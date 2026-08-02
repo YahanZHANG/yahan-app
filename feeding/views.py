@@ -1,5 +1,6 @@
 from datetime import date
 from django.contrib.auth.decorators import login_required
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from django.contrib import messages
 from django.db import transaction
@@ -19,6 +20,7 @@ from decimal import Decimal
 from .forms import (
     AllergyReactionForm,
     BabySettingsForm,
+    FoodCreateForm,
     MealForm,
     MealItemCreateFormSet,
     MealItemEditFormSet,
@@ -635,6 +637,64 @@ def today(request):
     return render(
         request,
         "feeding/today.html",
+        context,
+    )
+
+@login_required
+def food_create(request):
+    next_url = request.GET.get(
+        "next",
+        request.POST.get("next", ""),
+    )
+
+    if request.method == "POST":
+        form = FoodCreateForm(
+            request.POST,
+        )
+
+        if form.is_valid():
+            food = form.save(
+                commit=False
+            )
+
+            food.is_user_created = True
+            food.is_active = True
+            food.save()
+
+            form.save_m2m()
+
+            messages.success(
+                request,
+                f"「{food.name}」を追加した。",
+            )
+
+            if (
+                next_url
+                and url_has_allowed_host_and_scheme(
+                    url=next_url,
+                    allowed_hosts={
+                        request.get_host()
+                    },
+                    require_https=request.is_secure(),
+                )
+            ):
+                return redirect(next_url)
+
+            return redirect(
+                "feeding:food_list"
+            )
+
+    else:
+        form = FoodCreateForm()
+
+    context = {
+        "form": form,
+        "next_url": next_url,
+    }
+
+    return render(
+        request,
+        "feeding/food_form.html",
         context,
     )
 

@@ -5,9 +5,11 @@ from django.forms import BaseInlineFormSet, inlineformset_factory
 from .models import Baby
 
 from .models import (
+    Allergen,
     AllergyReaction,
     Dish,
     DishCategory,
+    FeedingGroup,
     Food,
     FoodCategory,
     Meal,
@@ -612,3 +614,108 @@ class BabySettingsForm(forms.ModelForm):
                 format="%Y-%m-%d",
             ),
         }
+
+class FoodCreateForm(forms.ModelForm):
+    class Meta:
+        model = Food
+        fields = (
+            "name",
+            "category",
+            "feeding_group",
+            "allergens",
+            "show_in_first_year_list",
+        )
+
+        labels = {
+            "name": "食材名",
+            "category": "食材ジャンル",
+            "feeding_group": "標準量の分類",
+            "allergens": "含まれるアレルゲン",
+            "show_in_first_year_list": (
+                "食材チャレンジに表示する"
+            ),
+        }
+
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "例：洋なし",
+                    "autocomplete": "off",
+                }
+            ),
+            "category": forms.Select(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "feeding_group": forms.Select(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "allergens": forms.CheckboxSelectMultiple(),
+            "show_in_first_year_list": (
+                forms.CheckboxInput()
+            ),
+        }
+
+        help_texts = {
+            "feeding_group": (
+                "「今日の離乳食量」の集計に使う分類。"
+            ),
+            "allergens": (
+                "該当するものがなければ選択不要。"
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["category"].queryset = (
+            FoodCategory.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        self.fields["feeding_group"].queryset = (
+            FeedingGroup.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        self.fields["allergens"].queryset = (
+            Allergen.objects
+            .filter(is_active=True)
+            .order_by(
+                "classification",
+                "display_order",
+                "name",
+            )
+        )
+
+        self.fields[
+            "show_in_first_year_list"
+        ].initial = True
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+
+        duplicate_exists = (
+            Food.objects
+            .filter(name__iexact=name)
+            .exists()
+        )
+
+        if duplicate_exists:
+            raise ValidationError(
+                "同じ名前の食材がすでに登録されている。"
+            )
+
+        return name

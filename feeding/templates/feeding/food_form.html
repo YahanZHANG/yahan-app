@@ -1,0 +1,159 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    新しい食材を追加 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    {% if next_url %}
+        <a
+            href="{{ next_url }}"
+            class="back-link"
+        >
+            ← 食事記録に戻る
+        </a>
+    {% else %}
+        <a
+            href="{% url 'feeding:food_list' %}"
+            class="back-link"
+        >
+            ← 食材一覧に戻る
+        </a>
+    {% endif %}
+
+    <h2>新しい食材を追加</h2>
+
+    <p>
+        一覧にない食材を登録する。
+    </p>
+</section>
+
+<form
+    method="post"
+    class="food-create-form"
+>
+    {% csrf_token %}
+
+    {% if next_url %}
+        <input
+            type="hidden"
+            name="next"
+            value="{{ next_url }}"
+        >
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="form-section">
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% for error in form.name.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">
+                {{ form.category.label }}
+            </label>
+
+            {{ form.category }}
+
+            {% for error in form.category.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label
+                for="{{ form.feeding_group.id_for_label }}"
+            >
+                {{ form.feeding_group.label }}
+            </label>
+
+            {{ form.feeding_group }}
+
+            {% if form.feeding_group.help_text %}
+                <small class="form-help-text">
+                    {{ form.feeding_group.help_text }}
+                </small>
+            {% endif %}
+
+            {% for error in form.feeding_group.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div class="form-group">
+            <span class="form-label">
+                {{ form.allergens.label }}
+            </span>
+
+            {% if form.allergens.help_text %}
+                <small class="form-help-text">
+                    {{ form.allergens.help_text }}
+                </small>
+            {% endif %}
+
+            <div class="allergen-checkbox-list">
+                {{ form.allergens }}
+            </div>
+
+            {% for error in form.allergens.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="form-section">
+        <label class="setting-checkbox-row">
+            {{ form.show_in_first_year_list }}
+
+            <span>
+                <strong>
+                    {{ form.show_in_first_year_list.label }}
+                </strong>
+
+                <small>
+                    食材チャレンジの総品目と進捗に含める。
+                </small>
+            </span>
+        </label>
+
+        {% for error in form.show_in_first_year_list.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </section>
+
+    <div class="form-actions">
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            食材を追加
+        </button>
+    </div>
+</form>
+{% endblock %}

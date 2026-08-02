@@ -31,6 +31,11 @@ urlpatterns = [
         name="food_list",
     ),
     path(
+        "foods/add/",
+        views.food_create,
+        name="food_create",
+    ),
+    path(
         "foods/<int:food_id>/",
         views.food_detail,
         name="food_detail",
