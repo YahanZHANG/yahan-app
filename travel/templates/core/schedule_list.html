@@ -9,7 +9,7 @@
     <div class="form-page-header schedule-list-header">
         <div>
             <a
-                href="{% url 'home' %}"
+                href="{% url 'travel:home' %}"
                 class="back-link"
             >
                 <i class="bi bi-chevron-left"></i>
@@ -64,7 +64,7 @@
 
                                     <div class="schedule-item-actions">
                                         <a
-                                            href="{% url 'schedule_update' schedule.id %}"
+                                            href="{% url 'travel:schedule_update' schedule.id %}"
                                             class="schedule-edit-button"
                                             aria-label="予定を編集"
                                             title="予定を編集"

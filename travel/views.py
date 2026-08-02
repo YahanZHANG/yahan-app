@@ -196,7 +196,7 @@ def schedule_create(request):
             schedule = form.save(commit=False)
             schedule.created_by = request.user
             schedule.save()
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = ScheduleForm()
 
@@ -225,7 +225,7 @@ def schedule_update(request, schedule_id):
 
         if form.is_valid():
             form.save()
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = ScheduleForm(
             instance=schedule,
@@ -290,7 +290,7 @@ def task_create(request):
             task = form.save(commit=False)
             task.created_by = request.user
             task.save()
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = TaskForm()
 
@@ -320,7 +320,7 @@ def task_toggle(request, task_id):
             ]
         )
 
-    return redirect("home")
+    return redirect("travel:home")
 
 @login_required
 def task_list(request):
@@ -416,7 +416,7 @@ def baby_log_create(request):
             baby_log = form.save(commit=False)
             baby_log.created_by = request.user
             baby_log.save()
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = BabyLogForm()
 
@@ -444,7 +444,7 @@ def family_status_update(request):
 
         if form.is_valid():
             form.save()
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = FamilyStatusForm(
             instance=family_status,
@@ -470,7 +470,7 @@ def milk_log_create(request):
             milk_log.created_by = request.user
             milk_log.save()
 
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = MilkLogForm()
 
@@ -494,7 +494,7 @@ def sleep_log_create(request):
             sleep_log.created_by = request.user
             sleep_log.save()
 
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = SleepLogForm()
 
@@ -518,7 +518,7 @@ def poop_log_create(request):
             poop_log.created_by = request.user
             poop_log.save()
 
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = PoopLogForm()
 
@@ -555,7 +555,7 @@ def meeting_note_create(request):
             meeting_note.created_by = request.user
             meeting_note.save()
 
-            return redirect("home")
+            return redirect("travel:home")
     else:
         form = MeetingNoteForm()
 
@@ -701,10 +701,10 @@ def milk_log_quick_create(request, amount_ml):
     allowed_amounts = {150, 200}
 
     if request.method != "POST":
-        return redirect("home")
+        return redirect("travel:home")
 
     if amount_ml not in allowed_amounts:
-        return redirect("home")
+        return redirect("travel:home")
 
     MilkLog.objects.create(
         fed_at=timezone.now(),
@@ -712,12 +712,12 @@ def milk_log_quick_create(request, amount_ml):
         created_by=request.user,
     )
 
-    return redirect("home")
+    return redirect("travel:home")
 
 @login_required
 def sleep_start(request):
     if request.method != "POST":
-        return redirect("home")
+        return redirect("travel:home")
 
     active_sleep = SleepLog.objects.filter(
         ended_at__isnull=True,
@@ -729,12 +729,12 @@ def sleep_start(request):
             created_by=request.user,
         )
 
-    return redirect("home")
+    return redirect("travel:home")
 
 @login_required
 def sleep_end(request):
     if request.method != "POST":
-        return redirect("home")
+        return redirect("travel:home")
 
     active_sleep = SleepLog.objects.filter(
         ended_at__isnull=True,
@@ -750,7 +750,7 @@ def sleep_end(request):
             ]
         )
 
-    return redirect("home")
+    return redirect("travel:home")
 
 @login_required
 def profile_photo(request, user_id):
