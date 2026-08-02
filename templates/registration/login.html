@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1, viewport-fit=cover"
     >
 
-    <title>ログイン | 家族たび</title>
+    <title>ログイン | yahan-app</title>
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
@@ -18,8 +18,8 @@
     >
 
     <link
-        rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+        rel="stylesheet"
     >
 
     <link
@@ -29,55 +29,72 @@
 </head>
 
 <body class="login-body">
-    <main class="login-container">
-        <section class="login-introduction">
-            <p class="app-eyebrow mb-2">FAMILY TRIP HUB</p>
-            <h1>家族たび</h1>
-            <p>
-                予定、お願い、赤ちゃんの記録を、
-                家族みんなで共有するアプリ
-            </p>
-        </section>
 
-        <form method="post" class="app-card login-card">
-            {% csrf_token %}
+<main class="login-container">
 
-            <div class="login-icon">
-                <i class="bi bi-people-fill"></i>
+    <section class="login-introduction">
+
+        <p class="app-eyebrow mb-2">
+            YAHAN APP
+        </p>
+
+        <h1>yahan-app</h1>
+
+        <p>
+            ログインして利用するアプリを選択してください。
+        </p>
+
+    </section>
+
+    <form
+        method="post"
+        class="app-card login-card"
+    >
+
+        {% csrf_token %}
+
+        <div class="login-icon">
+            <i class="bi bi-grid-1x2-fill"></i>
+        </div>
+
+        <h2>ログイン</h2>
+
+        {% if form.errors %}
+            <div class="form-errors">
+                ユーザー名またはパスワードが違います。
             </div>
+        {% endif %}
 
-            <h2>ログイン</h2>
+        <div class="form-field">
 
-            {% if form.errors %}
-                <div class="form-errors">
-                    ユーザー名またはパスワードが違います。
-                </div>
-            {% endif %}
+            <label for="{{ form.username.id_for_label }}">
+                ユーザー名
+            </label>
 
-            {% if next %}
-                <input type="hidden" name="next" value="{{ next }}">
-            {% endif %}
+            {{ form.username }}
 
-            <div class="form-field">
-                <label for="{{ form.username.id_for_label }}">
-                    ユーザー名
-                </label>
+        </div>
 
-                {{ form.username }}
-            </div>
+        <div class="form-field">
 
-            <div class="form-field">
-                <label for="{{ form.password.id_for_label }}">
-                    パスワード
-                </label>
+            <label for="{{ form.password.id_for_label }}">
+                パスワード
+            </label>
 
-                {{ form.password }}
-            </div>
+            {{ form.password }}
 
-            <button type="submit" class="primary-button login-button">
-                ログイン
-            </button>
-        </form>
-    </main>
+        </div>
+
+        <button
+            type="submit"
+            class="primary-button login-button"
+        >
+            ログイン
+        </button>
+
+    </form>
+
+</main>
+
 </body>
 </html>

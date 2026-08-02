@@ -1697,13 +1697,6 @@ def allergy_photo_delete(request, photo_id):
 def settings_view(request):
     baby = get_current_baby()
 
-    if baby is None:
-        messages.error(
-            request,
-            "子どもの情報がまだ登録されていない。",
-        )
-        return redirect("feeding:today")
-
     if request.method == "POST":
         form = BabySettingsForm(
             request.POST,
@@ -1711,16 +1704,23 @@ def settings_view(request):
         )
 
         if form.is_valid():
-            form.save()
+            saved_baby = form.save()
 
-            messages.success(
-                request,
-                "設定を保存した。",
-            )
+            if baby is None:
+                messages.success(
+                    request,
+                    f"「{saved_baby.name}」を登録した。",
+                )
+            else:
+                messages.success(
+                    request,
+                    "設定を保存した。",
+                )
 
             return redirect(
-                "feeding:settings",
+                "feeding:today",
             )
+
     else:
         form = BabySettingsForm(
             instance=baby,
@@ -1729,6 +1729,7 @@ def settings_view(request):
     context = {
         "baby": baby,
         "form": form,
+        "is_new_baby": baby is None,
     }
 
     return render(

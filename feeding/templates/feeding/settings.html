@@ -7,9 +7,19 @@
 {% block content %}
 <section class="page-header settings-page-header">
     <p class="eyebrow">SETTINGS</p>
-    <h2>設定</h2>
+    <h2>
+        {% if is_new_baby %}
+            赤ちゃんを登録
+        {% else %}
+            設定
+        {% endif %}
+    </h2>
     <p class="page-description">
-        子どもの情報とアプリの設定を管理する。
+        {% if is_new_baby %}
+            最初に赤ちゃんの情報を登録する。
+        {% else %}
+            子どもの情報とアプリの設定を管理する。
+        {% endif %}
     </p>
 </section>
 
@@ -71,7 +81,11 @@
             type="submit"
             class="primary-button"
         >
-            設定を保存
+            {% if is_new_baby %}
+                赤ちゃんを登録
+            {% else %}
+                設定を保存
+            {% endif %}
         </button>
     </form>
 </section>

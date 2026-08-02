@@ -15,18 +15,12 @@
 
     <ul>
         
-        <a
-            href="/travel/"
-            class="portal-app-card"
-        >
-            <div><h2>家族旅行</h2></div>
+        <a href="{% url 'travel:home' %}">
+            家族旅行
+        </a>
 
-        <a
-            href="/feeding/"
-            class="portal-app-card"
-        >
-            <div><h2>離乳食記録</h2></div>
-
+        <a href="{% url 'feeding:today' %}">
+            離乳食記録
         </a>
     </ul>
 </body>
