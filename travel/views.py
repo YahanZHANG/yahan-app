@@ -270,7 +270,7 @@ def schedule_delete(request, schedule_id):
         schedule.delete()
 
         return redirect(
-            "schedule_list",
+            "travel:schedule_list",
         )
 
     return render(
@@ -367,7 +367,7 @@ def task_update(request, task_id):
         if form.is_valid():
             form.save()
             return redirect(
-                "task_list",
+                "travel:task_list",
             )
     else:
         form = TaskForm(
@@ -396,7 +396,7 @@ def task_delete(request, task_id):
         task.delete()
 
         return redirect(
-            "task_list",
+            "travel:task_list",
         )
 
     return render(
@@ -600,7 +600,7 @@ def meeting_note_update(request, note_id):
             meeting_note.save()
 
             return redirect(
-                "meeting_note_list",
+                "travel:meeting_note_list",
             )
     else:
         form = MeetingNoteForm(
@@ -628,7 +628,7 @@ def meeting_note_delete(request, note_id):
         meeting_note.delete()
 
         return redirect(
-            "meeting_note_list",
+            "travel:meeting_note_list",
         )
 
     return render(
@@ -873,7 +873,7 @@ def expense_create(request):
                 )
 
             return redirect(
-                "expense_list",
+                "travel:expense_list",
             )
     else:
         form = ExpenseForm()
@@ -911,7 +911,7 @@ def expense_update(request, expense_id):
                 )
 
             return redirect(
-                "expense_list",
+                "travel:expense_list",
             )
     else:
         form = ExpenseForm(
@@ -938,7 +938,7 @@ def expense_delete(request, expense_id):
 
     if request.method == "POST":
         expense.delete()
-        return redirect("expense_list")
+        return redirect("travel:expense_list")
 
     return render(
         request,
@@ -1152,7 +1152,7 @@ def baby_growth_note_create(request):
             note.save()
 
             return redirect(
-                "baby_growth_note_list",
+                "travel:baby_growth_note_list",
             )
     else:
         form = BabyGrowthNoteForm()
@@ -1194,7 +1194,7 @@ def baby_growth_note_update(request, note_id):
 
         if form.is_valid():
             form.save()
-            return redirect("baby_growth_note_list")
+            return redirect("travel:baby_growth_note_list")
     else:
         form = BabyGrowthNoteForm(
             instance=note,
@@ -1221,7 +1221,7 @@ def baby_growth_note_delete(request, note_id):
         note.delete()
 
         return redirect(
-            "baby_growth_note_list",
+            "travel:baby_growth_note_list",
         )
 
     return render(

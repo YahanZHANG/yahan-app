@@ -20,7 +20,7 @@
         </div>
 
         <a
-            href="{% url 'schedule_create' %}"
+            href="{% url 'travel:schedule_create' %}"
             class="small-action-button"
         >
             ＋ 予定を追加
@@ -73,7 +73,7 @@
                                         </a>
 
                                         <a
-                                            href="{% url 'schedule_delete' schedule.id %}"
+                                            href="{% url 'travel:schedule_delete' schedule.id %}"
                                             class="schedule-delete-button"
                                             aria-label="予定を削除"
                                             title="予定を削除"
@@ -118,7 +118,7 @@
                 <i class="bi bi-calendar2-check"></i>
                 <p>今後の予定はまだありません</p>
 
-                <a href="{% url 'schedule_create' %}">
+                <a href="{% url 'travel:schedule_create' %}">
                     最初の予定を追加
                 </a>
             </div>

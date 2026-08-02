@@ -9,7 +9,7 @@
     <div class="form-page-header schedule-list-header">
         <div>
             <a
-                href="{% url 'home' %}"
+                href="{% url 'travel:home' %}"
                 class="back-link"
             >
                 <i class="bi bi-chevron-left"></i>
@@ -20,7 +20,7 @@
         </div>
 
         <a
-            href="{% url 'task_create' %}"
+            href="{% url 'travel:task_create' %}"
             class="small-action-button"
         >
             ＋ お願いを追加
@@ -43,7 +43,7 @@
                 <div class="task-list-row">
                     <form
                         method="post"
-                        action="{% url 'task_toggle' task.id %}"
+                        action="{% url 'travel:task_toggle' task.id %}"
                         class="task-list-toggle-form"
                     >
                         {% csrf_token %}
@@ -82,7 +82,7 @@
 
                     <div class="schedule-item-actions">
                         <a
-                            href="{% url 'task_update' task.id %}"
+                            href="{% url 'travel:task_update' task.id %}"
                             class="schedule-edit-button"
                             aria-label="お願いを編集"
                             title="お願いを編集"
@@ -91,7 +91,7 @@
                         </a>
 
                         <a
-                            href="{% url 'task_delete' task.id %}"
+                            href="{% url 'travel:task_delete' task.id %}"
                             class="schedule-delete-button"
                             aria-label="お願いを削除"
                             title="お願いを削除"
@@ -125,7 +125,7 @@
                 <div class="task-list-row task-is-completed">
                     <form
                         method="post"
-                        action="{% url 'task_toggle' task.id %}"
+                        action="{% url 'travel:task_toggle' task.id %}"
                         class="task-list-toggle-form"
                     >
                         {% csrf_token %}
@@ -156,7 +156,7 @@
 
                     <div class="schedule-item-actions">
                         <a
-                            href="{% url 'task_update' task.id %}"
+                            href="{% url 'travel:task_update' task.id %}"
                             class="schedule-edit-button"
                             aria-label="お願いを編集"
                             title="お願いを編集"
@@ -165,7 +165,7 @@
                         </a>
 
                         <a
-                            href="{% url 'task_delete' task.id %}"
+                            href="{% url 'travel:task_delete' task.id %}"
                             class="schedule-delete-button"
                             aria-label="お願いを削除"
                             title="お願いを削除"
