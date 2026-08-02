@@ -1,27 +1,190 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-    <title>yahan.app</title>
-</head>
-<body>
-    <h1>yahan.app</h1>
+{% extends "base.html" %}
 
-    <p>家族用アプリポータル</p>
+{% block title %}ホーム | yahan-app{% endblock %}
 
-    <ul>
-        
-        <a href="{% url 'travel:home' %}">
-            家族旅行
-        </a>
+{% block content %}
+<div class="portal-page">
 
-        <a href="{% url 'feeding:today' %}">
-            離乳食記録
-        </a>
-    </ul>
-</body>
-</html>
+    <header class="portal-hero">
+        <div class="portal-hero-decoration portal-decoration-one"></div>
+        <div class="portal-hero-decoration portal-decoration-two"></div>
+
+        <div class="portal-hero-content">
+            <div class="portal-brand-row">
+                <div class="portal-brand-icon" aria-hidden="true">
+                    Y
+                </div>
+
+                <div>
+                    <p class="portal-eyebrow">
+                        APP HUB
+                    </p>
+
+                    <h1>yahan-app</h1>
+                </div>
+            </div>
+
+            <p class="portal-hero-description">
+                いろんなアプリを作ってみた～
+            </p>
+
+            {% if user.is_authenticated %}
+                <div class="portal-user-row">
+                    <div class="portal-user-avatar" aria-hidden="true">
+                        {{ user.username|first|upper }}
+                    </div>
+
+                    <div class="portal-user-copy">
+                        <span>ログイン中</span>
+                        <strong>{{ user.username }}</strong>
+                    </div>
+
+                    <form
+                        method="post"
+                        action="{% url 'logout' %}"
+                        class="portal-logout-form"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="portal-logout-button"
+                        >
+                            ログアウト
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="portal-main">
+        <section class="portal-section">
+            <div class="portal-section-heading">
+                <div>
+                    <p class="portal-section-eyebrow">
+                        YOUR APPS
+                    </p>
+
+                    <h2>使うアプリを選ぶ</h2>
+                </div>
+
+                <span class="portal-app-count">
+                    2 apps
+                </span>
+            </div>
+
+            <div class="portal-app-grid">
+
+                <a
+                    href="{% url 'travel:home' %}"
+                    class="portal-app-card portal-travel-card"
+                >
+                    <div class="portal-card-top">
+                        <div class="portal-app-icon portal-travel-icon">
+                            <span aria-hidden="true">✈️</span>
+                        </div>
+
+                        <span class="portal-open-arrow" aria-hidden="true">
+                            ↗
+                        </span>
+                    </div>
+
+                    <div class="portal-card-content">
+                        <p class="portal-card-label">
+                            FAMILY TRIP
+                        </p>
+
+                        <h3>家族旅行</h3>
+
+                        <p>
+                            予定、ToDo、赤ちゃんの記録、
+                            家族会議、支出をまとめて管理する。
+                        </p>
+                    </div>
+
+                    <div class="portal-feature-list">
+                        <span>予定</span>
+                        <span>タスク</span>
+                        <span>支出</span>
+                    </div>
+
+                    <div class="portal-card-footer">
+                        <span>家族旅行を開く</span>
+                        <strong aria-hidden="true">→</strong>
+                    </div>
+                </a>
+
+                <a
+                    href="{% url 'feeding:today' %}"
+                    class="portal-app-card portal-feeding-card"
+                >
+                    <div class="portal-card-top">
+                        <div class="portal-app-icon portal-feeding-icon">
+                            <span aria-hidden="true">🥣</span>
+                        </div>
+
+                        <span class="portal-open-arrow" aria-hidden="true">
+                            ↗
+                        </span>
+                    </div>
+
+                    <div class="portal-card-content">
+                        <p class="portal-card-label">
+                            BABY FOOD
+                        </p>
+
+                        <h3>離乳食ノート</h3>
+
+                        <p>
+                            毎日の食事量、食材チャレンジ、
+                            料理の材料、アレルゲンを記録する。
+                        </p>
+                    </div>
+
+                    <div class="portal-feature-list">
+                        <span>食事記録</span>
+                        <span>食材</span>
+                        <span>アレルゲン</span>
+                    </div>
+
+                    <div class="portal-card-footer">
+                        <span>離乳食ノートを開く</span>
+                        <strong aria-hidden="true">→</strong>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <section class="portal-future-section">
+            <div class="portal-future-icon" aria-hidden="true">
+                ＋
+            </div>
+
+            <div class="portal-future-copy">
+                <p class="portal-section-eyebrow">
+                    GROWING WITH YOUR FAMILY
+                </p>
+
+                <h2>これからもアプリを追加</h2>
+
+                <p>
+                    家族に必要な機能を、ひとつずつ
+                    このホーム画面に増やしていく。
+                </p>
+            </div>
+
+            <span class="portal-coming-soon">
+                Coming soon
+            </span>
+        </section>
+    </main>
+
+    <footer class="portal-footer">
+        <span>yahan-app</span>
+        <small>Our family, in one place.</small>
+    </footer>
+
+</div>
+{% endblock %}
