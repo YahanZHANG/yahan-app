@@ -166,10 +166,14 @@
                                 </span>
 
                                 <strong>
-                                    {% if row.guideline.unit == "g" %}
-                                        {{ row.actual|floatformat:"-2" }}g
+                                    {% if row.guideline.feeding_group.code == "egg" %}
+                                        {% if row.actual %}
+                                            {{ row.actual|floatformat:"-2" }}g相当
+                                        {% else %}
+                                            0g
+                                        {% endif %}
                                     {% else %}
-                                        {{ row.guideline.food_form_note }}
+                                        {{ row.actual|floatformat:"-2" }}g
                                     {% endif %}
                                 </strong>
                             </div>

@@ -175,13 +175,11 @@ def get_daily_guideline_summary(
     その日の全食事を合計し、
     月齢別の1日分の目安量と比較する。
 
-    現段階の集計対象：
-    ・単一食材
-    ・g単位
-    ・標準量用食品群が設定済み
-
-    料理、ml、小さじ、大さじは対象外。
+    集計対象：
+    ・単一食材のg記録
+    ・料理の材料スナップショット
     """
+
     guidelines = (
         FeedingGuideline.objects
         .filter(
@@ -198,6 +196,47 @@ def get_daily_guideline_summary(
 
     excluded_items = []
 
+    def add_food_amount(
+        food,
+        amount,
+        display_name,
+    ):
+        """
+        食材の食品群に、摂取量を加算する。
+        集計できない場合は除外一覧へ追加する。
+        """
+
+        if amount is None:
+            excluded_items.append(
+                {
+                    "name": display_name,
+                    "reason": "材料量が未設定",
+                }
+            )
+            return
+
+        if not food or not food.feeding_group:
+            excluded_items.append(
+                {
+                    "name": display_name,
+                    "reason": "食品群未設定",
+                }
+            )
+            return
+
+        group_code = food.feeding_group.code
+
+        if group_code == "other":
+            excluded_items.append(
+                {
+                    "name": display_name,
+                    "reason": "比較対象外",
+                }
+            )
+            return
+
+        actual_amounts[group_code] += amount
+
     for meal in meals:
         items = (
             meal.items
@@ -206,19 +245,14 @@ def get_daily_guideline_summary(
                 "food__feeding_group",
                 "dish",
             )
+            .prefetch_related(
+                "ingredient_snapshots__food__feeding_group",
+            )
             .order_by("display_order", "id")
         )
 
         for item in items:
-            if item.item_type != MealItem.ItemType.FOOD:
-                excluded_items.append(
-                    {
-                        "name": item.item_name,
-                        "reason": "料理の材料量が未設定",
-                    }
-                )
-                continue
-
+            # g以外は現段階では換算しない
             if item.unit != MealItem.Unit.GRAM:
                 excluded_items.append(
                     {
@@ -230,27 +264,47 @@ def get_daily_guideline_summary(
                 )
                 continue
 
-            if not item.food or not item.food.feeding_group:
-                excluded_items.append(
-                    {
-                        "name": item.item_name,
-                        "reason": "食品群未設定",
-                    }
+            # 単一食材
+            if (
+                item.item_type
+                == MealItem.ItemType.FOOD
+            ):
+                add_food_amount(
+                    food=item.food,
+                    amount=item.amount,
+                    display_name=item.item_name,
                 )
                 continue
 
-            group_code = item.food.feeding_group.code
-
-            if group_code == "other":
-                excluded_items.append(
-                    {
-                        "name": item.item_name,
-                        "reason": "比較対象外",
-                    }
+            # 料理
+            if (
+                item.item_type
+                == MealItem.ItemType.DISH
+            ):
+                snapshots = list(
+                    item.ingredient_snapshots.all()
                 )
-                continue
 
-            actual_amounts[group_code] += item.amount
+                if not snapshots:
+                    excluded_items.append(
+                        {
+                            "name": item.item_name,
+                            "reason": (
+                                "料理材料の履歴がない"
+                            ),
+                        }
+                    )
+                    continue
+
+                for snapshot in snapshots:
+                    add_food_amount(
+                        food=snapshot.food,
+                        amount=snapshot.amount_g,
+                        display_name=(
+                            f"{item.item_name}："
+                            f"{snapshot.food.name}"
+                        ),
+                    )
 
     protein_group_codes = {
         "fish",
@@ -268,8 +322,10 @@ def get_daily_guideline_summary(
         actual = actual_amounts[group_code]
 
         comparison_available = (
-            guideline.unit == FeedingGuideline.Unit.GRAM
-            and group_code not in protein_group_codes
+            guideline.unit
+            == FeedingGuideline.Unit.GRAM
+            and group_code
+            not in protein_group_codes
         )
 
         daily_minimum = None
@@ -293,7 +349,9 @@ def get_daily_guideline_summary(
             if daily_maximum and daily_maximum > 0:
                 percent = min(
                     round(
-                        float(actual / daily_maximum)
+                        float(
+                            actual / daily_maximum
+                        )
                         * 100
                     ),
                     100,
@@ -301,16 +359,19 @@ def get_daily_guideline_summary(
 
             if actual == 0:
                 amount_status = "none"
+
             elif (
                 daily_minimum is not None
                 and actual < daily_minimum
             ):
                 amount_status = "below"
+
             elif (
                 daily_maximum is not None
                 and actual > daily_maximum
             ):
                 amount_status = "above"
+
             else:
                 amount_status = "within"
 
@@ -333,7 +394,9 @@ def get_daily_guideline_summary(
         "main_rows": main_rows,
         "protein_rows": protein_rows,
         "excluded_items": excluded_items,
-        "excluded_item_count": len(excluded_items),
+        "excluded_item_count": len(
+            excluded_items
+        ),
         "recommended_meals": recommended_meals,
     }
 
@@ -414,6 +477,127 @@ def today(request):
                     recommended_meals=recommended_meals,
                 )
             )
+
+        # --------------------------------------------------
+        # 食材チャレンジ
+        # --------------------------------------------------
+
+        target_foods = Food.objects.filter(
+            is_active=True,
+            show_in_first_year_list=True,
+        )
+
+        total_food_count = target_foods.count()
+
+        eaten_food_count = (
+            target_foods
+            .filter(
+                Q(
+                    meal_items__meal__baby=baby,
+                )
+                | Q(
+                    meal_item_ingredient_snapshots__meal_item__meal__baby=baby,
+                )
+            )
+            .distinct()
+            .count()
+        )
+                
+        if total_food_count:
+            food_progress_percent = round(
+                eaten_food_count
+                / total_food_count
+                * 100
+            )
+
+        # --------------------------------------------------
+        # アレルゲン進捗
+        # --------------------------------------------------
+
+        active_allergens = (
+            Allergen.objects
+            .filter(is_active=True)
+        )
+
+        total_allergen_count = (
+            active_allergens.count()
+        )
+
+        eaten_allergen_count = (
+            active_allergens
+            .filter(
+                Q(
+                    foods__meal_items__meal__baby=baby,
+                )
+                | Q(
+                    foods__meal_item_ingredient_snapshots__meal_item__meal__baby=baby,
+                )
+            )
+            .distinct()
+            .count()
+        )
+
+        if total_allergen_count:
+            allergen_progress_percent = round(
+                eaten_allergen_count
+                / total_allergen_count
+                * 100
+            )
+
+        # --------------------------------------------------
+        # 最近初めて食べた食材
+        # --------------------------------------------------
+
+        food_first_dates = (
+            target_foods
+            .select_related("category")
+            .annotate(
+                first_direct_date=Min(
+                    "meal_items__meal__date",
+                    filter=Q(
+                        meal_items__meal__baby=baby,
+                    ),
+                ),
+                first_dish_date=Min(
+                    "meal_item_ingredient_snapshots__"
+                    "meal_item__meal__date",
+                    filter=Q(
+                        meal_item_ingredient_snapshots__meal_item__meal__baby=baby,
+                    ),
+                ),
+            )
+        )
+
+        recent_candidates = []
+
+        for food in food_first_dates:
+            dates = [
+                value
+                for value in [
+                    food.first_direct_date,
+                    food.first_dish_date,
+                ]
+                if value is not None
+            ]
+
+            if not dates:
+                continue
+
+            recent_candidates.append(
+                {
+                    "food": food,
+                    "first_date": min(dates),
+                }
+            )
+
+        recent_candidates.sort(
+            key=lambda item: item["first_date"],
+            reverse=True,
+        )
+
+        recent_first_foods = (
+            recent_candidates[:5]
+        )
     
     for meal_number, meal_label in Meal.MealNumber.choices:
         meal = meals_by_number.get(meal_number)
@@ -820,12 +1004,11 @@ def meal_edit(request, meal_number):
 
                         selection_changed = (
                             is_new_item
-                            or "item_type"
-                            in item_form.changed_data
-                            or "food"
-                            in item_form.changed_data
-                            or "dish"
-                            in item_form.changed_data
+                            or "item_type" in item_form.changed_data
+                            or "food" in item_form.changed_data
+                            or "dish" in item_form.changed_data
+                            or "amount" in item_form.changed_data
+                            or "unit" in item_form.changed_data
                         )
 
                         snapshot_missing = (

@@ -127,19 +127,23 @@ class DishCategoryAdmin(admin.ModelAdmin):
         "name",
     )
 
-
 class DishIngredientInline(admin.TabularInline):
     model = DishIngredient
     extra = 3
     autocomplete_fields = ("food",)
+    fields = (
+        "display_order",
+        "food",
+        "amount_g",
+    )
     ordering = ("display_order",)
-
 
 @admin.register(Dish)
 class DishAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "category",
+        "finished_amount_g",
         "ingredient_names",
         "allergen_names",
         "is_user_created",
@@ -147,6 +151,14 @@ class DishAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "category",
+        "is_user_created",
+        "is_active",
+    )
+    fields = (
+        "name",
+        "category",
+        "finished_amount_g",
+        "instructions",
         "is_user_created",
         "is_active",
     )
@@ -268,6 +280,16 @@ class MealItemIngredientInline(admin.TabularInline):
     model = MealItemIngredient
     extra = 0
     autocomplete_fields = ("food",)
+    fields = (
+        "display_order",
+        "food",
+        "amount_g",
+    )
+    readonly_fields = (
+        "food",
+        "amount_g",
+        "display_order",
+    )
     ordering = (
         "display_order",
         "id",
@@ -320,6 +342,7 @@ class MealItemIngredientAdmin(admin.ModelAdmin):
     list_display = (
         "meal_item",
         "food",
+        "amount_g",
         "display_order",
     )
     list_filter = (

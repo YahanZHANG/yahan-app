@@ -309,6 +309,26 @@ class Dish(models.Model):
         on_delete=models.PROTECT,
         related_name="dishes",
     )
+
+    finished_amount_g = models.DecimalField(
+        "完成量",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0.01),
+        ],
+        help_text=(
+            "調理後に完成した料理全体の重量をgで入力する。"
+        ),
+    )
+
+    instructions = models.TextField(
+        "作り方",
+        blank=True,
+    )
+
     ingredients = models.ManyToManyField(
         Food,
         verbose_name="含まれる食材",
@@ -363,6 +383,19 @@ class DishIngredient(models.Model):
         verbose_name="食材",
         on_delete=models.PROTECT,
         related_name="dish_ingredients",
+    )
+    amount_g = models.DecimalField(
+        "使用量",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0.01),
+        ],
+        help_text=(
+            "料理全体に使用した材料の重量をgで入力する。"
+        ),
     )
     display_order = models.PositiveIntegerField(
         "表示順",
@@ -627,8 +660,8 @@ class MealItem(models.Model):
 
     def create_ingredient_snapshot(self):
         """
-        選択した料理の現在の材料一覧を、
-        この食事記録専用の履歴として保存する。
+        料理を記録した時点の材料と、
+        実際に食べた材料量を保存する。
         """
         self.ingredient_snapshots.all().delete()
 
@@ -644,17 +677,39 @@ class MealItem(models.Model):
             .order_by("display_order", "id")
         )
 
-        MealItemIngredient.objects.bulk_create(
-            [
+        finished_amount = self.dish.finished_amount_g
+
+        snapshots = []
+
+        for ingredient in ingredients:
+            calculated_amount = None
+
+            if (
+                self.unit == self.Unit.GRAM
+                and finished_amount
+                and finished_amount > 0
+                and ingredient.amount_g
+                and ingredient.amount_g > 0
+            ):
+                calculated_amount = (
+                    ingredient.amount_g
+                    * self.amount
+                    / finished_amount
+                )
+
+            snapshots.append(
                 MealItemIngredient(
                     meal_item=self,
                     food=ingredient.food,
+                    amount_g=calculated_amount,
                     display_order=ingredient.display_order,
                 )
-                for ingredient in ingredients
-            ]
-        )
+            )
 
+        MealItemIngredient.objects.bulk_create(
+            snapshots
+        )
+    
 class MealItemIngredient(models.Model):
     """
     料理を食事記録へ追加した時点の材料一覧。
@@ -674,6 +729,16 @@ class MealItemIngredient(models.Model):
         verbose_name="食材",
         on_delete=models.PROTECT,
         related_name="meal_item_ingredient_snapshots",
+    )
+    amount_g = models.DecimalField(
+        "実際に食べた材料量",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0.01),
+        ],
     )
     display_order = models.PositiveIntegerField(
         "表示順",
