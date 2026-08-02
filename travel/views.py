@@ -183,7 +183,7 @@ def home(request):
 
     return render(
         request,
-        "core/home.html",
+        "travel/home.html",
         context,
     )
 
@@ -202,7 +202,7 @@ def schedule_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "予定を追加",
@@ -233,7 +233,7 @@ def schedule_update(request, schedule_id):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "予定を編集",
@@ -253,7 +253,7 @@ def schedule_list(request):
 
     return render(
         request,
-        "core/schedule_list.html",
+        "travel/schedule_list.html",
         {
             "upcoming_schedules": upcoming_schedules,
         },
@@ -275,7 +275,7 @@ def schedule_delete(request, schedule_id):
 
     return render(
         request,
-        "core/schedule_confirm_delete.html",
+        "travel/schedule_confirm_delete.html",
         {
             "schedule": schedule,
         },
@@ -296,7 +296,7 @@ def task_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "お願いを追加",
@@ -343,7 +343,7 @@ def task_list(request):
 
     return render(
         request,
-        "core/task_list.html",
+        "travel/task_list.html",
         {
             "incomplete_tasks": incomplete_tasks,
             "completed_tasks": completed_tasks,
@@ -376,7 +376,7 @@ def task_update(request, task_id):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "お願いを編集",
@@ -401,7 +401,7 @@ def task_delete(request, task_id):
 
     return render(
         request,
-        "core/task_confirm_delete.html",
+        "travel/task_confirm_delete.html",
         {
             "task": task,
         },
@@ -422,7 +422,7 @@ def baby_log_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "赤ちゃん記録を追加",
@@ -452,7 +452,7 @@ def family_status_update(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "自分の状態を変更",
@@ -476,7 +476,7 @@ def milk_log_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "ミルクを記録",
@@ -500,7 +500,7 @@ def sleep_log_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "睡眠を記録",
@@ -524,7 +524,7 @@ def poop_log_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "うんちを記録",
@@ -561,7 +561,7 @@ def meeting_note_create(request):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "家族会議メモを追加",
@@ -609,7 +609,7 @@ def meeting_note_update(request, note_id):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "家族会議メモを編集",
@@ -633,7 +633,7 @@ def meeting_note_delete(request, note_id):
 
     return render(
         request,
-        "core/meeting_note_confirm_delete.html",
+        "travel/meeting_note_confirm_delete.html",
         {
             "meeting_note": meeting_note,
         },
@@ -880,7 +880,7 @@ def expense_create(request):
 
     return render(
         request,
-        "core/expense_form.html",
+        "travel/expense_form.html",
         {
             "form": form,
             "page_title": "支出を追加",
@@ -920,7 +920,7 @@ def expense_update(request, expense_id):
 
     return render(
         request,
-        "core/expense_form.html",
+        "travel/expense_form.html",
         {
             "form": form,
             "expense": expense,
@@ -942,7 +942,7 @@ def expense_delete(request, expense_id):
 
     return render(
         request,
-        "core/expense_confirm_delete.html",
+        "travel/expense_confirm_delete.html",
         {
             "expense": expense,
         },
@@ -1082,7 +1082,7 @@ def expense_list(request):
 
     return render(
         request,
-        "core/expense_list.html",
+        "travel/expense_list.html",
         {
             "expenses": expenses,
         },
@@ -1130,7 +1130,7 @@ def expense_settlement(request):
 
     return render(
         request,
-        "core/expense_settlement.html",
+        "travel/expense_settlement.html",
         {
             "settlement_groups": settlement_groups,
         },
@@ -1159,7 +1159,7 @@ def baby_growth_note_create(request):
 
     return render(
         request,
-        "core/baby_growth_note_form.html",
+        "travel/baby_growth_note_form.html",
         {
             "form": form,
         },
@@ -1173,7 +1173,7 @@ def baby_growth_note_list(request):
 
     return render(
         request,
-        "core/baby_growth_note_list.html",
+        "travel/baby_growth_note_list.html",
         {
             "growth_notes": growth_notes,
         },
@@ -1202,7 +1202,7 @@ def baby_growth_note_update(request, note_id):
 
     return render(
         request,
-        "core/form.html",
+        "travel/form.html",
         {
             "form": form,
             "page_title": "成長メモを編集",
@@ -1226,7 +1226,7 @@ def baby_growth_note_delete(request, note_id):
 
     return render(
         request,
-        "core/baby_growth_note_confirm_delete.html",
+        "travel/baby_growth_note_confirm_delete.html",
         {
             "note": note,
         },
@@ -1243,7 +1243,7 @@ def meeting_note_list(request):
 
     return render(
         request,
-        "core/meeting_note_list.html",
+        "travel/meeting_note_list.html",
         {
             "meeting_notes": meeting_notes,
         },
