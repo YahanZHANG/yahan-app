@@ -1,0 +1,429 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}今日 | 離乳食ノート{% endblock %}
+
+{% block content %}
+{% if baby %}
+    <section class="dashboard-hero">
+        <div class="dashboard-date-row">
+            <p id="device-date" class="dashboard-date">
+                {{ today_date|date:"Y年n月j日" }}
+            </p>
+
+            <span class="baby-age-badge">
+                生後{{ age_months }}か月
+            </span>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">TODAY</p>
+                <h3>今日の食事</h3>
+            </div>
+
+            <span class="section-summary">
+                {{ today_item_count }}品を記録
+            </span>
+        </div>
+
+        <div class="dashboard-meal-grid">
+            {% for card in meal_cards %}
+                <a
+                    href="{% url 'feeding:meal_edit' card.number %}"
+                    class="dashboard-meal-card{% if card.meal %} recorded{% endif %}"
+                    data-meal-link
+                >
+                    <span class="meal-number-icon">
+                        {{ card.number }}食目
+                    </span>
+
+                    {% if card.meal %}
+                        <span class="meal-state recorded">
+                            ✓ {{ card.item_count }}品
+                        </span>
+                    {% else %}
+                        <span class="meal-state">
+                            ＋ 記録する
+                        </span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">DAILY GUIDELINE</p>
+                <h3>今日の離乳食量</h3>
+            </div>
+
+            <span class="section-summary">
+                1日{{ feeding_stage.recommended_meals }}回の目安
+            </span>
+        </div>
+
+        {% if age_months < 7 %}
+            <div class="dashboard-empty-card">
+                <span>🥄</span>
+
+                <div>
+                    <strong>少量から進める時期</strong>
+                    <p>
+                        子どもの様子を見ながら、
+                        1日1回1さじずつ進める。
+                    </p>
+                </div>
+            </div>
+
+        {% elif age_months <= 18 %}
+            {% if daily_guideline_summary %}
+                <article class="meal-guideline-card">
+                    <div class="daily-guideline-heading">
+                        <div>
+                            <strong>今日の合計</strong>
+                            <small>
+                                本日記録した全食事を合算
+                            </small>
+                        </div>
+
+                        <span>
+                            {{ today_item_count }}品
+                        </span>
+                    </div>
+
+                    <div class="guideline-row-list">
+                        {% for row in daily_guideline_summary.main_rows %}
+                            <div class="guideline-row">
+                                <div class="guideline-row-top">
+                                    <span>
+                                        {{ row.guideline.feeding_group.name }}
+                                    </span>
+
+                                    <strong>
+                                        {{ row.actual|floatformat:"-2" }}g
+
+                                        <small>
+                                            /
+                                            {{ row.daily_minimum|floatformat:"-2" }}
+                                            〜
+                                            {{ row.daily_maximum|floatformat:"-2" }}g
+                                        </small>
+                                    </strong>
+                                </div>
+
+                                <div
+                                    class="guideline-progress {{ row.amount_status }}"
+                                >
+                                    <span
+                                        style="width: {{ row.percent }}%;"
+                                    ></span>
+                                </div>
+
+                                <div class="guideline-status-text">
+                                    {% if row.amount_status == "none" %}
+                                        <span>まだ記録なし</span>
+                                    {% elif row.amount_status == "below" %}
+                                        <span>
+                                            目安の下限より少なめ
+                                        </span>
+                                    {% elif row.amount_status == "within" %}
+                                        <span class="within">
+                                            目安の範囲内
+                                        </span>
+                                    {% elif row.amount_status == "above" %}
+                                        <span class="above">
+                                            目安量を超えている
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="empty-message">
+                                この月齢の標準量が登録されていない。
+                            </p>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="protein-summary-card">
+                    <div class="protein-summary-heading">
+                        <div>
+                            <p class="eyebrow">PROTEIN SOURCES</p>
+                            <h4>たんぱく源の内訳</h4>
+                        </div>
+
+                        <span>組み合わせ可</span>
+                    </div>
+
+                    <div class="protein-source-grid">
+                        {% for row in daily_guideline_summary.protein_rows %}
+                            <div class="protein-source-item">
+                                <span>
+                                    {{ row.guideline.feeding_group.name }}
+                                </span>
+
+                                <strong>
+                                    {% if row.guideline.unit == "g" %}
+                                        {{ row.actual|floatformat:"-2" }}g
+                                    {% else %}
+                                        {{ row.guideline.food_form_note }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        {% empty %}
+                            <p class="empty-message">
+                                たんぱく源の標準量が登録されていない。
+                            </p>
+                        {% endfor %}
+                    </div>
+
+                    <p>
+                        魚・肉・豆腐・卵・乳製品を
+                        すべて目安量まで食べる必要はない。
+                        今日使用したたんぱく源の内訳として表示している。
+                    </p>
+                </article>
+
+                {% if daily_guideline_summary.excluded_items %}
+                    <details class="calculation-details">
+                        <summary>
+                            現在の計算対象外
+                            {{ daily_guideline_summary.excluded_item_count }}件
+                        </summary>
+
+                        <ul>
+                            {% for excluded in daily_guideline_summary.excluded_items %}
+                                <li>
+                                    {{ excluded.name }}
+                                    — {{ excluded.reason }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                {% endif %}
+
+                <p class="guideline-general-note">
+                    表示は本日記録した離乳食の合計。
+                    母乳・ミルク由来の栄養は含まない。
+                    目安量はノルマではなく、食欲や成長・発達に応じて調整する。
+                </p>
+
+            {% else %}
+                <div class="dashboard-empty-card">
+                    <span>🥣</span>
+
+                    <div>
+                        <strong>まだ今日の記録がない</strong>
+                        <p>
+                            ①食目・②食目・③食目から記録すると、
+                            ここに1日の合計を表示する。
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="dashboard-empty-card">
+                <span>🍽️</span>
+
+                <div>
+                    <strong>18か月以降</strong>
+                    <p>
+                        現在の目安量比較は18か月までに対応している。
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">PROGRESS</p>
+                <h3>食材チャレンジ</h3>
+            </div>
+
+            <a
+                href="{% url 'feeding:food_list' %}"
+                class="section-link"
+            >
+                すべて見る ›
+            </a>
+        </div>
+
+        <a
+            href="{% url 'feeding:food_list' %}"
+            class="progress-dashboard-card food-progress-card"
+        >
+            <div class="progress-card-top">
+                <div class="progress-card-icon">🥕</div>
+
+                <div class="progress-card-numbers">
+                    <strong>
+                        {{ eaten_food_count }}
+                        <small>/ {{ total_food_count }}種類</small>
+                    </strong>
+
+                    <span>{{ food_progress_percent }}%</span>
+                </div>
+            </div>
+
+            <div class="dashboard-progress-bar">
+                <span
+                    style="width: {{ food_progress_percent }}%;"
+                ></span>
+            </div>
+
+            <p>
+                1歳までの食材リストから自動集計
+            </p>
+        </a>
+
+        <a
+            href="{% url 'feeding:allergen_list' %}"
+            class="progress-dashboard-card allergen-progress-card"
+        >
+            <div class="progress-card-top">
+                <div class="progress-card-icon">🛡️</div>
+
+                <div class="progress-card-numbers">
+                    <strong>
+                        {{ eaten_allergen_count }}
+                        <small>/ {{ total_allergen_count }}品目</small>
+                    </strong>
+
+                    <span>{{ allergen_progress_percent }}%</span>
+                </div>
+            </div>
+
+            <div class="dashboard-progress-bar">
+                <span
+                    style="width: {{ allergen_progress_percent }}%;"
+                ></span>
+            </div>
+
+            <p>
+                アレルゲン29品目の経験状況
+            </p>
+            </a>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">RECENT</p>
+                <h3>最近初めて食べた食材</h3>
+            </div>
+        </div>
+
+        {% if recent_first_foods %}
+            <div class="recent-food-list">
+                {% for item in recent_first_foods %}
+                    <a
+                        href="{% url 'feeding:food_detail' item.food.id %}"
+                        class="recent-food-row"
+                    >
+                        <span class="recent-food-icon">
+                            ✨
+                        </span>
+
+                        <span class="recent-food-main">
+                            <strong>{{ item.food.name }}</strong>
+
+                            <small>
+                                {{ item.food.category.name }}
+                            </small>
+                        </span>
+
+                        <span class="recent-food-date">
+                            {{ item.first_date|date:"n/j" }}
+                        </span>
+
+                        <span class="row-arrow">›</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty-card">
+                <span>🥄</span>
+
+                <div>
+                    <strong>まだ食材記録がない</strong>
+                    <p>
+                        食事を記録すると、ここに表示される。
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+{% else %}
+    <section class="dashboard-empty-state">
+        <span class="empty-state-icon">👶</span>
+
+        <h2>赤ちゃんを登録しよう</h2>
+
+        <p>
+            名前と生年月日を登録すると、月齢に合わせた情報を表示できる。
+        </p>
+
+        <a
+            href="/admin/feeding/baby/add/"
+            class="primary-button inline-button"
+        >
+            赤ちゃんを登録
+        </a>
+    </section>
+{% endif %}
+
+<script>
+    function getLocalDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+        const day = String(
+            now.getDate()
+        ).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+
+    const dateElement = document.getElementById(
+        "device-date"
+    );
+
+    if (dateElement) {
+        const formatter = new Intl.DateTimeFormat(
+            "ja-JP",
+            {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "short",
+            }
+        );
+
+        dateElement.textContent = formatter.format(
+            new Date()
+        );
+    }
+
+    const deviceDate = getLocalDateString();
+
+    document
+        .querySelectorAll("[data-meal-link]")
+        .forEach((link) => {
+            const url = new URL(link.href);
+            url.searchParams.set(
+                "date",
+                deviceDate
+            );
+            link.href = url.toString();
+        });
+</script>
+{% endblock %}

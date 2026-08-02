@@ -1,0 +1,132 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    {{ allergen.name }} | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    <a
+        href="{% url 'feeding:allergen_list' %}"
+        class="back-link"
+    >
+        ← アレルゲン一覧に戻る
+    </a>
+
+    <div class="food-detail-title">
+        <span class="status-mark large {{ status }}">
+            {{ icon }}
+        </span>
+
+        <div>
+            <p class="eyebrow">
+                {{ allergen.get_classification_display }}
+            </p>
+
+            <h2>{{ allergen.name }}</h2>
+        </div>
+    </div>
+</section>
+
+<section class="detail-summary-card">
+    <div class="detail-stat">
+        <span>ステータス</span>
+        <strong>{{ label }}</strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>食べた回数</span>
+        <strong>{{ exposure_count }}回</strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>初めて食べた日</span>
+        <strong>
+            {% if first_date %}
+                {{ first_date|date:"Y年n月j日" }}
+            {% else %}
+                まだ
+            {% endif %}
+        </strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>最後に食べた日</span>
+        <strong>
+            {% if last_date %}
+                {{ last_date|date:"Y年n月j日" }}
+            {% else %}
+                まだ
+            {% endif %}
+        </strong>
+    </div>
+</section>
+
+<section class="allergen-related-section">
+    <h3>関連する食材</h3>
+
+    <div class="related-food-tags">
+        {% for food in related_foods %}
+            <a
+                href="{% url 'feeding:food_detail' food.id %}"
+                class="related-food-tag"
+            >
+                {{ food.name }}
+            </a>
+        {% empty %}
+            <p class="empty-message">
+                関連食材が登録されていない。
+            </p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="history-section">
+    <h3>摂取履歴</h3>
+
+    <div class="history-list">
+        {% for entry in history %}
+            <article class="history-card">
+                <div>
+                    <strong>
+                        {{ entry.date|date:"Y年n月j日" }}
+                        ・{{ entry.meal_number }}
+                    </strong>
+
+                    <p>
+                        {{ entry.source }}
+
+                        {% if entry.is_dish and entry.ingredient_names %}
+                            <br>
+                            含有食材：
+                            {{ entry.ingredient_names }}
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="history-meta">
+                    <span>
+                        {{ entry.amount|floatformat:"-2" }}
+                        {{ entry.unit }}
+                    </span>
+
+                    <span>{{ entry.reaction }}</span>
+                </div>
+            </article>
+        {% empty %}
+            <div class="dashboard-empty-card">
+                <span>🛡️</span>
+
+                <div>
+                    <strong>まだ摂取記録がない</strong>
+
+                    <p>
+                        関連食材を記録すると、
+                        ここに履歴が表示される。
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

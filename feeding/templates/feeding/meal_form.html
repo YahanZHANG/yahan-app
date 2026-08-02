@@ -1,0 +1,245 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    {{ meal_label }} | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    <a
+        href="{% url 'feeding:today' %}"
+        class="back-link"
+    >
+        ← 今日に戻る
+    </a>
+
+    <h2>{{ meal_label }}の記録</h2>
+
+    <p>{{ baby.name }}</p>
+</section>
+
+<form
+    method="post"
+    id="meal-form"
+    data-set-device-date="{{ set_device_date|yesno:'true,false' }}"
+>
+    {% csrf_token %}
+
+    {% if meal.pk %}
+        <input
+            type="hidden"
+            name="meal_id"
+            value="{{ meal.pk }}"
+        >
+    {% endif %}
+
+    {% if meal_form.non_field_errors %}
+        <div class="form-error">
+            {{ meal_form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="form-section">
+        <div class="form-group">
+            <label for="{{ meal_form.date.id_for_label }}">
+                {{ meal_form.date.label }}
+            </label>
+
+            {{ meal_form.date }}
+
+            {% for error in meal_form.date.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {{ item_formset.management_form }}
+
+    {% if item_formset.non_form_errors %}
+        <div class="form-error">
+            {{ item_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    <div id="meal-item-list">
+        {% for item_form in item_formset %}
+            {% include "feeding/partials/meal_item_form.html" with item_form=item_form %}
+        {% endfor %}
+    </div>
+
+    <template id="empty-form-template">
+        {% include "feeding/partials/meal_item_form.html" with item_form=item_formset.empty_form %}
+    </template>
+
+    <button
+        type="button"
+        id="add-item-button"
+        class="secondary-button"
+    >
+        ＋ 食材・料理を追加
+    </button>
+
+    <div class="form-actions">
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            保存する
+        </button>
+    </div>
+</form>
+
+{% if meal.pk %}
+    <form
+        method="post"
+        action="{% url 'feeding:meal_delete' meal_number %}"
+        class="delete-meal-form"
+        onsubmit="return confirm('この食事記録をすべて削除する？');"
+    >
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="meal_id"
+            value="{{ meal.pk }}"
+        >
+
+        <button
+            type="submit"
+            class="danger-button"
+        >
+            この食事記録を削除
+        </button>
+    </form>
+{% endif %}
+
+<script>
+    const mealForm = document.getElementById("meal-form");
+    const dateInput = document.getElementById("id_date");
+
+    if (
+        mealForm.dataset.setDeviceDate === "true"
+        && dateInput
+    ) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+
+        dateInput.value = `${year}-${month}-${day}`;
+    }
+
+    const formList = document.getElementById("meal-item-list");
+    const totalFormsInput = document.getElementById(
+        "id_items-TOTAL_FORMS"
+    );
+    const emptyFormTemplate = document.getElementById(
+        "empty-form-template"
+    );
+    const addButton = document.getElementById("add-item-button");
+
+    function updateItemNumbers() {
+        let visibleNumber = 1;
+
+        formList
+            .querySelectorAll("[data-form-row]")
+            .forEach((row) => {
+                if (row.hidden) {
+                    return;
+                }
+
+                const heading = row.querySelector("[data-item-number]");
+
+                if (heading) {
+                    heading.textContent = `食材・料理 ${visibleNumber}`;
+                }
+
+                visibleNumber += 1;
+            });
+    }
+
+    function updateSelectedType(row, clearOtherField = false) {
+        const typeSelect = row.querySelector(".item-type-select");
+        const foodField = row.querySelector("[data-food-field]");
+        const dishField = row.querySelector("[data-dish-field]");
+        const foodSelect = row.querySelector(".food-select");
+        const dishSelect = row.querySelector(".dish-select");
+
+        if (!typeSelect) {
+            return;
+        }
+
+        const selectedType = typeSelect.value;
+
+        foodField.hidden = selectedType !== "food";
+        dishField.hidden = selectedType !== "dish";
+
+        if (clearOtherField) {
+            if (selectedType === "food" && dishSelect) {
+                dishSelect.value = "";
+            }
+
+            if (selectedType === "dish" && foodSelect) {
+                foodSelect.value = "";
+            }
+        }
+    }
+
+    function bindRow(row) {
+        const typeSelect = row.querySelector(".item-type-select");
+        const removeButton = row.querySelector("[data-remove-row]");
+        const deleteInput = row.querySelector(
+            'input[name$="-DELETE"]'
+        );
+
+        updateSelectedType(row);
+
+        if (typeSelect) {
+            typeSelect.addEventListener("change", () => {
+                updateSelectedType(row, true);
+            });
+        }
+
+        if (removeButton) {
+            removeButton.addEventListener("click", () => {
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                }
+
+                row.hidden = true;
+                updateItemNumbers();
+            });
+        }
+    }
+
+    formList
+        .querySelectorAll("[data-form-row]")
+        .forEach((row) => {
+            bindRow(row);
+        });
+
+    addButton.addEventListener("click", () => {
+        const formIndex = Number(totalFormsInput.value);
+
+        const newFormHtml = emptyFormTemplate.innerHTML.replace(
+            /__prefix__/g,
+            formIndex
+        );
+
+        formList.insertAdjacentHTML(
+            "beforeend",
+            newFormHtml
+        );
+
+        totalFormsInput.value = formIndex + 1;
+
+        const rows = formList.querySelectorAll("[data-form-row]");
+        const newRow = rows[rows.length - 1];
+
+        bindRow(newRow);
+        updateItemNumbers();
+    });
+
+    updateItemNumbers();
+</script>
+{% endblock %}

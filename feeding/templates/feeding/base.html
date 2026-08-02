@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <title>
+        {% block title %}
+            離乳食ノート
+        {% endblock %}
+    </title>
+
+    <link 
+        rel="stylesheet" 
+        href="{% static 'feeding/css/style.css' %}"
+    >
+</head>
+
+<body class="{% if user.is_authenticated %}authenticated{% else %}guest{% endif %}">
+
+{% if user.is_authenticated %}
+<header class="app-header">
+    <div class="app-container">
+
+        <a
+            href="{% url 'feeding:today' %}"
+            class="app-title"
+        >
+            のいちゃんの離乳食
+        </a>
+        
+        <form
+            method="post"
+            action="{% url 'logout' %}"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="logout-button"
+            >
+                ログアウト
+            </button>
+        </form>
+
+    </div>
+</header>
+{% endif %}
+
+<main class="app-main">
+    <div class="app-container">
+
+        {% if messages %}
+            <div class="message-list">
+                {% for message in messages %}
+                    <div class="app-message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+</main>
+
+{% if user.is_authenticated %}
+<nav class="bottom-navigation">
+
+    <a
+        href="{% url 'feeding:today' %}"
+        class="nav-item"
+    >
+        <span class="nav-icon">🏠</span>
+        <span>今日</span>
+    </a>
+
+    <a
+        href="{% url 'feeding:food_list' %}"
+        class="nav-item"
+    >
+        <span class="nav-icon">🥕</span>
+        <span>食材</span>
+    </a>
+
+    <a
+        href="{% url 'feeding:allergen_list' %}"
+        class="nav-item"
+    >
+        <span class="nav-icon">🛡️</span>
+        <span>アレルギー</span>
+    </a>
+
+    <a
+        href="#"
+        class="nav-item"
+    >
+        <span class="nav-icon">⚙️</span>
+        <span>設定</span>
+    </a>
+
+</nav>
+{% endif %}
+
+</body>
+</html>

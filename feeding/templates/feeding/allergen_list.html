@@ -1,0 +1,123 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    アレルゲン29品目 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">ALLERGEN TRACKER</p>
+    <h2>アレルゲン29品目</h2>
+
+    {% if baby %}
+        <p class="page-description">
+            {{ baby.name }}の食事記録から自動更新される。
+        </p>
+    {% endif %}
+</section>
+
+<section class="allergen-overview-card">
+    <div class="allergen-overview-top">
+        <div>
+            <span>経験したアレルゲン</span>
+
+            <strong>
+                {{ eaten_allergen_count }}
+                <small>/ {{ total_allergen_count }}品目</small>
+            </strong>
+        </div>
+
+        <span class="allergen-percent">
+            {{ progress_percent }}%
+        </span>
+    </div>
+
+    <div class="dashboard-progress-bar allergen-bar">
+        <span style="width: {{ progress_percent }}%;"></span>
+    </div>
+</section>
+
+<div class="status-legend">
+    <span class="legend-item not-yet">
+        － まだ
+    </span>
+
+    <span class="legend-item tried">
+        ○ 食べた
+    </span>
+
+    <span class="legend-item familiar">
+        ✓ 食べ慣れた
+    </span>
+</div>
+
+<section class="allergen-section">
+    <div class="allergen-section-heading">
+        <div>
+            <p class="eyebrow">REQUIRED</p>
+            <h3>義務表示 9品目</h3>
+        </div>
+
+        <span>{{ required_cards|length }}品目</span>
+    </div>
+
+    <div class="allergen-grid">
+        {% for card in required_cards %}
+            <a
+                href="{% url 'feeding:allergen_detail' card.allergen.id %}"
+                class="allergen-card {{ card.status }}"
+            >
+                <span class="allergen-card-icon">
+                    {{ card.icon }}
+                </span>
+
+                <strong>
+                    {{ card.allergen.name }}
+                </strong>
+
+                <small>
+                    {{ card.label }}
+                    {% if card.count %}
+                        ・{{ card.count }}回
+                    {% endif %}
+                </small>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="allergen-section">
+    <div class="allergen-section-heading">
+        <div>
+            <p class="eyebrow">RECOMMENDED</p>
+            <h3>推奨表示 20品目</h3>
+        </div>
+
+        <span>{{ recommended_cards|length }}品目</span>
+    </div>
+
+    <div class="allergen-grid">
+        {% for card in recommended_cards %}
+            <a
+                href="{% url 'feeding:allergen_detail' card.allergen.id %}"
+                class="allergen-card {{ card.status }}"
+            >
+                <span class="allergen-card-icon">
+                    {{ card.icon }}
+                </span>
+
+                <strong>
+                    {{ card.allergen.name }}
+                </strong>
+
+                <small>
+                    {{ card.label }}
+                    {% if card.count %}
+                        ・{{ card.count }}回
+                    {% endif %}
+                </small>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

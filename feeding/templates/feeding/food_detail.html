@@ -1,0 +1,97 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}{{ food.name }} | 離乳食ノート{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    <a
+        href="{% url 'feeding:food_list' %}"
+        class="back-link"
+    >
+        ← 食材リストに戻る
+    </a>
+
+    <div class="food-detail-title">
+        <span class="status-mark large {{ status }}">
+            {{ status_icon }}
+        </span>
+
+        <div>
+            <p class="eyebrow">{{ food.category.name }}</p>
+            <h2>{{ food.name }}</h2>
+        </div>
+    </div>
+</section>
+
+<section class="detail-summary-card">
+    <div class="detail-stat">
+        <span>ステータス</span>
+        <strong>{{ status_label }}</strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>食べた回数</span>
+        <strong>{{ eaten_count }}回</strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>初めて食べた日</span>
+        <strong>
+            {% if first_date %}
+                {{ first_date|date:"Y年n月j日" }}
+            {% else %}
+                まだ
+            {% endif %}
+        </strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>最後に食べた日</span>
+        <strong>
+            {% if last_date %}
+                {{ last_date|date:"Y年n月j日" }}
+            {% else %}
+                まだ
+            {% endif %}
+        </strong>
+    </div>
+</section>
+
+<section class="history-section">
+    <h3>食事履歴</h3>
+
+    <div class="history-list">
+        {% for entry in history %}
+            <article class="history-card">
+                <div>
+                    <strong>
+                        {{ entry.date|date:"Y年n月j日" }}
+                        ・{{ entry.meal_number }}
+                    </strong>
+
+                    <p>{{ entry.source }}</p>
+                </div>
+
+                <div class="history-meta">
+                    {% if entry.amount %}
+                        <span>
+                            {{ entry.amount|floatformat:"-2" }}
+                            {{ entry.unit }}
+                        </span>
+                    {% else %}
+                        <span>料理に含有</span>
+                    {% endif %}
+
+                    <span>{{ entry.reaction }}</span>
+                </div>
+            </article>
+        {% empty %}
+            <div class="summary-card">
+                <p class="empty-message">
+                    まだ食べた記録がない。
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

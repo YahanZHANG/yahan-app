@@ -1,0 +1,419 @@
+from django import forms
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.forms import BaseInlineFormSet, inlineformset_factory
+
+from .models import (
+    AllergyReaction,
+    Dish,
+    Food,
+    Meal,
+    MealItem,
+)
+
+
+class FoodChoiceField(forms.ModelChoiceField):
+    """食材名とジャンルを選択肢に表示する。"""
+
+    def label_from_instance(self, obj):
+        return f"{obj.category.name}｜{obj.name}"
+
+
+class DishChoiceField(forms.ModelChoiceField):
+    """料理名と料理ジャンルを選択肢に表示する。"""
+
+    def label_from_instance(self, obj):
+        return f"{obj.category.name}｜{obj.name}"
+
+
+class MealForm(forms.ModelForm):
+    class Meta:
+        model = Meal
+        fields = ("date",)
+        widgets = {
+            "date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "form-control",
+                },
+            ),
+        }
+        labels = {
+            "date": "日付",
+        }
+
+
+class MealItemForm(forms.ModelForm):
+    item_type = forms.ChoiceField(
+        label="記録するもの",
+        choices=[
+            ("", "食材または料理を選択"),
+            *MealItem.ItemType.choices,
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-control item-type-select",
+            }
+        ),
+    )
+
+    food = FoodChoiceField(
+        label="食材名",
+        queryset=Food.objects.none(),
+        required=False,
+        empty_label="食材を選択",
+        widget=forms.Select(
+            attrs={
+                "class": "form-control food-select",
+            }
+        ),
+    )
+
+    dish = DishChoiceField(
+        label="料理名",
+        queryset=Dish.objects.none(),
+        required=False,
+        empty_label="料理を選択",
+        widget=forms.Select(
+            attrs={
+                "class": "form-control dish-select",
+            }
+        ),
+    )
+
+    unit = forms.ChoiceField(
+        label="単位",
+        choices=[
+            ("", "単位を選択"),
+            *MealItem.Unit.choices,
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        ),
+    )
+
+    reaction = forms.ChoiceField(
+        label="反応",
+        choices=[
+            ("", "反応を選択"),
+            ("love", "🤩 大喜び"),
+            ("happy", "😊 嬉"),
+            ("normal", "😐 普"),
+            ("unsure", "😕 微妙"),
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        ),
+    )
+
+    class Meta:
+        model = MealItem
+        fields = (
+            "item_type",
+            "food",
+            "dish",
+            "amount",
+            "unit",
+            "reaction",
+            "has_allergy_symptoms",
+        )
+        widgets = {
+            "amount": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0.01",
+                    "step": "0.01",
+                    "inputmode": "decimal",
+                    "placeholder": "例：30",
+                },
+            ),
+            "has_allergy_symptoms": forms.CheckboxInput(
+                attrs={
+                    "class": "allergy-symptom-checkbox",
+                }
+            ),
+        }
+        labels = {
+            "amount": "実際に食べた量",
+            "has_allergy_symptoms": "症状が出た",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        food_query = Food.objects.filter(is_active=True)
+
+        if self.instance and self.instance.food_id:
+            food_query = Food.objects.filter(
+                Q(is_active=True)
+                | Q(pk=self.instance.food_id)
+            )
+
+        self.fields["food"].queryset = (
+            food_query
+            .select_related("category")
+            .order_by(
+                "category__display_order",
+                "category__name",
+                "name",
+            )
+        )
+
+        dish_query = Dish.objects.filter(is_active=True)
+
+        if self.instance and self.instance.dish_id:
+            dish_query = Dish.objects.filter(
+                Q(is_active=True)
+                | Q(pk=self.instance.dish_id)
+            )
+
+        self.fields["dish"].queryset = (
+            dish_query
+            .select_related("category")
+            .order_by(
+                "category__display_order",
+                "category__name",
+                "name",
+            )
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        item_type = cleaned_data.get("item_type")
+        food = cleaned_data.get("food")
+        dish = cleaned_data.get("dish")
+
+        if item_type == MealItem.ItemType.FOOD:
+            if food is None:
+                self.add_error(
+                    "food",
+                    "食材を選択してください。",
+                )
+
+            if dish is not None:
+                self.add_error(
+                    "dish",
+                    "食材を記録する場合、料理は選択できません。",
+                )
+
+        elif item_type == MealItem.ItemType.DISH:
+            if dish is None:
+                self.add_error(
+                    "dish",
+                    "料理を選択してください。",
+                )
+
+            if food is not None:
+                self.add_error(
+                    "food",
+                    "料理を記録する場合、食材は選択できません。",
+                )
+
+        return cleaned_data
+
+
+class BaseMealItemFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        if any(form.errors for form in self.forms):
+            return
+
+        active_item_count = 0
+        selected_items = set()
+
+        for form in self.forms:
+            cleaned_data = getattr(form, "cleaned_data", {})
+
+            if not cleaned_data:
+                continue
+
+            if cleaned_data.get("DELETE"):
+                continue
+
+            item_type = cleaned_data.get("item_type")
+
+            if not item_type:
+                continue
+
+            food = cleaned_data.get("food")
+            dish = cleaned_data.get("dish")
+
+            if item_type == MealItem.ItemType.FOOD and food:
+                selected_key = ("food", food.pk)
+                selected_field = "food"
+                active_item_count += 1
+
+            elif item_type == MealItem.ItemType.DISH and dish:
+                selected_key = ("dish", dish.pk)
+                selected_field = "dish"
+                active_item_count += 1
+
+            else:
+                continue
+
+            if selected_key in selected_items:
+                form.add_error(
+                    selected_field,
+                    "同じ食材・料理がこの食事内ですでに選択されている。",
+                )
+            else:
+                selected_items.add(selected_key)
+
+        if active_item_count == 0:
+            raise ValidationError(
+                "少なくとも1件の食材または料理を入力してください。"
+            )
+
+
+MealItemCreateFormSet = inlineformset_factory(
+    Meal,
+    MealItem,
+    form=MealItemForm,
+    formset=BaseMealItemFormSet,
+    extra=3,
+    can_delete=True,
+    max_num=30,
+    validate_max=True,
+)
+
+MealItemEditFormSet = inlineformset_factory(
+    Meal,
+    MealItem,
+    form=MealItemForm,
+    formset=BaseMealItemFormSet,
+    extra=1,
+    can_delete=True,
+    max_num=30,
+    validate_max=True,
+)
+
+SYMPTOM_CHOICES = [
+    ("mouth_redness", "口の周りの赤み"),
+    ("face_redness", "顔の赤み"),
+    ("rash", "発疹"),
+    ("hives", "じんましん"),
+    ("itching", "かゆみ"),
+    ("eyelid_swelling", "まぶたの腫れ"),
+    ("lip_swelling", "唇の腫れ"),
+    ("vomiting", "嘔吐"),
+    ("diarrhea", "下痢"),
+    ("cough", "咳"),
+    ("wheezing", "ゼーゼー"),
+    ("breathing_difficulty", "呼吸が苦しそう"),
+    ("low_energy", "元気がない"),
+    ("altered_consciousness", "意識状態がおかしい"),
+    ("other", "その他"),
+]
+
+
+BODY_LOCATION_CHOICES = [
+    ("mouth", "口の周り"),
+    ("face", "顔"),
+    ("neck", "首"),
+    ("chest", "胸"),
+    ("abdomen", "お腹"),
+    ("back", "背中"),
+    ("arms", "腕"),
+    ("legs", "脚"),
+    ("whole_body", "全身"),
+    ("other", "その他"),
+]
+
+
+class AllergyReactionForm(forms.ModelForm):
+    symptoms = forms.MultipleChoiceField(
+        label="症状",
+        choices=SYMPTOM_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    body_locations = forms.MultipleChoiceField(
+        label="症状が出た場所",
+        choices=BODY_LOCATION_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    class Meta:
+        model = AllergyReaction
+        fields = (
+            "onset_time",
+            "minutes_after_eating",
+            "symptoms",
+            "body_locations",
+            "other_symptom",
+            "other_location",
+            "visited_doctor",
+            "medical_institution",
+            "doctor_diagnosis",
+            "doctor_instructions",
+            "avoidance_instructed",
+            "notes",
+        )
+        widgets = {
+            "onset_time": forms.TimeInput(
+                attrs={
+                    "type": "time",
+                    "class": "form-control",
+                }
+            ),
+            "minutes_after_eating": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "placeholder": "例：20",
+                }
+            ),
+            "other_symptom": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "その他の症状",
+                }
+            ),
+            "other_location": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "その他の場所",
+                }
+            ),
+            "medical_institution": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "doctor_diagnosis": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                }
+            ),
+            "doctor_instructions": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                }
+            ),
+            "notes": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                }
+            ),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if (
+            "other" in cleaned_data.get("symptoms", [])
+            and not cleaned_data.get("other_symptom")
+        ):
+            self.add_error(
+                "other_symptom",
+                "その他の症状を入力してください。",
+            )
+
+        return cleaned_data

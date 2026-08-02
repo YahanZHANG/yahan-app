@@ -1,0 +1,260 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}食材リスト | 離乳食ノート{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">1歳までの食材</p>
+    <h2>食材リスト</h2>
+
+    {% if baby %}
+        <p class="page-description">
+            {{ baby.name }}が食べた回数から自動更新される。
+        </p>
+    {% endif %}
+</section>
+
+<section class="food-search-section">
+    <label for="food-search" class="search-label">
+        食材を検索
+    </label>
+
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+
+        <input
+            type="search"
+            id="food-search"
+            class="food-search-input"
+            placeholder="例：にんじん、魚、ヨーグルト"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            id="clear-search"
+            class="clear-search-button"
+            aria-label="検索をクリア"
+            hidden
+        >
+            ×
+        </button>
+    </div>
+
+    <p id="search-result-count" class="search-result-count"></p>
+</section>
+
+<div class="status-legend">
+    <span class="legend-item not-yet">－ まだ</span>
+    <span class="legend-item tried">○ 食べた</span>
+    <span class="legend-item familiar">✓ 食べ慣れた</span>
+</div>
+
+<div class="category-list" id="category-list">
+    {% for card in category_cards %}
+        <section
+            class="food-category-card"
+            data-category-card
+        >
+            <button
+                type="button"
+                class="category-toggle"
+                data-category-toggle
+                aria-expanded="false"
+                aria-controls="category-content-{{ card.category.id }}"
+            >
+                <span class="category-toggle-main">
+                    <span>
+                        <strong>{{ card.category.name }}</strong>
+                        <small>
+                            {{ card.eaten_count }}／{{ card.total_count }}種類
+                        </small>
+                    </span>
+
+                    <span class="category-chevron" aria-hidden="true">
+                        ⌄
+                    </span>
+                </span>
+
+                <span class="category-progress">
+                    <span
+                        style="width:
+                        {% if card.total_count %}
+                            {% widthratio card.eaten_count card.total_count 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %};"
+                    ></span>
+                </span>
+            </button>
+
+            <div
+                class="food-category-content"
+                id="category-content-{{ card.category.id }}"
+                data-category-content
+                hidden
+            >
+                <div class="food-list">
+                    {% for item in card.foods %}
+                        <a
+                            href="{% url 'feeding:food_detail' item.food.id %}"
+                            class="food-row"
+                            data-food-row
+                            data-food-name="{{ item.food.name|lower }}"
+                            data-category-name="{{ card.category.name|lower }}"
+                        >
+                            <span class="status-mark {{ item.status }}">
+                                {{ item.status_icon }}
+                            </span>
+
+                            <span class="food-row-main">
+                                <strong>{{ item.food.name }}</strong>
+
+                                <small>
+                                    {{ item.status_label }}
+                                    {% if item.count %}
+                                        ・{{ item.count }}回
+                                    {% endif %}
+                                </small>
+                            </span>
+
+                            <span class="row-arrow">›</span>
+                        </a>
+                    {% empty %}
+                        <p class="empty-message">
+                            このジャンルには食材が登録されていない。
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endfor %}
+</div>
+
+<p id="no-search-results" class="no-search-results" hidden>
+    該当する食材が見つからない。
+</p>
+
+<script>
+    const categoryCards = document.querySelectorAll(
+        "[data-category-card]"
+    );
+    const searchInput = document.getElementById("food-search");
+    const clearButton = document.getElementById("clear-search");
+    const resultCount = document.getElementById(
+        "search-result-count"
+    );
+    const noResults = document.getElementById(
+        "no-search-results"
+    );
+
+    function setCategoryOpen(card, isOpen) {
+        const toggle = card.querySelector(
+            "[data-category-toggle]"
+        );
+        const content = card.querySelector(
+            "[data-category-content]"
+        );
+
+        toggle.setAttribute(
+            "aria-expanded",
+            String(isOpen)
+        );
+
+        content.hidden = !isOpen;
+        card.classList.toggle("is-open", isOpen);
+    }
+
+    categoryCards.forEach((card) => {
+        const toggle = card.querySelector(
+            "[data-category-toggle]"
+        );
+
+        toggle.addEventListener("click", () => {
+            const isExpanded =
+                toggle.getAttribute("aria-expanded") === "true";
+
+            setCategoryOpen(card, !isExpanded);
+        });
+    });
+
+    function normalizeText(value) {
+        return value
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "");
+    }
+
+    function updateSearch() {
+        const query = normalizeText(searchInput.value);
+        let matchedFoodCount = 0;
+        let matchedCategoryCount = 0;
+
+        clearButton.hidden = query.length === 0;
+
+        categoryCards.forEach((card) => {
+            const rows = card.querySelectorAll(
+                "[data-food-row]"
+            );
+            let categoryMatches = 0;
+
+            rows.forEach((row) => {
+                const foodName = normalizeText(
+                    row.dataset.foodName || ""
+                );
+                const categoryName = normalizeText(
+                    row.dataset.categoryName || ""
+                );
+
+                const matches =
+                    query.length === 0
+                    || foodName.includes(query)
+                    || categoryName.includes(query);
+
+                row.hidden = !matches;
+
+                if (matches) {
+                    categoryMatches += 1;
+                    matchedFoodCount += 1;
+                }
+            });
+
+            if (query.length === 0) {
+                card.hidden = false;
+                setCategoryOpen(card, false);
+                return;
+            }
+
+            const categoryHasMatch = categoryMatches > 0;
+
+            card.hidden = !categoryHasMatch;
+
+            if (categoryHasMatch) {
+                matchedCategoryCount += 1;
+                setCategoryOpen(card, true);
+            }
+        });
+
+        if (query.length === 0) {
+            resultCount.textContent = "";
+            noResults.hidden = true;
+            return;
+        }
+
+        resultCount.textContent =
+            `${matchedFoodCount}件の食材が見つかった`;
+
+        noResults.hidden = matchedFoodCount > 0;
+    }
+
+    searchInput.addEventListener("input", updateSearch);
+
+    clearButton.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.focus();
+        updateSearch();
+    });
+
+    updateSearch();
+</script>
+{% endblock %}

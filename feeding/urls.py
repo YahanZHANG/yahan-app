@@ -1,0 +1,73 @@
+from django.urls import path
+from django.contrib.auth import views as auth_views
+
+from . import views
+
+
+app_name = "feeding"
+
+urlpatterns = [
+    path(
+        "accounts/login/",
+        auth_views.LoginView.as_view(
+            template_name="registration/login.html",
+            redirect_authenticated_user=True,
+        ),
+        name="login",
+    ),
+    path(
+        "accounts/logout/",
+        auth_views.LogoutView.as_view(),
+        name="logout",
+    ),
+    path(
+        "",
+        views.today,
+        name="today",
+    ),
+    path(
+        "foods/",
+        views.food_list,
+        name="food_list",
+    ),
+    path(
+        "foods/<int:food_id>/",
+        views.food_detail,
+        name="food_detail",
+    ),
+    path(
+        "allergens/",
+        views.allergen_list,
+        name="allergen_list",
+    ),
+    path(
+        "allergens/<int:allergen_id>/",
+        views.allergen_detail,
+        name="allergen_detail",
+    ),
+    path(
+        "meals/<int:meal_number>/",
+        views.meal_edit,
+        name="meal_edit",
+    ),
+    path(
+        "meals/<int:meal_number>/delete/",
+        views.meal_delete,
+        name="meal_delete",
+    ),
+    path(
+        "meal-items/<int:meal_item_id>/reaction/",
+        views.allergy_reaction_edit,
+        name="allergy_reaction_edit",
+    ),
+    path(
+        "meal-items/<int:meal_item_id>/reaction/delete/",
+        views.allergy_reaction_delete,
+        name="allergy_reaction_delete",
+    ),
+    path(
+        "reaction-photos/<int:photo_id>/delete/",
+        views.allergy_photo_delete,
+        name="allergy_photo_delete",
+    ),
+]

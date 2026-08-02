@@ -21,6 +21,10 @@ urlpatterns = [
         "travel/",
         include("travel.urls"),
     ),
+    path(
+        "feeding/",
+        include("feeding.urls"),
+    ),
 ]
 
 if settings.DEBUG:

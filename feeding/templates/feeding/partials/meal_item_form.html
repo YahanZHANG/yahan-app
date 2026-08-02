@@ -1,0 +1,136 @@
+<div
+    class="meal-item-card"
+    data-form-row
+>
+    {% for hidden_field in item_form.hidden_fields %}
+        {{ hidden_field }}
+    {% endfor %}
+
+    <div class="meal-item-heading">
+        <h3 data-item-number>食材・料理</h3>
+
+        <button
+            type="button"
+            class="remove-item-button"
+            data-remove-row
+        >
+            削除
+        </button>
+    </div>
+
+    {% if item_form.non_field_errors %}
+        <div class="form-error">
+            {{ item_form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="{{ item_form.item_type.id_for_label }}">
+            {{ item_form.item_type.label }}
+        </label>
+
+        {{ item_form.item_type }}
+
+        {% for error in item_form.item_type.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group"
+        data-food-field
+    >
+        <label for="{{ item_form.food.id_for_label }}">
+            {{ item_form.food.label }}
+        </label>
+
+        {{ item_form.food }}
+
+        {% for error in item_form.food.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group"
+        data-dish-field
+    >
+        <label for="{{ item_form.dish.id_for_label }}">
+            {{ item_form.dish.label }}
+        </label>
+
+        {{ item_form.dish }}
+
+        {% for error in item_form.dish.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="amount-grid">
+        <div class="form-group">
+            <label for="{{ item_form.amount.id_for_label }}">
+                {{ item_form.amount.label }}
+            </label>
+
+            {{ item_form.amount }}
+
+            {% for error in item_form.amount.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ item_form.unit.id_for_label }}">
+                {{ item_form.unit.label }}
+            </label>
+
+            {{ item_form.unit }}
+
+            {% for error in item_form.unit.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="{{ item_form.reaction.id_for_label }}">
+            {{ item_form.reaction.label }}
+        </label>
+
+        {{ item_form.reaction }}
+
+        {% for error in item_form.reaction.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="allergy-symptom-toggle">
+        <label>
+            {{ item_form.has_allergy_symptoms }}
+
+            <span class="allergy-toggle-text">
+                <strong>症状が出た</strong>
+                <small>
+                    選択すると、保存後に詳細記録画面へ移動する
+                </small>
+            </span>
+        </label>
+
+        {% for error in item_form.has_allergy_symptoms.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    {% if item_form.instance.pk and item_form.instance.has_allergy_symptoms %}
+        <a
+            href="{% url 'feeding:allergy_reaction_edit' item_form.instance.pk %}"
+            class="allergy-detail-link"
+        >
+            ⚠ 症状の詳細を確認・編集
+        </a>
+    {% endif %}
+
+    <div class="delete-input">
+        {{ item_form.DELETE }}
+    </div>
+</div>

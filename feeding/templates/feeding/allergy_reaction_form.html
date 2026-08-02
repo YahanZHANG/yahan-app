@@ -1,0 +1,239 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    症状の記録 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    <a
+        href="{% url 'feeding:meal_edit' meal_item.meal.meal_number %}?date={{ meal_item.meal.date|date:'Y-m-d' }}"
+        class="back-link"
+    >
+        ← 食事記録に戻る
+    </a>
+
+    <p class="eyebrow">ALLERGY REACTION</p>
+    <h2>症状の詳細</h2>
+
+    <p>
+        {{ meal_item.meal.date|date:"Y年n月j日" }}
+        ・{{ meal_item.meal.get_meal_number_display }}
+    </p>
+</section>
+
+<section class="reaction-food-card">
+    <div>
+        <span>食材・料理</span>
+        <strong>{{ meal_item.item_name }}</strong>
+    </div>
+
+    <div>
+        <span>食べた量</span>
+        <strong>
+            {{ meal_item.amount|floatformat:"-2" }}
+            {{ meal_item.get_unit_display }}
+        </strong>
+    </div>
+
+    {% if allergen_names %}
+        <div class="reaction-allergen-list">
+            <span>含まれるアレルゲン</span>
+
+            <div>
+                {% for name in allergen_names %}
+                    <strong>{{ name }}</strong>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</section>
+
+<div class="emergency-warning">
+    <strong>呼吸困難や意識状態の変化がある場合</strong>
+    <p>
+        アプリへの記録よりも、医療機関への連絡を優先する。
+    </p>
+</div>
+
+<form
+    method="post"
+    enctype="multipart/form-data"
+>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="reaction-form-section">
+        <h3>症状</h3>
+
+        <div class="checkbox-card-grid">
+            {{ form.symptoms }}
+        </div>
+
+        {% for error in form.symptoms.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+
+        <div class="form-group">
+            <label for="{{ form.other_symptom.id_for_label }}">
+                その他の症状
+            </label>
+            {{ form.other_symptom }}
+            {{ form.other_symptom.errors }}
+        </div>
+    </section>
+
+    <section class="reaction-form-section">
+        <h3>症状が出た場所</h3>
+
+        <div class="checkbox-card-grid">
+            {{ form.body_locations }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.other_location.id_for_label }}">
+                その他の場所
+            </label>
+            {{ form.other_location }}
+        </div>
+    </section>
+
+    <section class="reaction-form-section">
+        <h3>発症時間</h3>
+
+        <div class="amount-grid">
+            <div class="form-group">
+                <label for="{{ form.onset_time.id_for_label }}">
+                    症状が出た時刻
+                </label>
+                {{ form.onset_time }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.minutes_after_eating.id_for_label }}">
+                    食後何分
+                </label>
+                {{ form.minutes_after_eating }}
+            </div>
+        </div>
+    </section>
+
+    <section class="reaction-form-section">
+        <h3>写真</h3>
+
+        <input
+            type="file"
+            name="photos"
+            accept="image/*"
+            multiple
+            class="photo-input"
+        >
+
+        {% if reaction.photos.exists %}
+            <div class="reaction-photo-grid">
+                {% for photo in reaction.photos.all %}
+                    <div class="reaction-photo">
+                        <img
+                            src="{{ photo.image.url }}"
+                            alt="症状の写真"
+                        >
+
+                        <button
+                            type="submit"
+                            form="delete-photo-{{ photo.id }}"
+                            class="photo-delete-button"
+                        >
+                            削除
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="reaction-form-section">
+        <h3>受診情報</h3>
+
+        <label class="large-checkbox-row">
+            {{ form.visited_doctor }}
+            <span>医療機関を受診した</span>
+        </label>
+
+        <div class="form-group">
+            <label for="{{ form.medical_institution.id_for_label }}">
+                医療機関名
+            </label>
+            {{ form.medical_institution }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.doctor_diagnosis.id_for_label }}">
+                医師の診断
+            </label>
+            {{ form.doctor_diagnosis }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.doctor_instructions.id_for_label }}">
+                医師からの指示
+            </label>
+            {{ form.doctor_instructions }}
+        </div>
+
+        <label class="large-checkbox-row danger">
+            {{ form.avoidance_instructed }}
+            <span>除去を指示された</span>
+        </label>
+    </section>
+
+    <section class="reaction-form-section">
+        <div class="form-group">
+            <label for="{{ form.notes.id_for_label }}">
+                メモ
+            </label>
+            {{ form.notes }}
+        </div>
+    </section>
+
+    <button
+        type="submit"
+        class="primary-button"
+    >
+        症状記録を保存
+    </button>
+</form>
+
+{% for photo in reaction.photos.all %}
+    <form
+        id="delete-photo-{{ photo.id }}"
+        method="post"
+        action="{% url 'feeding:allergy_photo_delete' photo.id %}"
+        onsubmit="return confirm('この写真を削除する？');"
+    >
+        {% csrf_token %}
+    </form>
+{% endfor %}
+
+{% if reaction.pk %}
+    <form
+        method="post"
+        action="{% url 'feeding:allergy_reaction_delete' meal_item.id %}"
+        class="delete-meal-form"
+        onsubmit="return confirm('症状記録を削除する？');"
+    >
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="danger-button"
+        >
+            症状記録を削除
+        </button>
+    </form>
+{% endif %}
+{% endblock %}
