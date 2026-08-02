@@ -36,6 +36,26 @@
         {% endfor %}
     </div>
 
+
+    <div
+        class="form-group"
+        data-food-category-field
+    >
+        <label
+            for="{{ item_form.food_category.id_for_label }}"
+        >
+            {{ item_form.food_category.label }}
+        </label>
+
+        {{ item_form.food_category }}
+
+        {% for error in item_form.food_category.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
     <div
         class="form-group"
         data-food-field
@@ -48,6 +68,25 @@
 
         {% for error in item_form.food.errors %}
             <p class="field-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group"
+        data-dish-category-field
+    >
+        <label
+            for="{{ item_form.dish_category.id_for_label }}"
+        >
+            {{ item_form.dish_category.label }}
+        </label>
+
+        {{ item_form.dish_category }}
+
+        {% for error in item_form.dish_category.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
         {% endfor %}
     </div>
 

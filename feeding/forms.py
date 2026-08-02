@@ -7,7 +7,9 @@ from .models import Baby
 from .models import (
     AllergyReaction,
     Dish,
+    DishCategory,
     Food,
+    FoodCategory,
     Meal,
     MealItem,
 )
@@ -26,6 +28,44 @@ class DishChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return f"{obj.category.name}｜{obj.name}"
 
+class CategoryDataSelect(forms.Select):
+    """
+    各optionにジャンルIDを埋め込むSelect。
+    JavaScriptでジャンル別に選択肢を絞り込むために使う。
+    """
+
+    def create_option(
+        self,
+        name,
+        value,
+        label,
+        selected,
+        index,
+        subindex=None,
+        attrs=None,
+    ):
+        option = super().create_option(
+            name,
+            value,
+            label,
+            selected,
+            index,
+            subindex=subindex,
+            attrs=attrs,
+        )
+
+        instance = getattr(
+            value,
+            "instance",
+            None,
+        )
+
+        if instance is not None:
+            option["attrs"][
+                "data-category-id"
+            ] = str(instance.category_id)
+
+        return option
 
 class MealForm(forms.ModelForm):
     class Meta:
@@ -58,24 +98,54 @@ class MealItemForm(forms.ModelForm):
         ),
     )
 
+    food_category = forms.ModelChoiceField(
+        label="食材ジャンル",
+        queryset=FoodCategory.objects.none(),
+        required=False,
+        empty_label="食材ジャンルを選択",
+        widget=forms.Select(
+            attrs={
+                "class": (
+                    "form-control "
+                    "food-category-select"
+                ),
+            }
+        ),
+    )
+
+    dish_category = forms.ModelChoiceField(
+        label="料理ジャンル",
+        queryset=DishCategory.objects.none(),
+        required=False,
+        empty_label="料理ジャンルを選択",
+        widget=forms.Select(
+            attrs={
+                "class": (
+                    "form-control "
+                    "dish-category-select"
+                ),
+            }
+        ),
+    )
+
     food = FoodChoiceField(
         label="食材名",
         queryset=Food.objects.none(),
         required=False,
         empty_label="食材を選択",
-        widget=forms.Select(
+        widget=CategoryDataSelect(
             attrs={
                 "class": "form-control food-select",
             }
         ),
     )
-
+    
     dish = DishChoiceField(
         label="料理名",
         queryset=Dish.objects.none(),
         required=False,
         empty_label="料理を選択",
-        widget=forms.Select(
+        widget=CategoryDataSelect(
             attrs={
                 "class": "form-control dish-select",
             }
@@ -115,7 +185,9 @@ class MealItemForm(forms.ModelForm):
         model = MealItem
         fields = (
             "item_type",
+            "food_category",
             "food",
+            "dish_category",
             "dish",
             "amount",
             "unit",
@@ -145,6 +217,47 @@ class MealItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields[
+            "food_category"
+        ].queryset = (
+            FoodCategory.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        self.fields[
+            "dish_category"
+        ].queryset = (
+            DishCategory.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        if (
+            self.instance
+            and self.instance.food_id
+        ):
+            self.fields[
+                "food_category"
+            ].initial = (
+                self.instance.food.category_id
+            )
+
+        if (
+            self.instance
+            and self.instance.dish_id
+        ):
+            self.fields[
+                "dish_category"
+            ].initial = (
+                self.instance.dish.category_id
+            )
 
         food_query = Food.objects.filter(is_active=True)
 
@@ -185,38 +298,91 @@ class MealItemForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        item_type = cleaned_data.get("item_type")
+        item_type = cleaned_data.get(
+            "item_type"
+        )
+        food_category = cleaned_data.get(
+            "food_category"
+        )
         food = cleaned_data.get("food")
+        dish_category = cleaned_data.get(
+            "dish_category"
+        )
         dish = cleaned_data.get("dish")
 
         if item_type == MealItem.ItemType.FOOD:
+            if food_category is None:
+                self.add_error(
+                    "food_category",
+                    "食材ジャンルを選択してください。",
+                )
+
             if food is None:
                 self.add_error(
                     "food",
                     "食材を選択してください。",
                 )
 
+            if (
+                food
+                and food_category
+                and food.category_id
+                != food_category.id
+            ):
+                self.add_error(
+                    "food",
+                    (
+                        "選択したジャンルに属する"
+                        "食材を選んでください。"
+                    ),
+                )
+
             if dish is not None:
                 self.add_error(
                     "dish",
-                    "食材を記録する場合、料理は選択できません。",
+                    (
+                        "食材を記録する場合、"
+                        "料理は選択できません。"
+                    ),
                 )
 
         elif item_type == MealItem.ItemType.DISH:
+            if dish_category is None:
+                self.add_error(
+                    "dish_category",
+                    "料理ジャンルを選択してください。",
+                )
+
             if dish is None:
                 self.add_error(
                     "dish",
                     "料理を選択してください。",
                 )
 
+            if (
+                dish
+                and dish_category
+                and dish.category_id
+                != dish_category.id
+            ):
+                self.add_error(
+                    "dish",
+                    (
+                        "選択したジャンルに属する"
+                        "料理を選んでください。"
+                    ),
+                )
+
             if food is not None:
                 self.add_error(
                     "food",
-                    "料理を記録する場合、食材は選択できません。",
+                    (
+                        "料理を記録する場合、"
+                        "食材は選択できません。"
+                    ),
                 )
 
         return cleaned_data
-
 
 class BaseMealItemFormSet(BaseInlineFormSet):
     def clean(self):

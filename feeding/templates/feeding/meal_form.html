@@ -158,12 +158,39 @@
             });
     }
 
-    function updateSelectedType(row, clearOtherField = false) {
-        const typeSelect = row.querySelector(".item-type-select");
-        const foodField = row.querySelector("[data-food-field]");
-        const dishField = row.querySelector("[data-dish-field]");
-        const foodSelect = row.querySelector(".food-select");
-        const dishSelect = row.querySelector(".dish-select");
+    function updateSelectedType(
+        row,
+        clearOtherField = false
+    ) {
+        const typeSelect = row.querySelector(
+            ".item-type-select"
+        );
+
+        const foodCategoryField = row.querySelector(
+            "[data-food-category-field]"
+        );
+        const foodField = row.querySelector(
+            "[data-food-field]"
+        );
+        const dishCategoryField = row.querySelector(
+            "[data-dish-category-field]"
+        );
+        const dishField = row.querySelector(
+            "[data-dish-field]"
+        );
+
+        const foodCategorySelect = row.querySelector(
+            ".food-category-select"
+        );
+        const foodSelect = row.querySelector(
+            ".food-select"
+        );
+        const dishCategorySelect = row.querySelector(
+            ".dish-category-select"
+        );
+        const dishSelect = row.querySelector(
+            ".dish-select"
+        );
 
         if (!typeSelect) {
             return;
@@ -171,44 +198,179 @@
 
         const selectedType = typeSelect.value;
 
-        foodField.hidden = selectedType !== "food";
-        dishField.hidden = selectedType !== "dish";
+        const isFood = selectedType === "food";
+        const isDish = selectedType === "dish";
+
+        foodCategoryField.hidden = !isFood;
+        foodField.hidden = !isFood;
+        dishCategoryField.hidden = !isDish;
+        dishField.hidden = !isDish;
 
         if (clearOtherField) {
-            if (selectedType === "food" && dishSelect) {
-                dishSelect.value = "";
+            if (isFood) {
+                if (dishCategorySelect) {
+                    dishCategorySelect.value = "";
+                }
+
+                if (dishSelect) {
+                    dishSelect.value = "";
+                }
             }
 
-            if (selectedType === "dish" && foodSelect) {
-                foodSelect.value = "";
+            if (isDish) {
+                if (foodCategorySelect) {
+                    foodCategorySelect.value = "";
+                }
+
+                if (foodSelect) {
+                    foodSelect.value = "";
+                }
             }
         }
     }
 
+    function filterOptions(
+        categorySelect,
+        itemSelect
+    ) {
+        if (!categorySelect || !itemSelect) {
+            return;
+        }
+
+        const categoryId = categorySelect.value;
+        const selectedOption = itemSelect.options[
+            itemSelect.selectedIndex
+        ];
+
+        Array.from(itemSelect.options).forEach(
+            (option) => {
+                if (!option.value) {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+
+                const optionCategoryId = (
+                    option.dataset.categoryId
+                );
+
+                const shouldShow = (
+                    categoryId
+                    && optionCategoryId === categoryId
+                );
+
+                option.hidden = !shouldShow;
+                option.disabled = !shouldShow;
+            }
+        );
+
+        if (
+            selectedOption
+            && selectedOption.value
+            && selectedOption.dataset.categoryId
+            !== categoryId
+        ) {
+            itemSelect.value = "";
+        }
+
+    if (!categoryId) {
+        itemSelect.value = "";
+    }
+}
+
     function bindRow(row) {
-        const typeSelect = row.querySelector(".item-type-select");
-        const removeButton = row.querySelector("[data-remove-row]");
+        const typeSelect = row.querySelector(
+            ".item-type-select"
+        );
+        const foodCategorySelect = row.querySelector(
+            ".food-category-select"
+        );
+        const foodSelect = row.querySelector(
+            ".food-select"
+        );
+        const dishCategorySelect = row.querySelector(
+            ".dish-category-select"
+        );
+        const dishSelect = row.querySelector(
+            ".dish-select"
+        );
+        const removeButton = row.querySelector(
+            "[data-remove-row]"
+        );
         const deleteInput = row.querySelector(
             'input[name$="-DELETE"]'
         );
 
         updateSelectedType(row);
 
+        filterOptions(
+            foodCategorySelect,
+            foodSelect
+        );
+
+        filterOptions(
+            dishCategorySelect,
+            dishSelect
+        );
+
         if (typeSelect) {
-            typeSelect.addEventListener("change", () => {
-                updateSelectedType(row, true);
-            });
+            typeSelect.addEventListener(
+                "change",
+                () => {
+                    updateSelectedType(
+                        row,
+                        true
+                    );
+
+                    filterOptions(
+                        foodCategorySelect,
+                        foodSelect
+                    );
+
+                    filterOptions(
+                        dishCategorySelect,
+                        dishSelect
+                    );
+                }
+            );
+        }
+
+        if (foodCategorySelect) {
+            foodCategorySelect.addEventListener(
+                "change",
+                () => {
+                    filterOptions(
+                        foodCategorySelect,
+                        foodSelect
+                    );
+                }
+            );
+        }
+
+        if (dishCategorySelect) {
+            dishCategorySelect.addEventListener(
+                "change",
+                () => {
+                    filterOptions(
+                        dishCategorySelect,
+                        dishSelect
+                    );
+                }
+            );
         }
 
         if (removeButton) {
-            removeButton.addEventListener("click", () => {
-                if (deleteInput) {
-                    deleteInput.checked = true;
-                }
+            removeButton.addEventListener(
+                "click",
+                () => {
+                    if (deleteInput) {
+                        deleteInput.checked = true;
+                    }
 
-                row.hidden = true;
-                updateItemNumbers();
-            });
+                    row.hidden = true;
+                    updateItemNumbers();
+                }
+            );
         }
     }
 
