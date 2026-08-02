@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ page_title }} | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'expense_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            支出一覧へ戻る
+        </a>
+
+        <h2>{{ page_title }}</h2>
+    </div>
+
+    <form
+        method="post"
+        class="app-card app-form expense-form"
+        novalidate
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="{{ form.title.id_for_label }}">
+                {{ form.title.label }}
+            </label>
+
+            {{ form.title }}
+
+            {% for error in form.title.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="expense-main-grid">
+            <div class="form-field">
+                <label for="{{ form.total_amount.id_for_label }}">
+                    {{ form.total_amount.label }}
+                </label>
+
+                {{ form.total_amount }}
+
+                {% for error in form.total_amount.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.currency.id_for_label }}">
+                    {{ form.currency.label }}
+                </label>
+
+                {{ form.currency }}
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.paid_by.id_for_label }}">
+                {{ form.paid_by.label }}
+            </label>
+
+            {{ form.paid_by }}
+
+            {% for error in form.paid_by.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="expense-main-grid">
+            <div class="form-field">
+                <label for="{{ form.paid_at.id_for_label }}">
+                    {{ form.paid_at.label }}
+                </label>
+
+                {{ form.paid_at }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.category.id_for_label }}">
+                    {{ form.category.label }}
+                </label>
+
+                {{ form.category }}
+            </div>
+        </div>
+
+        <section class="expense-share-section">
+            <div class="expense-share-heading">
+                <div>
+                    <p class="section-eyebrow mb-1">BREAKDOWN</p>
+                    <h3>負担する人・金額</h3>
+                </div>
+
+                <button
+                    type="button"
+                    id="expense-average-button"
+                    class="small-action-button"
+                >
+                    選択した人で平均
+                </button>
+            </div>
+
+            <p class="expense-share-help">
+                負担する人にチェックを入れ、金額を入力する。
+            </p>
+
+            <div class="expense-share-list">
+                <label class="expense-share-row">
+                    <input
+                        type="checkbox"
+                        class="expense-share-checkbox"
+                        data-share-input="{{ form.papa_amount.id_for_label }}"
+                    >
+
+                    <span class="expense-share-name">
+                        パパ
+                    </span>
+
+                    {{ form.papa_amount }}
+                </label>
+
+                <label class="expense-share-row">
+                    <input
+                        type="checkbox"
+                        class="expense-share-checkbox"
+                        data-share-input="{{ form.mama_amount.id_for_label }}"
+                    >
+
+                    <span class="expense-share-name">
+                        ママ
+                    </span>
+
+                    {{ form.mama_amount }}
+                </label>
+
+                <label class="expense-share-row">
+                    <input
+                        type="checkbox"
+                        class="expense-share-checkbox"
+                        data-share-input="{{ form.yeye_amount.id_for_label }}"
+                    >
+
+                    <span class="expense-share-name">
+                        じいじ
+                    </span>
+
+                    {{ form.yeye_amount }}
+                </label>
+
+                <label class="expense-share-row">
+                    <input
+                        type="checkbox"
+                        class="expense-share-checkbox"
+                        data-share-input="{{ form.nainai_amount.id_for_label }}"
+                    >
+
+                    <span class="expense-share-name">
+                        ばあば
+                    </span>
+
+                    {{ form.nainai_amount }}
+                </label>
+            </div>
+
+            <div class="expense-share-summary">
+                <span>内訳合計</span>
+
+                <strong id="expense-share-total">
+                    0
+                </strong>
+            </div>
+        </section>
+
+        <div class="form-field">
+            <label for="{{ form.note.id_for_label }}">
+                {{ form.note.label }}
+            </label>
+
+            {{ form.note }}
+        </div>
+
+        <div class="form-actions">
+            <a
+                href="{% url 'expense_list' %}"
+                class="secondary-button"
+            >
+                キャンセル
+            </a>
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                {{ submit_label }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

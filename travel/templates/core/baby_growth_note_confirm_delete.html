@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}
+    成長メモを削除 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'baby_growth_note_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            記録一覧へ戻る
+        </a>
+
+        <h2>成長メモを削除</h2>
+    </div>
+
+    <div class="app-card delete-confirm-card">
+        <div class="delete-confirm-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h3>この成長メモを削除する？</h3>
+
+        <div class="delete-schedule-summary">
+            <strong>
+                {{ note.observed_on|date:"Y年n月j日" }}
+            </strong>
+
+            <span>
+                {{ note.content|truncatechars:80 }}
+            </span>
+        </div>
+
+        <p class="delete-warning">
+            削除した成長メモは元に戻せない。
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-actions">
+                <a
+                    href="{% url 'baby_growth_note_list' %}"
+                    class="secondary-button"
+                >
+                    キャンセル
+                </a>
+
+                <button
+                    type="submit"
+                    class="danger-button"
+                >
+                    削除する
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

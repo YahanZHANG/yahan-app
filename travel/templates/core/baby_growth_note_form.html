@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+    成長メモを追加 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'baby_growth_note_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            記録一覧へ戻る
+        </a>
+
+        <h2>成長メモを追加</h2>
+    </div>
+
+    <form
+        method="post"
+        class="app-card app-form"
+        novalidate
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="{{ form.observed_on.id_for_label }}">
+                {{ form.observed_on.label }}
+            </label>
+
+            {{ form.observed_on }}
+
+            {% for error in form.observed_on.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.content.id_for_label }}">
+                {{ form.content.label }}
+            </label>
+
+            {{ form.content }}
+
+            {% for error in form.content.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a
+                href="{% url 'baby_growth_note_list' %}"
+                class="secondary-button"
+            >
+                キャンセル
+            </a>
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                保存
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

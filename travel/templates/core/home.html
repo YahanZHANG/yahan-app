@@ -1,0 +1,758 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+
+<section class="welcome-section">
+    <div>
+        <p class="today-label mb-1">
+            {{ today|date:"Y年n月j日" }}
+        </p>
+
+        <p class="welcome-subtitle mb-0">
+            日本滞在 {{ stay_day }}日目
+        </p>
+
+    </div>
+</section>
+
+{% if important_notice %}
+    <section class="important-notice">
+        <div class="important-notice-icon">
+            <i class="bi bi-megaphone-fill"></i>
+        </div>
+
+        <div>
+            <p class="important-notice-label mb-1">
+                重要なお知らせ
+            </p>
+
+            <p class="important-notice-text mb-0">
+                {{ important_notice.message|linebreaksbr }}
+            </p>
+
+            <p class="important-notice-meta mb-0">
+                {{ important_notice.updated_at|date:"n月j日 H:i" }}更新
+                {% if important_notice.updated_by %}
+                    ・
+                    {% if important_notice.updated_by.first_name %}
+                        {{ important_notice.updated_by.first_name }}
+                    {% else %}
+                        {{ important_notice.updated_by.username }}
+                    {% endif %}
+                {% endif %}
+            </p>
+        </div>
+    </section>
+{% endif %}
+
+{% if upcoming_schedules %}
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                次の予定
+            </h3>
+        </div>
+
+        <a
+            href="{% url 'schedule_list' %}"
+            class="small-action-button"
+        >
+            今後の予定一覧
+        </a>
+    </div>
+
+    <div class="upcoming-schedule-grid">
+        {% for schedule in upcoming_schedules %}
+            <article
+                class="app-card upcoming-schedule-card"
+                data-countdown-target="{{ schedule.start_at|date:'c' }}"
+            >
+                <p class="upcoming-schedule-datetime">
+                    {{ schedule.start_at|date:"n/j H:i" }}
+                </p>
+
+                <h3>{{ schedule.title }}</h3>
+
+                {% if schedule.location %}
+                    <p class="upcoming-schedule-location">
+                        <i class="bi bi-geo-alt"></i>
+                        {{ schedule.location }}
+                    </p>
+                {% endif %}
+
+                <div class="upcoming-schedule-countdown">
+                    計算中…
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">家族マップ</h3>
+        </div>
+
+        <span class="location-auto-label">
+            <i class="bi bi-broadcast"></i>
+            自動更新
+        </span>
+    </div>
+
+    <div
+        id="family-map"
+        data-share-url="{% url 'share_location' %}"
+    ></div>
+
+    {{ map_locations|json_script:"family-map-data" }}
+
+    <div
+        id="location-share-message"
+        class="location-share-message"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+    <div class="family-finder">
+    <div class="family-icon-list">
+        {% for card in family_cards %}
+            <button
+                type="button"
+                class="family-icon-item"
+                data-family-detail-target="family-detail-{{ card.user.id }}"
+                aria-expanded="false"
+                aria-label="
+                    {% if card.user.first_name %}
+                        {{ card.user.first_name }}
+                    {% else %}
+                        {{ card.user.username }}
+                    {% endif %}
+                    の位置情報を表示
+                "
+            >
+                <span class="family-profile-icon">
+                    {% if card.user.username == "papa" %}
+                        <img
+                            src="{% static 'images/family/papa.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "mama" %}
+                        <img
+                            src="{% static 'images/family/mama.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "yeye" %}
+                        <img
+                            src="{% static 'images/family/yeye.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "nainai" %}
+                        <img
+                            src="{% static 'images/family/nainai.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.first_name %}
+                        {{ card.user.first_name|slice:":1" }}
+                    {% else %}
+                        {{ card.user.username|slice:":1" }}
+                    {% endif %}
+                </span>
+            </button>
+        {% empty %}
+            <p class="family-icons-empty">
+                家族ユーザーが見つかりません
+            </p>
+        {% endfor %}
+    </div>
+
+    <div class="family-detail-area">
+            {% for card in family_cards %}
+                <div
+                    id="family-detail-{{ card.user.id }}"
+                    class="family-detail-panel"
+                    hidden
+                >
+                    <div class="family-detail-avatar">
+                        {% if card.user.username == "papa" %}
+                            <img
+                                src="{% static 'images/family/papa.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "mama" %}
+                            <img
+                                src="{% static 'images/family/mama.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "yeye" %}
+                            <img
+                                src="{% static 'images/family/yeye.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "nainai" %}
+                            <img
+                                src="{% static 'images/family/nainai.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.first_name %}
+                            {{ card.user.first_name|slice:":1" }}
+                        {% else %}
+                            {{ card.user.username|slice:":1" }}
+                        {% endif %}
+                    </div>
+
+                    <div class="family-detail-content">
+                        {% if card.location %}
+                            <p class="family-detail-time">
+                                <i class="bi bi-clock"></i>
+                                {{ card.location.shared_at|date:"n月j日 H:i" }}更新
+                            </p>
+
+                            <p
+                                class="family-detail-distance"
+                                data-family-user-id="{{ card.user.id }}"
+                            >
+                                距離を計算中…
+                            </p>
+                        {% else %}
+                            <p class="family-detail-missing">
+                                現在地はまだ共有されていません
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                赤ちゃんの最新情報
+            </h3>
+        </div>
+    </div>
+
+    <div class="baby-summary-grid">
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    🍼
+                </div>
+            </div>
+
+            {% if latest_milk %}
+                <strong>{{ latest_milk.amount_ml }} ml</strong>
+                <span>{{ latest_milk.fed_at|date:"H:i" }}</span>
+            {% else %}
+                <strong>未記録</strong>
+                <span>—</span>
+            {% endif %}
+        </article>
+
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    🌙
+                </div>
+            </div>
+
+            {% if active_sleep %}
+                <strong>睡眠中</strong>
+                <span>
+                    {{ active_sleep.started_at|date:"H:i" }}から
+                </span>
+            {% elif latest_sleep %}
+                <strong>{{ latest_sleep.duration_minutes }}分</strong>
+                <span>
+                    {{ latest_sleep.started_at|date:"H:i" }}
+                    〜
+                    {{ latest_sleep.ended_at|date:"H:i" }}
+                </span>
+            {% else %}
+                <strong>未記録</strong>
+                <span>—</span>
+            {% endif %}
+        </article>
+
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    💩
+                </div>
+            </div>
+
+            {% if latest_poop %}
+                <strong>{{ latest_poop.get_amount_display }}</strong>
+                <span>{{ latest_poop.happened_at|date:"H:i" }}</span>
+            {% else %}
+                <strong>未記録</strong>
+                <span>—</span>
+            {% endif %}
+        </article>
+    </div>
+
+    <div class="quick-actions">
+        <form
+            method="post"
+            action="{% url 'milk_log_quick_create' 200 %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button"
+            >
+                ＋200 ml
+            </button>
+        </form>
+
+        <form
+            method="post"
+            action="{% url 'milk_log_quick_create' 150 %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button"
+            >
+                ＋150 ml
+            </button>
+        </form>
+
+        <a
+            href="{% url 'milk_log_create' %}"
+            class="quick-action-button"
+        >
+            ミルク手動
+        </a>
+
+    {% if active_sleep %}
+        <form
+            method="post"
+            action="{% url 'sleep_end' %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button sleep-end-button"
+            >
+                起きた
+            </button>
+        </form>
+    {% else %}
+        <form
+            method="post"
+            action="{% url 'sleep_start' %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button sleep-start-button"
+            >
+                寝た
+            </button>
+        </form>
+    {% endif %}
+
+        <a
+            href="{% url 'sleep_log_create' %}"
+            class="quick-action-button"
+        >
+            睡眠手動
+        </a>
+
+        <a
+            href="{% url 'poop_log_create' %}"
+            class="quick-action-button"
+        >
+            うんち
+        </a>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                成長・変化のメモ
+            </h3>
+        </div>
+
+        <div class="growth-note-actions">
+            <a
+                href="{% url 'baby_growth_note_list' %}"
+                class="small-action-button"
+            >
+                記録一覧
+            </a>
+
+            <a
+                href="{% url 'baby_growth_note_create' %}"
+                class="small-action-button"
+            >
+                ＋ 記録
+            </a>
+        </div>
+    </div>
+
+    <div class="app-card growth-note-list">
+        {% for note in latest_growth_notes %}
+            <article class="growth-note-item">
+                <div class="growth-note-header">
+                    <div class="growth-note-main">
+                        <span class="growth-note-date">
+                            <i class="bi bi-calendar3"></i>
+                            {{ note.observed_on|date:"n月j日" }}
+                        </span>
+
+                        <span class="growth-note-content">
+                            {{ note.content }}
+                        </span>
+                    </div>
+
+                    {% if note.created_by %}
+                        <div
+                            class="growth-note-author-photo"
+                            title="{% if note.created_by.first_name %}{{ note.created_by.first_name }}{% else %}{{ note.created_by.username }}{% endif %}"
+                        >
+                            {% if note.created_by.username == "papa" %}
+                                <img
+                                    src="{% static 'images/family/papa.jpg' %}"
+                                    alt="パパ"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "mama" %}
+                                <img
+                                    src="{% static 'images/family/mama.jpg' %}"
+                                    alt="ママ"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "yeye" %}
+                                <img
+                                    src="{% static 'images/family/yeye.jpg' %}"
+                                    alt="じいじ"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "nainai" %}
+                                <img
+                                    src="{% static 'images/family/nainai.jpg' %}"
+                                    alt="ばあば"
+                                    class="growth-note-avatar"
+                                >
+                            {% else %}
+                                <span class="growth-note-avatar-fallback">
+                                    {% if note.created_by.first_name %}
+                                        {{ note.created_by.first_name|slice:":1" }}
+                                    {% else %}
+                                        {{ note.created_by.username|slice:":1" }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+            </article>
+        {% empty %}
+            <div class="empty-state compact-empty-state">
+                <i class="bi bi-stars"></i>
+                <p>成長メモはまだありません</p>
+
+                <a href="{% url 'baby_growth_note_create' %}">
+                    最初の記録を追加
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                支出・精算
+            </h3>
+        </div>
+    </div>
+
+    <div class="expense-home-grid">
+        <a
+            href="{% url 'expense_create' %}"
+            class="app-card expense-home-card"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-plus-circle-fill"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>支出を追加</strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+
+        <a
+            href="{% url 'expense_list' %}"
+            class="app-card expense-home-card"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>支出一覧</strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+
+        <a
+            href="{% url 'expense_settlement' %}"
+            class="app-card expense-home-card expense-home-card-primary"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-calculator-fill"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>精算結果</strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">今日のお願い</h3>
+        </div>
+
+        <div class="task-heading-actions">
+            <a
+                href="{% url 'task_list' %}"
+                class="small-action-button"
+            >
+                依頼事項一覧
+            </a>
+
+            <a
+                href="{% url 'task_create' %}"
+                class="small-action-button"
+            >
+                ＋ 追加
+            </a>
+        </div>
+    </div>
+
+    <div class="app-card task-list">
+        {% for task in tasks %}
+            <form
+                method="post"
+                action="{% url 'task_toggle' task.id %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="
+                        task-item
+                        task-item-button
+                        {% if task.is_completed %}
+                            task-is-completed
+                        {% endif %}
+                    "
+                >
+                    <span class="task-checkmark">
+                        {% if task.is_completed %}
+                            ✓
+                        {% endif %}
+                    </span>
+
+                    <span class="task-main">
+                        <strong>{{ task.title }}</strong>
+
+                        <small>
+                            {% if task.assigned_to %}
+                                担当：{{ task.assigned_to }}
+                            {% else %}
+                                担当：未定
+                            {% endif %}
+
+                            {% if task.created_by %}
+                                ・追加：
+                                {% if task.created_by.first_name %}
+                                    {{ task.created_by.first_name }}
+                                {% else %}
+                                    {{ task.created_by.username }}
+                                {% endif %}
+                            {% endif %}
+                        </small>
+                    </span>
+
+                    <span class="task-deadline">
+                        {% if task.is_completed %}
+                            完了
+                        {% elif task.due_at %}
+                            {{ task.due_at|date:"n/j H:i" }}
+                        {% else %}
+                            期限なし
+                        {% endif %}
+                    </span>
+                </button>
+            </form>
+        {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-check2-square"></i>
+                <p>お願いはまだありません</p>
+
+                <a href="{% url 'task_create' %}">
+                    最初のお願いを追加
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                家族会議メモ
+            </h3>
+        </div>
+
+        <div class="meeting-note-actions">
+            <a
+                href="{% url 'meeting_note_list' %}"
+                class="small-action-button"
+            >
+                会議一覧
+            </a>
+
+            <a
+                href="{% url 'meeting_note_create' %}"
+                class="small-action-button"
+            >
+                ＋ 追加
+            </a>
+        </div>
+    </div>
+
+    {% if latest_meeting_note %}
+        <article class="app-card meeting-note-card">
+            <div class="meeting-note-header">
+                <div>
+                    <h4 class="meeting-note-main-date">
+                        {{ latest_meeting_note.discussed_at|date:"Y年n月j日" }}
+                    </h4>
+                </div>
+
+                {% if latest_meeting_note.created_by %}
+                    <div
+                        class="meeting-note-author-photo"
+                        title="{% if latest_meeting_note.created_by.first_name %}{{ latest_meeting_note.created_by.first_name }}{% else %}{{ latest_meeting_note.created_by.username }}{% endif %}"
+                    >
+                        {% if latest_meeting_note.created_by.username == "papa" %}
+                            <img
+                                src="{% static 'images/family/papa.jpg' %}"
+                                alt="パパ"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "mama" %}
+                            <img
+                                src="{% static 'images/family/mama.jpg' %}"
+                                alt="ママ"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "yeye" %}
+                            <img
+                                src="{% static 'images/family/yeye.jpg' %}"
+                                alt="じいじ"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "nainai" %}
+                            <img
+                                src="{% static 'images/family/nainai.jpg' %}"
+                                alt="ばあば"
+                                class="meeting-note-avatar"
+                            >
+                        {% else %}
+                            <span class="meeting-note-avatar-fallback">
+                                {% if latest_meeting_note.created_by.first_name %}
+                                    {{ latest_meeting_note.created_by.first_name|slice:":1" }}
+                                {% else %}
+                                    {{ latest_meeting_note.created_by.username|slice:":1" }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="meeting-note-section">
+                <h5>
+                    <i class="bi bi-check-circle"></i>
+                    決定事項
+                </h5>
+
+                <div class="meeting-note-text">
+                    {{ latest_meeting_note.decisions|linebreaksbr }}
+                </div>
+            </div>
+
+            {% if latest_meeting_note.next_actions %}
+                <div class="meeting-note-section">
+                    <h5>
+                        <i class="bi bi-arrow-right-circle"></i>
+                        次にやること
+                    </h5>
+
+                    <div class="meeting-note-text">
+                        {{ latest_meeting_note.next_actions|linebreaksbr }}
+                    </div>
+                </div>
+            {% endif %}
+        </article>
+    {% else %}
+        <div class="app-card empty-state">
+            <i class="bi bi-journal-text"></i>
+            <p>家族会議メモはまだありません</p>
+
+            <a href="{% url 'meeting_note_create' %}">
+                最初のメモを追加
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+

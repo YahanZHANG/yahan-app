@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}
+    お願い一覧 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header schedule-list-header">
+        <div>
+            <a
+                href="{% url 'home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>お願い一覧</h2>
+        </div>
+
+        <a
+            href="{% url 'task_create' %}"
+            class="small-action-button"
+        >
+            ＋ お願いを追加
+        </a>
+    </div>
+
+    <section class="task-list-section">
+        <div class="section-heading">
+            <h3 class="section-title mb-0">
+                未完了
+            </h3>
+
+            <span class="task-count">
+                {{ incomplete_tasks|length }}件
+            </span>
+        </div>
+
+        <div class="app-card task-list">
+            {% for task in incomplete_tasks %}
+                <div class="task-list-row">
+                    <form
+                        method="post"
+                        action="{% url 'task_toggle' task.id %}"
+                        class="task-list-toggle-form"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="task-check-button"
+                            aria-label="完了にする"
+                            title="完了にする"
+                        >
+                            <span class="task-checkmark"></span>
+                        </button>
+                    </form>
+
+                    <div class="task-list-main">
+                        <strong>{{ task.title }}</strong>
+
+                        <small>
+                            {% if task.assigned_to %}
+                                担当：{{ task.assigned_to }}
+                            {% else %}
+                                担当：未定
+                            {% endif %}
+
+                            {% if task.due_at %}
+                                ・期限：{{ task.due_at|date:"n/j H:i" }}
+                            {% else %}
+                                ・期限なし
+                            {% endif %}
+                        </small>
+
+                        {% if task.note %}
+                            <p>{{ task.note }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="schedule-item-actions">
+                        <a
+                            href="{% url 'task_update' task.id %}"
+                            class="schedule-edit-button"
+                            aria-label="お願いを編集"
+                            title="お願いを編集"
+                        >
+                            <i class="bi bi-pencil"></i>
+                        </a>
+
+                        <a
+                            href="{% url 'task_delete' task.id %}"
+                            class="schedule-delete-button"
+                            aria-label="お願いを削除"
+                            title="お願いを削除"
+                        >
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state compact-empty-state">
+                    <i class="bi bi-check2-square"></i>
+                    <p>未完了のお願いはありません</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="task-list-section completed-task-section">
+        <div class="section-heading">
+            <h3 class="section-title mb-0">
+                完了済み
+            </h3>
+
+            <span class="task-count">
+                {{ completed_tasks|length }}件
+            </span>
+        </div>
+
+        <div class="app-card task-list">
+            {% for task in completed_tasks %}
+                <div class="task-list-row task-is-completed">
+                    <form
+                        method="post"
+                        action="{% url 'task_toggle' task.id %}"
+                        class="task-list-toggle-form"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="task-check-button"
+                            aria-label="未完了に戻す"
+                            title="未完了に戻す"
+                        >
+                            <span class="task-checkmark">
+                                ✓
+                            </span>
+                        </button>
+                    </form>
+
+                    <div class="task-list-main">
+                        <strong>{{ task.title }}</strong>
+
+                        <small>
+                            {% if task.assigned_to %}
+                                担当：{{ task.assigned_to }}
+                            {% else %}
+                                担当：未定
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <div class="schedule-item-actions">
+                        <a
+                            href="{% url 'task_update' task.id %}"
+                            class="schedule-edit-button"
+                            aria-label="お願いを編集"
+                            title="お願いを編集"
+                        >
+                            <i class="bi bi-pencil"></i>
+                        </a>
+
+                        <a
+                            href="{% url 'task_delete' task.id %}"
+                            class="schedule-delete-button"
+                            aria-label="お願いを削除"
+                            title="お願いを削除"
+                        >
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state compact-empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <p>完了済みのお願いはありません</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}
+    支出一覧 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header schedule-list-header">
+        <div>
+            <a
+                href="{% url 'home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>支出一覧</h2>
+        </div>
+
+        <div class="expense-header-actions">
+            <a
+                href="{% url 'expense_settlement' %}"
+                class="small-action-button"
+            >
+                <i class="bi bi-calculator"></i>
+                精算結果
+            </a>
+
+            <a
+                href="{% url 'expense_create' %}"
+                class="small-action-button"
+            >
+                ＋ 支出を追加
+            </a>
+        </div>
+    </div>
+
+    {% if expenses %}
+        <div class="meeting-note-list">
+            {% for expense in expenses %}
+                <article class="app-card meeting-note-card">
+                    <div class="meeting-note-header">
+                        <div>
+                            <p class="meeting-note-date">
+                                {{ expense.paid_at|date:"Y年n月j日 H:i" }}
+                            </p>
+
+                            <h4>{{ expense.title }}</h4>
+                        </div>
+
+                        <div class="expense-list-actions">
+                            <span class="meeting-note-author">
+                                {{ expense.total_amount }}
+                                {{ expense.currency }}
+                            </span>
+
+                            <a
+                                href="{% url 'expense_update' expense.id %}"
+                                class="schedule-edit-button"
+                                aria-label="支出を編集"
+                                title="支出を編集"
+                            >
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a
+                                href="{% url 'expense_delete' expense.id %}"
+                                class="schedule-delete-button"
+                                aria-label="支出を削除"
+                                title="支出を削除"
+                            >
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <div class="meeting-note-section">
+                        <h5>支払った人</h5>
+
+                        <div class="meeting-note-text">
+                            {% if expense.paid_by.first_name %}
+                                {{ expense.paid_by.first_name }}
+                            {% else %}
+                                {{ expense.paid_by.username }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="meeting-note-section">
+                        <h5>負担内訳</h5>
+
+                        <div class="meeting-note-text">
+                            {% for share in expense.shares.all %}
+                                <div>
+                                    {% if share.user.first_name %}
+                                        {{ share.user.first_name }}
+                                    {% else %}
+                                        {{ share.user.username }}
+                                    {% endif %}
+                                    ：{{ share.amount }}
+                                    {{ expense.currency }}
+                                </div>
+                            {% empty %}
+                                内訳なし
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="app-card empty-state">
+            <i class="bi bi-wallet2"></i>
+            <p>支出はまだありません</p>
+
+            <a href="{% url 'expense_create' %}">
+                最初の支出を追加
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

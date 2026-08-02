@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}
+    今後の予定一覧 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page schedule-list-page">
+    <div class="form-page-header schedule-list-header">
+        <div>
+            <a
+                href="{% url 'home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>今後の予定一覧</h2>
+        </div>
+
+        <a
+            href="{% url 'schedule_create' %}"
+            class="small-action-button"
+        >
+            ＋ 予定を追加
+        </a>
+    </div>
+
+    <div class="schedule-list">
+        {% regroup upcoming_schedules by start_at.date as schedule_groups %}
+
+        {% for group in schedule_groups %}
+            <section class="schedule-date-group">
+                <div class="schedule-date-heading">
+                    <span class="schedule-date-day">
+                        {{ group.grouper|date:"n月j日" }}
+                    </span>
+
+                    <span class="schedule-date-weekday">
+                        {{ group.grouper|date:"D" }}
+                    </span>
+                </div>
+
+                <div class="app-card schedule-list-card">
+                    {% for schedule in group.list %}
+                        <article class="schedule-list-item">
+                            <div class="schedule-list-time">
+                                {{ schedule.start_at|date:"H:i" }}
+                            </div>
+
+                            <div class="schedule-list-main">
+                                <div class="schedule-list-title-row">
+                                    <h3>
+                                        {{ schedule.title }}
+
+                                        {% if schedule.is_important %}
+                                            <i
+                                                class="bi bi-exclamation-circle-fill"
+                                                title="重要な予定"
+                                            ></i>
+                                        {% endif %}
+                                    </h3>
+
+                                    <div class="schedule-item-actions">
+                                        <a
+                                            href="{% url 'schedule_update' schedule.id %}"
+                                            class="schedule-edit-button"
+                                            aria-label="予定を編集"
+                                            title="予定を編集"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <a
+                                            href="{% url 'schedule_delete' schedule.id %}"
+                                            class="schedule-delete-button"
+                                            aria-label="予定を削除"
+                                            title="予定を削除"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {% if schedule.location %}
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        {{ schedule.location }}
+                                    </p>
+                                {% endif %}
+
+                                {% if schedule.note %}
+                                    <p>
+                                        {{ schedule.note }}
+                                    </p>
+                                {% endif %}
+
+                                {% if schedule.created_by %}
+                                    <p class="schedule-list-created-by">
+                                        <i class="bi bi-person"></i>
+
+                                        {% if schedule.created_by.first_name %}
+                                            {{ schedule.created_by.first_name }}
+                                        {% else %}
+                                            {{ schedule.created_by.username }}
+                                        {% endif %}
+                                        が追加
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% empty %}
+            <div class="app-card empty-state">
+                <i class="bi bi-calendar2-check"></i>
+                <p>今後の予定はまだありません</p>
+
+                <a href="{% url 'schedule_create' %}">
+                    最初の予定を追加
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
