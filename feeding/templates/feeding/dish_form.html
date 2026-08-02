@@ -1,0 +1,335 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    新しい料理を追加 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    {% if next_url %}
+        <a
+            href="{{ next_url }}"
+            class="back-link"
+        >
+            ← 食事記録に戻る
+        </a>
+    {% else %}
+        <a
+            href="{% url 'feeding:today' %}"
+            class="back-link"
+        >
+            ← 今日に戻る
+        </a>
+    {% endif %}
+
+    <h2>新しい料理を追加</h2>
+
+    <p>
+        料理全体の完成量と材料ごとの重量を登録する。
+    </p>
+</section>
+
+<form
+    method="post"
+    id="dish-create-form"
+>
+    {% csrf_token %}
+
+    {% if next_url %}
+        <input
+            type="hidden"
+            name="next"
+            value="{{ next_url }}"
+        >
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="form-section">
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% for error in form.name.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label
+                for="{{ form.category.id_for_label }}"
+            >
+                {{ form.category.label }}
+            </label>
+
+            {{ form.category }}
+
+            {% for error in form.category.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <label
+                for="{{ form.finished_amount_g.id_for_label }}"
+            >
+                {{ form.finished_amount_g.label }}
+            </label>
+
+            <div class="amount-with-unit">
+                {{ form.finished_amount_g }}
+                <span>g</span>
+            </div>
+
+            {% if form.finished_amount_g.help_text %}
+                <small class="form-help-text">
+                    {{ form.finished_amount_g.help_text }}
+                </small>
+            {% endif %}
+
+            {% for error in form.finished_amount_g.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">INGREDIENTS</p>
+                <h3>材料</h3>
+            </div>
+        </div>
+
+        {{ ingredient_formset.management_form }}
+
+        {% if ingredient_formset.non_form_errors %}
+            <div class="form-error">
+                {{ ingredient_formset.non_form_errors }}
+            </div>
+        {% endif %}
+
+        <div id="dish-ingredient-list">
+            {% for ingredient_form in ingredient_formset %}
+                {% include "feeding/partials/dish_ingredient_form.html" with ingredient_form=ingredient_form %}
+            {% endfor %}
+        </div>
+
+        <template id="empty-ingredient-template">
+            {% include "feeding/partials/dish_ingredient_form.html" with ingredient_form=ingredient_formset.empty_form %}
+        </template>
+
+        <button
+            type="button"
+            id="add-ingredient-button"
+            class="secondary-button"
+        >
+            ＋ 材料を追加
+        </button>
+    </section>
+
+    <div class="form-actions">
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            料理を保存
+        </button>
+    </div>
+</form>
+
+<script>
+    const ingredientList = document.getElementById(
+        "dish-ingredient-list"
+    );
+
+    const totalIngredientForms = document.getElementById(
+        "id_ingredients-TOTAL_FORMS"
+    );
+
+    const emptyIngredientTemplate = document.getElementById(
+        "empty-ingredient-template"
+    );
+
+    const addIngredientButton = document.getElementById(
+        "add-ingredient-button"
+    );
+
+    function updateIngredientNumbers() {
+        let number = 1;
+
+        ingredientList
+            .querySelectorAll("[data-ingredient-row]")
+            .forEach((row) => {
+                if (row.hidden) {
+                    return;
+                }
+
+                const heading = row.querySelector(
+                    "[data-ingredient-number]"
+                );
+
+                if (heading) {
+                    heading.textContent = `材料 ${number}`;
+                }
+
+                number += 1;
+            });
+    }
+
+    function filterIngredientFoods(
+        categorySelect,
+        foodSelect
+    ) {
+        if (!categorySelect || !foodSelect) {
+            return;
+        }
+
+        const categoryId = categorySelect.value;
+
+        const selectedOption = foodSelect.options[
+            foodSelect.selectedIndex
+        ];
+
+        Array.from(foodSelect.options).forEach(
+            (option) => {
+                if (!option.value) {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+
+                const shouldShow = (
+                    categoryId
+                    && option.dataset.categoryId
+                    === categoryId
+                );
+
+                option.hidden = !shouldShow;
+                option.disabled = !shouldShow;
+            }
+        );
+
+        if (
+            selectedOption
+            && selectedOption.value
+            && selectedOption.dataset.categoryId
+            !== categoryId
+        ) {
+            foodSelect.value = "";
+        }
+
+        if (!categoryId) {
+            foodSelect.value = "";
+        }
+    }
+
+    function bindIngredientRow(row) {
+        const categorySelect = row.querySelector(
+            ".ingredient-food-category-select"
+        );
+
+        const foodSelect = row.querySelector(
+            ".ingredient-food-select"
+        );
+
+        const removeButton = row.querySelector(
+            "[data-remove-ingredient]"
+        );
+
+        const deleteInput = row.querySelector(
+            'input[name$="-DELETE"]'
+        );
+
+        filterIngredientFoods(
+            categorySelect,
+            foodSelect
+        );
+
+        if (categorySelect) {
+            categorySelect.addEventListener(
+                "change",
+                () => {
+                    filterIngredientFoods(
+                        categorySelect,
+                        foodSelect
+                    );
+                }
+            );
+        }
+
+        if (removeButton) {
+            removeButton.addEventListener(
+                "click",
+                () => {
+                    if (deleteInput) {
+                        deleteInput.checked = true;
+                    }
+
+                    row.hidden = true;
+                    updateIngredientNumbers();
+                }
+            );
+        }
+    }
+
+    ingredientList
+        .querySelectorAll("[data-ingredient-row]")
+        .forEach((row) => {
+            bindIngredientRow(row);
+        });
+
+    addIngredientButton.addEventListener(
+        "click",
+        () => {
+            const formIndex = Number(
+                totalIngredientForms.value
+            );
+
+            const html = (
+                emptyIngredientTemplate
+                .innerHTML
+                .replace(
+                    /__prefix__/g,
+                    formIndex
+                )
+            );
+
+            ingredientList.insertAdjacentHTML(
+                "beforeend",
+                html
+            );
+
+            totalIngredientForms.value = (
+                formIndex + 1
+            );
+
+            const rows = ingredientList.querySelectorAll(
+                "[data-ingredient-row]"
+            );
+
+            const newRow = rows[
+                rows.length - 1
+            ];
+
+            bindIngredientRow(newRow);
+            updateIngredientNumbers();
+        }
+    );
+
+    updateIngredientNumbers();
+</script>
+{% endblock %}

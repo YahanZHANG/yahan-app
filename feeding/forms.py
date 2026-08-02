@@ -9,6 +9,7 @@ from .models import (
     AllergyReaction,
     Dish,
     DishCategory,
+    DishIngredient,
     FeedingGroup,
     Food,
     FoodCategory,
@@ -719,3 +720,275 @@ class FoodCreateForm(forms.ModelForm):
             )
 
         return name
+
+
+class DishCreateForm(forms.ModelForm):
+    class Meta:
+        model = Dish
+        fields = (
+            "name",
+            "category",
+            "finished_amount_g",
+        )
+        labels = {
+            "name": "料理名",
+            "category": "料理ジャンル",
+            "finished_amount_g": "完成量",
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "例：鶏肉とかぼちゃのおかゆ",
+                    "autocomplete": "off",
+                }
+            ),
+            "category": forms.Select(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "finished_amount_g": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0.01",
+                    "step": "0.01",
+                    "inputmode": "decimal",
+                    "placeholder": "例：200",
+                }
+            ),
+        }
+        help_texts = {
+            "finished_amount_g": (
+                "調理後に完成した料理全体の重量をgで入力する。"
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["category"].queryset = (
+            DishCategory.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+
+        if Dish.objects.filter(
+            name__iexact=name,
+        ).exists():
+            raise ValidationError(
+                "同じ名前の料理がすでに登録されている。"
+            )
+
+        return name
+
+
+class DishIngredientForm(forms.ModelForm):
+    food_category = forms.ModelChoiceField(
+        label="食材ジャンル",
+        queryset=FoodCategory.objects.none(),
+        required=False,
+        empty_label="食材ジャンルを選択",
+        widget=forms.Select(
+            attrs={
+                "class": (
+                    "form-control "
+                    "ingredient-food-category-select"
+                ),
+            }
+        ),
+    )
+
+    food = FoodChoiceField(
+        label="食材名",
+        queryset=Food.objects.none(),
+        required=False,
+        empty_label="食材を選択",
+        widget=CategoryDataSelect(
+            attrs={
+                "class": (
+                    "form-control "
+                    "ingredient-food-select"
+                ),
+            }
+        ),
+    )
+
+    class Meta:
+        model = DishIngredient
+        fields = (
+            "food_category",
+            "food",
+            "amount_g",
+        )
+        labels = {
+            "amount_g": "使用量",
+        }
+        widgets = {
+            "amount_g": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0.01",
+                    "step": "0.01",
+                    "inputmode": "decimal",
+                    "placeholder": "例：30",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields[
+            "food_category"
+        ].queryset = (
+            FoodCategory.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        self.fields["food"].queryset = (
+            Food.objects
+            .filter(is_active=True)
+            .select_related("category")
+            .order_by(
+                "category__display_order",
+                "category__name",
+                "name",
+            )
+        )
+
+        if (
+            self.instance
+            and self.instance.food_id
+        ):
+            self.fields[
+                "food_category"
+            ].initial = (
+                self.instance.food.category_id
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        food_category = cleaned_data.get(
+            "food_category"
+        )
+        food = cleaned_data.get("food")
+        amount_g = cleaned_data.get("amount_g")
+
+        row_has_input = bool(
+            food_category
+            or food
+            or amount_g
+        )
+
+        if not row_has_input:
+            return cleaned_data
+
+        if food_category is None:
+            self.add_error(
+                "food_category",
+                "食材ジャンルを選択してください。",
+            )
+
+        if food is None:
+            self.add_error(
+                "food",
+                "食材を選択してください。",
+            )
+
+        if amount_g is None:
+            self.add_error(
+                "amount_g",
+                "使用量を入力してください。",
+            )
+
+        if (
+            food
+            and food_category
+            and food.category_id
+            != food_category.id
+        ):
+            self.add_error(
+                "food",
+                "選択したジャンルに属する食材を選んでください。",
+            )
+
+        return cleaned_data
+
+
+class BaseDishIngredientFormSet(
+    BaseInlineFormSet
+):
+    def clean(self):
+        super().clean()
+
+        if any(
+            form.errors
+            for form in self.forms
+        ):
+            return
+
+        ingredient_count = 0
+        selected_food_ids = set()
+
+        for form in self.forms:
+            cleaned_data = getattr(
+                form,
+                "cleaned_data",
+                {},
+            )
+
+            if not cleaned_data:
+                continue
+
+            if cleaned_data.get("DELETE"):
+                continue
+
+            food = cleaned_data.get("food")
+            amount_g = cleaned_data.get(
+                "amount_g"
+            )
+
+            if food is None and amount_g is None:
+                continue
+
+            if food is None:
+                continue
+
+            ingredient_count += 1
+
+            if food.pk in selected_food_ids:
+                form.add_error(
+                    "food",
+                    "同じ食材がすでに材料に追加されている。",
+                )
+            else:
+                selected_food_ids.add(food.pk)
+
+        if ingredient_count == 0:
+            raise ValidationError(
+                "少なくとも1つの材料を入力してください。"
+            )
+
+
+DishIngredientFormSet = inlineformset_factory(
+    Dish,
+    DishIngredient,
+    form=DishIngredientForm,
+    formset=BaseDishIngredientFormSet,
+    extra=3,
+    can_delete=True,
+    max_num=30,
+    validate_max=True,
+)

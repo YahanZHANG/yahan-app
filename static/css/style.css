@@ -2649,3 +2649,24 @@ button {
 .food-list-actions .primary-button {
     width: auto;
 }
+
+.dish-ingredient-card {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: #fff;
+}
+
+.amount-with-unit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.amount-with-unit > span {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+}

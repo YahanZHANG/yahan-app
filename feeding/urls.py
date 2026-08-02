@@ -41,6 +41,11 @@ urlpatterns = [
         name="food_detail",
     ),
     path(
+        "dishes/add/",
+        views.dish_create,
+        name="dish_create",
+    ),
+    path(
         "allergens/",
         views.allergen_list,
         name="allergen_list",

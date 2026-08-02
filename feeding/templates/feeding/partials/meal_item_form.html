@@ -107,6 +107,13 @@
 
         {{ item_form.dish }}
 
+        <a
+            href="{% url 'feeding:dish_create' %}?next={{ request.get_full_path|urlencode }}"
+            class="inline-add-link"
+        >
+            ＋ 一覧にない料理を追加
+        </a>
+
         {% for error in item_form.dish.errors %}
             <p class="field-error">{{ error }}</p>
         {% endfor %}

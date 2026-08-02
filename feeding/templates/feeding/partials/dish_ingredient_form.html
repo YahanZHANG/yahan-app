@@ -1,0 +1,83 @@
+<div
+    class="dish-ingredient-card"
+    data-ingredient-row
+>
+    {% for hidden_field in ingredient_form.hidden_fields %}
+        {{ hidden_field }}
+    {% endfor %}
+
+    <div class="meal-item-heading">
+        <h3 data-ingredient-number>
+            材料
+        </h3>
+
+        <button
+            type="button"
+            class="remove-item-button"
+            data-remove-ingredient
+        >
+            削除
+        </button>
+    </div>
+
+    {% if ingredient_form.non_field_errors %}
+        <div class="form-error">
+            {{ ingredient_form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label
+            for="{{ ingredient_form.food_category.id_for_label }}"
+        >
+            {{ ingredient_form.food_category.label }}
+        </label>
+
+        {{ ingredient_form.food_category }}
+
+        {% for error in ingredient_form.food_category.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label
+            for="{{ ingredient_form.food.id_for_label }}"
+        >
+            {{ ingredient_form.food.label }}
+        </label>
+
+        {{ ingredient_form.food }}
+
+        {% for error in ingredient_form.food.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label
+            for="{{ ingredient_form.amount_g.id_for_label }}"
+        >
+            {{ ingredient_form.amount_g.label }}
+        </label>
+
+        <div class="amount-with-unit">
+            {{ ingredient_form.amount_g }}
+            <span>g</span>
+        </div>
+
+        {% for error in ingredient_form.amount_g.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div class="delete-input">
+        {{ ingredient_form.DELETE }}
+    </div>
+</div>

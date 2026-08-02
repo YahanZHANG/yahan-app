@@ -20,6 +20,8 @@ from decimal import Decimal
 from .forms import (
     AllergyReactionForm,
     BabySettingsForm,
+    DishCreateForm,
+    DishIngredientFormSet,
     FoodCreateForm,
     MealForm,
     MealItemCreateFormSet,
@@ -31,6 +33,7 @@ from .models import (
     AllergyReaction,
     AllergyReactionPhoto,
     Baby,
+    Dish,
     FeedingGuideline,
     Food,
     FoodCategory,
@@ -695,6 +698,118 @@ def food_create(request):
     return render(
         request,
         "feeding/food_form.html",
+        context,
+    )
+
+@login_required
+def dish_create(request):
+    next_url = request.GET.get(
+        "next",
+        request.POST.get("next", ""),
+    )
+
+    dish = Dish()
+
+    if request.method == "POST":
+        form = DishCreateForm(
+            request.POST,
+            instance=dish,
+        )
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                request.POST,
+                instance=dish,
+                prefix="ingredients",
+            )
+        )
+
+        if (
+            form.is_valid()
+            and ingredient_formset.is_valid()
+        ):
+            with transaction.atomic():
+                saved_dish = form.save(
+                    commit=False
+                )
+
+                saved_dish.is_user_created = True
+                saved_dish.is_active = True
+                saved_dish.save()
+
+                ingredient_formset.instance = (
+                    saved_dish
+                )
+
+                ingredients = (
+                    ingredient_formset.save(
+                        commit=False
+                    )
+                )
+
+                for deleted_ingredient in (
+                    ingredient_formset
+                    .deleted_objects
+                ):
+                    deleted_ingredient.delete()
+
+                display_order = 10
+
+                for ingredient in ingredients:
+                    ingredient.dish = saved_dish
+                    ingredient.display_order = (
+                        display_order
+                    )
+                    ingredient.save()
+
+                    display_order += 10
+
+            messages.success(
+                request,
+                f"「{saved_dish.name}」を追加した。",
+            )
+
+            if (
+                next_url
+                and url_has_allowed_host_and_scheme(
+                    url=next_url,
+                    allowed_hosts={
+                        request.get_host()
+                    },
+                    require_https=(
+                        request.is_secure()
+                    ),
+                )
+            ):
+                return redirect(next_url)
+
+            return redirect(
+                "feeding:today"
+            )
+
+    else:
+        form = DishCreateForm(
+            instance=dish
+        )
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                instance=dish,
+                prefix="ingredients",
+            )
+        )
+
+    context = {
+        "form": form,
+        "ingredient_formset": (
+            ingredient_formset
+        ),
+        "next_url": next_url,
+    }
+
+    return render(
+        request,
+        "feeding/dish_form.html",
         context,
     )
 
