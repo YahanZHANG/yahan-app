@@ -627,6 +627,329 @@ DISHES = [
     ),
 ]
 
+# 料理100gあたりの材料構成。
+#
+# 各料理の材料量は原則として合計100gにする。
+# これは調理レシピそのものではなく、
+# 食事記録を食品群別に按分するための標準比率。
+DISH_RECIPE_RATIOS = {
+    "10倍がゆ": {
+        "米": 10,
+    },
+    "7倍がゆ": {
+        "米": 14,
+    },
+    "5倍がゆ": {
+        "米": 20,
+    },
+    "オートミールがゆ": {
+        "オートミール": 20,
+    },
+    "野菜がゆ": {
+        "米": 55,
+        "にんじん": 15,
+        "玉ねぎ": 15,
+        "キャベツ": 15,
+    },
+    "しらすがゆ": {
+        "米": 85,
+        "しらす": 15,
+    },
+    "鮭がゆ": {
+        "米": 85,
+        "さけ": 15,
+    },
+    "鶏肉がゆ": {
+        "米": 70,
+        "鶏肉": 15,
+        "にんじん": 15,
+    },
+    "卵黄がゆ": {
+        "米": 85,
+        "卵黄": 15,
+    },
+    "納豆がゆ": {
+        "米": 80,
+        "納豆": 20,
+    },
+    "豆腐がゆ": {
+        "米": 65,
+        "豆腐": 35,
+    },
+    "トマトリゾット": {
+        "米": 60,
+        "トマト": 30,
+        "玉ねぎ": 10,
+    },
+
+    "やわらかいうどん": {
+        "うどん": 100,
+    },
+    "野菜うどん": {
+        "うどん": 60,
+        "にんじん": 15,
+        "玉ねぎ": 10,
+        "キャベツ": 15,
+    },
+    "鶏肉うどん": {
+        "うどん": 65,
+        "鶏肉": 15,
+        "にんじん": 20,
+    },
+    "鮭うどん": {
+        "うどん": 65,
+        "さけ": 15,
+        "ほうれん草": 20,
+    },
+    "トマトパスタ": {
+        "パスタ": 50,
+        "トマト": 35,
+        "玉ねぎ": 15,
+    },
+    "ボロネーゼ": {
+        "パスタ": 40,
+        "牛肉": 15,
+        "トマト": 25,
+        "玉ねぎ": 10,
+        "にんじん": 10,
+    },
+    "ツナパスタ": {
+        "パスタ": 45,
+        "ツナ（水煮）": 15,
+        "トマト": 25,
+        "玉ねぎ": 15,
+    },
+    "クリームパスタ": {
+        "パスタ": 45,
+        "牛乳": 35,
+        "バター": 5,
+        "ほうれん草": 15,
+    },
+    "野菜マカロニ": {
+        "マカロニ": 45,
+        "にんじん": 20,
+        "玉ねぎ": 15,
+        "ブロッコリー": 20,
+    },
+
+    "パンがゆ": {
+        "食パン": 100,
+    },
+    "ミルクパンがゆ": {
+        "食パン": 45,
+        "牛乳": 55,
+    },
+    "バナナパンがゆ": {
+        "食パン": 45,
+        "バナナ": 55,
+    },
+    "フレンチトースト": {
+        "食パン": 55,
+        "全卵": 25,
+        "牛乳": 20,
+    },
+    "野菜入りパンがゆ": {
+        "食パン": 50,
+        "にんじん": 15,
+        "玉ねぎ": 15,
+        "ブロッコリー": 20,
+    },
+
+    "かぼちゃサラダ": {
+        "かぼちゃ": 80,
+        "プレーンヨーグルト": 20,
+    },
+    "ポテトサラダ": {
+        "じゃがいも": 65,
+        "にんじん": 20,
+        "きゅうり": 15,
+    },
+    "ラタトゥイユ": {
+        "トマト": 30,
+        "玉ねぎ": 20,
+        "なす": 20,
+        "ズッキーニ": 20,
+        "パプリカ": 10,
+    },
+    "さつまいもおやき": {
+        "さつまいも": 85,
+        "米粉": 15,
+    },
+    "野菜おやき": {
+        "じゃがいも": 55,
+        "にんじん": 15,
+        "キャベツ": 15,
+        "米粉": 15,
+    },
+
+    "白身魚の野菜煮": {
+        "たら": 25,
+        "にんじん": 25,
+        "玉ねぎ": 20,
+        "ブロッコリー": 30,
+    },
+    "鮭のクリーム煮": {
+        "さけ": 25,
+        "牛乳": 35,
+        "玉ねぎ": 20,
+        "ブロッコリー": 20,
+    },
+    "しらすと野菜の煮物": {
+        "しらす": 20,
+        "にんじん": 25,
+        "大根": 30,
+        "小松菜": 25,
+    },
+    "ツナとじゃがいもの煮物": {
+        "ツナ（水煮）": 20,
+        "じゃがいも": 55,
+        "玉ねぎ": 25,
+    },
+    "白身魚のつみれ": {
+        "たら": 50,
+        "豆腐": 35,
+        "玉ねぎ": 15,
+    },
+
+    "鶏そぼろ": {
+        "鶏肉": 100,
+    },
+    "鶏肉と野菜の煮物": {
+        "鶏肉": 25,
+        "にんじん": 20,
+        "玉ねぎ": 20,
+        "じゃがいも": 35,
+    },
+    "肉じゃが": {
+        "牛肉": 20,
+        "じゃがいも": 45,
+        "にんじん": 15,
+        "玉ねぎ": 20,
+    },
+    "豆腐ハンバーグ": {
+        "豆腐": 45,
+        "鶏肉": 30,
+        "玉ねぎ": 15,
+        "にんじん": 10,
+    },
+    "ミートボール": {
+        "豚肉": 60,
+        "玉ねぎ": 25,
+        "にんじん": 15,
+    },
+    "鶏肉のトマト煮": {
+        "鶏肉": 25,
+        "トマト": 35,
+        "玉ねぎ": 20,
+        "にんじん": 20,
+    },
+
+    "卵とじ": {
+        "全卵": 45,
+        "玉ねぎ": 20,
+        "にんじん": 20,
+        "かつおだし": 15,
+    },
+    "オムレツ": {
+        "全卵": 55,
+        "牛乳": 15,
+        "にんじん": 15,
+        "ほうれん草": 15,
+    },
+    "卵焼き": {
+        "全卵": 100,
+    },
+    "茶碗蒸し": {
+        "全卵": 35,
+        "鶏肉": 15,
+        "にんじん": 10,
+        "しいたけ": 10,
+        "かつおだし": 30,
+    },
+
+    "豆腐の野菜あんかけ": {
+        "豆腐": 50,
+        "にんじん": 15,
+        "玉ねぎ": 20,
+        "小松菜": 15,
+    },
+    "白和え": {
+        "豆腐": 55,
+        "ほうれん草": 25,
+        "にんじん": 20,
+    },
+    "高野豆腐の煮物": {
+        "高野豆腐": 35,
+        "にんじん": 25,
+        "しいたけ": 15,
+        "かつおだし": 25,
+    },
+    "納豆と野菜の和え物": {
+        "納豆": 45,
+        "小松菜": 30,
+        "にんじん": 25,
+    },
+
+    "野菜スープ": {
+        "にんじん": 35,
+        "玉ねぎ": 30,
+        "キャベツ": 35,
+    },
+    "コーンスープ": {
+        "とうもろこし": 55,
+        "牛乳": 45,
+    },
+    "かぼちゃスープ": {
+        "かぼちゃ": 55,
+        "玉ねぎ": 15,
+        "牛乳": 30,
+    },
+    "ミネストローネ": {
+        "トマト": 30,
+        "にんじん": 15,
+        "玉ねぎ": 15,
+        "キャベツ": 20,
+        "じゃがいも": 20,
+    },
+    "味噌汁": {
+        "味噌": 5,
+        "豆腐": 35,
+        "わかめ": 10,
+        "大根": 50,
+    },
+    "鶏肉と野菜のスープ": {
+        "鶏肉": 20,
+        "にんじん": 25,
+        "玉ねぎ": 25,
+        "キャベツ": 30,
+    },
+
+    "バナナヨーグルト": {
+        "バナナ": 50,
+        "プレーンヨーグルト": 50,
+    },
+    "りんごヨーグルト": {
+        "りんご": 50,
+        "プレーンヨーグルト": 50,
+    },
+    "フルーツヨーグルト": {
+        "バナナ": 25,
+        "りんご": 25,
+        "プレーンヨーグルト": 50,
+    },
+    "さつまいもヨーグルト": {
+        "さつまいも": 50,
+        "プレーンヨーグルト": 50,
+    },
+    "りんごのコンポート": {
+        "りんご": 100,
+    },
+    "りんごとバナナのペースト": {
+        "りんご": 50,
+        "バナナ": 50,
+    },
+}
+
 # 1食あたりの目安量
 #
 # タプルの構造：
@@ -1171,33 +1494,122 @@ class Command(BaseCommand):
             for food in Food.objects.all()
         }
 
-        for dish_name, category_name, ingredient_names in DISHES:
+        for (
+            dish_name,
+            category_name,
+            ingredient_names,
+        ) in DISHES:
+            # ----------------------------------------------
+            # 料理ジャンルの確認
+            # ----------------------------------------------
             if category_name not in categories:
                 raise CommandError(
-                    f"料理ジャンル「{category_name}」が登録されていません。"
+                    f"料理ジャンル「{category_name}」"
+                    "が登録されていません。"
                 )
 
+            # ----------------------------------------------
+            # 材料となる食材が登録済みか確認
+            # ----------------------------------------------
             missing_foods = [
-                name
-                for name in ingredient_names
-                if name not in foods
+                ingredient_name
+                for ingredient_name in ingredient_names
+                if ingredient_name not in foods
             ]
 
             if missing_foods:
-                missing_names = "、".join(missing_foods)
-
                 raise CommandError(
-                    f"料理「{dish_name}」の材料が登録されていません："
-                    f"{missing_names}"
+                    f"料理「{dish_name}」の材料が"
+                    "登録されていません："
+                    f"{'、'.join(missing_foods)}"
+                )
+
+            # ----------------------------------------------
+            # 材料比率データを取得
+            # ----------------------------------------------
+            recipe_ratios = DISH_RECIPE_RATIOS.get(
+                dish_name
+            )
+
+            if recipe_ratios is None:
+                raise CommandError(
+                    f"料理「{dish_name}」の"
+                    "材料比率データがありません。"
+                )
+
+            # ----------------------------------------------
+            # DISHESにある全材料に比率があるか確認
+            # ----------------------------------------------
+            missing_ratios = [
+                ingredient_name
+                for ingredient_name in ingredient_names
+                if ingredient_name not in recipe_ratios
+            ]
+
+            if missing_ratios:
+                raise CommandError(
+                    f"料理「{dish_name}」の材料比率が"
+                    "登録されていません："
+                    f"{'、'.join(missing_ratios)}"
+                )
+
+            # ----------------------------------------------
+            # 比率辞書に余計な材料がないか確認
+            # ----------------------------------------------
+            unknown_ratio_foods = [
+                food_name
+                for food_name in recipe_ratios
+                if food_name not in ingredient_names
+            ]
+
+            if unknown_ratio_foods:
+                raise CommandError(
+                    f"料理「{dish_name}」の比率データに、"
+                    "材料一覧にない食材があります："
+                    f"{'、'.join(unknown_ratio_foods)}"
+                )
+
+            # ----------------------------------------------
+            # 0以下の材料量がないか確認
+            # ----------------------------------------------
+            invalid_ratios = [
+                food_name
+                for food_name, amount
+                in recipe_ratios.items()
+                if amount is None or amount <= 0
+            ]
+
+            if invalid_ratios:
+                raise CommandError(
+                    f"料理「{dish_name}」の材料比率が"
+                    "0以下になっています："
+                    f"{'、'.join(invalid_ratios)}"
+                )
+
+            ratio_total = sum(
+                recipe_ratios.values()
+            )
+
+            if ratio_total <= 0:
+                raise CommandError(
+                    f"料理「{dish_name}」の"
+                    "材料比率合計が不正です。"
                 )
 
             category = categories[category_name]
-            dish = Dish.objects.filter(name=dish_name).first()
 
+            dish = Dish.objects.filter(
+                name=dish_name
+            ).first()
+
+            # ----------------------------------------------
+            # 新規料理
+            # ----------------------------------------------
             if dish is None:
                 dish = Dish.objects.create(
                     name=dish_name,
                     category=category,
+                    finished_amount_g=100,
                     is_user_created=False,
                     is_active=True,
                 )
@@ -1206,41 +1618,65 @@ class Command(BaseCommand):
                     dish=dish,
                     ingredient_names=ingredient_names,
                     foods=foods,
+                    recipe_ratios=recipe_ratios,
                 )
 
                 created_count += 1
                 continue
 
+            # ----------------------------------------------
+            # 既存料理を--forceで更新
+            # ----------------------------------------------
             if force:
                 dish.category = category
+                dish.finished_amount_g = 100
                 dish.is_user_created = False
                 dish.is_active = True
-                dish.save()
+
+                dish.save(
+                    update_fields=[
+                        "category",
+                        "finished_amount_g",
+                        "is_user_created",
+                        "is_active",
+                        "updated_at",
+                    ]
+                )
 
                 self.replace_dish_ingredients(
                     dish=dish,
                     ingredient_names=ingredient_names,
                     foods=foods,
+                    recipe_ratios=recipe_ratios,
                 )
 
                 updated_count += 1
+
             else:
                 skipped_count += 1
 
-        return created_count, updated_count, skipped_count
+        return (
+            created_count,
+            updated_count,
+            skipped_count,
+        )
 
     @staticmethod
     def replace_dish_ingredients(
         dish,
         ingredient_names,
         foods,
+        recipe_ratios,
     ):
-        DishIngredient.objects.filter(dish=dish).delete()
+        DishIngredient.objects.filter(
+            dish=dish
+        ).delete()
 
         dish_ingredients = [
             DishIngredient(
                 dish=dish,
                 food=foods[food_name],
+                amount_g=recipe_ratios[food_name],
                 display_order=index * 10,
             )
             for index, food_name in enumerate(
@@ -1249,8 +1685,10 @@ class Command(BaseCommand):
             )
         ]
 
-        DishIngredient.objects.bulk_create(dish_ingredients)
-
+        DishIngredient.objects.bulk_create(
+            dish_ingredients
+        )
+    
     def seed_feeding_groups(self, force):
         created_count = 0
         updated_count = 0
