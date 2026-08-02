@@ -1957,3 +1957,89 @@ body.guest {
 .logout-button:hover {
     background: rgba(255,255,255,.25);
 }
+
+.settings-page-header {
+    margin-bottom: 22px;
+}
+
+.settings-section {
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.settings-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.settings-section-heading h3 {
+    margin: 0 0 3px;
+    font-size: 18px;
+}
+
+.settings-section-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.settings-icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 15px;
+    background: var(--primary-soft);
+    font-size: 23px;
+}
+
+.settings-icon.neutral {
+    background: #f0f1f5;
+}
+
+.settings-form {
+    display: grid;
+    gap: 3px;
+}
+
+.settings-account-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 4px;
+}
+
+.settings-account-row > div {
+    display: grid;
+    gap: 3px;
+}
+
+.settings-account-row span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.settings-account-row strong {
+    font-size: 15px;
+}
+
+.settings-logout-button {
+    padding: 9px 13px;
+    border: 1px solid #e2a4aa;
+    border-radius: 999px;
+    color: #a33140;
+    background: #fff1f2;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}

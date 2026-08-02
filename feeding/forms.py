@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.forms import BaseInlineFormSet, inlineformset_factory
+from .models import Baby
 
 from .models import (
     AllergyReaction,
@@ -417,3 +418,31 @@ class AllergyReactionForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+class BabySettingsForm(forms.ModelForm):
+    class Meta:
+        model = Baby
+        fields = [
+            "name",
+            "birth_date",
+        ]
+        labels = {
+            "name": "子どもの名前",
+            "birth_date": "生年月日",
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "例：のい",
+                    "autocomplete": "off",
+                }
+            ),
+            "birth_date": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                },
+                format="%Y-%m-%d",
+            ),
+        }

@@ -18,6 +18,7 @@ from decimal import Decimal
 
 from .forms import (
     AllergyReactionForm,
+    BabySettingsForm,
     MealForm,
     MealItemCreateFormSet,
     MealItemEditFormSet,
@@ -1331,4 +1332,49 @@ def allergy_photo_delete(request, photo_id):
     return redirect(
         "feeding:allergy_reaction_edit",
         meal_item_id=meal_item_id,
+    )
+
+
+@login_required
+def settings_view(request):
+    baby = get_current_baby()
+
+    if baby is None:
+        messages.error(
+            request,
+            "子どもの情報がまだ登録されていない。",
+        )
+        return redirect("feeding:today")
+
+    if request.method == "POST":
+        form = BabySettingsForm(
+            request.POST,
+            instance=baby,
+        )
+
+        if form.is_valid():
+            form.save()
+
+            messages.success(
+                request,
+                "設定を保存した。",
+            )
+
+            return redirect(
+                "feeding:settings",
+            )
+    else:
+        form = BabySettingsForm(
+            instance=baby,
+        )
+
+    context = {
+        "baby": baby,
+        "form": form,
+    }
+
+    return render(
+        request,
+        "feeding/settings.html",
+        context,
     )

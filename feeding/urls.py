@@ -70,4 +70,9 @@ urlpatterns = [
         views.allergy_photo_delete,
         name="allergy_photo_delete",
     ),
+    path(
+        "settings/",
+        views.settings_view,
+        name="settings",
+    ),
 ]

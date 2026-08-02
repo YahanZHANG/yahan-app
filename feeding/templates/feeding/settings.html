@@ -1,0 +1,114 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    設定 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header settings-page-header">
+    <p class="eyebrow">SETTINGS</p>
+    <h2>設定</h2>
+    <p class="page-description">
+        子どもの情報とアプリの設定を管理する。
+    </p>
+</section>
+
+<section class="settings-section">
+    <div class="settings-section-heading">
+        <div class="settings-icon">
+            👶
+        </div>
+
+        <div>
+            <h3>子どもの情報</h3>
+            <p>
+                月齢や標準量の計算に使用する。
+            </p>
+        </div>
+    </div>
+
+    <form
+        method="post"
+        class="settings-form"
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% if form.name.errors %}
+                <div class="field-error">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.birth_date.id_for_label }}">
+                {{ form.birth_date.label }}
+            </label>
+
+            {{ form.birth_date }}
+
+            {% if form.birth_date.errors %}
+                <div class="field-error">
+                    {{ form.birth_date.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            設定を保存
+        </button>
+    </form>
+</section>
+
+<section class="settings-section">
+    <div class="settings-section-heading">
+        <div class="settings-icon neutral">
+            👤
+        </div>
+
+        <div>
+            <h3>アカウント</h3>
+            <p>
+                現在のログインを終了する。
+            </p>
+        </div>
+    </div>
+
+    <div class="settings-account-row">
+        <div>
+            <span>ログイン中</span>
+            <strong>{{ user.username }}</strong>
+        </div>
+
+        <form
+            method="post"
+            action="{% url 'logout' %}"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="settings-logout-button"
+            >
+                ログアウト
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}
