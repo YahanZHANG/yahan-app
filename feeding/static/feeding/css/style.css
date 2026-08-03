@@ -2984,14 +2984,14 @@ button.settings-baby-card:hover {
     }
 
     .app-title {
-        font-size: 0.76rem;
+        font-size: 0.9rem;
     }
 
     .portal-back-link,
     .logout-button {
         min-height: 28px;
         padding: 4px 7px;
-        font-size: 0.61rem;
+        font-size: 0.8rem;
     }
 
     .header-actions {
