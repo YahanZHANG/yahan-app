@@ -2746,3 +2746,124 @@ button.settings-baby-card:hover {
 .danger-confirm-button:hover {
     background: #9f2f41;
 }
+
+/* ==========================================================
+   Leave shared baby
+   ========================================================== */
+
+.baby-leave-zone {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding: 14px;
+    background: #f5f7fa;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+}
+
+.baby-leave-zone > div {
+    display: grid;
+    gap: 3px;
+}
+
+.baby-leave-zone strong {
+    color: var(--text-main);
+    font-size: 0.8rem;
+}
+
+.baby-leave-zone small {
+    color: var(--muted);
+    font-size: 0.67rem;
+    line-height: 1.4;
+}
+
+.baby-leave-link {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    color: #687386;
+    background: #e8ebef;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.baby-leave-link:hover {
+    color: #505a6a;
+    background: #dfe3e8;
+}
+
+.leave-summary-card {
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    margin-bottom: 17px;
+    padding: 17px;
+    background: #f5f7fa;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+}
+
+.leave-summary-icon {
+    font-size: 1.4rem;
+}
+
+.leave-summary-card h3 {
+    margin: 0 0 6px;
+    color: var(--text-main);
+    font-size: 0.94rem;
+}
+
+.leave-summary-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.55;
+}
+
+.leave-confirm-form {
+    padding: 17px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+}
+
+.leave-confirm-button {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 14px;
+    color: #ffffff;
+    background: #667386;
+    border: 0;
+    border-radius: 13px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.leave-confirm-button:hover {
+    background: #535f70;
+}
+
+.leave-blocked-message {
+    padding: 17px;
+    background: #fff6e5;
+    border: 1px solid #eed8ab;
+    border-radius: 17px;
+}
+
+.leave-blocked-message strong {
+    display: block;
+    margin-bottom: 7px;
+    color: #8d651b;
+    font-size: 0.85rem;
+}
+
+.leave-blocked-message p {
+    margin: 5px 0 0;
+    color: #756443;
+    font-size: 0.72rem;
+    line-height: 1.55;
+}

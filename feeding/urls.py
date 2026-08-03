@@ -87,6 +87,11 @@ urlpatterns = [
         name="baby_delete",
     ),
     path(
+        "babies/<int:baby_id>/leave/",
+        views.baby_membership_leave,
+        name="baby_membership_leave",
+    ),
+    path(
         (
             "babies/<int:baby_id>/members/"
             "<int:membership_id>/toggle-edit/"

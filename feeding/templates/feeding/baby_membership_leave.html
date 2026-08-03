@@ -1,0 +1,77 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    共有から退出 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a
+        href="{% url 'feeding:settings' %}"
+        class="back-link"
+    >
+        ← 設定に戻る
+    </a>
+
+    <p class="eyebrow">
+        LEAVE SHARED NOTE
+    </p>
+
+    <h2>共有から退出</h2>
+
+    <p class="page-description">
+        {{ baby.name }}の離乳食ノートを、
+        このアカウントから外す。
+    </p>
+</section>
+
+<section class="leave-summary-card">
+    <div class="leave-summary-icon">
+        👋
+    </div>
+
+    <div>
+        <h3>
+            {{ baby.name }}の共有から退出する
+        </h3>
+
+        <p>
+            子どもの情報や離乳食記録は削除されない。
+            他の共同管理者は、そのまま利用できる。
+        </p>
+    </div>
+</section>
+
+{% if can_leave %}
+    <form
+        method="post"
+        class="settings-form leave-confirm-form"
+        onsubmit="return confirm('{{ baby.name }}の共有から退出する？');"
+    >
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="leave-confirm-button"
+        >
+            この子どもの共有から退出
+        </button>
+    </form>
+{% else %}
+    <div class="leave-blocked-message">
+        <strong>
+            現在は退出できない
+        </strong>
+
+        <p>
+            {{ baby.name }}には、
+            あなた以外の編集可能な共同管理者がいない。
+        </p>
+
+        <p>
+            先に別のユーザーを共同管理者へ追加するか、
+            既存の共同管理者を編集可能に変更してください。
+        </p>
+    </div>
+{% endif %}
+{% endblock %}

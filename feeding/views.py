@@ -2086,6 +2086,111 @@ def baby_delete(
     )
 
 @login_required
+def baby_membership_leave(
+    request,
+    baby_id,
+):
+    """
+    ログイン中ユーザーが、
+    子どもの共有から退出する。
+
+    子ども本体や食事記録は削除しない。
+    """
+
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+    )
+
+    membership = get_object_or_404(
+        BabyMembership,
+        baby=baby,
+        user=request.user,
+    )
+
+    other_editable_members_exist = (
+        BabyMembership.objects
+        .filter(
+            baby=baby,
+            can_edit=True,
+        )
+        .exclude(pk=membership.pk)
+        .exists()
+    )
+
+    can_leave = (
+        not membership.can_edit
+        or other_editable_members_exist
+    )
+
+    if request.method == "POST":
+        if not can_leave:
+            messages.error(
+                request,
+                (
+                    "ほかに編集可能な共同管理者がいないため、"
+                    "この子どもの共有から退出できない。"
+                ),
+            )
+
+            return redirect(
+                "feeding:settings"
+            )
+
+        baby_name = baby.name
+        baby_id_to_remove = baby.pk
+
+        membership.delete()
+
+        if (
+            request.session.get(
+                "feeding_current_baby_id"
+            )
+            == baby_id_to_remove
+        ):
+            request.session.pop(
+                "feeding_current_baby_id",
+                None,
+            )
+
+        next_baby = (
+            get_accessible_babies(
+                request.user
+            )
+            .first()
+        )
+
+        if next_baby is not None:
+            request.session[
+                "feeding_current_baby_id"
+            ] = next_baby.pk
+
+        messages.success(
+            request,
+            f"{baby_name}の共有から退出した。",
+        )
+
+        return redirect(
+            "feeding:settings"
+        )
+
+    context = {
+        "baby": baby,
+        "membership": membership,
+        "can_leave": can_leave,
+        "other_editable_members_exist": (
+            other_editable_members_exist
+        ),
+    }
+
+    return render(
+        request,
+        "feeding/baby_membership_leave.html",
+        context,
+    )
+
+@login_required
 def settings_view(request):
     accessible_babies = list(
         get_accessible_babies(

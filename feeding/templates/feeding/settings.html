@@ -169,6 +169,26 @@
             </a>
         </div>
     {% endif %}
+
+    {% if baby and current_membership %}
+        <div class="baby-leave-zone">
+            <div>
+                <strong>この子どもの共有から退出</strong>
+
+                <small>
+                    子どものデータは削除せず、
+                    このアカウントからだけ外す。
+                </small>
+            </div>
+
+            <a
+                href="{% url 'feeding:baby_membership_leave' baby.pk %}"
+                class="baby-leave-link"
+            >
+                退出
+            </a>
+        </div>
+    {% endif %}
 </section>
 
 {% if baby %}
