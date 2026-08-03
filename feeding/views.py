@@ -28,6 +28,7 @@ from .forms import (
     MealForm,
     MealItemCreateFormSet,
     MealItemEditFormSet,
+    SupplementCreateForm,
 )
 
 from .models import (
@@ -1024,6 +1025,97 @@ def dish_create(request):
     )
 
 @login_required
+def supplement_create(request):
+    baby = get_current_baby(request)
+
+    if baby is None:
+        messages.error(
+            request,
+            "先に子どもを登録してください。",
+        )
+
+        return redirect(
+            "feeding:settings"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの離乳食ノートは閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    if request.method == "POST":
+        form = SupplementCreateForm(
+            request.POST,
+        )
+
+        if form.is_valid():
+            supplement = form.save(
+                commit=False
+            )
+
+            next_order = (
+                Supplement.objects
+                .aggregate(
+                    maximum_order=Max(
+                        "display_order"
+                    )
+                )
+                .get("maximum_order")
+                or 0
+            )
+
+            supplement.display_order = (
+                next_order + 10
+            )
+            supplement.is_active = True
+            supplement.save()
+
+            messages.success(
+                request,
+                f"「{supplement.name}」を追加した。",
+            )
+
+            selected_date = parse_selected_date(
+                request.POST.get("date")
+            )
+
+            today_url = reverse(
+                "feeding:today"
+            )
+
+            return redirect(
+                f"{today_url}"
+                f"?date={selected_date.isoformat()}"
+            )
+
+    else:
+        form = SupplementCreateForm()
+
+    selected_date = parse_selected_date(
+        request.GET.get("date")
+    )
+
+    context = {
+        "baby": baby,
+        "form": form,
+        "selected_date": selected_date,
+    }
+
+    return render(
+        request,
+        "feeding/supplement_form.html",
+        context,
+    )
+
+@login_required
 def food_list(request):
     baby = get_current_baby(request)
 
@@ -1553,6 +1645,87 @@ def meal_delete(request, meal_number):
 
     return redirect(
         "feeding:today"
+    )
+
+@login_required
+@require_POST
+def supplement_intake_toggle(
+    request,
+    supplement_id,
+):
+    baby = get_current_baby(request)
+
+    if baby is None:
+        return redirect(
+            "feeding:today"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    supplement = get_object_or_404(
+        Supplement,
+        pk=supplement_id,
+        is_active=True,
+    )
+
+    selected_date = parse_selected_date(
+        request.POST.get("date")
+    )
+
+    intake, created = (
+        SupplementIntake.objects
+        .get_or_create(
+            baby=baby,
+            supplement=supplement,
+            date=selected_date,
+            defaults={
+                "taken": True,
+            },
+        )
+    )
+
+    if not created:
+        intake.taken = not intake.taken
+
+        intake.save(
+            update_fields=[
+                "taken",
+                "updated_at",
+            ]
+        )
+
+    status_label = (
+        "飲んだ"
+        if intake.taken
+        else "飲んでいない"
+    )
+
+    messages.success(
+        request,
+        (
+            f"{supplement.name}を"
+            f"「{status_label}」に変更した。"
+        ),
+    )
+
+    today_url = reverse(
+        "feeding:today"
+    )
+
+    return redirect(
+        f"{today_url}"
+        f"?date={selected_date.isoformat()}"
     )
 
 @login_required

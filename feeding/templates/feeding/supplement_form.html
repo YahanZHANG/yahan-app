@@ -1,0 +1,72 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    薬・サプリを追加 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a
+        href="{% url 'feeding:today' %}?date={{ selected_date|date:'Y-m-d' }}"
+        class="back-link"
+    >
+        ← 戻る
+    </a>
+
+    <p class="eyebrow">
+        MEDICINE & SUPPLEMENTS
+    </p>
+
+    <h2>薬・サプリを追加</h2>
+
+    <p class="page-description">
+        毎日の服用状況を記録する項目を追加する。
+    </p>
+</section>
+
+<form
+    method="post"
+    class="settings-form"
+>
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="date"
+        value="{{ selected_date|date:'Y-m-d' }}"
+    >
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="settings-card">
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% for error in form.name.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+
+            <p class="field-help">
+                例：鉄剤、抗生物質、オメガ3
+            </p>
+        </div>
+    </section>
+
+    <button
+        type="submit"
+        class="primary-button"
+    >
+        追加する
+    </button>
+</form>
+{% endblock %}

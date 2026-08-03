@@ -17,6 +17,7 @@ from .models import (
     FoodCategory,
     Meal,
     MealItem,
+    Supplement,
 )
 
 
@@ -467,7 +468,6 @@ class BaseMealItemFormSet(BaseInlineFormSet):
                 "少なくとも1件の食材または料理を入力してください。"
             )
 
-
 MealItemCreateFormSet = inlineformset_factory(
     Meal,
     MealItem,
@@ -768,6 +768,39 @@ class BabyDeleteConfirmForm(forms.Form):
             )
 
         return confirm_name
+
+class SupplementCreateForm(forms.ModelForm):
+    class Meta:
+        model = Supplement
+        fields = (
+            "name",
+        )
+
+        labels = {
+            "name": "薬・サプリ名",
+        }
+
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "例：鉄剤",
+                    "autocomplete": "off",
+                }
+            ),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+
+        if Supplement.objects.filter(
+            name__iexact=name,
+        ).exists():
+            raise ValidationError(
+                "同じ名前の薬・サプリがすでに登録されている。"
+            )
+
+        return name
 
 class FoodCreateForm(forms.ModelForm):
     class Meta:

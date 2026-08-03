@@ -3266,3 +3266,19 @@ button.settings-baby-card:hover {
         grid-template-columns: 1fr;
     }
 }
+
+.supplement-toggle-form {
+    margin: 0;
+}
+
+button.supplement-card {
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+button.supplement-card:active {
+    transform: scale(0.98);
+}
