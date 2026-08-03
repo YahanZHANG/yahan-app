@@ -1,0 +1,63 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    å®¶æ—ä¼šè­°ãƒ¡ãƒ¢ã‚’å‰Šé™¤ | è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'travel:meeting_note_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            ä¼šè­°ä¸€è¦§ã¸æˆ»ã‚‹
+        </a>
+
+        <h2>å®¶æ—ä¼šè­°ãƒ¡ãƒ¢ã‚’å‰Šé™¤</h2>
+    </div>
+
+    <div class="app-card delete-confirm-card">
+        <div class="delete-confirm-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h3>ã“ã®ä¼šè­°ãƒ¡ãƒ¢ã‚’å‰Šé™¤ã™ã‚‹ï¼Ÿ</h3>
+
+        <div class="delete-schedule-summary">
+            <strong>
+                {{ meeting_note.discussed_at|date:"Yå¹´næœˆjæ—¥" }}
+            </strong>
+
+            <span>
+                {{ meeting_note.decisions|truncatechars:60 }}
+            </span>
+        </div>
+
+        <p class="delete-warning">
+            å‰Šé™¤ã—ãŸä¼šè­°ãƒ¡ãƒ¢ã¯å…ƒã«æˆ»ã›ãªã„ã€‚
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-actions">
+                <a
+                    href="{% url 'travel:meeting_note_list' %}"
+                    class="secondary-button"
+                >
+                    ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+                </a>
+
+                <button
+                    type="submit"
+                    class="danger-button"
+                >
+                    å‰Šé™¤ã™ã‚‹
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

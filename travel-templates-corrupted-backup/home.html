@@ -1,0 +1,759 @@
+﻿{% extends "travel/base.html" %}
+{% load static %}
+
+{% block title %}
+    è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+
+<section class="welcome-section">
+    <div>
+        <p class="today-label mb-1">
+            {{ today|date:"Yå¹´næœˆjæ—¥" }}
+        </p>
+
+        <p class="welcome-subtitle mb-0">
+            æ—¥æœ¬æ»žåœ¨ {{ stay_day }}æ—¥ç›®
+        </p>
+
+    </div>
+</section>
+
+{% if important_notice %}
+    <section class="important-notice">
+        <div class="important-notice-icon">
+            <i class="bi bi-megaphone-fill"></i>
+        </div>
+
+        <div>
+            <p class="important-notice-label mb-1">
+                é‡è¦ãªãŠçŸ¥ã‚‰ã›
+            </p>
+
+            <p class="important-notice-text mb-0">
+                {{ important_notice.message|linebreaksbr }}
+            </p>
+
+            <p class="important-notice-meta mb-0">
+                {{ important_notice.updated_at|date:"næœˆjæ—¥ H:i" }}æ›´æ–°
+                {% if important_notice.updated_by %}
+                    ãƒ»
+                    {% if important_notice.updated_by.first_name %}
+                        {{ important_notice.updated_by.first_name }}
+                    {% else %}
+                        {{ important_notice.updated_by.username }}
+                    {% endif %}
+                {% endif %}
+            </p>
+        </div>
+    </section>
+{% endif %}
+
+{% if upcoming_schedules %}
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                æ¬¡ã®äºˆå®š
+            </h3>
+        </div>
+
+        <a
+            href="{% url 'travel:schedule_list' %}"
+            class="small-action-button"
+        >
+            ä»Šå¾Œã®äºˆå®šä¸€è¦§
+        </a>
+    </div>
+
+    <div class="upcoming-schedule-grid">
+        {% for schedule in upcoming_schedules %}
+            <article
+                class="app-card upcoming-schedule-card"
+                data-countdown-target="{{ schedule.start_at|date:'c' }}"
+            >
+                <p class="upcoming-schedule-datetime">
+                    {{ schedule.start_at|date:"n/j H:i" }}
+                </p>
+
+                <h3>{{ schedule.title }}</h3>
+
+                {% if schedule.location %}
+                    <p class="upcoming-schedule-location">
+                        <i class="bi bi-geo-alt"></i>
+                        {{ schedule.location }}
+                    </p>
+                {% endif %}
+
+                <div class="upcoming-schedule-countdown">
+                    è¨ˆç®—ä¸­â€¦
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">å®¶æ—ãƒžãƒƒãƒ—</h3>
+        </div>
+
+        <span class="location-auto-label">
+            <i class="bi bi-broadcast"></i>
+            è‡ªå‹•æ›´æ–°
+        </span>
+    </div>
+
+    <div
+        id="family-map"
+        data-share-url="{% url 'travel:share_location' %}"
+    ></div>
+
+    {{ map_locations|json_script:"family-map-data" }}
+
+    <div
+        id="location-share-message"
+        class="location-share-message"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+    <div class="family-finder">
+    <div class="family-icon-list">
+        {% for card in family_cards %}
+            <button
+                type="button"
+                class="family-icon-item"
+                data-family-detail-target="family-detail-{{ card.user.id }}"
+                aria-expanded="false"
+                aria-label="
+                    {% if card.user.first_name %}
+                        {{ card.user.first_name }}
+                    {% else %}
+                        {{ card.user.username }}
+                    {% endif %}
+                    ã®ä½ç½®æƒ…å ±ã‚’è¡¨ç¤º
+                "
+            >
+                <span class="family-profile-icon">
+                    {% if card.user.username == "papa" %}
+                        <img
+                            src="{% static 'images/family/papa.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "mama" %}
+                        <img
+                            src="{% static 'images/family/mama.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "yeye" %}
+                        <img
+                            src="{% static 'images/family/yeye.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.username == "nainai" %}
+                        <img
+                            src="{% static 'images/family/nainai.jpg' %}"
+                            alt=""
+                            class="family-profile-photo"
+                        >
+                    {% elif card.user.first_name %}
+                        {{ card.user.first_name|slice:":1" }}
+                    {% else %}
+                        {{ card.user.username|slice:":1" }}
+                    {% endif %}
+                </span>
+            </button>
+        {% empty %}
+            <p class="family-icons-empty">
+                å®¶æ—ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“
+            </p>
+        {% endfor %}
+    </div>
+
+    <div class="family-detail-area">
+            {% for card in family_cards %}
+                <div
+                    id="family-detail-{{ card.user.id }}"
+                    class="family-detail-panel"
+                    hidden
+                >
+                    <div class="family-detail-avatar">
+                        {% if card.user.username == "papa" %}
+                            <img
+                                src="{% static 'images/family/papa.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "mama" %}
+                            <img
+                                src="{% static 'images/family/mama.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "yeye" %}
+                            <img
+                                src="{% static 'images/family/yeye.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.username == "nainai" %}
+                            <img
+                                src="{% static 'images/family/nainai.jpg' %}"
+                                alt=""
+                                class="family-detail-photo"
+                            >
+                        {% elif card.user.first_name %}
+                            {{ card.user.first_name|slice:":1" }}
+                        {% else %}
+                            {{ card.user.username|slice:":1" }}
+                        {% endif %}
+                    </div>
+
+                    <div class="family-detail-content">
+                        {% if card.location %}
+                            <p class="family-detail-time">
+                                <i class="bi bi-clock"></i>
+                                {{ card.location.shared_at|date:"næœˆjæ—¥ H:i" }}æ›´æ–°
+                            </p>
+
+                            <p
+                                class="family-detail-distance"
+                                data-family-user-id="{{ card.user.id }}"
+                            >
+                                è·é›¢ã‚’è¨ˆç®—ä¸­â€¦
+                            </p>
+                        {% else %}
+                            <p class="family-detail-missing">
+                                ç¾åœ¨åœ°ã¯ã¾ã å…±æœ‰ã•ã‚Œã¦ã„ã¾ã›ã‚“
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                èµ¤ã¡ã‚ƒã‚“ã®æœ€æ–°æƒ…å ±
+            </h3>
+        </div>
+    </div>
+
+    <div class="baby-summary-grid">
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    ðŸ¼
+                </div>
+            </div>
+
+            {% if latest_milk %}
+                <strong>{{ latest_milk.amount_ml }} ml</strong>
+                <span>{{ latest_milk.fed_at|date:"H:i" }}</span>
+            {% else %}
+                <strong>æœªè¨˜éŒ²</strong>
+                <span>â€”</span>
+            {% endif %}
+        </article>
+
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    ðŸŒ™
+                </div>
+            </div>
+
+            {% if active_sleep %}
+                <strong>ç¡çœ ä¸­</strong>
+                <span>
+                    {{ active_sleep.started_at|date:"H:i" }}ã‹ã‚‰
+                </span>
+            {% elif latest_sleep %}
+                <strong>{{ latest_sleep.duration_minutes }}åˆ†</strong>
+                <span>
+                    {{ latest_sleep.started_at|date:"H:i" }}
+                    ã€œ
+                    {{ latest_sleep.ended_at|date:"H:i" }}
+                </span>
+            {% else %}
+                <strong>æœªè¨˜éŒ²</strong>
+                <span>â€”</span>
+            {% endif %}
+        </article>
+
+        <article class="app-card baby-summary-card">
+            <div class="summary-icon">
+                <div class="summary-icon">
+                    ðŸ’©
+                </div>
+            </div>
+
+            {% if latest_poop %}
+                <strong>{{ latest_poop.get_amount_display }}</strong>
+                <span>{{ latest_poop.happened_at|date:"H:i" }}</span>
+            {% else %}
+                <strong>æœªè¨˜éŒ²</strong>
+                <span>â€”</span>
+            {% endif %}
+        </article>
+    </div>
+
+    <div class="quick-actions">
+        <form
+            method="post"
+            action="{% url 'travel:milk_log_quick_create' 200 %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button"
+            >
+                ï¼‹200 ml
+            </button>
+        </form>
+
+        <form
+            method="post"
+            action="{% url 'travel:milk_log_quick_create' 150 %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button"
+            >
+                ï¼‹150 ml
+            </button>
+        </form>
+
+        <a
+            href="{% url 'travel:milk_log_create' %}"
+            class="quick-action-button"
+        >
+            ãƒŸãƒ«ã‚¯æ‰‹å‹•
+        </a>
+
+    {% if active_sleep %}
+        <form
+            method="post"
+            action="{% url 'travel:sleep_end' %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button sleep-end-button"
+            >
+                èµ·ããŸ
+            </button>
+        </form>
+    {% else %}
+        <form
+            method="post"
+            action="{% url 'travel:sleep_start' %}"
+            class="quick-log-form"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="quick-action-button sleep-start-button"
+            >
+                å¯ãŸ
+            </button>
+        </form>
+    {% endif %}
+
+        <a
+            href="{% url 'travel:sleep_log_create' %}"
+            class="quick-action-button"
+        >
+            ç¡çœ æ‰‹å‹•
+        </a>
+
+        <a
+            href="{% url 'travel:poop_log_create' %}"
+            class="quick-action-button"
+        >
+            ã†ã‚“ã¡
+        </a>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                æˆé•·ãƒ»å¤‰åŒ–ã®ãƒ¡ãƒ¢
+            </h3>
+        </div>
+
+        <div class="growth-note-actions">
+            <a
+                href="{% url 'travel:baby_growth_note_list' %}"
+                class="small-action-button"
+            >
+                è¨˜éŒ²ä¸€è¦§
+            </a>
+
+            <a
+                href="{% url 'travel:baby_growth_note_create' %}"
+                class="small-action-button"
+            >
+                ï¼‹ è¨˜éŒ²
+            </a>
+        </div>
+    </div>
+
+    <div class="app-card growth-note-list">
+        {% for note in latest_growth_notes %}
+            <article class="growth-note-item">
+                <div class="growth-note-header">
+                    <div class="growth-note-main">
+                        <span class="growth-note-date">
+                            <i class="bi bi-calendar3"></i>
+                            {{ note.observed_on|date:"næœˆjæ—¥" }}
+                        </span>
+
+                        <span class="growth-note-content">
+                            {{ note.content }}
+                        </span>
+                    </div>
+
+                    {% if note.created_by %}
+                        <div
+                            class="growth-note-author-photo"
+                            title="{% if note.created_by.first_name %}{{ note.created_by.first_name }}{% else %}{{ note.created_by.username }}{% endif %}"
+                        >
+                            {% if note.created_by.username == "papa" %}
+                                <img
+                                    src="{% static 'images/family/papa.jpg' %}"
+                                    alt="ãƒ‘ãƒ‘"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "mama" %}
+                                <img
+                                    src="{% static 'images/family/mama.jpg' %}"
+                                    alt="ãƒžãƒž"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "yeye" %}
+                                <img
+                                    src="{% static 'images/family/yeye.jpg' %}"
+                                    alt="ã˜ã„ã˜"
+                                    class="growth-note-avatar"
+                                >
+                            {% elif note.created_by.username == "nainai" %}
+                                <img
+                                    src="{% static 'images/family/nainai.jpg' %}"
+                                    alt="ã°ã‚ã°"
+                                    class="growth-note-avatar"
+                                >
+                            {% else %}
+                                <span class="growth-note-avatar-fallback">
+                                    {% if note.created_by.first_name %}
+                                        {{ note.created_by.first_name|slice:":1" }}
+                                    {% else %}
+                                        {{ note.created_by.username|slice:":1" }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+            </article>
+        {% empty %}
+            <div class="empty-state compact-empty-state">
+                <i class="bi bi-stars"></i>
+                <p>æˆé•·ãƒ¡ãƒ¢ã¯ã¾ã ã‚ã‚Šã¾ã›ã‚“</p>
+
+                <a href="{% url 'travel:baby_growth_note_create' %}">
+                    æœ€åˆã®è¨˜éŒ²ã‚’è¿½åŠ 
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                æ”¯å‡ºãƒ»ç²¾ç®—
+            </h3>
+        </div>
+    </div>
+
+    <div class="expense-home-grid">
+        <a
+            href="{% url 'travel:expense_create' %}"
+            class="app-card expense-home-card"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-plus-circle-fill"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>æ”¯å‡ºã‚’è¿½åŠ </strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+
+        <a
+            href="{% url 'travel:expense_list' %}"
+            class="app-card expense-home-card"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>æ”¯å‡ºä¸€è¦§</strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+
+        <a
+            href="{% url 'travel:expense_settlement' %}"
+            class="app-card expense-home-card expense-home-card-primary"
+        >
+            <div class="expense-home-icon">
+                <i class="bi bi-calculator-fill"></i>
+            </div>
+
+            <div class="expense-home-content">
+                <strong>ç²¾ç®—çµæžœ</strong>
+            </div>
+
+            <i class="bi bi-chevron-right expense-home-arrow"></i>
+        </a>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">ä»Šæ—¥ã®ãŠé¡˜ã„</h3>
+        </div>
+
+        <div class="task-heading-actions">
+            <a
+                href="{% url 'travel:task_list' %}"
+                class="small-action-button"
+            >
+                ä¾é ¼äº‹é …ä¸€è¦§
+            </a>
+
+            <a
+                href="{% url 'travel:task_create' %}"
+                class="small-action-button"
+            >
+                ï¼‹ è¿½åŠ 
+            </a>
+        </div>
+    </div>
+
+    <div class="app-card task-list">
+        {% for task in tasks %}
+            <form
+                method="post"
+                action="{% url 'travel:task_toggle' task.id %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="
+                        task-item
+                        task-item-button
+                        {% if task.is_completed %}
+                            task-is-completed
+                        {% endif %}
+                    "
+                >
+                    <span class="task-checkmark">
+                        {% if task.is_completed %}
+                            âœ“
+                        {% endif %}
+                    </span>
+
+                    <span class="task-main">
+                        <strong>{{ task.title }}</strong>
+
+                        <small>
+                            {% if task.assigned_to %}
+                                æ‹…å½“ï¼š{{ task.assigned_to }}
+                            {% else %}
+                                æ‹…å½“ï¼šæœªå®š
+                            {% endif %}
+
+                            {% if task.created_by %}
+                                ãƒ»è¿½åŠ ï¼š
+                                {% if task.created_by.first_name %}
+                                    {{ task.created_by.first_name }}
+                                {% else %}
+                                    {{ task.created_by.username }}
+                                {% endif %}
+                            {% endif %}
+                        </small>
+                    </span>
+
+                    <span class="task-deadline">
+                        {% if task.is_completed %}
+                            å®Œäº†
+                        {% elif task.due_at %}
+                            {{ task.due_at|date:"n/j H:i" }}
+                        {% else %}
+                            æœŸé™ãªã—
+                        {% endif %}
+                    </span>
+                </button>
+            </form>
+        {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-check2-square"></i>
+                <p>ãŠé¡˜ã„ã¯ã¾ã ã‚ã‚Šã¾ã›ã‚“</p>
+
+                <a href="{% url 'travel:task_create' %}">
+                    æœ€åˆã®ãŠé¡˜ã„ã‚’è¿½åŠ 
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-heading">
+        <div>
+            <h3 class="section-title mb-0">
+                å®¶æ—ä¼šè­°ãƒ¡ãƒ¢
+            </h3>
+        </div>
+
+        <div class="meeting-note-actions">
+            <a
+                href="{% url 'travel:meeting_note_list' %}"
+                class="small-action-button"
+            >
+                ä¼šè­°ä¸€è¦§
+            </a>
+
+            <a
+                href="{% url 'travel:meeting_note_create' %}"
+                class="small-action-button"
+            >
+                ï¼‹ è¿½åŠ 
+            </a>
+        </div>
+    </div>
+
+    {% if latest_meeting_note %}
+        <article class="app-card meeting-note-card">
+            <div class="meeting-note-header">
+                <div>
+                    <h4 class="meeting-note-main-date">
+                        {{ latest_meeting_note.discussed_at|date:"Yå¹´næœˆjæ—¥" }}
+                    </h4>
+                </div>
+
+                {% if latest_meeting_note.created_by %}
+                    <div
+                        class="meeting-note-author-photo"
+                        title="{% if latest_meeting_note.created_by.first_name %}{{ latest_meeting_note.created_by.first_name }}{% else %}{{ latest_meeting_note.created_by.username }}{% endif %}"
+                    >
+                        {% if latest_meeting_note.created_by.username == "papa" %}
+                            <img
+                                src="{% static 'images/family/papa.jpg' %}"
+                                alt="ãƒ‘ãƒ‘"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "mama" %}
+                            <img
+                                src="{% static 'images/family/mama.jpg' %}"
+                                alt="ãƒžãƒž"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "yeye" %}
+                            <img
+                                src="{% static 'images/family/yeye.jpg' %}"
+                                alt="ã˜ã„ã˜"
+                                class="meeting-note-avatar"
+                            >
+                        {% elif latest_meeting_note.created_by.username == "nainai" %}
+                            <img
+                                src="{% static 'images/family/nainai.jpg' %}"
+                                alt="ã°ã‚ã°"
+                                class="meeting-note-avatar"
+                            >
+                        {% else %}
+                            <span class="meeting-note-avatar-fallback">
+                                {% if latest_meeting_note.created_by.first_name %}
+                                    {{ latest_meeting_note.created_by.first_name|slice:":1" }}
+                                {% else %}
+                                    {{ latest_meeting_note.created_by.username|slice:":1" }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="meeting-note-section">
+                <h5>
+                    <i class="bi bi-check-circle"></i>
+                    æ±ºå®šäº‹é …
+                </h5>
+
+                <div class="meeting-note-text">
+                    {{ latest_meeting_note.decisions|linebreaksbr }}
+                </div>
+            </div>
+
+            {% if latest_meeting_note.next_actions %}
+                <div class="meeting-note-section">
+                    <h5>
+                        <i class="bi bi-arrow-right-circle"></i>
+                        æ¬¡ã«ã‚„ã‚‹ã“ã¨
+                    </h5>
+
+                    <div class="meeting-note-text">
+                        {{ latest_meeting_note.next_actions|linebreaksbr }}
+                    </div>
+                </div>
+            {% endif %}
+        </article>
+    {% else %}
+        <div class="app-card empty-state">
+            <i class="bi bi-journal-text"></i>
+            <p>å®¶æ—ä¼šè­°ãƒ¡ãƒ¢ã¯ã¾ã ã‚ã‚Šã¾ã›ã‚“</p>
+
+            <a href="{% url 'travel:meeting_note_create' %}">
+                æœ€åˆã®ãƒ¡ãƒ¢ã‚’è¿½åŠ 
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+

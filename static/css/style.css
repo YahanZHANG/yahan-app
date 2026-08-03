@@ -3230,3 +3230,24 @@ button {
         gap: 4px;
     }
 }
+
+.portal-no-apps {
+    grid-column: 1 / -1;
+    padding: 28px 20px;
+    border: 1px dashed #d8dae5;
+    border-radius: 24px;
+    color: #777c92;
+    background: #ffffff;
+    text-align: center;
+}
+
+.portal-no-apps strong {
+    display: block;
+    color: #3e445e;
+    font-size: 15px;
+}
+
+.portal-no-apps p {
+    margin: 7px 0 0;
+    font-size: 13px;
+}

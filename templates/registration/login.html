@@ -51,9 +51,18 @@
         class="app-card login-card"
     >
 
-        {% csrf_token %}
+    {% csrf_token %}
 
-        <div class="login-icon">
+    {% if next %}
+        <input
+            type="hidden"
+            name="next"
+            value="{{ next }}"
+        >
+    {% endif %}
+
+    <div class="login-icon">    
+
             <i class="bi bi-grid-1x2-fill"></i>
         </div>
 

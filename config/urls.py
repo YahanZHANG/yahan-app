@@ -14,10 +14,6 @@ urlpatterns = [
         auth_views.LoginView.as_view(
             template_name="registration/login.html",
             redirect_authenticated_user=True,
-
-            # ログイン後は、アクセス元ではなく
-            # 必ずポータルへ戻す
-            redirect_field_name=None,
         ),
         name="login",
     ),

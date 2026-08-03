@@ -1,0 +1,69 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    ãŠé¡˜ã„ã‚’å‰Šé™¤ | è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'travel:task_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            ãŠé¡˜ã„ä¸€è¦§ã¸æˆ»ã‚‹
+        </a>
+
+        <h2>ãŠé¡˜ã„ã‚’å‰Šé™¤</h2>
+    </div>
+
+    <div class="app-card delete-confirm-card">
+        <div class="delete-confirm-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h3>ã“ã®ãŠé¡˜ã„ã‚’å‰Šé™¤ã™ã‚‹ï¼Ÿ</h3>
+
+        <div class="delete-schedule-summary">
+            <strong>{{ task.title }}</strong>
+
+            {% if task.assigned_to %}
+                <span>
+                    æ‹…å½“ï¼š{{ task.assigned_to }}
+                </span>
+            {% endif %}
+
+            {% if task.due_at %}
+                <span>
+                    æœŸé™ï¼š{{ task.due_at|date:"Yå¹´næœˆjæ—¥ H:i" }}
+                </span>
+            {% endif %}
+        </div>
+
+        <p class="delete-warning">
+            å‰Šé™¤ã—ãŸãŠé¡˜ã„ã¯å…ƒã«æˆ»ã›ãªã„ã€‚
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-actions">
+                <a
+                    href="{% url 'travel:task_list' %}"
+                    class="secondary-button"
+                >
+                    ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+                </a>
+
+                <button
+                    type="submit"
+                    class="danger-button"
+                >
+                    å‰Šé™¤ã™ã‚‹
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

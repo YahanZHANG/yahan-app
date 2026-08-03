@@ -1,0 +1,75 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    æ”¯å‡ºã‚’å‰Šé™¤ | è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'travel:expense_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            æ”¯å‡ºä¸€è¦§ã¸æˆ»ã‚‹
+        </a>
+
+        <h2>æ”¯å‡ºã‚’å‰Šé™¤</h2>
+    </div>
+
+    <div class="app-card delete-confirm-card">
+        <div class="delete-confirm-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h3>ã“ã®æ”¯å‡ºã‚’å‰Šé™¤ã™ã‚‹ï¼Ÿ</h3>
+
+        <div class="delete-schedule-summary">
+            <strong>{{ expense.title }}</strong>
+
+            <span>
+                {{ expense.total_amount }}
+                {{ expense.currency }}
+            </span>
+
+            <span>
+                {{ expense.paid_at|date:"Yå¹´næœˆjæ—¥ H:i" }}
+            </span>
+
+            <span>
+                æ”¯æ‰•ã£ãŸäººï¼š
+                {% if expense.paid_by.first_name %}
+                    {{ expense.paid_by.first_name }}
+                {% else %}
+                    {{ expense.paid_by.username }}
+                {% endif %}
+            </span>
+        </div>
+
+        <p class="delete-warning">
+            å‰Šé™¤ã—ãŸæ”¯å‡ºã¨è² æ‹…å†…è¨³ã¯å…ƒã«æˆ»ã›ãªã„ã€‚
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-actions">
+                <a
+                    href="{% url 'travel:expense_list' %}"
+                    class="secondary-button"
+                >
+                    ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+                </a>
+
+                <button
+                    type="submit"
+                    class="danger-button"
+                >
+                    å‰Šé™¤ã™ã‚‹
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

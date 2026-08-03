@@ -1,0 +1,160 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    ç²¾ç®—çµæžœ | è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+<div class="form-page settlement-page">
+    <div class="form-page-header settlement-page-header">
+        <div>
+            <a
+                href="{% url 'travel:expense_list' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                æ”¯å‡ºä¸€è¦§ã¸æˆ»ã‚‹
+            </a>
+
+            <h2>ç²¾ç®—çµæžœ</h2>
+
+            <p class="settlement-description">
+                æ”¯æ‰•é¡ã¨è² æ‹…é¡ã®å·®ã‹ã‚‰ã€
+                å¿…è¦ãªé€é‡‘é¡ã‚’é€šè²¨åˆ¥ã«è¨ˆç®—ã—ã¦ã„ã¾ã™ã€‚
+            </p>
+        </div>
+    </div>
+
+    {% for group in settlement_groups %}
+        <section class="settlement-currency-section">
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow mb-1">
+                        SETTLEMENT
+                    </p>
+
+                    <h3 class="section-title mb-0">
+                        {% if group.currency == "JPY" %}
+                            æ—¥æœ¬å††
+                        {% elif group.currency == "CHF" %}
+                            ã‚¹ã‚¤ã‚¹ãƒ•ãƒ©ãƒ³
+                        {% elif group.currency == "CNY" %}
+                            ä¸­å›½å…ƒ
+                        {% elif group.currency == "EUR" %}
+                            ãƒ¦ãƒ¼ãƒ­
+                        {% else %}
+                            {{ group.currency }}
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <span class="settlement-expense-count">
+                    {{ group.expense_count }}ä»¶
+                </span>
+            </div>
+
+            <div class="settlement-balance-grid">
+                {% for item in group.balances %}
+                    <article class="app-card settlement-balance-card">
+                        <p class="settlement-user-name">
+                            {% if item.user.first_name %}
+                                {{ item.user.first_name }}
+                            {% else %}
+                                {{ item.user.username }}
+                            {% endif %}
+                        </p>
+
+                        {% if item.balance > 0 %}
+                            <strong class="settlement-positive">
+                                ï¼‹{{ item.balance|floatformat:2 }}
+                                {{ group.currency }}
+                            </strong>
+
+                            <span>å—ã‘å–ã‚‹äºˆå®š</span>
+                        {% elif item.balance < 0 %}
+                            <strong class="settlement-negative">
+                                {{ item.balance|floatformat:2 }}
+                                {{ group.currency }}
+                            </strong>
+
+                            <span>æ”¯æ‰•ã†äºˆå®š</span>
+                        {% else %}
+                            <strong class="settlement-zero">
+                                0 {{ group.currency }}
+                            </strong>
+
+                            <span>ç²¾ç®—ä¸è¦</span>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+
+            <div class="settlement-transfer-section">
+                <h4>
+                    <i class="bi bi-arrow-left-right"></i>
+                    å¿…è¦ãªé€é‡‘
+                </h4>
+
+                {% if group.transfers %}
+                    <div class="settlement-transfer-list">
+                        {% for transfer in group.transfers %}
+                            <article class="app-card settlement-transfer-card">
+                                <div class="settlement-transfer-person">
+                                    <span>æ”¯æ‰•ã†</span>
+
+                                    <strong>
+                                        {% if transfer.from_user.first_name %}
+                                            {{ transfer.from_user.first_name }}
+                                        {% else %}
+                                            {{ transfer.from_user.username }}
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+                                <div class="settlement-transfer-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+
+                                    <strong>
+                                        {{ transfer.amount|floatformat:2 }}
+                                        {{ group.currency }}
+                                    </strong>
+                                </div>
+
+                                <div class="settlement-transfer-person">
+                                    <span>å—ã‘å–ã‚‹</span>
+
+                                    <strong>
+                                        {% if transfer.to_user.first_name %}
+                                            {{ transfer.to_user.first_name }}
+                                        {% else %}
+                                            {{ transfer.to_user.username }}
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="app-card settlement-complete">
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        <div>
+                            <strong>ç²¾ç®—ã¯å¿…è¦ã‚ã‚Šã¾ã›ã‚“</strong>
+                            <p>å…¨å“¡ã®æ”¯æ‰•é¡ã¨è² æ‹…é¡ãŒä¸€è‡´ã—ã¦ã„ã¾ã™ã€‚</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    {% empty %}
+        <div class="app-card empty-state">
+            <i class="bi bi-wallet2"></i>
+            <p>ç²¾ç®—å¯¾è±¡ã®æ”¯å‡ºã¯ã¾ã ã‚ã‚Šã¾ã›ã‚“</p>
+
+            <a href="{% url 'travel:expense_create' %}">
+                æœ€åˆã®æ”¯å‡ºã‚’è¿½åŠ 
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+﻿{% extends "travel/base.html" %}
+{% load static %}
+
+{% block title %}
+    家族会議一覧 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header schedule-list-header">
+        <div>
+            <a
+                href="{% url 'travel:home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>家族会議一覧</h2>
+        </div>
+
+        <a
+            href="{% url 'travel:meeting_note_create' %}"
+            class="small-action-button"
+        >
+            ＋ 会議メモを追加
+        </a>
+    </div>
+
+    {% if meeting_notes %}
+        <div class="meeting-note-list">
+            {% for meeting_note in meeting_notes %}
+                <article class="app-card meeting-note-card">
+                    <div class="meeting-note-header">
+                        <div>
+                            <h4 class="meeting-note-main-date">
+                                {{ meeting_note.discussed_at|date:"Y年n月j日" }}
+                            </h4>
+
+                            {% if meeting_note.created_by %}
+                                <div
+                                    class="meeting-note-author-photo"
+                                    title="{% if meeting_note.created_by.first_name %}{{ meeting_note.created_by.first_name }}{% else %}{{ meeting_note.created_by.username }}{% endif %}"
+                                >
+                                    {% if meeting_note.created_by.username == "papa" %}
+                                        <img
+                                            src="{% static 'images/family/papa.jpg' %}"
+                                            alt="パパ"
+                                            class="meeting-note-avatar"
+                                        >
+                                    {% elif meeting_note.created_by.username == "mama" %}
+                                        <img
+                                            src="{% static 'images/family/mama.jpg' %}"
+                                            alt="ママ"
+                                            class="meeting-note-avatar"
+                                        >
+                                    {% elif meeting_note.created_by.username == "yeye" %}
+                                        <img
+                                            src="{% static 'images/family/yeye.jpg' %}"
+                                            alt="じいじ"
+                                            class="meeting-note-avatar"
+                                        >
+                                    {% elif meeting_note.created_by.username == "nainai" %}
+                                        <img
+                                            src="{% static 'images/family/nainai.jpg' %}"
+                                            alt="ばあば"
+                                            class="meeting-note-avatar"
+                                        >
+                                    {% else %}
+                                        <span class="meeting-note-avatar-fallback">
+                                            {% if meeting_note.created_by.first_name %}
+                                                {{ meeting_note.created_by.first_name|slice:":1" }}
+                                            {% else %}
+                                                {{ meeting_note.created_by.username|slice:":1" }}
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="schedule-item-actions">
+                            <a
+                                href="{% url 'travel:meeting_note_update' meeting_note.id %}"
+                                class="schedule-edit-button"
+                                aria-label="会議メモを編集"
+                                title="会議メモを編集"
+                            >
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a
+                                href="{% url 'travel:meeting_note_delete' meeting_note.id %}"
+                                class="schedule-delete-button"
+                                aria-label="会議メモを削除"
+                                title="会議メモを削除"
+                            >
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="meeting-note-section">
+                        <h5>
+                            <i class="bi bi-check-circle"></i>
+                            決定事項
+                        </h5>
+
+                        <div class="meeting-note-text">
+                            {{ meeting_note.decisions|linebreaksbr }}
+                        </div>
+                    </div>
+
+                    {% if meeting_note.next_actions %}
+                        <div class="meeting-note-section">
+                            <h5>
+                                <i class="bi bi-arrow-right-circle"></i>
+                                次にやること
+                            </h5>
+
+                            <div class="meeting-note-text">
+                                {{ meeting_note.next_actions|linebreaksbr }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="app-card empty-state">
+            <i class="bi bi-journal-text"></i>
+            <p>家族会議メモはまだありません</p>
+
+            <a href="{% url 'travel:meeting_note_create' %}">
+                最初のメモを追加
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

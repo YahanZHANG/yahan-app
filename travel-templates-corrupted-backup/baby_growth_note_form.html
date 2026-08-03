@@ -1,0 +1,75 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    æˆé•·ãƒ¡ãƒ¢ã‚’è¿½åŠ  | è«¾ä¾ã®å®¶æ—æ—…è¡Œ
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header">
+        <a
+            href="{% url 'travel:baby_growth_note_list' %}"
+            class="back-link"
+        >
+            <i class="bi bi-chevron-left"></i>
+            è¨˜éŒ²ä¸€è¦§ã¸æˆ»ã‚‹
+        </a>
+
+        <h2>æˆé•·ãƒ¡ãƒ¢ã‚’è¿½åŠ </h2>
+    </div>
+
+    <form
+        method="post"
+        class="app-card app-form"
+        novalidate
+    >
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="{{ form.observed_on.id_for_label }}">
+                {{ form.observed_on.label }}
+            </label>
+
+            {{ form.observed_on }}
+
+            {% for error in form.observed_on.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.content.id_for_label }}">
+                {{ form.content.label }}
+            </label>
+
+            {{ form.content }}
+
+            {% for error in form.content.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a
+                href="{% url 'travel:baby_growth_note_list' %}"
+                class="secondary-button"
+            >
+                ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+            </a>
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                ä¿å­˜
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

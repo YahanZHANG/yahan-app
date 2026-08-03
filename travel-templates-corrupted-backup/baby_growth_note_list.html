@@ -1,0 +1,84 @@
+﻿{% extends "travel/base.html" %}
+
+{% block title %}
+    成長メモ一覧 | 諾依の家族旅行
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-page-header schedule-list-header">
+        <div>
+            <a
+                href="{% url 'travel:home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>成長メモ一覧</h2>
+        </div>
+
+        <a
+            href="{% url 'travel:baby_growth_note_create' %}"
+            class="small-action-button"
+        >
+            ＋ 記録を追加
+        </a>
+    </div>
+
+    {% if growth_notes %}
+        <div class="meeting-note-list">
+            {% for note in growth_notes %}
+                <article class="app-card meeting-note-card">
+                    <div class="meeting-note-header">
+                        <div>
+                            <p class="meeting-note-date">
+                                {{ note.observed_on|date:"Y年n月j日" }}
+                            </p>
+
+                            <h4>
+                                {{ note.content|truncatechars:40 }}
+                            </h4>
+                        </div>
+
+                        <div class="schedule-item-actions">
+                            <a
+                                href="{% url 'travel:baby_growth_note_update' note.id %}"
+                                class="schedule-edit-button"
+                                aria-label="記録を編集"
+                                title="記録を編集"
+                            >
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a
+                                href="{% url 'travel:baby_growth_note_delete' note.id %}"
+                                class="schedule-delete-button"
+                                aria-label="記録を削除"
+                                title="記録を削除"
+                            >
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <div class="meeting-note-text">
+                        {{ note.content|linebreaksbr }}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="app-card empty-state">
+            <i class="bi bi-stars"></i>
+            <p>成長メモはまだありません</p>
+
+            <a href="{% url 'travel:baby_growth_note_create' %}">
+                最初の記録を追加
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

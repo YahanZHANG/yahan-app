@@ -70,89 +70,111 @@
                 </div>
 
                 <span class="portal-app-count">
-                    2 apps
+                    {% if can_use_travel and can_use_feeding %}
+                        2 apps
+                    {% elif can_use_travel or can_use_feeding %}
+                        1 app
+                    {% else %}
+                        0 apps
+                    {% endif %}
                 </span>
             </div>
 
             <div class="portal-app-grid">
 
-                <a
-                    href="{% url 'travel:home' %}"
-                    class="portal-app-card portal-travel-card"
-                >
-                    <div class="portal-card-top">
-                        <div class="portal-app-icon portal-travel-icon">
-                            <span aria-hidden="true">✈️</span>
+                {% if can_use_travel %}
+                    <a
+                        href="{% url 'travel:home' %}"
+                        class="portal-app-card portal-travel-card"
+                    >
+                        <div class="portal-card-top">
+                            <div class="portal-app-icon portal-travel-icon">
+                                <span aria-hidden="true">✈️</span>
+                            </div>
+
+                            <span class="portal-open-arrow" aria-hidden="true">
+                                ↗
+                            </span>
                         </div>
 
-                        <span class="portal-open-arrow" aria-hidden="true">
-                            ↗
-                        </span>
-                    </div>
+                        <div class="portal-card-content">
+                            <p class="portal-card-label">
+                                FAMILY TRIP
+                            </p>
 
-                    <div class="portal-card-content">
-                        <p class="portal-card-label">
-                            FAMILY TRIP
-                        </p>
+                            <h3>家族旅行</h3>
 
-                        <h3>家族旅行</h3>
-
-                        <p>
-                            予定、ToDo、赤ちゃんの記録、
-                            家族会議、支出をまとめて管理する。
-                        </p>
-                    </div>
-
-                    <div class="portal-feature-list">
-                        <span>予定</span>
-                        <span>タスク</span>
-                        <span>支出</span>
-                    </div>
-
-                    <div class="portal-card-footer">
-                        <span>家族旅行を開く</span>
-                        <strong aria-hidden="true">→</strong>
-                    </div>
-                </a>
-
-                <a
-                    href="{% url 'feeding:today' %}"
-                    class="portal-app-card portal-feeding-card"
-                >
-                    <div class="portal-card-top">
-                        <div class="portal-app-icon portal-feeding-icon">
-                            <span aria-hidden="true">🥣</span>
+                            <p>
+                                予定、ToDo、赤ちゃんの記録、
+                                家族会議、支出をまとめて管理する。
+                            </p>
                         </div>
 
-                        <span class="portal-open-arrow" aria-hidden="true">
-                            ↗
-                        </span>
-                    </div>
+                        <div class="portal-feature-list">
+                            <span>予定</span>
+                            <span>タスク</span>
+                            <span>支出</span>
+                        </div>
 
-                    <div class="portal-card-content">
-                        <p class="portal-card-label">
-                            BABY FOOD
-                        </p>
+                        <div class="portal-card-footer">
+                            <span>家族旅行を開く</span>
+                            <strong aria-hidden="true">→</strong>
+                        </div>
+                    </a>
+                {% endif %}
 
-                        <h3>離乳食ノート</h3>
+                {% if can_use_feeding %}
+                    <a
+                        href="{% url 'feeding:today' %}"
+                        class="portal-app-card portal-feeding-card"
+                    >
+                        <div class="portal-card-top">
+                            <div class="portal-app-icon portal-feeding-icon">
+                                <span aria-hidden="true">🥣</span>
+                            </div>
+
+                            <span class="portal-open-arrow" aria-hidden="true">
+                                ↗
+                            </span>
+                        </div>
+
+                        <div class="portal-card-content">
+                            <p class="portal-card-label">
+                                BABY FOOD
+                            </p>
+
+                            <h3>離乳食ノート</h3>
+
+                            <p>
+                                毎日の食事量、食材チャレンジ、
+                                料理の材料、アレルゲンを記録する。
+                            </p>
+                        </div>
+
+                        <div class="portal-feature-list">
+                            <span>食事記録</span>
+                            <span>食材</span>
+                            <span>アレルゲン</span>
+                        </div>
+
+                        <div class="portal-card-footer">
+                            <span>離乳食ノートを開く</span>
+                            <strong aria-hidden="true">→</strong>
+                        </div>
+                    </a>
+                {% endif %}
+
+                {% if not can_use_travel and not can_use_feeding %}
+                    <div class="portal-no-apps">
+                        <strong>
+                            利用できるアプリがない
+                        </strong>
 
                         <p>
-                            毎日の食事量、食材チャレンジ、
-                            料理の材料、アレルゲンを記録する。
+                            管理者にアカウント設定を確認してください。
                         </p>
                     </div>
-
-                    <div class="portal-feature-list">
-                        <span>食事記録</span>
-                        <span>食材</span>
-                        <span>アレルゲン</span>
-                    </div>
-
-                    <div class="portal-card-footer">
-                        <span>離乳食ノートを開く</span>
-                        <strong aria-hidden="true">→</strong>
-                    </div>
-                </a>
+                {% endif %}
 
             </div>
         </section>
