@@ -179,20 +179,59 @@
                 <div class="baby-member-main">
                     <strong>
                         {{ membership.user.username }}
+
+                        {% if membership.user == user %}
+                            <span class="baby-member-self-label">
+                                自分
+                            </span>
+                        {% endif %}
                     </strong>
 
                     <small>
                         {% if membership.can_edit %}
-                            ・編集可能
+                            編集可能
                         {% else %}
-                            ・閲覧のみ
-                        {% endif %}
-
-                        {% if membership.user == user %}
-                            ・自分
+                            閲覧のみ
                         {% endif %}
                     </small>
                 </div>
+
+                {% if can_manage_members and membership.user != user %}
+                    <div class="baby-member-actions">
+                        <form
+                            method="post"
+                            action="{% url 'feeding:baby_member_toggle_edit' baby.pk membership.pk %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="baby-member-permission-button"
+                            >
+                                {% if membership.can_edit %}
+                                    閲覧のみにする
+                                {% else %}
+                                    編集可能にする
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <form
+                            method="post"
+                            action="{% url 'feeding:baby_member_delete' baby.pk membership.pk %}"
+                            onsubmit="return confirm('{{ membership.user.username }}を共同管理者から削除する？');"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="baby-member-delete-button"
+                            >
+                                削除
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
             </div>
         {% empty %}
             <p class="empty-message">

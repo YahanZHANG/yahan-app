@@ -1831,6 +1831,127 @@ def baby_member_add(
     )
 
 @login_required
+@require_POST
+def baby_member_toggle_edit(
+    request,
+    baby_id,
+    membership_id,
+):
+    """
+    共同管理者の編集権限を切り替える。
+
+    現在のユーザー自身の権限は、
+    この画面から変更できない。
+    """
+
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+        memberships__can_edit=True,
+    )
+
+    membership = get_object_or_404(
+        BabyMembership.objects.select_related(
+            "user",
+        ),
+        pk=membership_id,
+        baby=baby,
+    )
+
+    if membership.user_id == request.user.id:
+        messages.error(
+            request,
+            "自分自身の編集権限は変更できない。",
+        )
+
+        return redirect(
+            "feeding:settings",
+        )
+
+    membership.can_edit = not membership.can_edit
+
+    membership.save(
+        update_fields=[
+            "can_edit",
+        ]
+    )
+
+    permission_label = (
+        "編集可能"
+        if membership.can_edit
+        else "閲覧のみ"
+    )
+
+    messages.success(
+        request,
+        (
+            f"{membership.user.username}を"
+            f"{permission_label}に変更した。"
+        ),
+    )
+
+    return redirect(
+        "feeding:settings",
+    )
+
+
+@login_required
+@require_POST
+def baby_member_delete(
+    request,
+    baby_id,
+    membership_id,
+):
+    """
+    子どもの共同管理者からユーザーを削除する。
+
+    現在のユーザー自身は、
+    この画面から削除できない。
+    """
+
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+        memberships__can_edit=True,
+    )
+
+    membership = get_object_or_404(
+        BabyMembership.objects.select_related(
+            "user",
+        ),
+        pk=membership_id,
+        baby=baby,
+    )
+
+    if membership.user_id == request.user.id:
+        messages.error(
+            request,
+            "自分自身を共同管理者から削除できない。",
+        )
+
+        return redirect(
+            "feeding:settings",
+        )
+
+    username = membership.user.username
+
+    membership.delete()
+
+    messages.success(
+        request,
+        (
+            f"{username}を"
+            f"{baby.name}の共同管理者から削除した。"
+        ),
+    )
+
+    return redirect(
+        "feeding:settings",
+    )
+
+@login_required
 def baby_create(request):
     if request.method == "POST":
         form = BabySettingsForm(

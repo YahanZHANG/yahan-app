@@ -82,6 +82,22 @@ urlpatterns = [
         name="baby_member_add",
     ),
     path(
+        (
+            "babies/<int:baby_id>/members/"
+            "<int:membership_id>/toggle-edit/"
+        ),
+        views.baby_member_toggle_edit,
+        name="baby_member_toggle_edit",
+    ),
+    path(
+        (
+            "babies/<int:baby_id>/members/"
+            "<int:membership_id>/delete/"
+        ),
+        views.baby_member_delete,
+        name="baby_member_delete",
+    ),
+    path(
         "babies/<int:baby_id>/select/",
         views.select_baby,
         name="select_baby",
