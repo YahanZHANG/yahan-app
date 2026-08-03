@@ -82,6 +82,11 @@ urlpatterns = [
         name="baby_member_add",
     ),
     path(
+        "babies/<int:baby_id>/delete/",
+        views.baby_delete,
+        name="baby_delete",
+    ),
+    path(
         (
             "babies/<int:baby_id>/members/"
             "<int:membership_id>/toggle-edit/"

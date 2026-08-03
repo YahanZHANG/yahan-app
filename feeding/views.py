@@ -21,6 +21,7 @@ from .forms import (
     AllergyReactionForm,
     BabyMemberAddForm,
     BabySettingsForm,
+    BabyDeleteConfirmForm,
     DishCreateForm,
     DishIngredientFormSet,
     FoodCreateForm,
@@ -1991,6 +1992,96 @@ def baby_create(request):
     return render(
         request,
         "feeding/baby_form.html",
+        context,
+    )
+
+@login_required
+def baby_delete(
+    request,
+    baby_id,
+):
+    """
+    子どもと、その子どもに紐づく記録を削除する。
+    編集権限を持つユーザーのみ実行できる。
+    """
+
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+        memberships__can_edit=True,
+    )
+
+    if request.method == "POST":
+        form = BabyDeleteConfirmForm(
+            request.POST,
+            baby=baby,
+        )
+
+        if form.is_valid():
+            baby_name = baby.name
+            deleted_baby_id = baby.pk
+
+            with transaction.atomic():
+                baby.delete()
+
+                if (
+                    request.session.get(
+                        "feeding_current_baby_id"
+                    )
+                    == deleted_baby_id
+                ):
+                    request.session.pop(
+                        "feeding_current_baby_id",
+                        None,
+                    )
+
+            next_baby = (
+                get_accessible_babies(
+                    request.user
+                )
+                .first()
+            )
+
+            if next_baby is not None:
+                request.session[
+                    "feeding_current_baby_id"
+                ] = next_baby.pk
+
+            messages.success(
+                request,
+                f"{baby_name}と、その記録を削除した。",
+            )
+
+            return redirect(
+                "feeding:settings"
+            )
+
+    else:
+        form = BabyDeleteConfirmForm(
+            baby=baby,
+        )
+
+    meal_count = Meal.objects.filter(
+        baby=baby
+    ).count()
+
+    membership_count = (
+        BabyMembership.objects
+        .filter(baby=baby)
+        .count()
+    )
+
+    context = {
+        "baby": baby,
+        "form": form,
+        "meal_count": meal_count,
+        "membership_count": membership_count,
+    }
+
+    return render(
+        request,
+        "feeding/baby_confirm_delete.html",
         context,
     )
 

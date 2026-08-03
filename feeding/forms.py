@@ -731,6 +731,44 @@ class BabyMemberAddForm(forms.Form):
             can_edit=self.cleaned_data["can_edit"],
         )
 
+class BabyDeleteConfirmForm(forms.Form):
+    confirm_name = forms.CharField(
+        label="確認のため子どもの名前を入力",
+        max_length=50,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "off",
+                "placeholder": "子どもの名前を入力",
+            }
+        ),
+    )
+
+    def __init__(
+        self,
+        *args,
+        baby=None,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.baby = baby
+
+    def clean_confirm_name(self):
+        confirm_name = (
+            self.cleaned_data["confirm_name"]
+            .strip()
+        )
+
+        if (
+            self.baby is None
+            or confirm_name != self.baby.name
+        ):
+            raise ValidationError(
+                "子どもの名前が一致しない。"
+            )
+
+        return confirm_name
+
 class FoodCreateForm(forms.ModelForm):
     class Meta:
         model = Food

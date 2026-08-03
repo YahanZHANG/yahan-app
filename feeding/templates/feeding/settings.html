@@ -151,6 +151,24 @@
             {% endif %}
         </button>
     </form>
+
+    {% if baby and current_membership.can_edit %}
+        <div class="baby-danger-zone">
+            <div>
+                <strong>この子どもを削除</strong>
+                <small>
+                    離乳食記録や共同管理者情報も削除される。
+                </small>
+            </div>
+
+            <a
+                href="{% url 'feeding:baby_delete' baby.pk %}"
+                class="baby-delete-link"
+            >
+                削除
+            </a>
+        </div>
+    {% endif %}
 </section>
 
 {% if baby %}

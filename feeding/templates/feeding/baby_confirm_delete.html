@@ -1,0 +1,92 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    子どもを削除 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a
+        href="{% url 'feeding:settings' %}"
+        class="back-link"
+    >
+        ← 設定に戻る
+    </a>
+
+    <p class="eyebrow">
+        DELETE CHILD
+    </p>
+
+    <h2>子どもを削除</h2>
+
+    <p class="page-description">
+        この操作は取り消せない。
+    </p>
+</section>
+
+<section class="danger-summary-card">
+    <div class="danger-summary-icon">
+        ⚠️
+    </div>
+
+    <div>
+        <h3>
+            {{ baby.name }}を削除する
+        </h3>
+
+        <p>
+            この子どもに紐づく離乳食記録、
+            アレルギー記録、共同管理者情報も削除される。
+        </p>
+    </div>
+</section>
+
+<div class="delete-impact-list">
+    <div>
+        <span>食事記録</span>
+        <strong>{{ meal_count }}件</strong>
+    </div>
+
+    <div>
+        <span>共同管理者</span>
+        <strong>{{ membership_count }}人</strong>
+    </div>
+</div>
+
+<form
+    method="post"
+    class="settings-form danger-delete-form"
+>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="{{ form.confirm_name.id_for_label }}">
+            確認のため
+            <strong>{{ baby.name }}</strong>
+            と入力
+        </label>
+
+        {{ form.confirm_name }}
+
+        {% for error in form.confirm_name.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <button
+        type="submit"
+        class="danger-confirm-button"
+        onclick="return confirm('{{ baby.name }}と、そのすべての記録を完全に削除する？');"
+    >
+        この子どもと記録を完全に削除
+    </button>
+</form>
+{% endblock %}
