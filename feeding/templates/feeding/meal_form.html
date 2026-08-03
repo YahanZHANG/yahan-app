@@ -324,6 +324,49 @@
             "[data-clear-reaction]"
         );
 
+        const reactionInputs = row.querySelectorAll(
+            ".reaction-radio-input"
+        );
+
+        function updateReactionState() {
+            const hasSelection = Array.from(
+                reactionInputs
+            ).some((input) => input.checked);
+
+            if (!clearReactionButton) {
+                return;
+            }
+
+            clearReactionButton.classList.toggle(
+                "is-active",
+                hasSelection
+            );
+
+            clearReactionButton.disabled = !hasSelection;
+        }
+
+        reactionInputs.forEach((input) => {
+            input.addEventListener(
+                "change",
+                updateReactionState
+            );
+        });
+
+        if (clearReactionButton) {
+            clearReactionButton.addEventListener(
+                "click",
+                () => {
+                    reactionInputs.forEach((input) => {
+                        input.checked = false;
+                    });
+
+                    updateReactionState();
+                }
+            );
+        }
+
+        updateReactionState();
+
         if (
             typeInput
             && !typeInput.value
@@ -393,21 +436,6 @@
                         dishCategorySelect,
                         dishSelect
                     );
-                }
-            );
-        }
-
-        if (clearReactionButton) {
-            clearReactionButton.addEventListener(
-                "click",
-                () => {
-                    row
-                        .querySelectorAll(
-                            ".reaction-radio-input"
-                        )
-                        .forEach((input) => {
-                            input.checked = false;
-                        });
                 }
             );
         }

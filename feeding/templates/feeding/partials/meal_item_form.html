@@ -183,15 +183,28 @@
     </div>
 
     <fieldset class="reaction-fieldset">
-        <legend>
-            反応
-            <small>任意</small>
-        </legend>
+        <div class="reaction-header">
+            <span class="reaction-title">
+                反応
+            </span>
+
+            <button
+                type="button"
+                class="clear-reaction-button"
+                data-clear-reaction
+                disabled
+            >
+                選択を解除
+            </button>
+        </div>
 
         <div class="reaction-button-grid">
             {% for choice in item_form.reaction %}
                 {% if choice.data.value %}
-                    <label class="reaction-option">
+                    <label
+                        class="reaction-option"
+                        title="{{ choice.choice_label }}"
+                    >
                         {{ choice.tag }}
 
                         <span class="reaction-option-content">
@@ -208,19 +221,10 @@
                                 <span class="reaction-emoji">😕</span>
                             {% endif %}
                         </span>
-                        
                     </label>
                 {% endif %}
             {% endfor %}
         </div>
-
-        <button
-            type="button"
-            class="clear-reaction-button"
-            data-clear-reaction
-        >
-            選択を解除
-        </button>
 
         {% for error in item_form.reaction.errors %}
             <p class="field-error">
@@ -262,3 +266,4 @@
         {{ item_form.DELETE }}
     </div>
 </div>
+

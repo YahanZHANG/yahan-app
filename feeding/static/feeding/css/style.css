@@ -2194,17 +2194,6 @@ body.guest {
     padding:0;
 }
 
-.reaction-fieldset legend{
-    font-weight:700;
-    font-size:.92rem;
-    margin-bottom:12px;
-}
-
-.reaction-fieldset legend small{
-    color:#999;
-    font-weight:500;
-}
-
 .reaction-button-grid{
 
     display:grid;
@@ -2272,15 +2261,61 @@ body.guest {
 
 .clear-reaction-button{
 
-    margin-top:12px;
-
     background:none;
-
     border:none;
 
-    color:#888;
+    color:#bdbdbd;
+
+    font-size:.82rem;
+    font-weight:700;
 
     cursor:pointer;
 
-    font-size:.8rem;
+    transition:.18s;
+}
+
+.clear-reaction-button.is-active{
+    color:#2d7ef7;
+}
+
+.reaction-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.reaction-title {
+    color: var(--text-main);
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.clear-reaction-button {
+    padding: 4px 0;
+    background: transparent;
+    color: #bdbdbd;
+    border: 0;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: default;
+    transition:
+        color 160ms ease,
+        opacity 160ms ease;
+}
+
+.clear-reaction-button.is-active {
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.clear-reaction-button:disabled {
+    color: #c7c9cc;
+    opacity: 0.65;
+}
+
+.clear-reaction-button.is-active:hover {
+    color: #244c61;
 }
