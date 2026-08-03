@@ -153,6 +153,66 @@
     </form>
 </section>
 
+{% if baby %}
+<section class="settings-section">
+    <div class="settings-section-heading">
+        <div class="settings-icon neutral">
+            👥
+        </div>
+
+        <div>
+            <h3>共同管理者</h3>
+
+            <p>
+                {{ baby.name }}の離乳食ノートを共有しているユーザー。
+            </p>
+        </div>
+    </div>
+
+    <div class="baby-member-list">
+        {% for membership in baby_memberships %}
+            <div class="baby-member-row">
+                <span class="baby-member-avatar">
+                    {{ membership.user.username|first|upper }}
+                </span>
+
+                <div class="baby-member-main">
+                    <strong>
+                        {{ membership.user.username }}
+                    </strong>
+
+                    <small>
+                        {% if membership.can_edit %}
+                            ・編集可能
+                        {% else %}
+                            ・閲覧のみ
+                        {% endif %}
+
+                        {% if membership.user == user %}
+                            ・自分
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        {% empty %}
+            <p class="empty-message">
+                共同管理者が登録されていない。
+            </p>
+        {% endfor %}
+    </div>
+
+    {% if can_manage_members %}
+        <a
+            href="{% url 'feeding:baby_member_add' baby.pk %}"
+            class="settings-add-baby-button"
+        >
+            <span aria-hidden="true">＋</span>
+            共同管理者を追加
+        </a>
+    {% endif %}
+</section>
+{% endif %}
+
 <section class="settings-section">
     <div class="settings-section-heading">
         <div class="settings-icon neutral">

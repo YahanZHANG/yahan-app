@@ -29,7 +29,6 @@ class BabyMembershipInline(
     )
     fields = (
         "user",
-        "role",
         "can_edit",
     )
     ordering = (
@@ -78,33 +77,14 @@ class BabyMembershipAdmin(
     list_display = (
         "baby",
         "user",
-        "role",
         "can_edit",
         "created_at",
     )
     list_filter = (
-        "role",
         "can_edit",
         "baby",
     )
-    search_fields = (
-        "baby__name",
-        "user__username",
-        "user__email",
-    )
-    autocomplete_fields = (
-        "baby",
-        "user",
-    )
-    list_select_related = (
-        "baby",
-        "user",
-    )
-    ordering = (
-        "baby__name",
-        "user__username",
-    )
-
+    
 @admin.register(FoodCategory)
 class FoodCategoryAdmin(admin.ModelAdmin):
     list_display = (

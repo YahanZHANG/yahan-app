@@ -1,0 +1,88 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    共同管理者を追加 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a
+        href="{% url 'feeding:settings' %}"
+        class="back-link"
+    >
+        ← 設定に戻る
+    </a>
+
+    <p class="eyebrow">
+        SHARED ACCESS
+    </p>
+
+    <h2>共同管理者を追加</h2>
+
+    <p class="page-description">
+        {{ baby.name }}の離乳食ノートを共有する
+        既存ユーザーを追加する。
+    </p>
+</section>
+
+<form
+    method="post"
+    class="settings-form"
+>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="settings-card">
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">
+                {{ form.username.label }}
+            </label>
+
+            {{ form.username }}
+
+            {% for error in form.username.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+
+            <p class="field-help">
+                追加する人がログインに使用している
+                ユーザー名を入力する。
+            </p>
+        </div>
+
+        <div class="member-edit-toggle">
+            <label>
+                {{ form.can_edit }}
+
+                <span>
+                    <strong>
+                        編集を許可する
+                    </strong>
+                </span>
+            </label>
+
+            {% for error in form.can_edit.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            共同管理者に追加
+        </button>
+    </div>
+</form>
+{% endblock %}

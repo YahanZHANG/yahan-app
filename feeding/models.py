@@ -43,11 +43,6 @@ class Baby(models.Model):
 class BabyMembership(models.Model):
     """赤ちゃんと、その情報を管理できるユーザーの関係。"""
 
-    class Role(models.TextChoices):
-        PARENT = "parent", "保護者"
-        FAMILY = "family", "家族"
-        VIEWER = "viewer", "閲覧のみ"
-
     baby = models.ForeignKey(
         Baby,
         verbose_name="赤ちゃん",
@@ -59,12 +54,6 @@ class BabyMembership(models.Model):
         verbose_name="ユーザー",
         on_delete=models.CASCADE,
         related_name="baby_memberships",
-    )
-    role = models.CharField(
-        "役割",
-        max_length=20,
-        choices=Role.choices,
-        default=Role.PARENT,
     )
     can_edit = models.BooleanField(
         "編集できる",

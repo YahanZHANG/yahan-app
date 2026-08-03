@@ -1,12 +1,14 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 from django.forms import BaseInlineFormSet, inlineformset_factory
 from .models import Baby
 
 from .models import (
     Allergen,
     AllergyReaction,
+    BabyMembership,
     Dish,
     DishCategory,
     DishIngredient,
@@ -641,6 +643,94 @@ class BabySettingsForm(forms.ModelForm):
             ),
         }
 
+class BabyMemberAddForm(forms.Form):
+    """既存ユーザーを共同管理者として追加するフォーム。"""
+
+    username = forms.CharField(
+        label="ユーザー名",
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "例：papa",
+                "autocomplete": "off",
+                "autocapitalize": "none",
+            }
+        ),
+    )
+
+    can_edit = forms.BooleanField(
+        label="食事記録や設定を編集できる",
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "form-check-input",
+            }
+        ),
+    )
+
+    def __init__(
+        self,
+        *args,
+        baby=None,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.baby = baby
+        self.target_user = None
+
+    def clean_username(self):
+        username = (
+            self.cleaned_data["username"]
+            .strip()
+        )
+
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(
+                username__iexact=username,
+                is_active=True,
+            )
+        except User.DoesNotExist as exc:
+            raise ValidationError(
+                "このユーザー名のアカウントは見つからない。"
+            ) from exc
+
+        if (
+            self.baby
+            and BabyMembership.objects.filter(
+                baby=self.baby,
+                user=user,
+            ).exists()
+        ):
+            raise ValidationError(
+                "このユーザーはすでに共同管理者として登録されている。"
+            )
+
+        self.target_user = user
+
+        return username
+
+    def save(self):
+        if not self.is_valid():
+            raise ValueError(
+                "有効なフォームだけ保存できる。"
+            )
+
+        if self.baby is None:
+            raise ValueError(
+                "対象の子どもが指定されていない。"
+            )
+
+        return BabyMembership.objects.create(
+            baby=self.baby,
+            user=self.target_user,
+            can_edit=self.cleaned_data["can_edit"],
+        )
+
 class FoodCreateForm(forms.ModelForm):
     class Meta:
         model = Food
@@ -746,7 +836,6 @@ class FoodCreateForm(forms.ModelForm):
 
         return name
 
-
 class DishCreateForm(forms.ModelForm):
     class Meta:
         model = Dish
@@ -812,7 +901,6 @@ class DishCreateForm(forms.ModelForm):
             )
 
         return name
-
 
 class DishIngredientForm(forms.ModelForm):
     food_category = forms.ModelChoiceField(
@@ -951,7 +1039,6 @@ class DishIngredientForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class BaseDishIngredientFormSet(
     BaseInlineFormSet
 ):
@@ -1005,7 +1092,6 @@ class BaseDishIngredientFormSet(
             raise ValidationError(
                 "少なくとも1つの材料を入力してください。"
             )
-
 
 DishIngredientFormSet = inlineformset_factory(
     Dish,

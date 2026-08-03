@@ -19,6 +19,7 @@ from decimal import Decimal
 
 from .forms import (
     AllergyReactionForm,
+    BabyMemberAddForm,
     BabySettingsForm,
     DishCreateForm,
     DishIngredientFormSet,
@@ -1776,6 +1777,60 @@ def allergy_photo_delete(request, photo_id):
     )
 
 @login_required
+def baby_member_add(
+    request,
+    baby_id,
+):
+    """
+    現在の利用者が編集権限を持つ子どもへ、
+    既存ユーザーを共同管理者として追加する。
+    """
+
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+        memberships__can_edit=True,
+    )
+
+    if request.method == "POST":
+        form = BabyMemberAddForm(
+            request.POST,
+            baby=baby,
+        )
+
+        if form.is_valid():
+            membership = form.save()
+
+            messages.success(
+                request,
+                (
+                    f"{membership.user.username}を"
+                    f"{baby.name}の共同管理者に追加した。"
+                ),
+            )
+
+            return redirect(
+                "feeding:settings"
+            )
+
+    else:
+        form = BabyMemberAddForm(
+            baby=baby,
+        )
+
+    context = {
+        "baby": baby,
+        "form": form,
+    }
+
+    return render(
+        request,
+        "feeding/baby_member_form.html",
+        context,
+    )
+
+@login_required
 def baby_create(request):
     if request.method == "POST":
         form = BabySettingsForm(
@@ -1789,7 +1844,6 @@ def baby_create(request):
                 BabyMembership.objects.create(
                     baby=baby,
                     user=request.user,
-                    role=BabyMembership.Role.PARENT,
                     can_edit=True,
                 )
 
@@ -1829,6 +1883,33 @@ def settings_view(request):
 
     baby = get_current_baby(request)
 
+    current_membership = None
+    baby_memberships = []
+
+    if baby is not None:
+        current_membership = (
+            BabyMembership.objects
+            .filter(
+                baby=baby,
+                user=request.user,
+            )
+            .first()
+        )
+
+        baby_memberships = list(
+            BabyMembership.objects
+            .filter(baby=baby)
+            .select_related("user")
+            .order_by(
+                "user__username"
+            )
+        )
+
+    can_manage_members = bool(
+        current_membership
+        and current_membership.can_edit
+    )
+
     if request.method == "POST":
         form = BabySettingsForm(
             request.POST,
@@ -1845,9 +1926,6 @@ def settings_view(request):
                         baby=saved_baby,
                         user=request.user,
                         defaults={
-                            "role": (
-                                BabyMembership.Role.PARENT
-                            ),
                             "can_edit": True,
                         },
                     )
@@ -1881,6 +1959,9 @@ def settings_view(request):
         "form": form,
         "is_new_baby": baby is None,
         "accessible_babies": accessible_babies,
+        "baby_memberships": baby_memberships,
+        "current_membership": current_membership,
+        "can_manage_members": can_manage_members,
     }
 
     return render(
@@ -1888,3 +1969,4 @@ def settings_view(request):
         "feeding/settings.html",
         context,
     )
+
