@@ -2077,23 +2077,28 @@ body.guest {
 }
 
 .item-type-toggle-button{
+
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:2px;
+    gap:6px;
 
-    min-height:38px;
-    padding:6px 8px;
+    padding:5px 12px;
 
-    border:none;
-    border-radius:15px;
+    border:1px solid #ececec;
+    border-radius:999px;
 
-    cursor:pointer;
+    background:white;
+    color:#b4b8bf;
 
-    font-weight:700;
     font-size:.82rem;
+    font-weight:600;
 
-    transition:.18s;
+    box-shadow:none;
+
+    opacity:.25;
+
+    transition:all .18s ease;
 }
 
 .item-type-toggle-button[data-item-type-button="food"] {
@@ -2106,10 +2111,14 @@ body.guest {
     color: #705405;
 }
 
-.item-type-toggle-button.is-active {
-    transform: translateY(-3px);
+.item-type-toggle-button.is-active{
+
+    opacity:1;
+
+    transform:translateY(-1px);
+
     box-shadow:
-        0 10px 20px rgba(32, 45, 55, 0.15);
+        0 4px 12px rgba(0,0,0,.08);
 }
 
 .item-type-toggle-button:active {
