@@ -3,6 +3,9 @@
 {% block title %}今日 | 離乳食ノート{% endblock %}
 
 {% block content %}
+
+{% include "feeding/partials/baby_switcher.html" %}
+
 {% if baby %}
     <section class="dashboard-hero">
         <div class="dashboard-date-row">

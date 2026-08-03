@@ -491,8 +491,10 @@ def parse_selected_date(date_value):
 
 @login_required
 def today(request):
-    accessible_babies = get_accessible_babies(
-        request.user
+    accessible_babies = list(
+        get_accessible_babies(
+            request.user
+        )
     )
 
     baby = get_current_baby(request)

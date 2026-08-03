@@ -1,0 +1,74 @@
+{% if accessible_babies|length > 1 %}
+    <section class="baby-switcher">
+        <p class="baby-switcher-label">
+            記録する子ども
+        </p>
+
+        <div class="baby-switcher-list">
+            {% for accessible_baby in accessible_babies %}
+                {% if accessible_baby.pk == baby.pk %}
+                    <button
+                        type="button"
+                        class="baby-switcher-button is-active"
+                        aria-current="true"
+                        disabled
+                    >
+                        <span class="baby-switcher-avatar">
+                            {{ accessible_baby.name|first }}
+                        </span>
+
+                        <span>
+                            {{ accessible_baby.name }}
+                        </span>
+
+                        <span
+                            class="baby-switcher-check"
+                            aria-hidden="true"
+                        >
+                            ✓
+                        </span>
+                    </button>
+                {% else %}
+                    <form
+                        method="post"
+                        action="{% url 'feeding:select_baby' accessible_baby.pk %}"
+                        class="baby-switcher-form"
+                    >
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{{ request.get_full_path }}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="baby-switcher-button"
+                        >
+                            <span class="baby-switcher-avatar">
+                                {{ accessible_baby.name|first }}
+                            </span>
+
+                            <span>
+                                {{ accessible_baby.name }}
+                            </span>
+                        </button>
+                    </form>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+
+{% elif baby %}
+    <section class="current-baby-summary">
+        <span class="current-baby-avatar">
+            {{ baby.name|first }}
+        </span>
+
+        <div>
+            <small>記録中</small>
+            <strong>{{ baby.name }}</strong>
+        </div>
+    </section>
+{% endif %}

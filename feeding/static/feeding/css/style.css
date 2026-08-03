@@ -2328,3 +2328,138 @@ body.guest {
 .clear-reaction-button.is-active:hover {
     color: #244c61;
 }
+
+/* ==========================================================
+   Baby switcher
+   ========================================================== */
+
+.baby-switcher {
+    margin-bottom: 22px;
+}
+
+.baby-switcher-label {
+    margin: 0 0 9px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.baby-switcher-list {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 2px 2px 7px;
+    scrollbar-width: none;
+}
+
+.baby-switcher-list::-webkit-scrollbar {
+    display: none;
+}
+
+.baby-switcher-form {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.baby-switcher-button {
+    display: flex;
+    min-width: 122px;
+    min-height: 49px;
+    gap: 9px;
+    align-items: center;
+    padding: 7px 13px 7px 8px;
+    background: #f0f2f4;
+    color: var(--muted);
+    border: 0;
+    border-radius: 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color 160ms ease,
+        color 160ms ease,
+        box-shadow 160ms ease,
+        transform 120ms ease;
+}
+
+.baby-switcher-button:not(:disabled):hover {
+    background: #e9ecef;
+}
+
+.baby-switcher-button:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.baby-switcher-button.is-active {
+    background: #ffffff;
+    color: var(--primary);
+    box-shadow:
+        0 6px 18px rgba(35, 48, 58, 0.1);
+    cursor: default;
+}
+
+.baby-switcher-avatar {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    background: #ffffff;
+    color: var(--primary);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.baby-switcher-button.is-active
+.baby-switcher-avatar {
+    background: var(--primary-soft);
+}
+
+.baby-switcher-check {
+    margin-left: auto;
+    color: var(--primary);
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+.current-baby-summary {
+    display: flex;
+    width: fit-content;
+    gap: 9px;
+    align-items: center;
+    margin-bottom: 21px;
+    padding: 7px 12px 7px 7px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.current-baby-avatar {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.current-baby-summary div {
+    display: grid;
+}
+
+.current-baby-summary small {
+    color: var(--muted);
+    font-size: 0.62rem;
+}
+
+.current-baby-summary strong {
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
