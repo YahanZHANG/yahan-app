@@ -3124,7 +3124,7 @@ button.settings-baby-card:hover {
 
 @media (max-width: 420px) {
     .dashboard-date-toolbar {
-        gap: 7px;
+        gap: 10px;
     }
 
     .dashboard-date-picker {
@@ -3133,21 +3133,21 @@ button.settings-baby-card:hover {
     }
 
     .dashboard-date-text {
-        font-size: 1rem;
+        font-size: 1.8rem;
     }
 
     .dashboard-calendar-button {
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
+        width: 45px;
+        height: 45px;
+        font-size: 2rem;
     }
 
     .back-to-today-link {
-        font-size: 0.58rem;
+        font-size: 0.75rem;
     }
 
     .dashboard-age-badge {
-        font-size: 0.82rem;
+        font-size: 1rem;
     }
 }
 
