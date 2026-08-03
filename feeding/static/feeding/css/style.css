@@ -2899,7 +2899,7 @@ button.settings-baby-card:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: nowrap;
 }
 
@@ -2908,7 +2908,7 @@ button.settings-baby-card:hover {
     flex: 1 1 auto;
     overflow: hidden;
     color: #ffffff;
-    font-size: 0.86rem;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1.2;
     text-overflow: ellipsis;
@@ -2932,7 +2932,7 @@ button.settings-baby-card:hover {
     border-radius: 999px;
     color: rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.14);
-    font-size: 0.66rem;
+    font-size: 0.8rem;
     font-weight: 700;
     line-height: 1;
     text-decoration: none;
@@ -2955,7 +2955,7 @@ button.settings-baby-card:hover {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.12);
     font: inherit;
-    font-size: 0.66rem;
+    font-size: 0.8rem;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
