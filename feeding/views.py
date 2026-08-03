@@ -41,15 +41,58 @@ from .models import (
     MealItem,
 )
 
-
-def get_current_baby():
+def get_accessible_babies(user):
     """
-    現段階では、最初に登録された赤ちゃんを使用する。
-
-    後の段階で家族ログインや複数の赤ちゃんに
-    対応できるように変更する。
+    ログインユーザーが利用できる赤ちゃんを返す。
     """
-    return Baby.objects.order_by("id").first()
+    if not user.is_authenticated:
+        return Baby.objects.none()
+
+    return (
+        Baby.objects
+        .filter(
+            memberships__user=user,
+        )
+        .distinct()
+        .order_by(
+            "birth_date",
+            "name",
+        )
+    )
+
+def get_current_baby(request):
+    """
+    ログインユーザーが管理できる赤ちゃんのうち、
+    現在選択されている赤ちゃんを返す。
+
+    選択情報はセッションに保存する。
+    """
+    accessible_babies = get_accessible_babies(
+        request.user
+    )
+
+    selected_baby_id = request.session.get(
+        "feeding_current_baby_id"
+    )
+
+    if selected_baby_id:
+        selected_baby = (
+            accessible_babies
+            .filter(pk=selected_baby_id)
+            .first()
+        )
+
+        if selected_baby is not None:
+            return selected_baby
+
+    first_baby = accessible_babies.first()
+
+    if first_baby is not None:
+        request.session[
+            "feeding_current_baby_id"
+        ] = first_baby.pk
+
+    return first_baby
 
 def calculate_age_in_months(birth_date, target_date):
     """指定日時点の満月齢を計算する。"""
@@ -405,6 +448,38 @@ def get_daily_guideline_summary(
         "recommended_meals": recommended_meals,
     }
 
+@login_required
+@require_POST
+def select_baby(request, baby_id):
+    """
+    現在操作する赤ちゃんを切り替える。
+    """
+    baby = get_object_or_404(
+        Baby,
+        pk=baby_id,
+        memberships__user=request.user,
+    )
+
+    request.session[
+        "feeding_current_baby_id"
+    ] = baby.pk
+
+    messages.success(
+        request,
+        f"{baby.name}の離乳食ノートに切り替えた。",
+    )
+
+    next_url = request.POST.get("next")
+
+    if (
+        next_url
+        and next_url.startswith("/")
+        and not next_url.startswith("//")
+    ):
+        return redirect(next_url)
+
+    return redirect("feeding:today")
+
 def parse_selected_date(date_value):
     if not date_value:
         return timezone.localdate()
@@ -416,7 +491,11 @@ def parse_selected_date(date_value):
 
 @login_required
 def today(request):
-    baby = get_current_baby()
+    accessible_babies = get_accessible_babies(
+        request.user
+    )
+
+    baby = get_current_baby(request)
     today_date = timezone.localdate()
 
     meal_cards = []
@@ -622,6 +701,7 @@ def today(request):
     
     context = {
         "baby": baby,
+        "accessible_babies": accessible_babies,
         "today_date": today_date,
         "age_months": age_months,
         "feeding_stage": feeding_stage,
@@ -815,7 +895,7 @@ def dish_create(request):
 
 @login_required
 def food_list(request):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     categories = (
         FoodCategory.objects
@@ -914,7 +994,7 @@ def food_list(request):
 
 @login_required
 def food_detail(request, food_id):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     food = get_object_or_404(
         Food.objects.select_related("category"),
@@ -1047,7 +1127,7 @@ def meal_edit(request, meal_number):
         )
         return redirect("feeding:today")
 
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     if baby is None:
         messages.error(
@@ -1286,7 +1366,7 @@ def meal_edit(request, meal_number):
 @login_required
 @require_POST
 def meal_delete(request, meal_number):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     if baby is None:
         return redirect("feeding:today")
@@ -1310,7 +1390,7 @@ def meal_delete(request, meal_number):
 
 @login_required
 def allergen_list(request):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     required_cards = []
     recommended_cards = []
@@ -1385,7 +1465,7 @@ def allergen_list(request):
 
 @login_required
 def allergen_detail(request, allergen_id):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     allergen = get_object_or_404(
         Allergen,
@@ -1550,7 +1630,7 @@ def allergen_detail(request, allergen_id):
 
 @login_required
 def allergy_reaction_edit(request, meal_item_id):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     meal_item = get_object_or_404(
         MealItem.objects.select_related(
@@ -1637,7 +1717,7 @@ def allergy_reaction_edit(request, meal_item_id):
 @login_required
 @require_POST
 def allergy_reaction_delete(request, meal_item_id):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     meal_item = get_object_or_404(
         MealItem,
@@ -1670,7 +1750,7 @@ def allergy_reaction_delete(request, meal_item_id):
 @login_required
 @require_POST
 def allergy_photo_delete(request, photo_id):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     photo = get_object_or_404(
         AllergyReactionPhoto,
@@ -1695,7 +1775,7 @@ def allergy_photo_delete(request, photo_id):
 
 @login_required
 def settings_view(request):
-    baby = get_current_baby()
+    baby = get_current_baby(request)
 
     if request.method == "POST":
         form = BabySettingsForm(

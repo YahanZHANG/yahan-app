@@ -71,4 +71,9 @@ urlpatterns = [
         views.settings_view,
         name="settings",
     ),
+    path(
+        "babies/<int:baby_id>/select/",
+        views.select_baby,
+        name="select_baby",
+    ),
 ]
