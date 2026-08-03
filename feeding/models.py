@@ -87,6 +87,110 @@ class BabyMembership(models.Model):
             f"{self.user.username}"
         )
 
+class Supplement(models.Model):
+    """子どもが使用する薬・サプリの種類。"""
+
+    name = models.CharField(
+        "名前",
+        max_length=100,
+        unique=True,
+    )
+    is_active = models.BooleanField(
+        "使用中",
+        default=True,
+    )
+    display_order = models.PositiveIntegerField(
+        "表示順",
+        default=0,
+    )
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "薬・サプリ"
+        verbose_name_plural = "薬・サプリ"
+        ordering = [
+            "display_order",
+            "name",
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class SupplementIntake(models.Model):
+    """子どもごとの日別の薬・サプリ摂取記録。"""
+
+    baby = models.ForeignKey(
+        Baby,
+        verbose_name="子ども",
+        on_delete=models.CASCADE,
+        related_name="supplement_intakes",
+    )
+    supplement = models.ForeignKey(
+        Supplement,
+        verbose_name="薬・サプリ",
+        on_delete=models.CASCADE,
+        related_name="intakes",
+    )
+    date = models.DateField(
+        "日付",
+    )
+    taken = models.BooleanField(
+        "飲んだ",
+        default=False,
+    )
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "薬・サプリ摂取記録"
+        verbose_name_plural = "薬・サプリ摂取記録"
+        ordering = [
+            "-date",
+            "supplement__display_order",
+            "supplement__name",
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "baby",
+                    "supplement",
+                    "date",
+                ],
+                name=(
+                    "unique_supplement_intake_"
+                    "per_baby_and_day"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+        status = (
+            "飲んだ"
+            if self.taken
+            else "飲んでいない"
+        )
+
+        return (
+            f"{self.baby.name}："
+            f"{self.date}："
+            f"{self.supplement.name}："
+            f"{status}"
+        )
+
 class FoodCategory(models.Model):
     """野菜、果物、肉類などの食材ジャンル。"""
 

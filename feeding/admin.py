@@ -16,6 +16,8 @@ from .models import (
     Meal,
     MealItem,
     MealItemIngredient,
+    Supplement,
+    SupplementIntake,
     
 )
 
@@ -496,3 +498,54 @@ class FeedingGuidelineAdmin(admin.ModelAdmin):
             f"{obj.min_age_months}〜"
             f"{obj.max_age_months}か月"
         )
+
+
+@admin.register(Supplement)
+class SupplementAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "display_order",
+        "is_active",
+        "updated_at",
+    )
+    list_editable = (
+        "display_order",
+        "is_active",
+    )
+    search_fields = (
+        "name",
+    )
+    ordering = (
+        "display_order",
+        "name",
+    )
+
+
+@admin.register(SupplementIntake)
+class SupplementIntakeAdmin(admin.ModelAdmin):
+    list_display = (
+        "date",
+        "baby",
+        "supplement",
+        "taken",
+        "updated_at",
+    )
+    list_filter = (
+        "taken",
+        "supplement",
+        "baby",
+        "date",
+    )
+    search_fields = (
+        "baby__name",
+        "supplement__name",
+    )
+    list_select_related = (
+        "baby",
+        "supplement",
+    )
+    date_hierarchy = "date"
+    ordering = (
+        "-date",
+        "supplement__display_order",
+    )
