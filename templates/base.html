@@ -44,42 +44,11 @@
 </head>
 
 <body>
+    {% if request.resolver_match.namespace != "portal" %}
     <header class="app-header">
-        <div class="container app-container">
-            <div>
-                <h1 class="app-title mb-0">
-                    諾依の家族旅行
-                </h1>
-            </div>
-
-            <div class="header-user">
-    <div class="header-user-name">
-        <small>ログイン中</small>
-        <strong>
-            {% if request.user.first_name %}
-                {{ request.user.first_name }}
-            {% else %}
-                {{ request.user.username }}
-            {% endif %}
-        </strong>
-    </div>
-
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-
-        <button
-            type="submit"
-            class="profile-button"
-            aria-label="ログアウト"
-            title="ログアウト"
-        >
-            <i class="bi bi-box-arrow-right"></i>
-        </button>
-    </form>
-</div>
-
-        </div>
+        ...
     </header>
+    {% endif %}
 
     <main class="container app-container page-content">
         {% block content %}
