@@ -2184,3 +2184,103 @@ body.guest {
 .meal-first-field {
     margin-top: 18px;
 }
+
+
+/* ===== Reaction ===== */
+
+.reaction-fieldset{
+    margin-top:22px;
+    border:none;
+    padding:0;
+}
+
+.reaction-fieldset legend{
+    font-weight:700;
+    font-size:.92rem;
+    margin-bottom:12px;
+}
+
+.reaction-fieldset legend small{
+    color:#999;
+    font-weight:500;
+}
+
+.reaction-button-grid{
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+
+    gap:10px;
+}
+
+.reaction-option{
+
+    position:relative;
+
+    cursor:pointer;
+}
+
+.reaction-option input{
+
+    position:absolute;
+
+    opacity:0;
+
+    pointer-events:none;
+}
+
+.reaction-option-content{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    min-height:45px;
+
+    border-radius:18px;
+
+    background:#f6f7f9;
+
+    transition:.18s;
+
+    border:2px solid transparent;
+}
+
+.reaction-emoji{
+    font-size:1.5rem;
+    line-height:1;
+}
+
+.reaction-option input:checked
++ .reaction-option-content{
+
+    background:#fff3cc;
+
+    border-color:#ffd84c;
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 8px 16px rgba(0,0,0,.08);
+}
+
+.reaction-option:hover
+.reaction-option-content{
+
+    transform:translateY(-2px);
+}
+
+.clear-reaction-button{
+
+    margin-top:12px;
+
+    background:none;
+
+    border:none;
+
+    color:#888;
+
+    cursor:pointer;
+
+    font-size:.8rem;
+}

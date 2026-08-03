@@ -196,30 +196,19 @@
 
                         <span class="reaction-option-content">
                             {% if choice.data.value == "love" %}
-                                <span class="reaction-emoji">
-                                    🤩
-                                </span>
-                                <small>大喜び</small>
+                                <span class="reaction-emoji">🤩</span>
 
                             {% elif choice.data.value == "happy" %}
-                                <span class="reaction-emoji">
-                                    😊
-                                </span>
-                                <small>嬉</small>
+                                <span class="reaction-emoji">😊</span>
 
                             {% elif choice.data.value == "normal" %}
-                                <span class="reaction-emoji">
-                                    😐
-                                </span>
-                                <small>普</small>
+                                <span class="reaction-emoji">😐</span>
 
                             {% elif choice.data.value == "unsure" %}
-                                <span class="reaction-emoji">
-                                    😕
-                                </span>
-                                <small>微妙</small>
+                                <span class="reaction-emoji">😕</span>
                             {% endif %}
                         </span>
+                        
                     </label>
                 {% endif %}
             {% endfor %}
