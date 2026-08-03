@@ -84,9 +84,6 @@
                     <div class="daily-guideline-heading">
                         <div>
                             <strong>今日の合計</strong>
-                            <small>
-                                本日記録した全食事を合算
-                            </small>
                         </div>
 
                         <span>
@@ -184,11 +181,6 @@
                         {% endfor %}
                     </div>
 
-                    <p>
-                        魚・肉・豆腐・卵・乳製品を
-                        すべて目安量まで食べる必要はない。
-                        今日使用したたんぱく源の内訳として表示している。
-                    </p>
                 </article>
 
                 {% if daily_guideline_summary.excluded_items %}
@@ -208,12 +200,6 @@
                         </ul>
                     </details>
                 {% endif %}
-
-                <p class="guideline-general-note">
-                    表示は本日記録した離乳食の合計。
-                    母乳・ミルク由来の栄養は含まない。
-                    目安量はノルマではなく、食欲や成長・発達に応じて調整する。
-                </p>
 
             {% else %}
                 <div class="dashboard-empty-card">

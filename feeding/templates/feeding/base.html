@@ -11,7 +11,7 @@
 
     <title>
         {% block title %}
-            {{ feeding_baby.name }}の離乳食記録
+            {{ baby.name }}の離乳食記録
         {% endblock %}
     </title>
 
@@ -31,7 +31,7 @@
             href="{% url 'feeding:today' %}"
             class="app-title"
         >
-            離乳食記録
+            {{ baby.name }}の離乳食記録
         </a>
         
         <form
