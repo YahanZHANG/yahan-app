@@ -21,7 +21,7 @@
 
         <div class="expense-header-actions">
             <a
-                href="{% url 'travel:expense_settlement' %}"
+                href="{% url 'expense_settlement' %}"
                 class="small-action-button"
             >
                 <i class="bi bi-calculator"></i>
@@ -29,7 +29,7 @@
             </a>
 
             <a
-                href="{% url 'travel:expense_create' %}"
+                href="{% url 'expense_create' %}"
                 class="small-action-button"
             >
                 ＋ 支出を追加
@@ -57,7 +57,7 @@
                             </span>
 
                             <a
-                                href="{% url 'travel:expense_update' expense.id %}"
+                                href="{% url 'expense_update' expense.id %}"
                                 class="schedule-edit-button"
                                 aria-label="支出を編集"
                                 title="支出を編集"
@@ -66,7 +66,7 @@
                             </a>
 
                             <a
-                                href="{% url 'travel:expense_delete' expense.id %}"
+                                href="{% url 'expense_delete' expense.id %}"
                                 class="schedule-delete-button"
                                 aria-label="支出を削除"
                                 title="支出を削除"
@@ -116,7 +116,7 @@
             <i class="bi bi-wallet2"></i>
             <p>支出はまだありません</p>
 
-            <a href="{% url 'travel:expense_create' %}">
+            <a href="{% url 'expense_create' %}">
                 最初の支出を追加
             </a>
         </div>

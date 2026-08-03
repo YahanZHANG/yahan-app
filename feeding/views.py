@@ -33,6 +33,7 @@ from .models import (
     AllergyReaction,
     AllergyReactionPhoto,
     Baby,
+    BabyMembership,
     Dish,
     FeedingGuideline,
     Food,
@@ -1774,9 +1775,58 @@ def allergy_photo_delete(request, photo_id):
         meal_item_id=meal_item_id,
     )
 
+@login_required
+def baby_create(request):
+    if request.method == "POST":
+        form = BabySettingsForm(
+            request.POST,
+        )
+
+        if form.is_valid():
+            with transaction.atomic():
+                baby = form.save()
+
+                BabyMembership.objects.create(
+                    baby=baby,
+                    user=request.user,
+                    role=BabyMembership.Role.PARENT,
+                    can_edit=True,
+                )
+
+                request.session[
+                    "feeding_current_baby_id"
+                ] = baby.pk
+
+            messages.success(
+                request,
+                f"{baby.name}を登録した。",
+            )
+
+            return redirect(
+                "feeding:settings",
+            )
+
+    else:
+        form = BabySettingsForm()
+
+    context = {
+        "form": form,
+    }
+
+    return render(
+        request,
+        "feeding/baby_form.html",
+        context,
+    )
 
 @login_required
 def settings_view(request):
+    accessible_babies = list(
+        get_accessible_babies(
+            request.user
+        )
+    )
+
     baby = get_current_baby(request)
 
     if request.method == "POST":
@@ -1786,12 +1836,30 @@ def settings_view(request):
         )
 
         if form.is_valid():
-            saved_baby = form.save()
+            with transaction.atomic():
+                is_new_baby = baby is None
+                saved_baby = form.save()
 
-            if baby is None:
+                if is_new_baby:
+                    BabyMembership.objects.get_or_create(
+                        baby=saved_baby,
+                        user=request.user,
+                        defaults={
+                            "role": (
+                                BabyMembership.Role.PARENT
+                            ),
+                            "can_edit": True,
+                        },
+                    )
+
+                    request.session[
+                        "feeding_current_baby_id"
+                    ] = saved_baby.pk
+
+            if is_new_baby:
                 messages.success(
                     request,
-                    f"「{saved_baby.name}」を登録した。",
+                    f"{saved_baby.name}を登録した。",
                 )
             else:
                 messages.success(
@@ -1800,7 +1868,7 @@ def settings_view(request):
                 )
 
             return redirect(
-                "feeding:today",
+                "feeding:settings",
             )
 
     else:
@@ -1812,6 +1880,7 @@ def settings_view(request):
         "baby": baby,
         "form": form,
         "is_new_baby": baby is None,
+        "accessible_babies": accessible_babies,
     }
 
     return render(

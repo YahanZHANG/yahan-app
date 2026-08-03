@@ -60,7 +60,7 @@
         </div>
 
         <a
-            href="{% url 'travel:schedule_list' %}"
+            href="{% url 'schedule_list' %}"
             class="small-action-button"
         >
             今後の予定一覧
@@ -313,7 +313,7 @@
     <div class="quick-actions">
         <form
             method="post"
-            action="{% url 'travel:milk_log_quick_create' 200 %}"
+            action="{% url 'milk_log_quick_create' 200 %}"
             class="quick-log-form"
         >
             {% csrf_token %}
@@ -328,7 +328,7 @@
 
         <form
             method="post"
-            action="{% url 'travel:milk_log_quick_create' 150 %}"
+            action="{% url 'milk_log_quick_create' 150 %}"
             class="quick-log-form"
         >
             {% csrf_token %}
@@ -342,7 +342,7 @@
         </form>
 
         <a
-            href="{% url 'travel:milk_log_create' %}"
+            href="{% url 'milk_log_create' %}"
             class="quick-action-button"
         >
             ミルク手動
@@ -351,7 +351,7 @@
     {% if active_sleep %}
         <form
             method="post"
-            action="{% url 'travel:sleep_end' %}"
+            action="{% url 'sleep_end' %}"
             class="quick-log-form"
         >
             {% csrf_token %}
@@ -366,7 +366,7 @@
     {% else %}
         <form
             method="post"
-            action="{% url 'travel:sleep_start' %}"
+            action="{% url 'sleep_start' %}"
             class="quick-log-form"
         >
             {% csrf_token %}
@@ -381,14 +381,14 @@
     {% endif %}
 
         <a
-            href="{% url 'travel:sleep_log_create' %}"
+            href="{% url 'sleep_log_create' %}"
             class="quick-action-button"
         >
             睡眠手動
         </a>
 
         <a
-            href="{% url 'travel:poop_log_create' %}"
+            href="{% url 'poop_log_create' %}"
             class="quick-action-button"
         >
             うんち
@@ -406,14 +406,14 @@
 
         <div class="growth-note-actions">
             <a
-                href="{% url 'travel:baby_growth_note_list' %}"
+                href="{% url 'baby_growth_note_list' %}"
                 class="small-action-button"
             >
                 記録一覧
             </a>
 
             <a
-                href="{% url 'travel:baby_growth_note_create' %}"
+                href="{% url 'baby_growth_note_create' %}"
                 class="small-action-button"
             >
                 ＋ 記録
@@ -484,7 +484,7 @@
                 <i class="bi bi-stars"></i>
                 <p>成長メモはまだありません</p>
 
-                <a href="{% url 'travel:baby_growth_note_create' %}">
+                <a href="{% url 'baby_growth_note_create' %}">
                     最初の記録を追加
                 </a>
             </div>
@@ -504,7 +504,7 @@
 
     <div class="expense-home-grid">
         <a
-            href="{% url 'travel:expense_create' %}"
+            href="{% url 'expense_create' %}"
             class="app-card expense-home-card"
         >
             <div class="expense-home-icon">
@@ -519,7 +519,7 @@
         </a>
 
         <a
-            href="{% url 'travel:expense_list' %}"
+            href="{% url 'expense_list' %}"
             class="app-card expense-home-card"
         >
             <div class="expense-home-icon">
@@ -534,7 +534,7 @@
         </a>
 
         <a
-            href="{% url 'travel:expense_settlement' %}"
+            href="{% url 'expense_settlement' %}"
             class="app-card expense-home-card expense-home-card-primary"
         >
             <div class="expense-home-icon">
@@ -558,14 +558,14 @@
 
         <div class="task-heading-actions">
             <a
-                href="{% url 'travel:task_list' %}"
+                href="{% url 'task_list' %}"
                 class="small-action-button"
             >
                 依頼事項一覧
             </a>
 
             <a
-                href="{% url 'travel:task_create' %}"
+                href="{% url 'task_create' %}"
                 class="small-action-button"
             >
                 ＋ 追加
@@ -577,7 +577,7 @@
         {% for task in tasks %}
             <form
                 method="post"
-                action="{% url 'travel:task_toggle' task.id %}"
+                action="{% url 'task_toggle' task.id %}"
             >
                 {% csrf_token %}
 
@@ -634,7 +634,7 @@
                 <i class="bi bi-check2-square"></i>
                 <p>お願いはまだありません</p>
 
-                <a href="{% url 'travel:task_create' %}">
+                <a href="{% url 'task_create' %}">
                     最初のお願いを追加
                 </a>
             </div>
@@ -652,14 +652,14 @@
 
         <div class="meeting-note-actions">
             <a
-                href="{% url 'travel:meeting_note_list' %}"
+                href="{% url 'meeting_note_list' %}"
                 class="small-action-button"
             >
                 会議一覧
             </a>
 
             <a
-                href="{% url 'travel:meeting_note_create' %}"
+                href="{% url 'meeting_note_create' %}"
                 class="small-action-button"
             >
                 ＋ 追加
@@ -747,7 +747,7 @@
             <i class="bi bi-journal-text"></i>
             <p>家族会議メモはまだありません</p>
 
-            <a href="{% url 'travel:meeting_note_create' %}">
+            <a href="{% url 'meeting_note_create' %}">
                 最初のメモを追加
             </a>
         </div>

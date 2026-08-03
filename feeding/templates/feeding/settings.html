@@ -23,6 +23,69 @@
     </p>
 </section>
 
+{% if accessible_babies %}
+    <section class="settings-section">
+        <h3>管理する子ども</h3>
+
+        <div class="settings-baby-list">
+            {% for accessible_baby in accessible_babies %}
+                {% if accessible_baby.pk == baby.pk %}
+                    <div class="settings-baby-card is-active">
+                        <span class="settings-baby-avatar">
+                            {{ accessible_baby.name|first }}
+                        </span>
+
+                        <div class="settings-baby-main">
+                            <strong>{{ accessible_baby.name }}</strong>
+                            <small>現在選択中</small>
+                        </div>
+
+                        <span class="settings-baby-check">
+                            ✓
+                        </span>
+                    </div>
+                {% else %}
+                    <form
+                        method="post"
+                        action="{% url 'feeding:select_baby' accessible_baby.pk %}"
+                        class="settings-baby-form"
+                    >
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{% url 'feeding:settings' %}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="settings-baby-card"
+                        >
+                            <span class="settings-baby-avatar">
+                                {{ accessible_baby.name|first }}
+                            </span>
+
+                            <div class="settings-baby-main">
+                                <strong>{{ accessible_baby.name }}</strong>
+                                <small>この子に切り替える</small>
+                            </div>
+                        </button>
+                    </form>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <a
+            href="{% url 'feeding:baby_create' %}"
+            class="settings-add-baby-button"
+        >
+            <span aria-hidden="true">＋</span>
+            子どもを追加
+        </a>
+    </section>
+{% endif %}
+
 <section class="settings-section">
     <div class="settings-section-heading">
         <div class="settings-icon">

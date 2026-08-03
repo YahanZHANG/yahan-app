@@ -2330,136 +2330,124 @@ body.guest {
 }
 
 /* ==========================================================
-   Baby switcher
+   Settings baby switcher
    ========================================================== */
 
-.baby-switcher {
-    margin-bottom: 22px;
+.settings-section {
+    margin-bottom: 24px;
 }
 
-.baby-switcher-label {
-    margin: 0 0 9px;
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-weight: 700;
+.settings-section h3 {
+    margin: 0 0 11px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 800;
 }
 
-.baby-switcher-list {
-    display: flex;
-    gap: 9px;
-    overflow-x: auto;
-    padding: 2px 2px 7px;
-    scrollbar-width: none;
+.settings-baby-list {
+    display: grid;
+    gap: 10px;
 }
 
-.baby-switcher-list::-webkit-scrollbar {
-    display: none;
-}
-
-.baby-switcher-form {
-    flex: 0 0 auto;
+.settings-baby-form {
     margin: 0;
 }
 
-.baby-switcher-button {
-    display: flex;
-    min-width: 122px;
-    min-height: 49px;
-    gap: 9px;
+.settings-baby-card {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 12px;
     align-items: center;
-    padding: 7px 13px 7px 8px;
-    background: #f0f2f4;
-    color: var(--muted);
-    border: 0;
+    width: 100%;
+    min-height: 62px;
+    padding: 10px 13px;
+    background: #f4f5f7;
+    color: var(--text-main);
+    border: 1px solid transparent;
     border-radius: 16px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    white-space: nowrap;
+    text-align: left;
     cursor: pointer;
-    transition:
-        background-color 160ms ease,
-        color 160ms ease,
-        box-shadow 160ms ease,
-        transform 120ms ease;
 }
 
-.baby-switcher-button:not(:disabled):hover {
-    background: #e9ecef;
+button.settings-baby-card:hover {
+    background: #eceff2;
 }
 
-.baby-switcher-button:not(:disabled):active {
-    transform: scale(0.97);
-}
-
-.baby-switcher-button.is-active {
+.settings-baby-card.is-active {
     background: #ffffff;
-    color: var(--primary);
-    box-shadow:
-        0 6px 18px rgba(35, 48, 58, 0.1);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
     cursor: default;
 }
 
-.baby-switcher-avatar {
+.settings-baby-avatar {
     display: grid;
-    width: 34px;
-    height: 34px;
-    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
     place-items: center;
-    background: #ffffff;
+    background: var(--primary-soft);
     color: var(--primary);
     border-radius: 50%;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 900;
 }
 
-.baby-switcher-button.is-active
-.baby-switcher-avatar {
-    background: var(--primary-soft);
+.settings-baby-main {
+    display: grid;
+    gap: 2px;
 }
 
-.baby-switcher-check {
-    margin-left: auto;
+.settings-baby-main strong {
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.settings-baby-main small {
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.settings-baby-check {
     color: var(--primary);
-    font-size: 0.76rem;
+    font-size: 0.9rem;
     font-weight: 900;
 }
 
-.current-baby-summary {
+.settings-add-baby-button {
     display: flex;
-    width: fit-content;
-    gap: 9px;
+    min-height: 50px;
+    gap: 8px;
     align-items: center;
-    margin-bottom: 21px;
-    padding: 7px 12px 7px 7px;
+    justify-content: center;
+    margin-top: 11px;
+    padding: 10px 14px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border: 1px dashed var(--primary);
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.settings-add-baby-button:hover {
+    color: var(--primary);
+    background: #dcebef;
+}
+
+.settings-add-baby-button span {
+    font-size: 1rem;
+}
+
+.settings-card {
+    margin-bottom: 18px;
+    padding: 18px;
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: var(--shadow-sm);
 }
 
-.current-baby-avatar {
-    display: grid;
-    width: 34px;
-    height: 34px;
-    place-items: center;
-    background: var(--primary-soft);
-    color: var(--primary);
-    border-radius: 50%;
-    font-size: 0.8rem;
-    font-weight: 900;
-}
-
-.current-baby-summary div {
-    display: grid;
-}
-
-.current-baby-summary small {
-    color: var(--muted);
-    font-size: 0.62rem;
-}
-
-.current-baby-summary strong {
-    color: var(--text-main);
-    font-size: 0.82rem;
-    font-weight: 800;
+.settings-card .form-group:last-child {
+    margin-bottom: 0;
 }
