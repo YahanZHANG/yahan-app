@@ -6,37 +6,54 @@
         {{ hidden_field }}
     {% endfor %}
 
-    <div class="meal-item-toolbar">
-        <div
-            class="item-type-toggle"
-            role="group"
-            aria-label="食材または料理"
+<div class="meal-item-toolbar">
+    <div
+        class="item-type-toggle"
+        role="group"
+        aria-label="食材または料理"
+    >
+        <button
+            type="button"
+            class="item-type-toggle-button"
+            data-item-type-button="food"
+            aria-pressed="false"
         >
-            <button
-                type="button"
-                class="item-type-toggle-button"
-                data-item-type-button="food"
+            <span
+                class="item-type-icon"
+                aria-hidden="true"
             >
-                食材
-            </button>
+                🥕
+            </span>
 
-            <button
-                type="button"
-                class="item-type-toggle-button"
-                data-item-type-button="dish"
-            >
-                料理
-            </button>
-        </div>
+            <span>食材</span>
+        </button>
 
         <button
             type="button"
-            class="remove-item-button"
-            data-remove-row
+            class="item-type-toggle-button"
+            data-item-type-button="dish"
+            aria-pressed="false"
         >
-            削除
+            <span
+                class="item-type-icon"
+                aria-hidden="true"
+            >
+                🍲
+            </span>
+
+            <span>料理</span>
         </button>
     </div>
+</div>
+
+<button
+    type="button"
+    class="remove-item-button"
+    data-remove-row
+    aria-label="この食材・料理を削除"
+>
+    <span aria-hidden="true">×</span>
+</button>
 
     {% if item_form.non_field_errors %}
         <div class="form-error">

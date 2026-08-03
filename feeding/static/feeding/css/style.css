@@ -2043,3 +2043,60 @@ body.guest {
     font-weight: 800;
     cursor: pointer;
 }
+
+.item-type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: min(100%, 270px);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.item-type-toggle-button {
+    display: flex;
+    min-height: 68px;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 0;
+    border-radius: 18px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow:
+        0 5px 12px rgba(32, 45, 55, 0.07);
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.item-type-toggle-button[data-item-type-button="food"] {
+    background: #edf8ee;
+    color: #3f7d52;
+}
+
+.item-type-toggle-button[data-item-type-button="dish"] {
+    background: #fff7da;
+    color: #9b7718;
+}
+
+.item-type-toggle-button.is-active {
+    transform: translateY(-3px);
+    box-shadow:
+        0 10px 20px rgba(32, 45, 55, 0.15);
+}
+
+.item-type-toggle-button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.item-type-icon {
+    width: auto;
+    height: auto;
+    font-size: 1.55rem;
+}
