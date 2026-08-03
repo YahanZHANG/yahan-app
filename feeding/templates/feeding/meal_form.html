@@ -237,6 +237,30 @@
         }
     }
 
+    function prepareCategoryFilter(itemSelect) {
+        if (!itemSelect) {
+            return;
+        }
+
+        if (itemSelect.dataset.optionsPrepared === "true") {
+            return;
+        }
+
+        const optionData = Array.from(
+            itemSelect.options
+        ).map((option) => ({
+            value: option.value,
+            text: option.textContent,
+            categoryId: option.dataset.categoryId || "",
+        }));
+
+        itemSelect.dataset.allOptions = JSON.stringify(
+            optionData
+        );
+
+        itemSelect.dataset.optionsPrepared = "true";
+    }
+
     function filterOptions(
         categorySelect,
         itemSelect
@@ -245,46 +269,81 @@
             return;
         }
 
+        prepareCategoryFilter(itemSelect);
+
         const categoryId = categorySelect.value;
-        const selectedOption = itemSelect.options[
-            itemSelect.selectedIndex
-        ];
+        const previousValue = itemSelect.value;
 
-        Array.from(itemSelect.options).forEach(
-            (option) => {
-                if (!option.value) {
-                    option.hidden = false;
-                    option.disabled = false;
-                    return;
-                }
-
-                const optionCategoryId = (
-                    option.dataset.categoryId
-                );
-
-                const shouldShow = (
-                    categoryId
-                    && optionCategoryId === categoryId
-                );
-
-                option.hidden = !shouldShow;
-                option.disabled = !shouldShow;
-            }
+        const allOptions = JSON.parse(
+            itemSelect.dataset.allOptions || "[]"
         );
 
-        if (
-            selectedOption
-            && selectedOption.value
-            && selectedOption.dataset.categoryId
-            !== categoryId
-        ) {
-            itemSelect.value = "";
+        itemSelect.innerHTML = "";
+
+        const placeholderOption = document.createElement(
+            "option"
+        );
+
+        placeholderOption.value = "";
+
+        if (categoryId) {
+            placeholderOption.textContent = (
+                "選択してください"
+            );
+        } else {
+            placeholderOption.textContent = (
+                "先にジャンルを選択"
+            );
         }
 
-    if (!categoryId) {
-        itemSelect.value = "";
+        itemSelect.appendChild(
+            placeholderOption
+        );
+
+        if (!categoryId) {
+            itemSelect.disabled = true;
+            return;
+        }
+
+        itemSelect.disabled = false;
+
+        allOptions.forEach((optionData) => {
+            if (
+                !optionData.value
+                || optionData.categoryId !== categoryId
+            ) {
+                return;
+            }
+
+            const option = document.createElement(
+                "option"
+            );
+
+            option.value = optionData.value;
+            option.textContent = optionData.text;
+            option.dataset.categoryId = (
+                optionData.categoryId
+            );
+
+            if (optionData.value === previousValue) {
+                option.selected = true;
+            }
+
+            itemSelect.appendChild(option);
+        });
+
+        const previousOptionStillExists = Array.from(
+            itemSelect.options
+        ).some(
+            (option) => (
+                option.value === previousValue
+            )
+        );
+
+        if (!previousOptionStillExists) {
+            itemSelect.value = "";
+        }
     }
-}
 
     function bindRow(row) {
         const typeInput = row.querySelector(
@@ -375,6 +434,14 @@
 
         updateSelectedType(row);
 
+        prepareCategoryFilter(
+            foodSelect
+        );
+
+        prepareCategoryFilter(
+            dishSelect
+        );
+
         filterOptions(
             foodCategorySelect,
             foodSelect
@@ -419,6 +486,10 @@
             foodCategorySelect.addEventListener(
                 "change",
                 () => {
+                    if (foodSelect) {
+                        foodSelect.value = "";
+                    }
+
                     filterOptions(
                         foodCategorySelect,
                         foodSelect
@@ -431,6 +502,10 @@
             dishCategorySelect.addEventListener(
                 "change",
                 () => {
+                    if (dishSelect) {
+                        dishSelect.value = "";
+                    }
+
                     filterOptions(
                         dishCategorySelect,
                         dishSelect
