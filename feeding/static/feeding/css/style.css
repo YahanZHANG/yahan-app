@@ -63,13 +63,6 @@ a {
     justify-content: space-between;
 }
 
-.app-title {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 800;
-    text-decoration: none;
-}
-
 .app-main {
     padding: 24px 0;
 }
@@ -1898,7 +1891,7 @@ body.guest {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 14px;
 }
 
 .header-logout-button {
@@ -1957,7 +1950,7 @@ body.guest {
 }
 
 .logout-button {
-    padding: 8px 14px;
+    padding: 7px 12px;
 
     border: 1px solid rgba(255,255,255,.35);
     border-radius: 999px;
@@ -1967,7 +1960,7 @@ body.guest {
     color: #fff;
 
     font: inherit;
-    font-size: 13px;
+    font-size: .82rem;
     font-weight: 700;
 
     cursor: pointer;
@@ -2898,15 +2891,110 @@ button.settings-baby-card:hover {
     gap: 12px;
 }
 
+/* ==========================================================
+   Feeding header compact layout
+   ========================================================== */
+
+.app-header .app-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.app-title {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.header-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
 .portal-back-link {
-    color: rgba(255,255,255,.72);
-    font-size: .72rem;
-    font-weight: 600;
+    display: inline-flex;
+    min-height: 30px;
+    padding: 5px 8px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
     text-decoration: none;
     white-space: nowrap;
-    transition: color .15s;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .portal-back-link:hover {
-    color: #fff;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.logout-button {
+    min-height: 30px;
+    padding: 5px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 999px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.logout-button:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.header-actions form {
+    margin: 0;
+}
+
+@media (max-width: 420px) {
+    .app-container {
+        width: min(100% - 20px, 720px);
+    }
+
+    .app-header {
+        padding:
+            calc(10px + env(safe-area-inset-top))
+            0
+            10px;
+    }
+
+    .app-title {
+        font-size: 0.76rem;
+    }
+
+    .portal-back-link,
+    .logout-button {
+        min-height: 28px;
+        padding: 4px 7px;
+        font-size: 0.61rem;
+    }
+
+    .header-actions {
+        gap: 4px;
+    }
 }
