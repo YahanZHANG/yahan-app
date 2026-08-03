@@ -6,54 +6,53 @@
         {{ hidden_field }}
     {% endfor %}
 
-<div class="meal-item-toolbar">
-    <div
-        class="item-type-toggle"
-        role="group"
-        aria-label="食材または料理"
-    >
-        <button
-            type="button"
-            class="item-type-toggle-button"
-            data-item-type-button="food"
-            aria-pressed="false"
+    <div class="meal-item-toolbar">
+        <div
+            class="item-type-toggle"
+            role="group"
+            aria-label="食材または料理"
         >
-            <span
-                class="item-type-icon"
-                aria-hidden="true"
+            <button
+                type="button"
+                class="item-type-toggle-button"
+                data-item-type-button="food"
+                aria-pressed="false"
             >
-                🥕
-            </span>
+                <span
+                    class="item-type-icon"
+                    aria-hidden="true"
+                >
+                    🥕
+                </span>
 
-            <span>食材</span>
-        </button>
+                <span>食材</span>
+            </button>
 
-        <button
-            type="button"
-            class="item-type-toggle-button"
-            data-item-type-button="dish"
-            aria-pressed="false"
-        >
-            <span
-                class="item-type-icon"
-                aria-hidden="true"
+            <button
+                type="button"
+                class="item-type-toggle-button"
+                data-item-type-button="dish"
+                aria-pressed="false"
             >
-                🍲
-            </span>
+                <span
+                    class="item-type-icon"
+                    aria-hidden="true"
+                >
+                    🍲
+                </span>
 
-            <span>料理</span>
-        </button>
+                <span>料理</span>
+            </button>
+        </div>
     </div>
-</div>
 
-<button
-    type="button"
-    class="remove-item-button"
-    data-remove-row
-    aria-label="この食材・料理を削除"
->
-    <span aria-hidden="true">×</span>
-</button>
+    <button
+        type="button"
+        class="remove-item-button"
+        data-remove-row
+    >
+        削除
+    </button>
 
     {% if item_form.non_field_errors %}
         <div class="form-error">
@@ -62,11 +61,13 @@
     {% endif %}
 
     {% for error in item_form.item_type.errors %}
-        <p class="field-error">{{ error }}</p>
+        <p class="field-error">
+            {{ error }}
+        </p>
     {% endfor %}
 
     <div
-        class="form-group"
+        class="form-group meal-inline-field meal-first-field"
         data-food-category-field
     >
         <label
@@ -85,10 +86,12 @@
     </div>
 
     <div
-        class="form-group"
+        class="form-group meal-inline-field"
         data-food-field
     >
-        <label for="{{ item_form.food.id_for_label }}">
+        <label
+            for="{{ item_form.food.id_for_label }}"
+        >
             {{ item_form.food.label }}
         </label>
 
@@ -109,7 +112,7 @@
     </div>
 
     <div
-        class="form-group"
+        class="form-group meal-inline-field meal-first-field"
         data-dish-category-field
     >
         <label
@@ -128,10 +131,12 @@
     </div>
 
     <div
-        class="form-group"
+        class="form-group meal-inline-field"
         data-dish-field
     >
-        <label for="{{ item_form.dish.id_for_label }}">
+        <label
+            for="{{ item_form.dish.id_for_label }}"
+        >
             {{ item_form.dish.label }}
         </label>
 
@@ -151,17 +156,17 @@
         {% endfor %}
     </div>
 
-    <div class="form-group">
-        <label for="{{ item_form.amount.id_for_label }}">
-            {{ item_form.amount.label }}
+    <div
+        class="form-group meal-inline-field meal-amount-field"
+    >
+        <label
+            for="{{ item_form.amount.id_for_label }}"
+        >
+            実際に食べた量（g）
         </label>
 
         <div class="meal-amount-input-row">
             {{ item_form.amount }}
-
-            <span class="meal-amount-unit">
-                g
-            </span>
         </div>
 
         {% for error in item_form.amount.errors %}
@@ -191,16 +196,27 @@
 
                         <span class="reaction-option-content">
                             {% if choice.data.value == "love" %}
-                                <span class="reaction-emoji">🤩</span>
+                                <span class="reaction-emoji">
+                                    🤩
+                                </span>
                                 <small>大喜び</small>
+
                             {% elif choice.data.value == "happy" %}
-                                <span class="reaction-emoji">😊</span>
+                                <span class="reaction-emoji">
+                                    😊
+                                </span>
                                 <small>嬉</small>
+
                             {% elif choice.data.value == "normal" %}
-                                <span class="reaction-emoji">😐</span>
+                                <span class="reaction-emoji">
+                                    😐
+                                </span>
                                 <small>普</small>
+
                             {% elif choice.data.value == "unsure" %}
-                                <span class="reaction-emoji">😕</span>
+                                <span class="reaction-emoji">
+                                    😕
+                                </span>
                                 <small>微妙</small>
                             {% endif %}
                         </span>

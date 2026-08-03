@@ -234,6 +234,7 @@ a {
 
 .form-section,
 .meal-item-card {
+    position:relative;
     margin-bottom: 16px;
     padding: 18px;
     border: 1px solid var(--border);
@@ -322,15 +323,35 @@ a {
     background: #fff1f2;
 }
 
-.remove-item-button {
-    padding: 6px 10px;
-    border: 0;
-    border-radius: 9px;
-    color: #a33140;
-    background: #fff0f2;
-    font: inherit;
-    font-size: 13px;
-    cursor: pointer;
+.remove-item-button{
+
+    position:absolute;
+
+    top:14px;
+    right:14px;
+
+    padding:10px 18px;
+
+    border:none;
+
+    border-radius:999px;
+
+    background:#fdecef;
+
+    color:#c15674;
+
+    font-size:.72rem;
+    font-weight:700;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,.08);
+}
+
+.remove-item-button:hover{
+    background:#fad9df;
+    transform:translateY(-1px);
 }
 
 .form-actions {
@@ -2055,34 +2076,34 @@ body.guest {
     box-shadow: none;
 }
 
-.item-type-toggle-button {
-    display: flex;
-    min-height: 68px;
-    flex-direction: column;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    border: 0;
-    border-radius: 18px;
-    font-size: 0.88rem;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow:
-        0 5px 12px rgba(32, 45, 55, 0.07);
-    transition:
-        transform 160ms ease,
-        box-shadow 160ms ease;
+.item-type-toggle-button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+
+    min-height:38px;
+    padding:6px 8px;
+
+    border:none;
+    border-radius:15px;
+
+    cursor:pointer;
+
+    font-weight:700;
+    font-size:.82rem;
+
+    transition:.18s;
 }
 
 .item-type-toggle-button[data-item-type-button="food"] {
-    background: #edf8ee;
-    color: #3f7d52;
+    background: #e6f8e8;
+    color: #075225;
 }
 
 .item-type-toggle-button[data-item-type-button="dish"] {
-    background: #fff7da;
-    color: #9b7718;
+    background: #f8e6b6;
+    color: #705405;
 }
 
 .item-type-toggle-button.is-active {
@@ -2098,5 +2119,68 @@ body.guest {
 .item-type-icon {
     width: auto;
     height: auto;
-    font-size: 1.55rem;
+    font-size:1rem;
+    line-height:1;
+}
+
+/* ==========================================================
+   Meal form inline fields
+   ========================================================== */
+
+.meal-inline-field {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.meal-inline-field > label {
+    margin: 0 !important;
+    color: var(--text-main);
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.meal-inline-field > .form-control {
+    min-width: 0;
+}
+
+.meal-inline-field .inline-add-link {
+    grid-column: 2;
+    margin-top: -3px;
+}
+
+.meal-amount-field .meal-amount-input-row {
+    min-width: 0;
+}
+
+.meal-amount-input-row {
+    grid-template-columns: minmax(0, 1fr) 40px;
+}
+
+.meal-amount-unit {
+    min-height: 42px;
+}
+
+/* エラーメッセージは入力欄の下に置く */
+
+.meal-inline-field > .field-error {
+    grid-column: 2;
+    margin-top: -5px;
+}
+
+@media (max-width: 420px) {
+    .meal-inline-field {
+        grid-template-columns: 94px minmax(0, 1fr);
+        gap: 9px;
+    }
+
+    .meal-inline-field > label {
+        font-size: 0.73rem;
+    }
+}
+
+.meal-first-field {
+    margin-top: 18px;
 }
