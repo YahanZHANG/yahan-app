@@ -5,6 +5,7 @@ from .models import (
     AllergyReaction,
     AllergyReactionPhoto,
     Baby,
+    BabyMembership,
     Dish,
     DishCategory,
     DishIngredient,
@@ -18,17 +19,91 @@ from .models import (
     
 )
 
+class BabyMembershipInline(
+    admin.TabularInline
+):
+    model = BabyMembership
+    extra = 1
+    autocomplete_fields = (
+        "user",
+    )
+    fields = (
+        "user",
+        "role",
+        "can_edit",
+    )
+    ordering = (
+        "user__username",
+    )
+
 
 @admin.register(Baby)
 class BabyAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "birth_date",
+        "caregiver_names",
         "updated_at",
     )
-    search_fields = ("name",)
-    ordering = ("birth_date",)
+    search_fields = (
+        "name",
+        "memberships__user__username",
+    )
+    ordering = (
+        "birth_date",
+        "name",
+    )
+    inlines = (
+        BabyMembershipInline,
+    )
 
+    @admin.display(
+        description="管理ユーザー"
+    )
+    def caregiver_names(self, obj):
+        return "、".join(
+            obj.memberships
+            .select_related("user")
+            .order_by("user__username")
+            .values_list(
+                "user__username",
+                flat=True,
+            )
+        ) or "未設定"
+
+@admin.register(BabyMembership)
+class BabyMembershipAdmin(
+    admin.ModelAdmin
+):
+    list_display = (
+        "baby",
+        "user",
+        "role",
+        "can_edit",
+        "created_at",
+    )
+    list_filter = (
+        "role",
+        "can_edit",
+        "baby",
+    )
+    search_fields = (
+        "baby__name",
+        "user__username",
+        "user__email",
+    )
+    autocomplete_fields = (
+        "baby",
+        "user",
+    )
+    list_select_related = (
+        "baby",
+        "user",
+    )
+    ordering = (
+        "baby__name",
+        "user__username",
+    )
 
 @admin.register(FoodCategory)
 class FoodCategoryAdmin(admin.ModelAdmin):

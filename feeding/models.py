@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-
 
 class Baby(models.Model):
     """アプリで管理する赤ちゃん。"""
@@ -12,6 +12,13 @@ class Baby(models.Model):
     )
     birth_date = models.DateField(
         "生年月日",
+    )
+    caregivers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="BabyMembership",
+        related_name="feeding_babies",
+        verbose_name="管理ユーザー",
+        blank=True,
     )
     created_at = models.DateTimeField(
         "作成日時",
@@ -25,11 +32,71 @@ class Baby(models.Model):
     class Meta:
         verbose_name = "赤ちゃん"
         verbose_name_plural = "赤ちゃん"
-        ordering = ["birth_date", "name"]
+        ordering = [
+            "birth_date",
+            "name",
+        ]
 
     def __str__(self):
         return self.name
 
+class BabyMembership(models.Model):
+    """赤ちゃんと、その情報を管理できるユーザーの関係。"""
+
+    class Role(models.TextChoices):
+        PARENT = "parent", "保護者"
+        FAMILY = "family", "家族"
+        VIEWER = "viewer", "閲覧のみ"
+
+    baby = models.ForeignKey(
+        Baby,
+        verbose_name="赤ちゃん",
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="ユーザー",
+        on_delete=models.CASCADE,
+        related_name="baby_memberships",
+    )
+    role = models.CharField(
+        "役割",
+        max_length=20,
+        choices=Role.choices,
+        default=Role.PARENT,
+    )
+    can_edit = models.BooleanField(
+        "編集できる",
+        default=True,
+    )
+    created_at = models.DateTimeField(
+        "登録日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "赤ちゃんの利用者"
+        verbose_name_plural = "赤ちゃんの利用者"
+        ordering = [
+            "baby",
+            "user__username",
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "baby",
+                    "user",
+                ],
+                name="unique_user_per_baby",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.baby.name}："
+            f"{self.user.username}"
+        )
 
 class FoodCategory(models.Model):
     """野菜、果物、肉類などの食材ジャンル。"""
@@ -209,7 +276,6 @@ class Allergen(models.Model):
     def __str__(self):
         return self.name
 
-
 class Food(models.Model):
     """にんじん、豆腐、牛肉などの単一食材。"""
 
@@ -268,7 +334,6 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
-
 class DishCategory(models.Model):
     """おかゆ、麺・パスタ、魚料理などの料理ジャンル。"""
 
@@ -293,7 +358,6 @@ class DishCategory(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Dish(models.Model):
     """ボロネーゼ、野菜がゆなどの料理。"""
@@ -367,7 +431,6 @@ class Dish(models.Model):
         return Allergen.objects.filter(
             foods__dishes=self
         ).distinct()
-
 
 class DishIngredient(models.Model):
     """料理と、その料理に含まれる食材の関係。"""
