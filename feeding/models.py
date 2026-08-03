@@ -536,6 +536,8 @@ class MealItem(models.Model):
         "反応",
         max_length=10,
         choices=Reaction.choices,
+        blank=True,
+        default="",
     )
     has_allergy_symptoms = models.BooleanField(
         "症状あり",

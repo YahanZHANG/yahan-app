@@ -6,8 +6,28 @@
         {{ hidden_field }}
     {% endfor %}
 
-    <div class="meal-item-heading">
-        <h3 data-item-number>食材・料理</h3>
+    <div class="meal-item-toolbar">
+        <div
+            class="item-type-toggle"
+            role="group"
+            aria-label="食材または料理"
+        >
+            <button
+                type="button"
+                class="item-type-toggle-button"
+                data-item-type-button="food"
+            >
+                食材
+            </button>
+
+            <button
+                type="button"
+                class="item-type-toggle-button"
+                data-item-type-button="dish"
+            >
+                料理
+            </button>
+        </div>
 
         <button
             type="button"
@@ -24,18 +44,9 @@
         </div>
     {% endif %}
 
-    <div class="form-group">
-        <label for="{{ item_form.item_type.id_for_label }}">
-            {{ item_form.item_type.label }}
-        </label>
-
-        {{ item_form.item_type }}
-
-        {% for error in item_form.item_type.errors %}
-            <p class="field-error">{{ error }}</p>
-        {% endfor %}
-    </div>
-
+    {% for error in item_form.item_type.errors %}
+        <p class="field-error">{{ error }}</p>
+    {% endfor %}
 
     <div
         class="form-group"
@@ -74,7 +85,9 @@
         </a>
 
         {% for error in item_form.food.errors %}
-            <p class="field-error">{{ error }}</p>
+            <p class="field-error">
+                {{ error }}
+            </p>
         {% endfor %}
     </div>
 
@@ -115,47 +128,84 @@
         </a>
 
         {% for error in item_form.dish.errors %}
-            <p class="field-error">{{ error }}</p>
+            <p class="field-error">
+                {{ error }}
+            </p>
         {% endfor %}
-    </div>
-
-    <div class="amount-grid">
-        <div class="form-group">
-            <label for="{{ item_form.amount.id_for_label }}">
-                {{ item_form.amount.label }}
-            </label>
-
-            {{ item_form.amount }}
-
-            {% for error in item_form.amount.errors %}
-                <p class="field-error">{{ error }}</p>
-            {% endfor %}
-        </div>
-
-        <div class="form-group">
-            <label for="{{ item_form.unit.id_for_label }}">
-                {{ item_form.unit.label }}
-            </label>
-
-            {{ item_form.unit }}
-
-            {% for error in item_form.unit.errors %}
-                <p class="field-error">{{ error }}</p>
-            {% endfor %}
-        </div>
     </div>
 
     <div class="form-group">
-        <label for="{{ item_form.reaction.id_for_label }}">
-            {{ item_form.reaction.label }}
+        <label for="{{ item_form.amount.id_for_label }}">
+            {{ item_form.amount.label }}
         </label>
 
-        {{ item_form.reaction }}
+        <div class="meal-amount-input-row">
+            {{ item_form.amount }}
 
-        {% for error in item_form.reaction.errors %}
-            <p class="field-error">{{ error }}</p>
+            <span class="meal-amount-unit">
+                g
+            </span>
+        </div>
+
+        {% for error in item_form.amount.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+
+        {% for error in item_form.unit.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
         {% endfor %}
     </div>
+
+    <fieldset class="reaction-fieldset">
+        <legend>
+            反応
+            <small>任意</small>
+        </legend>
+
+        <div class="reaction-button-grid">
+            {% for choice in item_form.reaction %}
+                {% if choice.data.value %}
+                    <label class="reaction-option">
+                        {{ choice.tag }}
+
+                        <span class="reaction-option-content">
+                            {% if choice.data.value == "love" %}
+                                <span class="reaction-emoji">🤩</span>
+                                <small>大喜び</small>
+                            {% elif choice.data.value == "happy" %}
+                                <span class="reaction-emoji">😊</span>
+                                <small>嬉</small>
+                            {% elif choice.data.value == "normal" %}
+                                <span class="reaction-emoji">😐</span>
+                                <small>普</small>
+                            {% elif choice.data.value == "unsure" %}
+                                <span class="reaction-emoji">😕</span>
+                                <small>微妙</small>
+                            {% endif %}
+                        </span>
+                    </label>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <button
+            type="button"
+            class="clear-reaction-button"
+            data-clear-reaction
+        >
+            選択を解除
+        </button>
+
+        {% for error in item_form.reaction.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </fieldset>
 
     <div class="allergy-symptom-toggle">
         <label>
@@ -163,6 +213,7 @@
 
             <span class="allergy-toggle-text">
                 <strong>症状が出た</strong>
+
                 <small>
                     選択すると、保存後に詳細記録画面へ移動する
                 </small>
@@ -170,7 +221,9 @@
         </label>
 
         {% for error in item_form.has_allergy_symptoms.errors %}
-            <p class="field-error">{{ error }}</p>
+            <p class="field-error">
+                {{ error }}
+            </p>
         {% endfor %}
     </div>
 

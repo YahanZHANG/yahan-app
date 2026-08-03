@@ -86,17 +86,13 @@ class MealForm(forms.ModelForm):
             "date": "日付",
         }
 
-
 class MealItemForm(forms.ModelForm):
     item_type = forms.ChoiceField(
-        label="記録するもの",
-        choices=[
-            ("", "食材または料理を選択"),
-            *MealItem.ItemType.choices,
-        ],
-        widget=forms.Select(
+        choices=MealItem.ItemType.choices,
+        initial=MealItem.ItemType.FOOD,
+        widget=forms.HiddenInput(
             attrs={
-                "class": "form-control item-type-select",
+                "class": "item-type-select",
             }
         ),
     )
@@ -142,7 +138,7 @@ class MealItemForm(forms.ModelForm):
             }
         ),
     )
-    
+
     dish = DishChoiceField(
         label="料理名",
         queryset=Dish.objects.none(),
@@ -156,30 +152,31 @@ class MealItemForm(forms.ModelForm):
     )
 
     unit = forms.ChoiceField(
-        label="単位",
         choices=[
-            ("", "単位を選択"),
-            *MealItem.Unit.choices,
+            (MealItem.Unit.GRAM, "g"),
         ],
-        widget=forms.Select(
+        initial=MealItem.Unit.GRAM,
+        required=False,
+        widget=forms.HiddenInput(
             attrs={
-                "class": "form-control",
+                "class": "meal-unit-input",
             }
         ),
     )
 
     reaction = forms.ChoiceField(
         label="反応",
+        required=False,
         choices=[
-            ("", "反応を選択"),
-            ("love", "🤩 大喜び"),
-            ("happy", "😊 嬉"),
-            ("normal", "😐 普"),
-            ("unsure", "😕 微妙"),
+            ("", "未選択"),
+            ("love", "🤩"),
+            ("happy", "😊"),
+            ("normal", "😐"),
+            ("unsure", "😕"),
         ],
-        widget=forms.Select(
+        widget=forms.RadioSelect(
             attrs={
-                "class": "form-control",
+                "class": "reaction-radio-input",
             }
         ),
     )
@@ -197,6 +194,7 @@ class MealItemForm(forms.ModelForm):
             "reaction",
             "has_allergy_symptoms",
         )
+
         widgets = {
             "amount": forms.NumberInput(
                 attrs={
@@ -213,13 +211,15 @@ class MealItemForm(forms.ModelForm):
                 }
             ),
         }
+
         labels = {
-            "amount": "実際に食べた量",
+            "amount": "実際に食べた量(g)",
             "has_allergy_symptoms": "症状が出た",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields[
             "food_category"
         ].queryset = (
@@ -242,6 +242,24 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
+        if self.instance and self.instance.pk:
+            self.fields[
+                "item_type"
+            ].initial = self.instance.item_type
+
+            self.fields[
+                "unit"
+            ].initial = MealItem.Unit.GRAM
+
+        else:
+            self.fields[
+                "item_type"
+            ].initial = MealItem.ItemType.FOOD
+
+            self.fields[
+                "unit"
+            ].initial = MealItem.Unit.GRAM
+
         if (
             self.instance
             and self.instance.food_id
@@ -262,9 +280,14 @@ class MealItemForm(forms.ModelForm):
                 self.instance.dish.category_id
             )
 
-        food_query = Food.objects.filter(is_active=True)
+        food_query = Food.objects.filter(
+            is_active=True
+        )
 
-        if self.instance and self.instance.food_id:
+        if (
+            self.instance
+            and self.instance.food_id
+        ):
             food_query = Food.objects.filter(
                 Q(is_active=True)
                 | Q(pk=self.instance.food_id)
@@ -280,9 +303,14 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
-        dish_query = Dish.objects.filter(is_active=True)
+        dish_query = Dish.objects.filter(
+            is_active=True
+        )
 
-        if self.instance and self.instance.dish_id:
+        if (
+            self.instance
+            and self.instance.dish_id
+        ):
             dish_query = Dish.objects.filter(
                 Q(is_active=True)
                 | Q(pk=self.instance.dish_id)
@@ -298,16 +326,25 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
+    def clean_unit(self):
+        return MealItem.Unit.GRAM
+
     def clean(self):
         cleaned_data = super().clean()
 
-        item_type = cleaned_data.get(
-            "item_type"
+        item_type = (
+            cleaned_data.get("item_type")
+            or MealItem.ItemType.FOOD
         )
+
+        cleaned_data["item_type"] = item_type
+        cleaned_data["unit"] = MealItem.Unit.GRAM
+
         food_category = cleaned_data.get(
             "food_category"
         )
         food = cleaned_data.get("food")
+
         dish_category = cleaned_data.get(
             "dish_category"
         )
@@ -340,14 +377,8 @@ class MealItemForm(forms.ModelForm):
                     ),
                 )
 
-            if dish is not None:
-                self.add_error(
-                    "dish",
-                    (
-                        "食材を記録する場合、"
-                        "料理は選択できません。"
-                    ),
-                )
+            cleaned_data["dish"] = None
+            cleaned_data["dish_category"] = None
 
         elif item_type == MealItem.ItemType.DISH:
             if dish_category is None:
@@ -376,14 +407,8 @@ class MealItemForm(forms.ModelForm):
                     ),
                 )
 
-            if food is not None:
-                self.add_error(
-                    "food",
-                    (
-                        "料理を記録する場合、"
-                        "食材は選択できません。"
-                    ),
-                )
+            cleaned_data["food"] = None
+            cleaned_data["food_category"] = None
 
         return cleaned_data
 

@@ -39,7 +39,7 @@
         </div>
     {% endif %}
 
-    <section class="form-section">
+    <section class="form-section meal-date-section">
         <div class="form-group">
             <label for="{{ meal_form.date.id_for_label }}">
                 {{ meal_form.date.label }}
@@ -138,31 +138,11 @@
     );
     const addButton = document.getElementById("add-item-button");
 
-    function updateItemNumbers() {
-        let visibleNumber = 1;
-
-        formList
-            .querySelectorAll("[data-form-row]")
-            .forEach((row) => {
-                if (row.hidden) {
-                    return;
-                }
-
-                const heading = row.querySelector("[data-item-number]");
-
-                if (heading) {
-                    heading.textContent = `食材・料理 ${visibleNumber}`;
-                }
-
-                visibleNumber += 1;
-            });
-    }
-
     function updateSelectedType(
         row,
         clearOtherField = false
     ) {
-        const typeSelect = row.querySelector(
+        const typeInput = row.querySelector(
             ".item-type-select"
         );
 
@@ -192,19 +172,48 @@
             ".dish-select"
         );
 
-        if (!typeSelect) {
+        const typeButtons = row.querySelectorAll(
+            "[data-item-type-button]"
+        );
+
+        if (!typeInput) {
             return;
         }
 
-        const selectedType = typeSelect.value;
+        if (!typeInput.value) {
+            typeInput.value = "food";
+        }
 
+        const selectedType = typeInput.value;
         const isFood = selectedType === "food";
         const isDish = selectedType === "dish";
+
+        row.classList.toggle(
+            "is-dish-mode",
+            isDish
+        );
 
         foodCategoryField.hidden = !isFood;
         foodField.hidden = !isFood;
         dishCategoryField.hidden = !isDish;
         dishField.hidden = !isDish;
+
+        typeButtons.forEach((button) => {
+            const isActive = (
+                button.dataset.itemTypeButton
+                === selectedType
+            );
+
+            button.classList.toggle(
+                "is-active",
+                isActive
+            );
+
+            button.setAttribute(
+                "aria-pressed",
+                String(isActive)
+            );
+        });
 
         if (clearOtherField) {
             if (isFood) {
@@ -279,27 +288,48 @@
 }
 
     function bindRow(row) {
-        const typeSelect = row.querySelector(
+        const typeInput = row.querySelector(
             ".item-type-select"
         );
+
+        const typeButtons = row.querySelectorAll(
+            "[data-item-type-button]"
+        );
+
         const foodCategorySelect = row.querySelector(
             ".food-category-select"
         );
+
         const foodSelect = row.querySelector(
             ".food-select"
         );
+
         const dishCategorySelect = row.querySelector(
             ".dish-category-select"
         );
+
         const dishSelect = row.querySelector(
             ".dish-select"
         );
+
         const removeButton = row.querySelector(
             "[data-remove-row]"
         );
+
         const deleteInput = row.querySelector(
             'input[name$="-DELETE"]'
         );
+
+        const clearReactionButton = row.querySelector(
+            "[data-clear-reaction]"
+        );
+
+        if (
+            typeInput
+            && !typeInput.value
+        ) {
+            typeInput.value = "food";
+        }
 
         updateSelectedType(row);
 
@@ -313,10 +343,18 @@
             dishSelect
         );
 
-        if (typeSelect) {
-            typeSelect.addEventListener(
-                "change",
+        typeButtons.forEach((button) => {
+            button.addEventListener(
+                "click",
                 () => {
+                    if (!typeInput) {
+                        return;
+                    }
+
+                    typeInput.value = (
+                        button.dataset.itemTypeButton
+                    );
+
                     updateSelectedType(
                         row,
                         true
@@ -333,7 +371,7 @@
                     );
                 }
             );
-        }
+        });
 
         if (foodCategorySelect) {
             foodCategorySelect.addEventListener(
@@ -359,6 +397,21 @@
             );
         }
 
+        if (clearReactionButton) {
+            clearReactionButton.addEventListener(
+                "click",
+                () => {
+                    row
+                        .querySelectorAll(
+                            ".reaction-radio-input"
+                        )
+                        .forEach((input) => {
+                            input.checked = false;
+                        });
+                }
+            );
+        }
+
         if (removeButton) {
             removeButton.addEventListener(
                 "click",
@@ -368,7 +421,6 @@
                     }
 
                     row.hidden = true;
-                    updateItemNumbers();
                 }
             );
         }
@@ -399,9 +451,7 @@
         const newRow = rows[rows.length - 1];
 
         bindRow(newRow);
-        updateItemNumbers();
     });
 
-    updateItemNumbers();
 </script>
 {% endblock %}
