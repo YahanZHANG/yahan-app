@@ -6,78 +6,60 @@
 
 {% if baby %}
     <section class="dashboard-hero">
-        <div class="dashboard-date-navigation">
-            <a
-                href="?date={{ previous_date|date:'Y-m-d' }}"
-                class="date-navigation-button"
-                aria-label="前日"
-            >
-                ‹
-            </a>
+        <div class="dashboard-date-toolbar">
 
-            <form
-                method="get"
-                class="dashboard-date-form"
-            >
-                <label
-                    for="record-date"
-                    class="visually-hidden"
+            <div class="dashboard-date-left">
+
+                <form
+                    method="get"
+                    class="dashboard-date-form"
+                    id="dashboard-date-form"
                 >
-                    表示する日付
-                </label>
+                    <input
+                        type="date"
+                        id="record-date"
+                        name="date"
+                        value="{{ selected_date|date:'Y-m-d' }}"
+                        max="{{ today_date|date:'Y-m-d' }}"
+                        class="dashboard-native-date-input"
+                    >
 
-                <input
-                    type="date"
-                    id="record-date"
-                    name="date"
-                    value="{{ selected_date|date:'Y-m-d' }}"
-                    max="{{ today_date|date:'Y-m-d' }}"
-                    class="dashboard-date-input"
-                    onchange="this.form.submit()"
-                >
-            </form>
+                    <div class="dashboard-date-picker">
+                        <span class="dashboard-date-text">
+                            {{ selected_date|date:"Y年n月j日" }}
+                        </span>
 
-            {% if not is_today %}
-                <a
-                    href="?date={{ next_date|date:'Y-m-d' }}"
-                    class="date-navigation-button"
-                    aria-label="翌日"
-                >
-                    ›
-                </a>
-            {% else %}
-                <span
-                    class="date-navigation-button is-disabled"
-                    aria-hidden="true"
-                >
-                    ›
-                </span>
-            {% endif %}
-        </div>
+                        <button
+                            type="button"
+                            class="dashboard-calendar-button"
+                            id="open-date-picker"
+                            aria-label="日付を選択"
+                            title="日付を選択"
+                        >
+                            📅
+                        </button>
+                    </div>
+                </form>
 
-        <div class="dashboard-date-row">
-            <div>
-                <p class="dashboard-date">
-                    {{ selected_date|date:"Y年n月j日" }}
-                </p>
-
-                {% if is_today %}
-                    <span class="selected-date-label">
-                        今日
-                    </span>
-                {% else %}
+                {% if not is_today %}
                     <a
                         href="{% url 'feeding:today' %}"
                         class="back-to-today-link"
                     >
                         今日に戻る
                     </a>
+                {% else %}
+                    <span class="back-to-today-link is-current">
+                        今日
+                    </span>
                 {% endif %}
+
             </div>
 
-            <span class="baby-age-badge">
-                生後{{ age_months }}か月
-            </span>
+        <span class="dashboard-age-badge">
+            生後{{ age_months }}か月
+        </span>
+
         </div>
     </section>
 
@@ -89,7 +71,7 @@
                     {% if is_today %}
                         今日の食事
                     {% else %}
-                        選択された日の食事
+                        この日の食事
                     {% endif %}
                 </h3>
             </div>
@@ -152,7 +134,7 @@
                     {% if is_today %}
                         今日の離乳食量
                     {% else %}
-                        選択された日の離乳食量
+                        この日の離乳食量
                     {% endif %}
                 </h3>
             </div>
@@ -184,7 +166,7 @@
                                 {% if is_today %}
                                     今日の合計
                                 {% else %}
-                                    選択された日の合計
+                                    この日の合計
                                 {% endif %}
                             </strong>
                         </div>
@@ -472,5 +454,45 @@
     </section>
 {% endif %}
 
+<script>
+    const dateInput = document.getElementById(
+        "record-date"
+    );
+
+    const datePickerButton = document.getElementById(
+        "open-date-picker"
+    );
+
+    const dateForm = document.getElementById(
+        "dashboard-date-form"
+    );
+
+    if (
+        dateInput
+        && datePickerButton
+        && dateForm
+    ) {
+        datePickerButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    typeof dateInput.showPicker
+                    === "function"
+                ) {
+                    dateInput.showPicker();
+                } else {
+                    dateInput.click();
+                }
+            }
+        );
+
+        dateInput.addEventListener(
+            "change",
+            () => {
+                dateForm.submit();
+            }
+        );
+    }
+</script>
 
 {% endblock %}
