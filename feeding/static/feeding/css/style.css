@@ -2867,3 +2867,27 @@ button.settings-baby-card:hover {
     font-size: 0.72rem;
     line-height: 1.55;
 }
+
+.dashboard-meal-card.read-only {
+    cursor: default;
+    opacity: 0.78;
+}
+
+.meal-state.read-only {
+    color: var(--muted);
+    background: #eef1f4;
+}
+
+.read-only-add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px 13px;
+    color: var(--muted);
+    background: #eef1f4;
+    border-radius: 12px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    cursor: default;
+}

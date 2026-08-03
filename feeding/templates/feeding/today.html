@@ -31,25 +31,45 @@
 
         <div class="dashboard-meal-grid">
             {% for card in meal_cards %}
-                <a
-                    href="{% url 'feeding:meal_edit' card.number %}"
-                    class="dashboard-meal-card{% if card.meal %} recorded{% endif %}"
-                    data-meal-link
-                >
-                    <span class="meal-number-icon">
-                        {{ card.number }}食目
-                    </span>
+                {% if can_edit_baby %}
+                    <a
+                        href="{% url 'feeding:meal_edit' card.number %}"
+                        class="dashboard-meal-card{% if card.meal %} recorded{% endif %}"
+                        data-meal-link
+                    >
+                        <span class="meal-number-icon">
+                            {{ card.number }}食目
+                        </span>
 
-                    {% if card.meal %}
-                        <span class="meal-state recorded">
-                            ✓ {{ card.item_count }}品
+                        {% if card.meal %}
+                            <span class="meal-state recorded">
+                                ✓ {{ card.item_count }}品
+                            </span>
+                        {% else %}
+                            <span class="meal-state">
+                                ＋ 記録する
+                            </span>
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <div
+                        class="dashboard-meal-card read-only{% if card.meal %} recorded{% endif %}"
+                    >
+                        <span class="meal-number-icon">
+                            {{ card.number }}食目
                         </span>
-                    {% else %}
-                        <span class="meal-state">
-                            ＋ 記録する
-                        </span>
-                    {% endif %}
-                </a>
+
+                        {% if card.meal %}
+                            <span class="meal-state recorded">
+                                ✓ {{ card.item_count }}品
+                            </span>
+                        {% else %}
+                            <span class="meal-state read-only">
+                                閲覧のみ
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
     </section>

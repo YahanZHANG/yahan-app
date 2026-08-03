@@ -97,6 +97,40 @@ def get_current_baby(request):
 
     return first_baby
 
+def get_current_baby_membership(request):
+    """
+    現在選択中の子どもに対する
+    ログインユーザーのMembershipを返す。
+    """
+    baby = get_current_baby(request)
+
+    if baby is None:
+        return None
+
+    return (
+        BabyMembership.objects
+        .filter(
+            baby=baby,
+            user=request.user,
+        )
+        .first()
+    )
+
+
+def user_can_edit_baby(request, baby):
+    """
+    ログインユーザーが対象の子どもを
+    編集できるか判定する。
+    """
+    if baby is None:
+        return False
+
+    return BabyMembership.objects.filter(
+        baby=baby,
+        user=request.user,
+        can_edit=True,
+    ).exists()
+
 def calculate_age_in_months(birth_date, target_date):
     """指定日時点の満月齢を計算する。"""
     months = (
@@ -501,6 +535,20 @@ def today(request):
     )
 
     baby = get_current_baby(request)
+
+
+
+    current_membership = (
+        get_current_baby_membership(
+            request
+        )
+    )
+
+    can_edit_baby = bool(
+        current_membership
+        and current_membership.can_edit
+    )
+
     today_date = timezone.localdate()
 
     meal_cards = []
@@ -706,6 +754,7 @@ def today(request):
     
     context = {
         "baby": baby,
+        "can_edit_baby": can_edit_baby,
         "accessible_babies": accessible_babies,
         "today_date": today_date,
         "age_months": age_months,
@@ -730,6 +779,21 @@ def today(request):
 
 @login_required
 def food_create(request):
+    baby = get_current_baby(request)
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの離乳食ノートは閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:food_list"
+        )
+
     next_url = request.GET.get(
         "next",
         request.POST.get("next", ""),
@@ -902,6 +966,11 @@ def dish_create(request):
 def food_list(request):
     baby = get_current_baby(request)
 
+    can_edit_baby = user_can_edit_baby(
+        request,
+        baby,
+    )
+
     categories = (
         FoodCategory.objects
         .filter(is_active=True)
@@ -988,6 +1057,7 @@ def food_list(request):
 
     context = {
         "baby": baby,
+        "can_edit_baby": can_edit_baby,
         "category_cards": category_cards,
     }
 
@@ -1140,6 +1210,19 @@ def meal_edit(request, meal_number):
             "先に管理画面から赤ちゃんを登録してください。",
         )
         return redirect("feeding:today")
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
 
     meal_id = request.POST.get("meal_id")
 
@@ -1374,7 +1457,22 @@ def meal_delete(request, meal_number):
     baby = get_current_baby(request)
 
     if baby is None:
-        return redirect("feeding:today")
+        return redirect(
+            "feeding:today"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
 
     meal = get_object_or_404(
         Meal,
@@ -1384,6 +1482,7 @@ def meal_delete(request, meal_number):
     )
 
     meal_description = str(meal)
+
     meal.delete()
 
     messages.success(
@@ -1391,7 +1490,9 @@ def meal_delete(request, meal_number):
         f"{meal_description}を削除した。",
     )
 
-    return redirect("feeding:today")
+    return redirect(
+        "feeding:today"
+    )
 
 @login_required
 def allergen_list(request):
@@ -2227,6 +2328,20 @@ def settings_view(request):
         and current_membership.can_edit
     )
 
+    if (
+        request.method == "POST"
+        and baby is not None
+        and not can_manage_members
+    ):
+        messages.error(
+            request,
+            "この子どもの設定は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:settings",
+        )
+
     if request.method == "POST":
         form = BabySettingsForm(
             request.POST,
@@ -2286,4 +2401,3 @@ def settings_view(request):
         "feeding/settings.html",
         context,
     )
-

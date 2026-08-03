@@ -17,13 +17,18 @@
 </section>
 
 <div class="food-list-actions">
-    <a
-        href="{% url 'feeding:food_create' %}"
-        class="primary-button inline-button"
-    >
-        ＋ 新しい食材を追加
-
-    </a>
+    {% if can_edit_baby %}
+        <a
+            href="{% url 'feeding:food_create' %}"
+            class="..."
+        >
+            新しい食材を追加
+        </a>
+    {% else %}
+        <span class="read-only-add-button">
+            閲覧のみ
+        </span>
+    {% endif %}
 </div>
 
 <section class="food-search-section">
