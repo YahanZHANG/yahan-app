@@ -63,6 +63,82 @@
         </div>
     </section>
 
+    <section class="dashboard-section supplement-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">
+                    MEDICINE & SUPPLEMENTS
+                </p>
+
+                <h3>
+                    {% if is_today %}
+                        今日の薬・サプリ
+                    {% else %}
+                        この日の薬・サプリ
+                    {% endif %}
+                </h3>
+            </div>
+
+            {% if can_edit_baby %}
+                <a
+                    href="#"
+                    class="section-link supplement-add-link"
+                >
+                    ＋ 追加
+                </a>
+            {% endif %}
+        </div>
+
+        {% if supplement_cards %}
+            <div class="supplement-card-list">
+                {% for card in supplement_cards %}
+                    <div
+                        class="supplement-card{% if card.taken %} is-taken{% endif %}"
+                    >
+                        <div class="supplement-card-main">
+                            <span class="supplement-icon">
+                                {% if card.taken %}
+                                    ✓
+                                {% else %}
+                                    ○
+                                {% endif %}
+                            </span>
+
+                            <strong>
+                                {{ card.supplement.name }}
+                            </strong>
+                        </div>
+
+                        {% if card.taken %}
+                            <span class="supplement-status is-taken">
+                                飲んだ
+                            </span>
+                        {% else %}
+                            <span class="supplement-status">
+                                飲んでいない
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty-card">
+                <span>💊</span>
+
+                <div>
+                    <strong>
+                        薬・サプリがまだ登録されていない
+                    </strong>
+
+                    <p>
+                        ビタミンDや乳酸菌などを登録すると、
+                        ここに表示される。
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
     <section class="dashboard-section">
         <div class="section-heading">
             <div>

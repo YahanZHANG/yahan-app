@@ -3172,3 +3172,97 @@ button.settings-baby-card:hover {
     flex: 0 0 auto;
     margin: 0;
 }
+
+/* ==========================================================
+   Medicine and supplements
+   ========================================================== */
+
+.supplement-section {
+    margin-bottom: 28px;
+}
+
+.supplement-card-list {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.supplement-card {
+    display: flex;
+    min-width: 0;
+    min-height: 66px;
+    padding: 12px 13px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #f3f4f6;
+    opacity: 0.72;
+}
+
+.supplement-card.is-taken {
+    border-color: #efafbd;
+    background:
+        linear-gradient(
+            145deg,
+            #fff9fb,
+            #ffedf2
+        );
+    opacity: 1;
+}
+
+.supplement-card-main {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 9px;
+}
+
+.supplement-card-main strong {
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.supplement-icon {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    color: #838791;
+    background: #e4e6ea;
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.supplement-card.is-taken .supplement-icon {
+    color: #ffffff;
+    background: var(--primary);
+}
+
+.supplement-status {
+    flex: 0 0 auto;
+    color: #989ba2;
+    font-size: 0.66rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.supplement-status.is-taken {
+    color: var(--primary-dark);
+}
+
+.supplement-add-link {
+    font-size: 0.7rem;
+}
+
+@media (max-width: 420px) {
+    .supplement-card-list {
+        grid-template-columns: 1fr;
+    }
+}

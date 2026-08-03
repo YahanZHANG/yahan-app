@@ -42,6 +42,8 @@ from .models import (
     FoodCategory,
     Meal,
     MealItem,
+    Supplement,
+    SupplementIntake,
 )
 
 def get_accessible_babies(user):
@@ -548,7 +550,7 @@ def today(request):
         current_membership
         and current_membership.can_edit
     )
-    
+
     today_date = timezone.localdate()
 
     selected_date = parse_selected_date(
@@ -591,6 +593,7 @@ def today(request):
     allergen_progress_percent = 0
 
     recent_first_foods = []
+    supplement_cards = []
 
     if baby:
         age_months = calculate_age_in_months(
@@ -611,6 +614,39 @@ def today(request):
             )
             .order_by("meal_number")
         )
+
+        active_supplements = (
+            Supplement.objects
+            .filter(is_active=True)
+            .order_by(
+                "display_order",
+                "name",
+            )
+        )
+
+        taken_supplement_ids = set(
+            SupplementIntake.objects
+            .filter(
+                baby=baby,
+                date=selected_date,
+                taken=True,
+            )
+            .values_list(
+                "supplement_id",
+                flat=True,
+            )
+        )
+
+        supplement_cards = [
+            {
+                "supplement": supplement,
+                "taken": (
+                    supplement.pk
+                    in taken_supplement_ids
+                ),
+            }
+            for supplement in active_supplements
+        ]
 
         meals_by_number = {
             meal.meal_number: meal
@@ -793,6 +829,7 @@ def today(request):
         "eaten_allergen_count": eaten_allergen_count,
         "allergen_progress_percent": allergen_progress_percent,
         "recent_first_foods": recent_first_foods,
+        "supplement_cards": supplement_cards,
     }
 
     return render(
