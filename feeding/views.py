@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date,  timedelta
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -548,8 +548,31 @@ def today(request):
         current_membership
         and current_membership.can_edit
     )
-
+    
     today_date = timezone.localdate()
+
+    selected_date = parse_selected_date(
+        request.GET.get("date")
+    )
+
+    previous_date = (
+        selected_date
+        - timedelta(days=1)
+    )
+
+    next_date = (
+        selected_date
+        + timedelta(days=1)
+    )
+
+    is_today = (
+        selected_date == today_date
+    )
+
+    is_future_date = (
+        selected_date > today_date
+    )
+
 
     meal_cards = []
     meals_by_number = {}
@@ -572,7 +595,7 @@ def today(request):
     if baby:
         age_months = calculate_age_in_months(
             baby.birth_date,
-            today_date,
+            selected_date,
         )
 
         feeding_stage = get_feeding_stage(age_months)
@@ -581,7 +604,7 @@ def today(request):
             Meal.objects
             .filter(
                 baby=baby,
-                date=today_date,
+                date=selected_date,
             )
             .annotate(
                 item_count_value=Count("items"),
@@ -756,6 +779,7 @@ def today(request):
         "baby": baby,
         "can_edit_baby": can_edit_baby,
         "accessible_babies": accessible_babies,
+        "selected_date": selected_date,
         "today_date": today_date,
         "age_months": age_months,
         "feeding_stage": feeding_stage,

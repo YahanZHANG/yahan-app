@@ -6,10 +6,74 @@
 
 {% if baby %}
     <section class="dashboard-hero">
+        <div class="dashboard-date-navigation">
+            <a
+                href="?date={{ previous_date|date:'Y-m-d' }}"
+                class="date-navigation-button"
+                aria-label="前日"
+            >
+                ‹
+            </a>
+
+            <form
+                method="get"
+                class="dashboard-date-form"
+            >
+                <label
+                    for="record-date"
+                    class="visually-hidden"
+                >
+                    表示する日付
+                </label>
+
+                <input
+                    type="date"
+                    id="record-date"
+                    name="date"
+                    value="{{ selected_date|date:'Y-m-d' }}"
+                    max="{{ today_date|date:'Y-m-d' }}"
+                    class="dashboard-date-input"
+                    onchange="this.form.submit()"
+                >
+            </form>
+
+            {% if not is_today %}
+                <a
+                    href="?date={{ next_date|date:'Y-m-d' }}"
+                    class="date-navigation-button"
+                    aria-label="翌日"
+                >
+                    ›
+                </a>
+            {% else %}
+                <span
+                    class="date-navigation-button is-disabled"
+                    aria-hidden="true"
+                >
+                    ›
+                </span>
+            {% endif %}
+        </div>
+
         <div class="dashboard-date-row">
-            <p id="device-date" class="dashboard-date">
-                {{ today_date|date:"Y年n月j日" }}
-            </p>
+            <div>
+                <p class="dashboard-date">
+                    {{ selected_date|date:"Y年n月j日" }}
+                </p>
+
+                {% if is_today %}
+                    <span class="selected-date-label">
+                        今日
+                    </span>
+                {% else %}
+                    <a
+                        href="{% url 'feeding:today' %}"
+                        class="back-to-today-link"
+                    >
+                        今日に戻る
+                    </a>
+                {% endif %}
+            </div>
 
             <span class="baby-age-badge">
                 生後{{ age_months }}か月
@@ -21,7 +85,13 @@
         <div class="section-heading">
             <div>
                 <p class="eyebrow">TODAY</p>
-                <h3>今日の食事</h3>
+                <h3>
+                    {% if is_today %}
+                        今日の食事
+                    {% else %}
+                        選択された日の食事
+                    {% endif %}
+                </h3>
             </div>
 
             <span class="section-summary">
@@ -33,7 +103,7 @@
             {% for card in meal_cards %}
                 {% if can_edit_baby %}
                     <a
-                        href="{% url 'feeding:meal_edit' card.number %}"
+                        href="{% url 'feeding:meal_edit' card.number %}?date={{ selected_date|date:'Y-m-d' }}"
                         class="dashboard-meal-card{% if card.meal %} recorded{% endif %}"
                         data-meal-link
                     >
@@ -78,7 +148,13 @@
         <div class="section-heading">
             <div>
                 <p class="eyebrow">DAILY GUIDELINE</p>
-                <h3>今日の離乳食量</h3>
+                <h3>
+                    {% if is_today %}
+                        今日の離乳食量
+                    {% else %}
+                        選択された日の離乳食量
+                    {% endif %}
+                </h3>
             </div>
 
             <span class="section-summary">
@@ -104,7 +180,13 @@
                 <article class="meal-guideline-card">
                     <div class="daily-guideline-heading">
                         <div>
-                            <strong>今日の合計</strong>
+                            <strong>
+                                {% if is_today %}
+                                    今日の合計
+                                {% else %}
+                                    選択された日の合計
+                                {% endif %}
+                            </strong>
                         </div>
 
                         <span>
@@ -390,51 +472,5 @@
     </section>
 {% endif %}
 
-<script>
-    function getLocalDateString() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-        const day = String(
-            now.getDate()
-        ).padStart(2, "0");
 
-        return `${year}-${month}-${day}`;
-    }
-
-    const dateElement = document.getElementById(
-        "device-date"
-    );
-
-    if (dateElement) {
-        const formatter = new Intl.DateTimeFormat(
-            "ja-JP",
-            {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                weekday: "short",
-            }
-        );
-
-        dateElement.textContent = formatter.format(
-            new Date()
-        );
-    }
-
-    const deviceDate = getLocalDateString();
-
-    document
-        .querySelectorAll("[data-meal-link]")
-        .forEach((link) => {
-            const url = new URL(link.href);
-            url.searchParams.set(
-                "date",
-                deviceDate
-            );
-            link.href = url.toString();
-        });
-</script>
 {% endblock %}
