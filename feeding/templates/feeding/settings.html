@@ -304,25 +304,32 @@
         </div>
     </div>
 
-    <div class="settings-account-row">
-        <div>
-            <span>ログイン中</span>
-            <strong>{{ user.username }}</strong>
-        </div>
-
-        <form
-            method="post"
-            action="{% url 'logout' %}"
+    <div class="header-user-row">
+        <a
+            href="{% url 'portal:home' %}"
+            class="portal-back-link"
         >
-            {% csrf_token %}
+            ← yahan-app
+        </a>
 
-            <button
-                type="submit"
-                class="settings-logout-button"
+        <div class="header-user-actions">
+            <div class="header-user-info">
+                <span>ログイン中</span>
+                <strong>{{ user.username }}</strong>
+            </div>
+
+            <form
+                method="post"
+                action="{% url 'logout' %}"
             >
-                ログアウト
-            </button>
-        </form>
+                {% csrf_token %}
+
+                <button type="submit">
+                    ログアウト
+                </button>
+            </form>
+        </div>
     </div>
+    
 </section>
 {% endblock %}

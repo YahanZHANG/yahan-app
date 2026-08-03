@@ -52,30 +52,44 @@
                 </h1>
             </div>
 
-            <div class="header-user">
-    <div class="header-user-name">
-        <small>ログイン中</small>
-        <strong>
-            {% if request.user.first_name %}
-                {{ request.user.first_name }}
-            {% else %}
-                {{ request.user.username }}
-            {% endif %}
-        </strong>
+<div class="header-user">
+
+    <a
+        href="{% url 'portal:home' %}"
+        class="portal-back-link"
+    >
+        ← yahan-app
+    </a>
+
+    <div class="header-user-actions">
+
+        <div class="header-user-name">
+            <small>ログイン中</small>
+
+            <strong>
+                {% if request.user.first_name %}
+                    {{ request.user.first_name }}
+                {% else %}
+                    {{ request.user.username }}
+                {% endif %}
+            </strong>
+        </div>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="profile-button"
+                aria-label="ログアウト"
+                title="ログアウト"
+            >
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </form>
+
     </div>
 
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-
-        <button
-            type="submit"
-            class="profile-button"
-            aria-label="ログアウト"
-            title="ログアウト"
-        >
-            <i class="bi bi-box-arrow-right"></i>
-        </button>
-    </form>
 </div>
 
         </div>

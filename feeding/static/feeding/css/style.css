@@ -2891,3 +2891,22 @@ button.settings-baby-card:hover {
     font-weight: 800;
     cursor: default;
 }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.portal-back-link {
+    color: rgba(255,255,255,.72);
+    font-size: .72rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .15s;
+}
+
+.portal-back-link:hover {
+    color: #fff;
+}

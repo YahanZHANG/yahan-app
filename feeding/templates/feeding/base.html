@@ -33,20 +33,31 @@
         >
             {{ baby.name }}の離乳食記録
         </a>
-        
-        <form
-            method="post"
-            action="{% url 'logout' %}"
-        >
-            {% csrf_token %}
 
-            <button
-                type="submit"
-                class="logout-button"
+        <div class="header-actions">
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="portal-back-link"
             >
-                ログアウト
-            </button>
-        </form>
+                ← yahan-app
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'logout' %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="logout-button"
+                >
+                    ログアウト
+                </button>
+            </form>
+
+        </div>
 
     </div>
 </header>
