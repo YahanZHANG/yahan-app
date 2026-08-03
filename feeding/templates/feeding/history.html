@@ -1,0 +1,131 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    履歴 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">
+        HISTORY
+    </p>
+
+    <h2>これまでの記録</h2>
+
+    <p class="page-description">
+        {{ baby.name }}の食事と薬・サプリを、
+        日付ごとに確認する。
+    </p>
+</section>
+
+{% if history_days %}
+    <div class="feeding-history-list">
+        {% for day in history_days %}
+            <article class="feeding-history-day">
+                <div class="history-day-heading">
+                    <div>
+                        <strong>
+                            {{ day.date|date:"Y年n月j日" }}
+                        </strong>
+
+                        <small>
+                            {{ day.date|date:"D" }}
+                        </small>
+                    </div>
+
+                    {% if can_edit_baby %}
+                        <a
+                            href="{% url 'feeding:today' %}?date={{ day.date|date:'Y-m-d' }}"
+                            class="history-day-open-link"
+                        >
+                            この日を開く
+                        </a>
+                    {% endif %}
+                </div>
+
+                <section class="history-supplement-section">
+                    <h3>薬・サプリ</h3>
+
+                    <div class="history-supplement-list">
+                        {% for row in day.supplements %}
+                            <span
+                                class="history-supplement-item{% if row.taken %} is-taken{% endif %}"
+                            >
+                                <span aria-hidden="true">
+                                    {% if row.taken %}
+                                        ✓
+                                    {% else %}
+                                        ○
+                                    {% endif %}
+                                </span>
+
+                                {{ row.supplement.name }}
+                            </span>
+                        {% empty %}
+                            <span class="history-empty-text">
+                                登録なし
+                            </span>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <div class="history-meal-list">
+                    {% for meal_row in day.meals %}
+                        <section class="history-meal-card">
+                            <div class="history-meal-heading">
+                                <strong>
+                                    {{ meal_row.meal.get_meal_number_display }}
+                                </strong>
+
+                                {% if can_edit_baby %}
+                                    <a
+                                        href="{% url 'feeding:meal_edit' meal_row.meal.meal_number %}?date={{ day.date|date:'Y-m-d' }}"
+                                    >
+                                        編集
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <ul>
+                                {% for item in meal_row.items %}
+                                    <li>
+                                        <span>
+                                            {{ item.item_name }}
+                                        </span>
+
+                                        <strong>
+                                            {{ item.amount|floatformat:"-2" }}
+                                            {{ item.get_unit_display }}
+                                        </strong>
+                                    </li>
+                                {% empty %}
+                                    <li class="history-empty-text">
+                                        食材の記録なし
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                    {% empty %}
+                        <p class="history-no-meal">
+                            この日は食事記録なし
+                        </p>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="dashboard-empty-card">
+        <span>📖</span>
+
+        <div>
+            <strong>まだ履歴がない</strong>
+
+            <p>
+                食事や薬・サプリを記録すると、
+                ここに日付順で表示される。
+            </p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

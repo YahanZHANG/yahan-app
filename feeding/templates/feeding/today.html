@@ -13,31 +13,30 @@
                 <form
                     method="get"
                     class="dashboard-date-form"
-                    id="dashboard-date-form"
                 >
-                    <input
-                        type="date"
-                        id="record-date"
-                        name="date"
-                        value="{{ selected_date|date:'Y-m-d' }}"
-                        max="{{ today_date|date:'Y-m-d' }}"
-                        class="dashboard-native-date-input"
-                    >
-
                     <div class="dashboard-date-picker">
                         <span class="dashboard-date-text">
                             {{ selected_date|date:"Y年n月j日" }}
                         </span>
 
-                        <button
-                            type="button"
-                            class="dashboard-calendar-button"
-                            id="open-date-picker"
-                            aria-label="日付を選択"
-                            title="日付を選択"
-                        >
-                            📅
-                        </button>
+                        <span class="dashboard-calendar-control">
+                            <span
+                                class="dashboard-calendar-icon"
+                                aria-hidden="true"
+                            >
+                                📅
+                            </span>
+
+                            <input
+                                type="date"
+                                name="date"
+                                value="{{ selected_date|date:'Y-m-d' }}"
+                                max="{{ today_date|date:'Y-m-d' }}"
+                                class="dashboard-native-date-input"
+                                aria-label="日付を選択"
+                                onchange="this.form.submit()"
+                            >
+                        </span>
                     </div>
                 </form>
 
@@ -574,46 +573,5 @@
         </a>
     </section>
 {% endif %}
-
-<script>
-    const dateInput = document.getElementById(
-        "record-date"
-    );
-
-    const datePickerButton = document.getElementById(
-        "open-date-picker"
-    );
-
-    const dateForm = document.getElementById(
-        "dashboard-date-form"
-    );
-
-    if (
-        dateInput
-        && datePickerButton
-        && dateForm
-    ) {
-        datePickerButton.addEventListener(
-            "click",
-            () => {
-                if (
-                    typeof dateInput.showPicker
-                    === "function"
-                ) {
-                    dateInput.showPicker();
-                } else {
-                    dateInput.click();
-                }
-            }
-        );
-
-        dateInput.addEventListener(
-            "change",
-            () => {
-                dateForm.submit();
-            }
-        );
-    }
-</script>
 
 {% endblock %}

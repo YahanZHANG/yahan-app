@@ -12,6 +12,11 @@ urlpatterns = [
         name="today",
     ),
     path(
+        "history/",
+        views.history,
+        name="history",
+    ),
+    path(
         "foods/",
         views.food_list,
         name="food_list",

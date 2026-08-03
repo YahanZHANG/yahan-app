@@ -148,7 +148,7 @@ a {
     left: 0;
     z-index: 200;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     padding:
         9px
         max(12px, env(safe-area-inset-right))
@@ -3022,15 +3022,6 @@ button.settings-baby-card:hover {
     margin: 0;
 }
 
-.dashboard-native-date-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-}
-
 .dashboard-date-picker {
     display: flex;
     width: 100%;
@@ -3054,33 +3045,6 @@ button.settings-baby-card:hover {
     line-height: 1.2;
     text-align: left;
     white-space: nowrap;
-}
-
-.dashboard-calendar-button {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    flex: 0 0 auto;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    color: var(--primary-dark);
-    background: transparent;
-    font-size: 1.4rem;
-    line-height: 1;
-    cursor: pointer;
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
-}
-
-.dashboard-calendar-button:hover {
-    background: rgba(243, 139, 160, 0.12);
-}
-
-.dashboard-calendar-button:active {
-    transform: scale(0.94);
 }
 
 .back-to-today-link {
@@ -3124,30 +3088,24 @@ button.settings-baby-card:hover {
 
 @media (max-width: 420px) {
     .dashboard-date-toolbar {
-        gap: 10px;
+        gap: 8px;
     }
 
     .dashboard-date-picker {
         min-height: 40px;
-        gap: 6px;
+        gap: 4px;
     }
 
     .dashboard-date-text {
-        font-size: 1.8rem;
-    }
-
-    .dashboard-calendar-button {
-        width: 45px;
-        height: 45px;
-        font-size: 2rem;
+        font-size: 1.2rem;
     }
 
     .back-to-today-link {
-        font-size: 0.75rem;
+        font-size: 0.5rem;
     }
 
     .dashboard-age-badge {
-        font-size: 1rem;
+        font-size: 0.75rem;
     }
 }
 
@@ -3171,6 +3129,37 @@ button.settings-baby-card:hover {
 .dashboard-date-form {
     flex: 0 0 auto;
     margin: 0;
+}
+
+.dashboard-calendar-control {
+    position: relative;
+    display: grid;
+    width: 45px;
+    height: 45px;
+    flex: 0 0 auto;
+    place-items: center;
+}
+
+.dashboard-calendar-icon {
+    font-size: 2rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.dashboard-native-date-input {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 /* ==========================================================
@@ -3281,4 +3270,156 @@ button.supplement-card {
 
 button.supplement-card:active {
     transform: scale(0.98);
+}
+
+/* ==========================================================
+   Feeding history
+   ========================================================== */
+
+.feeding-history-list {
+    display: grid;
+    gap: 17px;
+}
+
+.feeding-history-day {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 19px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.history-day-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 16px;
+    border-bottom: 1px solid var(--border);
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #fff7fa
+        );
+}
+
+.history-day-heading > div {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.history-day-heading strong {
+    font-size: 0.95rem;
+}
+
+.history-day-heading small {
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+.history-day-open-link {
+    color: var(--primary-dark);
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.history-supplement-section {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-supplement-section h3 {
+    margin: 0 0 9px;
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+.history-supplement-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.history-supplement-item {
+    display: inline-flex;
+    padding: 6px 9px;
+    align-items: center;
+    gap: 5px;
+    border-radius: 999px;
+    color: #9699a0;
+    background: #eef0f3;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.history-supplement-item.is-taken {
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+}
+
+.history-meal-list {
+    display: grid;
+}
+
+.history-meal-card {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-meal-card:last-child {
+    border-bottom: 0;
+}
+
+.history-meal-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.history-meal-heading strong {
+    font-size: 0.8rem;
+}
+
+.history-meal-heading a {
+    color: var(--primary-dark);
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+
+.history-meal-card ul {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.history-meal-card li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text);
+    font-size: 0.75rem;
+}
+
+.history-meal-card li strong {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+}
+
+.history-no-meal {
+    margin: 0;
+    padding: 14px 16px;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.history-empty-text {
+    color: var(--muted);
+    font-size: 0.7rem;
 }

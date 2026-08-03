@@ -840,6 +840,136 @@ def today(request):
     )
 
 @login_required
+def history(request):
+    """
+    選択中の子どもの食事と薬・サプリ履歴を、
+    日付ごとに新しい順で表示する。
+    """
+
+    baby = get_current_baby(request)
+
+    if baby is None:
+        messages.error(
+            request,
+            "先に子どもを登録してください。",
+        )
+
+        return redirect(
+            "feeding:settings"
+        )
+
+    meals = list(
+        Meal.objects
+        .filter(baby=baby)
+        .prefetch_related(
+            "items__food",
+            "items__dish",
+        )
+        .order_by(
+            "-date",
+            "meal_number",
+        )
+    )
+
+    supplement_intakes = list(
+        SupplementIntake.objects
+        .filter(baby=baby)
+        .select_related("supplement")
+        .order_by(
+            "-date",
+            "supplement__display_order",
+            "supplement__name",
+        )
+    )
+
+    supplements = list(
+        Supplement.objects
+        .filter(is_active=True)
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
+
+    meals_by_date = defaultdict(list)
+
+    for meal in meals:
+        meals_by_date[meal.date].append(meal)
+
+    intakes_by_date = defaultdict(dict)
+
+    for intake in supplement_intakes:
+        intakes_by_date[intake.date][
+            intake.supplement_id
+        ] = intake.taken
+
+    history_dates = sorted(
+        set(meals_by_date.keys())
+        | set(intakes_by_date.keys()),
+        reverse=True,
+    )
+
+    history_days = []
+
+    for history_date in history_dates:
+        meal_rows = []
+
+        for meal in meals_by_date.get(
+            history_date,
+            [],
+        ):
+            items = list(
+                meal.items.all()
+            )
+
+            meal_rows.append(
+                {
+                    "meal": meal,
+                    "items": items,
+                }
+            )
+
+        supplement_rows = []
+
+        for supplement in supplements:
+            supplement_rows.append(
+                {
+                    "supplement": supplement,
+                    "taken": (
+                        intakes_by_date
+                        .get(history_date, {})
+                        .get(
+                            supplement.pk,
+                            False,
+                        )
+                    ),
+                }
+            )
+
+        history_days.append(
+            {
+                "date": history_date,
+                "meals": meal_rows,
+                "supplements": supplement_rows,
+            }
+        )
+
+    context = {
+        "baby": baby,
+        "history_days": history_days,
+        "can_edit_baby": user_can_edit_baby(
+            request,
+            baby,
+        ),
+    }
+
+    return render(
+        request,
+        "feeding/history.html",
+        context,
+    )
+
+@login_required
 def food_create(request):
     baby = get_current_baby(request)
 
