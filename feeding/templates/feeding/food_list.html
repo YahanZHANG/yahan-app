@@ -23,12 +23,14 @@
 <div
     class="catalog-type-toggle"
     role="group"
-    aria-label="食材または料理"
+    aria-label="表示する種類"
 >
     <a
         href="{% url 'feeding:food_list' %}?tab=food"
         class="catalog-type-toggle-button catalog-food-button{% if selected_tab == 'food' %} is-active{% endif %}"
-        aria-current="{% if selected_tab == 'food' %}page{% else %}false{% endif %}"
+        {% if selected_tab == "food" %}
+            aria-current="page"
+        {% endif %}
     >
         <span
             class="catalog-type-icon"
@@ -43,7 +45,9 @@
     <a
         href="{% url 'feeding:food_list' %}?tab=dish"
         class="catalog-type-toggle-button catalog-dish-button{% if selected_tab == 'dish' %} is-active{% endif %}"
-        aria-current="{% if selected_tab == 'dish' %}page{% else %}false{% endif %}"
+        {% if selected_tab == "dish" %}
+            aria-current="page"
+        {% endif %}
     >
         <span
             class="catalog-type-icon"
@@ -54,10 +58,31 @@
 
         <span>料理</span>
     </a>
+
+    <a
+        href="{% url 'feeding:food_list' %}?tab=commercial"
+        class="catalog-type-toggle-button catalog-commercial-button{% if selected_tab == 'commercial' %} is-active{% endif %}"
+        {% if selected_tab == "commercial" %}
+            aria-current="page"
+        {% endif %}
+    >
+        <span
+            class="catalog-type-icon"
+            aria-hidden="true"
+        >
+            🛒
+        </span>
+
+        <span>市販品</span>
+    </a>
 </div>
 
 {% if selected_tab == "dish" %}
     {% include "feeding/partials/dish_catalog_tab.html" %}
+
+{% elif selected_tab == "commercial" %}
+    {% include "feeding/partials/commercial_catalog_tab.html" %}
+
 {% else %}
     {% include "feeding/partials/food_catalog_tab.html" %}
 {% endif %}
@@ -460,5 +485,52 @@
             }
         );
     }
+
+    document
+    .querySelectorAll(
+        "[data-commercial-brand-toggle]"
+    )
+    .forEach((toggleButton) => {
+        toggleButton.addEventListener(
+            "click",
+            () => {
+                const brandCard = (
+                    toggleButton.closest(
+                        "[data-commercial-brand-card]"
+                    )
+                );
+
+                if (!brandCard) {
+                    return;
+                }
+
+                const brandContent = (
+                    brandCard.querySelector(
+                        "[data-commercial-brand-content]"
+                    )
+                );
+
+                if (!brandContent) {
+                    return;
+                }
+
+                const isOpen = (
+                    !brandContent.hidden
+                );
+
+                brandContent.hidden = isOpen;
+
+                brandCard.classList.toggle(
+                    "is-open",
+                    !isOpen
+                );
+
+                toggleButton.setAttribute(
+                    "aria-expanded",
+                    String(!isOpen)
+                );
+            }
+        );
+    });
 </script>
 {% endblock %}

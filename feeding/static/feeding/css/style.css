@@ -2060,7 +2060,8 @@ body.guest {
 
 .item-type-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    width: min(100%, 390px);
     gap: 12px;
     width: min(100%, 270px);
     padding: 0;
@@ -2102,6 +2103,11 @@ body.guest {
 .item-type-toggle-button[data-item-type-button="dish"] {
     background: #f8e6b6;
     color: #705405;
+}
+
+.item-type-toggle-button[data-item-type-button="commercial"] {
+    background: #e8f2fa;
+    color: #496882;
 }
 
 .item-type-toggle-button.is-active{
@@ -3432,31 +3438,74 @@ button.supplement-card:active {
 
 .catalog-type-toggle {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    width: min(100%, 270px);
-    margin-bottom: 22px;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    width: 100%;
+    margin-bottom: 24px;
 }
 
 .catalog-type-toggle-button {
-    display: flex;
-    min-height: 38px;
-    padding: 6px 12px;
+    display: inline-flex;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 8px;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    border: 1px solid #ececec;
+    gap: 5px;
+    border: 0;
     border-radius: 999px;
-    color: #b4b8bf;
-    background: #ffffff;
-    font-size: 0.82rem;
-    font-weight: 700;
-    opacity: 0.28;
+    font-size: 0.78rem;
+    font-weight: 850;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    opacity: 0.3;
     box-shadow: none;
     transition:
         opacity 0.18s ease,
         transform 0.18s ease,
         box-shadow 0.18s ease;
+}
+
+.catalog-food-button {
+    color: #08723b;
+    background: #dff7e5;
+}
+
+.catalog-dish-button {
+    color: #866211;
+    background: #fff1cf;
+}
+
+.catalog-commercial-button {
+    color: #496882;
+    background: #e8f2fa;
+}
+
+.catalog-type-toggle-button.is-active {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow:
+        0 5px 14px
+        rgba(47, 49, 55, 0.09);
+}
+
+.catalog-type-icon {
+    flex: 0 0 auto;
+    font-size: 0.94rem;
+    line-height: 1;
+}
+
+@media (max-width: 380px) {
+    .catalog-type-toggle {
+        gap: 6px;
+    }
+
+    .catalog-type-toggle-button {
+        padding-inline: 5px;
+        font-size: 0.72rem;
+    }
 }
 
 .catalog-food-button {

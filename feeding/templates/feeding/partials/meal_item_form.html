@@ -6,44 +6,46 @@
         {{ hidden_field }}
     {% endfor %}
 
-    <div class="meal-item-toolbar">
-        <div
-            class="item-type-toggle"
-            role="group"
-            aria-label="食材または料理"
+    <div
+        class="item-type-toggle"
+        role="group"
+        aria-label="食材・料理・市販品"
+    >
+        <button
+            type="button"
+            class="item-type-toggle-button"
+            data-item-type-button="food"
+            aria-pressed="false"
         >
-            <button
-                type="button"
-                class="item-type-toggle-button"
-                data-item-type-button="food"
-                aria-pressed="false"
-            >
-                <span
-                    class="item-type-icon"
-                    aria-hidden="true"
-                >
-                    🥕
-                </span>
+            <span class="item-type-icon" aria-hidden="true">
+                🥕
+            </span>
+            <span>食材</span>
+        </button>
 
-                <span>食材</span>
-            </button>
+        <button
+            type="button"
+            class="item-type-toggle-button"
+            data-item-type-button="dish"
+            aria-pressed="false"
+        >
+            <span class="item-type-icon" aria-hidden="true">
+                🍲
+            </span>
+            <span>料理</span>
+        </button>
 
-            <button
-                type="button"
-                class="item-type-toggle-button"
-                data-item-type-button="dish"
-                aria-pressed="false"
-            >
-                <span
-                    class="item-type-icon"
-                    aria-hidden="true"
-                >
-                    🍲
-                </span>
-
-                <span>料理</span>
-            </button>
-        </div>
+        <button
+            type="button"
+            class="item-type-toggle-button"
+            data-item-type-button="commercial"
+            aria-pressed="false"
+        >
+            <span class="item-type-icon" aria-hidden="true">
+                🛒
+            </span>
+            <span>市販品</span>
+        </button>
     </div>
 
     <button
@@ -150,6 +152,42 @@
         </a>
 
         {% for error in item_form.dish.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group meal-inline-field meal-first-field"
+        data-commercial-brand-field
+        hidden
+    >
+        <label for="{{ item_form.commercial_brand.id_for_label }}">
+            {{ item_form.commercial_brand.label }}
+        </label>
+
+        {{ item_form.commercial_brand }}
+
+        {% for error in item_form.commercial_brand.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group meal-inline-field"
+        data-commercial-product-field
+        hidden
+    >
+        <label for="{{ item_form.commercial_product.id_for_label }}">
+            {{ item_form.commercial_product.label }}
+        </label>
+
+        {{ item_form.commercial_product }}
+
+        {% for error in item_form.commercial_product.errors %}
             <p class="field-error">
                 {{ error }}
             </p>

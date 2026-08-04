@@ -1012,6 +1012,7 @@ def today(request):
 
     recent_first_foods = []
     supplement_cards = []
+    brushed_meal_numbers = set()
     toothbrushing_by_meal = []
 
     if baby:
@@ -1874,6 +1875,7 @@ def food_list(request):
     if selected_tab not in {
         "food",
         "dish",
+        "commercial",
     }:
         selected_tab = "food"
 
@@ -1973,8 +1975,13 @@ def food_list(request):
 
     dishes = (
         Dish.objects
-        .filter(is_active=True)
-        .select_related("category")
+        .filter(
+            is_active=True,
+            is_commercial_product=False,
+        )
+        .select_related(
+            "category",
+        )
         .prefetch_related(
             "dish_ingredients__food",
         )
@@ -2060,12 +2067,109 @@ def food_list(request):
             card["dishes"]
         )
 
+    commercial_products = (
+        Dish.objects
+        .filter(
+            is_active=True,
+            is_commercial_product=True,
+        )
+        .select_related("category")
+        .prefetch_related(
+            "dish_ingredients__food",
+        )
+        .order_by(
+            "commercial_brand",
+            "recommended_from_month",
+            "name",
+        )
+    )
+
+    commercial_brand_cards = []
+
+    brand_definitions = [
+        {
+            "code": Dish.CommercialBrand.HIPP,
+            "name": "HiPP",
+        },
+        {
+            "code": Dish.CommercialBrand.HOLLE,
+            "name": "Holle",
+        },
+    ]
+
+    for brand in brand_definitions:
+        brand_products = [
+            product
+            for product in commercial_products
+            if product.commercial_brand
+            == brand["code"]
+        ]
+
+        product_rows = []
+
+        for product in brand_products:
+            eaten_count = 0
+
+            if baby:
+                eaten_count = (
+                    MealItem.objects
+                    .filter(
+                        meal__baby=baby,
+                        dish=product,
+                        item_type=(
+                            MealItem.ItemType.DISH
+                        ),
+                    )
+                    .values("meal_id")
+                    .distinct()
+                    .count()
+                )
+
+            status_data = get_exposure_status(
+                eaten_count
+            )
+
+            product_rows.append(
+                {
+                    "product": product,
+                    "count": eaten_count,
+                    "status": status_data["status"],
+                    "status_label": (
+                        status_data["label"]
+                    ),
+                    "status_icon": (
+                        status_data["icon"]
+                    ),
+                }
+            )
+
+        eaten_count = sum(
+            1
+            for row in product_rows
+            if row["count"] > 0
+        )
+
+        commercial_brand_cards.append(
+            {
+                "brand_code": brand["code"],
+                "brand_name": brand["name"],
+                "products": product_rows,
+                "eaten_count": eaten_count,
+                "total_count": len(product_rows),
+            }
+        )
+
     context = {
         "baby": baby,
         "can_edit_baby": can_edit_baby,
         "selected_tab": selected_tab,
         "category_cards": category_cards,
-        "dish_category_cards": dish_category_cards,
+        "dish_category_cards": (
+            dish_category_cards
+        ),
+        "commercial_brand_cards": (
+            commercial_brand_cards
+        ),
     }
 
     return render(

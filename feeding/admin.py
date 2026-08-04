@@ -200,52 +200,66 @@ class DishAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "category",
+        "is_commercial_product",
+        "commercial_brand",
+        "recommended_from_month",
         "finished_amount_g",
-        "ingredient_names",
-        "allergen_names",
-        "is_user_created",
+        "ingredient_data_verified",
         "is_active",
     )
+
     list_filter = (
-        "category",
-        "is_user_created",
+        "is_commercial_product",
+        "commercial_brand",
+        "recommended_from_month",
+        "ingredient_data_verified",
         "is_active",
-    )
-    fields = (
-        "name",
         "category",
-        "finished_amount_g",
-        "instructions",
-        "is_user_created",
-        "is_active",
     )
+
     search_fields = (
         "name",
         "category__name",
-        "dish_ingredients__food__name",
     )
-    list_select_related = ("category",)
-    inlines = (DishIngredientInline,)
+
     ordering = (
         "category__display_order",
         "category__name",
         "name",
     )
 
-    @admin.display(description="材料")
-    def ingredient_names(self, obj):
-        return "、".join(
-            obj.dish_ingredients.select_related("food")
-            .order_by("display_order", "id")
-            .values_list("food__name", flat=True)
-        ) or "未登録"
+    fieldsets = (
+        (
+            "基本情報",
+            {
+                "fields": (
+                    "name",
+                    "category",
+                    "finished_amount_g",
+                    "instructions",
+                    "is_user_created",
+                    "is_active",
+                ),
+            },
+        ),
+        (
+            "市販品情報",
+            {
+                "fields": (
+                    "is_commercial_product",
+                    "commercial_brand",
+                    "recommended_from_month",
+                    "source_url",
+                    "ingredient_data_verified",
+                    "ingredient_data_note",
+                ),
+            },
+        ),
+    )
 
-    @admin.display(description="アレルゲン")
-    def allergen_names(self, obj):
-        return "、".join(
-            obj.allergens.values_list("name", flat=True)
-        ) or "なし"
-
+    inlines = [
+        DishIngredientInline,
+    ]
 
 @admin.register(DishIngredient)
 class DishIngredientAdmin(admin.ModelAdmin):

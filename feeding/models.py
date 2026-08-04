@@ -453,13 +453,18 @@ class DishCategory(models.Model):
         return self.name
 
 class Dish(models.Model):
-    """ボロネーゼ、野菜がゆなどの料理。"""
+    """ボロネーゼ、野菜がゆ、市販品などの料理。"""
+
+    class CommercialBrand(models.TextChoices):
+        HIPP = "hipp", "HiPP"
+        HOLLE = "holle", "Holle"
 
     name = models.CharField(
         "料理名",
         max_length=100,
         unique=True,
     )
+
     category = models.ForeignKey(
         DishCategory,
         verbose_name="料理ジャンル",
@@ -493,18 +498,64 @@ class Dish(models.Model):
         related_name="dishes",
         blank=True,
     )
+
     is_user_created = models.BooleanField(
         "手動追加した料理",
         default=False,
     )
+
     is_active = models.BooleanField(
         "表示する",
         default=True,
     )
+
+    is_commercial_product = models.BooleanField(
+        "市販品",
+        default=False,
+    )
+
+    commercial_brand = models.CharField(
+        "メーカー",
+        max_length=20,
+        choices=CommercialBrand.choices,
+        blank=True,
+    )
+
+    recommended_from_month = models.PositiveSmallIntegerField(
+        "対象月齢",
+        null=True,
+        blank=True,
+        help_text="例：5か月からなら5",
+    )
+
+    source_url = models.URLField(
+        "公式商品ページ",
+        blank=True,
+    )
+
+    ingredient_data_verified = models.BooleanField(
+        "材料割合確認済み",
+        default=False,
+        help_text=(
+            "公式の商品ページまたは商品ラベルで、"
+            "登録材料の割合を確認した場合に有効にする。"
+        ),
+    )
+
+    ingredient_data_note = models.CharField(
+        "材料データの注記",
+        max_length=255,
+        blank=True,
+        help_text=(
+            "例：主要材料のみ割合が明記されている"
+        ),
+    )
+
     created_at = models.DateTimeField(
         "作成日時",
         auto_now_add=True,
     )
+
     updated_at = models.DateTimeField(
         "更新日時",
         auto_now=True,
@@ -513,7 +564,11 @@ class Dish(models.Model):
     class Meta:
         verbose_name = "料理"
         verbose_name_plural = "料理"
-        ordering = ["category__display_order", "category__name", "name"]
+        ordering = [
+            "category__display_order",
+            "category__name",
+            "name",
+        ]
 
     def __str__(self):
         return self.name
@@ -521,9 +576,38 @@ class Dish(models.Model):
     @property
     def allergens(self):
         """料理に含まれる食材からアレルゲンを取得する。"""
+
         return Allergen.objects.filter(
             foods__dishes=self
         ).distinct()
+
+    def clean(self):
+        super().clean()
+
+        if (
+            self.is_commercial_product
+            and not self.commercial_brand
+        ):
+            raise ValidationError(
+                {
+                    "commercial_brand": (
+                        "市販品にはメーカーを設定してください。"
+                    )
+                }
+            )
+
+        if (
+            not self.is_commercial_product
+            and self.commercial_brand
+        ):
+            raise ValidationError(
+                {
+                    "commercial_brand": (
+                        "メーカーを設定する場合は、"
+                        "市販品を有効にしてください。"
+                    )
+                }
+            )
 
 class DishIngredient(models.Model):
     """料理と、その料理に含まれる食材の関係。"""

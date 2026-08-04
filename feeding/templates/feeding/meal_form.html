@@ -7,14 +7,15 @@
 {% block content %}
 <section class="form-page-header">
     <a
-        href="{% url 'feeding:today' %}"
+        href="{% url 'feeding:today' %}?date={{ selected_date|date:'Y-m-d' }}"
         class="back-link"
     >
-        ← 今日に戻る
+        ← この日の記録に戻る
     </a>
 
-    <h2>{{ meal_label }}の記録</h2>
-
+    <h2>
+        {{ meal_label }}の記録
+    </h2>
 </section>
 
 <form
@@ -40,14 +41,18 @@
 
     <section class="form-section meal-date-section">
         <div class="form-group">
-            <label for="{{ meal_form.date.id_for_label }}">
+            <label
+                for="{{ meal_form.date.id_for_label }}"
+            >
                 {{ meal_form.date.label }}
             </label>
 
             {{ meal_form.date }}
 
             {% for error in meal_form.date.errors %}
-                <p class="field-error">{{ error }}</p>
+                <p class="field-error">
+                    {{ error }}
+                </p>
             {% endfor %}
         </div>
     </section>
@@ -75,7 +80,7 @@
         id="add-item-button"
         class="secondary-button"
     >
-        ＋ 食材・料理を追加
+        ＋ 食材・料理・市販品を追加
     </button>
 
     <div class="form-actions">
@@ -113,188 +118,141 @@
 {% endif %}
 
 <script>
-    const mealForm = document.getElementById("meal-form");
-    const dateInput = document.getElementById("id_date");
+    const mealForm = document.getElementById(
+        "meal-form"
+    );
+
+    const dateInput = document.getElementById(
+        "id_date"
+    );
 
     if (
-        mealForm.dataset.setDeviceDate === "true"
+        mealForm
+        && mealForm.dataset.setDeviceDate === "true"
         && dateInput
     ) {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
 
-        dateInput.value = `${year}-${month}-${day}`;
+        const year = now.getFullYear();
+
+        const month = String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+        const day = String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+        dateInput.value = (
+            `${year}-${month}-${day}`
+        );
     }
 
-    const formList = document.getElementById("meal-item-list");
+    const formList = document.getElementById(
+        "meal-item-list"
+    );
+
     const totalFormsInput = document.getElementById(
         "id_items-TOTAL_FORMS"
     );
+
     const emptyFormTemplate = document.getElementById(
         "empty-form-template"
     );
-    const addButton = document.getElementById("add-item-button");
 
-    function updateSelectedType(
-        row,
-        clearOtherField = false
+    const addButton = document.getElementById(
+        "add-item-button"
+    );
+
+
+    function prepareCategoryFilter(
+        itemSelect
     ) {
-        const typeInput = row.querySelector(
-            ".item-type-select"
-        );
-
-        const foodCategoryField = row.querySelector(
-            "[data-food-category-field]"
-        );
-        const foodField = row.querySelector(
-            "[data-food-field]"
-        );
-        const dishCategoryField = row.querySelector(
-            "[data-dish-category-field]"
-        );
-        const dishField = row.querySelector(
-            "[data-dish-field]"
-        );
-
-        const foodCategorySelect = row.querySelector(
-            ".food-category-select"
-        );
-        const foodSelect = row.querySelector(
-            ".food-select"
-        );
-        const dishCategorySelect = row.querySelector(
-            ".dish-category-select"
-        );
-        const dishSelect = row.querySelector(
-            ".dish-select"
-        );
-
-        const typeButtons = row.querySelectorAll(
-            "[data-item-type-button]"
-        );
-
-        if (!typeInput) {
-            return;
-        }
-
-        if (!typeInput.value) {
-            typeInput.value = "food";
-        }
-
-        const selectedType = typeInput.value;
-        const isFood = selectedType === "food";
-        const isDish = selectedType === "dish";
-
-        row.classList.toggle(
-            "is-dish-mode",
-            isDish
-        );
-
-        foodCategoryField.hidden = !isFood;
-        foodField.hidden = !isFood;
-        dishCategoryField.hidden = !isDish;
-        dishField.hidden = !isDish;
-
-        typeButtons.forEach((button) => {
-            const isActive = (
-                button.dataset.itemTypeButton
-                === selectedType
-            );
-
-            button.classList.toggle(
-                "is-active",
-                isActive
-            );
-
-            button.setAttribute(
-                "aria-pressed",
-                String(isActive)
-            );
-        });
-
-        if (clearOtherField) {
-            if (isFood) {
-                if (dishCategorySelect) {
-                    dishCategorySelect.value = "";
-                }
-
-                if (dishSelect) {
-                    dishSelect.value = "";
-                }
-            }
-
-            if (isDish) {
-                if (foodCategorySelect) {
-                    foodCategorySelect.value = "";
-                }
-
-                if (foodSelect) {
-                    foodSelect.value = "";
-                }
-            }
-        }
-    }
-
-    function prepareCategoryFilter(itemSelect) {
         if (!itemSelect) {
             return;
         }
 
-        if (itemSelect.dataset.optionsPrepared === "true") {
+        if (
+            itemSelect.dataset.optionsPrepared
+            === "true"
+        ) {
             return;
         }
 
         const optionData = Array.from(
             itemSelect.options
-        ).map((option) => ({
-            value: option.value,
-            text: option.textContent,
-            categoryId: option.dataset.categoryId || "",
-        }));
-
-        itemSelect.dataset.allOptions = JSON.stringify(
-            optionData
+        ).map(
+            (option) => ({
+                value: option.value,
+                text: option.textContent,
+                categoryId: (
+                    option.dataset.categoryId
+                    || ""
+                ),
+            })
         );
 
-        itemSelect.dataset.optionsPrepared = "true";
+        itemSelect.dataset.allOptions = (
+            JSON.stringify(
+                optionData
+            )
+        );
+
+        itemSelect.dataset.optionsPrepared = (
+            "true"
+        );
     }
+
 
     function filterOptions(
         categorySelect,
         itemSelect
     ) {
-        if (!categorySelect || !itemSelect) {
+        if (
+            !categorySelect
+            || !itemSelect
+        ) {
             return;
         }
 
-        prepareCategoryFilter(itemSelect);
+        prepareCategoryFilter(
+            itemSelect
+        );
 
-        const categoryId = categorySelect.value;
-        const previousValue = itemSelect.value;
+        const categoryId = (
+            categorySelect.value
+        );
+
+        const previousValue = (
+            itemSelect.value
+        );
 
         const allOptions = JSON.parse(
-            itemSelect.dataset.allOptions || "[]"
+            itemSelect.dataset.allOptions
+            || "[]"
         );
 
         itemSelect.innerHTML = "";
 
-        const placeholderOption = document.createElement(
-            "option"
+        const placeholderOption = (
+            document.createElement(
+                "option"
+            )
         );
 
         placeholderOption.value = "";
 
-        if (categoryId) {
-            placeholderOption.textContent = (
-                "選択してください"
-            );
-        } else {
-            placeholderOption.textContent = (
-                "先にジャンルを選択"
-            );
-        }
+        placeholderOption.textContent = (
+            categoryId
+            ? "選択してください"
+            : "先にジャンルを選択"
+        );
 
         itemSelect.appendChild(
             placeholderOption
@@ -307,36 +265,55 @@
 
         itemSelect.disabled = false;
 
-        allOptions.forEach((optionData) => {
-            if (
-                !optionData.value
-                || optionData.categoryId !== categoryId
-            ) {
-                return;
+        allOptions.forEach(
+            (optionData) => {
+                if (
+                    !optionData.value
+                    || optionData.categoryId
+                    !== categoryId
+                ) {
+                    return;
+                }
+
+                const option = (
+                    document.createElement(
+                        "option"
+                    )
+                );
+
+                option.value = (
+                    optionData.value
+                );
+
+                option.textContent = (
+                    optionData.text
+                );
+
+                option.dataset.categoryId = (
+                    optionData.categoryId
+                );
+
+                if (
+                    optionData.value
+                    === previousValue
+                ) {
+                    option.selected = true;
+                }
+
+                itemSelect.appendChild(
+                    option
+                );
             }
+        );
 
-            const option = document.createElement(
-                "option"
-            );
-
-            option.value = optionData.value;
-            option.textContent = optionData.text;
-            option.dataset.categoryId = (
-                optionData.categoryId
-            );
-
-            if (optionData.value === previousValue) {
-                option.selected = true;
-            }
-
-            itemSelect.appendChild(option);
-        });
-
-        const previousOptionStillExists = Array.from(
-            itemSelect.options
-        ).some(
-            (option) => (
-                option.value === previousValue
+        const previousOptionStillExists = (
+            Array.from(
+                itemSelect.options
+            ).some(
+                (option) => (
+                    option.value
+                    === previousValue
+                )
             )
         );
 
@@ -345,51 +322,486 @@
         }
     }
 
-    function bindRow(row) {
-        const typeInput = row.querySelector(
-            ".item-type-select"
+
+    function prepareCommercialFilter(
+        productSelect
+    ) {
+        if (!productSelect) {
+            return;
+        }
+
+        if (
+            productSelect.dataset.optionsPrepared
+            === "true"
+        ) {
+            return;
+        }
+
+        const optionData = Array.from(
+            productSelect.options
+        ).map(
+            (option) => ({
+                value: option.value,
+                text: option.textContent,
+                brand: (
+                    option.dataset.brand
+                    || ""
+                ),
+            })
         );
 
-        const typeButtons = row.querySelectorAll(
-            "[data-item-type-button]"
+        productSelect.dataset.allOptions = (
+            JSON.stringify(
+                optionData
+            )
         );
 
-        const foodCategorySelect = row.querySelector(
-            ".food-category-select"
+        productSelect.dataset.optionsPrepared = (
+            "true"
+        );
+    }
+
+
+    function filterCommercialProducts(
+        brandSelect,
+        productSelect
+    ) {
+        if (
+            !brandSelect
+            || !productSelect
+        ) {
+            return;
+        }
+
+        prepareCommercialFilter(
+            productSelect
         );
 
-        const foodSelect = row.querySelector(
-            ".food-select"
+        const selectedBrand = (
+            brandSelect.value
         );
 
-        const dishCategorySelect = row.querySelector(
-            ".dish-category-select"
+        const previousValue = (
+            productSelect.value
         );
 
-        const dishSelect = row.querySelector(
-            ".dish-select"
+        const allOptions = JSON.parse(
+            productSelect.dataset.allOptions
+            || "[]"
         );
 
-        const removeButton = row.querySelector(
-            "[data-remove-row]"
+        productSelect.innerHTML = "";
+
+        const placeholderOption = (
+            document.createElement(
+                "option"
+            )
         );
 
-        const deleteInput = row.querySelector(
-            'input[name$="-DELETE"]'
+        placeholderOption.value = "";
+
+        placeholderOption.textContent = (
+            selectedBrand
+            ? "選択してください"
+            : "先にメーカーを選択"
         );
 
-        const clearReactionButton = row.querySelector(
-            "[data-clear-reaction]"
+        productSelect.appendChild(
+            placeholderOption
         );
 
-        const reactionInputs = row.querySelectorAll(
-            ".reaction-radio-input"
+        if (!selectedBrand) {
+            productSelect.disabled = true;
+            return;
+        }
+
+        productSelect.disabled = false;
+
+        allOptions.forEach(
+            (optionData) => {
+                if (
+                    !optionData.value
+                    || optionData.brand
+                    !== selectedBrand
+                ) {
+                    return;
+                }
+
+                const option = (
+                    document.createElement(
+                        "option"
+                    )
+                );
+
+                option.value = (
+                    optionData.value
+                );
+
+                option.textContent = (
+                    optionData.text
+                );
+
+                option.dataset.brand = (
+                    optionData.brand
+                );
+
+                if (
+                    optionData.value
+                    === previousValue
+                ) {
+                    option.selected = true;
+                }
+
+                productSelect.appendChild(
+                    option
+                );
+            }
+        );
+
+        const previousOptionStillExists = (
+            Array.from(
+                productSelect.options
+            ).some(
+                (option) => (
+                    option.value
+                    === previousValue
+                )
+            )
+        );
+
+        if (!previousOptionStillExists) {
+            productSelect.value = "";
+        }
+    }
+
+
+    function updateSelectedType(
+        row,
+        clearOtherFields = false
+    ) {
+        const catalogTypeInput = (
+            row.querySelector(
+                ".catalog-type-select"
+            )
+        );
+
+        const itemTypeInput = (
+            row.querySelector(
+                ".item-type-select"
+            )
+        );
+
+        if (!catalogTypeInput) {
+            return;
+        }
+
+        if (!catalogTypeInput.value) {
+            if (
+                itemTypeInput
+                && itemTypeInput.value
+                === "dish"
+            ) {
+                catalogTypeInput.value = (
+                    "dish"
+                );
+            } else {
+                catalogTypeInput.value = (
+                    "food"
+                );
+            }
+        }
+
+        const selectedType = (
+            catalogTypeInput.value
+        );
+
+        const isFood = (
+            selectedType === "food"
+        );
+
+        const isDish = (
+            selectedType === "dish"
+        );
+
+        const isCommercial = (
+            selectedType
+            === "commercial"
+        );
+
+        const foodCategoryField = (
+            row.querySelector(
+                "[data-food-category-field]"
+            )
+        );
+
+        const foodField = (
+            row.querySelector(
+                "[data-food-field]"
+            )
+        );
+
+        const dishCategoryField = (
+            row.querySelector(
+                "[data-dish-category-field]"
+            )
+        );
+
+        const dishField = (
+            row.querySelector(
+                "[data-dish-field]"
+            )
+        );
+
+        const commercialBrandField = (
+            row.querySelector(
+                "[data-commercial-brand-field]"
+            )
+        );
+
+        const commercialProductField = (
+            row.querySelector(
+                "[data-commercial-product-field]"
+            )
+        );
+
+        const foodCategorySelect = (
+            row.querySelector(
+                ".food-category-select"
+            )
+        );
+
+        const foodSelect = (
+            row.querySelector(
+                ".food-select"
+            )
+        );
+
+        const dishCategorySelect = (
+            row.querySelector(
+                ".dish-category-select"
+            )
+        );
+
+        const dishSelect = (
+            row.querySelector(
+                ".dish-select"
+            )
+        );
+
+        const commercialBrandSelect = (
+            row.querySelector(
+                ".commercial-brand-select"
+            )
+        );
+
+        const commercialProductSelect = (
+            row.querySelector(
+                ".commercial-product-select"
+            )
+        );
+
+        const typeButtons = (
+            row.querySelectorAll(
+                "[data-item-type-button]"
+            )
+        );
+
+        if (foodCategoryField) {
+            foodCategoryField.hidden = (
+                !isFood
+            );
+        }
+
+        if (foodField) {
+            foodField.hidden = (
+                !isFood
+            );
+        }
+
+        if (dishCategoryField) {
+            dishCategoryField.hidden = (
+                !isDish
+            );
+        }
+
+        if (dishField) {
+            dishField.hidden = (
+                !isDish
+            );
+        }
+
+        if (commercialBrandField) {
+            commercialBrandField.hidden = (
+                !isCommercial
+            );
+        }
+
+        if (commercialProductField) {
+            commercialProductField.hidden = (
+                !isCommercial
+            );
+        }
+
+        row.classList.toggle(
+            "is-dish-mode",
+            isDish
+        );
+
+        row.classList.toggle(
+            "is-commercial-mode",
+            isCommercial
+        );
+
+        typeButtons.forEach(
+            (button) => {
+                const isActive = (
+                    button
+                    .dataset
+                    .itemTypeButton
+                    === selectedType
+                );
+
+                button.classList.toggle(
+                    "is-active",
+                    isActive
+                );
+
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isActive)
+                );
+            }
+        );
+
+        if (itemTypeInput) {
+            itemTypeInput.value = (
+                isFood
+                ? "food"
+                : "dish"
+            );
+        }
+
+        if (!clearOtherFields) {
+            return;
+        }
+
+        if (!isFood) {
+            if (foodCategorySelect) {
+                foodCategorySelect.value = "";
+            }
+
+            if (foodSelect) {
+                foodSelect.value = "";
+            }
+        }
+
+        if (!isDish) {
+            if (dishCategorySelect) {
+                dishCategorySelect.value = "";
+            }
+
+            if (dishSelect) {
+                dishSelect.value = "";
+            }
+        }
+
+        if (!isCommercial) {
+            if (commercialBrandSelect) {
+                commercialBrandSelect.value = "";
+            }
+
+            if (commercialProductSelect) {
+                commercialProductSelect.value = "";
+            }
+        }
+    }
+
+
+    function bindRow(
+        row
+    ) {
+        const catalogTypeInput = (
+            row.querySelector(
+                ".catalog-type-select"
+            )
+        );
+
+        const typeButtons = (
+            row.querySelectorAll(
+                "[data-item-type-button]"
+            )
+        );
+
+        const foodCategorySelect = (
+            row.querySelector(
+                ".food-category-select"
+            )
+        );
+
+        const foodSelect = (
+            row.querySelector(
+                ".food-select"
+            )
+        );
+
+        const dishCategorySelect = (
+            row.querySelector(
+                ".dish-category-select"
+            )
+        );
+
+        const dishSelect = (
+            row.querySelector(
+                ".dish-select"
+            )
+        );
+
+        const commercialBrandSelect = (
+            row.querySelector(
+                ".commercial-brand-select"
+            )
+        );
+
+        const commercialProductSelect = (
+            row.querySelector(
+                ".commercial-product-select"
+            )
+        );
+
+        const removeButton = (
+            row.querySelector(
+                "[data-remove-row]"
+            )
+        );
+
+        const deleteInput = (
+            row.querySelector(
+                'input[name$="-DELETE"]'
+            )
+        );
+
+        const clearReactionButton = (
+            row.querySelector(
+                "[data-clear-reaction]"
+            )
+        );
+
+        const reactionInputs = (
+            row.querySelectorAll(
+                ".reaction-radio-input"
+            )
         );
 
         function updateReactionState() {
-            const hasSelection = Array.from(
-                reactionInputs
-            ).some((input) => input.checked);
+            const hasSelection = (
+                Array.from(
+                    reactionInputs
+                ).some(
+                    (input) => (
+                        input.checked
+                    )
+                )
+            );
 
             if (!clearReactionButton) {
                 return;
@@ -400,23 +812,29 @@
                 hasSelection
             );
 
-            clearReactionButton.disabled = !hasSelection;
+            clearReactionButton.disabled = (
+                !hasSelection
+            );
         }
 
-        reactionInputs.forEach((input) => {
-            input.addEventListener(
-                "change",
-                updateReactionState
-            );
-        });
+        reactionInputs.forEach(
+            (input) => {
+                input.addEventListener(
+                    "change",
+                    updateReactionState
+                );
+            }
+        );
 
         if (clearReactionButton) {
             clearReactionButton.addEventListener(
                 "click",
                 () => {
-                    reactionInputs.forEach((input) => {
-                        input.checked = false;
-                    });
+                    reactionInputs.forEach(
+                        (input) => {
+                            input.checked = false;
+                        }
+                    );
 
                     updateReactionState();
                 }
@@ -425,21 +843,20 @@
 
         updateReactionState();
 
-        if (
-            typeInput
-            && !typeInput.value
-        ) {
-            typeInput.value = "food";
-        }
-
-        updateSelectedType(row);
-
         prepareCategoryFilter(
             foodSelect
         );
 
         prepareCategoryFilter(
             dishSelect
+        );
+
+        prepareCommercialFilter(
+            commercialProductSelect
+        );
+
+        updateSelectedType(
+            row
         );
 
         filterOptions(
@@ -452,35 +869,49 @@
             dishSelect
         );
 
-        typeButtons.forEach((button) => {
-            button.addEventListener(
-                "click",
-                () => {
-                    if (!typeInput) {
-                        return;
+        filterCommercialProducts(
+            commercialBrandSelect,
+            commercialProductSelect
+        );
+
+        typeButtons.forEach(
+            (button) => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        if (!catalogTypeInput) {
+                            return;
+                        }
+
+                        catalogTypeInput.value = (
+                            button
+                            .dataset
+                            .itemTypeButton
+                        );
+
+                        updateSelectedType(
+                            row,
+                            true
+                        );
+
+                        filterOptions(
+                            foodCategorySelect,
+                            foodSelect
+                        );
+
+                        filterOptions(
+                            dishCategorySelect,
+                            dishSelect
+                        );
+
+                        filterCommercialProducts(
+                            commercialBrandSelect,
+                            commercialProductSelect
+                        );
                     }
-
-                    typeInput.value = (
-                        button.dataset.itemTypeButton
-                    );
-
-                    updateSelectedType(
-                        row,
-                        true
-                    );
-
-                    filterOptions(
-                        foodCategorySelect,
-                        foodSelect
-                    );
-
-                    filterOptions(
-                        dishCategorySelect,
-                        dishSelect
-                    );
-                }
-            );
-        });
+                );
+            }
+        );
 
         if (foodCategorySelect) {
             foodCategorySelect.addEventListener(
@@ -514,6 +945,24 @@
             );
         }
 
+        if (commercialBrandSelect) {
+            commercialBrandSelect.addEventListener(
+                "change",
+                () => {
+                    if (
+                        commercialProductSelect
+                    ) {
+                        commercialProductSelect.value = "";
+                    }
+
+                    filterCommercialProducts(
+                        commercialBrandSelect,
+                        commercialProductSelect
+                    );
+                }
+            );
+        }
+
         if (removeButton) {
             removeButton.addEventListener(
                 "click",
@@ -528,32 +977,68 @@
         }
     }
 
-    formList
-        .querySelectorAll("[data-form-row]")
-        .forEach((row) => {
-            bindRow(row);
-        });
 
-    addButton.addEventListener("click", () => {
-        const formIndex = Number(totalFormsInput.value);
+    if (formList) {
+        formList
+            .querySelectorAll(
+                "[data-form-row]"
+            )
+            .forEach(
+                (row) => {
+                    bindRow(row);
+                }
+            );
+    }
 
-        const newFormHtml = emptyFormTemplate.innerHTML.replace(
-            /__prefix__/g,
-            formIndex
+
+    if (
+        addButton
+        && formList
+        && totalFormsInput
+        && emptyFormTemplate
+    ) {
+        addButton.addEventListener(
+            "click",
+            () => {
+                const formIndex = Number(
+                    totalFormsInput.value
+                );
+
+                const newFormHtml = (
+                    emptyFormTemplate
+                    .innerHTML
+                    .replace(
+                        /__prefix__/g,
+                        formIndex
+                    )
+                );
+
+                formList.insertAdjacentHTML(
+                    "beforeend",
+                    newFormHtml
+                );
+
+                totalFormsInput.value = (
+                    formIndex + 1
+                );
+
+                const rows = (
+                    formList.querySelectorAll(
+                        "[data-form-row]"
+                    )
+                );
+
+                const newRow = (
+                    rows[
+                        rows.length - 1
+                    ]
+                );
+
+                bindRow(
+                    newRow
+                );
+            }
         );
-
-        formList.insertAdjacentHTML(
-            "beforeend",
-            newFormHtml
-        );
-
-        totalFormsInput.value = formIndex + 1;
-
-        const rows = formList.querySelectorAll("[data-form-row]");
-        const newRow = rows[rows.length - 1];
-
-        bindRow(newRow);
-    });
-
+    }
 </script>
 {% endblock %}

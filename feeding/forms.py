@@ -1,13 +1,13 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.contrib.auth import get_user_model
 from django.forms import BaseInlineFormSet, inlineformset_factory
-from .models import Baby
 
 from .models import (
     Allergen,
     AllergyReaction,
+    Baby,
     BabyMembership,
     Dish,
     DishCategory,
@@ -33,6 +33,7 @@ class DishChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
         return f"{obj.category.name}｜{obj.name}"
+
 
 class CategoryDataSelect(forms.Select):
     """
@@ -67,11 +68,52 @@ class CategoryDataSelect(forms.Select):
         )
 
         if instance is not None:
-            option["attrs"][
-                "data-category-id"
-            ] = str(instance.category_id)
+            option["attrs"]["data-category-id"] = str(
+                instance.category_id
+            )
 
         return option
+
+
+class CommercialProductSelect(forms.Select):
+    """
+    各市販品optionにブランドコードを埋め込むSelect。
+    JavaScriptでHiPP・Holle別に候補を絞り込むために使う。
+    """
+
+    def create_option(
+        self,
+        name,
+        value,
+        label,
+        selected,
+        index,
+        subindex=None,
+        attrs=None,
+    ):
+        option = super().create_option(
+            name,
+            value,
+            label,
+            selected,
+            index,
+            subindex=subindex,
+            attrs=attrs,
+        )
+
+        instance = getattr(
+            value,
+            "instance",
+            None,
+        )
+
+        if instance is not None:
+            option["attrs"]["data-brand"] = (
+                instance.commercial_brand
+            )
+
+        return option
+
 
 class MealForm(forms.ModelForm):
     class Meta:
@@ -89,6 +131,7 @@ class MealForm(forms.ModelForm):
             "date": "日付",
         }
 
+
 class MealItemForm(forms.ModelForm):
     item_type = forms.ChoiceField(
         choices=MealItem.ItemType.choices,
@@ -96,6 +139,21 @@ class MealItemForm(forms.ModelForm):
         widget=forms.HiddenInput(
             attrs={
                 "class": "item-type-select",
+            }
+        ),
+    )
+
+    catalog_type = forms.ChoiceField(
+        required=False,
+        choices=[
+            ("food", "食材"),
+            ("dish", "料理"),
+            ("commercial", "市販品"),
+        ],
+        initial="food",
+        widget=forms.HiddenInput(
+            attrs={
+                "class": "catalog-type-select",
             }
         ),
     )
@@ -137,7 +195,10 @@ class MealItemForm(forms.ModelForm):
         empty_label="食材を選択",
         widget=CategoryDataSelect(
             attrs={
-                "class": "form-control food-select",
+                "class": (
+                    "form-control "
+                    "food-select"
+                ),
             }
         ),
     )
@@ -149,14 +210,59 @@ class MealItemForm(forms.ModelForm):
         empty_label="料理を選択",
         widget=CategoryDataSelect(
             attrs={
-                "class": "form-control dish-select",
+                "class": (
+                    "form-control "
+                    "dish-select"
+                ),
+            }
+        ),
+    )
+
+    commercial_brand = forms.ChoiceField(
+        label="メーカー",
+        required=False,
+        choices=[
+            ("", "メーカーを選択"),
+            (
+                Dish.CommercialBrand.HIPP,
+                "HiPP",
+            ),
+            (
+                Dish.CommercialBrand.HOLLE,
+                "Holle",
+            ),
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": (
+                    "form-control "
+                    "commercial-brand-select"
+                ),
+            }
+        ),
+    )
+
+    commercial_product = forms.ModelChoiceField(
+        label="市販品名",
+        required=False,
+        queryset=Dish.objects.none(),
+        empty_label="先にメーカーを選択",
+        widget=CommercialProductSelect(
+            attrs={
+                "class": (
+                    "form-control "
+                    "commercial-product-select"
+                ),
             }
         ),
     )
 
     unit = forms.ChoiceField(
         choices=[
-            (MealItem.Unit.GRAM, "g"),
+            (
+                MealItem.Unit.GRAM,
+                "g",
+            ),
         ],
         initial=MealItem.Unit.GRAM,
         required=False,
@@ -179,7 +285,9 @@ class MealItemForm(forms.ModelForm):
         ],
         widget=forms.RadioSelect(
             attrs={
-                "class": "reaction-radio-input",
+                "class": (
+                    "reaction-radio-input"
+                ),
             }
         ),
     )
@@ -197,7 +305,6 @@ class MealItemForm(forms.ModelForm):
             "reaction",
             "has_allergy_symptoms",
         )
-
         widgets = {
             "amount": forms.NumberInput(
                 attrs={
@@ -210,22 +317,30 @@ class MealItemForm(forms.ModelForm):
             ),
             "has_allergy_symptoms": forms.CheckboxInput(
                 attrs={
-                    "class": "allergy-symptom-checkbox",
+                    "class": (
+                        "allergy-symptom-checkbox"
+                    ),
                 }
             ),
         }
-
         labels = {
             "amount": "実際に食べた量(g)",
             "has_allergy_symptoms": "症状が出た",
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
 
-        self.fields[
-            "food_category"
-        ].queryset = (
+        instance = self.instance
+
+        self.fields["food_category"].queryset = (
             FoodCategory.objects
             .filter(is_active=True)
             .order_by(
@@ -234,9 +349,7 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
-        self.fields[
-            "dish_category"
-        ].queryset = (
+        self.fields["dish_category"].queryset = (
             DishCategory.objects
             .filter(is_active=True)
             .order_by(
@@ -245,55 +358,35 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
-        if self.instance and self.instance.pk:
-            self.fields[
-                "item_type"
-            ].initial = self.instance.item_type
+        self.fields["unit"].initial = (
+            MealItem.Unit.GRAM
+        )
 
-            self.fields[
-                "unit"
-            ].initial = MealItem.Unit.GRAM
-
-        else:
-            self.fields[
-                "item_type"
-            ].initial = MealItem.ItemType.FOOD
-
-            self.fields[
-                "unit"
-            ].initial = MealItem.Unit.GRAM
-
-        if (
-            self.instance
-            and self.instance.food_id
-        ):
-            self.fields[
-                "food_category"
-            ].initial = (
-                self.instance.food.category_id
+        if instance and instance.pk:
+            self.fields["item_type"].initial = (
+                instance.item_type
             )
-
-        if (
-            self.instance
-            and self.instance.dish_id
-        ):
-            self.fields[
-                "dish_category"
-            ].initial = (
-                self.instance.dish.category_id
+        else:
+            self.fields["item_type"].initial = (
+                MealItem.ItemType.FOOD
             )
 
         food_query = Food.objects.filter(
-            is_active=True
+            is_active=True,
         )
 
         if (
-            self.instance
-            and self.instance.food_id
+            instance
+            and instance.pk
+            and instance.food_id
         ):
             food_query = Food.objects.filter(
                 Q(is_active=True)
-                | Q(pk=self.instance.food_id)
+                | Q(pk=instance.food_id)
+            )
+
+            self.fields["food_category"].initial = (
+                instance.food.category_id
             )
 
         self.fields["food"].queryset = (
@@ -307,16 +400,26 @@ class MealItemForm(forms.ModelForm):
         )
 
         dish_query = Dish.objects.filter(
-            is_active=True
+            is_active=True,
+            is_commercial_product=False,
         )
 
         if (
-            self.instance
-            and self.instance.dish_id
+            instance
+            and instance.pk
+            and instance.dish_id
+            and not instance.dish.is_commercial_product
         ):
             dish_query = Dish.objects.filter(
-                Q(is_active=True)
-                | Q(pk=self.instance.dish_id)
+                Q(
+                    is_active=True,
+                    is_commercial_product=False,
+                )
+                | Q(pk=instance.dish_id)
+            )
+
+            self.fields["dish_category"].initial = (
+                instance.dish.category_id
             )
 
         self.fields["dish"].queryset = (
@@ -329,31 +432,95 @@ class MealItemForm(forms.ModelForm):
             )
         )
 
+        commercial_query = Dish.objects.filter(
+            is_active=True,
+            is_commercial_product=True,
+        )
+
+        if (
+            instance
+            and instance.pk
+            and instance.dish_id
+            and instance.dish.is_commercial_product
+        ):
+            commercial_query = Dish.objects.filter(
+                Q(
+                    is_active=True,
+                    is_commercial_product=True,
+                )
+                | Q(pk=instance.dish_id)
+            )
+
+        self.fields["commercial_product"].queryset = (
+            commercial_query
+            .order_by(
+                "commercial_brand",
+                "recommended_from_month",
+                "name",
+            )
+        )
+
+        if (
+            instance
+            and instance.pk
+            and instance.dish_id
+            and instance.dish.is_commercial_product
+        ):
+            self.fields["catalog_type"].initial = (
+                "commercial"
+            )
+            self.fields["commercial_brand"].initial = (
+                instance.dish.commercial_brand
+            )
+            self.fields["commercial_product"].initial = (
+                instance.dish
+            )
+
+        elif (
+            instance
+            and instance.pk
+            and instance.item_type
+            == MealItem.ItemType.DISH
+        ):
+            self.fields["catalog_type"].initial = "dish"
+
+        else:
+            self.fields["catalog_type"].initial = "food"
+
     def clean_unit(self):
         return MealItem.Unit.GRAM
 
     def clean(self):
         cleaned_data = super().clean()
 
-        item_type = (
-            cleaned_data.get("item_type")
-            or MealItem.ItemType.FOOD
+        catalog_type = (
+            cleaned_data.get("catalog_type")
+            or "food"
         )
-
-        cleaned_data["item_type"] = item_type
-        cleaned_data["unit"] = MealItem.Unit.GRAM
-
         food_category = cleaned_data.get(
             "food_category"
         )
         food = cleaned_data.get("food")
-
         dish_category = cleaned_data.get(
             "dish_category"
         )
         dish = cleaned_data.get("dish")
+        commercial_brand = cleaned_data.get(
+            "commercial_brand"
+        )
+        commercial_product = cleaned_data.get(
+            "commercial_product"
+        )
 
-        if item_type == MealItem.ItemType.FOOD:
+        cleaned_data["unit"] = (
+            MealItem.Unit.GRAM
+        )
+
+        if catalog_type == "food":
+            cleaned_data["item_type"] = (
+                MealItem.ItemType.FOOD
+            )
+
             if food_category is None:
                 self.add_error(
                     "food_category",
@@ -382,8 +549,14 @@ class MealItemForm(forms.ModelForm):
 
             cleaned_data["dish"] = None
             cleaned_data["dish_category"] = None
+            cleaned_data["commercial_brand"] = ""
+            cleaned_data["commercial_product"] = None
 
-        elif item_type == MealItem.ItemType.DISH:
+        elif catalog_type == "dish":
+            cleaned_data["item_type"] = (
+                MealItem.ItemType.DISH
+            )
+
             if dish_category is None:
                 self.add_error(
                     "dish_category",
@@ -394,6 +567,18 @@ class MealItemForm(forms.ModelForm):
                 self.add_error(
                     "dish",
                     "料理を選択してください。",
+                )
+
+            if (
+                dish
+                and dish.is_commercial_product
+            ):
+                self.add_error(
+                    "dish",
+                    (
+                        "市販品は市販品タブから"
+                        "選択してください。"
+                    ),
                 )
 
             if (
@@ -412,21 +597,91 @@ class MealItemForm(forms.ModelForm):
 
             cleaned_data["food"] = None
             cleaned_data["food_category"] = None
+            cleaned_data["commercial_brand"] = ""
+            cleaned_data["commercial_product"] = None
+
+        elif catalog_type == "commercial":
+            cleaned_data["item_type"] = (
+                MealItem.ItemType.DISH
+            )
+
+            if not commercial_brand:
+                self.add_error(
+                    "commercial_brand",
+                    "メーカーを選択してください。",
+                )
+
+            if commercial_product is None:
+                self.add_error(
+                    "commercial_product",
+                    "市販品を選択してください。",
+                )
+
+            if (
+                commercial_product
+                and not (
+                    commercial_product
+                    .is_commercial_product
+                )
+            ):
+                self.add_error(
+                    "commercial_product",
+                    (
+                        "市販品として登録された"
+                        "商品を選択してください。"
+                    ),
+                )
+
+            if (
+                commercial_product
+                and commercial_brand
+                and (
+                    commercial_product
+                    .commercial_brand
+                    != commercial_brand
+                )
+            ):
+                self.add_error(
+                    "commercial_product",
+                    (
+                        "選択したメーカーの商品を"
+                        "選んでください。"
+                    ),
+                )
+
+            cleaned_data["dish"] = commercial_product
+            cleaned_data["food"] = None
+            cleaned_data["food_category"] = None
+            cleaned_data["dish_category"] = None
+
+        else:
+            self.add_error(
+                "catalog_type",
+                "入力形式が正しくありません。",
+            )
 
         return cleaned_data
+
 
 class BaseMealItemFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
-        if any(form.errors for form in self.forms):
+        if any(
+            form.errors
+            for form in self.forms
+        ):
             return
 
         active_item_count = 0
         selected_items = set()
 
         for form in self.forms:
-            cleaned_data = getattr(form, "cleaned_data", {})
+            cleaned_data = getattr(
+                form,
+                "cleaned_data",
+                {},
+            )
 
             if not cleaned_data:
                 continue
@@ -434,7 +689,9 @@ class BaseMealItemFormSet(BaseInlineFormSet):
             if cleaned_data.get("DELETE"):
                 continue
 
-            item_type = cleaned_data.get("item_type")
+            item_type = cleaned_data.get(
+                "item_type"
+            )
 
             if not item_type:
                 continue
@@ -442,14 +699,41 @@ class BaseMealItemFormSet(BaseInlineFormSet):
             food = cleaned_data.get("food")
             dish = cleaned_data.get("dish")
 
-            if item_type == MealItem.ItemType.FOOD and food:
-                selected_key = ("food", food.pk)
+            if (
+                item_type
+                == MealItem.ItemType.FOOD
+                and food
+            ):
+                selected_key = (
+                    "food",
+                    food.pk,
+                )
                 selected_field = "food"
                 active_item_count += 1
 
-            elif item_type == MealItem.ItemType.DISH and dish:
-                selected_key = ("dish", dish.pk)
-                selected_field = "dish"
+            elif (
+                item_type
+                == MealItem.ItemType.DISH
+                and dish
+            ):
+                selected_key = (
+                    "dish",
+                    dish.pk,
+                )
+
+                catalog_type = (
+                    cleaned_data.get(
+                        "catalog_type"
+                    )
+                )
+
+                if catalog_type == "commercial":
+                    selected_field = (
+                        "commercial_product"
+                    )
+                else:
+                    selected_field = "dish"
+
                 active_item_count += 1
 
             else:
@@ -458,15 +742,26 @@ class BaseMealItemFormSet(BaseInlineFormSet):
             if selected_key in selected_items:
                 form.add_error(
                     selected_field,
-                    "同じ食材・料理がこの食事内ですでに選択されている。",
+                    (
+                        "同じ食材・料理・市販品が"
+                        "この食事内ですでに"
+                        "選択されている。"
+                    ),
                 )
             else:
-                selected_items.add(selected_key)
+                selected_items.add(
+                    selected_key
+                )
 
         if active_item_count == 0:
             raise ValidationError(
-                "少なくとも1件の食材または料理を入力してください。"
+                (
+                    "少なくとも1件の"
+                    "食材・料理・市販品を"
+                    "入力してください。"
+                )
             )
+
 
 MealItemCreateFormSet = inlineformset_factory(
     Meal,
@@ -489,6 +784,7 @@ MealItemEditFormSet = inlineformset_factory(
     max_num=30,
     validate_max=True,
 )
+
 
 SYMPTOM_CHOICES = [
     ("mouth_redness", "口の周りの赤み"),

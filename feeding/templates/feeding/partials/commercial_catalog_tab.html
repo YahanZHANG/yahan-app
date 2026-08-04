@@ -1,0 +1,175 @@
+<section class="commercial-catalog-section">
+    <section class="food-search-section">
+        <label
+            for="commercial-search-input"
+            class="search-label"
+        >
+            市販品を検索
+        </label>
+
+        <div class="search-box">
+            <span
+                class="search-icon"
+                aria-hidden="true"
+            >
+                🔍
+            </span>
+
+            <input
+                type="search"
+                id="commercial-search-input"
+                class="food-search-input"
+                placeholder="例：Karotte、Apfel、Risotto"
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="clear-commercial-search"
+                class="clear-search-button"
+                aria-label="検索をクリア"
+                hidden
+            >
+                ×
+            </button>
+        </div>
+
+        <p
+            id="commercial-search-result-count"
+            class="search-result-count"
+        ></p>
+    </section>
+
+    <div
+        class="category-list"
+        id="commercial-brand-list"
+    >
+        {% for card in commercial_brand_cards %}
+            <section
+                class="food-category-card commercial-brand-card"
+                data-commercial-brand-card
+            >
+                <button
+                    type="button"
+                    class="category-toggle"
+                    data-commercial-brand-toggle
+                    aria-expanded="false"
+                    aria-controls="commercial-brand-content-{{ card.brand_code }}"
+                >
+                    <span class="category-toggle-main">
+                        <span>
+                            <strong>
+                                {{ card.brand_name }}
+                            </strong>
+
+                            <small>
+                                {{ card.eaten_count }}
+                                ／
+                                {{ card.total_count }}種類
+                            </small>
+                        </span>
+
+                        <span
+                            class="category-chevron"
+                            aria-hidden="true"
+                        >
+                            ⌄
+                        </span>
+                    </span>
+
+                    <span class="category-progress">
+                        <span
+                            style="
+                                width:
+                                {% if card.total_count %}
+                                    {% widthratio card.eaten_count card.total_count 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %};
+                            "
+                        ></span>
+                    </span>
+                </button>
+
+                <div
+                    class="food-category-content"
+                    id="commercial-brand-content-{{ card.brand_code }}"
+                    data-commercial-brand-content
+                    hidden
+                >
+                    <div class="food-list">
+                        {% for item in card.products %}
+                            <a
+                                href="{% url 'feeding:dish_update' item.product.pk %}"
+                                class="food-row"
+                                data-commercial-product
+                                data-search-text="
+                                    {{ item.product.name }}
+                                    {{ card.brand_name }}
+                                    {% for ingredient in item.product.dish_ingredients.all %}
+                                        {{ ingredient.food.name }}
+                                    {% endfor %}
+                                "
+                            >
+                                <span class="status-mark {{ item.status }}">
+                                    {{ item.status_icon }}
+                                </span>
+
+                                <span class="food-row-main">
+                                    <strong>
+                                        {{ item.product.name }}
+                                    </strong>
+
+                                    <small>
+                                        {{ item.status_label }}
+
+                                        {% if item.count %}
+                                            ・{{ item.count }}回
+                                        {% endif %}
+
+                                        {% if item.product.recommended_from_month %}
+                                            ・{{ item.product.recommended_from_month }}か月頃から
+                                        {% endif %}
+                                    </small>
+                                </span>
+
+                                <span class="row-arrow">
+                                    ›
+                                </span>
+                            </a>
+                        {% empty %}
+                            <p class="empty-message">
+                                このブランドの商品はまだ登録されていない。
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% empty %}
+            <div class="dashboard-empty-card">
+                <span aria-hidden="true">
+                    🛒
+                </span>
+
+                <div>
+                    <strong>
+                        市販品がまだ登録されていない
+                    </strong>
+
+                    <p>
+                        HiPP・Holleの商品を登録すると、
+                        ここに表示される。
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <p
+        id="no-commercial-search-results"
+        class="no-search-results"
+        hidden
+    >
+        該当する市販品が見つからない。
+    </p>
+</section>
