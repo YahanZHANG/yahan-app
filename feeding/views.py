@@ -478,6 +478,14 @@ def get_daily_guideline_summary(
         else:
             main_rows.append(row)
 
+    protein_total = sum(
+        (
+            row["actual"]
+            for row in protein_rows
+        ),
+        Decimal("0"),
+    )
+
     return {
         "main_rows": main_rows,
         "protein_rows": protein_rows,

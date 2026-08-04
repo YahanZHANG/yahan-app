@@ -3609,3 +3609,66 @@ button.supplement-card:active {
     font-size: 0.8rem;
     font-weight: 800;
 }
+
+/* ==========================================================
+   Protein details inside daily guideline
+   ========================================================== */
+
+.guideline-protein-row {
+    display: grid;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.protein-details {
+    margin: 0;
+}
+
+.protein-details summary {
+    width: fit-content;
+    margin-left: auto;
+    color: var(--primary-dark);
+    font-size: 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+}
+
+.protein-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.protein-details summary::after {
+    margin-left: 5px;
+    content: "⌄";
+}
+
+.protein-details[open] summary::after {
+    content: "⌃";
+}
+
+.protein-detail-list {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #f7f8fa;
+}
+
+.protein-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.protein-detail-row span {
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.protein-detail-row strong {
+    font-size: 0.74rem;
+}

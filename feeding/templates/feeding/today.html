@@ -326,15 +326,20 @@
 
                                 <div class="guideline-status-text">
                                     {% if row.amount_status == "none" %}
-                                        <span>まだ記録なし</span>
+                                        <span>
+                                            まだ記録なし
+                                        </span>
+
                                     {% elif row.amount_status == "below" %}
                                         <span>
                                             目安の下限より少なめ
                                         </span>
+
                                     {% elif row.amount_status == "within" %}
                                         <span class="within">
                                             目安の範囲内
                                         </span>
+
                                     {% elif row.amount_status == "above" %}
                                         <span class="above">
                                             目安量を超えている
@@ -347,45 +352,51 @@
                                 この月齢の標準量が登録されていない。
                             </p>
                         {% endfor %}
-                    </div>
-                </article>
 
-                <article class="protein-summary-card">
-                    <div class="protein-summary-heading">
-                        <div>
-                            <p class="eyebrow">PROTEIN SOURCES</p>
-                            <h4>たんぱく源の内訳</h4>
-                        </div>
+                        {% if daily_guideline_summary.protein_rows %}
+                            <div class="guideline-protein-row">
+                                <div class="guideline-row-top">
+                                    <span>
+                                        タンパク質
+                                    </span>
 
-                        <span>組み合わせ可</span>
-                    </div>
+                                    <strong>
+                                        {{ daily_guideline_summary.protein_total|floatformat:"-2" }}g
+                                    </strong>
+                                </div>
 
-                    <div class="protein-source-grid">
-                        {% for row in daily_guideline_summary.protein_rows %}
-                            <div class="protein-source-item">
-                                <span>
-                                    {{ row.guideline.feeding_group.name }}
-                                </span>
+                                <details class="protein-details">
+                                    <summary>
+                                        詳細を見る
+                                    </summary>
 
-                                <strong>
-                                    {% if row.guideline.feeding_group.code == "egg" %}
-                                        {% if row.actual %}
-                                            {{ row.actual|floatformat:"-2" }}g相当
-                                        {% else %}
-                                            0g
-                                        {% endif %}
-                                    {% else %}
-                                        {{ row.actual|floatformat:"-2" }}g
-                                    {% endif %}
-                                </strong>
+                                    <div class="protein-detail-list">
+                                        {% for row in daily_guideline_summary.protein_rows %}
+                                            {% if row.actual %}
+                                                <div class="protein-detail-row">
+                                                    <span>
+                                                        {{ row.guideline.feeding_group.name }}
+                                                    </span>
+
+                                                    <strong>
+                                                        {% if row.guideline.feeding_group.code == "egg" %}
+                                                            {{ row.actual|floatformat:"-2" }}g相当
+                                                        {% else %}
+                                                            {{ row.actual|floatformat:"-2" }}g
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+                                            {% endif %}
+                                        {% empty %}
+                                            <p class="empty-message">
+                                                たんぱく源の標準量が登録されていない。
+                                            </p>
+                                        {% endfor %}
+                                    </div>
+                                </details>
                             </div>
-                        {% empty %}
-                            <p class="empty-message">
-                                たんぱく源の標準量が登録されていない。
-                            </p>
-                        {% endfor %}
+                        {% endif %}
                     </div>
-
                 </article>
 
                 {% if daily_guideline_summary.excluded_items %}
@@ -411,7 +422,10 @@
                     <span>🥣</span>
 
                     <div>
-                        <strong>まだ今日の記録がない</strong>
+                        <strong>
+                            まだ今日の記録がない
+                        </strong>
+
                         <p>
                             ①食目・②食目・③食目から記録すると、
                             ここに1日の合計を表示する。
@@ -425,14 +439,17 @@
                 <span>🍽️</span>
 
                 <div>
-                    <strong>18か月以降</strong>
+                    <strong>
+                        18か月以降
+                    </strong>
+
                     <p>
                         現在の目安量比較は18か月までに対応している。
                     </p>
                 </div>
-            </div>
-        {% endif %}
-    </section>
+    </div>
+{% endif %}
+</section>
 
     <section class="dashboard-section">
         <div class="section-heading">
