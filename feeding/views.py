@@ -45,6 +45,7 @@ from .models import (
     MealItem,
     Supplement,
     SupplementIntake,
+    ToothbrushingRecord,
 )
 
 def get_accessible_babies(user):
@@ -1011,6 +1012,7 @@ def today(request):
 
     recent_first_foods = []
     supplement_cards = []
+    toothbrushing_by_meal = []
 
     if baby:
         age_months = calculate_age_in_months(
@@ -1030,6 +1032,19 @@ def today(request):
                 item_count_value=Count("items"),
             )
             .order_by("meal_number")
+        )
+
+        brushed_meal_numbers = set(
+            ToothbrushingRecord.objects
+            .filter(
+                baby=baby,
+                date=selected_date,
+                brushed=True,
+            )
+            .values_list(
+                "meal_number",
+                flat=True,
+            )
         )
 
         active_supplements = (
@@ -1224,6 +1239,10 @@ def today(request):
                     meal.item_count_value
                     if meal
                     else 0
+                ),
+                "brushed": (
+                    meal_number
+                    in brushed_meal_numbers
                 ),
             }
         )
@@ -2552,6 +2571,96 @@ def supplement_intake_toggle(
         request,
         (
             f"{supplement.name}を"
+            f"「{status_label}」に変更した。"
+        ),
+    )
+
+    today_url = reverse(
+        "feeding:today"
+    )
+
+    return redirect(
+        f"{today_url}"
+        f"?date={selected_date.isoformat()}"
+    )
+
+@login_required
+@require_POST
+def toothbrushing_toggle(
+    request,
+    meal_number,
+):
+    valid_numbers = {
+        number
+        for number, _ in Meal.MealNumber.choices
+    }
+
+    if meal_number not in valid_numbers:
+        messages.error(
+            request,
+            "食事番号が正しくない。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    baby = get_current_baby(request)
+
+    if baby is None:
+        return redirect(
+            "feeding:today"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    selected_date = parse_selected_date(
+        request.POST.get("date")
+    )
+
+    record, created = (
+        ToothbrushingRecord.objects
+        .get_or_create(
+            baby=baby,
+            date=selected_date,
+            meal_number=meal_number,
+            defaults={
+                "brushed": True,
+            },
+        )
+    )
+
+    if not created:
+        record.brushed = not record.brushed
+
+        record.save(
+            update_fields=[
+                "brushed",
+                "updated_at",
+            ]
+        )
+
+    status_label = (
+        "歯磨き済"
+        if record.brushed
+        else "歯磨き前"
+    )
+
+    messages.success(
+        request,
+        (
+            f"{record.get_meal_number_display()}後を"
             f"「{status_label}」に変更した。"
         ),
     )

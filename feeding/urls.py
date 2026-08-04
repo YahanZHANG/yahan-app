@@ -67,6 +67,14 @@ urlpatterns = [
         name="meal_delete",
     ),
     path(
+        (
+            "toothbrushing/"
+            "<int:meal_number>/toggle/"
+        ),
+        views.toothbrushing_toggle,
+        name="toothbrushing_toggle",
+    ),
+    path(
         "supplements/add/",
         views.supplement_create,
         name="supplement_create",

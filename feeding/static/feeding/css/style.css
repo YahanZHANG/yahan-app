@@ -3686,3 +3686,82 @@ button.supplement-card:active {
     font-size: 0.66rem;
     line-height: 1.5;
 }
+
+/* ==========================================================
+   Toothbrushing cards
+   ========================================================== */
+
+.toothbrushing-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 9px;
+}
+
+.toothbrushing-form {
+    margin: 0;
+}
+
+.toothbrushing-card {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px 6px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: #969aa2;
+    background: #f0f2f4;
+    font: inherit;
+    opacity: 0.62;
+}
+
+button.toothbrushing-card {
+    cursor: pointer;
+}
+
+.toothbrushing-card.is-brushed {
+    border-color: #c8ddea;
+    color: #467895;
+    background: #edf8ff;
+    opacity: 1;
+    box-shadow:
+        0 4px 12px
+        rgba(80, 125, 155, 0.08);
+}
+
+.toothbrushing-icon {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.toothbrushing-label {
+    overflow: hidden;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+button.toothbrushing-card:active {
+    transform: scale(0.97);
+}
+
+@media (max-width: 380px) {
+    .toothbrushing-grid {
+        gap: 6px;
+    }
+
+    .toothbrushing-card {
+        padding-inline: 4px;
+    }
+
+    .toothbrushing-label {
+        font-size: 0.64rem;
+    }
+}

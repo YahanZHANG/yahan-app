@@ -244,6 +244,65 @@
                 {% endif %}
             {% endfor %}
         </div>
+
+        <div class="toothbrushing-grid">
+            {% for card in meal_cards %}
+                {% if can_edit_baby %}
+                    <form
+                        method="post"
+                        action="{% url 'feeding:toothbrushing_toggle' card.number %}"
+                        class="toothbrushing-form"
+                    >
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="date"
+                            value="{{ selected_date|date:'Y-m-d' }}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="toothbrushing-card{% if card.brushed %} is-brushed{% endif %}"
+                        >
+                            <span
+                                class="toothbrushing-icon"
+                                aria-hidden="true"
+                            >
+                                🪥
+                            </span>
+
+                            <span class="toothbrushing-label">
+                                {% if card.brushed %}
+                                    歯磨き済
+                                {% else %}
+                                    歯磨き前
+                                {% endif %}
+                            </span>
+                        </button>
+                    </form>
+                {% else %}
+                    <div
+                        class="toothbrushing-card{% if card.brushed %} is-brushed{% endif %}"
+                    >
+                        <span
+                            class="toothbrushing-icon"
+                            aria-hidden="true"
+                        >
+                            🪥
+                        </span>
+
+                        <span class="toothbrushing-label">
+                            {% if card.brushed %}
+                                歯磨き済
+                            {% else %}
+                                歯磨き前
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </section>
 
     <section class="dashboard-section">
@@ -450,7 +509,7 @@
                         すべてを合計して食べる必要はありません。
                     </p>
                     <p class="daily-guideline-note">
-                        ※6か月未満を1日1回食、7～8か月を1日2回食、9か月以上を1日3食として計算。
+                        ※6か月以下を1日1回食、7～8か月を1日2回食、9か月以上を1日3食として計算。
                     </p>
                 </article>
 

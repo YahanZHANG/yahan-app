@@ -628,6 +628,77 @@ class Meal(models.Model):
             f"{self.get_meal_number_display()}"
         )
 
+class ToothbrushingRecord(models.Model):
+    """子どもごとの食後の歯磨き記録。"""
+
+    baby = models.ForeignKey(
+        Baby,
+        verbose_name="子ども",
+        on_delete=models.CASCADE,
+        related_name="toothbrushing_records",
+    )
+
+    date = models.DateField(
+        "日付",
+    )
+
+    meal_number = models.PositiveSmallIntegerField(
+        "食事番号",
+        choices=Meal.MealNumber.choices,
+    )
+
+    brushed = models.BooleanField(
+        "歯磨き済み",
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "歯磨き記録"
+        verbose_name_plural = "歯磨き記録"
+
+        ordering = [
+            "-date",
+            "meal_number",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "baby",
+                    "date",
+                    "meal_number",
+                ],
+                name=(
+                    "unique_toothbrushing_record_"
+                    "per_baby_date_and_meal"
+                ),
+            ),
+        ]
+
+    def __str__(self):
+        status = (
+            "歯磨き済"
+            if self.brushed
+            else "歯磨き前"
+        )
+
+        return (
+            f"{self.baby.name}："
+            f"{self.date}："
+            f"{self.get_meal_number_display()}："
+            f"{status}"
+        )
+
 
 class MealItem(models.Model):
     """1回の食事に含まれる食材または料理。"""
@@ -925,7 +996,6 @@ class MealItemIngredient(models.Model):
             f"{self.meal_item.item_name}："
             f"{self.food.name}"
         )
-
 
 class AllergyReaction(models.Model):
     """食材・料理を食べた後に生じた症状の詳細記録。"""
