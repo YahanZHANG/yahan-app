@@ -1155,6 +1155,64 @@ def dish_create(request):
     )
 
 @login_required
+def dish_detail(
+    request,
+    dish_id,
+):
+    baby = get_current_baby(request)
+
+    dish = get_object_or_404(
+        Dish.objects
+        .select_related("category")
+        .prefetch_related(
+            "dish_ingredients__food",
+            "dish_ingredients__food__feeding_group",
+        ),
+        pk=dish_id,
+        is_active=True,
+    )
+
+    ingredients = list(
+        dish.dish_ingredients
+        .select_related(
+            "food",
+            "food__feeding_group",
+        )
+        .order_by(
+            "display_order",
+            "id",
+        )
+    )
+
+    total_ingredient_amount = sum(
+        (
+            ingredient.amount_g
+            for ingredient in ingredients
+            if ingredient.amount_g is not None
+        ),
+        Decimal("0"),
+    )
+
+    context = {
+        "baby": baby,
+        "dish": dish,
+        "ingredients": ingredients,
+        "total_ingredient_amount": (
+            total_ingredient_amount
+        ),
+        "can_edit_baby": user_can_edit_baby(
+            request,
+            baby,
+        ),
+    }
+
+    return render(
+        request,
+        "feeding/dish_detail.html",
+        context,
+    )
+
+@login_required
 def dish_update(
     request,
     dish_id,
@@ -1492,9 +1550,49 @@ def food_list(request):
         )
     )
 
+    dish_category_cards = []
+
+    for dish in dishes:
+        category_name = (
+            dish.category.name
+            if dish.category
+            else "ジャンル未設定"
+        )
+
+        category_id = (
+            dish.category_id
+            if dish.category_id
+            else "none"
+        )
+
+        existing_card = next(
+            (
+                card
+                for card in dish_category_cards
+                if card["category_id"] == category_id
+            ),
+            None,
+        )
+
+        if existing_card is None:
+            existing_card = {
+                "category_id": category_id,
+                "category_name": category_name,
+                "dishes": [],
+            }
+
+            dish_category_cards.append(
+                existing_card
+            )
+
+        existing_card["dishes"].append(
+            dish
+        )
+
     context = {
         "baby": baby,
         "can_edit_baby": can_edit_baby,
+        "dish_category_cards": dish_category_cards,
         "selected_tab": selected_tab,
         "category_cards": category_cards,
         "dishes": dishes,

@@ -3427,148 +3427,185 @@ button.supplement-card:active {
 }
 
 /* ==========================================================
-   Food and dish catalog
+   Food / dish toggle
    ========================================================== */
 
-.catalog-tab-switcher {
+.catalog-type-toggle {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 4px;
-    background: #eef0f3;
-    border-radius: 15px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, 270px);
+    margin-bottom: 22px;
 }
 
-.catalog-tab-button {
+.catalog-type-toggle-button {
     display: flex;
-    min-height: 42px;
+    min-height: 38px;
+    padding: 6px 12px;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    border-radius: 12px;
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 800;
-}
-
-.catalog-tab-button.is-active {
-    color: var(--text);
+    gap: 6px;
+    border: 1px solid #ececec;
+    border-radius: 999px;
+    color: #b4b8bf;
     background: #ffffff;
-    box-shadow: var(--shadow-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    opacity: 0.28;
+    box-shadow: none;
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
-.catalog-toolbar {
+.catalog-food-button {
+    color: #075225;
+    background: #e6f8e8;
+}
+
+.catalog-dish-button {
+    color: #705405;
+    background: #f8e6b6;
+}
+
+.catalog-type-toggle-button.is-active {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.catalog-type-toggle-button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.catalog-type-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* ==========================================================
+   Dish catalog rows
+   ========================================================== */
+
+.dish-row {
     display: flex;
+    min-height: 76px;
+    padding: 12px 16px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid #f1e9e9;
+}
+
+.dish-row:last-child {
+    border-bottom: 0;
+}
+
+.dish-row-main {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 8px;
+}
+
+.dish-row-title {
+    display: flex;
+    min-width: 0;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
-.catalog-search-box {
-    display: flex;
-    min-width: 0;
-    flex: 1;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: #ffffff;
-}
-
-.catalog-search-box input {
-    width: 100%;
-    min-width: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    font: inherit;
-}
-
-.catalog-add-button {
-    flex: 0 0 auto;
-    padding: 9px 12px;
-    border-radius: 12px;
-    color: var(--primary-dark);
-    background: var(--primary-soft);
-    font-size: 0.7rem;
-    font-weight: 800;
-}
-
-.dish-catalog-list {
-    display: grid;
-    gap: 11px;
-}
-
-.dish-catalog-card {
-    padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: 17px;
-    background: #ffffff;
-    box-shadow: var(--shadow-sm);
-}
-
-.dish-catalog-heading {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-}
-
-.dish-catalog-icon {
-    display: grid;
-    width: 40px;
-    height: 40px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 13px;
-    background: #fff2d9;
-    font-size: 1.2rem;
-}
-
-.dish-catalog-main {
+.dish-row-title > span:last-child {
     display: grid;
     min-width: 0;
-    flex: 1;
     gap: 2px;
 }
 
-.dish-catalog-main strong {
+.dish-row-title strong {
     overflow: hidden;
-    font-size: 0.86rem;
+    font-size: 0.9rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dish-catalog-main small {
+.dish-row-title small {
     color: var(--muted);
-    font-size: 0.67rem;
+    font-size: 0.68rem;
+}
+
+.dish-row-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 11px;
+    background: #fff2d9;
+    font-size: 1rem;
 }
 
 .dish-edit-link {
     flex: 0 0 auto;
+    margin-top: 5px;
     color: var(--primary-dark);
     font-size: 0.7rem;
     font-weight: 800;
 }
 
-.dish-ingredient-tags {
+/* ==========================================================
+   Dish detail
+   ========================================================== */
+
+.dish-status-mark {
+    color: #705405;
+    background: #f8e6b6;
+}
+
+.dish-detail-section {
+    margin-top: 24px;
+}
+
+.dish-detail-ingredient-list {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.dish-detail-ingredient-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 11px;
+    min-height: 62px;
+    padding: 11px 15px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border-bottom: 1px solid #f1e9e9;
 }
 
-.dish-ingredient-tags span {
-    padding: 5px 8px;
-    border-radius: 999px;
-    color: #6c6351;
-    background: #f5f1e9;
-    font-size: 0.66rem;
-    font-weight: 700;
+.dish-detail-ingredient-row:last-child {
+    border-bottom: 0;
 }
 
-.dish-no-ingredients {
-    color: var(--muted) !important;
-    background: #eef0f3 !important;
+.dish-detail-ingredient-row > div {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.dish-detail-ingredient-row strong {
+    font-size: 0.86rem;
+}
+
+.dish-detail-ingredient-row small {
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.dish-detail-ingredient-row > span {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    font-weight: 800;
 }

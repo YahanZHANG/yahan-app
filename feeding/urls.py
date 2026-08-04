@@ -37,6 +37,11 @@ urlpatterns = [
         name="dish_create",
     ),
     path(
+        "dishes/<int:dish_id>/",
+        views.dish_detail,
+        name="dish_detail",
+    ),
+    path(
         "dishes/<int:dish_id>/edit/",
         views.dish_update,
         name="dish_update",

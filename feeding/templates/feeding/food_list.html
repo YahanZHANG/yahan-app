@@ -20,21 +20,39 @@
     {% endif %}
 </section>
 
-<div class="catalog-tab-switcher">
+<div
+    class="catalog-type-toggle"
+    role="group"
+    aria-label="食材または料理"
+>
     <a
         href="{% url 'feeding:food_list' %}?tab=food"
-        class="catalog-tab-button{% if selected_tab == 'food' %} is-active{% endif %}"
+        class="catalog-type-toggle-button catalog-food-button{% if selected_tab == 'food' %} is-active{% endif %}"
+        aria-current="{% if selected_tab == 'food' %}page{% else %}false{% endif %}"
     >
-        <span aria-hidden="true">🥕</span>
-        食材
+        <span
+            class="catalog-type-icon"
+            aria-hidden="true"
+        >
+            🥕
+        </span>
+
+        <span>食材</span>
     </a>
 
     <a
         href="{% url 'feeding:food_list' %}?tab=dish"
-        class="catalog-tab-button{% if selected_tab == 'dish' %} is-active{% endif %}"
+        class="catalog-type-toggle-button catalog-dish-button{% if selected_tab == 'dish' %} is-active{% endif %}"
+        aria-current="{% if selected_tab == 'dish' %}page{% else %}false{% endif %}"
     >
-        <span aria-hidden="true">🍲</span>
-        料理
+        <span
+            class="catalog-type-icon"
+            aria-hidden="true"
+        >
+            🍲
+        </span>
+
+        <span>料理</span>
     </a>
 </div>
 
@@ -232,6 +250,54 @@
             );
         });
 
+    document
+        .querySelectorAll(
+            "[data-dish-category-toggle]"
+        )
+        .forEach((toggleButton) => {
+            toggleButton.addEventListener(
+                "click",
+                () => {
+                    const categoryCard = (
+                        toggleButton.closest(
+                            "[data-dish-category-card]"
+                        )
+                    );
+
+                    if (!categoryCard) {
+                        return;
+                    }
+
+                    const categoryContent = (
+                        categoryCard.querySelector(
+                            "[data-dish-category-content]"
+                        )
+                    );
+
+                    if (!categoryContent) {
+                        return;
+                    }
+
+                    const isOpen = (
+                        !categoryContent.hidden
+                    );
+
+                    categoryContent.hidden = isOpen;
+
+                    categoryCard.classList.toggle(
+                        "is-open",
+                        !isOpen
+                    );
+
+                    toggleButton.setAttribute(
+                        "aria-expanded",
+                        String(!isOpen)
+                    );
+                }
+            );
+        });
+
+
     /*
      * 料理検索
      */
@@ -251,8 +317,8 @@
         "no-dish-search-results"
     );
 
-    const dishCards = document.querySelectorAll(
-        "[data-dish-card]"
+    const dishCategoryCards = document.querySelectorAll(
+        "[data-dish-category-card]"
     );
 
     function updateDishSearch() {
@@ -268,23 +334,91 @@
 
         let visibleDishCount = 0;
 
-        dishCards.forEach((dishCard) => {
-            const searchText = (
-                dishCard.dataset.searchText
-                || ""
-            ).toLowerCase();
+        dishCategoryCards.forEach(
+            (categoryCard) => {
+                const dishCards = (
+                    categoryCard.querySelectorAll(
+                        "[data-dish-card]"
+                    )
+                );
 
-            const matches = (
-                !query
-                || searchText.includes(query)
-            );
+                const categoryContent = (
+                    categoryCard.querySelector(
+                        "[data-dish-category-content]"
+                    )
+                );
 
-            dishCard.hidden = !matches;
+                const categoryToggle = (
+                    categoryCard.querySelector(
+                        "[data-dish-category-toggle]"
+                    )
+                );
 
-            if (matches) {
-                visibleDishCount += 1;
+                let visibleCategoryDishCount = 0;
+
+                dishCards.forEach((dishCard) => {
+                    const searchText = (
+                        dishCard.dataset.searchText
+                        || ""
+                    ).toLowerCase();
+
+                    const matches = (
+                        !query
+                        || searchText.includes(query)
+                    );
+
+                    dishCard.hidden = !matches;
+
+                    if (matches) {
+                        visibleDishCount += 1;
+                        visibleCategoryDishCount += 1;
+                    }
+                });
+
+                categoryCard.hidden = (
+                    visibleCategoryDishCount === 0
+                );
+
+                if (
+                    query
+                    && visibleCategoryDishCount > 0
+                ) {
+                    categoryCard.classList.add(
+                        "is-open"
+                    );
+
+                    if (categoryContent) {
+                        categoryContent.hidden = false;
+                    }
+
+                    if (categoryToggle) {
+                        categoryToggle.setAttribute(
+                            "aria-expanded",
+                            "true"
+                        );
+                    }
+                }
+
+                if (!query) {
+                    categoryCard.hidden = false;
+
+                    categoryCard.classList.remove(
+                        "is-open"
+                    );
+
+                    if (categoryContent) {
+                        categoryContent.hidden = true;
+                    }
+
+                    if (categoryToggle) {
+                        categoryToggle.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+                    }
+                }
             }
-        });
+        );
 
         if (clearDishSearchButton) {
             clearDishSearchButton.hidden = !query;

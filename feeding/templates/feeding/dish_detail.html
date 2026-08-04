@@ -1,0 +1,117 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    {{ dish.name }} | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <a
+        href="{% url 'feeding:food_list' %}?tab=dish"
+        class="back-link"
+    >
+        ← 料理一覧に戻る
+    </a>
+
+    <div class="food-detail-title">
+        <span class="status-mark large dish-status-mark">
+            🍲
+        </span>
+
+        <div>
+            <p class="eyebrow">
+                DISH
+            </p>
+
+            <h2>
+                {{ dish.name }}
+            </h2>
+        </div>
+    </div>
+</section>
+
+<section class="detail-summary-card">
+    <div class="detail-stat">
+        <span>料理ジャンル</span>
+
+        <strong>
+            {% if dish.category %}
+                {{ dish.category.name }}
+            {% else %}
+                未設定
+            {% endif %}
+        </strong>
+    </div>
+
+    <div class="detail-stat">
+        <span>完成量</span>
+
+        <strong>
+            {% if dish.finished_amount_g %}
+                {{ dish.finished_amount_g|floatformat:"-2" }}g
+            {% else %}
+                未設定
+            {% endif %}
+        </strong>
+    </div>
+</section>
+
+<section class="history-section dish-detail-section">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">
+                INGREDIENTS
+            </p>
+
+            <h3>材料</h3>
+        </div>
+
+        {% if can_edit_baby %}
+            <a
+                href="{% url 'feeding:dish_update' dish.pk %}"
+                class="section-link"
+            >
+                編集
+            </a>
+        {% endif %}
+    </div>
+
+    {% if ingredients %}
+        <div class="dish-detail-ingredient-list">
+            {% for ingredient in ingredients %}
+                <div class="dish-detail-ingredient-row">
+                    <div>
+                        <strong>
+                            {{ ingredient.food.name }}
+                        </strong>
+
+                        <small>
+                            {% if ingredient.food.feeding_group %}
+                                {{ ingredient.food.feeding_group.name }}
+                            {% else %}
+                                食品群未設定
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <span>
+                        {{ ingredient.amount_g|floatformat:"-2" }}g
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="dashboard-empty-card">
+            <span>🍲</span>
+
+            <div>
+                <strong>材料が登録されていない</strong>
+
+                <p>
+                    編集画面から材料を追加できる。
+                </p>
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
