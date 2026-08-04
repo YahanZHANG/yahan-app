@@ -437,19 +437,6 @@
                                                 ></span>
                                             </div>
 
-                                            <div class="protein-detail-note">
-                                                {% if detail.daily_minimum is not None and detail.daily_maximum is not None %}
-                                                    1日の目安：
-                                                    {{ detail.daily_minimum|floatformat:"-2" }}
-                                                    〜
-                                                    {{ detail.daily_maximum|floatformat:"-2" }}g
-                                                {% elif detail.reference %}
-                                                    1日の目安：
-                                                    {{ detail.reference|floatformat:"-2" }}g
-                                                {% else %}
-                                                    目安量未設定
-                                                {% endif %}
-                                            </div>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -457,6 +444,14 @@
                         {% endif %}
 
                     </div>
+
+                    <p class="daily-guideline-note">
+                        ※魚＋肉、豆腐、卵、乳製品の目安量は、それぞれを主なたんぱく源として使う場合の1日の目安です。
+                        すべてを合計して食べる必要はありません。
+                    </p>
+                    <p class="daily-guideline-note">
+                        ※6か月未満を1日1回食、7～8か月を1日2回食、9か月以上を1日3食として計算。
+                    </p>
                 </article>
 
                 {% if daily_guideline_summary.excluded_items %}

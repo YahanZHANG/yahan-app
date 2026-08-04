@@ -3621,11 +3621,10 @@ button.supplement-card:active {
 
 .protein-detail-list {
     display: grid;
-    gap: 13px;
-    margin-top: 9px;
+    gap: 14px;
+    margin-top: 10px;
     padding: 13px;
     border-radius: 14px;
-    background: #faf9fa;
 }
 
 .protein-detail-item {
@@ -3677,4 +3676,13 @@ button.supplement-card:active {
             rgba(239, 180, 112, 0.45)
         );
     transition: width 0.25s ease;
+}
+
+.daily-guideline-note {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f2f5;
+    color: #9aa3ad;
+    font-size: 0.66rem;
+    line-height: 1.5;
 }
