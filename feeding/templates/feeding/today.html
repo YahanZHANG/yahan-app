@@ -353,49 +353,109 @@
                             </p>
                         {% endfor %}
 
-                        {% if daily_guideline_summary.protein_rows %}
-                            <div class="guideline-protein-row">
+                        {% if daily_guideline_summary.protein_summary.detail_rows %}
+                            <div class="guideline-row guideline-protein-row">
                                 <div class="guideline-row-top">
                                     <span>
-                                        タンパク質
+                                        たんぱく源
                                     </span>
 
                                     <strong>
-                                        {{ daily_guideline_summary.protein_total|floatformat:"-2" }}g
+                                        {{ daily_guideline_summary.protein_summary.percent }}%
+
+                                        <small>
+                                            / 1日分の目安
+                                        </small>
                                     </strong>
                                 </div>
 
-                                <details class="protein-details">
-                                    <summary>
-                                        詳細を見る
-                                    </summary>
+                                <div
+                                    class="guideline-progress {{ daily_guideline_summary.protein_summary.amount_status }}"
+                                >
+                                    <span
+                                        style="width: {{ daily_guideline_summary.protein_summary.percent }}%;"
+                                    ></span>
+                                </div>
 
-                                    <div class="protein-detail-list">
-                                        {% for row in daily_guideline_summary.protein_rows %}
-                                            {% if row.actual %}
-                                                <div class="protein-detail-row">
-                                                    <span>
-                                                        {{ row.guideline.feeding_group.name }}
-                                                    </span>
+                                <div class="guideline-status-text">
+                                    {% if daily_guideline_summary.protein_summary.amount_status == "none" %}
+                                        <span>
+                                            まだ記録なし
+                                        </span>
 
-                                                    <strong>
-                                                        {% if row.guideline.feeding_group.code == "egg" %}
-                                                            {{ row.actual|floatformat:"-2" }}g相当
-                                                        {% else %}
-                                                            {{ row.actual|floatformat:"-2" }}g
-                                                        {% endif %}
-                                                    </strong>
-                                                </div>
-                                            {% endif %}
-                                        {% empty %}
-                                            <p class="empty-message">
-                                                たんぱく源の標準量が登録されていない。
-                                            </p>
-                                        {% endfor %}
-                                    </div>
-                                </details>
+                                    {% elif daily_guideline_summary.protein_summary.amount_status == "below" %}
+                                        <span>
+                                            1日分の目安より少なめ
+                                        </span>
+
+                                    {% elif daily_guideline_summary.protein_summary.amount_status == "within" %}
+                                        <span class="within">
+                                            1日分の目安に到達
+                                        </span>
+
+                                    {% elif daily_guideline_summary.protein_summary.amount_status == "above" %}
+                                        <span class="above">
+                                            1日分の目安を超えている
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="protein-detail-list">
+                                    {% for detail in daily_guideline_summary.protein_summary.detail_rows %}
+                                        <div class="protein-detail-item">
+                                            <div class="protein-detail-heading">
+                                                <span>
+                                                    {{ detail.label }}
+                                                </span>
+
+                                                <strong>
+                                                    {% if detail.code == "fish_meat" %}
+                                                        魚
+                                                        {{ detail.fish_actual|floatformat:"-2" }}g
+                                                        ＋ 肉
+                                                        {{ detail.meat_actual|floatformat:"-2" }}g
+
+                                                    {% elif detail.code == "egg" %}
+                                                        {{ detail.actual|floatformat:"-2" }}g相当
+
+                                                    {% else %}
+                                                        {{ detail.actual|floatformat:"-2" }}g
+                                                    {% endif %}
+
+                                                    {% if detail.reference %}
+                                                        <small>
+                                                            /
+                                                            {{ detail.reference|floatformat:"-2" }}g
+                                                        </small>
+                                                    {% endif %}
+                                                </strong>
+                                            </div>
+
+                                            <div class="protein-mini-progress">
+                                                <span
+                                                    style="width: {{ detail.percent }}%;"
+                                                ></span>
+                                            </div>
+
+                                            <div class="protein-detail-note">
+                                                {% if detail.daily_minimum is not None and detail.daily_maximum is not None %}
+                                                    1日の目安：
+                                                    {{ detail.daily_minimum|floatformat:"-2" }}
+                                                    〜
+                                                    {{ detail.daily_maximum|floatformat:"-2" }}g
+                                                {% elif detail.reference %}
+                                                    1日の目安：
+                                                    {{ detail.reference|floatformat:"-2" }}g
+                                                {% else %}
+                                                    目安量未設定
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         {% endif %}
+
                     </div>
                 </article>
 

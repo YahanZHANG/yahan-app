@@ -3611,64 +3611,70 @@ button.supplement-card:active {
 }
 
 /* ==========================================================
-   Protein details inside daily guideline
+   Protein source progress
    ========================================================== */
 
 .guideline-protein-row {
-    display: grid;
-    gap: 8px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
 }
 
-.protein-details {
-    margin: 0;
-}
-
-.protein-details summary {
-    width: fit-content;
-    margin-left: auto;
-    color: var(--primary-dark);
-    font-size: 0.7rem;
-    font-weight: 800;
-    cursor: pointer;
-    list-style: none;
-}
-
-.protein-details summary::-webkit-details-marker {
-    display: none;
-}
-
-.protein-details summary::after {
-    margin-left: 5px;
-    content: "⌄";
-}
-
-.protein-details[open] summary::after {
-    content: "⌃";
-}
-
 .protein-detail-list {
     display: grid;
-    gap: 7px;
-    margin-top: 10px;
-    padding: 11px 12px;
-    border-radius: 12px;
-    background: #f7f8fa;
+    gap: 13px;
+    margin-top: 9px;
+    padding: 13px;
+    border-radius: 14px;
+    background: #faf9fa;
 }
 
-.protein-detail-row {
+.protein-detail-item {
+    display: grid;
+    gap: 6px;
+}
+
+.protein-detail-heading {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 12px;
 }
 
-.protein-detail-row span {
-    color: var(--muted);
+.protein-detail-heading > span {
+    color: var(--text);
     font-size: 0.72rem;
+    font-weight: 800;
 }
 
-.protein-detail-row strong {
-    font-size: 0.74rem;
+.protein-detail-heading > strong {
+    color: var(--text);
+    font-size: 0.69rem;
+    font-weight: 800;
+    text-align: right;
+}
+
+.protein-detail-heading small {
+    color: var(--muted);
+    font-size: 0.59rem;
+    font-weight: 700;
+}
+
+.protein-mini-progress {
+    height: 5px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eeecee;
+}
+
+.protein-mini-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(243, 139, 160, 0.45),
+            rgba(239, 180, 112, 0.45)
+        );
+    transition: width 0.25s ease;
 }

@@ -266,16 +266,26 @@ def get_daily_guideline_summary(
     集計対象：
     ・単一食材のg記録
     ・料理の材料スナップショット
+
+    たんぱく源：
+    ・魚と肉は「魚＋肉」として合算する
+    ・豆腐、卵、乳製品は個別に換算する
+    ・各たんぱく源の1日目安量の中央値を
+      100%の基準として全体の進捗を算出する
     """
 
-    guidelines = (
+    guidelines = list(
         FeedingGuideline.objects
         .filter(
             min_age_months__lte=age_months,
             max_age_months__gte=age_months,
         )
-        .select_related("feeding_group")
-        .order_by("display_order")
+        .select_related(
+            "feeding_group"
+        )
+        .order_by(
+            "display_order"
+        )
     )
 
     actual_amounts = defaultdict(
@@ -284,14 +294,20 @@ def get_daily_guideline_summary(
 
     excluded_items = []
 
+    # --------------------------------------------------
+    # 食材量の集計
+    # --------------------------------------------------
+
     def add_food_amount(
         food,
         amount,
         display_name,
     ):
         """
-        食材の食品群に、摂取量を加算する。
-        集計できない場合は除外一覧へ追加する。
+        食材の食品群に摂取量を加算する。
+
+        集計できないものは、
+        excluded_itemsへ理由付きで追加する。
         """
 
         if amount is None:
@@ -303,7 +319,10 @@ def get_daily_guideline_summary(
             )
             return
 
-        if not food or not food.feeding_group:
+        if (
+            food is None
+            or food.feeding_group is None
+        ):
             excluded_items.append(
                 {
                     "name": display_name,
@@ -312,7 +331,9 @@ def get_daily_guideline_summary(
             )
             return
 
-        group_code = food.feeding_group.code
+        group_code = (
+            food.feeding_group.code
+        )
 
         if group_code == "other":
             excluded_items.append(
@@ -323,7 +344,9 @@ def get_daily_guideline_summary(
             )
             return
 
-        actual_amounts[group_code] += amount
+        actual_amounts[group_code] += (
+            Decimal(amount)
+        )
 
     for meal in meals:
         items = (
@@ -334,19 +357,30 @@ def get_daily_guideline_summary(
                 "dish",
             )
             .prefetch_related(
-                "ingredient_snapshots__food__feeding_group",
+                (
+                    "ingredient_snapshots"
+                    "__food"
+                    "__feeding_group"
+                ),
             )
-            .order_by("display_order", "id")
+            .order_by(
+                "display_order",
+                "id",
+            )
         )
 
         for item in items:
-            # g以外は現段階では換算しない
-            if item.unit != MealItem.Unit.GRAM:
+            # 現段階ではg単位だけを集計する。
+            if (
+                item.unit
+                != MealItem.Unit.GRAM
+            ):
                 excluded_items.append(
                     {
                         "name": item.item_name,
                         "reason": (
-                            f"{item.get_unit_display()}単位"
+                            f"{item.get_unit_display()}"
+                            "単位"
                         ),
                     }
                 )
@@ -360,7 +394,9 @@ def get_daily_guideline_summary(
                 add_food_amount(
                     food=item.food,
                     amount=item.amount,
-                    display_name=item.item_name,
+                    display_name=(
+                        item.item_name
+                    ),
                 )
                 continue
 
@@ -370,13 +406,17 @@ def get_daily_guideline_summary(
                 == MealItem.ItemType.DISH
             ):
                 snapshots = list(
-                    item.ingredient_snapshots.all()
+                    item
+                    .ingredient_snapshots
+                    .all()
                 )
 
                 if not snapshots:
                     excluded_items.append(
                         {
-                            "name": item.item_name,
+                            "name": (
+                                item.item_name
+                            ),
                             "reason": (
                                 "料理材料の履歴がない"
                             ),
@@ -387,12 +427,18 @@ def get_daily_guideline_summary(
                 for snapshot in snapshots:
                     add_food_amount(
                         food=snapshot.food,
-                        amount=snapshot.amount_g,
+                        amount=(
+                            snapshot.amount_g
+                        ),
                         display_name=(
                             f"{item.item_name}："
                             f"{snapshot.food.name}"
                         ),
                     )
+
+    # --------------------------------------------------
+    # 食品群ごとの行を作成
+    # --------------------------------------------------
 
     protein_group_codes = {
         "fish",
@@ -406,42 +452,68 @@ def get_daily_guideline_summary(
     protein_rows = []
 
     for guideline in guidelines:
-        group_code = guideline.feeding_group.code
-        actual = actual_amounts[group_code]
+        group_code = (
+            guideline
+            .feeding_group
+            .code
+        )
+
+        actual = actual_amounts[
+            group_code
+        ]
+
+        daily_minimum = None
+        daily_maximum = None
+
+        if (
+            guideline.minimum_amount
+            is not None
+        ):
+            daily_minimum = (
+                guideline.minimum_amount
+                * recommended_meals
+            )
+
+        if (
+            guideline.maximum_amount
+            is not None
+        ):
+            daily_maximum = (
+                guideline.maximum_amount
+                * recommended_meals
+            )
+
+        is_protein_group = (
+            group_code
+            in protein_group_codes
+        )
 
         comparison_available = (
             guideline.unit
             == FeedingGuideline.Unit.GRAM
-            and group_code
-            not in protein_group_codes
+            and not is_protein_group
         )
 
-        daily_minimum = None
-        daily_maximum = None
         percent = 0
+        raw_percent = 0
         amount_status = "none"
 
+        # 穀類・野菜果物などの通常表示
         if comparison_available:
-            if guideline.minimum_amount is not None:
-                daily_minimum = (
-                    guideline.minimum_amount
-                    * recommended_meals
+            if (
+                daily_maximum is not None
+                and daily_maximum > 0
+            ):
+                raw_percent = round(
+                    float(
+                        actual
+                        / daily_maximum
+                    )
+                    * 100
                 )
 
-            if guideline.maximum_amount is not None:
-                daily_maximum = (
-                    guideline.maximum_amount
-                    * recommended_meals
-                )
-
-            if daily_maximum and daily_maximum > 0:
                 percent = min(
-                    round(
-                        float(
-                            actual / daily_maximum
-                        )
-                        * 100
-                    ),
+                    raw_percent,
                     100,
                 )
 
@@ -450,13 +522,15 @@ def get_daily_guideline_summary(
 
             elif (
                 daily_minimum is not None
-                and actual < daily_minimum
+                and actual
+                < daily_minimum
             ):
                 amount_status = "below"
 
             elif (
                 daily_maximum is not None
-                and actual > daily_maximum
+                and actual
+                > daily_maximum
             ):
                 amount_status = "above"
 
@@ -466,34 +540,368 @@ def get_daily_guideline_summary(
         row = {
             "guideline": guideline,
             "actual": actual,
-            "daily_minimum": daily_minimum,
-            "daily_maximum": daily_maximum,
+            "daily_minimum": (
+                daily_minimum
+            ),
+            "daily_maximum": (
+                daily_maximum
+            ),
             "percent": percent,
-            "amount_status": amount_status,
-            "comparison_available": comparison_available,
+            "raw_percent": raw_percent,
+            "amount_status": (
+                amount_status
+            ),
+            "comparison_available": (
+                comparison_available
+            ),
         }
 
-        if group_code in protein_group_codes:
+        if is_protein_group:
             protein_rows.append(row)
         else:
             main_rows.append(row)
 
-    protein_total = sum(
+    # --------------------------------------------------
+    # たんぱく源の表示用データ
+    # --------------------------------------------------
+
+    protein_rows_by_code = {
         (
-            row["actual"]
-            for row in protein_rows
-        ),
-        Decimal("0"),
+            row["guideline"]
+            .feeding_group
+            .code
+        ): row
+        for row in protein_rows
+    }
+
+    def get_row_actual(code):
+        row = protein_rows_by_code.get(
+            code
+        )
+
+        if row is None:
+            return Decimal("0")
+
+        return row["actual"]
+
+    def get_reference_amount(row):
+        """
+        1日分の目安量の中央値を返す。
+
+        下限と上限の両方がある場合：
+        (下限 + 上限) / 2
+
+        片方しかない場合：
+        登録されている値を使用する。
+        """
+
+        if row is None:
+            return None
+
+        daily_minimum = row[
+            "daily_minimum"
+        ]
+
+        daily_maximum = row[
+            "daily_maximum"
+        ]
+
+        if (
+            daily_minimum is not None
+            and daily_maximum is not None
+        ):
+            return (
+                daily_minimum
+                + daily_maximum
+            ) / Decimal("2")
+
+        if daily_maximum is not None:
+            return daily_maximum
+
+        if daily_minimum is not None:
+            return daily_minimum
+
+        return None
+
+    def build_protein_detail_row(
+        *,
+        label,
+        code,
+        actual,
+        reference,
+        minimum=None,
+        maximum=None,
+        extra=None,
+    ):
+        """
+        たんぱく源の詳細表示用データを作る。
+        """
+
+        raw_percent = 0
+
+        if (
+            reference is not None
+            and reference > 0
+        ):
+            raw_percent = round(
+                float(
+                    actual / reference
+                )
+                * 100
+            )
+
+        detail_row = {
+            "label": label,
+            "code": code,
+            "actual": actual,
+            "reference": reference,
+            "daily_minimum": minimum,
+            "daily_maximum": maximum,
+            "raw_percent": raw_percent,
+            "percent": min(
+                raw_percent,
+                100,
+            ),
+        }
+
+        if extra:
+            detail_row.update(extra)
+
+        return detail_row
+
+    fish_row = (
+        protein_rows_by_code
+        .get("fish")
     )
+
+    meat_row = (
+        protein_rows_by_code
+        .get("meat")
+    )
+
+    tofu_row = (
+        protein_rows_by_code
+        .get("tofu")
+    )
+
+    egg_row = (
+        protein_rows_by_code
+        .get("egg")
+    )
+
+    dairy_row = (
+        protein_rows_by_code
+        .get("dairy")
+    )
+
+    fish_actual = get_row_actual(
+        "fish"
+    )
+
+    meat_actual = get_row_actual(
+        "meat"
+    )
+
+    fish_meat_actual = (
+        fish_actual
+        + meat_actual
+    )
+
+    # 魚と肉には同じ目安量が設定されている想定。
+    # 魚の設定を優先し、なければ肉を使用する。
+    fish_meat_guideline_row = (
+        fish_row
+        if fish_row is not None
+        else meat_row
+    )
+
+    fish_meat_reference = (
+        get_reference_amount(
+            fish_meat_guideline_row
+        )
+    )
+
+    protein_detail_rows = []
+
+    # 魚＋肉
+    if (
+        fish_row is not None
+        or meat_row is not None
+    ):
+        protein_detail_rows.append(
+            build_protein_detail_row(
+                label="魚＋肉",
+                code="fish_meat",
+                actual=fish_meat_actual,
+                reference=(
+                    fish_meat_reference
+                ),
+                minimum=(
+                    fish_meat_guideline_row[
+                        "daily_minimum"
+                    ]
+                    if (
+                        fish_meat_guideline_row
+                        is not None
+                    )
+                    else None
+                ),
+                maximum=(
+                    fish_meat_guideline_row[
+                        "daily_maximum"
+                    ]
+                    if (
+                        fish_meat_guideline_row
+                        is not None
+                    )
+                    else None
+                ),
+                extra={
+                    "fish_actual": (
+                        fish_actual
+                    ),
+                    "meat_actual": (
+                        meat_actual
+                    ),
+                },
+            )
+        )
+
+    # 豆腐・卵・乳製品
+    protein_source_definitions = [
+        {
+            "label": "豆腐",
+            "code": "tofu",
+            "row": tofu_row,
+        },
+        {
+            "label": "卵",
+            "code": "egg",
+            "row": egg_row,
+        },
+        {
+            "label": "乳製品",
+            "code": "dairy",
+            "row": dairy_row,
+        },
+    ]
+
+    for source in (
+        protein_source_definitions
+    ):
+        row = source["row"]
+
+        if row is None:
+            continue
+
+        reference = (
+            get_reference_amount(row)
+        )
+
+        protein_detail_rows.append(
+            build_protein_detail_row(
+                label=source["label"],
+                code=source["code"],
+                actual=row["actual"],
+                reference=reference,
+                minimum=(
+                    row["daily_minimum"]
+                ),
+                maximum=(
+                    row["daily_maximum"]
+                ),
+            )
+        )
+
+    # --------------------------------------------------
+    # たんぱく源全体の進捗
+    # --------------------------------------------------
+
+    protein_equivalent_ratio = (
+        Decimal("0")
+    )
+
+    for detail_row in (
+        protein_detail_rows
+    ):
+        reference = detail_row[
+            "reference"
+        ]
+
+        if (
+            reference is None
+            or reference <= 0
+        ):
+            continue
+
+        protein_equivalent_ratio += (
+            detail_row["actual"]
+            / reference
+        )
+
+    raw_protein_percent = round(
+        float(
+            protein_equivalent_ratio
+        )
+        * 100
+    )
+
+    protein_percent = min(
+        raw_protein_percent,
+        100,
+    )
+
+    if raw_protein_percent == 0:
+        protein_amount_status = (
+            "none"
+        )
+
+    elif raw_protein_percent < 80:
+        protein_amount_status = (
+            "below"
+        )
+
+    elif raw_protein_percent <= 120:
+        protein_amount_status = (
+            "within"
+        )
+
+    else:
+        protein_amount_status = (
+            "above"
+        )
+
+    protein_summary = {
+        "detail_rows": (
+            protein_detail_rows
+        ),
+        "percent": protein_percent,
+        "raw_percent": (
+            raw_protein_percent
+        ),
+        "amount_status": (
+            protein_amount_status
+        ),
+        "equivalent_ratio": (
+            protein_equivalent_ratio
+        ),
+    }
 
     return {
         "main_rows": main_rows,
         "protein_rows": protein_rows,
-        "excluded_items": excluded_items,
+        "protein_summary": (
+            protein_summary
+        ),
+        "excluded_items": (
+            excluded_items
+        ),
         "excluded_item_count": len(
             excluded_items
         ),
-        "recommended_meals": recommended_meals,
+        "recommended_meals": (
+            recommended_meals
+        ),
     }
 
 @login_required
