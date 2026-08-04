@@ -1155,6 +1155,130 @@ def dish_create(request):
     )
 
 @login_required
+def dish_update(
+    request,
+    dish_id,
+):
+    baby = get_current_baby(request)
+
+    if baby is None:
+        messages.error(
+            request,
+            "先に子どもを登録してください。",
+        )
+
+        return redirect(
+            "feeding:settings"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの離乳食ノートは閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:food_list"
+        )
+
+    dish = get_object_or_404(
+        Dish,
+        pk=dish_id,
+        is_active=True,
+    )
+
+    if request.method == "POST":
+        form = DishCreateForm(
+            request.POST,
+            instance=dish,
+        )
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                request.POST,
+                instance=dish,
+                prefix="ingredients",
+            )
+        )
+
+        if (
+            form.is_valid()
+            and ingredient_formset.is_valid()
+        ):
+            with transaction.atomic():
+                saved_dish = form.save()
+
+                ingredient_formset.instance = (
+                    saved_dish
+                )
+
+                ingredients = (
+                    ingredient_formset.save(
+                        commit=False
+                    )
+                )
+
+                for deleted_ingredient in (
+                    ingredient_formset
+                    .deleted_objects
+                ):
+                    deleted_ingredient.delete()
+
+                display_order = 10
+
+                for ingredient in ingredients:
+                    ingredient.dish = saved_dish
+                    ingredient.display_order = (
+                        display_order
+                    )
+                    ingredient.save()
+
+                    display_order += 10
+
+            messages.success(
+                request,
+                f"「{saved_dish.name}」を更新した。",
+            )
+
+            return redirect(
+                (
+                    reverse(
+                        "feeding:food_list"
+                    )
+                    + "?tab=dish"
+                )
+            )
+
+    else:
+        form = DishCreateForm(
+            instance=dish,
+        )
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                instance=dish,
+                prefix="ingredients",
+            )
+        )
+
+    context = {
+        "baby": baby,
+        "dish": dish,
+        "form": form,
+        "ingredient_formset": ingredient_formset,
+        "is_edit": True,
+    }
+
+    return render(
+        request,
+        "feeding/dish_form.html",
+        context,
+    )
+
+@login_required
 def supplement_create(request):
     baby = get_current_baby(request)
 
@@ -1249,6 +1373,22 @@ def supplement_create(request):
 def food_list(request):
     baby = get_current_baby(request)
 
+    selected_tab = request.GET.get(
+        "tab",
+        "food",
+    )
+
+    if selected_tab not in {
+        "food",
+        "dish",
+    }:
+        selected_tab = "food"
+
+    can_edit_baby = user_can_edit_baby(
+        request,
+        baby,
+    )
+
     can_edit_baby = user_can_edit_baby(
         request,
         baby,
@@ -1338,10 +1478,26 @@ def food_list(request):
             }
         )
 
+    dishes = (
+        Dish.objects
+        .filter(is_active=True)
+        .select_related("category")
+        .prefetch_related(
+            "dish_ingredients__food",
+        )
+        .order_by(
+            "category__display_order",
+            "category__name",
+            "name",
+        )
+    )
+
     context = {
         "baby": baby,
         "can_edit_baby": can_edit_baby,
+        "selected_tab": selected_tab,
         "category_cards": category_cards,
+        "dishes": dishes,
     }
 
     return render(
@@ -1349,6 +1505,8 @@ def food_list(request):
         "feeding/food_list.html",
         context,
     )
+
+
 
 @login_required
 def food_detail(request, food_id):

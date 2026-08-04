@@ -1,17 +1,22 @@
 {% extends "feeding/base.html" %}
 
 {% block title %}
-    新しい料理を追加 | 離乳食ノート
+    {% if is_edit %}
+        料理を編集
+    {% else %}
+        料理を追加
+    {% endif %}
+    | 離乳食ノート
 {% endblock %}
 
 {% block content %}
 <section class="form-page-header">
     {% if next_url %}
         <a
-            href="{{ next_url }}"
+            href="{% url 'feeding:food_list' %}?tab=dish"
             class="back-link"
         >
-            ← 食事記録に戻る
+            ← 料理一覧に戻る
         </a>
     {% else %}
         <a
@@ -22,7 +27,13 @@
         </a>
     {% endif %}
 
-    <h2>新しい料理を追加</h2>
+    <h2>
+        {% if is_edit %}
+            料理を編集
+        {% else %}
+            料理を追加
+        {% endif %}
+    </h2>
 
     <p>
         料理全体の完成量と材料ごとの重量を登録する。
@@ -146,7 +157,11 @@
             type="submit"
             class="primary-button"
         >
-            料理を保存
+            {% if is_edit %}
+                変更を保存
+            {% else %}
+                料理を追加
+            {% endif %}
         </button>
     </div>
 </form>

@@ -1,0 +1,194 @@
+<section class="food-catalog-section">
+    <div class="food-list-actions">
+        {% if can_edit_baby %}
+            <a
+                href="{% url 'feeding:food_create' %}"
+                class="catalog-add-button"
+            >
+                ＋ 新しい食材を追加
+            </a>
+        {% else %}
+            <span class="read-only-add-button">
+                閲覧のみ
+            </span>
+        {% endif %}
+    </div>
+
+    <section class="food-search-section">
+        <label
+            for="food-search"
+            class="search-label"
+        >
+            食材を検索
+        </label>
+
+        <div class="search-box">
+            <span
+                class="search-icon"
+                aria-hidden="true"
+            >
+                🔍
+            </span>
+
+            <input
+                type="search"
+                id="food-search"
+                class="food-search-input"
+                placeholder="例：にんじん、魚、ヨーグルト"
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="clear-search"
+                class="clear-search-button"
+                aria-label="検索をクリア"
+                hidden
+            >
+                ×
+            </button>
+        </div>
+
+        <p
+            id="search-result-count"
+            class="search-result-count"
+        ></p>
+    </section>
+
+    <div class="status-legend">
+        <span class="legend-item not-yet">
+            － まだ
+        </span>
+
+        <span class="legend-item tried">
+            ○ 食べた
+        </span>
+
+        <span class="legend-item familiar">
+            ✓ 食べ慣れた
+        </span>
+    </div>
+
+    <div
+        class="category-list"
+        id="category-list"
+    >
+        {% for card in category_cards %}
+            <section
+                class="food-category-card"
+                data-category-card
+            >
+                <button
+                    type="button"
+                    class="category-toggle"
+                    data-category-toggle
+                    aria-expanded="false"
+                    aria-controls="category-content-{{ card.category.id }}"
+                >
+                    <span class="category-toggle-main">
+                        <span>
+                            <strong>
+                                {{ card.category.name }}
+                            </strong>
+
+                            <small>
+                                {{ card.eaten_count }}
+                                ／
+                                {{ card.total_count }}種類
+                            </small>
+                        </span>
+
+                        <span
+                            class="category-chevron"
+                            aria-hidden="true"
+                        >
+                            ⌄
+                        </span>
+                    </span>
+
+                    <span class="category-progress">
+                        <span
+                            style="
+                                width:
+                                {% if card.total_count %}
+                                    {% widthratio card.eaten_count card.total_count 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %};
+                            "
+                        ></span>
+                    </span>
+                </button>
+
+                <div
+                    class="food-category-content"
+                    id="category-content-{{ card.category.id }}"
+                    data-category-content
+                    hidden
+                >
+                    <div class="food-list">
+                        {% for item in card.foods %}
+                            <a
+                                href="{% url 'feeding:food_detail' item.food.id %}"
+                                class="food-row"
+                                data-food-row
+                                data-food-name="{{ item.food.name|lower }}"
+                                data-category-name="{{ card.category.name|lower }}"
+                            >
+                                <span class="status-mark {{ item.status }}">
+                                    {{ item.status_icon }}
+                                </span>
+
+                                <span class="food-row-main">
+                                    <strong>
+                                        {{ item.food.name }}
+                                    </strong>
+
+                                    <small>
+                                        {{ item.status_label }}
+
+                                        {% if item.count %}
+                                            ・{{ item.count }}回
+                                        {% endif %}
+                                    </small>
+                                </span>
+
+                                <span class="row-arrow">
+                                    ›
+                                </span>
+                            </a>
+                        {% empty %}
+                            <p class="empty-message">
+                                このジャンルには食材が登録されていない。
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% empty %}
+            <div class="dashboard-empty-card">
+                <span aria-hidden="true">
+                    🥕
+                </span>
+
+                <div>
+                    <strong>
+                        食材が登録されていない
+                    </strong>
+
+                    <p>
+                        食材を追加すると、ここに表示される。
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <p
+        id="no-search-results"
+        class="no-search-results"
+        hidden
+    >
+        該当する食材が見つからない。
+    </p>
+</section>

@@ -1,279 +1,330 @@
 {% extends "feeding/base.html" %}
 
-{% block title %}食材リスト | 離乳食ノート{% endblock %}
+{% block title %}
+    食材・料理 | 離乳食ノート
+{% endblock %}
 
 {% block content %}
 <section class="page-header">
-    <p class="eyebrow">1歳までの食材</p>
-    <h2>食材リスト</h2>
+    <p class="eyebrow">
+        FOOD & DISHES
+    </p>
+
+    <h2>食材・料理</h2>
 
     {% if baby %}
         <p class="page-description">
-            {{ baby.name }}が食べた回数から自動更新される。
+            {{ baby.name }}の食材履歴と、
+            登録した料理を管理する。
         </p>
     {% endif %}
 </section>
 
-</section>
+<div class="catalog-tab-switcher">
+    <a
+        href="{% url 'feeding:food_list' %}?tab=food"
+        class="catalog-tab-button{% if selected_tab == 'food' %} is-active{% endif %}"
+    >
+        <span aria-hidden="true">🥕</span>
+        食材
+    </a>
 
-<div class="food-list-actions">
-    {% if can_edit_baby %}
-        <a
-            href="{% url 'feeding:food_create' %}"
-            class="..."
-        >
-            新しい食材を追加
-        </a>
-    {% else %}
-        <span class="read-only-add-button">
-            閲覧のみ
-        </span>
-    {% endif %}
+    <a
+        href="{% url 'feeding:food_list' %}?tab=dish"
+        class="catalog-tab-button{% if selected_tab == 'dish' %} is-active{% endif %}"
+    >
+        <span aria-hidden="true">🍲</span>
+        料理
+    </a>
 </div>
 
-<section class="food-search-section">
-
-<section class="food-search-section">
-    <label for="food-search" class="search-label">
-        <h1></h1>   
-    </label>
-
-    <div class="search-box">
-        <span class="search-icon">🔍</span>
-
-        <input
-            type="search"
-            id="food-search"
-            class="food-search-input"
-            placeholder="例：にんじん、魚、ヨーグルト"
-            autocomplete="off"
-        >
-
-        <button
-            type="button"
-            id="clear-search"
-            class="clear-search-button"
-            aria-label="検索をクリア"
-            hidden
-        >
-            ×
-        </button>
-    </div>
-
-    <p id="search-result-count" class="search-result-count"></p>
-</section>
-
-<div class="status-legend">
-    <span class="legend-item not-yet">－ まだ</span>
-    <span class="legend-item tried">○ 食べた</span>
-    <span class="legend-item familiar">✓ 食べ慣れた</span>
-</div>
-
-<div class="category-list" id="category-list">
-    {% for card in category_cards %}
-        <section
-            class="food-category-card"
-            data-category-card
-        >
-            <button
-                type="button"
-                class="category-toggle"
-                data-category-toggle
-                aria-expanded="false"
-                aria-controls="category-content-{{ card.category.id }}"
-            >
-                <span class="category-toggle-main">
-                    <span>
-                        <strong>{{ card.category.name }}</strong>
-                        <small>
-                            {{ card.eaten_count }}／{{ card.total_count }}種類
-                        </small>
-                    </span>
-
-                    <span class="category-chevron" aria-hidden="true">
-                        ⌄
-                    </span>
-                </span>
-
-                <span class="category-progress">
-                    <span
-                        style="width:
-                        {% if card.total_count %}
-                            {% widthratio card.eaten_count card.total_count 100 %}%
-                        {% else %}
-                            0%
-                        {% endif %};"
-                    ></span>
-                </span>
-            </button>
-
-            <div
-                class="food-category-content"
-                id="category-content-{{ card.category.id }}"
-                data-category-content
-                hidden
-            >
-                <div class="food-list">
-                    {% for item in card.foods %}
-                        <a
-                            href="{% url 'feeding:food_detail' item.food.id %}"
-                            class="food-row"
-                            data-food-row
-                            data-food-name="{{ item.food.name|lower }}"
-                            data-category-name="{{ card.category.name|lower }}"
-                        >
-                            <span class="status-mark {{ item.status }}">
-                                {{ item.status_icon }}
-                            </span>
-
-                            <span class="food-row-main">
-                                <strong>{{ item.food.name }}</strong>
-
-                                <small>
-                                    {{ item.status_label }}
-                                    {% if item.count %}
-                                        ・{{ item.count }}回
-                                    {% endif %}
-                                </small>
-                            </span>
-
-                            <span class="row-arrow">›</span>
-                        </a>
-                    {% empty %}
-                        <p class="empty-message">
-                            このジャンルには食材が登録されていない。
-                        </p>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-    {% endfor %}
-</div>
-
-<p id="no-search-results" class="no-search-results" hidden>
-    該当する食材が見つからない。
-</p>
+{% if selected_tab == "dish" %}
+    {% include "feeding/partials/dish_catalog_tab.html" %}
+{% else %}
+    {% include "feeding/partials/food_catalog_tab.html" %}
+{% endif %}
 
 <script>
-    const categoryCards = document.querySelectorAll(
-        "[data-category-card]"
+    /*
+     * 食材検索
+     */
+    const foodSearchInput = document.getElementById(
+        "food-search"
     );
-    const searchInput = document.getElementById("food-search");
-    const clearButton = document.getElementById("clear-search");
-    const resultCount = document.getElementById(
+
+    const clearFoodSearchButton = document.getElementById(
+        "clear-search"
+    );
+
+    const foodSearchResultCount = document.getElementById(
         "search-result-count"
     );
-    const noResults = document.getElementById(
+
+    const noFoodSearchResults = document.getElementById(
         "no-search-results"
     );
 
-    function setCategoryOpen(card, isOpen) {
-        const toggle = card.querySelector(
-            "[data-category-toggle]"
-        );
-        const content = card.querySelector(
-            "[data-category-content]"
-        );
+    const foodCategoryCards = document.querySelectorAll(
+        "[data-category-card]"
+    );
 
-        toggle.setAttribute(
-            "aria-expanded",
-            String(isOpen)
-        );
-
-        content.hidden = !isOpen;
-        card.classList.toggle("is-open", isOpen);
-    }
-
-    categoryCards.forEach((card) => {
-        const toggle = card.querySelector(
-            "[data-category-toggle]"
-        );
-
-        toggle.addEventListener("click", () => {
-            const isExpanded =
-                toggle.getAttribute("aria-expanded") === "true";
-
-            setCategoryOpen(card, !isExpanded);
-        });
-    });
-
-    function normalizeText(value) {
-        return value
-            .trim()
-            .toLowerCase()
-            .replace(/\s+/g, "");
-    }
-
-    function updateSearch() {
-        const query = normalizeText(searchInput.value);
-        let matchedFoodCount = 0;
-        let matchedCategoryCount = 0;
-
-        clearButton.hidden = query.length === 0;
-
-        categoryCards.forEach((card) => {
-            const rows = card.querySelectorAll(
-                "[data-food-row]"
-            );
-            let categoryMatches = 0;
-
-            rows.forEach((row) => {
-                const foodName = normalizeText(
-                    row.dataset.foodName || ""
-                );
-                const categoryName = normalizeText(
-                    row.dataset.categoryName || ""
-                );
-
-                const matches =
-                    query.length === 0
-                    || foodName.includes(query)
-                    || categoryName.includes(query);
-
-                row.hidden = !matches;
-
-                if (matches) {
-                    categoryMatches += 1;
-                    matchedFoodCount += 1;
-                }
-            });
-
-            if (query.length === 0) {
-                card.hidden = false;
-                setCategoryOpen(card, false);
-                return;
-            }
-
-            const categoryHasMatch = categoryMatches > 0;
-
-            card.hidden = !categoryHasMatch;
-
-            if (categoryHasMatch) {
-                matchedCategoryCount += 1;
-                setCategoryOpen(card, true);
-            }
-        });
-
-        if (query.length === 0) {
-            resultCount.textContent = "";
-            noResults.hidden = true;
+    function updateFoodSearch() {
+        if (!foodSearchInput) {
             return;
         }
 
-        resultCount.textContent =
-            `${matchedFoodCount}件の食材が見つかった`;
+        const query = (
+            foodSearchInput.value
+            .trim()
+            .toLowerCase()
+        );
 
-        noResults.hidden = matchedFoodCount > 0;
+        let visibleFoodCount = 0;
+
+        foodCategoryCards.forEach((categoryCard) => {
+            const foodRows = categoryCard.querySelectorAll(
+                "[data-food-row]"
+            );
+
+            const categoryContent = categoryCard.querySelector(
+                "[data-category-content]"
+            );
+
+            const categoryToggle = categoryCard.querySelector(
+                "[data-category-toggle]"
+            );
+
+            let visibleCategoryFoodCount = 0;
+
+            foodRows.forEach((foodRow) => {
+                const foodName = (
+                    foodRow.dataset.foodName
+                    || ""
+                );
+
+                const categoryName = (
+                    foodRow.dataset.categoryName
+                    || ""
+                );
+
+                const matches = (
+                    !query
+                    || foodName.includes(query)
+                    || categoryName.includes(query)
+                );
+
+                foodRow.hidden = !matches;
+
+                if (matches) {
+                    visibleFoodCount += 1;
+                    visibleCategoryFoodCount += 1;
+                }
+            });
+
+            categoryCard.hidden = (
+                visibleCategoryFoodCount === 0
+            );
+
+            if (query && visibleCategoryFoodCount > 0) {
+                categoryCard.classList.add(
+                    "is-open"
+                );
+
+                if (categoryContent) {
+                    categoryContent.hidden = false;
+                }
+
+                if (categoryToggle) {
+                    categoryToggle.setAttribute(
+                        "aria-expanded",
+                        "true"
+                    );
+                }
+            }
+        });
+
+        if (clearFoodSearchButton) {
+            clearFoodSearchButton.hidden = !query;
+        }
+
+        if (foodSearchResultCount) {
+            foodSearchResultCount.textContent = (
+                query
+                ? `${visibleFoodCount}件見つかった`
+                : ""
+            );
+        }
+
+        if (noFoodSearchResults) {
+            noFoodSearchResults.hidden = (
+                !query
+                || visibleFoodCount > 0
+            );
+        }
     }
 
-    searchInput.addEventListener("input", updateSearch);
+    if (foodSearchInput) {
+        foodSearchInput.addEventListener(
+            "input",
+            updateFoodSearch
+        );
+    }
 
-    clearButton.addEventListener("click", () => {
-        searchInput.value = "";
-        searchInput.focus();
-        updateSearch();
-    });
+    if (
+        clearFoodSearchButton
+        && foodSearchInput
+    ) {
+        clearFoodSearchButton.addEventListener(
+            "click",
+            () => {
+                foodSearchInput.value = "";
+                updateFoodSearch();
+                foodSearchInput.focus();
+            }
+        );
+    }
 
-    updateSearch();
+    /*
+     * 食材カテゴリーの開閉
+     */
+    document
+        .querySelectorAll("[data-category-toggle]")
+        .forEach((toggleButton) => {
+            toggleButton.addEventListener(
+                "click",
+                () => {
+                    const categoryCard = (
+                        toggleButton.closest(
+                            "[data-category-card]"
+                        )
+                    );
+
+                    if (!categoryCard) {
+                        return;
+                    }
+
+                    const categoryContent = (
+                        categoryCard.querySelector(
+                            "[data-category-content]"
+                        )
+                    );
+
+                    if (!categoryContent) {
+                        return;
+                    }
+
+                    const isOpen = (
+                        !categoryContent.hidden
+                    );
+
+                    categoryContent.hidden = isOpen;
+
+                    categoryCard.classList.toggle(
+                        "is-open",
+                        !isOpen
+                    );
+
+                    toggleButton.setAttribute(
+                        "aria-expanded",
+                        String(!isOpen)
+                    );
+                }
+            );
+        });
+
+    /*
+     * 料理検索
+     */
+    const dishSearchInput = document.getElementById(
+        "dish-search-input"
+    );
+
+    const clearDishSearchButton = document.getElementById(
+        "clear-dish-search"
+    );
+
+    const dishSearchResultCount = document.getElementById(
+        "dish-search-result-count"
+    );
+
+    const noDishSearchResults = document.getElementById(
+        "no-dish-search-results"
+    );
+
+    const dishCards = document.querySelectorAll(
+        "[data-dish-card]"
+    );
+
+    function updateDishSearch() {
+        if (!dishSearchInput) {
+            return;
+        }
+
+        const query = (
+            dishSearchInput.value
+            .trim()
+            .toLowerCase()
+        );
+
+        let visibleDishCount = 0;
+
+        dishCards.forEach((dishCard) => {
+            const searchText = (
+                dishCard.dataset.searchText
+                || ""
+            ).toLowerCase();
+
+            const matches = (
+                !query
+                || searchText.includes(query)
+            );
+
+            dishCard.hidden = !matches;
+
+            if (matches) {
+                visibleDishCount += 1;
+            }
+        });
+
+        if (clearDishSearchButton) {
+            clearDishSearchButton.hidden = !query;
+        }
+
+        if (dishSearchResultCount) {
+            dishSearchResultCount.textContent = (
+                query
+                ? `${visibleDishCount}件見つかった`
+                : ""
+            );
+        }
+
+        if (noDishSearchResults) {
+            noDishSearchResults.hidden = (
+                !query
+                || visibleDishCount > 0
+            );
+        }
+    }
+
+    if (dishSearchInput) {
+        dishSearchInput.addEventListener(
+            "input",
+            updateDishSearch
+        );
+    }
+
+    if (
+        clearDishSearchButton
+        && dishSearchInput
+    ) {
+        clearDishSearchButton.addEventListener(
+            "click",
+            () => {
+                dishSearchInput.value = "";
+                updateDishSearch();
+                dishSearchInput.focus();
+            }
+        );
+    }
 </script>
 {% endblock %}

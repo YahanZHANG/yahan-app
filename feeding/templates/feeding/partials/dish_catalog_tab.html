@@ -1,0 +1,156 @@
+<section class="dish-catalog-section">
+    <div class="catalog-toolbar">
+        <div class="catalog-search-area">
+            <label
+                for="dish-search-input"
+                class="search-label"
+            >
+                料理を検索
+            </label>
+
+            <div class="search-box">
+                <span
+                    class="search-icon"
+                    aria-hidden="true"
+                >
+                    🔍
+                </span>
+
+                <input
+                    type="search"
+                    id="dish-search-input"
+                    class="food-search-input"
+                    placeholder="料理名・材料名で検索"
+                    autocomplete="off"
+                >
+
+                <button
+                    type="button"
+                    id="clear-dish-search"
+                    class="clear-search-button"
+                    aria-label="検索をクリア"
+                    hidden
+                >
+                    ×
+                </button>
+            </div>
+
+            <p
+                id="dish-search-result-count"
+                class="search-result-count"
+            ></p>
+        </div>
+
+        {% if can_edit_baby %}
+            <a
+                href="{% url 'feeding:dish_create' %}"
+                class="catalog-add-button"
+            >
+                ＋ 料理を追加
+            </a>
+        {% else %}
+            <span class="read-only-add-button">
+                閲覧のみ
+            </span>
+        {% endif %}
+    </div>
+
+    <div
+        class="dish-catalog-list"
+        id="dish-catalog-list"
+    >
+        {% for dish in dishes %}
+            <article
+                class="dish-catalog-card"
+                data-dish-card
+                data-search-text="
+                    {{ dish.name }}
+                    {% if dish.category %}
+                        {{ dish.category.name }}
+                    {% endif %}
+                    {% for ingredient in dish.dish_ingredients.all %}
+                        {{ ingredient.food.name }}
+                    {% endfor %}
+                "
+            >
+                <div class="dish-catalog-heading">
+                    <div
+                        class="dish-catalog-icon"
+                        aria-hidden="true"
+                    >
+                        🍲
+                    </div>
+
+                    <div class="dish-catalog-main">
+                        <strong>
+                            {{ dish.name }}
+                        </strong>
+
+                        <small>
+                            {% if dish.category %}
+                                {{ dish.category.name }}
+                            {% else %}
+                                ジャンル未設定
+                            {% endif %}
+
+                            {% if dish.finished_amount_g %}
+                                ・完成量
+                                {{ dish.finished_amount_g|floatformat:"-2" }}g
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    {% if can_edit_baby %}
+                        <a
+                            href="{% url 'feeding:dish_update' dish.pk %}"
+                            class="dish-edit-link"
+                        >
+                            編集
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="dish-ingredient-tags">
+                    {% for ingredient in dish.dish_ingredients.all %}
+                        <span>
+                            {{ ingredient.food.name }}
+
+                            {% if ingredient.amount_g %}
+                                {{ ingredient.amount_g|floatformat:"-2" }}g
+                            {% endif %}
+                        </span>
+                    {% empty %}
+                        <span class="dish-no-ingredients">
+                            材料未登録
+                        </span>
+                    {% endfor %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="dashboard-empty-card">
+                <span aria-hidden="true">
+                    🍲
+                </span>
+
+                <div>
+                    <strong>
+                        料理がまだない
+                    </strong>
+
+                    <p>
+                        よく使う料理を登録すると、
+                        食事記録から選択できる。
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <p
+        id="no-dish-search-results"
+        class="no-search-results"
+        hidden
+    >
+        該当する料理が見つからない。
+    </p>
+</section>

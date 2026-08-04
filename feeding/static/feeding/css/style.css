@@ -3425,3 +3425,150 @@ button.supplement-card:active {
     color: var(--muted);
     font-size: 0.7rem;
 }
+
+/* ==========================================================
+   Food and dish catalog
+   ========================================================== */
+
+.catalog-tab-switcher {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: #eef0f3;
+    border-radius: 15px;
+}
+
+.catalog-tab-button {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.catalog-tab-button.is-active {
+    color: var(--text);
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.catalog-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.catalog-search-box {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.catalog-search-box input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+}
+
+.catalog-add-button {
+    flex: 0 0 auto;
+    padding: 9px 12px;
+    border-radius: 12px;
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.dish-catalog-list {
+    display: grid;
+    gap: 11px;
+}
+
+.dish-catalog-card {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.dish-catalog-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.dish-catalog-icon {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    background: #fff2d9;
+    font-size: 1.2rem;
+}
+
+.dish-catalog-main {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+}
+
+.dish-catalog-main strong {
+    overflow: hidden;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dish-catalog-main small {
+    color: var(--muted);
+    font-size: 0.67rem;
+}
+
+.dish-edit-link {
+    flex: 0 0 auto;
+    color: var(--primary-dark);
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.dish-ingredient-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 11px;
+}
+
+.dish-ingredient-tags span {
+    padding: 5px 8px;
+    border-radius: 999px;
+    color: #6c6351;
+    background: #f5f1e9;
+    font-size: 0.66rem;
+    font-weight: 700;
+}
+
+.dish-no-ingredients {
+    color: var(--muted) !important;
+    background: #eef0f3 !important;
+}

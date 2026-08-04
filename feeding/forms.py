@@ -964,9 +964,16 @@ class DishCreateForm(forms.ModelForm):
     def clean_name(self):
         name = self.cleaned_data["name"].strip()
 
-        if Dish.objects.filter(
+        duplicate_dishes = Dish.objects.filter(
             name__iexact=name,
-        ).exists():
+        )
+
+        if self.instance and self.instance.pk:
+            duplicate_dishes = duplicate_dishes.exclude(
+                pk=self.instance.pk,
+            )
+
+        if duplicate_dishes.exists():
             raise ValidationError(
                 "同じ名前の料理がすでに登録されている。"
             )
