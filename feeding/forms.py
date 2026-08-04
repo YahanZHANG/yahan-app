@@ -1276,6 +1276,169 @@ class DishCreateForm(forms.ModelForm):
 
         return name
 
+class CommercialProductCreateForm(
+    forms.ModelForm
+):
+    class Meta:
+        model = Dish
+
+        fields = (
+            "name",
+            "commercial_brand",
+            "recommended_from_month",
+            "finished_amount_g",
+            "source_url",
+            "ingredient_data_verified",
+            "ingredient_data_note",
+        )
+
+        labels = {
+            "name": "商品名",
+            "commercial_brand": "メーカー",
+            "recommended_from_month": (
+                "対象月齢"
+            ),
+            "finished_amount_g": (
+                "内容量"
+            ),
+            "source_url": (
+                "公式商品ページ"
+            ),
+            "ingredient_data_verified": (
+                "材料割合確認済み"
+            ),
+            "ingredient_data_note": (
+                "材料データの注記"
+            ),
+        }
+
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": (
+                        "例："
+                        "Gemüse mit Reis und Huhn"
+                    ),
+                    "autocomplete": "off",
+                }
+            ),
+            "commercial_brand": (
+                forms.Select(
+                    attrs={
+                        "class": "form-control",
+                    }
+                )
+            ),
+            "recommended_from_month": (
+                forms.NumberInput(
+                    attrs={
+                        "class": "form-control",
+                        "min": "4",
+                        "max": "36",
+                        "step": "1",
+                        "placeholder": "例：6",
+                    }
+                )
+            ),
+            "finished_amount_g": (
+                forms.NumberInput(
+                    attrs={
+                        "class": "form-control",
+                        "min": "0.01",
+                        "step": "0.01",
+                        "inputmode": "decimal",
+                        "placeholder": "例：190",
+                    }
+                )
+            ),
+            "source_url": forms.URLInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": (
+                        "https://..."
+                    ),
+                }
+            ),
+            "ingredient_data_verified": (
+                forms.CheckboxInput()
+            ),
+            "ingredient_data_note": (
+                forms.TextInput(
+                    attrs={
+                        "class": "form-control",
+                        "placeholder": (
+                            "例：主要材料のみ"
+                            "割合が明記されている"
+                        ),
+                    }
+                )
+            ),
+        }
+
+        help_texts = {
+            "finished_amount_g": (
+                "商品の容器全体の内容量を"
+                "gで入力する。"
+            ),
+            "recommended_from_month": (
+                "「6か月頃から」なら6を入力する。"
+            ),
+            "ingredient_data_verified": (
+                "公式ページまたは商品ラベルで"
+                "割合を確認できた場合のみ"
+                "チェックする。"
+            ),
+        }
+
+    def clean_name(self):
+        name = (
+            self.cleaned_data["name"]
+            .strip()
+        )
+
+        duplicate_products = (
+            Dish.objects
+            .filter(
+                name__iexact=name,
+                is_commercial_product=True,
+            )
+        )
+
+        if (
+            self.instance
+            and self.instance.pk
+        ):
+            duplicate_products = (
+                duplicate_products
+                .exclude(
+                    pk=self.instance.pk,
+                )
+            )
+
+        if duplicate_products.exists():
+            raise ValidationError(
+                "同じ名前の市販品が"
+                "すでに登録されています。"
+            )
+
+        return name
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        brand = cleaned_data.get(
+            "commercial_brand"
+        )
+
+        if not brand:
+            self.add_error(
+                "commercial_brand",
+                "メーカーを選択してください。",
+            )
+
+        return cleaned_data
+
 class DishIngredientForm(forms.ModelForm):
     food_category = forms.ModelChoiceField(
         label="食材ジャンル",

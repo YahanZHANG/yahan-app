@@ -22,6 +22,8 @@ from .forms import (
     BabyMemberAddForm,
     BabySettingsForm,
     BabyDeleteConfirmForm,
+    CommercialProductCreateForm,
+    DishCategory,
     DishCreateForm,
     DishIngredientFormSet,
     FoodCreateForm,
@@ -1591,6 +1593,146 @@ def dish_create(request):
     )
 
 @login_required
+def commercial_product_create(
+    request,
+):
+    baby = get_current_baby(request)
+
+    if baby is None:
+        messages.error(
+            request,
+            "子どもを選択してください。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:food_list"
+        )
+
+    next_url = (
+        request.POST.get("next")
+        or request.GET.get("next")
+        or ""
+    )
+
+    if request.method == "POST":
+        form = CommercialProductCreateForm(
+            request.POST,
+        )
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                request.POST,
+                prefix="ingredients",
+            )
+        )
+
+        if (
+            form.is_valid()
+            and ingredient_formset.is_valid()
+        ):
+            with transaction.atomic():
+                product = form.save(
+                    commit=False
+                )
+
+                commercial_category, _ = (
+                    DishCategory.objects
+                    .get_or_create(
+                        name="市販品",
+                        defaults={
+                            "display_order": 999,
+                            "is_active": True,
+                        },
+                    )
+                )
+
+                product.category = (
+                    commercial_category
+)
+
+                product.is_commercial_product = (
+                    True
+                )
+
+                product.is_user_created = (
+                    True
+                )
+
+                product.is_active = True
+
+                product.save()
+
+                ingredient_formset.instance = (
+                    product
+                )
+
+                ingredient_formset.save()
+
+            messages.success(
+                request,
+                (
+                    f"市販品「{product.name}」を"
+                    "追加しました。"
+                ),
+            )
+
+            if next_url:
+                return redirect(
+                    next_url
+                )
+
+            commercial_list_url = (
+                reverse(
+                    "feeding:food_list"
+                )
+            )
+
+            return redirect(
+                f"{commercial_list_url}"
+                "?tab=commercial"
+            )
+
+    else:
+        form = CommercialProductCreateForm()
+
+        ingredient_formset = (
+            DishIngredientFormSet(
+                prefix="ingredients",
+            )
+        )
+
+    context = {
+        "baby": baby,
+        "can_edit_baby": True,
+        "form": form,
+        "ingredient_formset": (
+            ingredient_formset
+        ),
+        "next_url": next_url,
+        "is_edit": False,
+        "is_commercial": True,
+    }
+
+    return render(
+        request,
+        "feeding/commercial_product_form.html",
+        context,
+    )
+
+@login_required
 def dish_detail(
     request,
     dish_id,
@@ -2177,8 +2319,6 @@ def food_list(request):
         "feeding/food_list.html",
         context,
     )
-
-
 
 @login_required
 def food_detail(request, food_id):

@@ -77,14 +77,13 @@
     </a>
 </div>
 
-{% if selected_tab == "dish" %}
+{% if selected_tab == "food" %}
+    {% include "feeding/partials/food_catalog_tab.html" %}
+{% elif selected_tab == "dish" %}
     {% include "feeding/partials/dish_catalog_tab.html" %}
-
-{% elif selected_tab == "commercial" %}
+{% else %}
     {% include "feeding/partials/commercial_catalog_tab.html" %}
 
-{% else %}
-    {% include "feeding/partials/food_catalog_tab.html" %}
 {% endif %}
 
 <script>
@@ -532,5 +531,199 @@
             }
         );
     });
+
+    /*
+     * 市販品検索
+     */
+    const commercialSearchInput = (
+        document.getElementById(
+            "commercial-search-input"
+        )
+    );
+
+    const clearCommercialSearchButton = (
+        document.getElementById(
+            "clear-commercial-search"
+        )
+    );
+
+    const commercialSearchResultCount = (
+        document.getElementById(
+            "commercial-search-result-count"
+        )
+    );
+
+    const noCommercialSearchResults = (
+        document.getElementById(
+            "no-commercial-search-results"
+        )
+    );
+
+    const commercialBrandCards = (
+        document.querySelectorAll(
+            "[data-commercial-brand-card]"
+        )
+    );
+
+    function updateCommercialSearch() {
+        if (!commercialSearchInput) {
+            return;
+        }
+
+        const query = (
+            commercialSearchInput
+            .value
+            .trim()
+            .toLowerCase()
+        );
+
+        let visibleProductCount = 0;
+
+        commercialBrandCards.forEach(
+            (brandCard) => {
+                const productRows = (
+                    brandCard.querySelectorAll(
+                        "[data-commercial-product]"
+                    )
+                );
+
+                const brandContent = (
+                    brandCard.querySelector(
+                        "[data-commercial-brand-content]"
+                    )
+                );
+
+                const brandToggle = (
+                    brandCard.querySelector(
+                        "[data-commercial-brand-toggle]"
+                    )
+                );
+
+                let visibleBrandProductCount = 0;
+
+                productRows.forEach(
+                    (productRow) => {
+                        const searchText = (
+                            productRow
+                            .dataset
+                            .searchText
+                            || ""
+                        ).toLowerCase();
+
+                        const matches = (
+                            !query
+                            || searchText.includes(
+                                query
+                            )
+                        );
+
+                        productRow.hidden = (
+                            !matches
+                        );
+
+                        if (matches) {
+                            visibleProductCount += 1;
+                            visibleBrandProductCount += 1;
+                        }
+                    }
+                );
+
+                brandCard.hidden = (
+                    visibleBrandProductCount === 0
+                );
+
+                /*
+                 * 検索中、該当商品があるブランドは
+                 * 自動的に開く。
+                 */
+                if (
+                    query
+                    && visibleBrandProductCount > 0
+                ) {
+                    brandCard.classList.add(
+                        "is-open"
+                    );
+
+                    if (brandContent) {
+                        brandContent.hidden = false;
+                    }
+
+                    if (brandToggle) {
+                        brandToggle.setAttribute(
+                            "aria-expanded",
+                            "true"
+                        );
+                    }
+                }
+
+                /*
+                 * 検索を消したら、
+                 * ブランド一覧を閉じた初期状態へ戻す。
+                 */
+                if (!query) {
+                    brandCard.hidden = false;
+
+                    brandCard.classList.remove(
+                        "is-open"
+                    );
+
+                    if (brandContent) {
+                        brandContent.hidden = true;
+                    }
+
+                    if (brandToggle) {
+                        brandToggle.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+                    }
+                }
+            }
+        );
+
+        if (clearCommercialSearchButton) {
+            clearCommercialSearchButton.hidden = (
+                !query
+            );
+        }
+
+        if (commercialSearchResultCount) {
+            commercialSearchResultCount.textContent = (
+                query
+                ? `${visibleProductCount}件見つかった`
+                : ""
+            );
+        }
+
+        if (noCommercialSearchResults) {
+            noCommercialSearchResults.hidden = (
+                !query
+                || visibleProductCount > 0
+            );
+        }
+    }
+
+    if (commercialSearchInput) {
+        commercialSearchInput.addEventListener(
+            "input",
+            updateCommercialSearch
+        );
+    }
+
+    if (
+        clearCommercialSearchButton
+        && commercialSearchInput
+    ) {
+        clearCommercialSearchButton.addEventListener(
+            "click",
+            () => {
+                commercialSearchInput.value = "";
+
+                updateCommercialSearch();
+
+                commercialSearchInput.focus();
+            }
+        );
+    }
 </script>
 {% endblock %}

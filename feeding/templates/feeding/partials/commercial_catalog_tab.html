@@ -1,9 +1,26 @@
 <section class="commercial-catalog-section">
+
+    <div class="food-list-actions">
+        {% if can_edit_baby %}
+            <a
+                href="{% url 'feeding:commercial_product_create' %}?next={{ request.get_full_path|urlencode }}"
+                class="primary-link"
+            >
+                ＋ 新しい市販品を追加
+            </a>
+        {% else %}
+            <span class="read-only-add-button">
+                閲覧のみ
+            </span>
+        {% endif %}
+    </div>
+
     <section class="food-search-section">
         <label
             for="commercial-search-input"
             class="search-label"
         >
+            <h1>    </h1>
             市販品を検索
         </label>
 
@@ -133,7 +150,10 @@
                                     </small>
                                 </span>
 
-                                <span class="row-arrow">
+                                <span
+                                    class="row-arrow"
+                                    aria-hidden="true"
+                                >
                                     ›
                                 </span>
                             </a>
