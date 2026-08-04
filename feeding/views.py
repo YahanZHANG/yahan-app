@@ -1553,6 +1553,25 @@ def food_list(request):
     dish_category_cards = []
 
     for dish in dishes:
+        eaten_count = 0
+
+        if baby:
+            eaten_count = (
+                MealItem.objects
+                .filter(
+                    meal__baby=baby,
+                    dish=dish,
+                    item_type=MealItem.ItemType.DISH,
+                )
+                .values("meal_id")
+                .distinct()
+                .count()
+            )
+
+        status_data = get_exposure_status(
+            eaten_count
+        )
+
         category_name = (
             dish.category.name
             if dish.category
@@ -1586,16 +1605,32 @@ def food_list(request):
             )
 
         existing_card["dishes"].append(
-            dish
+            {
+                "dish": dish,
+                "count": eaten_count,
+                "status": status_data["status"],
+                "status_label": status_data["label"],
+                "status_icon": status_data["icon"],
+            }
+        )
+
+    for card in dish_category_cards:
+        card["eaten_count"] = sum(
+            1
+            for item in card["dishes"]
+            if item["count"] > 0
+        )
+
+        card["total_count"] = len(
+            card["dishes"]
         )
 
     context = {
         "baby": baby,
         "can_edit_baby": can_edit_baby,
-        "dish_category_cards": dish_category_cards,
         "selected_tab": selected_tab,
         "category_cards": category_cards,
-        "dishes": dishes,
+        "dish_category_cards": dish_category_cards,
     }
 
     return render(

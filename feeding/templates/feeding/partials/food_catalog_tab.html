@@ -2,10 +2,11 @@
     <div class="food-list-actions">
         {% if can_edit_baby %}
             <a
-                href="{% url 'feeding:food_create' %}"
-                class="catalog-add-button"
+                href="{% url 'feeding:dish_create' %}"
+                class="primary-link"
             >
                 ＋ 新しい食材を追加
+                <h1>    </h1>
             </a>
         {% else %}
             <span class="read-only-add-button">
