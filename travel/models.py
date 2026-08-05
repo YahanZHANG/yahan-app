@@ -4,6 +4,35 @@ from decimal import Decimal
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 
+class FamilyMember(models.Model):
+    """予定の対象として選択できる家族メンバー。"""
+
+    name = models.CharField(
+        "名前",
+        max_length=50,
+        unique=True,
+    )
+
+    display_order = models.PositiveIntegerField(
+        "表示順",
+        default=0,
+    )
+
+    is_active = models.BooleanField(
+        "選択肢に表示する",
+        default=True,
+    )
+
+    class Meta:
+        verbose_name = "家族メンバー"
+        verbose_name_plural = "家族メンバー"
+        ordering = [
+            "display_order",
+            "id",
+        ]
+
+    def __str__(self):
+        return self.name
 
 class Schedule(models.Model):
     """旅行や家族の予定を保存するモデル。"""
@@ -29,13 +58,6 @@ class Schedule(models.Model):
         blank=True,
     )
 
-    class Person(models.TextChoices):
-        BABY = "baby", "赤ちゃん"
-        MAMA = "mama", "ママ"
-        PAPA = "papa", "パパ"
-        FAMILY = "family", "家族全員"
-        OTHER = "other", "その他"
-
     note = models.TextField(
         "補足",
         blank=True,
@@ -46,11 +68,10 @@ class Schedule(models.Model):
         default=False,
     )
 
-    person = models.CharField(
-        "誰の予定",
-        max_length=20,
-        choices=Person.choices,
-        default=Person.FAMILY,
+    people = models.ManyToManyField(
+        FamilyMember,
+        verbose_name="誰の予定",
+        related_name="schedules",
     )
 
     created_by = models.ForeignKey(

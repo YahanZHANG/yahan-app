@@ -26,36 +26,80 @@
             {% endif %}
 
             {% for field in form %}
-                <div class="form-field">
-                    {% if field.field.widget.input_type == "checkbox" %}
-                        <label class="checkbox-field">
+                {% if field.name == "people" %}
+                    <div class="form-field schedule-people-field">
+                        <div class="schedule-people-heading">
+                            <label>
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="required-mark">*</span>
+                                {% endif %}
+                            </label>
+
+                            <button
+                                type="button"
+                                class="select-all-people-button"
+                                data-select-all-people
+                            >
+                                家族全員
+                            </button>
+                        </div>
+
+                        <div class="schedule-people-options" data-people-options>
+                            {% for checkbox in field %}
+                                <label class="schedule-person-option">
+                                    {{ checkbox.tag }}
+                                    <span>{{ checkbox.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        {% if field.help_text %}
+                            <p class="help-text">
+                                {{ field.help_text }}
+                            </p>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+                {% else %}
+                    <div class="form-field">
+                        {% if field.field.widget.input_type == "checkbox" %}
+                            <label class="checkbox-field">
+                                {{ field }}
+                                <span>{{ field.label }}</span>
+                            </label>
+                        {% else %}
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+
+                                {% if field.field.required %}
+                                    <span class="required-mark">*</span>
+                                {% endif %}
+                            </label>
+
                             {{ field }}
-                            <span>{{ field.label }}</span>
-                        </label>
-                    {% else %}
-                        <label for="{{ field.id_for_label }}">
-                            {{ field.label }}
+                        {% endif %}
 
-                            {% if field.field.required %}
-                                <span class="required-mark">*</span>
-                            {% endif %}
-                        </label>
+                        {% if field.help_text %}
+                            <p class="help-text">
+                                {{ field.help_text }}
+                            </p>
+                        {% endif %}
 
-                        {{ field }}
-                    {% endif %}
-
-                    {% if field.help_text %}
-                        <p class="help-text">
-                            {{ field.help_text }}
-                        </p>
-                    {% endif %}
-
-                    {% for error in field.errors %}
-                        <p class="field-error">
-                            {{ error }}
-                        </p>
-                    {% endfor %}
-                </div>
+                        {% for error in field.errors %}
+                            <p class="field-error">
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             {% endfor %}
 
             <div class="form-actions">
@@ -69,5 +113,76 @@
             </div>
         </form>
     </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const selectAllButton = document.querySelector(
+                "[data-select-all-people]"
+            );
+
+            const peopleOptions = document.querySelector(
+                "[data-people-options]"
+            );
+
+            if (!selectAllButton || !peopleOptions) {
+                return;
+            }
+
+            const checkboxes = Array.from(
+                peopleOptions.querySelectorAll(
+                    'input[type="checkbox"]'
+                )
+            );
+
+            function areAllSelected() {
+                return (
+                    checkboxes.length > 0 &&
+                    checkboxes.every(function (checkbox) {
+                        return checkbox.checked;
+                    })
+                );
+            }
+
+            function updateSelectAllButton() {
+                const allSelected = areAllSelected();
+
+                selectAllButton.classList.toggle(
+                    "is-active",
+                    allSelected
+                );
+
+                selectAllButton.textContent = allSelected
+                    ? "全員選択中"
+                    : "家族全員";
+            }
+
+            selectAllButton.addEventListener(
+                "click",
+                function () {
+                    const shouldSelectAll = !areAllSelected();
+
+                    checkboxes.forEach(function (checkbox) {
+                        checkbox.checked = shouldSelectAll;
+                        checkbox.dispatchEvent(
+                            new Event("change", {
+                                bubbles: true,
+                            })
+                        );
+                    });
+
+                    updateSelectAllButton();
+                }
+            );
+
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener(
+                    "change",
+                    updateSelectAllButton
+                );
+            });
+
+            updateSelectAllButton();
+        });
+    </script>
 
     {% endblock %}

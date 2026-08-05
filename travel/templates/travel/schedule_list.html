@@ -96,6 +96,16 @@
                                     </p>
                                 {% endif %}
 
+                                {% if schedule.people.exists %}
+                                    <p class="schedule-list-person">
+                                        <i class="bi bi-people"></i>
+
+                                        {% for person in schedule.people.all %}
+                                            {{ person.name }}{% if not forloop.last %}・{% endif %}
+                                        {% endfor %}
+                                    </p>
+                                {% endif %}
+
                             </div>
                         </article>
                     {% endfor %}

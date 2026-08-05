@@ -37,7 +37,7 @@ class ScheduleForm(forms.ModelForm):
 
         fields = [
             "title",
-            "person",
+            "people",
             "start_at",
             "end_at",
             "location",
@@ -46,6 +46,7 @@ class ScheduleForm(forms.ModelForm):
         ]
 
         widgets = {
+            "people": forms.CheckboxSelectMultiple(),
             "start_at": DateTimeLocalInput(),
             "end_at": DateTimeLocalInput(),
             "note": forms.Textarea(
@@ -55,7 +56,16 @@ class ScheduleForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+        self.fields["people"].queryset = (
+            self.fields["people"]
+            .queryset
+            .filter(is_active=True)
+            .order_by("display_order", "id")
+        )
+        
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
