@@ -196,7 +196,7 @@ def schedule_create(request):
             schedule = form.save(commit=False)
             schedule.created_by = request.user
             schedule.save()
-            return redirect("travel:home")
+            return redirect("travel:schedule_list")
     else:
         form = ScheduleForm()
 
