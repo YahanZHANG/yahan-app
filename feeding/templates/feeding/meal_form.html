@@ -65,6 +65,33 @@
         </div>
     {% endif %}
 
+    {% if item_formset.errors %}
+        <div class="form-error">
+            <strong>入力内容を確認してください。</strong>
+
+            {% for form in item_formset %}
+                {% if form.errors %}
+                    <div>
+                        <strong>
+                            項目 {{ forloop.counter }}
+                        </strong>
+
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>
+                                        {{ field.label }}：
+                                        {{ error }}
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div id="meal-item-list">
         {% for item_form in item_formset %}
             {% include "feeding/partials/meal_item_form.html" with item_form=item_form %}

@@ -75,11 +75,10 @@ class CategoryDataSelect(forms.Select):
 
         return option
 
-
 class CommercialProductSelect(forms.Select):
     """
-    各市販品optionにブランドコードを埋め込むSelect。
-    JavaScriptでHiPP・Holle別に候補を絞り込むために使う。
+    各市販品optionにメーカーIDを埋め込むSelect。
+    JavaScriptでメーカー別に候補を絞り込むために使う。
     """
 
     def create_option(
@@ -108,13 +107,15 @@ class CommercialProductSelect(forms.Select):
             None,
         )
 
-        if instance is not None:
-            option["attrs"]["data-brand"] = (
-                instance.commercial_brand
+        if (
+            instance is not None
+            and instance.commercial_brand_id
+        ):
+            option["attrs"]["data-brand"] = str(
+                instance.commercial_brand_id
             )
 
         return option
-
 
 class MealForm(forms.ModelForm):
     class Meta:
@@ -458,8 +459,12 @@ class MealItemForm(forms.ModelForm):
 
         self.fields["commercial_product"].queryset = (
             commercial_query
-            .order_by(
+            .select_related(
                 "commercial_brand",
+            )
+            .order_by(
+                "commercial_brand__display_order",
+                "commercial_brand__name",
                 "recommended_from_month",
                 "name",
             )

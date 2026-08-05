@@ -17,9 +17,13 @@
             data-item-type-button="food"
             aria-pressed="false"
         >
-            <span class="item-type-icon" aria-hidden="true">
+            <span
+                class="item-type-icon"
+                aria-hidden="true"
+            >
                 🥕
             </span>
+
             <span>食材</span>
         </button>
 
@@ -29,9 +33,13 @@
             data-item-type-button="dish"
             aria-pressed="false"
         >
-            <span class="item-type-icon" aria-hidden="true">
+            <span
+                class="item-type-icon"
+                aria-hidden="true"
+            >
                 🍲
             </span>
+
             <span>料理</span>
         </button>
 
@@ -41,9 +49,13 @@
             data-item-type-button="commercial"
             aria-pressed="false"
         >
-            <span class="item-type-icon" aria-hidden="true">
+            <span
+                class="item-type-icon"
+                aria-hidden="true"
+            >
                 🛒
             </span>
+
             <span>市販品</span>
         </button>
     </div>
@@ -63,6 +75,12 @@
     {% endif %}
 
     {% for error in item_form.item_type.errors %}
+        <p class="field-error">
+            {{ error }}
+        </p>
+    {% endfor %}
+
+    {% for error in item_form.catalog_type.errors %}
         <p class="field-error">
             {{ error }}
         </p>
@@ -116,6 +134,7 @@
     <div
         class="form-group meal-inline-field meal-first-field"
         data-dish-category-field
+        hidden
     >
         <label
             for="{{ item_form.dish_category.id_for_label }}"
@@ -126,6 +145,60 @@
         {{ item_form.dish_category }}
 
         {% for error in item_form.dish_category.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group meal-inline-field"
+        data-dish-field
+        hidden
+    >
+        <label
+            for="{{ item_form.dish.id_for_label }}"
+        >
+            {{ item_form.dish.label }}
+        </label>
+
+        {{ item_form.dish }}
+
+        <a
+            href="{% url 'feeding:dish_create' %}?next={{ request.get_full_path|urlencode }}"
+            class="inline-add-link"
+        >
+            ＋ 一覧にない料理を追加
+        </a>
+
+        {% for error in item_form.dish.errors %}
+            <p class="field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+
+    <div
+        class="form-group meal-inline-field meal-first-field"
+        data-commercial-brand-field
+        hidden
+    >
+        <label
+            for="{{ item_form.commercial_brand.id_for_label }}"
+        >
+            {{ item_form.commercial_brand.label }}
+        </label>
+
+        {{ item_form.commercial_brand }}
+
+        <a
+            href="{% url 'feeding:commercial_brand_create' %}?next={{ request.get_full_path|urlencode }}"
+            class="inline-add-link"
+        >
+            ＋ 一覧にないメーカーを追加
+        </a>
+
+        {% for error in item_form.commercial_brand.errors %}
             <p class="field-error">
                 {{ error }}
             </p>
@@ -212,16 +285,24 @@
 
                         <span class="reaction-option-content">
                             {% if choice.data.value == "love" %}
-                                <span class="reaction-emoji">🤩</span>
+                                <span class="reaction-emoji">
+                                    🤩
+                                </span>
 
                             {% elif choice.data.value == "happy" %}
-                                <span class="reaction-emoji">😊</span>
+                                <span class="reaction-emoji">
+                                    😊
+                                </span>
 
                             {% elif choice.data.value == "normal" %}
-                                <span class="reaction-emoji">😐</span>
+                                <span class="reaction-emoji">
+                                    😐
+                                </span>
 
                             {% elif choice.data.value == "unsure" %}
-                                <span class="reaction-emoji">😕</span>
+                                <span class="reaction-emoji">
+                                    😕
+                                </span>
                             {% endif %}
                         </span>
                     </label>
@@ -241,7 +322,9 @@
             {{ item_form.has_allergy_symptoms }}
 
             <span class="allergy-toggle-text">
-                <strong>症状が出た</strong>
+                <strong>
+                    症状が出た
+                </strong>
 
                 <small>
                     選択すると、保存後に詳細記録画面へ移動する
@@ -269,4 +352,3 @@
         {{ item_form.DELETE }}
     </div>
 </div>
-
