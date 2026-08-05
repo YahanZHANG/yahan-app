@@ -96,18 +96,6 @@
                                     </p>
                                 {% endif %}
 
-                                {% if schedule.created_by %}
-                                    <p class="schedule-list-created-by">
-                                        <i class="bi bi-person"></i>
-
-                                        {% if schedule.created_by.first_name %}
-                                            {{ schedule.created_by.first_name }}
-                                        {% else %}
-                                            {{ schedule.created_by.username }}
-                                        {% endif %}
-                                        が追加
-                                    </p>
-                                {% endif %}
                             </div>
                         </article>
                     {% endfor %}

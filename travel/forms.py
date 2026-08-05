@@ -37,6 +37,7 @@ class ScheduleForm(forms.ModelForm):
 
         fields = [
             "title",
+            "person",
             "start_at",
             "end_at",
             "location",

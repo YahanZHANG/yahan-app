@@ -29,6 +29,13 @@ class Schedule(models.Model):
         blank=True,
     )
 
+    class Person(models.TextChoices):
+        BABY = "baby", "赤ちゃん"
+        MAMA = "mama", "ママ"
+        PAPA = "papa", "パパ"
+        FAMILY = "family", "家族全員"
+        OTHER = "other", "その他"
+
     note = models.TextField(
         "補足",
         blank=True,
@@ -37,6 +44,13 @@ class Schedule(models.Model):
     is_important = models.BooleanField(
         "重要な予定",
         default=False,
+    )
+
+    person = models.CharField(
+        "誰の予定",
+        max_length=20,
+        choices=Person.choices,
+        default=Person.FAMILY,
     )
 
     created_by = models.ForeignKey(
