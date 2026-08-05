@@ -9,6 +9,7 @@ from .models import (
     AllergyReaction,
     Baby,
     BabyMembership,
+    CommercialBrand,
     Dish,
     DishCategory,
     DishIngredient,
@@ -218,20 +219,11 @@ class MealItemForm(forms.ModelForm):
         ),
     )
 
-    commercial_brand = forms.ChoiceField(
+    commercial_brand = forms.ModelChoiceField(
         label="メーカー",
         required=False,
-        choices=[
-            ("", "メーカーを選択"),
-            (
-                Dish.CommercialBrand.HIPP,
-                "HiPP",
-            ),
-            (
-                Dish.CommercialBrand.HOLLE,
-                "Holle",
-            ),
-        ],
+        queryset=CommercialBrand.objects.none(),
+        empty_label="メーカーを選択",
         widget=forms.Select(
             attrs={
                 "class": (
@@ -336,6 +328,19 @@ class MealItemForm(forms.ModelForm):
         super().__init__(
             *args,
             **kwargs,
+        )
+
+        self.fields[
+            "commercial_brand"
+        ].queryset = (
+            CommercialBrand.objects
+            .filter(
+                is_active=True,
+            )
+            .order_by(
+                "display_order",
+                "name",
+            )
         )
 
         instance = self.instance
@@ -470,7 +475,7 @@ class MealItemForm(forms.ModelForm):
                 "commercial"
             )
             self.fields["commercial_brand"].initial = (
-                instance.dish.commercial_brand
+                instance.dish.commercial_brand_id
             )
             self.fields["commercial_product"].initial = (
                 instance.dish
@@ -549,7 +554,7 @@ class MealItemForm(forms.ModelForm):
 
             cleaned_data["dish"] = None
             cleaned_data["dish_category"] = None
-            cleaned_data["commercial_brand"] = ""
+            cleaned_data["commercial_brand"] = None
             cleaned_data["commercial_product"] = None
 
         elif catalog_type == "dish":
@@ -597,7 +602,7 @@ class MealItemForm(forms.ModelForm):
 
             cleaned_data["food"] = None
             cleaned_data["food_category"] = None
-            cleaned_data["commercial_brand"] = ""
+            cleaned_data["commercial_brand"] = None
             cleaned_data["commercial_product"] = None
 
         elif catalog_type == "commercial":
@@ -637,8 +642,8 @@ class MealItemForm(forms.ModelForm):
                 and commercial_brand
                 and (
                     commercial_product
-                    .commercial_brand
-                    != commercial_brand
+                    .commercial_brand_id
+                    != commercial_brand.id
                 )
             ):
                 self.add_error(

@@ -452,12 +452,49 @@ class DishCategory(models.Model):
     def __str__(self):
         return self.name
 
+class CommercialBrand(models.Model):
+    """市販離乳食のメーカー。"""
+
+    name = models.CharField(
+        "メーカー名",
+        max_length=100,
+        unique=True,
+    )
+
+    display_order = models.PositiveSmallIntegerField(
+        "表示順",
+        default=0,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "市販品メーカー"
+        verbose_name_plural = "市販品メーカー"
+        ordering = [
+            "display_order",
+            "name",
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class Dish(models.Model):
     """ボロネーゼ、野菜がゆ、市販品などの料理。"""
-
-    class CommercialBrand(models.TextChoices):
-        HIPP = "hipp", "HiPP"
-        HOLLE = "holle", "Holle"
 
     name = models.CharField(
         "料理名",
@@ -514,11 +551,13 @@ class Dish(models.Model):
         default=False,
     )
 
-    commercial_brand = models.CharField(
-        "メーカー",
-        max_length=20,
-        choices=CommercialBrand.choices,
+    commercial_brand = models.ForeignKey(
+        CommercialBrand,
+        verbose_name="メーカー",
+        on_delete=models.PROTECT,
+        null=True,
         blank=True,
+        related_name="products",
     )
 
     recommended_from_month = models.PositiveSmallIntegerField(
@@ -782,7 +821,6 @@ class ToothbrushingRecord(models.Model):
             f"{self.get_meal_number_display()}："
             f"{status}"
         )
-
 
 class MealItem(models.Model):
     """1回の食事に含まれる食材または料理。"""

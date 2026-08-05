@@ -39,6 +39,7 @@ from .models import (
     AllergyReactionPhoto,
     Baby,
     BabyMembership,
+    CommercialBrand,
     Dish,
     FeedingGuideline,
     Food,
@@ -2209,18 +2210,22 @@ def food_list(request):
             card["dishes"]
         )
 
-    commercial_products = (
+    commercial_products = list(
         Dish.objects
         .filter(
             is_active=True,
             is_commercial_product=True,
         )
-        .select_related("category")
+        .select_related(
+            "category",
+            "commercial_brand",
+        )
         .prefetch_related(
             "dish_ingredients__food",
         )
         .order_by(
-            "commercial_brand",
+            "commercial_brand__display_order",
+            "commercial_brand__name",
             "recommended_from_month",
             "name",
         )
@@ -2228,23 +2233,25 @@ def food_list(request):
 
     commercial_brand_cards = []
 
-    brand_definitions = [
-        {
-            "code": Dish.CommercialBrand.HIPP,
-            "name": "HiPP",
-        },
-        {
-            "code": Dish.CommercialBrand.HOLLE,
-            "name": "Holle",
-        },
-    ]
+    commercial_brands = (
+        CommercialBrand.objects
+        .filter(
+            is_active=True,
+        )
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
 
-    for brand in brand_definitions:
+    for brand in commercial_brands:
         brand_products = [
             product
             for product in commercial_products
-            if product.commercial_brand
-            == brand["code"]
+            if (
+                product.commercial_brand_id
+                == brand.id
+            )
         ]
 
         product_rows = []
@@ -2262,7 +2269,9 @@ def food_list(request):
                             MealItem.ItemType.DISH
                         ),
                     )
-                    .values("meal_id")
+                    .values(
+                        "meal_id"
+                    )
                     .distinct()
                     .count()
                 )
@@ -2275,7 +2284,9 @@ def food_list(request):
                 {
                     "product": product,
                     "count": eaten_count,
-                    "status": status_data["status"],
+                    "status": (
+                        status_data["status"]
+                    ),
                     "status_label": (
                         status_data["label"]
                     ),
@@ -2285,7 +2296,7 @@ def food_list(request):
                 }
             )
 
-        eaten_count = sum(
+        eaten_product_count = sum(
             1
             for row in product_rows
             if row["count"] > 0
@@ -2293,11 +2304,15 @@ def food_list(request):
 
         commercial_brand_cards.append(
             {
-                "brand_code": brand["code"],
-                "brand_name": brand["name"],
+                "brand_id": brand.id,
+                "brand_name": brand.name,
                 "products": product_rows,
-                "eaten_count": eaten_count,
-                "total_count": len(product_rows),
+                "eaten_count": (
+                    eaten_product_count
+                ),
+                "total_count": len(
+                    product_rows
+                ),
             }
         )
 
