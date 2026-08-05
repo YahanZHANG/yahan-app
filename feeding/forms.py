@@ -1444,6 +1444,65 @@ class CommercialProductCreateForm(
 
         return cleaned_data
 
+class CommercialBrandCreateForm(
+    forms.ModelForm
+):
+    class Meta:
+        model = CommercialBrand
+
+        fields = (
+            "name",
+        )
+
+        labels = {
+            "name": "メーカー名",
+        }
+
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": (
+                        "例：dmBio、Alnatura、"
+                        "和光堂"
+                    ),
+                    "autocomplete": "off",
+                }
+            ),
+        }
+
+    def clean_name(self):
+        name = (
+            self.cleaned_data["name"]
+            .strip()
+        )
+
+        duplicate_brand = (
+            CommercialBrand.objects
+            .filter(
+                name__iexact=name,
+            )
+        )
+
+        if (
+            self.instance
+            and self.instance.pk
+        ):
+            duplicate_brand = (
+                duplicate_brand
+                .exclude(
+                    pk=self.instance.pk,
+                )
+            )
+
+        if duplicate_brand.exists():
+            raise ValidationError(
+                "同じ名前のメーカーが"
+                "すでに登録されている。"
+            )
+
+        return name
+    
 class DishIngredientForm(forms.ModelForm):
     food_category = forms.ModelChoiceField(
         label="食材ジャンル",

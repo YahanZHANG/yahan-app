@@ -103,6 +103,11 @@ urlpatterns = [
         name="commercial_product_create",
     ),
     path(
+        "commercial-brands/add/",
+        views.commercial_brand_create,
+        name="commercial_brand_create",
+    ),
+    path(
         "reaction-photos/<int:photo_id>/delete/",
         views.allergy_photo_delete,
         name="allergy_photo_delete",

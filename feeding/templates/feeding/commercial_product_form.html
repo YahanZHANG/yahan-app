@@ -6,12 +6,21 @@
 
 {% block content %}
 <section class="form-page-header">
-    <a
-        href="{% url 'feeding:food_list' %}?tab=commercial"
-        class="back-link"
-    >
-        ← 市販品一覧に戻る
-    </a>
+    {% if next_url %}
+        <a
+            href="{{ next_url }}"
+            class="back-link"
+        >
+            ← 戻る
+        </a>
+    {% else %}
+        <a
+            href="{% url 'feeding:food_list' %}?tab=commercial"
+            class="back-link"
+        >
+            ← 市販品一覧に戻る
+        </a>
+    {% endif %}
 
     <h2>市販品を追加</h2>
 
@@ -42,11 +51,19 @@
 
     <section class="form-section">
         <div class="form-group">
-            <label for="{{ form.name.id_for_label }}">
+            <label
+                for="{{ form.name.id_for_label }}"
+            >
                 {{ form.name.label }}
             </label>
 
             {{ form.name }}
+
+            {% if form.name.help_text %}
+                <small class="form-help-text">
+                    {{ form.name.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.name.errors %}
                 <p class="field-error">
@@ -56,11 +73,26 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.commercial_brand.id_for_label }}">
+            <label
+                for="{{ form.commercial_brand.id_for_label }}"
+            >
                 {{ form.commercial_brand.label }}
             </label>
 
             {{ form.commercial_brand }}
+
+            <a
+                href="{% url 'feeding:commercial_brand_create' %}?next={{ request.get_full_path|urlencode }}"
+                class="inline-add-link"
+            >
+                ＋ 一覧にないメーカーを追加
+            </a>
+
+            {% if form.commercial_brand.help_text %}
+                <small class="form-help-text">
+                    {{ form.commercial_brand.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.commercial_brand.errors %}
                 <p class="field-error">
@@ -70,11 +102,19 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.recommended_from_month.id_for_label }}">
+            <label
+                for="{{ form.recommended_from_month.id_for_label }}"
+            >
                 {{ form.recommended_from_month.label }}
             </label>
 
             {{ form.recommended_from_month }}
+
+            {% if form.recommended_from_month.help_text %}
+                <small class="form-help-text">
+                    {{ form.recommended_from_month.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.recommended_from_month.errors %}
                 <p class="field-error">
@@ -84,7 +124,9 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.finished_amount_g.id_for_label }}">
+            <label
+                for="{{ form.finished_amount_g.id_for_label }}"
+            >
                 {{ form.finished_amount_g.label }}
             </label>
 
@@ -92,6 +134,12 @@
                 {{ form.finished_amount_g }}
                 <span>g</span>
             </div>
+
+            {% if form.finished_amount_g.help_text %}
+                <small class="form-help-text">
+                    {{ form.finished_amount_g.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.finished_amount_g.errors %}
                 <p class="field-error">
@@ -101,11 +149,19 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.source_url.id_for_label }}">
+            <label
+                for="{{ form.source_url.id_for_label }}"
+            >
                 {{ form.source_url.label }}
             </label>
 
             {{ form.source_url }}
+
+            {% if form.source_url.help_text %}
+                <small class="form-help-text">
+                    {{ form.source_url.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.source_url.errors %}
                 <p class="field-error">
@@ -115,10 +171,19 @@
         </div>
 
         <div class="form-group">
-            <label>
+            <label class="checkbox-label">
                 {{ form.ingredient_data_verified }}
-                {{ form.ingredient_data_verified.label }}
+
+                <span>
+                    {{ form.ingredient_data_verified.label }}
+                </span>
             </label>
+
+            {% if form.ingredient_data_verified.help_text %}
+                <small class="form-help-text">
+                    {{ form.ingredient_data_verified.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.ingredient_data_verified.errors %}
                 <p class="field-error">
@@ -128,11 +193,19 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.ingredient_data_note.id_for_label }}">
+            <label
+                for="{{ form.ingredient_data_note.id_for_label }}"
+            >
                 {{ form.ingredient_data_note.label }}
             </label>
 
             {{ form.ingredient_data_note }}
+
+            {% if form.ingredient_data_note.help_text %}
+                <small class="form-help-text">
+                    {{ form.ingredient_data_note.help_text }}
+                </small>
+            {% endif %}
 
             {% for error in form.ingredient_data_note.errors %}
                 <p class="field-error">
@@ -145,10 +218,18 @@
     <section class="form-section">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">INGREDIENTS</p>
+                <p class="eyebrow">
+                    INGREDIENTS
+                </p>
+
                 <h3>材料</h3>
             </div>
         </div>
+
+        <p class="form-help-text">
+            商品全体に含まれる材料と、その重量を登録する。
+            例：190gの商品に、にんじんが50%なら95g。
+        </p>
 
         {{ ingredient_formset.management_form }}
 
@@ -204,11 +285,18 @@
         "add-ingredient-button"
     );
 
+
     function updateIngredientNumbers() {
+        if (!ingredientList) {
+            return;
+        }
+
         let number = 1;
 
         ingredientList
-            .querySelectorAll("[data-ingredient-row]")
+            .querySelectorAll(
+                "[data-ingredient-row]"
+            )
             .forEach((row) => {
                 if (row.hidden) {
                     return;
@@ -219,61 +307,171 @@
                 );
 
                 if (heading) {
-                    heading.textContent = `材料 ${number}`;
+                    heading.textContent = (
+                        `材料 ${number}`
+                    );
                 }
 
                 number += 1;
             });
     }
 
+
+    function prepareIngredientFoodOptions(
+        foodSelect
+    ) {
+        if (!foodSelect) {
+            return;
+        }
+
+        if (
+            foodSelect.dataset.optionsPrepared
+            === "true"
+        ) {
+            return;
+        }
+
+        const optionData = Array.from(
+            foodSelect.options
+        ).map(
+            (option) => ({
+                value: option.value,
+                text: option.textContent,
+                categoryId: (
+                    option.dataset.categoryId
+                    || ""
+                ),
+            })
+        );
+
+        foodSelect.dataset.allOptions = (
+            JSON.stringify(
+                optionData
+            )
+        );
+
+        foodSelect.dataset.optionsPrepared = (
+            "true"
+        );
+    }
+
+
     function filterIngredientFoods(
         categorySelect,
         foodSelect
     ) {
-        if (!categorySelect || !foodSelect) {
+        if (
+            !categorySelect
+            || !foodSelect
+        ) {
             return;
         }
 
-        const categoryId = categorySelect.value;
+        prepareIngredientFoodOptions(
+            foodSelect
+        );
 
-        const selectedOption = foodSelect.options[
-            foodSelect.selectedIndex
-        ];
+        const categoryId = (
+            categorySelect.value
+        );
 
-        Array.from(foodSelect.options).forEach(
-            (option) => {
-                if (!option.value) {
-                    option.hidden = false;
-                    option.disabled = false;
+        const previousValue = (
+            foodSelect.value
+        );
+
+        const allOptions = JSON.parse(
+            foodSelect.dataset.allOptions
+            || "[]"
+        );
+
+        foodSelect.innerHTML = "";
+
+        const placeholderOption = (
+            document.createElement(
+                "option"
+            )
+        );
+
+        placeholderOption.value = "";
+
+        placeholderOption.textContent = (
+            categoryId
+            ? "選択してください"
+            : "先にジャンルを選択"
+        );
+
+        foodSelect.appendChild(
+            placeholderOption
+        );
+
+        if (!categoryId) {
+            foodSelect.disabled = true;
+            return;
+        }
+
+        foodSelect.disabled = false;
+
+        allOptions.forEach(
+            (optionData) => {
+                if (
+                    !optionData.value
+                    || optionData.categoryId
+                    !== categoryId
+                ) {
                     return;
                 }
 
-                const shouldShow = (
-                    categoryId
-                    && option.dataset.categoryId
-                    === categoryId
+                const option = (
+                    document.createElement(
+                        "option"
+                    )
                 );
 
-                option.hidden = !shouldShow;
-                option.disabled = !shouldShow;
+                option.value = (
+                    optionData.value
+                );
+
+                option.textContent = (
+                    optionData.text
+                );
+
+                option.dataset.categoryId = (
+                    optionData.categoryId
+                );
+
+                if (
+                    optionData.value
+                    === previousValue
+                ) {
+                    option.selected = true;
+                }
+
+                foodSelect.appendChild(
+                    option
+                );
             }
         );
 
-        if (
-            selectedOption
-            && selectedOption.value
-            && selectedOption.dataset.categoryId
-            !== categoryId
-        ) {
-            foodSelect.value = "";
-        }
+        const previousOptionStillExists = (
+            Array.from(
+                foodSelect.options
+            ).some(
+                (option) => (
+                    option.value
+                    === previousValue
+                )
+            )
+        );
 
-        if (!categoryId) {
+        if (!previousOptionStillExists) {
             foodSelect.value = "";
         }
     }
 
-    function bindIngredientRow(row) {
+
+    function bindIngredientRow(
+        row
+    ) {
         const categorySelect = row.querySelector(
             ".ingredient-food-category-select"
         );
@@ -290,6 +488,10 @@
             'input[name$="-DELETE"]'
         );
 
+        prepareIngredientFoodOptions(
+            foodSelect
+        );
+
         filterIngredientFoods(
             categorySelect,
             foodSelect
@@ -299,6 +501,10 @@
             categorySelect.addEventListener(
                 "change",
                 () => {
+                    if (foodSelect) {
+                        foodSelect.value = "";
+                    }
+
                     filterIngredientFoods(
                         categorySelect,
                         foodSelect
@@ -316,55 +522,75 @@
                     }
 
                     row.hidden = true;
+
                     updateIngredientNumbers();
                 }
             );
         }
     }
 
-    ingredientList
-        .querySelectorAll("[data-ingredient-row]")
-        .forEach((row) => {
-            bindIngredientRow(row);
-        });
 
-    addIngredientButton.addEventListener(
-        "click",
-        () => {
-            const formIndex = Number(
-                totalIngredientForms.value
-            );
-
-            const html = (
-                emptyIngredientTemplate
-                .innerHTML
-                .replace(
-                    /__prefix__/g,
-                    formIndex
-                )
-            );
-
-            ingredientList.insertAdjacentHTML(
-                "beforeend",
-                html
-            );
-
-            totalIngredientForms.value = (
-                formIndex + 1
-            );
-
-            const rows = ingredientList.querySelectorAll(
+    if (ingredientList) {
+        ingredientList
+            .querySelectorAll(
                 "[data-ingredient-row]"
-            );
+            )
+            .forEach((row) => {
+                bindIngredientRow(row);
+            });
+    }
 
-            const newRow = rows[
-                rows.length - 1
-            ];
 
-            bindIngredientRow(newRow);
-            updateIngredientNumbers();
-        }
-    );
+    if (
+        addIngredientButton
+        && ingredientList
+        && totalIngredientForms
+        && emptyIngredientTemplate
+    ) {
+        addIngredientButton.addEventListener(
+            "click",
+            () => {
+                const formIndex = Number(
+                    totalIngredientForms.value
+                );
+
+                const html = (
+                    emptyIngredientTemplate
+                    .innerHTML
+                    .replace(
+                        /__prefix__/g,
+                        formIndex
+                    )
+                );
+
+                ingredientList.insertAdjacentHTML(
+                    "beforeend",
+                    html
+                );
+
+                totalIngredientForms.value = (
+                    formIndex + 1
+                );
+
+                const rows = (
+                    ingredientList.querySelectorAll(
+                        "[data-ingredient-row]"
+                    )
+                );
+
+                const newRow = rows[
+                    rows.length - 1
+                ];
+
+                bindIngredientRow(
+                    newRow
+                );
+
+                updateIngredientNumbers();
+            }
+        );
+    }
+
 
     updateIngredientNumbers();
 </script>

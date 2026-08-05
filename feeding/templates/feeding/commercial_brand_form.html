@@ -1,0 +1,76 @@
+{% extends "feeding/base.html" %}
+
+{% block title %}
+    メーカーを追加 | 離乳食ノート
+{% endblock %}
+
+{% block content %}
+<section class="form-page-header">
+    {% if next_url %}
+        <a
+            href="{{ next_url }}"
+            class="back-link"
+        >
+            ← 戻る
+        </a>
+    {% else %}
+        <a
+            href="{% url 'feeding:food_list' %}?tab=commercial"
+            class="back-link"
+        >
+            ← 市販品一覧に戻る
+        </a>
+    {% endif %}
+
+    <h2>メーカーを追加</h2>
+
+    <p>
+        市販離乳食のメーカー名を登録する。
+    </p>
+</section>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if next_url %}
+        <input
+            type="hidden"
+            name="next"
+            value="{{ next_url }}"
+        >
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        <div class="form-error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <section class="form-section">
+        <div class="form-group">
+            <label
+                for="{{ form.name.id_for_label }}"
+            >
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% for error in form.name.errors %}
+                <p class="field-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button
+            type="submit"
+            class="primary-button"
+        >
+            メーカーを追加
+        </button>
+    </div>
+</form>
+{% endblock %}

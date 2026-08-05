@@ -22,6 +22,7 @@ from .forms import (
     BabyMemberAddForm,
     BabySettingsForm,
     BabyDeleteConfirmForm,
+    CommercialBrandCreateForm,
     CommercialProductCreateForm,
     DishCategory,
     DishCreateForm,
@@ -1597,7 +1598,9 @@ def dish_create(request):
 def commercial_product_create(
     request,
 ):
-    baby = get_current_baby(request)
+    baby = get_current_baby(
+        request
+    )
 
     if baby is None:
         messages.error(
@@ -1628,41 +1631,58 @@ def commercial_product_create(
         or ""
     )
 
+    commercial_category, _ = (
+        DishCategory.objects
+        .get_or_create(
+            name="市販品",
+            defaults={
+                "display_order": 999,
+                "is_active": True,
+            },
+        )
+    )
+
+    product_instance = Dish(
+        category=commercial_category,
+        is_commercial_product=True,
+        is_user_created=True,
+        is_active=True,
+    )
+
     if request.method == "POST":
         form = CommercialProductCreateForm(
             request.POST,
+            instance=product_instance,
         )
 
         ingredient_formset = (
             DishIngredientFormSet(
                 request.POST,
+                instance=product_instance,
                 prefix="ingredients",
             )
         )
 
-        if (
+        form_is_valid = (
             form.is_valid()
-            and ingredient_formset.is_valid()
+        )
+
+        formset_is_valid = (
+            ingredient_formset.is_valid()
+        )
+
+        if (
+            form_is_valid
+            and formset_is_valid
         ):
             with transaction.atomic():
                 product = form.save(
                     commit=False
                 )
 
-                commercial_category, _ = (
-                    DishCategory.objects
-                    .get_or_create(
-                        name="市販品",
-                        defaults={
-                            "display_order": 999,
-                            "is_active": True,
-                        },
-                    )
-                )
-
                 product.category = (
                     commercial_category
-)
+                )
 
                 product.is_commercial_product = (
                     True
@@ -1702,15 +1722,20 @@ def commercial_product_create(
             )
 
             return redirect(
-                f"{commercial_list_url}"
-                "?tab=commercial"
+                (
+                    f"{commercial_list_url}"
+                    "?tab=commercial"
+                )
             )
 
     else:
-        form = CommercialProductCreateForm()
+        form = CommercialProductCreateForm(
+            instance=product_instance,
+        )
 
         ingredient_formset = (
             DishIngredientFormSet(
+                instance=product_instance,
                 prefix="ingredients",
             )
         )
@@ -1729,7 +1754,113 @@ def commercial_product_create(
 
     return render(
         request,
-        "feeding/commercial_product_form.html",
+        (
+            "feeding/"
+            "commercial_product_form.html"
+        ),
+        context,
+    )
+
+@login_required
+def commercial_brand_create(request):
+    baby = get_current_baby(request)
+
+    if baby is None:
+        messages.error(
+            request,
+            "子どもを選択してください。",
+        )
+
+        return redirect(
+            "feeding:today"
+        )
+
+    if not user_can_edit_baby(
+        request,
+        baby,
+    ):
+        messages.error(
+            request,
+            "この子どもの記録は閲覧のみです。",
+        )
+
+        return redirect(
+            "feeding:food_list"
+        )
+
+    next_url = (
+        request.POST.get("next")
+        or request.GET.get("next")
+        or ""
+    )
+
+    if request.method == "POST":
+        form = CommercialBrandCreateForm(
+            request.POST,
+        )
+
+        if form.is_valid():
+            brand = form.save(
+                commit=False
+            )
+
+            max_display_order = (
+                CommercialBrand.objects
+                .order_by(
+                    "-display_order"
+                )
+                .values_list(
+                    "display_order",
+                    flat=True,
+                )
+                .first()
+                or 0
+            )
+
+            brand.display_order = (
+                max_display_order + 10
+            )
+
+            brand.is_active = True
+            brand.save()
+
+            messages.success(
+                request,
+                (
+                    f"メーカー「{brand.name}」を"
+                    "追加しました。"
+                ),
+            )
+
+            if next_url:
+                return redirect(
+                    next_url
+                )
+
+            return redirect(
+                (
+                    reverse(
+                        "feeding:food_list"
+                    )
+                    + "?tab=commercial"
+                )
+            )
+
+    else:
+        form = (
+            CommercialBrandCreateForm()
+        )
+
+    context = {
+        "baby": baby,
+        "can_edit_baby": True,
+        "form": form,
+        "next_url": next_url,
+    }
+
+    return render(
+        request,
+        "feeding/commercial_brand_form.html",
         context,
     )
 
