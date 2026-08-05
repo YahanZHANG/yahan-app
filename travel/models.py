@@ -42,6 +42,12 @@ class Schedule(models.Model):
         max_length=200,
     )
 
+    people = models.ManyToManyField(
+        FamilyMember,
+        verbose_name="誰の予定",
+        related_name="schedules",
+    )
+
     start_at = models.DateTimeField(
         "開始日時",
     )
@@ -66,12 +72,6 @@ class Schedule(models.Model):
     is_important = models.BooleanField(
         "重要な予定",
         default=False,
-    )
-
-    people = models.ManyToManyField(
-        FamilyMember,
-        verbose_name="誰の予定",
-        related_name="schedules",
     )
 
     created_by = models.ForeignKey(

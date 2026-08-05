@@ -37,6 +37,10 @@
                                 {% endif %}
                             </label>
 
+                            
+                        </div>
+
+                        <div class="schedule-people-options" data-people-options>
                             <button
                                 type="button"
                                 class="select-all-people-button"
@@ -44,9 +48,7 @@
                             >
                                 家族全員
                             </button>
-                        </div>
 
-                        <div class="schedule-people-options" data-people-options>
                             {% for checkbox in field %}
                                 <label class="schedule-person-option">
                                     {{ checkbox.tag }}

@@ -2623,18 +2623,18 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    min-height: 42px;
+    min-height: 35px;
     margin: 0;
-    padding: 9px 14px;
+    padding: 6px 8px;
     border: 1px solid #d9dee8;
     border-radius: 12px;
-    background: #fff;
+    background: #c5dff6;
     cursor: pointer;
 }
 
 .schedule-person-option input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     margin: 0;
 }
 
@@ -2654,10 +2654,6 @@ button {
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 12px;
-}
-
-.schedule-people-heading > label {
-    margin: 0;
 }
 
 .schedule-people-options {
@@ -2711,4 +2707,88 @@ button {
 .select-all-people-button.is-active {
     background: var(--primary);
     color: #fff;
+}
+
+.app-form .schedule-people-heading > label {
+    display: block;
+    margin: 0;
+    color: var(--text-main);
+    font-size: 0.83rem;
+    font-weight: 800;
+}
+
+/* 予定の対象者ボタン：最終上書き */
+.app-form .schedule-people-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.app-form .schedule-person-option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    margin: 0;
+    padding: 8px 13px;
+    background: #f3f6f8 !important;
+    color: var(--text-main) !important;
+    border: 1px solid #d7e0e5 !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.app-form .schedule-person-option:hover {
+    background: var(--primary-soft) !important;
+    border-color: #9fb8c5 !important;
+    transform: translateY(-1px);
+}
+
+/* 元のチェックボックスを隠す */
+.app-form .schedule-person-option input[type="checkbox"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+/* 名前の文字 */
+.app-form .schedule-person-option span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: inherit !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+}
+
+/* 選択中 */
+.app-form .schedule-person-option:has(
+    input[type="checkbox"]:checked
+) {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 5px 13px rgba(54, 95, 117, 0.2) !important;
+}
+
+/* 選択中だけチェックマーク */
+.app-form .schedule-person-option:has(
+    input[type="checkbox"]:checked
+) span::before {
+    content: "✓";
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.schedule-people-options {
+    margin-bottom: 14px;
 }
