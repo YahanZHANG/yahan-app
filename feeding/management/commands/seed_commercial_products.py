@@ -4,7 +4,13 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models import Q
 
-from feeding.models import Dish, DishCategory, DishIngredient, Food
+from feeding.models import (
+    CommercialBrand,
+    Dish,
+    DishCategory,
+    DishIngredient,
+    Food,
+)
 from .commercial_product_data import COMMERCIAL_PRODUCTS
 
 
@@ -44,6 +50,86 @@ FOOD_REFERENCE_ALIASES = {
     "ブルーベリー": ["ブルーベリー", "いちご", "りんご"],
     "ラズベリー": ["ラズベリー", "いちご", "りんご"],
     "いちご": ["いちご", "りんご"],
+        "ビスケット": [
+        "ビスケット",
+        "パン",
+        "小麦",
+        "うどん",
+        "パスタ",
+        "オートミール",
+        "米",
+    ],
+    "マンゴー": [
+        "マンゴー",
+        "桃",
+        "バナナ",
+        "りんご",
+    ],
+    "小麦": [
+        "小麦",
+        "うどん",
+        "パスタ",
+        "そうめん",
+        "パン",
+        "オートミール",
+        "米",
+    ],
+    "パッションフルーツ": [
+        "パッションフルーツ",
+        "マンゴー",
+        "桃",
+        "りんご",
+    ],
+    "ドラゴンフルーツ": [
+        "ドラゴンフルーツ",
+        "キウイ",
+        "マンゴー",
+        "りんご",
+    ],
+    "カシス": [
+        "カシス",
+        "ブルーベリー",
+        "ラズベリー",
+        "いちご",
+        "りんご",
+    ],
+    "キウイ": [
+        "キウイ",
+        "洋なし",
+        "りんご",
+        "バナナ",
+    ],
+    "さつまいも": [
+        "さつまいも",
+        "じゃがいも",
+        "かぼちゃ",
+        "にんじん",
+    ],
+    "ヨーグルト": [
+        "ヨーグルト",
+        "牛乳",
+        "乳製品",
+        "豆腐",
+    ],
+    "ブラックベリー": [
+        "ブラックベリー",
+        "ブルーベリー",
+        "ラズベリー",
+        "いちご",
+        "りんご",
+    ],
+    "キヌア": [
+        "キヌア",
+        "米",
+        "オートミール",
+        "クスクス",
+    ],
+    "パイナップル": [
+        "パイナップル",
+        "マンゴー",
+        "桃",
+        "りんご",
+    ],
 }
 
 
@@ -65,10 +151,38 @@ class Command(BaseCommand):
 
         category, _ = DishCategory.objects.get_or_create(
             name="市販品",
-            defaults={"display_order": 999, "is_active": True},
+            defaults={
+                "display_order": 999,
+                "is_active": True,
+            },
         )
 
-        created_count = updated_count = 0
+        brand_objects = {}
+
+        brand_definitions = {
+            "hipp": {
+                "name": "HiPP",
+                "display_order": 10,
+            },
+            "holle": {
+                "name": "Holle",
+                "display_order": 20,
+            },
+        }
+
+        for brand_code, brand_data in brand_definitions.items():
+            brand, _ = CommercialBrand.objects.update_or_create(
+                name=brand_data["name"],
+                defaults={
+                    "display_order": brand_data["display_order"],
+                    "is_active": True,
+                },
+            )
+
+            brand_objects[brand_code] = brand
+
+        created_count = 0
+        updated_count = 0
 
         for p in products:
             name = (
@@ -82,20 +196,36 @@ class Command(BaseCommand):
                 continue
 
             verified = p["ratio_source"] == "official"
+
+            brand = brand_objects.get(
+                p["brand"]
+            )
+
+            if brand is None:
+                raise CommandError(
+                    f'未対応のメーカーコード: {p["brand"]}'
+                )
+
             product, created = Dish.objects.update_or_create(
                 name=name,
                 defaults={
                     "category": category,
-                    "finished_amount_g": Decimal(p["finished_amount_g"]),
+                    "finished_amount_g": Decimal(
+                        p["finished_amount_g"]
+                    ),
                     "instructions": "",
                     "is_user_created": False,
                     "is_active": True,
                     "is_commercial_product": True,
-                    "commercial_brand": p["brand"],
-                    "recommended_from_month": p["recommended_from_month"],
+                    "commercial_brand": brand,
+                    "recommended_from_month": (
+                        p["recommended_from_month"]
+                    ),
                     "source_url": p["source_url"],
                     "ingredient_data_verified": verified,
-                    "ingredient_data_note": self._build_note(p),
+                    "ingredient_data_note": (
+                        self._build_note(p)
+                    ),
                 },
             )
 
