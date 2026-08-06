@@ -46,4 +46,12 @@ urlpatterns = [
             namespace="feeding",
         ),
     ),
+
+    path(
+        "games/",
+        include(
+            "games.urls",
+            namespace="games",
+        ),
+    ),
 ]

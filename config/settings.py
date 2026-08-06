@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "portal.apps.PortalConfig",
     "travel.apps.TravelConfig",
     "feeding.apps.FeedingConfig",
+    "games.apps.GamesConfig",
 ]
 
 # ------------------------------------------------------------------------------

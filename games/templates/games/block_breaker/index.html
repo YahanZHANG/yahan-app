@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ブロック崩し{% endblock %}
+
+{% block content %}
+<section class="block-breaker-page">
+    <div class="block-breaker-heading">
+        <div>
+            <h1>ブロック崩し</h1>
+            <p>ボールを落とさず、ブロックを全部壊そう。</p>
+        </div>
+
+        <a
+            class="back-to-games"
+            href="{% url 'games:game_list' %}"
+        >
+            ゲーム一覧
+        </a>
+    </div>
+
+    <div class="game-status">
+        <div class="status-item">
+            <span>ステージ</span>
+            <strong id="stage-display">1</strong>
+        </div>
+
+        <div class="status-item">
+            <span>スコア</span>
+            <strong id="score-display">0</strong>
+        </div>
+
+        <div class="status-item">
+            <span>残機</span>
+            <strong id="lives-display">3</strong>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <canvas
+            id="game-canvas"
+            width="720"
+            height="520"
+        ></canvas>
+
+        <div id="game-overlay" class="game-overlay">
+            <div class="overlay-panel">
+                <h2 id="overlay-title">ステージ1</h2>
+
+                <p id="overlay-message">
+                    マウス、指、左右キーでバーを動かせる。
+                </p>
+
+                <button id="start-button" type="button">
+                    スタート
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-controls">
+        <button id="move-left-button" type="button">
+            ◀
+        </button>
+
+        <button id="pause-button" type="button">
+            一時停止
+        </button>
+
+        <button id="move-right-button" type="button">
+            ▶
+        </button>
+    </div>
+</section>
+
+<link
+    rel="stylesheet"
+    href="{% static 'games/block_breaker/css/style.css' %}"
+>
+
+<script
+    type="module"
+    src="{% static 'games/block_breaker/js/game.js' %}"
+></script>
+{% endblock %}
