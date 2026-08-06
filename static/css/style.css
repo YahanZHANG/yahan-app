@@ -3251,3 +3251,15 @@ button {
     margin: 7px 0 0;
     font-size: 13px;
 }
+
+.portal-games-card {
+    --portal-card-accent: #7c6ee6;
+}
+
+.portal-games-icon {
+    background: linear-gradient(
+        135deg,
+        #7c6ee6,
+        #a994f4
+    );
+}

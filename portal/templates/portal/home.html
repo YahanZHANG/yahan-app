@@ -71,11 +71,11 @@
 
                 <span class="portal-app-count">
                     {% if can_use_travel and can_use_feeding %}
-                        2 apps
+                        3 apps
                     {% elif can_use_travel or can_use_feeding %}
-                        1 app
+                        2 apps
                     {% else %}
-                        0 apps
+                        1 app
                     {% endif %}
                 </span>
             </div>
@@ -164,17 +164,44 @@
                     </a>
                 {% endif %}
 
-                {% if not can_use_travel and not can_use_feeding %}
-                    <div class="portal-no-apps">
-                        <strong>
-                            利用できるアプリがない
-                        </strong>
+                <a
+                    href="{% url 'games:game_list' %}"
+                    class="portal-app-card portal-games-card"
+                >
+                    <div class="portal-card-top">
+                        <div class="portal-app-icon portal-games-icon">
+                            <span aria-hidden="true">🎮</span>
+                        </div>
+
+                        <span class="portal-open-arrow" aria-hidden="true">
+                            ↗
+                        </span>
+                    </div>
+
+                    <div class="portal-card-content">
+                        <p class="portal-card-label">
+                            MINI GAMES
+                        </p>
+
+                        <h3>ゲーム</h3>
 
                         <p>
-                            管理者にアカウント設定を確認してください。
+                            ブロック崩しなどの、
+                            シンプルなゲームで遊ぶ。
                         </p>
                     </div>
-                {% endif %}
+
+                    <div class="portal-feature-list">
+                        <span>ブロック崩し</span>
+                        <span>スコア</span>
+                        <span>ステージ</span>
+                    </div>
+
+                    <div class="portal-card-footer">
+                        <span>ゲームを開く</span>
+                        <strong aria-hidden="true">→</strong>
+                    </div>
+                </a>
 
             </div>
         </section>
