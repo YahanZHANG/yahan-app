@@ -1,5 +1,19 @@
 import { GAME_CONFIG } from "./config.js";
 import { BRICK_TYPES, LEVELS } from "./levels.js";
+import {
+    POWERUP_TYPES,
+    POWERUP_CONFIG,
+    createPowerup,
+    getPowerupSymbol,
+} from "./powerups.js";
+
+const powerupStatus = document.getElementById(
+    "powerup-status",
+);
+
+const powerupDisplay = document.getElementById(
+    "powerup-display",
+);
 
 const canvas = document.getElementById("game-canvas");
 const context = canvas.getContext("2d");
@@ -31,6 +45,14 @@ const state = {
 
     moveLeft: false,
     moveRight: false,
+
+    powerups: [],
+
+    effects: {
+        fireballPausedRemaining: 0,
+        fireballActive: false,
+        fireballEndsAt: 0,
+    },
 
     paddle: {
         x: 0,
@@ -122,6 +144,10 @@ function createBricks() {
 
 
 function initialiseLevel() {
+    state.powerups = [];
+
+    deactivateFireball();
+
     resetPaddle();
     resetBall();
     createBricks();
@@ -135,6 +161,49 @@ function updateStatus() {
     stageDisplay.textContent = state.levelIndex + 1;
 }
 
+
+function activateFireball() {
+    state.effects.fireballActive = true;
+
+    state.effects.fireballEndsAt = (
+        performance.now()
+        + POWERUP_CONFIG.fireballDuration
+    );
+
+    powerupStatus.classList.remove("is-hidden");
+}
+
+
+function deactivateFireball() {
+    state.effects.fireballActive = false;
+    state.effects.fireballEndsAt = 0;
+
+    powerupStatus.classList.add("is-hidden");
+}
+
+
+function updateFireballEffect(currentTime) {
+    if (!state.effects.fireballActive) {
+        return;
+    }
+
+    const remainingMilliseconds = (
+        state.effects.fireballEndsAt - currentTime
+    );
+
+    if (remainingMilliseconds <= 0) {
+        deactivateFireball();
+        return;
+    }
+
+    const remainingSeconds = (
+        remainingMilliseconds / 1000
+    ).toFixed(1);
+
+    powerupDisplay.textContent = (
+        `🔥 ${remainingSeconds}`
+    );
+}
 
 function drawBackground() {
     const gradient = context.createLinearGradient(
@@ -176,23 +245,64 @@ function drawPaddle() {
 function drawBall() {
     context.save();
 
-    context.fillStyle = "#ffffff";
-    context.shadowBlur = 14;
-    context.shadowColor = "#b7c4ff";
+    if (state.effects.fireballActive) {
+        const gradient = context.createRadialGradient(
+            state.ball.x,
+            state.ball.y,
+            1,
+            state.ball.x,
+            state.ball.y,
+            state.ball.radius * 2.4,
+        );
 
-    context.beginPath();
-    context.arc(
-        state.ball.x,
-        state.ball.y,
-        state.ball.radius,
-        0,
-        Math.PI * 2,
-    );
-    context.fill();
+        gradient.addColorStop(0, "#fff8aa");
+        gradient.addColorStop(0.35, "#ffcf4a");
+        gradient.addColorStop(0.7, "#ff5b2e");
+        gradient.addColorStop(1, "rgba(255, 70, 20, 0)");
+
+        context.fillStyle = gradient;
+        context.shadowBlur = 24;
+        context.shadowColor = "#ff5a1f";
+
+        context.beginPath();
+        context.arc(
+            state.ball.x,
+            state.ball.y,
+            state.ball.radius * 2.4,
+            0,
+            Math.PI * 2,
+        );
+        context.fill();
+
+        context.fillStyle = "#fff7c7";
+
+        context.beginPath();
+        context.arc(
+            state.ball.x,
+            state.ball.y,
+            state.ball.radius,
+            0,
+            Math.PI * 2,
+        );
+        context.fill();
+    } else {
+        context.fillStyle = "#ffffff";
+        context.shadowBlur = 14;
+        context.shadowColor = "#b7c4ff";
+
+        context.beginPath();
+        context.arc(
+            state.ball.x,
+            state.ball.y,
+            state.ball.radius,
+            0,
+            Math.PI * 2,
+        );
+        context.fill();
+    }
 
     context.restore();
 }
-
 
 function getBrickColor(brick, index) {
     const colors = [
@@ -264,9 +374,47 @@ function drawBricks() {
     });
 }
 
+function drawPowerups() {
+    state.powerups.forEach((powerup) => {
+        if (powerup.collected) {
+            return;
+        }
+
+        context.save();
+
+        context.fillStyle = "rgba(255, 255, 255, 0.95)";
+        context.shadowBlur = 12;
+        context.shadowColor = "#ff8a45";
+
+        context.beginPath();
+        context.roundRect(
+            powerup.x,
+            powerup.y,
+            powerup.width,
+            powerup.height,
+            10,
+        );
+        context.fill();
+
+        context.shadowBlur = 0;
+        context.font = "22px sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+
+        context.fillText(
+            getPowerupSymbol(powerup.type),
+            powerup.x + powerup.width / 2,
+            powerup.y + powerup.height / 2 + 1,
+        );
+
+        context.restore();
+    });
+}
+
 function draw() {
     drawBackground();
     drawBricks();
+    drawPowerups();
     drawPaddle();
     drawBall();
 }
@@ -296,6 +444,54 @@ function movePaddle() {
 function moveBall() {
     state.ball.x += state.ball.dx;
     state.ball.y += state.ball.dy;
+}
+
+function movePowerups() {
+    state.powerups.forEach((powerup) => {
+        if (powerup.collected) {
+            return;
+        }
+
+        powerup.y += powerup.speed;
+    });
+
+    state.powerups = state.powerups.filter((powerup) => {
+        return (
+            !powerup.collected
+            && powerup.y < canvas.height + powerup.height
+        );
+    });
+}
+
+function rectanglesOverlap(first, second) {
+    return (
+        first.x < second.x + second.width
+        && first.x + first.width > second.x
+        && first.y < second.y + second.height
+        && first.y + first.height > second.y
+    );
+}
+
+
+function handlePowerupCollisions() {
+    state.powerups.forEach((powerup) => {
+        if (powerup.collected) {
+            return;
+        }
+
+        if (!rectanglesOverlap(powerup, state.paddle)) {
+            return;
+        }
+
+        powerup.collected = true;
+
+        if (powerup.type === POWERUP_TYPES.FIREBALL) {
+            activateFireball();
+            state.score += 250;
+        }
+
+        updateStatus();
+    });
 }
 
 
@@ -409,12 +605,29 @@ function handleBrickCollisions() {
             if (brick.hitPoints <= 0) {
                 brick.destroyed = true;
                 state.score += 100;
+
+                if (brick.type === BRICK_TYPES.POWERUP) {
+                    const powerup = createPowerup(
+                        POWERUP_TYPES.FIREBALL,
+                        (
+                            brick.x
+                            + brick.width / 2
+                            - POWERUP_CONFIG.width / 2
+                        ),
+                        brick.y,
+                    );
+
+                    state.powerups.push(powerup);
+                }
+
                 updateStatus();
             }
         }
 
-        state.ball.dy *= -1;
-        break;
+        if (!state.effects.fireballActive) {
+            state.ball.dy *= -1;
+            break;
+        }
     }
 }
 
@@ -512,10 +725,14 @@ function gameLoop() {
 
     movePaddle();
     moveBall();
+    movePowerups();
 
     handleWallCollisions();
     handlePaddleCollision();
     handleBrickCollisions();
+    handlePowerupCollisions();
+
+    updateFireballEffect(performance.now());
 
     if (checkStageClear()) {
         draw();
@@ -589,7 +806,15 @@ function togglePause() {
 
     state.paused = !state.paused;
 
+    // 一時停止に入るとき
     if (state.paused) {
+        if (state.effects.fireballActive) {
+            state.effects.fireballPausedRemaining = Math.max(
+                0,
+                state.effects.fireballEndsAt - performance.now(),
+            );
+        }
+
         pauseButton.textContent = "再開";
 
         showOverlay(
@@ -599,6 +824,19 @@ function togglePause() {
         );
 
         return;
+    }
+
+    // 一時停止を解除するとき
+    if (
+        state.effects.fireballActive
+        && state.effects.fireballPausedRemaining > 0
+    ) {
+        state.effects.fireballEndsAt = (
+            performance.now()
+            + state.effects.fireballPausedRemaining
+        );
+
+        state.effects.fireballPausedRemaining = 0;
     }
 
     hideOverlay();

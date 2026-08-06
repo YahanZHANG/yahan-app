@@ -160,3 +160,25 @@
         padding: 7px 4px;
     }
 }
+
+.game-status:has(.powerup-status:not(.is-hidden)) {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.powerup-status {
+    background: #fff0e7;
+}
+
+.powerup-status strong {
+    color: #d94b23;
+}
+
+.powerup-status.is-hidden {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .game-status:has(.powerup-status:not(.is-hidden)) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
