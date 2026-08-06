@@ -24,6 +24,8 @@ const startButton = document.getElementById("start-button");
 
 const pauseButton = document.getElementById("pause-button");
 const laserButton = document.getElementById("laser-button");
+const gameShell = document.getElementById("game-shell");
+const fullscreenButton = document.getElementById("fullscreen-button");
 
 const stageSelect = document.getElementById(
     "stage-select",
@@ -1489,6 +1491,61 @@ function gameLoop() {
     }
 }
 
+async function toggleFullscreen() {
+    if (!gameShell) {
+        return;
+    }
+
+    try {
+        if (document.fullscreenElement) {
+            await document.exitFullscreen();
+            return;
+        }
+
+        if (gameShell.requestFullscreen) {
+            await gameShell.requestFullscreen();
+            return;
+        }
+
+        // Fullscreen APIが使えない環境用
+        gameShell.classList.toggle(
+            "is-pseudo-fullscreen",
+        );
+
+        updateFullscreenButton();
+    } catch (error) {
+        console.error(
+            "全画面表示を開始できませんでした。",
+            error,
+        );
+
+        gameShell.classList.toggle(
+            "is-pseudo-fullscreen",
+        );
+
+        updateFullscreenButton();
+    }
+}
+
+
+function updateFullscreenButton() {
+    if (!fullscreenButton || !gameShell) {
+        return;
+    }
+
+    const isFullscreen = Boolean(
+        document.fullscreenElement
+        || gameShell.classList.contains(
+            "is-pseudo-fullscreen",
+        )
+    );
+
+    fullscreenButton.textContent = (
+        isFullscreen
+        ? "× 全画面を終了"
+        : "⛶ 全画面"
+    );
+}
 
 function hideOverlay() {
     overlay.classList.add("is-hidden");
@@ -1812,6 +1869,19 @@ startButton.addEventListener(
 pauseButton.addEventListener(
     "click",
     togglePause,
+);
+
+if (fullscreenButton) {
+    fullscreenButton.addEventListener(
+        "click",
+        toggleFullscreen,
+    );
+}
+
+
+document.addEventListener(
+    "fullscreenchange",
+    updateFullscreenButton,
 );
 
 if (stageSelectButton) {

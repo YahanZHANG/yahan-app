@@ -243,3 +243,148 @@
     user-select: none;
     -webkit-user-select: none;
 }
+
+.fullscreen-button {
+    justify-self: end;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.14);
+    color: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.fullscreen-button:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+
+/* 本物の全画面表示 */
+#game-shell:fullscreen {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding:
+        max(10px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #101523;
+}
+
+
+/* Fullscreen APIが使えない場合 */
+#game-shell.is-pseudo-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding:
+        max(10px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #101523;
+}
+
+
+/* 全画面時のゲーム全体 */
+#game-shell:fullscreen,
+#game-shell.is-pseudo-fullscreen {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ヘッダーと操作部分は必要な高さだけ使用 */
+#game-shell:fullscreen .game-header,
+#game-shell.is-pseudo-fullscreen .game-header,
+#game-shell:fullscreen .game-status,
+#game-shell.is-pseudo-fullscreen .game-status,
+#game-shell:fullscreen .stage-selector,
+#game-shell.is-pseudo-fullscreen .stage-selector,
+#game-shell:fullscreen .game-controls,
+#game-shell.is-pseudo-fullscreen .game-controls {
+    flex: 0 0 auto;
+}
+
+
+/* Canvasを残り領域いっぱいに広げる */
+#game-shell:fullscreen #game-canvas,
+#game-shell.is-pseudo-fullscreen #game-canvas {
+    display: block;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    margin: auto;
+    aspect-ratio: 720 / 520;
+    object-fit: contain;
+}
+
+.game-canvas-area {
+    position: relative;
+    width: 100%;
+}
+
+
+#game-shell:fullscreen .game-canvas-area,
+#game-shell.is-pseudo-fullscreen .game-canvas-area {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+}
+
+
+#game-shell:fullscreen .game-canvas-area #game-canvas,
+#game-shell.is-pseudo-fullscreen .game-canvas-area #game-canvas {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 720 / 520;
+}
+
+@media (
+    orientation: landscape
+) and (
+    max-height: 600px
+) {
+    #game-shell:fullscreen,
+    #game-shell.is-pseudo-fullscreen {
+        padding: 6px;
+    }
+
+    #game-shell:fullscreen .game-header,
+    #game-shell.is-pseudo-fullscreen .game-header {
+        margin-bottom: 4px;
+    }
+
+    #game-shell:fullscreen .game-header-title,
+    #game-shell.is-pseudo-fullscreen .game-header-title {
+        font-size: 18px;
+    }
+
+    #game-shell:fullscreen .stage-selector,
+    #game-shell.is-pseudo-fullscreen .stage-selector {
+        margin: 4px 0;
+    }
+
+    #game-shell:fullscreen .game-controls,
+    #game-shell.is-pseudo-fullscreen .game-controls {
+        margin-top: 4px;
+    }
+}

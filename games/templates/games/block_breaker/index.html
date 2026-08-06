@@ -4,19 +4,29 @@
 {% block title %}ブロック崩し{% endblock %}
 
 {% block content %}
-<section class="block-breaker-page">
+<section
+    id="game-shell"
+    class="block-breaker-page"
+>
     <div class="block-breaker-heading">
-        <div>
-            <h1>ブロック崩し</h1>
-            <p>ボールを落とさず、ブロックを全部壊そう。</p>
-        </div>
-
         <a
             class="back-to-games"
             href="{% url 'games:game_list' %}"
         >
             ゲーム一覧
         </a>
+
+        <h1 class="block-breaker-title">
+            ブロック崩し
+        </h1>
+
+        <button
+            type="button"
+            id="fullscreen-button"
+            class="fullscreen-button"
+        >
+            ⛶ 全画面
+        </button>
     </div>
 
     <div class="game-status">
@@ -77,7 +87,7 @@
                 <h2 id="overlay-title">ステージ1</h2>
 
                 <p id="overlay-message">
-                    マウス、指、左右キーでバーを動かせる。
+                    マウスまたは指でバーを動かせる。
                 </p>
 
                 <button id="start-button" type="button">
@@ -88,7 +98,6 @@
     </div>
 
     <div class="mobile-controls">
-
         <button
             type="button"
             id="laser-button"
@@ -101,7 +110,6 @@
         <button id="pause-button" type="button">
             一時停止
         </button>
-
     </div>
 </section>
 
