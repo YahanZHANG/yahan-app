@@ -29,13 +29,13 @@
         </button>
     </div>
 
-    <div class="game-status fullscreen-hidden">
-        <div class="status-item">
+    <div class="game-status">
+        <div class="status-item fullscreen-hidden">
             <span>ステージ</span>
             <strong id="stage-display">1</strong>
         </div>
 
-        <div class="status-item">
+        <div class="status-item fullscreen-hidden">
             <span>スコア</span>
             <strong id="score-display">0</strong>
         </div>
@@ -47,7 +47,7 @@
 
         <div
             id="powerup-status"
-            class="status-item powerup-status is-hidden"
+            class="status-item powerup-status is-hidden fullscreen-hidden"
         >
             <span>パワー</span>
             <strong id="powerup-display">🔥 8.0</strong>
@@ -76,7 +76,7 @@
     </div>
 
     <div class="game-container">
-            <div class="rotate-device-message">
+        <div class="rotate-device-message">
             <span>↻</span>
             携帯を横向きにしてください
         </div>
@@ -86,21 +86,24 @@
             width="720"
             height="520"
         ></canvas>
-        <canvas
-            id="game-canvas"
-            width="720"
-            height="520"
-        ></canvas>
 
-        <div id="game-overlay" class="game-overlay">
+        <div
+            id="game-overlay"
+            class="game-overlay"
+        >
             <div class="overlay-panel">
-                <h2 id="overlay-title">ステージ1</h2>
+                <h2 id="overlay-title">
+                    ステージ1
+                </h2>
 
                 <p id="overlay-message">
                     マウスまたは指でバーを動かせる。
                 </p>
 
-                <button id="start-button" type="button">
+                <button
+                    id="start-button"
+                    type="button"
+                >
                     スタート
                 </button>
             </div>
@@ -117,7 +120,10 @@
             ⚡ レーザー
         </button>
 
-        <button id="pause-button" type="button">
+        <button
+            id="pause-button"
+            type="button"
+        >
             一時停止
         </button>
     </div>

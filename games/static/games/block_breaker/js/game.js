@@ -46,7 +46,7 @@ canvas.height = GAME_CONFIG.canvasHeight;
 const state = {
     score: 0,
     lives: GAME_CONFIG.lives,
-    levelIndex: 1,
+    levelIndex: 0,
 
     running: false,
     paused: false,
@@ -1724,9 +1724,6 @@ function selectStage() {
     // state.score = 0;
     // state.lives = GAME_CONFIG.lives;
 
-    state.moveLeft = false;
-    state.moveRight = false;
-
     initialiseLevel();
     draw();
 
@@ -1817,16 +1814,23 @@ function togglePause() {
 
 
 function setPaddleFromPointer(clientX) {
-    const screenWidth = Math.max(
-        1,
-        document.documentElement.clientWidth,
+    const canvasRectangle = (
+        canvas.getBoundingClientRect()
+    );
+
+    if (canvasRectangle.width <= 0) {
+        return;
+    }
+
+    const relativeX = (
+        clientX - canvasRectangle.left
     );
 
     const pointerRatio = Math.max(
         0,
         Math.min(
             1,
-            clientX / screenWidth,
+            relativeX / canvasRectangle.width,
         ),
     );
 
@@ -1851,7 +1855,6 @@ function setPaddleFromPointer(clientX) {
         draw();
     }
 }
-
 
 document.addEventListener("keydown", (event) => {
 
