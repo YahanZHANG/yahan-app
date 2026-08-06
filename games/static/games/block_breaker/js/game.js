@@ -198,15 +198,51 @@ function createBricks() {
 
             const powerupKey = `${rowIndex}-${columnIndex}`;
 
+            const initialX = (
+                startX
+                + columnIndex * (brickWidth + gap)
+            );
+
+            const initialY = (
+                startY
+                + rowIndex * (brickHeight + gap)
+            );
+
             state.bricks.push({
-                x: startX + columnIndex * (brickWidth + gap),
-                y: startY + rowIndex * (brickHeight + gap),
+                x: initialX,
+                y: initialY,
+
+                homeX: initialX,
+                homeY: initialY,
+
                 width: brickWidth,
                 height: brickHeight,
+
+                rowIndex,
+                columnIndex,
+
                 type,
-                hitPoints: type === BRICK_TYPES.STRONG ? 2 : 1,
+
+                hitPoints: (
+                    type === BRICK_TYPES.STRONG
+                    ? 2
+                    : 1
+                ),
+
                 destroyed: false,
-                powerupType: level.powerups?.[powerupKey] ?? null,
+
+                powerupType: (
+                    level.powerups?.[powerupKey]
+                    ?? null
+                ),
+
+                movable: Boolean(level.movingBricks),
+
+                moveDirection: (
+                    rowIndex % 2 === 0
+                    ? 1
+                    : -1
+                ),
             });
         });
     });
@@ -248,6 +284,7 @@ function activateFireball() {
 function deactivateFireball() {
     state.effects.fireballActive = false;
     state.effects.fireballEndsAt = 0;
+    state.effects.fireballPausedRemaining = 0;
 
     powerupStatus.classList.add("is-hidden");
 }
@@ -529,6 +566,52 @@ function moveBall() {
     state.ball.y += state.ball.dy;
 }
 
+function moveBricks() {
+    const level = getCurrentLevel();
+
+    if (!level.movingBricks) {
+        return;
+    }
+
+    const movementSpeed = (
+        level.brickMovementSpeed
+        ?? 1
+    );
+
+    const movementRange = (
+        level.brickMovementRange
+        ?? 60
+    );
+
+    state.bricks.forEach((brick) => {
+        if (
+            brick.destroyed
+            || !brick.movable
+        ) {
+            return;
+        }
+
+        brick.x += (
+            movementSpeed
+            * brick.moveDirection
+        );
+
+        const distanceFromHome = (
+            brick.x - brick.homeX
+        );
+
+        if (distanceFromHome >= movementRange) {
+            brick.x = brick.homeX + movementRange;
+            brick.moveDirection = -1;
+        }
+
+        if (distanceFromHome <= -movementRange) {
+            brick.x = brick.homeX - movementRange;
+            brick.moveDirection = 1;
+        }
+    });
+}
+
 function movePowerups() {
     state.powerups.forEach((powerup) => {
         if (powerup.collected) {
@@ -687,6 +770,45 @@ function handleBrickCollisions() {
             continue;
         }
 
+        const ball = state.ball;
+
+        const previousX = ball.x - ball.dx;
+        const previousY = ball.y - ball.dy;
+
+        const previousRight = (
+            previousX + ball.radius
+        );
+
+        const previousLeft = (
+            previousX - ball.radius
+        );
+
+        const previousBottom = (
+            previousY + ball.radius
+        );
+
+        const previousTop = (
+            previousY - ball.radius
+        );
+
+        const cameFromLeft = (
+            previousRight <= brick.x
+        );
+
+        const cameFromRight = (
+            previousLeft
+            >= brick.x + brick.width
+        );
+
+        const cameFromTop = (
+            previousBottom <= brick.y
+        );
+
+        const cameFromBottom = (
+            previousTop
+            >= brick.y + brick.height
+        );
+
         if (brick.type !== BRICK_TYPES.UNBREAKABLE) {
             if (state.effects.fireballActive) {
                 brick.hitPoints = 0;
@@ -719,10 +841,37 @@ function handleBrickCollisions() {
             }
         }
 
-        if (!state.effects.fireballActive) {
-            state.ball.dy *= -1;
-            break;
+        if (state.effects.fireballActive) {
+            continue;
         }
+
+        if (cameFromLeft && ball.dx > 0) {
+            ball.x = brick.x - ball.radius;
+            ball.dx *= -1;
+        } else if (cameFromRight && ball.dx < 0) {
+            ball.x = (
+                brick.x
+                + brick.width
+                + ball.radius
+            );
+
+            ball.dx *= -1;
+        } else if (cameFromTop && ball.dy > 0) {
+            ball.y = brick.y - ball.radius;
+            ball.dy *= -1;
+        } else if (cameFromBottom && ball.dy < 0) {
+            ball.y = (
+                brick.y
+                + brick.height
+                + ball.radius
+            );
+
+            ball.dy *= -1;
+        } else {
+            ball.dy *= -1;
+        }
+
+        break;
     }
 }
 
@@ -753,9 +902,14 @@ function checkStageClear() {
     );
 
     if (nextLevelExists) {
+        const nextLevel = LEVELS[state.levelIndex + 1];
+
         showOverlay(
             `ステージ${currentLevel.number}クリア！`,
-            `次は「${LEVELS[state.levelIndex + 1].name}」。`,
+            (
+                `次は「${nextLevel.name}」。`
+                + ` ${nextLevel.description}`
+            ),
             "次のステージ",
         );
 
@@ -820,6 +974,7 @@ function gameLoop() {
 
     movePaddle();
     moveBall();
+    moveBricks();
     movePowerups();
 
     handleWallCollisions();
@@ -1111,3 +1266,11 @@ startButton.dataset.action = "start";
 
 initialiseLevel();
 draw();
+
+const firstLevel = getCurrentLevel();
+
+showOverlay(
+    `ステージ${firstLevel.number}：${firstLevel.name}`,
+    firstLevel.description,
+    "スタート",
+);
