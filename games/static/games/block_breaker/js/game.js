@@ -1496,6 +1496,36 @@ function gameLoop() {
     }
 }
 
+async function lockLandscapeOrientation() {
+    if (
+        !screen.orientation
+        || typeof screen.orientation.lock !== "function"
+    ) {
+        return;
+    }
+
+    try {
+        await screen.orientation.lock(
+            "landscape",
+        );
+    } catch (error) {
+        console.info(
+            "この端末では横向き固定を利用できません。",
+            error,
+        );
+    }
+}
+
+
+function unlockScreenOrientation() {
+    if (
+        screen.orientation
+        && typeof screen.orientation.unlock === "function"
+    ) {
+        screen.orientation.unlock();
+    }
+}
+
 async function toggleFullscreen() {
     if (!gameShell) {
         return;
@@ -1503,24 +1533,36 @@ async function toggleFullscreen() {
 
     try {
         if (document.fullscreenElement) {
+            unlockScreenOrientation();
             await document.exitFullscreen();
             return;
         }
 
         if (gameShell.requestFullscreen) {
             await gameShell.requestFullscreen();
+
+            await lockLandscapeOrientation();
             return;
         }
 
-        // Fullscreen APIが使えない環境用
         gameShell.classList.toggle(
             "is-pseudo-fullscreen",
         );
 
+        if (
+            gameShell.classList.contains(
+                "is-pseudo-fullscreen",
+            )
+        ) {
+            await lockLandscapeOrientation();
+        } else {
+            unlockScreenOrientation();
+        }
+
         updateFullscreenButton();
     } catch (error) {
-        console.error(
-            "全画面表示を開始できませんでした。",
+        console.warn(
+            "全画面または横向き固定を開始できませんでした。",
             error,
         );
 
@@ -1886,7 +1928,13 @@ if (fullscreenButton) {
 
 document.addEventListener(
     "fullscreenchange",
-    updateFullscreenButton,
+    () => {
+        updateFullscreenButton();
+
+        if (!document.fullscreenElement) {
+            unlockScreenOrientation();
+        }
+    },
 );
 
 if (stageSelectButton) {

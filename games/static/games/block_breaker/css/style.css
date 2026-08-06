@@ -298,97 +298,186 @@
 }
 
 
-/* 全画面時のゲーム全体 */
+/* ブロック崩し画面では共通ヘッダーを非表示 */
+body.block-breaker-mode .app-header {
+    display: none;
+}
+
+
+/* 通常時は端末回転メッセージを非表示 */
+.rotate-device-message {
+    display: none;
+}
+
+
+/* Canvasとオーバーレイの基準 */
+.game-container {
+    position: relative;
+}
+
+
+/* 全画面表示の共通レイアウト */
 #game-shell:fullscreen,
 #game-shell.is-pseudo-fullscreen {
     display: flex;
     flex-direction: column;
+
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+
+    margin: 0;
+    padding:
+        max(6px, env(safe-area-inset-top))
+        max(6px, env(safe-area-inset-right))
+        max(6px, env(safe-area-inset-bottom))
+        max(6px, env(safe-area-inset-left));
+
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #101523;
 }
 
 
-/* ヘッダーと操作部分は必要な高さだけ使用 */
-#game-shell:fullscreen .game-header,
-#game-shell.is-pseudo-fullscreen .game-header,
+/* Fullscreen APIが使えない場合の擬似全画面 */
+#game-shell.is-pseudo-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+}
+
+
+/* 全画面では不要なUIを隠す */
+#game-shell:fullscreen .fullscreen-hidden,
+#game-shell.is-pseudo-fullscreen .fullscreen-hidden {
+    display: none !important;
+}
+
+
+/* 全画面では残機だけをコンパクトに表示 */
 #game-shell:fullscreen .game-status,
-#game-shell.is-pseudo-fullscreen .game-status,
-#game-shell:fullscreen .stage-selector,
-#game-shell.is-pseudo-fullscreen .stage-selector,
-#game-shell:fullscreen .game-controls,
-#game-shell.is-pseudo-fullscreen .game-controls {
+#game-shell.is-pseudo-fullscreen .game-status {
+    display: flex;
     flex: 0 0 auto;
+    justify-content: center;
+
+    margin: 0 0 6px;
+}
+
+#game-shell:fullscreen .lives-status,
+#game-shell.is-pseudo-fullscreen .lives-status {
+    min-width: auto;
+    padding: 5px 12px;
 }
 
 
-/* Canvasを残り領域いっぱいに広げる */
-#game-shell:fullscreen #game-canvas,
-#game-shell.is-pseudo-fullscreen #game-canvas {
-    display: block;
-    flex: 1 1 auto;
-    width: auto;
-    max-width: 100%;
-    min-height: 0;
-    margin: auto;
-    aspect-ratio: 720 / 520;
-    object-fit: contain;
-}
-
-.game-canvas-area {
-    position: relative;
-    width: 100%;
-}
-
-
-#game-shell:fullscreen .game-canvas-area,
-#game-shell.is-pseudo-fullscreen .game-canvas-area {
+/* ゲーム画面を残り領域いっぱいに広げる */
+#game-shell:fullscreen .game-container,
+#game-shell.is-pseudo-fullscreen .game-container {
     display: flex;
     flex: 1 1 auto;
     align-items: center;
     justify-content: center;
+
+    width: 100%;
     min-height: 0;
     overflow: hidden;
 }
 
 
-#game-shell:fullscreen .game-canvas-area #game-canvas,
-#game-shell.is-pseudo-fullscreen .game-canvas-area #game-canvas {
+/* Canvasの縦横比を維持して最大表示 */
+#game-shell:fullscreen #game-canvas,
+#game-shell.is-pseudo-fullscreen #game-canvas {
+    display: block;
+
     width: auto;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
+
+    margin: auto;
     aspect-ratio: 720 / 520;
+    object-fit: contain;
 }
 
-@media (
-    orientation: landscape
-) and (
-    max-height: 600px
-) {
+
+/* 全画面時のレーザー・一時停止ボタン */
+#game-shell:fullscreen .mobile-controls,
+#game-shell.is-pseudo-fullscreen .mobile-controls {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    gap: 10px;
+
+    margin: 6px 0 0;
+}
+
+#game-shell:fullscreen .mobile-controls button,
+#game-shell.is-pseudo-fullscreen .mobile-controls button {
+    min-height: 42px;
+    padding: 8px 18px;
+}
+
+
+/* スマホが縦向きの場合の案内 */
+@media (orientation: portrait) and (max-width: 900px) {
+    #game-shell:fullscreen .rotate-device-message,
+    #game-shell.is-pseudo-fullscreen .rotate-device-message {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        padding: 24px;
+        background: rgba(10, 15, 28, 0.94);
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    #game-shell:fullscreen .rotate-device-message span,
+    #game-shell.is-pseudo-fullscreen .rotate-device-message span {
+        font-size: 48px;
+    }
+}
+
+
+/* 高さの低い横画面では余白とボタンを小さくする */
+@media (orientation: landscape) and (max-height: 600px) {
     #game-shell:fullscreen,
     #game-shell.is-pseudo-fullscreen {
-        padding: 6px;
+        padding:
+            max(3px, env(safe-area-inset-top))
+            max(3px, env(safe-area-inset-right))
+            max(3px, env(safe-area-inset-bottom))
+            max(3px, env(safe-area-inset-left));
     }
 
-    #game-shell:fullscreen .game-header,
-    #game-shell.is-pseudo-fullscreen .game-header {
-        margin-bottom: 4px;
+    #game-shell:fullscreen .game-status,
+    #game-shell.is-pseudo-fullscreen .game-status {
+        margin-bottom: 3px;
     }
 
-    #game-shell:fullscreen .game-header-title,
-    #game-shell.is-pseudo-fullscreen .game-header-title {
-        font-size: 18px;
+    #game-shell:fullscreen .lives-status,
+    #game-shell.is-pseudo-fullscreen .lives-status {
+        padding: 3px 10px;
     }
 
-    #game-shell:fullscreen .stage-selector,
-    #game-shell.is-pseudo-fullscreen .stage-selector {
-        margin: 4px 0;
+    #game-shell:fullscreen .mobile-controls,
+    #game-shell.is-pseudo-fullscreen .mobile-controls {
+        gap: 8px;
+        margin-top: 3px;
     }
 
-    #game-shell:fullscreen .game-controls,
-    #game-shell.is-pseudo-fullscreen .game-controls {
-        margin-top: 4px;
+    #game-shell:fullscreen .mobile-controls button,
+    #game-shell.is-pseudo-fullscreen .mobile-controls button {
+        min-height: 36px;
+        padding: 5px 14px;
     }
-}
-
-body.block-breaker-mode .app-header {
-    display: none;
 }

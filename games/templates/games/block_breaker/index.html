@@ -8,7 +8,7 @@
     id="game-shell"
     class="block-breaker-page"
 >
-    <div class="block-breaker-heading">
+    <div class="block-breaker-heading fullscreen-hidden">
         <a
             class="back-to-games"
             href="{% url 'games:game_list' %}"
@@ -29,7 +29,7 @@
         </button>
     </div>
 
-    <div class="game-status">
+    <div class="game-status fullscreen-hidden">
         <div class="status-item">
             <span>ステージ</span>
             <strong id="stage-display">1</strong>
@@ -40,7 +40,7 @@
             <strong id="score-display">0</strong>
         </div>
 
-        <div class="status-item">
+        <div class="status-item lives-status">
             <span>残機</span>
             <strong id="lives-display">3</strong>
         </div>
@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <div class="stage-selector">
+    <div class="stage-selector fullscreen-hidden">
         <label for="stage-select">
             ステージ選択
         </label>
@@ -76,6 +76,16 @@
     </div>
 
     <div class="game-container">
+            <div class="rotate-device-message">
+            <span>↻</span>
+            携帯を横向きにしてください
+        </div>
+
+        <canvas
+            id="game-canvas"
+            width="720"
+            height="520"
+        ></canvas>
         <canvas
             id="game-canvas"
             width="720"
