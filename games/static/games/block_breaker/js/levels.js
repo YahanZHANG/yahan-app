@@ -4,6 +4,7 @@ export const BRICK_TYPES = {
     STRONG: 2,
     UNBREAKABLE: 3,
     POWERUP: 4,
+    BOMB: 5,
 };
 
 export const POWERUP_ACCESS = {
@@ -17,6 +18,7 @@ export const LEVELS = [
         name: "はじめの壁",
         ballSpeed: 4.2,
         powerupAccess: POWERUP_ACCESS.BEGINNER,
+        comboEnabled: false,
         movingBricks: false,
 
         layout: [
@@ -39,13 +41,14 @@ export const LEVELS = [
         name: "ダイヤモンド",
         ballSpeed: 4.8,
         powerupAccess: POWERUP_ACCESS.ALL,
+        comboEnabled: true,
         movingBricks: false,
 
         layout: [
             [0, 0, 0, 1, 1, 0, 0, 0],
             [0, 0, 1, 4, 4, 1, 0, 0],
-            [0, 1, 1, 2, 2, 1, 1, 0],
-            [1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 5, 2, 2, 5, 1, 0],
+            [1, 1, 1, 4, 1, 1, 1, 1],
             [0, 1, 1, 1, 1, 1, 1, 0],
             [0, 0, 1, 1, 1, 1, 0, 0],
         ],
@@ -53,6 +56,7 @@ export const LEVELS = [
         powerups: {
             "1-3": "fireball",
             "1-4": "wide-paddle",
+            "3-3": "laser",
         },
     },
 
@@ -61,19 +65,21 @@ export const LEVELS = [
         name: "鋼鉄の迷路",
         ballSpeed: 5.4,
         powerupAccess: POWERUP_ACCESS.ALL,
+        comboEnabled: true,
         movingBricks: false,
 
         layout: [
-            [2, 2, 2, 2, 2, 2, 2, 2],
+            [2, 2, 5, 2, 2, 5, 2, 2],
             [1, 3, 1, 4, 4, 1, 3, 1],
             [1, 0, 1, 0, 0, 1, 0, 1],
-            [1, 3, 1, 1, 1, 1, 3, 1],
-            [0, 1, 2, 1, 1, 2, 1, 0],
+            [1, 3, 1, 5, 1, 1, 3, 1],
+            [0, 1, 2, 1, 4, 2, 1, 0],
         ],
 
         powerups: {
             "1-3": "fireball",
             "1-4": "wide-paddle",
+            "4-4": "laser",
         },
     },
 
@@ -82,15 +88,16 @@ export const LEVELS = [
         name: "高速要塞",
         ballSpeed: 6.1,
         powerupAccess: POWERUP_ACCESS.ALL,
+        comboEnabled: true,
         movingBricks: false,
 
         layout: [
-            [2, 1, 2, 1, 1, 2, 1, 2],
+            [2, 1, 5, 1, 1, 5, 1, 2],
             [1, 4, 1, 3, 3, 1, 4, 1],
-            [2, 1, 2, 1, 1, 2, 1, 2],
+            [2, 1, 2, 5, 1, 2, 1, 2],
             [1, 3, 1, 2, 2, 1, 3, 1],
             [4, 1, 1, 1, 1, 1, 1, 4],
-            [1, 2, 1, 2, 2, 1, 2, 1],
+            [1, 2, 1, 4, 2, 1, 2, 1],
         ],
 
         powerups: {
@@ -98,6 +105,7 @@ export const LEVELS = [
             "1-6": "wide-paddle",
             "4-0": "wide-paddle",
             "4-7": "fireball",
+            "5-3": "laser",
         },
     },
 
@@ -106,17 +114,18 @@ export const LEVELS = [
         name: "カオス・ブレイカー",
         ballSpeed: 7.2,
         powerupAccess: POWERUP_ACCESS.ALL,
+        comboEnabled: true,
         movingBricks: true,
-        brickMovementSpeed: 1.25,
-        brickMovementRange: 85,
+        brickMovementSpeed: 1.4,
+        brickMovementRange: 28,
 
         layout: [
-            [2, 4, 2, 3, 3, 2, 4, 2],
+            [2, 4, 5, 3, 3, 5, 4, 2],
             [1, 2, 1, 2, 2, 1, 2, 1],
-            [3, 1, 4, 1, 1, 4, 1, 3],
+            [3, 1, 4, 5, 1, 4, 1, 3],
             [1, 2, 1, 3, 3, 1, 2, 1],
-            [2, 1, 2, 1, 1, 2, 1, 2],
-            [4, 3, 1, 2, 2, 1, 3, 4],
+            [2, 5, 2, 1, 1, 2, 5, 2],
+            [4, 3, 1, 4, 2, 1, 3, 4],
         ],
 
         powerups: {
@@ -125,6 +134,7 @@ export const LEVELS = [
             "2-2": "wide-paddle",
             "2-5": "fireball",
             "5-0": "fireball",
+            "5-3": "laser",
             "5-7": "wide-paddle",
         },
     },

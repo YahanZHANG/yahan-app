@@ -1,8 +1,8 @@
 export const POWERUP_TYPES = {
     FIREBALL: "fireball",
     WIDE_PADDLE: "wide-paddle",
+    LASER: "laser",
 };
-
 
 export const POWERUP_CONFIG = {
     width: 34,
@@ -13,8 +13,13 @@ export const POWERUP_CONFIG = {
 
     widePaddleDuration: 10000,
     widePaddleMultiplier: 1.6,
-};
 
+    laserDuration: 10000,
+    laserSpeed: 9,
+    laserWidth: 5,
+    laserHeight: 18,
+    laserCooldown: 260,
+};
 
 export function createPowerup(type, x, y) {
     return {
@@ -28,7 +33,6 @@ export function createPowerup(type, x, y) {
     };
 }
 
-
 export function getPowerupSymbol(type) {
     if (type === POWERUP_TYPES.FIREBALL) {
         return "🔥";
@@ -36,6 +40,10 @@ export function getPowerupSymbol(type) {
 
     if (type === POWERUP_TYPES.WIDE_PADDLE) {
         return "↔️";
+    }
+
+    if (type === POWERUP_TYPES.LASER) {
+        return "⚡";
     }
 
     return "?";
