@@ -1732,17 +1732,27 @@ function togglePause() {
 
 
 function setPaddleFromPointer(clientX) {
-    const rectangle = canvas.getBoundingClientRect();
+    const screenWidth = Math.max(
+        1,
+        document.documentElement.clientWidth,
+    );
 
-    const scaleX = canvas.width / rectangle.width;
+    const pointerRatio = Math.max(
+        0,
+        Math.min(
+            1,
+            clientX / screenWidth,
+        ),
+    );
 
-    const pointerX = (
-        clientX - rectangle.left
-    ) * scaleX;
+    const movableWidth = (
+        canvas.width
+        - state.paddle.width
+    );
 
     state.paddle.x = (
-        pointerX
-        - state.paddle.width / 2
+        movableWidth
+        * pointerRatio
     );
 
     keepPaddleInsideCanvas();
@@ -1791,24 +1801,44 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
+function isInteractiveElement(element) {
+    if (!(element instanceof Element)) {
+        return false;
+    }
 
-canvas.addEventListener("mousemove", (event) => {
-    setPaddleFromPointer(event.clientX);
-});
+    return Boolean(
+        element.closest(
+            "button, select, option, input, a, label",
+        ),
+    );
+}
 
 
-canvas.addEventListener(
-    "touchmove",
+document.addEventListener(
+    "pointermove",
     (event) => {
-        event.preventDefault();
+        if (isInteractiveElement(event.target)) {
+            return;
+        }
 
-        const touch = event.touches[0];
+        setPaddleFromPointer(event.clientX);
 
-        if (touch) {
-            setPaddleFromPointer(touch.clientX);
+        if (event.pointerType === "touch") {
+            event.preventDefault();
         }
     },
     { passive: false },
+);
+
+document.addEventListener(
+    "pointerdown",
+    (event) => {
+        if (isInteractiveElement(event.target)) {
+            return;
+        }
+
+        setPaddleFromPointer(event.clientX);
+    },
 );
 
 
