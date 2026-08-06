@@ -23,8 +23,6 @@ const overlayMessage = document.getElementById("overlay-message");
 const startButton = document.getElementById("start-button");
 
 const pauseButton = document.getElementById("pause-button");
-const moveLeftButton = document.getElementById("move-left-button");
-const moveRightButton = document.getElementById("move-right-button");
 const laserButton = document.getElementById("laser-button");
 
 const stageSelect = document.getElementById(
@@ -46,9 +44,6 @@ const state = {
     running: false,
     paused: false,
     animationFrameId: null,
-
-    moveLeft: false,
-    moveRight: false,
 
     powerups: [],
     lasers: [],
@@ -922,19 +917,6 @@ function draw() {
 }
 
 
-function movePaddle() {
-    if (state.moveLeft) {
-        state.paddle.x -= state.paddle.speed;
-    }
-
-    if (state.moveRight) {
-        state.paddle.x += state.paddle.speed;
-    }
-
-    keepPaddleInsideCanvas();
-}
-
-
 function moveBall() {
     state.ball.x += state.ball.dx;
     state.ball.y += state.ball.dy;
@@ -1475,7 +1457,6 @@ function gameLoop() {
         return;
     }
 
-    movePaddle();
     moveBall();
     moveBricks();
     movePowerups();
@@ -1769,15 +1750,6 @@ function setPaddleFromPointer(clientX) {
 
 
 document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        state.moveLeft = true;
-    }
-
-    if (event.key === "ArrowRight") {
-        event.preventDefault();
-        state.moveRight = true;
-    }
 
     if (event.code === "Space") {
         event.preventDefault();
@@ -1790,16 +1762,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-
-document.addEventListener("keyup", (event) => {
-    if (event.key === "ArrowLeft") {
-        state.moveLeft = false;
-    }
-
-    if (event.key === "ArrowRight") {
-        state.moveRight = false;
-    }
-});
 
 function isInteractiveElement(element) {
     if (!(element instanceof Element)) {
@@ -1841,42 +1803,6 @@ document.addEventListener(
     },
 );
 
-
-function bindHoldButton(button, direction) {
-    const startMoving = (event) => {
-        event.preventDefault();
-        state[direction] = true;
-    };
-
-    const stopMoving = (event) => {
-        event.preventDefault();
-        state[direction] = false;
-    };
-
-    button.addEventListener(
-        "pointerdown",
-        startMoving,
-    );
-
-    button.addEventListener(
-        "pointerup",
-        stopMoving,
-    );
-
-    button.addEventListener(
-        "pointercancel",
-        stopMoving,
-    );
-
-    button.addEventListener(
-        "pointerleave",
-        stopMoving,
-    );
-}
-
-
-bindHoldButton(moveLeftButton, "moveLeft");
-bindHoldButton(moveRightButton, "moveRight");
 
 startButton.addEventListener(
     "click",
