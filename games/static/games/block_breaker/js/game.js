@@ -1,5 +1,10 @@
 import { GAME_CONFIG } from "./config.js";
 import { BRICK_TYPES, LEVELS } from "./levels.js";
+
+document.body.classList.add(
+    "block-breaker-mode",
+);
+
 import {
     POWERUP_TYPES,
     POWERUP_CONFIG,
