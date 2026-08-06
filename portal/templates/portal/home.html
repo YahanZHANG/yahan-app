@@ -82,128 +82,62 @@
 
             <div class="portal-app-grid">
 
-                {% if can_use_travel %}
-                    <a
-                        href="{% url 'travel:home' %}"
-                        class="portal-app-card portal-travel-card"
-                    >
-                        <div class="portal-card-top">
-                            <div class="portal-app-icon portal-travel-icon">
-                                <span aria-hidden="true">✈️</span>
-                            </div>
-
-                            <span class="portal-open-arrow" aria-hidden="true">
-                                ↗
-                            </span>
-                        </div>
-
-                        <div class="portal-card-content">
-                            <p class="portal-card-label">
-                                FAMILY TRIP
-                            </p>
-
-                            <h3>家族旅行</h3>
-
-                            <p>
-                                予定、ToDo、赤ちゃんの記録、
-                                家族会議、支出をまとめて管理する。
-                            </p>
-                        </div>
-
-                        <div class="portal-feature-list">
-                            <span>予定</span>
-                            <span>タスク</span>
-                            <span>支出</span>
-                        </div>
-
-                        <div class="portal-card-footer">
-                            <span>家族旅行を開く</span>
-                            <strong aria-hidden="true">→</strong>
-                        </div>
-                    </a>
-                {% endif %}
-
-                {% if can_use_feeding %}
-                    <a
-                        href="{% url 'feeding:today' %}"
-                        class="portal-app-card portal-feeding-card"
-                    >
-                        <div class="portal-card-top">
-                            <div class="portal-app-icon portal-feeding-icon">
-                                <span aria-hidden="true">🥣</span>
-                            </div>
-
-                            <span class="portal-open-arrow" aria-hidden="true">
-                                ↗
-                            </span>
-                        </div>
-
-                        <div class="portal-card-content">
-                            <p class="portal-card-label">
-                                BABY FOOD
-                            </p>
-
-                            <h3>離乳食ノート</h3>
-
-                            <p>
-                                毎日の食事量、食材チャレンジ、
-                                料理の材料、アレルゲンを記録する。
-                            </p>
-                        </div>
-
-                        <div class="portal-feature-list">
-                            <span>食事記録</span>
-                            <span>食材</span>
-                            <span>アレルゲン</span>
-                        </div>
-
-                        <div class="portal-card-footer">
-                            <span>離乳食ノートを開く</span>
-                            <strong aria-hidden="true">→</strong>
-                        </div>
-                    </a>
-                {% endif %}
-
+            {% if can_use_travel %}
                 <a
-                    href="{% url 'games:game_list' %}"
-                    class="portal-app-card portal-games-card"
+                    href="{% url 'travel:home' %}"
+                    class="portal-app-card portal-travel-card"
                 >
-                    <div class="portal-card-top">
-                        <div class="portal-app-icon portal-games-icon">
-                            <span aria-hidden="true">🎮</span>
-                        </div>
-
-                        <span class="portal-open-arrow" aria-hidden="true">
-                            ↗
-                        </span>
+                    <div class="portal-app-icon portal-travel-icon">
+                        <span aria-hidden="true">✈️</span>
                     </div>
 
                     <div class="portal-card-content">
+                        <h3>家族旅行</h3>
+
                         <p class="portal-card-label">
-                            MINI GAMES
+                            FAMILY TRIP
                         </p>
-
-                        <h3>ゲーム</h3>
-
-                        <p>
-                            ブロック崩しなどの、
-                            シンプルなゲームで遊ぶ。
-                        </p>
-                    </div>
-
-                    <div class="portal-feature-list">
-                        <span>ブロック崩し</span>
-                        <span>スコア</span>
-                        <span>ステージ</span>
-                    </div>
-
-                    <div class="portal-card-footer">
-                        <span>ゲームを開く</span>
-                        <strong aria-hidden="true">→</strong>
                     </div>
                 </a>
+            {% endif %}
 
-            </div>
+            {% if can_use_feeding %}
+                <a
+                    href="{% url 'feeding:today' %}"
+                    class="portal-app-card portal-feeding-card"
+                >
+                    <div class="portal-app-icon portal-feeding-icon">
+                        <span aria-hidden="true">🥣</span>
+                    </div>
+
+                    <div class="portal-card-content">
+                        <h3>離乳食ノート</h3>
+
+                        <p class="portal-card-label">
+                            BABY FOOD
+                        </p>
+                    </div>
+                </a>
+            {% endif %}
+
+            <a
+                href="{% url 'games:game_list' %}"
+                class="portal-app-card portal-games-card"
+            >
+                <div class="portal-app-icon portal-games-icon">
+                    <span aria-hidden="true">🎮</span>
+                </div>
+
+                <div class="portal-card-content">
+                    <h3>ゲーム</h3>
+
+                    <p class="portal-card-label">
+                        MINI GAMES
+                    </p>
+                </div>
+            </a>
+
+        </div>
         </section>
 
     </main>
