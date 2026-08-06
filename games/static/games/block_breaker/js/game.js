@@ -1851,7 +1851,7 @@ function setPaddleFromPointer(clientX) {
         return;
     }
 
-    const relativeX = (
+    const pointerX = (
         clientX - canvasRectangle.left
     );
 
@@ -1859,7 +1859,7 @@ function setPaddleFromPointer(clientX) {
         0,
         Math.min(
             1,
-            relativeX / canvasRectangle.width,
+            pointerX / canvasRectangle.width,
         ),
     );
 
@@ -1898,19 +1898,34 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+canvas.addEventListener(
+    "pointerdown",
+    (event) => {
+        setPaddleFromPointer(
+            event.clientX,
+        );
 
-function isInteractiveElement(element) {
-    if (!(element instanceof Element)) {
-        return false;
-    }
+        if (event.pointerType === "touch") {
+            event.preventDefault();
+        }
+    },
+    { passive: false },
+);
 
-    return Boolean(
-        element.closest(
-            "button, select, option, input, a, label",
-        ),
-    );
-}
 
+canvas.addEventListener(
+    "pointermove",
+    (event) => {
+        setPaddleFromPointer(
+            event.clientX,
+        );
+
+        if (event.pointerType === "touch") {
+            event.preventDefault();
+        }
+    },
+    { passive: false },
+);
 
 document.addEventListener(
     "pointermove",
