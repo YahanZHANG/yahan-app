@@ -27,6 +27,14 @@ const moveLeftButton = document.getElementById("move-left-button");
 const moveRightButton = document.getElementById("move-right-button");
 const laserButton = document.getElementById("laser-button");
 
+const stageSelect = document.getElementById(
+    "stage-select",
+);
+
+const stageSelectButton = document.getElementById(
+    "stage-select-button",
+);
+
 canvas.width = GAME_CONFIG.canvasWidth;
 canvas.height = GAME_CONFIG.canvasHeight;
 
@@ -99,6 +107,12 @@ function updateStatus() {
     scoreDisplay.textContent = state.score;
     livesDisplay.textContent = state.lives;
     stageDisplay.textContent = state.levelIndex + 1;
+
+    if (stageSelect) {
+        stageSelect.value = String(
+            state.levelIndex
+        );
+    }
 }
 
 
@@ -1591,6 +1605,58 @@ function savePausedEffectTimers() {
     });
 }
 
+function selectStage() {
+    if (!stageSelect) {
+        return;
+    }
+
+    const selectedLevelIndex = Number(
+        stageSelect.value
+    );
+
+    const isValidLevel = (
+        Number.isInteger(selectedLevelIndex)
+        && selectedLevelIndex >= 0
+        && selectedLevelIndex < LEVELS.length
+    );
+
+    if (!isValidLevel) {
+        return;
+    }
+
+    state.running = false;
+    state.paused = false;
+
+    cancelAnimationFrame(
+        state.animationFrameId
+    );
+
+    state.animationFrameId = null;
+
+    state.levelIndex = selectedLevelIndex;
+
+    // ステージ選択時もスコアを残したい場合は、selectStage()内のこの2行だけ削除
+    // state.score = 0;
+    // state.lives = GAME_CONFIG.lives;
+
+    state.moveLeft = false;
+    state.moveRight = false;
+
+    initialiseLevel();
+    draw();
+
+    pauseButton.textContent = "一時停止";
+
+    const selectedLevel = getCurrentLevel();
+
+    showOverlay(
+        `ステージ${selectedLevel.number}`,
+        `「${selectedLevel.name}」を開始する。`,
+        "スタート",
+    );
+
+    startButton.dataset.action = "start";
+}
 
 function startOrContinueGame() {
     const action = startButton.dataset.action;
@@ -1791,6 +1857,13 @@ pauseButton.addEventListener(
     "click",
     togglePause,
 );
+
+if (stageSelectButton) {
+    stageSelectButton.addEventListener(
+        "click",
+        selectStage,
+    );
+}
 
 if (laserButton) {
     laserButton.disabled = true;
