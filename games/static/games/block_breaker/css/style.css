@@ -559,3 +559,54 @@ body.block-breaker-mode .app-header {
         font-size: 13px;
     }
 }
+
+/* 通常時は全画面終了ボタンを非表示 */
+.exit-fullscreen-button {
+    display: none;
+}
+
+
+/* 全画面時だけ右上に表示 */
+#game-shell:fullscreen .exit-fullscreen-button,
+#game-shell.is-pseudo-fullscreen .exit-fullscreen-button {
+    position: fixed;
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    z-index: 100;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 36px;
+    padding: 6px 12px;
+
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    background: rgba(20, 25, 40, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+#game-shell:fullscreen .exit-fullscreen-button:hover,
+#game-shell.is-pseudo-fullscreen .exit-fullscreen-button:hover {
+    background: rgba(40, 47, 70, 0.92);
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+    #game-shell:fullscreen .exit-fullscreen-button,
+    #game-shell.is-pseudo-fullscreen .exit-fullscreen-button {
+        top: max(3px, env(safe-area-inset-top));
+        right: max(3px, env(safe-area-inset-right));
+
+        min-height: 30px;
+        padding: 3px 9px;
+        font-size: 12px;
+    }
+}
