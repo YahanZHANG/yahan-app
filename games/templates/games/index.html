@@ -4,10 +4,14 @@
 
 {% block content %}
 <section class="games-page">
-    <div class="games-page-header">
-        <h1>ゲーム</h1>
-        <p>遊びたいゲームを選ぼう。</p>
-    </div>
+    <a href="{% url 'portal:home' %}" class="back-link">
+        ← Yahan-APPに戻る
+    </a>
+
+    <h1>  </h1>
+    <h1>ゲーム一覧</h1>
+
+    <!-- 既存のゲーム一覧 -->
 
     <div class="game-card-list">
         <a
