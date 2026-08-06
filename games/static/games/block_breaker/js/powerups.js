@@ -1,5 +1,6 @@
 export const POWERUP_TYPES = {
     FIREBALL: "fireball",
+    WIDE_PADDLE: "wide-paddle",
 };
 
 
@@ -9,6 +10,9 @@ export const POWERUP_CONFIG = {
     fallSpeed: 2.4,
 
     fireballDuration: 8000,
+
+    widePaddleDuration: 10000,
+    widePaddleMultiplier: 1.6,
 };
 
 
@@ -28,6 +32,10 @@ export function createPowerup(type, x, y) {
 export function getPowerupSymbol(type) {
     if (type === POWERUP_TYPES.FIREBALL) {
         return "🔥";
+    }
+
+    if (type === POWERUP_TYPES.WIDE_PADDLE) {
+        return "↔️";
     }
 
     return "?";

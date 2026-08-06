@@ -49,15 +49,20 @@ const state = {
     powerups: [],
 
     effects: {
-        fireballPausedRemaining: 0,
         fireballActive: false,
         fireballEndsAt: 0,
+        fireballPausedRemaining: 0,
+
+        widePaddleActive: false,
+        widePaddleEndsAt: 0,
+        widePaddlePausedRemaining: 0,
     },
 
     paddle: {
         x: 0,
         y: 0,
         width: GAME_CONFIG.paddle.width,
+        normalWidth: GAME_CONFIG.paddle.width,
         height: GAME_CONFIG.paddle.height,
         speed: GAME_CONFIG.paddle.speed,
     },
@@ -73,6 +78,68 @@ const state = {
     bricks: [],
 };
 
+function activateWidePaddle() {
+    const oldCenter = (
+        state.paddle.x
+        + state.paddle.width / 2
+    );
+
+    state.effects.widePaddleActive = true;
+
+    state.effects.widePaddleEndsAt = (
+        performance.now()
+        + POWERUP_CONFIG.widePaddleDuration
+    );
+
+    state.paddle.width = (
+        state.paddle.normalWidth
+        * POWERUP_CONFIG.widePaddleMultiplier
+    );
+
+    state.paddle.x = (
+        oldCenter
+        - state.paddle.width / 2
+    );
+
+    keepPaddleInsideCanvas();
+}
+
+
+function deactivateWidePaddle() {
+    const oldCenter = (
+        state.paddle.x
+        + state.paddle.width / 2
+    );
+
+    state.effects.widePaddleActive = false;
+    state.effects.widePaddleEndsAt = 0;
+    state.effects.widePaddlePausedRemaining = 0;
+
+    state.paddle.width = state.paddle.normalWidth;
+
+    state.paddle.x = (
+        oldCenter
+        - state.paddle.width / 2
+    );
+
+    keepPaddleInsideCanvas();
+}
+
+
+function updateWidePaddleEffect(currentTime) {
+    if (!state.effects.widePaddleActive) {
+        return;
+    }
+
+    const remainingMilliseconds = (
+        state.effects.widePaddleEndsAt
+        - currentTime
+    );
+
+    if (remainingMilliseconds <= 0) {
+        deactivateWidePaddle();
+    }
+}
 
 function getCurrentLevel() {
     return LEVELS[state.levelIndex];
@@ -129,6 +196,8 @@ function createBricks() {
                 return;
             }
 
+            const powerupKey = `${rowIndex}-${columnIndex}`;
+
             state.bricks.push({
                 x: startX + columnIndex * (brickWidth + gap),
                 y: startY + rowIndex * (brickHeight + gap),
@@ -137,6 +206,7 @@ function createBricks() {
                 type,
                 hitPoints: type === BRICK_TYPES.STRONG ? 2 : 1,
                 destroyed: false,
+                powerupType: level.powerups?.[powerupKey] ?? null,
             });
         });
     });
@@ -147,6 +217,7 @@ function initialiseLevel() {
     state.powerups = [];
 
     deactivateFireball();
+    deactivateWidePaddle();
 
     resetPaddle();
     resetBall();
@@ -224,9 +295,15 @@ function drawBackground() {
 function drawPaddle() {
     context.save();
 
-    context.fillStyle = "#f0f3ff";
-    context.shadowBlur = 12;
-    context.shadowColor = "rgba(150, 170, 255, 0.75)";
+    if (state.effects.widePaddleActive) {
+        context.fillStyle = "#8ff0d0";
+        context.shadowBlur = 18;
+        context.shadowColor = "rgba(100, 255, 210, 0.9)";
+    } else {
+        context.fillStyle = "#f0f3ff";
+        context.shadowBlur = 12;
+        context.shadowColor = "rgba(150, 170, 255, 0.75)";
+    }
 
     context.beginPath();
     context.roundRect(
@@ -419,6 +496,20 @@ function draw() {
     drawBall();
 }
 
+function keepPaddleInsideCanvas() {
+    if (state.paddle.x < 0) {
+        state.paddle.x = 0;
+    }
+
+    const maximumX = (
+        canvas.width
+        - state.paddle.width
+    );
+
+    if (state.paddle.x > maximumX) {
+        state.paddle.x = maximumX;
+    }
+}
 
 function movePaddle() {
     if (state.moveLeft) {
@@ -429,15 +520,7 @@ function movePaddle() {
         state.paddle.x += state.paddle.speed;
     }
 
-    if (state.paddle.x < 0) {
-        state.paddle.x = 0;
-    }
-
-    const maximumX = canvas.width - state.paddle.width;
-
-    if (state.paddle.x > maximumX) {
-        state.paddle.x = maximumX;
-    }
+    keepPaddleInsideCanvas();
 }
 
 
@@ -488,6 +571,11 @@ function handlePowerupCollisions() {
         if (powerup.type === POWERUP_TYPES.FIREBALL) {
             activateFireball();
             state.score += 250;
+        }
+
+        if (powerup.type === POWERUP_TYPES.WIDE_PADDLE) {
+            activateWidePaddle();
+            state.score += 200;
         }
 
         updateStatus();
@@ -600,15 +688,22 @@ function handleBrickCollisions() {
         }
 
         if (brick.type !== BRICK_TYPES.UNBREAKABLE) {
-            brick.hitPoints -= 1;
+            if (state.effects.fireballActive) {
+                brick.hitPoints = 0;
+            } else {
+                brick.hitPoints -= 1;
+            }
 
             if (brick.hitPoints <= 0) {
                 brick.destroyed = true;
                 state.score += 100;
 
-                if (brick.type === BRICK_TYPES.POWERUP) {
+                if (
+                    brick.type === BRICK_TYPES.POWERUP
+                    && brick.powerupType
+                ) {
                     const powerup = createPowerup(
-                        POWERUP_TYPES.FIREBALL,
+                        brick.powerupType,
                         (
                             brick.x
                             + brick.width / 2
@@ -732,7 +827,10 @@ function gameLoop() {
     handleBrickCollisions();
     handlePowerupCollisions();
 
-    updateFireballEffect(performance.now());
+    const currentTime = performance.now();
+
+    updateFireballEffect(currentTime);
+    updateWidePaddleEffect(currentTime);
 
     if (checkStageClear()) {
         draw();
@@ -784,6 +882,34 @@ function startOrContinueGame() {
 
     startButton.dataset.action = "";
 
+    // 中央の「再開」ボタンを押したとき、
+    // 一時停止前のパワーアップ残り時間を復元する
+    const currentTime = performance.now();
+
+    if (
+        state.effects.fireballActive
+        && state.effects.fireballPausedRemaining > 0
+    ) {
+        state.effects.fireballEndsAt = (
+            currentTime
+            + state.effects.fireballPausedRemaining
+        );
+
+        state.effects.fireballPausedRemaining = 0;
+    }
+
+    if (
+        state.effects.widePaddleActive
+        && state.effects.widePaddlePausedRemaining > 0
+    ) {
+        state.effects.widePaddleEndsAt = (
+            currentTime
+            + state.effects.widePaddlePausedRemaining
+        );
+
+        state.effects.widePaddlePausedRemaining = 0;
+    }
+
     hideOverlay();
 
     state.paused = false;
@@ -806,12 +932,21 @@ function togglePause() {
 
     state.paused = !state.paused;
 
-    // 一時停止に入るとき
+    // 一時停止に入る
     if (state.paused) {
+        const currentTime = performance.now();
+
         if (state.effects.fireballActive) {
             state.effects.fireballPausedRemaining = Math.max(
                 0,
-                state.effects.fireballEndsAt - performance.now(),
+                state.effects.fireballEndsAt - currentTime,
+            );
+        }
+
+        if (state.effects.widePaddleActive) {
+            state.effects.widePaddlePausedRemaining = Math.max(
+                0,
+                state.effects.widePaddleEndsAt - currentTime,
             );
         }
 
@@ -826,23 +961,40 @@ function togglePause() {
         return;
     }
 
-    // 一時停止を解除するとき
+    // 下の「一時停止／再開」ボタンで再開する
+    const currentTime = performance.now();
+
     if (
         state.effects.fireballActive
         && state.effects.fireballPausedRemaining > 0
     ) {
         state.effects.fireballEndsAt = (
-            performance.now()
+            currentTime
             + state.effects.fireballPausedRemaining
         );
 
         state.effects.fireballPausedRemaining = 0;
     }
 
+    if (
+        state.effects.widePaddleActive
+        && state.effects.widePaddlePausedRemaining > 0
+    ) {
+        state.effects.widePaddleEndsAt = (
+            currentTime
+            + state.effects.widePaddlePausedRemaining
+        );
+
+        state.effects.widePaddlePausedRemaining = 0;
+    }
+
     hideOverlay();
     pauseButton.textContent = "一時停止";
 
     state.running = true;
+
+    cancelAnimationFrame(state.animationFrameId);
+
     state.animationFrameId = requestAnimationFrame(
         gameLoop,
     );

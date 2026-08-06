@@ -18,6 +18,13 @@ export const LEVELS = [
             [1, 1, 4, 1, 1, 4, 1, 1],
             [0, 1, 1, 1, 1, 1, 1, 0],
         ],
+
+        powerups: {
+            "0-3": "fireball",
+            "0-4": "wide-paddle",
+            "2-2": "fireball",
+            "2-5": "wide-paddle",
+        },
     },
 
     {
