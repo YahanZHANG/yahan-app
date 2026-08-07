@@ -55,9 +55,14 @@ class TravelGroup(models.Model):
 class FamilyMember(models.Model):
     """旅行に登場する家族メンバー。ログインアカウントは必須ではない。"""
 
+
+    class MemberType(models.TextChoices):
+        ADULT = "adult", "大人"
+        CHILD = "child", "子ども"
+        BABY = "baby", "赤ちゃん"
+
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="family_members",
         blank=True,
@@ -66,7 +71,6 @@ class FamilyMember(models.Model):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name="ログインユーザー",
         on_delete=models.SET_NULL,
         related_name="travel_family_members",
         blank=True,
@@ -74,41 +78,40 @@ class FamilyMember(models.Model):
     )
 
     name = models.CharField(
-        "名前",
         max_length=50,
     )
 
+    member_type = models.CharField(
+        max_length=10,
+        choices=MemberType.choices,
+        default=MemberType.ADULT,
+    )
+
     display_order = models.PositiveIntegerField(
-        "表示順",
         default=0,
     )
 
     is_active = models.BooleanField(
-        "選択肢に表示する",
         default=True,
     )
 
     class Meta:
-        verbose_name = "家族メンバー"
-        verbose_name_plural = "家族メンバー"
         ordering = [
             "display_order",
             "id",
         ]
-
         constraints = [
             models.UniqueConstraint(
                 fields=[
                     "travel_group",
                     "name",
                 ],
-                name="unique_family_member_name_per_travel_group",
+                name="unique_family_member_name_per_travel",
             ),
         ]
 
     def __str__(self):
         return self.name
-
 
 class Schedule(models.Model):
     """旅行や家族の予定を保存するモデル。"""

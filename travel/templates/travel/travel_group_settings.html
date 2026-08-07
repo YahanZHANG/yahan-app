@@ -156,7 +156,7 @@
                                 id="username"
                                 name="username"
                                 required
-                                placeholder="ユーザー名を入力"
+                                placeholder="例：yahan"
                             >
 
                         </div>
@@ -234,6 +234,22 @@
                                         {{ member.name }}
                                     </strong>
 
+                                    {% if member.member_type == "baby" %}
+                                        <span class="travel-settings-type-badge">
+                                            赤ちゃん
+                                        </span>
+
+                                    {% elif member.member_type == "child" %}
+                                        <span class="travel-settings-type-badge">
+                                            子ども
+                                        </span>
+
+                                    {% else %}
+                                        <span class="travel-settings-type-badge">
+                                            大人
+                                        </span>
+                                    {% endif %}
+
                                     {% if member.user %}
                                         <span class="travel-settings-account-badge">
                                             アカウントあり
@@ -307,6 +323,37 @@
                                 required
                                 placeholder="例：Baby"
                             >
+
+                        </div>
+
+                        <div class="travel-settings-field">
+
+                            <label for="family-member-type">
+                                種類
+                            </label>
+
+                            <select
+                                id="family-member-type"
+                                name="member_type"
+                                required
+                            >
+                                <option value="adult">
+                                    大人
+                                </option>
+
+                                <option value="child">
+                                    子ども
+                                </option>
+
+                                <option value="baby">
+                                    赤ちゃん
+                                </option>
+                            </select>
+
+                            <p class="new-family-member-note">
+                                子どもがいると、成長・変化のメモが足される。
+                                赤ちゃんがいると、成長・変化のメモと、授乳記録・睡眠記録・うんちの記録が足される。
+                            </p>
 
                         </div>
 

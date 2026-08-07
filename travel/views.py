@@ -486,12 +486,27 @@ def family_member_add(
         "",
     ).strip()
 
+    member_type = request.POST.get(
+        "member_type",
+        FamilyMember.MemberType.ADULT,
+    )
+
+    valid_member_types = {
+        FamilyMember.MemberType.ADULT,
+        FamilyMember.MemberType.CHILD,
+        FamilyMember.MemberType.BABY,
+    }
+
+    if member_type not in valid_member_types:
+        member_type = FamilyMember.MemberType.ADULT
+
     if name:
         family_member, created = (
             FamilyMember.objects.get_or_create(
                 travel_group=travel_group,
                 name=name,
                 defaults={
+                    "member_type": member_type,
                     "display_order": (
                         travel_group.family_members.count()
                         + 1
@@ -501,11 +516,14 @@ def family_member_add(
             )
         )
 
-        if not created and not family_member.is_active:
+        if not created:
             family_member.is_active = True
+            family_member.member_type = member_type
+
             family_member.save(
                 update_fields=[
                     "is_active",
+                    "member_type",
                 ]
             )
 
@@ -563,6 +581,22 @@ def home(request):
             request,
             "travel/no_travel_group.html",
         )
+
+    active_family_members = FamilyMember.objects.filter(
+        travel_group=current_travel_group,
+        is_active=True,
+    )
+
+    has_baby = active_family_members.filter(
+        member_type=FamilyMember.MemberType.BABY,
+    ).exists()
+
+    has_child = active_family_members.filter(
+        member_type__in=[
+            FamilyMember.MemberType.CHILD,
+            FamilyMember.MemberType.BABY,
+        ],
+    ).exists()
 
     today = timezone.localdate()
 
@@ -713,6 +747,8 @@ def home(request):
             )
             .distinct()
         ),
+        "has_baby": has_baby,
+        "has_child": has_child,
         "stay_day": stay_day,
         "upcoming_schedules": upcoming_schedules,
         "latest_growth_notes": latest_growth_notes,

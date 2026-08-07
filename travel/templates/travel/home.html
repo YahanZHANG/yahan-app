@@ -316,6 +316,7 @@
 
 </section>
 
+{% if has_baby %}
 <section class="dashboard-section">
     <div class="section-heading">
         <div>
@@ -469,7 +470,9 @@
         </a>
     </div>
 </section>
+{% endif %}
 
+{% if has_child %}
 <section class="dashboard-section">
     <div class="section-heading">
         <div>
@@ -565,7 +568,7 @@
         {% endfor %}
     </div>
 </section>
-
+{% endif %}
 
 <section class="dashboard-section">
     <div class="section-heading">
