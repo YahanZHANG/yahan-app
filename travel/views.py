@@ -105,13 +105,21 @@ def travel_group_list(request):
         members=request.user,
     ).select_related(
         "owner",
+    ).prefetch_related(
+        "members",
+        "family_members",
     ).distinct()
+
+    current_travel_group = get_current_travel_group(
+        request
+    )
 
     return render(
         request,
         "travel/travel_group_list.html",
         {
             "travel_groups": travel_groups,
+            "current_travel_group": current_travel_group,
         },
     )
 
@@ -170,6 +178,55 @@ def travel_group_settings(
                 travel_group.owner_id
                 == request.user.id
             ),
+        },
+    )
+
+@login_required
+def travel_group_delete(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        owner=request.user,
+    )
+
+    if request.method == "POST":
+
+        deleted_group_id = travel_group.id
+
+        travel_group.delete()
+
+        if (
+            request.session.get(
+                "current_travel_group_id"
+            )
+            == deleted_group_id
+        ):
+            request.session.pop(
+                "current_travel_group_id",
+                None,
+            )
+
+        next_group = TravelGroup.objects.filter(
+            members=request.user,
+        ).first()
+
+        if next_group:
+            request.session[
+                "current_travel_group_id"
+            ] = next_group.id
+
+        return redirect(
+            "travel:travel_group_list"
+        )
+
+    return render(
+        request,
+        "travel/travel_group_confirm_delete.html",
+        {
+            "travel_group": travel_group,
         },
     )
 

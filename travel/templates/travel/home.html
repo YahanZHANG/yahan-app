@@ -13,42 +13,17 @@
 
         <div class="travel-header-main">
 
-            <p class="travel-header-label">
-                FAMILY TRIP
-            </p>
+            <div class="travel-header-title-group">
+                <p class="travel-header-label">
+                    FAMILY TRIP
+                </p>
 
-            <h1 class="travel-group-name">
-                {{ current_travel_group.name }}
-            </h1>
+                <h1 class="travel-group-name">
+                    {{ current_travel_group.name }}
+                </h1>
+            </div>
 
-            <a
-                href="{% url 'travel:travel_group_settings' current_travel_group.id %}"
-                class="small-action-button"
-            >
-                <i class="bi bi-gear"></i>
-                旅行設定
-            </a>
-
-            <a
-                href="{% url 'travel:travel_group_list' %}"
-                class="small-action-button"
-            >
-                <i class="bi bi-list-ul"></i>
-                旅行一覧
-            </a>
-
-            <p class="today-label mb-1">
-                {{ today|date:"Y年n月j日" }}
-            </p>
-
-            <p class="welcome-subtitle mb-0">
-                中国・日本滞在 {{ stay_day }}日目
-            </p>
-
-        </div>
-
-        {% if travel_groups|length > 1 %}
-            <div class="travel-switcher">
+            <div class="travel-header-actions">
 
                 <button
                     type="button"
@@ -63,6 +38,29 @@
 
                     <i class="bi bi-chevron-down"></i>
                 </button>
+
+                <a
+                    href="{% url 'travel:travel_group_list' %}"
+                    class="small-action-button"
+                >
+                    <i class="bi bi-list-ul"></i>
+                    旅行一覧
+                </a>
+
+            </div>
+
+        </div>
+
+        {% if travel_groups|length > 1 %}
+            <div class="travel-switcher">
+
+                <p class="today-label mb-1">
+                    {{ today|date:"Y年n月j日" }}
+                </p>
+
+                <p class="welcome-subtitle mb-0">
+                    中国・日本滞在 {{ stay_day }}日目
+                </p>
 
                 <div
                     class="travel-switcher-menu"

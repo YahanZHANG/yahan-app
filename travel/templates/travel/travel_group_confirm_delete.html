@@ -1,0 +1,66 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    旅行を削除
+{% endblock %}
+
+{% block content %}
+
+<section class="trip-delete-page">
+
+    <div class="trip-delete-card">
+
+        <div class="trip-delete-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <p class="trip-delete-eyebrow">
+            DELETE TRIP
+        </p>
+
+        <h1>
+            この旅行を削除する？
+        </h1>
+
+        <p class="trip-delete-name">
+            {{ travel_group.name }}
+        </p>
+
+        <div class="trip-delete-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+
+            <p>
+                この旅行に保存されている予定・お願い・
+                ミルク・睡眠・成長メモ・支出などのデータも
+                削除される。この操作は元に戻せない。
+            </p>
+        </div>
+
+        <div class="trip-delete-buttons">
+
+            <a
+                href="{% url 'travel:travel_group_list' %}"
+                class="trip-secondary-button"
+            >
+                キャンセル
+            </a>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="trip-danger-button"
+                >
+                    <i class="bi bi-trash3"></i>
+                    旅行を削除
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

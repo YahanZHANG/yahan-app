@@ -51,6 +51,11 @@ urlpatterns = [
         name="family_member_remove",
     ),
     path(
+        "groups/<int:travel_group_id>/delete/",
+        views.travel_group_delete,
+        name="travel_group_delete",
+    ),
+    path(
         "schedule/",
         views.schedule_list,
         name="schedule_list",

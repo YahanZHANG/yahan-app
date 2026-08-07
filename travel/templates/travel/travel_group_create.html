@@ -1,47 +1,93 @@
 {% extends "travel/base.html" %}
 
 {% block title %}
-    新しい旅行管理アプリ
+    新しい旅行 | 旅行管理アプリ
 {% endblock %}
 
 {% block content %}
 
-<section class="dashboard-section">
+<div class="form-page">
 
-    <div class="section-heading">
-        <h1 class="section-title">
-            新しい旅行管理アプリ
-        </h1>
+    <div class="form-page-header">
+
+        <div>
+            <a
+                href="{% url 'travel:travel_group_list' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                旅行一覧に戻る
+            </a>
+
+            <p class="travel-create-eyebrow">
+                NEW TRIP
+            </p>
+
+            <h2>
+                新しい旅行を作る
+            </h2>
+
+            <p class="travel-create-description">
+                家族や同行者と共有する旅行スペースを作成する。
+            </p>
+        </div>
+
     </div>
 
-    <form
-        method="post"
-        class="app-card"
-    >
-        {% csrf_token %}
 
-        <label for="travel-name">
-            旅行名
-        </label>
+    <div class="travel-create-card">
 
-        <input
-            type="text"
-            id="travel-name"
-            name="name"
-            maxlength="100"
-            required
-            placeholder="例：日本一時帰国 2027"
+        <form
+            method="post"
+            class="travel-create-form"
         >
+            {% csrf_token %}
 
-        <button
-            type="submit"
-            class="small-action-button"
-        >
-            旅行を作成
-        </button>
+            <div class="travel-create-field">
 
-    </form>
+                <label for="travel-name">
+                    旅行名
+                </label>
 
-</section>
+                <p class="travel-create-field-help">
+                    あとから設定画面で変更できる。
+                </p>
+
+                <input
+                    type="text"
+                    id="travel-name"
+                    name="name"
+                    maxlength="100"
+                    required
+                    autofocus
+                    placeholder="例：中国・日本一時帰国 2027"
+                >
+
+            </div>
+
+            <div class="travel-create-actions">
+
+                <a
+                    href="{% url 'travel:travel_group_list' %}"
+                    class="travel-create-cancel"
+                >
+                    キャンセル
+                </a>
+
+                <button
+                    type="submit"
+                    class="travel-create-submit"
+                >
+                    旅行を作成
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% endblock %}

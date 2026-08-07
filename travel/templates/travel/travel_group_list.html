@@ -1,18 +1,29 @@
 {% extends "travel/base.html" %}
 
 {% block title %}
-    家族旅行一覧
+    旅行一覧 | 旅行管理アプリ
 {% endblock %}
 
 {% block content %}
 
-<section class="dashboard-section">
+<div class="form-page">
 
-    <div class="section-heading">
+    <div class="form-page-header schedule-list-header">
+
         <div>
-            <h1 class="section-title">
-                旅行管理アプリ
-            </h1>
+            <a
+                href="{% url 'travel:home' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                ホームへ戻る
+            </a>
+
+            <h2>旅行一覧</h2>
+
+            <p class="trip-list-description">
+                参加している旅行を選択できる。
+            </p>
         </div>
 
         <a
@@ -21,63 +32,115 @@
         >
             ＋ 新しい旅行
         </a>
+
     </div>
 
-    <div class="travel-group-list">
+
+    <div class="trip-card-grid">
 
         {% for travel_group in travel_groups %}
 
-            <article class="app-card">
-
-                <h3>
-                    {{ travel_group.name }}
-                </h3>
-
-                <p>
-                    代表：
-                    {% if travel_group.owner.first_name %}
-                        {{ travel_group.owner.first_name }}
-                    {% else %}
-                        {{ travel_group.owner.username }}
+            <article
+                class="
+                    trip-card
+                    {% if current_travel_group and travel_group.id == current_travel_group.id %}
+                        trip-card-current
                     {% endif %}
-                </p>
+                "
+            >
 
-                <div>
-                    <a
-                        href="{% url 'travel:switch_travel_group' travel_group.id %}"
-                        class="small-action-button"
-                    >
-                        この旅行を開く
-                    </a>
+                <div class="trip-card-content">
 
-                    <a
-                        href="{% url 'travel:travel_group_settings' travel_group.id %}"
-                        class="small-action-button"
-                    >
-                        設定
-                    </a>
+                    {% if current_travel_group and travel_group.id == current_travel_group.id %}
+                        <div class="trip-current-badge">
+                            <i class="bi bi-check-circle-fill"></i>
+                            選択中
+                        </div>
+                    {% endif %}
+
+                    <h2 class="trip-card-title">
+                        {{ travel_group.name }}
+                    </h2>
+
+                </div>
+
+
+                <div class="trip-card-actions">
+
+                    {% if current_travel_group and travel_group.id == current_travel_group.id %}
+
+                        <a
+                            href="{% url 'travel:home' %}"
+                            class="trip-open-button"
+                        >
+                            この旅行を開く
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{% url 'travel:switch_travel_group' travel_group.id %}"
+                            class="trip-open-button"
+                        >
+                            この旅行を選択
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+
+                    {% endif %}
+
+
+                    <div class="trip-card-sub-actions">
+
+                        <a
+                            href="{% url 'travel:travel_group_settings' travel_group.id %}"
+                            class="trip-icon-action"
+                        >
+                            <i class="bi bi-gear"></i>
+                            設定
+                        </a>
+
+                        {% if travel_group.owner_id == request.user.id %}
+                            <a
+                                href="{% url 'travel:travel_group_delete' travel_group.id %}"
+                                class="trip-icon-action trip-delete-action"
+                            >
+                                <i class="bi bi-trash3"></i>
+                                削除
+                            </a>
+                        {% endif %}
+
+                    </div>
+
                 </div>
 
             </article>
 
         {% empty %}
 
-            <div class="app-card empty-state">
+            <div class="trip-empty-state">
+
+                <h2>
+                    まだ旅行がない
+                </h2>
+
                 <p>
-                    参加している旅行はまだありません
+                    最初の旅行を作成しよう。
                 </p>
 
                 <a
                     href="{% url 'travel:travel_group_create' %}"
+                    class="small-action-button"
                 >
-                    最初の旅行を作る
+                    ＋ 最初の旅行を作る
                 </a>
+
             </div>
 
         {% endfor %}
 
     </div>
 
-</section>
+</div>
 
 {% endblock %}
