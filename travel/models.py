@@ -4,6 +4,48 @@ from decimal import Decimal
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 
+class TravelGroup(models.Model):
+    """家族旅行ごとの共有スペース。"""
+
+    name = models.CharField(
+        "旅行名",
+        max_length=100,
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="代表者",
+        on_delete=models.PROTECT,
+        related_name="owned_travel_groups",
+    )
+
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        verbose_name="参加メンバー",
+        related_name="travel_groups",
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "家族旅行"
+        verbose_name_plural = "家族旅行"
+        ordering = [
+            "-created_at",
+        ]
+
+    def __str__(self):
+        return self.name
+
 class FamilyMember(models.Model):
     """予定の対象として選択できる家族メンバー。"""
 
@@ -36,6 +78,15 @@ class FamilyMember(models.Model):
 
 class Schedule(models.Model):
     """旅行や家族の予定を保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="schedules",
+        blank=True,
+        null=True,
+    )
 
     title = models.CharField(
         "予定名",
@@ -104,6 +155,15 @@ class Schedule(models.Model):
 
 class Task(models.Model):
     """家族へのお願いやToDoを保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="tasks",
+        blank=True,
+        null=True,
+    )
 
     class Priority(models.TextChoices):
         LOW = "low", "低"
@@ -174,6 +234,15 @@ class Task(models.Model):
 
 class BabyLog(models.Model):
     """赤ちゃんのミルク・睡眠・おむつなどを保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="baby_logs",
+        blank=True,
+        null=True,
+    )
 
     class LogType(models.TextChoices):
         MILK = "milk", "ミルク"
@@ -292,6 +361,15 @@ class FamilyStatus(models.Model):
 class MilkLog(models.Model):
     """赤ちゃんのミルク記録を保存するモデル。"""
 
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="milk_logs",
+        blank=True,
+        null=True,
+    )
+
     fed_at = models.DateTimeField(
         "授乳時刻",
     )
@@ -324,6 +402,15 @@ class MilkLog(models.Model):
 
 class SleepLog(models.Model):
     """赤ちゃんの睡眠記録を保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="sleep_logs",
+        blank=True,
+        null=True,
+    )
 
     started_at = models.DateTimeField(
         "寝入り時刻",
@@ -382,6 +469,15 @@ class SleepLog(models.Model):
 class PoopLog(models.Model):
     """赤ちゃんのうんち記録を保存するモデル。"""
 
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="poop_logs",
+        blank=True,
+        null=True,
+    )
+
     class Amount(models.TextChoices):
         LARGE = "large", "多い"
         NORMAL = "normal", "ふつう"
@@ -430,6 +526,15 @@ class PoopLog(models.Model):
 
 class MeetingNote(models.Model):
     """家族会議の決定事項や次の行動を保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="meeting_notes",
+        blank=True,
+        null=True,
+    )
 
     title = models.CharField(
         "タイトル",
@@ -556,6 +661,15 @@ class UserProfile(models.Model):
 class ImportantNotice(models.Model):
     """ホーム画面に表示する重要なお知らせ。"""
 
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="important_notices",
+        blank=True,
+        null=True,
+    )
+
     message = models.TextField(
         "お知らせ内容",
     )
@@ -591,6 +705,15 @@ class ImportantNotice(models.Model):
 
 class Expense(models.Model):
     """旅行中の支出を保存するモデル。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="expenses",
+        blank=True,
+        null=True,
+    )
 
     class Category(models.TextChoices):
         FOOD = "food", "食事"
@@ -744,6 +867,15 @@ class ExpenseShare(models.Model):
 
 class BabyGrowthNote(models.Model):
     """赤ちゃんの成長や変化についての気づきを記録する。"""
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="baby_growth_notes",
+        blank=True,
+        null=True,
+    )
 
     observed_on = models.DateField(
         "記録日",
