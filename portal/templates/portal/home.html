@@ -70,36 +70,33 @@
                 </div>
 
                 <span class="portal-app-count">
-                    {% if can_use_travel and can_use_feeding %}
+                    {% if can_use_feeding %}
                         3 apps
-                    {% elif can_use_travel or can_use_feeding %}
-                        2 apps
                     {% else %}
-                        1 app
+                        2 apps
                     {% endif %}
                 </span>
             </div>
 
             <div class="portal-app-grid">
 
-            {% if can_use_travel %}
-                <a
-                    href="{% url 'travel:home' %}"
-                    class="portal-app-card portal-travel-card"
-                >
-                    <div class="portal-app-icon portal-travel-icon">
-                        <span aria-hidden="true">✈️</span>
-                    </div>
+            <a
+                href="{% url 'travel:home' %}"
+                class="portal-app-card portal-travel-card"
+            >
+                <div class="portal-app-icon portal-travel-icon">
+                    <span aria-hidden="true">✈️</span>
+                </div>
 
-                    <div class="portal-card-content">
-                        <h3>旅行管理アプリ</h3>
+                <div class="portal-card-content">
+                    <h3>旅行管理アプリ</h3>
 
-                        <p class="portal-card-label">
-                            FAMILY TRIP
-                        </p>
-                    </div>
-                </a>
-            {% endif %}
+                    <p class="portal-card-label">
+                        FAMILY TRIP
+                    </p>
+                </div>
+            </a>
+
 
             {% if can_use_feeding %}
                 <a
