@@ -11,6 +11,11 @@ urlpatterns = [
         name="home",
     ),
     path(
+        "switch/<int:travel_group_id>/",
+        views.switch_travel_group,
+        name="switch_travel_group",
+    ),
+    path(
         "schedule/",
         views.schedule_list,
         name="schedule_list",

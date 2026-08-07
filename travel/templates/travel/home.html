@@ -8,16 +8,76 @@
 {% block content %}
 
 <section class="welcome-section">
-    <div>
-        <p class="today-label mb-1">
-            {{ today|date:"Y年n月j日" }}
-        </p>
 
-        <p class="welcome-subtitle mb-0">
-            日本滞在 {{ stay_day }}日目
-        </p>
+    <div class="travel-header">
+
+        <div class="travel-header-main">
+
+            <p class="travel-header-label">
+                FAMILY TRIP
+            </p>
+
+            <h1 class="travel-group-name">
+                {{ current_travel_group.name }}
+            </h1>
+
+            <p class="today-label mb-1">
+                {{ today|date:"Y年n月j日" }}
+            </p>
+
+            <p class="welcome-subtitle mb-0">
+                日本滞在 {{ stay_day }}日目
+            </p>
+
+        </div>
+
+        {% if travel_groups|length > 1 %}
+            <div class="travel-switcher">
+
+                <button
+                    type="button"
+                    class="travel-switcher-button"
+                    id="travel-switcher-button"
+                    aria-expanded="false"
+                    aria-controls="travel-switcher-menu"
+                >
+                    <span>
+                        旅行を切り替える
+                    </span>
+
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+
+                <div
+                    class="travel-switcher-menu"
+                    id="travel-switcher-menu"
+                    hidden
+                >
+                    {% for travel_group in travel_groups %}
+
+                        {% if travel_group.id == current_travel_group.id %}
+                            <div class="travel-switcher-current">
+                                <i class="bi bi-check-lg"></i>
+                                {{ travel_group.name }}
+                            </div>
+
+                        {% else %}
+                            <a
+                                href="{% url 'travel:switch_travel_group' travel_group.id %}"
+                                class="travel-switcher-option"
+                            >
+                                {{ travel_group.name }}
+                            </a>
+                        {% endif %}
+
+                    {% endfor %}
+                </div>
+
+            </div>
+        {% endif %}
 
     </div>
+
 </section>
 
 {% if important_notice %}
@@ -753,6 +813,47 @@
         </div>
     {% endif %}
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const button = document.getElementById(
+        "travel-switcher-button"
+    );
+
+    const menu = document.getElementById(
+        "travel-switcher-menu"
+    );
+
+    if (!button || !menu) {
+        return;
+    }
+
+    button.addEventListener("click", function () {
+        const isOpen = !menu.hidden;
+
+        menu.hidden = isOpen;
+
+        button.setAttribute(
+            "aria-expanded",
+            String(!isOpen)
+        );
+    });
+
+    document.addEventListener("click", function (event) {
+        if (
+            !button.contains(event.target)
+            && !menu.contains(event.target)
+        ) {
+            menu.hidden = true;
+
+            button.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+        }
+    });
+});
+</script>
 
 {% endblock %}
 

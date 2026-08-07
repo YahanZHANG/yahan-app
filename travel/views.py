@@ -42,11 +42,74 @@ from .models import (
     SharedLocation,
     SleepLog,
     Task,
+    TravelGroup,
     UserProfile,
 )
 
+def get_current_travel_group(request):
+    """
+    ログインユーザーが現在選択している旅行を返す。
+    選択されていなければ、参加している最初の旅行を使用する。
+    """
+
+    travel_groups = TravelGroup.objects.filter(
+        members=request.user,
+    ).distinct()
+
+    if not travel_groups.exists():
+        return None
+
+    current_group_id = request.session.get(
+        "current_travel_group_id"
+    )
+
+    if current_group_id:
+        current_group = travel_groups.filter(
+            id=current_group_id,
+        ).first()
+
+        if current_group:
+            return current_group
+
+    current_group = travel_groups.first()
+
+    request.session[
+        "current_travel_group_id"
+    ] = current_group.id
+
+    return current_group
+
+@login_required
+def switch_travel_group(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        members=request.user,
+    )
+
+    request.session[
+        "current_travel_group_id"
+    ] = travel_group.id
+
+    return redirect(
+        "travel:home",
+    )
+
 @login_required
 def home(request):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
+    if current_travel_group is None:
+        return render(
+            request,
+            "travel/no_travel_group.html",
+        )
+
     today = timezone.localdate()
 
     arrival_date = timezone.datetime(
@@ -60,6 +123,7 @@ def home(request):
     ).days
 
     upcoming_schedules = Schedule.objects.filter(
+        travel_group=current_travel_group,
         start_at__gte=timezone.now(),
     ).select_related(
         "created_by",
@@ -67,27 +131,35 @@ def home(request):
         "start_at",
     )[:2]
 
-    tasks = Task.objects.all().order_by(
+    tasks = Task.objects.filter(
+        travel_group=current_travel_group,
+    ).order_by(
         "is_completed",
         "due_at",
         "-created_at",
     )[:5]
 
-    latest_milk = MilkLog.objects.first()
+    latest_milk = MilkLog.objects.filter(
+        travel_group=current_travel_group,
+    ).first()
 
     latest_sleep = SleepLog.objects.filter(
+        travel_group=current_travel_group,
         ended_at__isnull=False,
     ).order_by(
         "-started_at",
     ).first()
 
     active_sleep = SleepLog.objects.filter(
+        travel_group=current_travel_group,
         ended_at__isnull=True,
     ).order_by(
         "-started_at",
     ).first()
     
-    latest_poop = PoopLog.objects.first()
+    latest_poop = PoopLog.objects.filter(
+        travel_group=current_travel_group,
+    ).first()
 
     User = get_user_model()
 
@@ -154,19 +226,28 @@ def home(request):
         )
 
     important_notice = ImportantNotice.objects.filter(
+        travel_group=current_travel_group,
         is_active=True,
     ).first()
 
-    latest_meeting_note = MeetingNote.objects.select_related(
+    latest_meeting_note = MeetingNote.objects.filter(
+        travel_group=current_travel_group,
+    ).select_related(
         "created_by",
     ).first()
 
-    latest_growth_notes = BabyGrowthNote.objects.select_related(
+    latest_growth_notes = BabyGrowthNote.objects.filter(
+        travel_group=current_travel_group,
+    ).select_related(
         "created_by",
-    ).all()[:5]
+    )[:5]
 
     context = {
         "today": today,
+        "current_travel_group": current_travel_group,
+        "travel_groups": TravelGroup.objects.filter(
+            members=request.user,
+        ).distinct(),
         "stay_day": stay_day,
         "upcoming_schedules": upcoming_schedules,
         "latest_growth_notes": latest_growth_notes,
@@ -194,9 +275,18 @@ def schedule_create(request):
 
         if form.is_valid():
             schedule = form.save(commit=False)
+
             schedule.created_by = request.user
-            schedule.save()
-            return redirect("travel:schedule_list")
+            schedule.travel_group = get_current_travel_group(
+                request
+            )
+
+    schedule.save()
+    form.save_m2m()
+
+    return redirect(
+        "travel:schedule_list"
+    )
     else:
         form = ScheduleForm()
 
@@ -212,9 +302,14 @@ def schedule_create(request):
 
 @login_required
 def schedule_update(request, schedule_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     schedule = get_object_or_404(
         Schedule,
         id=schedule_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -243,7 +338,12 @@ def schedule_update(request, schedule_id):
 
 @login_required
 def schedule_list(request):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     upcoming_schedules = Schedule.objects.filter(
+        travel_group=current_travel_group,
         start_at__gte=timezone.now(),
     ).select_related(
         "created_by",
@@ -256,14 +356,20 @@ def schedule_list(request):
         "travel/schedule_list.html",
         {
             "upcoming_schedules": upcoming_schedules,
+            "current_travel_group": current_travel_group,
         },
     )
 
 @login_required
 def schedule_delete(request, schedule_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     schedule = get_object_or_404(
         Schedule,
         id=schedule_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -288,8 +394,17 @@ def task_create(request):
 
         if form.is_valid():
             task = form.save(commit=False)
+
             task.created_by = request.user
+            task.travel_group = get_current_travel_group(
+                request
+            )
+
             task.save()
+
+            return redirect(
+                "travel:home"
+            )
             return redirect("travel:home")
     else:
         form = TaskForm()
@@ -307,9 +422,14 @@ def task_create(request):
 @login_required
 def task_toggle(request, task_id):
     if request.method == "POST":
+        current_travel_group = get_current_travel_group(
+            request
+        )
+
         task = get_object_or_404(
             Task,
             id=task_id,
+            travel_group=current_travel_group,
         )
 
         task.is_completed = not task.is_completed
@@ -324,7 +444,12 @@ def task_toggle(request, task_id):
 
 @login_required
 def task_list(request):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     incomplete_tasks = Task.objects.filter(
+        travel_group=current_travel_group,
         is_completed=False,
     ).select_related(
         "created_by",
@@ -334,6 +459,7 @@ def task_list(request):
     )
 
     completed_tasks = Task.objects.filter(
+        travel_group=current_travel_group,
         is_completed=True,
     ).select_related(
         "created_by",
@@ -347,15 +473,20 @@ def task_list(request):
         {
             "incomplete_tasks": incomplete_tasks,
             "completed_tasks": completed_tasks,
+            "current_travel_group": current_travel_group,
         },
     )
 
-
 @login_required
 def task_update(request, task_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     task = get_object_or_404(
         Task,
         id=task_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -387,9 +518,14 @@ def task_update(request, task_id):
 
 @login_required
 def task_delete(request, task_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     task = get_object_or_404(
         Task,
         id=task_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -414,9 +550,17 @@ def baby_log_create(request):
 
         if form.is_valid():
             baby_log = form.save(commit=False)
+
             baby_log.created_by = request.user
+            baby_log.travel_group = get_current_travel_group(
+                request
+            )
+
             baby_log.save()
-            return redirect("travel:home")
+
+            return redirect(
+                "travel:home"
+            )
     else:
         form = BabyLogForm()
 
@@ -467,7 +611,12 @@ def milk_log_create(request):
 
         if form.is_valid():
             milk_log = form.save(commit=False)
+
             milk_log.created_by = request.user
+            milk_log.travel_group = get_current_travel_group(
+                request
+            )
+
             milk_log.save()
 
             return redirect("travel:home")
@@ -491,10 +640,17 @@ def sleep_log_create(request):
 
         if form.is_valid():
             sleep_log = form.save(commit=False)
+
             sleep_log.created_by = request.user
+            sleep_log.travel_group = get_current_travel_group(
+                request
+            )
+
             sleep_log.save()
 
-            return redirect("travel:home")
+            return redirect(
+                "travel:home"
+            )
     else:
         form = SleepLogForm()
 
@@ -515,10 +671,17 @@ def poop_log_create(request):
 
         if form.is_valid():
             poop_log = form.save(commit=False)
+
             poop_log.created_by = request.user
+            poop_log.travel_group = get_current_travel_group(
+                request
+            )
+
             poop_log.save()
 
-            return redirect("travel:home")
+            return redirect(
+                "travel:home"
+            )
     else:
         form = PoopLogForm()
 
@@ -553,6 +716,10 @@ def meeting_note_create(request):
             )
 
             meeting_note.created_by = request.user
+            meeting_note.travel_group = get_current_travel_group(
+                request
+            )
+
             meeting_note.save()
 
             return redirect("travel:home")
@@ -571,9 +738,14 @@ def meeting_note_create(request):
 
 @login_required
 def meeting_note_update(request, note_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     meeting_note = get_object_or_404(
         MeetingNote,
         id=note_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -619,9 +791,14 @@ def meeting_note_update(request, note_id):
 
 @login_required
 def meeting_note_delete(request, note_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     meeting_note = get_object_or_404(
         MeetingNote,
         id=note_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -707,6 +884,9 @@ def milk_log_quick_create(request, amount_ml):
         return redirect("travel:home")
 
     MilkLog.objects.create(
+        travel_group=get_current_travel_group(
+            request
+        ),
         fed_at=timezone.now(),
         amount_ml=amount_ml,
         created_by=request.user,
@@ -717,26 +897,43 @@ def milk_log_quick_create(request, amount_ml):
 @login_required
 def sleep_start(request):
     if request.method != "POST":
-        return redirect("travel:home")
+        return redirect(
+            "travel:home"
+        )
+
+    current_travel_group = get_current_travel_group(
+        request
+    )
 
     active_sleep = SleepLog.objects.filter(
+        travel_group=current_travel_group,
         ended_at__isnull=True,
     ).first()
 
     if active_sleep is None:
         SleepLog.objects.create(
+            travel_group=current_travel_group,
             started_at=timezone.now(),
             created_by=request.user,
         )
 
-    return redirect("travel:home")
+    return redirect(
+        "travel:home"
+    )
 
 @login_required
 def sleep_end(request):
     if request.method != "POST":
-        return redirect("travel:home")
+        return redirect(
+            "travel:home"
+        )
+
+    current_travel_group = get_current_travel_group(
+        request
+    )
 
     active_sleep = SleepLog.objects.filter(
+        travel_group=current_travel_group,
         ended_at__isnull=True,
     ).order_by(
         "-started_at",
@@ -744,13 +941,16 @@ def sleep_end(request):
 
     if active_sleep is not None:
         active_sleep.ended_at = timezone.now()
+
         active_sleep.save(
             update_fields=[
                 "ended_at",
             ]
         )
 
-    return redirect("travel:home")
+    return redirect(
+        "travel:home"
+    )
 
 @login_required
 def profile_photo(request, user_id):
@@ -865,6 +1065,10 @@ def expense_create(request):
                 )
 
                 expense.created_by = request.user
+                expense.travel_group = get_current_travel_group(
+                    request
+                )
+
                 expense.save()
 
                 save_expense_shares(
@@ -890,9 +1094,14 @@ def expense_create(request):
 
 @login_required
 def expense_update(request, expense_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     expense = get_object_or_404(
         Expense,
         id=expense_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -931,9 +1140,14 @@ def expense_update(request, expense_id):
 
 @login_required
 def expense_delete(request, expense_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     expense = get_object_or_404(
         Expense,
         id=expense_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -1070,7 +1284,13 @@ def calculate_settlement_for_currency(
 
 @login_required
 def expense_list(request):
-    expenses = Expense.objects.select_related(
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
+    expenses = Expense.objects.filter(
+        travel_group=current_travel_group,
+    ).select_related(
         "paid_by",
         "created_by",
     ).prefetch_related(
@@ -1085,29 +1305,32 @@ def expense_list(request):
         "travel/expense_list.html",
         {
             "expenses": expenses,
+            "current_travel_group": current_travel_group,
         },
     )
 
-
 @login_required
 def expense_settlement(request):
-    User = get_user_model()
+    current_travel_group = get_current_travel_group(
+        request
+    )
 
-    family_users = list(
-        User.objects.filter(
+    users = list(
+        current_travel_group.members.filter(
             is_active=True,
-            is_superuser=False,
         ).order_by(
             "username",
         )
     )
 
     expenses = list(
-        Expense.objects.select_related(
+        Expense.objects.filter(
+            travel_group=current_travel_group,
+        ).select_related(
             "paid_by",
         ).prefetch_related(
             "shares__user",
-        ).all()
+        )
     )
 
     used_currencies = sorted(
@@ -1121,7 +1344,7 @@ def expense_settlement(request):
 
     for currency in used_currencies:
         group = calculate_settlement_for_currency(
-            users=family_users,
+            users=users,
             expenses=expenses,
             currency=currency,
         )
@@ -1133,6 +1356,7 @@ def expense_settlement(request):
         "travel/expense_settlement.html",
         {
             "settlement_groups": settlement_groups,
+            "current_travel_group": current_travel_group,
         },
     )
 
@@ -1149,6 +1373,10 @@ def baby_growth_note_create(request):
             )
 
             note.created_by = request.user
+            note.travel_group = get_current_travel_group(
+                request
+            )
+
             note.save()
 
             return redirect(
@@ -1167,23 +1395,35 @@ def baby_growth_note_create(request):
 
 @login_required
 def baby_growth_note_list(request):
-    growth_notes = BabyGrowthNote.objects.select_related(
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
+    growth_notes = BabyGrowthNote.objects.filter(
+        travel_group=current_travel_group,
+    ).select_related(
         "created_by",
-    ).all()
+    )
 
     return render(
         request,
         "travel/baby_growth_note_list.html",
         {
             "growth_notes": growth_notes,
+            "current_travel_group": current_travel_group,
         },
     )
 
 @login_required
 def baby_growth_note_update(request, note_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     note = get_object_or_404(
         BabyGrowthNote,
         id=note_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -1212,9 +1452,14 @@ def baby_growth_note_update(request, note_id):
 
 @login_required
 def baby_growth_note_delete(request, note_id):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     note = get_object_or_404(
         BabyGrowthNote,
         id=note_id,
+        travel_group=current_travel_group,
     )
 
     if request.method == "POST":
@@ -1234,7 +1479,13 @@ def baby_growth_note_delete(request, note_id):
 
 @login_required
 def meeting_note_list(request):
-    meeting_notes = MeetingNote.objects.select_related(
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
+    meeting_notes = MeetingNote.objects.filter(
+        travel_group=current_travel_group,
+    ).select_related(
         "created_by",
     ).order_by(
         "-discussed_at",
@@ -1246,5 +1497,6 @@ def meeting_note_list(request):
         "travel/meeting_note_list.html",
         {
             "meeting_notes": meeting_notes,
+            "current_travel_group": current_travel_group,
         },
     )
