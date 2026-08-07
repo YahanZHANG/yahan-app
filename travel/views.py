@@ -185,7 +185,9 @@ def switch_travel_group(
     travel_group_id,
 ):
     travel_group = get_object_or_404(
-        TravelGroup,
+        TravelGroup.objects.exclude(
+            archived_by=request.user,
+        ),
         id=travel_group_id,
         members=request.user,
     )
@@ -701,9 +703,16 @@ def home(request):
     context = {
         "today": today,
         "current_travel_group": current_travel_group,
-        "travel_groups": TravelGroup.objects.filter(
-            members=request.user,
-        ).distinct(),
+        "travel_groups": (
+            TravelGroup.objects
+            .filter(
+                members=request.user,
+            )
+            .exclude(
+                archived_by=request.user,
+            )
+            .distinct()
+        ),
         "stay_day": stay_day,
         "upcoming_schedules": upcoming_schedules,
         "latest_growth_notes": latest_growth_notes,
