@@ -38,6 +38,14 @@
                 {% endif %}
 
                 <a
+                    href="{% url 'travel:travel_group_settings' current_travel_group.id %}"
+                    class="small-action-button"
+                >
+                    <i class="bi bi-gear"></i>
+                    旅行設定
+                </a>
+
+                <a
                     href="{% url 'travel:travel_group_list' %}"
                     class="small-action-button"
                 >
@@ -177,35 +185,38 @@
 
     {% if upcoming_schedules %}
 
-        <div class="schedule-preview-list">
+        <div class="upcoming-schedule-grid">
 
             {% for schedule in upcoming_schedules %}
 
-                <article class="app-card schedule-preview-card">
+                <article class="app-card upcoming-schedule-card">
 
-                    <div class="schedule-preview-date">
-                        <span class="schedule-preview-day">
-                            {{ schedule.start_at|date:"j" }}
-                        </span>
+                    <p class="upcoming-schedule-datetime">
+                        {{ schedule.start_at|date:"n月j日 H:i" }}
+                    </p>
 
-                        <span class="schedule-preview-month">
-                            {{ schedule.start_at|date:"n月" }}
-                        </span>
-                    </div>
+                    <h3>
+                        {{ schedule.title }}
+                    </h3>
 
-                    <div class="schedule-preview-content">
+                    {% if schedule.location %}
+                        <p class="upcoming-schedule-location">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ schedule.location }}
+                        </p>
+                    {% endif %}
 
-                        <strong>
-                            {{ schedule.title }}
-                        </strong>
-
-                        <span>
-                            {{ schedule.start_at|date:"H:i" }}
-                        </span>
-
-                    </div>
-
-                    <i class="bi bi-chevron-right"></i>
+                    {% if schedule.days_until is not None %}
+                        <div class="upcoming-schedule-countdown">
+                            {% if schedule.days_until == 0 %}
+                                今日
+                            {% elif schedule.days_until == 1 %}
+                                明日
+                            {% else %}
+                                あと {{ schedule.days_until }}日
+                            {% endif %}
+                        </div>
+                    {% endif %}
 
                 </article>
 
