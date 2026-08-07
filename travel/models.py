@@ -47,13 +47,22 @@ class TravelGroup(models.Model):
         return self.name
 
 class FamilyMember(models.Model):
-    """予定の対象として選択できる家族メンバー。"""
+    """旅行に登場する家族メンバー。ログインアカウントは必須ではない。"""
 
     travel_group = models.ForeignKey(
         TravelGroup,
         verbose_name="家族旅行",
         on_delete=models.CASCADE,
         related_name="family_members",
+        blank=True,
+        null=True,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="ログインユーザー",
+        on_delete=models.SET_NULL,
+        related_name="travel_family_members",
         blank=True,
         null=True,
     )
@@ -87,12 +96,13 @@ class FamilyMember(models.Model):
                     "travel_group",
                     "name",
                 ],
-                name="unique_family_member_per_travel_group",
+                name="unique_family_member_name_per_travel_group",
             ),
         ]
 
     def __str__(self):
         return self.name
+
 
 class Schedule(models.Model):
     """旅行や家族の予定を保存するモデル。"""

@@ -29,6 +29,14 @@
                 旅行設定
             </a>
 
+            <a
+                href="{% url 'travel:travel_group_list' %}"
+                class="small-action-button"
+            >
+                <i class="bi bi-list-ul"></i>
+                旅行一覧
+            </a>
+
             <p class="today-label mb-1">
                 {{ today|date:"Y年n月j日" }}
             </p>

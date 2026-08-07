@@ -33,6 +33,7 @@ from .models import (
     BabyLog,
     Expense,
     ExpenseShare,
+    FamilyMember,
     FamilyStatus,
     ImportantNotice,
     MeetingNote,
@@ -194,6 +195,13 @@ def travel_group_member_add(
         "",
     ).strip()
 
+    add_as_family_member = (
+        request.POST.get(
+            "add_as_family_member"
+        )
+        == "on"
+    )
+
     if username:
         User = get_user_model()
 
@@ -207,10 +215,172 @@ def travel_group_member_add(
                 user
             )
 
+            if add_as_family_member:
+                display_name = (
+                    user.first_name
+                    if user.first_name
+                    else user.username
+                )
+
+                family_member, created = (
+                    FamilyMember.objects.get_or_create(
+                        travel_group=travel_group,
+                        name=display_name,
+                        defaults={
+                            "user": user,
+                            "display_order": (
+                                travel_group.family_members.count()
+                                + 1
+                            ),
+                            "is_active": True,
+                        },
+                    )
+                )
+
+                if not created:
+                    changed = False
+
+                    if family_member.user_id is None:
+                        family_member.user = user
+                        changed = True
+
+                    if not family_member.is_active:
+                        family_member.is_active = True
+                        changed = True
+
+                    if changed:
+                        family_member.save()
+
     return redirect(
         "travel:travel_group_settings",
         travel_group_id=travel_group.id,
     )
+
+
+@login_required
+def travel_group_member_remove(
+    request,
+    travel_group_id,
+    user_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        owner=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
+    User = get_user_model()
+
+    user = get_object_or_404(
+        User,
+        id=user_id,
+    )
+
+    # 代表者自身は削除できない
+    if user.id == travel_group.owner_id:
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
+    travel_group.members.remove(
+        user
+    )
+
+    display_name = (
+        user.first_name
+        if user.first_name
+        else user.username
+    )
+
+    return redirect(
+        "travel:travel_group_settings",
+        travel_group_id=travel_group.id,
+    )
+
+@login_required
+def family_member_add(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        owner=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
+    name = request.POST.get(
+        "name",
+        "",
+    ).strip()
+
+    if name:
+        FamilyMember.objects.get_or_create(
+            travel_group=travel_group,
+            name=name,
+            defaults={
+                "display_order": (
+                    travel_group.family_members.count()
+                    + 1
+                ),
+                "is_active": True,
+            },
+        )
+
+    return redirect(
+        "travel:travel_group_settings",
+        travel_group_id=travel_group.id,
+    )
+
+@login_required
+def family_member_remove(
+    request,
+    travel_group_id,
+    family_member_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        owner=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
+    family_member = get_object_or_404(
+        FamilyMember,
+        id=family_member_id,
+        travel_group=travel_group,
+    )
+
+    family_member.is_active = False
+
+    family_member.save(
+        update_fields=[
+            "is_active",
+        ]
+    )
+
+    return redirect(
+        "travel:travel_group_settings",
+        travel_group_id=travel_group.id,
+    )
+
 
 @login_required
 def home(request):

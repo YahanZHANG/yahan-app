@@ -2912,3 +2912,156 @@ button {
         width: 100%;
     }
 }
+
+.travel-member-list {
+    display: grid;
+    gap: 10px;
+
+    margin: 16px 0 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.travel-member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 12px 14px;
+
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.035);
+}
+
+.travel-member-name {
+    font-weight: 700;
+}
+
+.travel-owner-label {
+    display: inline-block;
+
+    margin-left: 6px;
+    padding: 3px 7px;
+
+    border-radius: 999px;
+
+    font-size: 0.68rem;
+    font-weight: 700;
+
+    background: rgba(0, 0, 0, 0.07);
+}
+
+.travel-member-remove-button {
+    padding: 7px 12px;
+
+    border: 0;
+    border-radius: 999px;
+
+    background: #fdecef;
+    color: #c15674;
+
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.travel-settings-top-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.travel-settings-back {
+    margin-bottom: 18px;
+}
+
+.travel-settings-card {
+    margin-bottom: 20px;
+}
+
+.travel-settings-title {
+    margin: 0 0 6px;
+
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.travel-settings-description {
+    margin: 0 0 18px;
+
+    color: #6b7280;
+
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.travel-settings-form {
+    display: grid;
+    gap: 12px;
+
+    margin-top: 18px;
+}
+
+.travel-settings-field {
+    display: grid;
+    gap: 6px;
+}
+
+.travel-settings-field label {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.travel-settings-field input {
+    width: 100%;
+
+    padding: 11px 13px;
+
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+
+    background: #fff;
+
+    font: inherit;
+}
+
+.travel-family-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+}
+
+.travel-family-checkbox input {
+    width: 18px;
+    height: 18px;
+}
+
+.travel-linked-user-label {
+    display: inline-block;
+
+    margin-left: 6px;
+    padding: 3px 7px;
+
+    border-radius: 999px;
+
+    background: rgba(0, 0, 0, 0.06);
+
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.travel-member-empty {
+    padding: 12px 0;
+
+    color: #7b8190;
+    font-size: 0.85rem;
+}

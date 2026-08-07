@@ -6,6 +6,16 @@
 
 {% block content %}
 
+<div class="travel-settings-back">
+    <a
+        href="{% url 'travel:travel_group_list' %}"
+        class="small-action-button"
+    >
+        <i class="bi bi-arrow-left"></i>
+        旅行一覧に戻る
+    </a>
+</div>
+
 <section class="dashboard-section">
 
     <div class="section-heading">
@@ -18,70 +28,235 @@
                 {{ travel_group.name }}
             </h1>
         </div>
+
+        <a
+            href="{% url 'travel:travel_group_create' %}"
+            class="small-action-button"
+        >
+            ＋ 新しい旅行
+        </a>
     </div>
 
-    <div class="app-card">
 
-        <h3>
-            メンバー
-        </h3>
+    <div class="app-card travel-settings-card">
 
-        <ul>
+        <h2 class="travel-settings-title">
+            この旅行を共有するユーザー
+        </h2>
+
+        <p class="travel-settings-description">
+            ログインアカウントを持つ人を招待する。
+            招待された人はこの旅行を開けるようになる。
+        </p>
+
+        <ul class="travel-member-list">
+
             {% for member in travel_group.members.all %}
-                <li>
-                    {% if member.first_name %}
-                        {{ member.first_name }}
-                    {% else %}
-                        {{ member.username }}
+
+                <li class="travel-member-item">
+
+                    <span class="travel-member-name">
+
+                        {% if member.first_name %}
+                            {{ member.first_name }}
+                        {% else %}
+                            {{ member.username }}
+                        {% endif %}
+
+                        {% if member.id == travel_group.owner_id %}
+                            <span class="travel-owner-label">
+                                代表者
+                            </span>
+                        {% endif %}
+
+                    </span>
+
+                    {% if is_owner and member.id != travel_group.owner_id %}
+
+                        <form
+                            method="post"
+                            action="{% url 'travel:travel_group_member_remove' travel_group.id member.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="travel-member-remove-button"
+                            >
+                                削除
+                            </button>
+                        </form>
+
                     {% endif %}
 
-                    {% if member.id == travel_group.owner_id %}
-                        （代表者）
-                    {% endif %}
                 </li>
+
+            {% empty %}
+
+                <li class="travel-member-empty">
+                    共有ユーザーはまだいません
+                </li>
+
             {% endfor %}
+
         </ul>
 
-    </div>
 
-    {% if is_owner %}
-
-        <div class="app-card">
-
-            <h3>
-                メンバーを追加
-            </h3>
+        {% if is_owner %}
 
             <form
                 method="post"
                 action="{% url 'travel:travel_group_member_add' travel_group.id %}"
+                class="travel-settings-form"
             >
                 {% csrf_token %}
 
-                <label for="username">
-                    ユーザー名
-                </label>
+                <div class="travel-settings-field">
 
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    required
-                    placeholder="例：nanamikubo"
-                >
+                    <label for="username">
+                        ユーザー名
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        required
+                        placeholder="例：nanamikubo"
+                    >
+
+                </div>
+
+                <label class="travel-family-checkbox">
+
+                    <input
+                        type="checkbox"
+                        name="add_as_family_member"
+                        checked
+                    >
+
+                    <span>
+                        この人を旅行メンバーにも追加する
+                    </span>
+
+                </label>
 
                 <button
                     type="submit"
                     class="small-action-button"
                 >
-                    追加
+                    ＋ ユーザーを招待
                 </button>
 
             </form>
 
-        </div>
+        {% endif %}
 
-    {% endif %}
+    </div>
+
+
+    <div class="app-card travel-settings-card">
+
+        <h2 class="travel-settings-title">
+            旅行に参加する人
+        </h2>
+
+        <p class="travel-settings-description">
+            予定の対象になる家族や同行者を登録する。
+            ログインアカウントは必要ない。
+        </p>
+
+        <ul class="travel-member-list">
+
+            {% for member in travel_group.family_members.all %}
+
+                {% if member.is_active %}
+
+                    <li class="travel-member-item">
+
+                        <span class="travel-member-name">
+
+                            {{ member.name }}
+
+                            {% if member.user %}
+                                <span class="travel-linked-user-label">
+                                    アカウントあり
+                                </span>
+                            {% endif %}
+
+                        </span>
+
+                        {% if is_owner %}
+
+                            <form
+                                method="post"
+                                action="{% url 'travel:family_member_remove' travel_group.id member.id %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="travel-member-remove-button"
+                                >
+                                    削除
+                                </button>
+                            </form>
+
+                        {% endif %}
+
+                    </li>
+
+                {% endif %}
+
+            {% empty %}
+
+                <li class="travel-member-empty">
+                    旅行メンバーはまだいません
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+
+        {% if is_owner %}
+
+            <form
+                method="post"
+                action="{% url 'travel:family_member_add' travel_group.id %}"
+                class="travel-settings-form"
+            >
+                {% csrf_token %}
+
+                <div class="travel-settings-field">
+
+                    <label for="family-member-name">
+                        名前
+                    </label>
+
+                    <input
+                        type="text"
+                        id="family-member-name"
+                        name="name"
+                        maxlength="50"
+                        required
+                        placeholder="例：Baby"
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="small-action-button"
+                >
+                    ＋ 旅行メンバーを追加
+                </button>
+
+            </form>
+
+        {% endif %}
+
+    </div>
 
 </section>
 
