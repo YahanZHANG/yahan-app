@@ -201,11 +201,6 @@ urlpatterns = [
         name="expense_settlement",
     ),
     path(
-        "expenses/add/",
-        views.expense_create,
-        name="expense_create",
-    ),
-    path(
         "expenses/<int:expense_id>/edit/",
         views.expense_update,
         name="expense_update",
