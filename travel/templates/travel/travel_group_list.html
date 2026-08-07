@@ -1,0 +1,83 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    家族旅行一覧
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <h1 class="section-title">
+                家族旅行
+            </h1>
+        </div>
+
+        <a
+            href="{% url 'travel:travel_group_create' %}"
+            class="small-action-button"
+        >
+            ＋ 新しい旅行
+        </a>
+    </div>
+
+    <div class="travel-group-list">
+
+        {% for travel_group in travel_groups %}
+
+            <article class="app-card">
+
+                <h3>
+                    {{ travel_group.name }}
+                </h3>
+
+                <p>
+                    代表：
+                    {% if travel_group.owner.first_name %}
+                        {{ travel_group.owner.first_name }}
+                    {% else %}
+                        {{ travel_group.owner.username }}
+                    {% endif %}
+                </p>
+
+                <div>
+                    <a
+                        href="{% url 'travel:switch_travel_group' travel_group.id %}"
+                        class="small-action-button"
+                    >
+                        この旅行を開く
+                    </a>
+
+                    <a
+                        href="{% url 'travel:travel_group_settings' travel_group.id %}"
+                        class="small-action-button"
+                    >
+                        設定
+                    </a>
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <div class="app-card empty-state">
+                <p>
+                    参加している旅行はまだありません
+                </p>
+
+                <a
+                    href="{% url 'travel:travel_group_create' %}"
+                >
+                    最初の旅行を作る
+                </a>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

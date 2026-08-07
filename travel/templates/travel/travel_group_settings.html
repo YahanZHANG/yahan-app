@@ -1,0 +1,88 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    {{ travel_group.name }} | 設定
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <div>
+            <p class="travel-header-label">
+                TRIP SETTINGS
+            </p>
+
+            <h1 class="section-title">
+                {{ travel_group.name }}
+            </h1>
+        </div>
+    </div>
+
+    <div class="app-card">
+
+        <h3>
+            メンバー
+        </h3>
+
+        <ul>
+            {% for member in travel_group.members.all %}
+                <li>
+                    {% if member.first_name %}
+                        {{ member.first_name }}
+                    {% else %}
+                        {{ member.username }}
+                    {% endif %}
+
+                    {% if member.id == travel_group.owner_id %}
+                        （代表者）
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+
+    {% if is_owner %}
+
+        <div class="app-card">
+
+            <h3>
+                メンバーを追加
+            </h3>
+
+            <form
+                method="post"
+                action="{% url 'travel:travel_group_member_add' travel_group.id %}"
+            >
+                {% csrf_token %}
+
+                <label for="username">
+                    ユーザー名
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    required
+                    placeholder="例：nanamikubo"
+                >
+
+                <button
+                    type="submit"
+                    class="small-action-button"
+                >
+                    追加
+                </button>
+
+            </form>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

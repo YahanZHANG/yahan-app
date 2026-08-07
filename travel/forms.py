@@ -239,79 +239,7 @@ class MeetingNoteForm(forms.ModelForm):
         }
 
 class ExpenseForm(forms.ModelForm):
-    """支出本体と4人分の負担額を入力するフォーム。"""
-
-    papa_amount = forms.DecimalField(
-        label="パパの負担額",
-        required=False,
-        min_value=Decimal("0"),
-        max_digits=12,
-        decimal_places=2,
-        initial=Decimal("0"),
-        widget=forms.NumberInput(
-            attrs={
-                "min": "0",
-                "step": "0.01",
-                "inputmode": "decimal",
-                "class": "expense-share-input",
-                "data-share-username": "papa",
-            }
-        ),
-    )
-
-    mama_amount = forms.DecimalField(
-        label="ママの負担額",
-        required=False,
-        min_value=Decimal("0"),
-        max_digits=12,
-        decimal_places=2,
-        initial=Decimal("0"),
-        widget=forms.NumberInput(
-            attrs={
-                "min": "0",
-                "step": "0.01",
-                "inputmode": "decimal",
-                "class": "expense-share-input",
-                "data-share-username": "mama",
-            }
-        ),
-    )
-
-    yeye_amount = forms.DecimalField(
-        label="じいじの負担額",
-        required=False,
-        min_value=Decimal("0"),
-        max_digits=12,
-        decimal_places=2,
-        initial=Decimal("0"),
-        widget=forms.NumberInput(
-            attrs={
-                "min": "0",
-                "step": "0.01",
-                "inputmode": "decimal",
-                "class": "expense-share-input",
-                "data-share-username": "yeye",
-            }
-        ),
-    )
-
-    nainai_amount = forms.DecimalField(
-        label="ばあばの負担額",
-        required=False,
-        min_value=Decimal("0"),
-        max_digits=12,
-        decimal_places=2,
-        initial=Decimal("0"),
-        widget=forms.NumberInput(
-            attrs={
-                "min": "0",
-                "step": "0.01",
-                "inputmode": "decimal",
-                "class": "expense-share-input",
-                "data-share-username": "nainai",
-            }
-        ),
-    )
+    """支出本体と旅行メンバーごとの負担額を入力するフォーム。"""
 
     class Meta:
         model = Expense
@@ -355,61 +283,99 @@ class ExpenseForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        travel_group=None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
-        User = get_user_model()
-
-        self.fields["paid_by"].queryset = User.objects.filter(
-            is_active=True,
-            is_superuser=False,
-        ).order_by(
-            "username",
-        )
+        self.travel_group = travel_group
 
         self.fields["paid_at"].input_formats = [
             "%Y-%m-%dT%H:%M",
         ]
 
+        if travel_group is None:
+            self.fields["paid_by"].queryset = (
+                get_user_model().objects.none()
+            )
+            return
+
+        members = travel_group.members.filter(
+            is_active=True,
+        ).order_by(
+            "username",
+        )
+
+        self.fields["paid_by"].queryset = members
+
+        existing_shares = {}
+
         if self.instance and self.instance.pk:
-            shares_by_username = {
-                share.user.username: share.amount
-                for share in self.instance.shares.select_related(
-                    "user",
-                ).all()
+            existing_shares = {
+                share.user_id: share.amount
+                for share in self.instance.shares.all()
             }
 
-            field_mapping = {
-                "papa": "papa_amount",
-                "mama": "mama_amount",
-                "yeye": "yeye_amount",
-                "nainai": "nainai_amount",
-            }
+        for member in members:
+            field_name = (
+                f"share_user_{member.id}"
+            )
 
-            for username, field_name in field_mapping.items():
-                self.fields[field_name].initial = (
-                    shares_by_username.get(
-                        username,
-                        Decimal("0"),
-                    )
-                )
+            if member.first_name:
+                display_name = member.first_name
+            else:
+                display_name = member.username
+
+            self.fields[field_name] = forms.DecimalField(
+                label=f"{display_name}の負担額",
+                required=False,
+                min_value=Decimal("0"),
+                max_digits=12,
+                decimal_places=2,
+                initial=existing_shares.get(
+                    member.id,
+                    Decimal("0"),
+                ),
+                widget=forms.NumberInput(
+                    attrs={
+                        "min": "0",
+                        "step": "0.01",
+                        "inputmode": "decimal",
+                        "class": "expense-share-input",
+                        "data-share-user-id": str(
+                            member.id
+                        ),
+                    }
+                ),
+            )
 
     def clean(self):
         cleaned_data = super().clean()
 
-        total_amount = cleaned_data.get("total_amount")
-
-        share_field_names = (
-            "papa_amount",
-            "mama_amount",
-            "yeye_amount",
-            "nainai_amount",
+        total_amount = cleaned_data.get(
+            "total_amount"
         )
+
+        if self.travel_group is None:
+            return cleaned_data
 
         share_total = Decimal("0")
 
-        for field_name in share_field_names:
-            amount = cleaned_data.get(field_name)
+        members = self.travel_group.members.filter(
+            is_active=True,
+        )
+
+        for member in members:
+            field_name = (
+                f"share_user_{member.id}"
+            )
+
+            amount = cleaned_data.get(
+                field_name
+            )
 
             if amount is None:
                 amount = Decimal("0")
@@ -421,7 +387,9 @@ class ExpenseForm(forms.ModelForm):
             total_amount is not None
             and share_total != total_amount
         ):
-            difference = total_amount - share_total
+            difference = (
+                total_amount - share_total
+            )
 
             if difference > 0:
                 message = (
@@ -440,6 +408,7 @@ class ExpenseForm(forms.ModelForm):
 
         return cleaned_data
 
+    
 class BabyGrowthNoteForm(forms.ModelForm):
     class Meta:
         model = BabyGrowthNote

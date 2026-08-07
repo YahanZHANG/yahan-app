@@ -99,6 +99,120 @@ def switch_travel_group(
     )
 
 @login_required
+def travel_group_list(request):
+    travel_groups = TravelGroup.objects.filter(
+        members=request.user,
+    ).select_related(
+        "owner",
+    ).distinct()
+
+    return render(
+        request,
+        "travel/travel_group_list.html",
+        {
+            "travel_groups": travel_groups,
+        },
+    )
+
+@login_required
+def travel_group_create(request):
+    if request.method == "POST":
+        name = request.POST.get(
+            "name",
+            "",
+        ).strip()
+
+        if name:
+            travel_group = TravelGroup.objects.create(
+                name=name,
+                owner=request.user,
+            )
+
+            travel_group.members.add(
+                request.user
+            )
+
+            request.session[
+                "current_travel_group_id"
+            ] = travel_group.id
+
+            return redirect(
+                "travel:home",
+            )
+
+    return render(
+        request,
+        "travel/travel_group_create.html",
+    )
+
+@login_required
+def travel_group_settings(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup.objects.select_related(
+            "owner",
+        ).prefetch_related(
+            "members",
+        ),
+        id=travel_group_id,
+        members=request.user,
+    )
+
+    return render(
+        request,
+        "travel/travel_group_settings.html",
+        {
+            "travel_group": travel_group,
+            "is_owner": (
+                travel_group.owner_id
+                == request.user.id
+            ),
+        },
+    )
+
+@login_required
+def travel_group_member_add(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        owner=request.user,
+    )
+
+    if request.method != "POST":
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
+    username = request.POST.get(
+        "username",
+        "",
+    ).strip()
+
+    if username:
+        User = get_user_model()
+
+        user = User.objects.filter(
+            username=username,
+            is_active=True,
+        ).first()
+
+        if user:
+            travel_group.members.add(
+                user
+            )
+
+    return redirect(
+        "travel:travel_group_settings",
+        travel_group_id=travel_group.id,
+    )
+
+@login_required
 def home(request):
     current_travel_group = get_current_travel_group(
         request
@@ -281,12 +395,13 @@ def schedule_create(request):
                 request
             )
 
-    schedule.save()
-    form.save_m2m()
+            schedule.save()
+            form.save_m2m()
 
-    return redirect(
-        "travel:schedule_list"
-    )
+            return redirect(
+                "travel:schedule_list"
+            )
+
     else:
         form = ScheduleForm()
 
@@ -1016,31 +1131,37 @@ def profile_photo(request, user_id):
         ),
     )
 
-def save_expense_shares(expense, cleaned_data):
-    """支出に紐づく4人分の負担額を保存する。"""
+def save_expense_shares(
+    expense,
+    cleaned_data,
+    travel_group,
+):
+    """旅行メンバーごとの負担額を保存する。"""
 
-    User = get_user_model()
-
-    share_fields = (
-        ("papa", "papa_amount"),
-        ("mama", "mama_amount"),
-        ("yeye", "yeye_amount"),
-        ("nainai", "nainai_amount"),
+    members = travel_group.members.filter(
+        is_active=True,
     )
 
-    for username, field_name in share_fields:
-        amount = cleaned_data.get(field_name)
+    member_ids = []
 
-        user = get_object_or_404(
-            User,
-            username=username,
-            is_active=True,
+    for member in members:
+        member_ids.append(
+            member.id
+        )
+
+        field_name = (
+            f"share_user_{member.id}"
+        )
+
+        amount = cleaned_data.get(
+            field_name,
+            Decimal("0"),
         )
 
         if amount and amount > 0:
             ExpenseShare.objects.update_or_create(
                 expense=expense,
-                user=user,
+                user=member,
                 defaults={
                     "amount": amount,
                 },
@@ -1048,14 +1169,25 @@ def save_expense_shares(expense, cleaned_data):
         else:
             ExpenseShare.objects.filter(
                 expense=expense,
-                user=user,
+                user=member,
             ).delete()
+
+    ExpenseShare.objects.filter(
+        expense=expense,
+    ).exclude(
+        user_id__in=member_ids,
+    ).delete()
 
 @login_required
 def expense_create(request):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     if request.method == "POST":
         form = ExpenseForm(
             request.POST,
+            travel_group=current_travel_group,
         )
 
         if form.is_valid():
@@ -1065,8 +1197,8 @@ def expense_create(request):
                 )
 
                 expense.created_by = request.user
-                expense.travel_group = get_current_travel_group(
-                    request
+                expense.travel_group = (
+                    current_travel_group
                 )
 
                 expense.save()
@@ -1074,13 +1206,17 @@ def expense_create(request):
                 save_expense_shares(
                     expense,
                     form.cleaned_data,
+                    current_travel_group,
                 )
 
             return redirect(
                 "travel:expense_list",
             )
+
     else:
-        form = ExpenseForm()
+        form = ExpenseForm(
+            travel_group=current_travel_group,
+        )
 
     return render(
         request,
@@ -1089,11 +1225,17 @@ def expense_create(request):
             "form": form,
             "page_title": "支出を追加",
             "submit_label": "保存",
+            "current_travel_group": (
+                current_travel_group
+            ),
         },
     )
 
 @login_required
-def expense_update(request, expense_id):
+def expense_update(
+    request,
+    expense_id,
+):
     current_travel_group = get_current_travel_group(
         request
     )
@@ -1108,6 +1250,7 @@ def expense_update(request, expense_id):
         form = ExpenseForm(
             request.POST,
             instance=expense,
+            travel_group=current_travel_group,
         )
 
         if form.is_valid():
@@ -1117,14 +1260,17 @@ def expense_update(request, expense_id):
                 save_expense_shares(
                     expense,
                     form.cleaned_data,
+                    current_travel_group,
                 )
 
             return redirect(
                 "travel:expense_list",
             )
+
     else:
         form = ExpenseForm(
             instance=expense,
+            travel_group=current_travel_group,
         )
 
     return render(
@@ -1135,8 +1281,12 @@ def expense_update(request, expense_id):
             "expense": expense,
             "page_title": "支出を編集",
             "submit_label": "変更を保存",
+            "current_travel_group": (
+                current_travel_group
+            ),
         },
     )
+
 
 @login_required
 def expense_delete(request, expense_id):

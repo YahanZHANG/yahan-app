@@ -16,6 +16,26 @@ urlpatterns = [
         name="switch_travel_group",
     ),
     path(
+        "groups/",
+        views.travel_group_list,
+        name="travel_group_list",
+    ),
+    path(
+        "groups/create/",
+        views.travel_group_create,
+        name="travel_group_create",
+    ),
+    path(
+        "groups/<int:travel_group_id>/settings/",
+        views.travel_group_settings,
+        name="travel_group_settings",
+    ),
+    path(
+        "groups/<int:travel_group_id>/members/add/",
+        views.travel_group_member_add,
+        name="travel_group_member_add",
+    ),
+    path(
         "schedule/",
         views.schedule_list,
         name="schedule_list",

@@ -1,0 +1,47 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    新しい家族旅行
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+        <h1 class="section-title">
+            新しい家族旅行
+        </h1>
+    </div>
+
+    <form
+        method="post"
+        class="app-card"
+    >
+        {% csrf_token %}
+
+        <label for="travel-name">
+            旅行名
+        </label>
+
+        <input
+            type="text"
+            id="travel-name"
+            name="name"
+            maxlength="100"
+            required
+            placeholder="例：日本一時帰国 2027"
+        >
+
+        <button
+            type="submit"
+            class="small-action-button"
+        >
+            旅行を作成
+        </button>
+
+    </form>
+
+</section>
+
+{% endblock %}
