@@ -12,6 +12,11 @@ class TravelGroup(models.Model):
         max_length=100,
     )
 
+    start_date = models.DateField(
+        blank=True,
+        null=True,
+    )
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="代表者",

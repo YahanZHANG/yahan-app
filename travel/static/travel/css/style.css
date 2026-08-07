@@ -4005,3 +4005,57 @@ button {
     font-size: 0.72rem;
     line-height: 1.6;
 }
+
+.schedule-empty-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-top: 16px;
+    padding: 20px;
+
+    border: 1px dashed rgba(0, 0, 0, 0.10);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.55);
+
+    color: #77717c;
+}
+
+.schedule-empty-card > i {
+    font-size: 1.35rem;
+    color: #99919d;
+}
+
+.schedule-empty-card strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #55505a;
+
+    font-size: 0.88rem;
+}
+
+.schedule-empty-card p {
+    margin: 0;
+
+    font-size: 0.76rem;
+}
+
+.schedule-home-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 760px) {
+
+    .schedule-home-actions {
+        flex-wrap: nowrap;
+    }
+
+    .schedule-home-actions .small-action-button {
+        white-space: nowrap;
+    }
+}

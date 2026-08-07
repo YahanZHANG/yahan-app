@@ -37,6 +37,72 @@
 
     </div>
 
+    {% if is_owner %}
+
+        <section class="travel-settings-panel travel-basic-settings">
+
+            <div class="travel-settings-panel-header">
+                <div>
+                    <h3>旅行の基本設定</h3>
+                    <p>
+                        旅行名や旅行開始日を設定できる。
+                    </p>
+                </div>
+            </div>
+
+            <form
+                method="post"
+                action="{% url 'travel:travel_group_settings' travel_group.id %}"
+                class="travel-settings-form"
+            >
+                {% csrf_token %}
+
+                <div class="travel-settings-field">
+
+                    <label for="travel-group-name">
+                        旅行名
+                    </label>
+
+                    <input
+                        type="text"
+                        id="travel-group-name"
+                        name="name"
+                        value="{{ travel_group.name }}"
+                        maxlength="100"
+                        required
+                    >
+
+                </div>
+
+                <div class="travel-settings-field">
+
+                    <label for="travel-start-date">
+                        旅行開始日
+                    </label>
+
+                    <input
+                        type="date"
+                        id="travel-start-date"
+                        name="start_date"
+                        value="{% if travel_group.start_date %}{{ travel_group.start_date|date:'Y-m-d' }}{% endif %}"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="travel-settings-primary-button"
+                >
+                    変更を保存
+                </button>
+
+            </form>
+
+        </section>
+
+    {% endif %}
+
 
     <div class="travel-settings-grid">
 

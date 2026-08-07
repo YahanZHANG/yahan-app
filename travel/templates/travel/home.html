@@ -14,10 +14,6 @@
         <div class="travel-header-main">
 
             <div class="travel-header-title-group">
-                <p class="travel-header-label">
-                    FAMILY TRIP
-                </p>
-
                 <h1 class="travel-group-name">
                     {{ current_travel_group.name }}
                 </h1>
@@ -25,19 +21,21 @@
 
             <div class="travel-header-actions">
 
-                <button
-                    type="button"
-                    class="travel-switcher-button"
-                    id="travel-switcher-button"
-                    aria-expanded="false"
-                    aria-controls="travel-switcher-menu"
-                >
-                    <span>
-                        旅行を切り替える
-                    </span>
+                {% if travel_groups|length > 1 %}
+                    <button
+                        type="button"
+                        class="travel-switcher-button"
+                        id="travel-switcher-button"
+                        aria-expanded="false"
+                        aria-controls="travel-switcher-menu"
+                    >
+                        <span>
+                            旅行を切り替える
+                        </span>
 
-                    <i class="bi bi-chevron-down"></i>
-                </button>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                {% endif %}
 
                 <a
                     href="{% url 'travel:travel_group_list' %}"
@@ -51,16 +49,29 @@
 
         </div>
 
+
+        <div class="travel-date-info">
+
+            <p class="today-label mb-1">
+                {{ today|date:"Y年n月j日" }}
+            </p>
+
+            {% if days_until_trip is not None %}
+                <p class="welcome-subtitle mb-0">
+                    旅行まであと {{ days_until_trip }}日
+                </p>
+
+            {% elif stay_day is not None %}
+                <p class="welcome-subtitle mb-0">
+                    旅行 {{ stay_day }}日目
+                </p>
+            {% endif %}
+
+        </div>
+
+
         {% if travel_groups|length > 1 %}
             <div class="travel-switcher">
-
-                <p class="today-label mb-1">
-                    {{ today|date:"Y年n月j日" }}
-                </p>
-
-                <p class="welcome-subtitle mb-0">
-                    中国・日本滞在 {{ stay_day }}日目
-                </p>
 
                 <div
                     class="travel-switcher-menu"
@@ -94,13 +105,16 @@
 
 </section>
 
+
 {% if important_notice %}
     <section class="important-notice">
+
         <div class="important-notice-icon">
             <i class="bi bi-megaphone-fill"></i>
         </div>
 
         <div>
+
             <p class="important-notice-label mb-1">
                 重要なお知らせ
             </p>
@@ -111,63 +125,115 @@
 
             <p class="important-notice-meta mb-0">
                 {{ important_notice.updated_at|date:"n月j日 H:i" }}更新
+
                 {% if important_notice.updated_by %}
                     ・
+
                     {% if important_notice.updated_by.first_name %}
                         {{ important_notice.updated_by.first_name }}
                     {% else %}
                         {{ important_notice.updated_by.username }}
                     {% endif %}
+
                 {% endif %}
             </p>
+
         </div>
+
     </section>
 {% endif %}
 
-{% if upcoming_schedules %}
+
 <section class="dashboard-section">
+
     <div class="section-heading">
+
         <div>
             <h3 class="section-title mb-0">
                 次の予定
             </h3>
         </div>
 
-        <a
-            href="{% url 'travel:schedule_list' %}"
-            class="small-action-button"
-        >
-            今後の予定一覧
-        </a>
-    </div>
+        <div class="schedule-home-actions">
 
-    <div class="upcoming-schedule-grid">
-        {% for schedule in upcoming_schedules %}
-            <article
-                class="app-card upcoming-schedule-card"
-                data-countdown-target="{{ schedule.start_at|date:'c' }}"
+            <a
+                href="{% url 'travel:schedule_list' %}"
+                class="small-action-button"
             >
-                <p class="upcoming-schedule-datetime">
-                    {{ schedule.start_at|date:"n/j H:i" }}
-                </p>
+                予定一覧
+            </a>
 
-                <h3>{{ schedule.title }}</h3>
+            <a
+                href="{% url 'travel:schedule_create' %}"
+                class="small-action-button"
+            >
+                ＋ 新しい予定
+            </a>
 
-                {% if schedule.location %}
-                    <p class="upcoming-schedule-location">
-                        <i class="bi bi-geo-alt"></i>
-                        {{ schedule.location }}
-                    </p>
-                {% endif %}
+        </div>
 
-                <div class="upcoming-schedule-countdown">
-                    計算中…
-                </div>
-            </article>
-        {% endfor %}
     </div>
+
+
+    {% if upcoming_schedules %}
+
+        <div class="schedule-preview-list">
+
+            {% for schedule in upcoming_schedules %}
+
+                <article class="app-card schedule-preview-card">
+
+                    <div class="schedule-preview-date">
+                        <span class="schedule-preview-day">
+                            {{ schedule.start_at|date:"j" }}
+                        </span>
+
+                        <span class="schedule-preview-month">
+                            {{ schedule.start_at|date:"n月" }}
+                        </span>
+                    </div>
+
+                    <div class="schedule-preview-content">
+
+                        <strong>
+                            {{ schedule.title }}
+                        </strong>
+
+                        <span>
+                            {{ schedule.start_at|date:"H:i" }}
+                        </span>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="schedule-empty-card">
+
+            <i class="bi bi-calendar-plus"></i>
+
+            <div>
+                <strong>
+                    まだ予定はありません
+                </strong>
+
+                <p>
+                    最初の予定を追加してみよう。
+                </p>
+            </div>
+
+        </div>
+
+    {% endif %}
+
 </section>
-{% endif %}
 
 <section class="dashboard-section">
     <div class="section-heading">

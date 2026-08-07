@@ -234,9 +234,15 @@ def travel_group_create(request):
             "",
         ).strip()
 
+        start_date = request.POST.get(
+            "start_date",
+            "",
+        ).strip()
+
         if name:
             travel_group = TravelGroup.objects.create(
                 name=name,
+                start_date=start_date or None,
                 owner=request.user,
             )
 
@@ -272,15 +278,47 @@ def travel_group_settings(
         members=request.user,
     )
 
+    is_owner = (
+        travel_group.owner_id
+        == request.user.id
+    )
+
+    if request.method == "POST" and is_owner:
+        name = request.POST.get(
+            "name",
+            "",
+        ).strip()
+
+        start_date = request.POST.get(
+            "start_date",
+            "",
+        ).strip()
+
+        if name:
+            travel_group.name = name
+            travel_group.start_date = (
+                start_date or None
+            )
+
+            travel_group.save(
+                update_fields=[
+                    "name",
+                    "start_date",
+                    "updated_at",
+                ]
+            )
+
+        return redirect(
+            "travel:travel_group_settings",
+            travel_group_id=travel_group.id,
+        )
+
     return render(
         request,
         "travel/travel_group_settings.html",
         {
             "travel_group": travel_group,
-            "is_owner": (
-                travel_group.owner_id
-                == request.user.id
-            ),
+            "is_owner": is_owner,
         },
     )
 
@@ -600,15 +638,29 @@ def home(request):
 
     today = timezone.localdate()
 
-    arrival_date = timezone.datetime(
-        2026,
-        8,
-        12,
-    ).date()
+    days_until_trip = None
+    stay_day = None
 
-    stay_day = (
-        today - arrival_date
-    ).days
+    if current_travel_group.start_date:
+        day_difference = (
+            today - current_travel_group.start_date
+        ).days
+
+        if day_difference < 0:
+            days_until_trip = abs(
+                day_difference
+            )
+        else:
+            stay_day = day_difference + 1
+
+    print(
+        "TRIP DEBUG:",
+        current_travel_group.name,
+        current_travel_group.start_date,
+        today,
+        days_until_trip,
+        stay_day,
+    )
 
     upcoming_schedules = Schedule.objects.filter(
         travel_group=current_travel_group,
@@ -749,6 +801,7 @@ def home(request):
         ),
         "has_baby": has_baby,
         "has_child": has_child,
+        "days_until_trip": days_until_trip,
         "stay_day": stay_day,
         "upcoming_schedules": upcoming_schedules,
         "latest_growth_notes": latest_growth_notes,
