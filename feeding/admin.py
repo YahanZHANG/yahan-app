@@ -6,6 +6,7 @@ from .models import (
     AllergyReactionPhoto,
     Baby,
     BabyMembership,
+    CommercialBrand,
     Dish,
     DishCategory,
     DishIngredient,
@@ -166,6 +167,17 @@ class FoodAdmin(admin.ModelAdmin):
             obj.allergens.values_list("name", flat=True)
         ) or "なし"
 
+@admin.register(CommercialBrand)
+class CommercialBrandAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+    )
+    search_fields = (
+        "name",
+    )
+    ordering = (
+        "name",
+    )
 
 @admin.register(DishCategory)
 class DishCategoryAdmin(admin.ModelAdmin):
