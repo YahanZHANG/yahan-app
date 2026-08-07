@@ -53,9 +53,19 @@ def get_current_travel_group(request):
     選択されていなければ、参加している最初の旅行を使用する。
     """
 
-    travel_groups = TravelGroup.objects.filter(
-        members=request.user,
-    ).distinct()
+    travel_groups = (
+        TravelGroup.objects
+        .filter(
+            members=request.user,
+        )
+        .exclude(
+            archived_by=request.user,
+        )
+        .select_related(
+            "owner",
+        )
+        .distinct()
+    )
 
     if not travel_groups.exists():
         return None
@@ -79,6 +89,95 @@ def get_current_travel_group(request):
     ] = current_group.id
 
     return current_group
+
+@login_required
+def travel_group_archive(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        members=request.user,
+    )
+
+    if request.method == "POST":
+        travel_group.archived_by.add(
+            request.user
+        )
+
+        if (
+            request.session.get(
+                "current_travel_group_id"
+            )
+            == travel_group.id
+        ):
+            request.session.pop(
+                "current_travel_group_id",
+                None,
+            )
+
+        next_group = (
+            TravelGroup.objects
+            .filter(
+                members=request.user,
+            )
+            .exclude(
+                archived_by=request.user,
+            )
+            .first()
+        )
+
+        if next_group:
+            request.session[
+                "current_travel_group_id"
+            ] = next_group.id
+
+    return redirect(
+        "travel:travel_group_list"
+    )
+
+@login_required
+def archived_travel_group_list(request):
+    travel_groups = (
+        TravelGroup.objects
+        .filter(
+            members=request.user,
+            archived_by=request.user,
+        )
+        .select_related(
+            "owner",
+        )
+        .distinct()
+    )
+
+    return render(
+        request,
+        "travel/archived_travel_group_list.html",
+        {
+            "travel_groups": travel_groups,
+        },
+    )
+
+@login_required
+def travel_group_unarchive(
+    request,
+    travel_group_id,
+):
+    travel_group = get_object_or_404(
+        TravelGroup,
+        id=travel_group_id,
+        members=request.user,
+    )
+
+    if request.method == "POST":
+        travel_group.archived_by.remove(
+            request.user
+        )
+
+    return redirect(
+        "travel:archived_travel_group_list"
+    )
 
 @login_required
 def switch_travel_group(
@@ -108,6 +207,8 @@ def travel_group_list(request):
     ).prefetch_related(
         "members",
         "family_members",
+    ).exclude(
+        archived_by=request.user,
     ).distinct()
 
     current_travel_group = get_current_travel_group(
@@ -512,15 +613,17 @@ def home(request):
         travel_group=current_travel_group,
     ).first()
 
-    User = get_user_model()
-
-    family_users = User.objects.filter(
-        is_active=True,
-        is_superuser=False,
-    ).select_related(
-        "profile",
-    ).order_by(
-        "username",
+    family_users = (
+        current_travel_group.members
+        .filter(
+            is_active=True,
+        )
+        .select_related(
+            "profile",
+        )
+        .order_by(
+            "username",
+        )
     )
 
     family_cards = []

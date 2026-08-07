@@ -56,6 +56,21 @@ urlpatterns = [
         name="travel_group_delete",
     ),
     path(
+        "groups/<int:travel_group_id>/archive/",
+        views.travel_group_archive,
+        name="travel_group_archive",
+    ),
+    path(
+        "groups/archived/",
+        views.archived_travel_group_list,
+        name="archived_travel_group_list",
+    ),
+    path(
+        "groups/<int:travel_group_id>/unarchive/",
+        views.travel_group_unarchive,
+        name="travel_group_unarchive",
+    ),
+    path(
         "schedule/",
         views.schedule_list,
         name="schedule_list",

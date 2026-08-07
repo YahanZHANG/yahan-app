@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator
 
 class TravelGroup(models.Model):
     """家族旅行ごとの共有スペース。"""
-
+        
     name = models.CharField(
         "旅行名",
         max_length=100,
@@ -23,6 +23,12 @@ class TravelGroup(models.Model):
         settings.AUTH_USER_MODEL,
         verbose_name="参加メンバー",
         related_name="travel_groups",
+        blank=True,
+    )
+
+    archived_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="archived_travel_groups",
         blank=True,
     )
 

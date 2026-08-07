@@ -1,0 +1,91 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    過去の旅行一覧 | 旅行管理アプリ
+{% endblock %}
+
+{% block content %}
+
+<div class="form-page">
+
+    <div class="form-page-header schedule-list-header">
+
+        <div>
+            <a
+                href="{% url 'travel:travel_group_list' %}"
+                class="back-link"
+            >
+                <i class="bi bi-chevron-left"></i>
+                旅行一覧に戻る
+            </a>
+
+            <h2>
+                過去の旅行一覧
+            </h2>
+
+            <p class="trip-list-description">
+                アーカイブした旅行を確認できる。
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="trip-card-grid">
+
+        {% for travel_group in travel_groups %}
+
+            <article class="trip-card">
+
+                <div class="trip-card-content">
+
+                    <h2 class="trip-card-title">
+                        {{ travel_group.name }}
+                    </h2>
+
+                </div>
+
+
+                <div class="trip-card-actions">
+
+                    <form
+                        method="post"
+                        action="{% url 'travel:travel_group_unarchive' travel_group.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="trip-open-button"
+                        >
+                            元に戻す
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </form>
+
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <div class="trip-empty-state">
+
+                <h2>
+                    アーカイブした旅行はまだない
+                </h2>
+
+                <p>
+                    アーカイブした旅行がここに表示される。
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

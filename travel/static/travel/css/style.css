@@ -3915,3 +3915,41 @@ button {
         width: 100%;
     }
 }
+
+.trip-owner-only-note {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 8px 10px;
+
+    border-radius: 10px;
+
+    background: #f5f3f6;
+    color: #817985;
+
+    font-size: 0.72rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.trip-card-sub-actions form {
+    margin: 0;
+}
+
+.trip-archive-action {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.trip-archive-action {
+    color: #67748a;
+}
+
+.trip-archive-action:hover {
+    background: #eef2f7;
+}
+
+.trip-card-actions form {
+    margin: 0;
+}

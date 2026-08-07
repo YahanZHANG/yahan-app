@@ -33,6 +33,14 @@
             ＋ 新しい旅行
         </a>
 
+        <a
+            href="{% url 'travel:archived_travel_group_list' %}"
+            class="small-action-button"
+        >
+            <i class="bi bi-archive"></i>
+            アーカイブした旅行
+        </a>
+
     </div>
 
 
@@ -100,7 +108,25 @@
                             設定
                         </a>
 
+
+                        <form
+                            method="post"
+                            action="{% url 'travel:travel_group_archive' travel_group.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="trip-icon-action trip-archive-action"
+                            >
+                                <i class="bi bi-archive"></i>
+                                アーカイブ
+                            </button>
+                        </form>
+
+
                         {% if travel_group.owner_id == request.user.id %}
+
                             <a
                                 href="{% url 'travel:travel_group_delete' travel_group.id %}"
                                 class="trip-icon-action trip-delete-action"
@@ -108,6 +134,19 @@
                                 <i class="bi bi-trash3"></i>
                                 削除
                             </a>
+
+                        {% else %}
+
+                            <span class="trip-owner-only-note">
+                                削除できるのは管理者の
+                                {% if travel_group.owner.first_name %}
+                                    {{ travel_group.owner.first_name }}
+                                {% else %}
+                                    {{ travel_group.owner.username }}
+                                {% endif %}
+                                だけです
+                            </span>
+
                         {% endif %}
 
                     </div>
