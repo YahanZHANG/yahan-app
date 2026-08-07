@@ -49,10 +49,18 @@ class TravelGroup(models.Model):
 class FamilyMember(models.Model):
     """予定の対象として選択できる家族メンバー。"""
 
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="family_members",
+        blank=True,
+        null=True,
+    )
+
     name = models.CharField(
         "名前",
         max_length=50,
-        unique=True,
     )
 
     display_order = models.PositiveIntegerField(
@@ -71,6 +79,16 @@ class FamilyMember(models.Model):
         ordering = [
             "display_order",
             "id",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "travel_group",
+                    "name",
+                ],
+                name="unique_family_member_per_travel_group",
+            ),
         ]
 
     def __str__(self):

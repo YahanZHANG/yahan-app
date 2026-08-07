@@ -56,14 +56,26 @@ class ScheduleForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        travel_group=None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
-        self.fields["people"].queryset = (
-            self.fields["people"]
-            .queryset
-            .filter(is_active=True)
-            .order_by("display_order", "id")
+        queryset = self.fields["people"].queryset.filter(
+            is_active=True,
+        )
+
+        if travel_group is not None:
+            queryset = queryset.filter(
+                travel_group=travel_group,
+            )
+
+        self.fields["people"].queryset = queryset.order_by(
+            "display_order",
+            "id",
         )
         
 class TaskForm(forms.ModelForm):

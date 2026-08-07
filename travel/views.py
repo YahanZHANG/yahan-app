@@ -384,16 +384,21 @@ def home(request):
 
 @login_required
 def schedule_create(request):
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
     if request.method == "POST":
-        form = ScheduleForm(request.POST)
+        form = ScheduleForm(
+            request.POST,
+            travel_group=current_travel_group,
+        )
 
         if form.is_valid():
             schedule = form.save(commit=False)
 
             schedule.created_by = request.user
-            schedule.travel_group = get_current_travel_group(
-                request
-            )
+            schedule.travel_group = current_travel_group
 
             schedule.save()
             form.save_m2m()
@@ -403,7 +408,9 @@ def schedule_create(request):
             )
 
     else:
-        form = ScheduleForm()
+        form = ScheduleForm(
+            travel_group=current_travel_group,
+        )
 
     return render(
         request,
@@ -412,8 +419,10 @@ def schedule_create(request):
             "form": form,
             "page_title": "予定を追加",
             "submit_label": "予定を保存",
+            "current_travel_group": current_travel_group,
         },
     )
+
 
 @login_required
 def schedule_update(request, schedule_id):
@@ -431,14 +440,20 @@ def schedule_update(request, schedule_id):
         form = ScheduleForm(
             request.POST,
             instance=schedule,
+            travel_group=current_travel_group,
         )
 
         if form.is_valid():
             form.save()
-            return redirect("travel:home")
+
+            return redirect(
+                "travel:schedule_list"
+            )
+
     else:
         form = ScheduleForm(
             instance=schedule,
+            travel_group=current_travel_group,
         )
 
     return render(
@@ -448,6 +463,7 @@ def schedule_update(request, schedule_id):
             "form": form,
             "page_title": "予定を編集",
             "submit_label": "変更を保存",
+            "current_travel_group": current_travel_group,
         },
     )
 
