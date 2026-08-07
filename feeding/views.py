@@ -276,7 +276,7 @@ def get_daily_guideline_summary(
     ・魚と肉は「魚＋肉」として合算する
     ・豆腐、卵、乳製品は個別に換算する
     ・各たんぱく源の1日目安量の中央値を
-      100%の基準として全体の進捗を算出する
+    100%の基準として全体の進捗を算出する
     """
 
     guidelines = list(
@@ -2676,6 +2676,51 @@ def meal_edit(request, meal_number):
 
         if meal_form.is_valid() and item_formset.is_valid():
             selected_date = meal_form.cleaned_data["date"]
+
+            # ----------------------------------------
+            # 実際に保存する食事内容があるか確認
+            # ----------------------------------------
+            has_active_items = False
+
+            for item_form in item_formset.forms:
+                cleaned_data = getattr(
+                    item_form,
+                    "cleaned_data",
+                    {},
+                )
+
+                if not cleaned_data:
+                    continue
+
+                if cleaned_data.get("DELETE"):
+                    continue
+
+                if (
+                    cleaned_data.get("food")
+                    or cleaned_data.get("dish")
+                    or cleaned_data.get(
+                        "commercial_product"
+                    )
+                ):
+                    has_active_items = True
+                    break
+
+            # ----------------------------------------
+            # 空ならMealを保存しない
+            # 既存Mealなら削除して未入力状態に戻す
+            # ----------------------------------------
+            if not has_active_items:
+                if meal.pk:
+                    meal.delete()
+
+                today_url = reverse(
+                    "feeding:today"
+                )
+
+                return redirect(
+                    f"{today_url}"
+                    f"?date={selected_date.isoformat()}"
+                )
 
             duplicate_meals = Meal.objects.filter(
                 baby=baby,

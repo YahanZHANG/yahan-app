@@ -503,6 +503,26 @@ class MealItemForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        # ----------------------------------------
+        # 完全に未入力の行は、そのまま無視する
+        # ----------------------------------------
+        row_has_input = any(
+            [
+                cleaned_data.get("food_category"),
+                cleaned_data.get("food"),
+                cleaned_data.get("dish_category"),
+                cleaned_data.get("dish"),
+                cleaned_data.get("commercial_brand"),
+                cleaned_data.get("commercial_product"),
+                cleaned_data.get("amount"),
+                cleaned_data.get("reaction"),
+                cleaned_data.get("has_allergy_symptoms"),
+            ]
+        )
+
+        if not row_has_input:
+            return cleaned_data
+
         catalog_type = (
             cleaned_data.get("catalog_type")
             or "food"
@@ -762,15 +782,6 @@ class BaseMealItemFormSet(BaseInlineFormSet):
                 selected_items.add(
                     selected_key
                 )
-
-        if active_item_count == 0:
-            raise ValidationError(
-                (
-                    "少なくとも1件の"
-                    "食材・料理・市販品を"
-                    "入力してください。"
-                )
-            )
 
 
 MealItemCreateFormSet = inlineformset_factory(
