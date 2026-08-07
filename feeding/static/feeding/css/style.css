@@ -57,12 +57,6 @@ a {
     backdrop-filter: blur(16px);
 }
 
-.app-header .app-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
 .app-main {
     padding: 24px 0;
 }
@@ -316,35 +310,28 @@ a {
     background: #fff1f2;
 }
 
-.remove-item-button{
-
-    position:absolute;
-
-    top:14px;
-    right:14px;
-
-    padding:10px 18px;
-
-    border:none;
-
-    border-radius:999px;
-
-    background:#fdecef;
-
-    color:#c15674;
-
-    font-size:.72rem;
-    font-weight:700;
-
-    cursor:pointer;
-
-    box-shadow:
-        0 4px 10px rgba(0,0,0,.08);
+.dish-ingredient-card {
+    position: relative;
 }
 
-.remove-item-button:hover{
-    background:#fad9df;
-    transform:translateY(-1px);
+.remove-item-button {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 999px;
+    color: #c15674;
+    background: #fdecef;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.remove-item-button:hover {
+    background: #fad9df;
+    transform: translateY(-1px);
 }
 
 .form-actions {
@@ -767,10 +754,6 @@ a {
 [data-food-row][hidden],
 [data-category-card][hidden] {
     display: none !important;
-}
-
-.dashboard-hero {
-    margin-bottom: 24px;
 }
 
 .dashboard-hero::after {
@@ -1546,119 +1529,6 @@ a {
     background: var(--danger-soft);
 }
 
-.meal-guideline-card {
-    padding: 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: #ffffff;
-    box-shadow: var(--shadow-sm);
-}
-
-.guideline-row-list {
-    display: grid;
-    gap: 16px;
-}
-
-.guideline-row {
-    display: grid;
-    gap: 7px;
-}
-
-.guideline-row-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.guideline-row-top > span {
-    font-size: 14px;
-    font-weight: 800;
-}
-
-.guideline-row-top strong {
-    text-align: right;
-    font-size: 15px;
-}
-
-.guideline-row-top strong small {
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.guideline-progress {
-    height: 9px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: #f0ecec;
-}
-
-.guideline-progress span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background:
-        linear-gradient(
-            90deg,
-            #ef9bb0,
-            #efb470
-        );
-}
-
-.guideline-progress.none span {
-    width: 0 !important;
-}
-
-.guideline-progress.within span {
-    background:
-        linear-gradient(
-            90deg,
-            #65ad7b,
-            #91c69d
-        );
-}
-
-.guideline-progress.above span {
-    background:
-        linear-gradient(
-            90deg,
-            #e9a05f,
-            #e88672
-        );
-}
-
-.guideline-note {
-    color: var(--muted);
-    font-size: 10px;
-    line-height: 1.5;
-}
-
-.calculation-details {
-    margin-top: 15px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 11px;
-}
-
-.calculation-details summary {
-    cursor: pointer;
-    font-weight: 800;
-}
-
-.calculation-details ul {
-    margin: 8px 0 0;
-    padding-left: 20px;
-}
-
-.guideline-general-note {
-    margin: 12px 2px 0;
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.7;
-}
-
 .daily-guideline-heading {
     display: flex;
     align-items: center;
@@ -1887,13 +1757,6 @@ body.guest {
     padding-bottom: 0;
 }
 
-.app-header .app-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-}
-
 .header-logout-button {
     padding: 7px 11px;
     border: 1px solid rgba(255, 255, 255, 0.45);
@@ -1949,35 +1812,12 @@ body.guest {
     gap: 4px;
 }
 
-.logout-button {
-    padding: 7px 12px;
-
-    border: 1px solid rgba(255,255,255,.35);
-    border-radius: 999px;
-
-    background: rgba(255,255,255,.15);
-
-    color: #fff;
-
-    font: inherit;
-    font-size: .82rem;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.logout-button:hover {
-    background: rgba(255,255,255,.25);
-}
-
 .settings-page-header {
     margin-bottom: 22px;
 }
 
 .settings-section {
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     padding: 20px;
     border: 1px solid var(--border);
     border-radius: 20px;
@@ -2061,9 +1901,8 @@ body.guest {
 .item-type-toggle {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    width: min(100%, 390px);
-    gap: 12px;
     width: min(100%, 270px);
+    gap: 12px;
     padding: 0;
     background: transparent;
     border: 0;
@@ -2267,25 +2106,6 @@ body.guest {
     transform:translateY(-2px);
 }
 
-.clear-reaction-button{
-
-    background:none;
-    border:none;
-
-    color:#bdbdbd;
-
-    font-size:.82rem;
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.18s;
-}
-
-.clear-reaction-button.is-active{
-    color:#2d7ef7;
-}
-
 .reaction-header {
     display: flex;
     align-items: center;
@@ -2331,10 +2151,6 @@ body.guest {
 /* ==========================================================
    Settings baby switcher
    ========================================================== */
-
-.settings-section {
-    margin-bottom: 24px;
-}
 
 .settings-section h3 {
     margin: 0 0 11px;
@@ -2461,7 +2277,11 @@ button.settings-baby-card:hover {
 }
 
 .baby-member-row {
-    display: flex;
+    display: grid;
+    grid-template-columns:
+        38px
+        minmax(0, 1fr)
+        auto;
     min-height: 58px;
     gap: 11px;
     align-items: center;
@@ -2545,16 +2365,6 @@ button.settings-baby-card:hover {
 /* ==========================================================
    Baby member management actions
    ========================================================== */
-
-.baby-member-row {
-    display: grid;
-    grid-template-columns:
-        38px
-        minmax(0, 1fr)
-        auto;
-    gap: 11px;
-    align-items: center;
-}
 
 .baby-member-self-label {
     display: inline-flex;
@@ -2891,12 +2701,6 @@ button.settings-baby-card:hover {
     cursor: default;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 /* ==========================================================
    Feeding header compact layout
    ========================================================== */
@@ -3023,14 +2827,14 @@ button.settings-baby-card:hover {
 
 .dashboard-date-form {
     position: relative;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
     margin: 0;
 }
 
 .dashboard-date-picker {
     display: flex;
-    width: 100%;
+    width: auto;
     min-height: 44px;
     padding: 0;
     align-items: center;
@@ -3121,20 +2925,6 @@ button.settings-baby-card:hover {
     gap: 6px;
     flex: 1;
     min-width: 0;
-}
-
-.dashboard-date-form {
-    flex: 0 0 auto;
-    margin: 0;
-}
-
-.dashboard-date-picker {
-    width: auto;
-}
-
-.dashboard-date-form {
-    flex: 0 0 auto;
-    margin: 0;
 }
 
 .dashboard-calendar-control {
@@ -3469,13 +3259,13 @@ button.supplement-card:active {
 }
 
 .catalog-food-button {
-    color: #08723b;
-    background: #dff7e5;
+    color: #075225;
+    background: #e6f8e8;
 }
 
 .catalog-dish-button {
-    color: #866211;
-    background: #fff1cf;
+    color: #705405;
+    background: #f8e6b6;
 }
 
 .catalog-commercial-button {
@@ -3487,13 +3277,12 @@ button.supplement-card:active {
     opacity: 1;
     transform: translateY(-1px);
     box-shadow:
-        0 5px 14px
-        rgba(47, 49, 55, 0.09);
+        0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .catalog-type-icon {
     flex: 0 0 auto;
-    font-size: 0.94rem;
+    font-size: 1rem;
     line-height: 1;
 }
 
@@ -3508,30 +3297,8 @@ button.supplement-card:active {
     }
 }
 
-.catalog-food-button {
-    color: #075225;
-    background: #e6f8e8;
-}
-
-.catalog-dish-button {
-    color: #705405;
-    background: #f8e6b6;
-}
-
-.catalog-type-toggle-button.is-active {
-    opacity: 1;
-    transform: translateY(-1px);
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
 .catalog-type-toggle-button:active {
     transform: translateY(-1px) scale(0.98);
-}
-
-.catalog-type-icon {
-    font-size: 1rem;
-    line-height: 1;
 }
 
 /* ==========================================================
