@@ -327,17 +327,27 @@ def family_member_add(
     ).strip()
 
     if name:
-        FamilyMember.objects.get_or_create(
-            travel_group=travel_group,
-            name=name,
-            defaults={
-                "display_order": (
-                    travel_group.family_members.count()
-                    + 1
-                ),
-                "is_active": True,
-            },
+        family_member, created = (
+            FamilyMember.objects.get_or_create(
+                travel_group=travel_group,
+                name=name,
+                defaults={
+                    "display_order": (
+                        travel_group.family_members.count()
+                        + 1
+                    ),
+                    "is_active": True,
+                },
+            )
         )
+
+        if not created and not family_member.is_active:
+            family_member.is_active = True
+            family_member.save(
+                update_fields=[
+                    "is_active",
+                ]
+            )
 
     return redirect(
         "travel:travel_group_settings",
@@ -399,7 +409,7 @@ def home(request):
     arrival_date = timezone.datetime(
         2026,
         8,
-        16,
+        12,
     ).date()
 
     stay_day = (
@@ -461,10 +471,12 @@ def home(request):
     for user in family_users:
         family_status = FamilyStatus.objects.filter(
             user=user,
+            travel_group=current_travel_group,
         ).first()
 
         shared_location = SharedLocation.objects.filter(
             user=user,
+            travel_group=current_travel_group,
         ).first()
 
         family_cards.append(
@@ -877,8 +889,20 @@ def baby_log_create(request):
 
 @login_required
 def family_status_update(request):
-    family_status, created = FamilyStatus.objects.get_or_create(
-        user=request.user,
+    current_travel_group = get_current_travel_group(
+        request
+    )
+
+    if current_travel_group is None:
+        return redirect(
+            "travel:travel_group_list"
+        )
+
+    family_status, created = (
+        FamilyStatus.objects.get_or_create(
+            user=request.user,
+            travel_group=current_travel_group,
+        )
     )
 
     if request.method == "POST":
@@ -889,7 +913,11 @@ def family_status_update(request):
 
         if form.is_valid():
             form.save()
-            return redirect("travel:home")
+
+            return redirect(
+                "travel:home"
+            )
+
     else:
         form = FamilyStatusForm(
             instance=family_status,
@@ -902,6 +930,7 @@ def family_status_update(request):
             "form": form,
             "page_title": "自分の状態を変更",
             "submit_label": "状態を更新",
+            "current_travel_group": current_travel_group,
         },
     )
 
@@ -1144,8 +1173,22 @@ def share_location(request):
                 status=400,
             )
 
+        current_travel_group = get_current_travel_group(
+            request
+        )
+
+        if current_travel_group is None:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "旅行が選択されていません。",
+                },
+                status=400,
+            )
+
         shared_location, created = SharedLocation.objects.update_or_create(
             user=request.user,
+            travel_group=current_travel_group,
             defaults={
                 "latitude": latitude,
                 "longitude": longitude,
@@ -1651,13 +1694,7 @@ def expense_settlement(request):
         request
     )
 
-    users = list(
-        current_travel_group.members.filter(
-            is_active=True,
-        ).order_by(
-            "username",
-        )
-    )
+    User = get_user_model()
 
     expenses = list(
         Expense.objects.filter(
@@ -1666,6 +1703,31 @@ def expense_settlement(request):
             "paid_by",
         ).prefetch_related(
             "shares__user",
+        )
+    )
+
+    user_ids = set(
+        current_travel_group.members.values_list(
+            "id",
+            flat=True,
+        )
+    )
+
+    for expense in expenses:
+        user_ids.add(
+            expense.paid_by_id
+        )
+
+        for share in expense.shares.all():
+            user_ids.add(
+                share.user_id
+            )
+
+    users = list(
+        User.objects.filter(
+            id__in=user_ids,
+        ).order_by(
+            "username",
         )
     )
 
@@ -1685,7 +1747,9 @@ def expense_settlement(request):
             currency=currency,
         )
 
-        settlement_groups.append(group)
+        settlement_groups.append(
+            group
+        )
 
     return render(
         request,

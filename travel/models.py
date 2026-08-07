@@ -37,8 +37,8 @@ class TravelGroup(models.Model):
     )
 
     class Meta:
-        verbose_name = "家族旅行"
-        verbose_name_plural = "家族旅行"
+        verbose_name = "旅行管理アプリ"
+        verbose_name_plural = "旅行管理アプリ"
         ordering = [
             "-created_at",
         ]
@@ -51,7 +51,7 @@ class FamilyMember(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="family_members",
         blank=True,
@@ -109,7 +109,7 @@ class Schedule(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="schedules",
         blank=True,
@@ -186,7 +186,7 @@ class Task(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="tasks",
         blank=True,
@@ -265,7 +265,7 @@ class BabyLog(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="baby_logs",
         blank=True,
@@ -334,7 +334,7 @@ class BabyLog(models.Model):
         return f"{self.get_log_type_display()} - {self.recorded_at:%Y-%m-%d %H:%M}"
 
 class FamilyStatus(models.Model):
-    """家族それぞれの現在の状態を保存するモデル。"""
+    """家族それぞれの現在の状態を旅行ごとに保存するモデル。"""
 
     class Status(models.TextChoices):
         HOME = "home", "家にいる"
@@ -346,11 +346,20 @@ class FamilyStatus(models.Model):
         ARRIVED = "arrived", "目的地に到着"
         OTHER = "other", "その他"
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="ユーザー",
         on_delete=models.CASCADE,
-        related_name="family_status",
+        related_name="family_statuses",
+    )
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="家族旅行",
+        on_delete=models.CASCADE,
+        related_name="family_statuses",
+        blank=True,
+        null=True,
     )
 
     status = models.CharField(
@@ -383,15 +392,30 @@ class FamilyStatus(models.Model):
         verbose_name_plural = "家族の状態"
         ordering = ["user__username"]
 
-    def __str__(self):
-        return f"{self.user} - {self.get_status_display()}"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "travel_group",
+                    "user",
+                ],
+                name="unique_family_status_per_travel_user",
+            ),
+        ]
 
+    def __str__(self):
+        return (
+            f"{self.travel_group} - "
+            f"{self.user} - "
+            f"{self.get_status_display()}"
+        )
+
+    
 class MilkLog(models.Model):
     """赤ちゃんのミルク記録を保存するモデル。"""
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="milk_logs",
         blank=True,
@@ -433,7 +457,7 @@ class SleepLog(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="sleep_logs",
         blank=True,
@@ -499,7 +523,7 @@ class PoopLog(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="poop_logs",
         blank=True,
@@ -557,7 +581,7 @@ class MeetingNote(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="meeting_notes",
         blank=True,
@@ -612,11 +636,20 @@ class MeetingNote(models.Model):
 class SharedLocation(models.Model):
     """家族が共有した現在地を保存するモデル。"""
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="ユーザー",
         on_delete=models.CASCADE,
-        related_name="shared_location",
+        related_name="shared_locations",
+    )
+
+    travel_group = models.ForeignKey(
+        TravelGroup,
+        verbose_name="旅行管理アプリ",
+        on_delete=models.CASCADE,
+        related_name="shared_locations",
+        blank=True,
+        null=True,
     )
 
     latitude = models.DecimalField(
@@ -647,8 +680,22 @@ class SharedLocation(models.Model):
         verbose_name_plural = "共有現在地"
         ordering = ["-shared_at"]
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "travel_group",
+                    "user",
+                ],
+                name="unique_shared_location_per_travel_user",
+            ),
+        ]
+
     def __str__(self):
-        return f"{self.user} - {self.latitude}, {self.longitude}"
+        return (
+            f"{self.travel_group} - "
+            f"{self.user} - "
+            f"{self.latitude}, {self.longitude}"
+        )
 
     @property
     def google_maps_url(self):
@@ -691,7 +738,7 @@ class ImportantNotice(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="important_notices",
         blank=True,
@@ -736,7 +783,7 @@ class Expense(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="expenses",
         blank=True,
@@ -898,7 +945,7 @@ class BabyGrowthNote(models.Model):
 
     travel_group = models.ForeignKey(
         TravelGroup,
-        verbose_name="家族旅行",
+        verbose_name="旅行管理アプリ",
         on_delete=models.CASCADE,
         related_name="baby_growth_notes",
         blank=True,

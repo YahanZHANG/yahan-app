@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='familymember',
             name='travel_group',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='family_members', to='core.travelgroup', verbose_name='家族旅行'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='family_members', to='core.travelgroup', verbose_name='旅行管理アプリ'),
         ),
         migrations.AlterField(
             model_name='familymember',

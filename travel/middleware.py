@@ -8,7 +8,7 @@ from django.urls import reverse
 class TravelAccessMiddleware:
     """
     travel_usersグループの利用者と管理者だけ、
-    家族旅行アプリへアクセスできるようにする。
+    旅行管理アプリアプリへアクセスできるようにする。
     """
 
     def __init__(self, get_response):
@@ -40,7 +40,7 @@ class TravelAccessMiddleware:
         if not can_use_travel:
             messages.error(
                 request,
-                "このアカウントでは家族旅行アプリを利用できない。",
+                "このアカウントでは旅行管理アプリアプリを利用できない。",
             )
 
             return redirect("portal:home")

@@ -1,0 +1,33 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    旅行管理アプリ
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="app-card empty-state">
+
+        <h2>
+            参加している旅行はまだありません
+        </h2>
+
+        <p>
+            新しい旅行を作るか、
+            旅行の代表者から招待してもらってください。
+        </p>
+
+        <a
+            href="{% url 'travel:travel_group_create' %}"
+            class="small-action-button"
+        >
+            ＋ 新しい旅行を作る
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
