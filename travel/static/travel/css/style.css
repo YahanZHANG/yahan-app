@@ -4305,11 +4305,11 @@ body {
 
     @media (max-width: 480px) {
         .travel-home-status .today-label {
-            font-size: 0.9rem;
+            font-size: 1.1rem;
         }
 
         .travel-home-status .welcome-subtitle {
-            font-size: 0.78rem;
+            font-size: 1rem;
         }
     }
 }
