@@ -1,8 +1,11 @@
 {% load static %}
 
 <!DOCTYPE html>
+
 <html lang="ja">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -16,11 +19,13 @@
         {% endblock %}
     </title>
 
+
     <!-- Bootstrap -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
+
 
     <!-- Bootstrap Icons -->
     <link
@@ -28,144 +33,196 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
-    <!-- Leaflet --> 
+
+    <!-- Leaflet -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    >
 
-    <!-- 自分たちのCSS -->
+
+    <!-- Travel CSS -->
     <link
         rel="stylesheet"
         href="{% static 'travel/css/style.css' %}"
     >
 
-
 </head>
 
+
 <body>
-    <header class="app-header">
-        <div class="container app-container">
-            <div>
-                <h1 class="app-title mb-0">
+
+
+<header class="app-header">
+
+    <div class="container app-container">
+
+        <div class="header-user">
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="portal-back-link"
+            >
+                ← yahan-app
+            </a>
+
+
+            <div class="app-title">
+
+                {% if global_current_travel_group %}
+                    {{ global_current_travel_group.name }}
+                {% else %}
                     旅行管理アプリ
-                </h1>
+                {% endif %}
+
             </div>
 
-<div class="header-user">
-
-    <a
-        href="{% url 'portal:home' %}"
-        class="portal-back-link"
-    >
-        ← yahan-app
-    </a>
-
-    <div class="header-user-actions">
-
-        <div class="header-user-name">
-            <small>ログイン中</small>
-
-            <strong>
-                {% if request.user.first_name %}
-                    {{ request.user.first_name }}
-                {% else %}
-                    {{ request.user.username }}
-                {% endif %}
-            </strong>
         </div>
 
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
 
-            <button
-                type="submit"
-                class="profile-button"
-                aria-label="ログアウト"
-                title="ログアウト"
+        <div class="header-user-actions">
+
+            <div class="header-user-name">
+
+                <small>
+                    ログイン中
+                </small>
+
+                <strong>
+                    {% if request.user.first_name %}
+                        {{ request.user.first_name }}
+                    {% else %}
+                        {{ request.user.username }}
+                    {% endif %}
+                </strong>
+
+            </div>
+
+
+            <form
+                method="post"
+                action="{% url 'logout' %}"
             >
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
-        </form>
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="profile-button"
+                    aria-label="ログアウト"
+                    title="ログアウト"
+                >
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+
+            </form>
+
+        </div>
 
     </div>
 
-</div>
-
-        </div>
-    </header>
-
-    <main class="container app-container page-content">
-        {% block content %}
-        {% endblock %}
-    </main>
-
-    
-    <nav class="travel-bottom-nav">
-
-        <a
-            href="{% url 'travel:home' %}"
-            class="travel-bottom-nav-item
-                {% if request.resolver_match.url_name == 'home' %}
-                    is-active
-                {% endif %}
-            "
-        >
-            <i class="bi bi-house"></i>
-            <span>ホーム</span>
-        </a>
+</header>
 
 
-        <a
-            href="{% url 'travel:schedule_list' %}"
-            class="travel-bottom-nav-item
-                {% if request.resolver_match.url_name == 'schedule_list' %}
-                    is-active
-                {% endif %}
-            "
-        >
-            <i class="bi bi-calendar3"></i>
-            <span>予定</span>
-        </a>
+<main class="container app-container page-content">
+
+    {% block content %}
+    {% endblock %}
+
+</main>
 
 
-        <a
-            href="{% url 'travel:expense_list' %}"
-            class="travel-bottom-nav-item
-                {% if request.resolver_match.url_name == 'expense_list' %}
-                    is-active
-                {% endif %}
-            "
-        >
-            <i class="bi bi-wallet2"></i>
-            <span>支出</span>
-        </a>
+<nav class="travel-bottom-nav">
+
+    <a
+        href="{% url 'travel:home' %}"
+        class="
+            travel-bottom-nav-item
+            {% if request.resolver_match.url_name == 'home' %}
+                is-active
+            {% endif %}
+        "
+    >
+        <i class="bi bi-house"></i>
+
+        <span>
+            ホーム
+        </span>
+    </a>
 
 
-        <a
-            href="{% url 'travel:settings_hub' %}"
-            class="travel-bottom-nav-item
-                {% if request.resolver_match.url_name == 'settings_hub' %}
-                    is-active
-                {% endif %}
-            "
-        >
-            <i class="bi bi-gear"></i>
-            <span>設定</span>
-        </a>
+    <a
+        href="{% url 'travel:schedule_list' %}"
+        class="
+            travel-bottom-nav-item
+            {% if request.resolver_match.url_name == 'schedule_list' or request.resolver_match.url_name == 'schedule_create' or request.resolver_match.url_name == 'schedule_update' %}
+                is-active
+            {% endif %}
+        "
+    >
+        <i class="bi bi-calendar3"></i>
 
-    </nav>
+        <span>
+            予定
+        </span>
+    </a>
 
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    ></script>
+    <a
+        href="{% url 'travel:expense_list' %}"
+        class="
+            travel-bottom-nav-item
+            {% if request.resolver_match.url_name == 'expense_list' or request.resolver_match.url_name == 'expense_create' or request.resolver_match.url_name == 'expense_settlement' %}
+                is-active
+            {% endif %}
+        "
+    >
+        <i class="bi bi-wallet2"></i>
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    ></script>
+        <span>
+            支出
+        </span>
+    </a>
 
-    <script src="{% static 'js/main.js' %}"></script>
+
+    <a
+        href="{% url 'travel:settings_hub' %}"
+        class="
+            travel-bottom-nav-item
+            {% if request.resolver_match.url_name == 'settings_hub' or request.resolver_match.url_name == 'travel_group_list' or request.resolver_match.url_name == 'travel_group_settings' %}
+                is-active
+            {% endif %}
+        "
+    >
+        <i class="bi bi-gear"></i>
+
+        <span>
+            設定
+        </span>
+    </a>
+
+</nav>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<script
+    src="{% static 'js/main.js' %}"
+></script>
+
+
+{% block extra_js %}
+{% endblock %}
+
 
 </body>
+
 </html>

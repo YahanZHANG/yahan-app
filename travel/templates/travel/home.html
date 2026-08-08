@@ -9,11 +9,7 @@
 
 <section class="welcome-section">
 
-    <div class="travel-home-heading">
-
-        <h1 class="travel-group-name">
-            {{ current_travel_group.name }}
-        </h1>
+    <div class="travel-home-status">
 
         <p class="today-label">
             {{ today|date:"Y年n月j日" }}
@@ -21,12 +17,12 @@
 
         {% if days_until_trip is not None %}
             <p class="welcome-subtitle">
-                旅行まであと {{ days_until_trip }}日
+                旅行開始まであと {{ days_until_trip }}日
             </p>
 
         {% elif stay_day is not None %}
             <p class="welcome-subtitle">
-                旅行 {{ stay_day }}日目
+                旅行{{ stay_day }}日目
             </p>
         {% endif %}
 
@@ -718,86 +714,6 @@
 
 </section>
 {% endif %}
-
-
-<section class="dashboard-section">
-
-    <div class="section-heading">
-
-        <div>
-            <h3 class="section-title mb-0">
-                支出・精算
-            </h3>
-        </div>
-
-    </div>
-
-
-    <div class="expense-home-grid">
-
-        <a
-            href="{% url 'travel:expense_create' %}"
-            class="app-card expense-home-card"
-        >
-
-            <div class="expense-home-icon">
-                <i class="bi bi-plus-circle-fill"></i>
-            </div>
-
-            <div class="expense-home-content">
-                <strong>
-                    支出を追加
-                </strong>
-            </div>
-
-            <i class="bi bi-chevron-right expense-home-arrow"></i>
-
-        </a>
-
-
-        <a
-            href="{% url 'travel:expense_list' %}"
-            class="app-card expense-home-card"
-        >
-
-            <div class="expense-home-icon">
-                <i class="bi bi-receipt"></i>
-            </div>
-
-            <div class="expense-home-content">
-                <strong>
-                    支出一覧
-                </strong>
-            </div>
-
-            <i class="bi bi-chevron-right expense-home-arrow"></i>
-
-        </a>
-
-
-        <a
-            href="{% url 'travel:expense_settlement' %}"
-            class="app-card expense-home-card expense-home-card-primary"
-        >
-
-            <div class="expense-home-icon">
-                <i class="bi bi-calculator-fill"></i>
-            </div>
-
-            <div class="expense-home-content">
-                <strong>
-                    精算結果
-                </strong>
-            </div>
-
-            <i class="bi bi-chevron-right expense-home-arrow"></i>
-
-        </a>
-
-    </div>
-
-</section>
-
 
 <section class="dashboard-section">
 

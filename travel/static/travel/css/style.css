@@ -121,7 +121,7 @@ button {
 
 .today-label {
     color: var(--primary);
-    font-size: 0.82rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
@@ -4271,4 +4271,40 @@ body {
 
     font-size: 1.2rem;
     font-weight: 850;
+}
+
+.travel-home-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.travel-home-status .today-label,
+.travel-home-status .welcome-subtitle {
+    margin: 0;
+}
+
+.travel-home-status .today-label {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.travel-home-status .welcome-subtitle {
+    color: var(--primary);
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-align: right;
+}
+
+@media (max-width: 480px) {
+    .travel-home-status {
+        gap: 10px;
+    }
+
+    .travel-home-status .today-label,
+    .travel-home-status .welcome-subtitle {
+        font-size: 0.78rem;
+    }
 }
