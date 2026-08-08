@@ -1,0 +1,99 @@
+{% extends "travel/base.html" %}
+
+{% block title %}
+    設定 | 旅行管理
+{% endblock %}
+
+{% block content %}
+
+<section class="travel-menu-page">
+
+    <div class="travel-menu-header">
+
+        <p class="travel-menu-eyebrow">
+            SETTINGS
+        </p>
+
+        <h1>
+            設定
+        </h1>
+
+        <p>
+            {{ current_travel_group.name }}
+        </p>
+
+    </div>
+
+
+    <div class="travel-menu-list">
+
+        <a
+            href="{% url 'travel:travel_group_list' %}"
+            class="travel-menu-card"
+        >
+            <div class="travel-menu-icon">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+
+            <div class="travel-menu-copy">
+                <strong>
+                    旅行を切り替える
+                </strong>
+
+                <span>
+                    別の旅行を選択する
+                </span>
+            </div>
+
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+
+        <a
+            href="{% url 'travel:travel_group_list' %}"
+            class="travel-menu-card"
+        >
+            <div class="travel-menu-icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+
+            <div class="travel-menu-copy">
+                <strong>
+                    旅行一覧
+                </strong>
+
+                <span>
+                    参加中・作成済みの旅行を見る
+                </span>
+            </div>
+
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+
+        <a
+            href="{% url 'travel:travel_group_settings' current_travel_group.id %}"
+            class="travel-menu-card"
+        >
+            <div class="travel-menu-icon">
+                <i class="bi bi-gear"></i>
+            </div>
+
+            <div class="travel-menu-copy">
+                <strong>
+                    この旅行の設定
+                </strong>
+
+                <span>
+                    旅行名・日程・メンバーなど
+                </span>
+            </div>
+
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}

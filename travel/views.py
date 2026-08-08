@@ -823,6 +823,21 @@ def home(request):
     )
 
 @login_required
+def settings_hub(request):
+    current_travel_group = get_current_travel_group(request)
+
+    if current_travel_group is None:
+        return redirect("travel:travel_group_list")
+
+    return render(
+        request,
+        "travel/settings_hub.html",
+        {
+            "current_travel_group": current_travel_group,
+        },
+    )
+
+@login_required
 def schedule_create(request):
     current_travel_group = get_current_travel_group(
         request

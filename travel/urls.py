@@ -71,6 +71,11 @@ urlpatterns = [
         name="travel_group_unarchive",
     ),
     path(
+        "settings/",
+        views.settings_hub,
+        name="settings_hub",
+    ),
+    path(
         "schedule/",
         views.schedule_list,
         name="schedule_list",
