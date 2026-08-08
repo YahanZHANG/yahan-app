@@ -5,8 +5,11 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="form-page">
+
     <div class="form-page-header">
+
         <a
             href="{% url 'travel:expense_list' %}"
             class="back-link"
@@ -15,8 +18,12 @@
             支出一覧へ戻る
         </a>
 
-        <h2>{{ page_title }}</h2>
+        <h2>
+            {{ page_title }}
+        </h2>
+
     </div>
+
 
     <form
         method="post"
@@ -25,13 +32,16 @@
     >
         {% csrf_token %}
 
+
         {% if form.non_field_errors %}
             <div class="form-errors">
                 {{ form.non_field_errors }}
             </div>
         {% endif %}
 
+
         <div class="form-field">
+
             <label for="{{ form.title.id_for_label }}">
                 {{ form.title.label }}
             </label>
@@ -39,12 +49,18 @@
             {{ form.title }}
 
             {% for error in form.title.errors %}
-                <p class="field-error">{{ error }}</p>
+                <p class="field-error">
+                    {{ error }}
+                </p>
             {% endfor %}
+
         </div>
 
+
         <div class="expense-main-grid">
+
             <div class="form-field">
+
                 <label for="{{ form.total_amount.id_for_label }}">
                     {{ form.total_amount.label }}
                 </label>
@@ -52,20 +68,29 @@
                 {{ form.total_amount }}
 
                 {% for error in form.total_amount.errors %}
-                    <p class="field-error">{{ error }}</p>
+                    <p class="field-error">
+                        {{ error }}
+                    </p>
                 {% endfor %}
+
             </div>
 
+
             <div class="form-field">
+
                 <label for="{{ form.currency.id_for_label }}">
                     {{ form.currency.label }}
                 </label>
 
                 {{ form.currency }}
+
             </div>
+
         </div>
 
+
         <div class="form-field">
+
             <label for="{{ form.paid_by.id_for_label }}">
                 {{ form.paid_by.label }}
             </label>
@@ -73,34 +98,54 @@
             {{ form.paid_by }}
 
             {% for error in form.paid_by.errors %}
-                <p class="field-error">{{ error }}</p>
+                <p class="field-error">
+                    {{ error }}
+                </p>
             {% endfor %}
+
         </div>
 
+
         <div class="expense-main-grid">
+
             <div class="form-field">
+
                 <label for="{{ form.paid_at.id_for_label }}">
                     {{ form.paid_at.label }}
                 </label>
 
                 {{ form.paid_at }}
+
             </div>
 
+
             <div class="form-field">
+
                 <label for="{{ form.category.id_for_label }}">
                     {{ form.category.label }}
                 </label>
 
                 {{ form.category }}
+
             </div>
+
         </div>
 
+
         <section class="expense-share-section">
+
             <div class="expense-share-heading">
+
                 <div>
-                    <p class="section-eyebrow mb-1">BREAKDOWN</p>
-                    <h3>負担する人・金額</h3>
+                    <p class="section-eyebrow mb-1">
+                        BREAKDOWN
+                    </p>
+
+                    <h3>
+                        負担する人・金額
+                    </h3>
                 </div>
+
 
                 <button
                     type="button"
@@ -109,88 +154,72 @@
                 >
                     選択した人で平均
                 </button>
+
             </div>
+
 
             <p class="expense-share-help">
                 負担する人にチェックを入れ、金額を入力する。
             </p>
 
-            <div class="expense-share-list">
-                <label class="expense-share-row">
-                    <input
-                        type="checkbox"
-                        class="expense-share-checkbox"
-                        data-share-input="{{ form.papa_amount.id_for_label }}"
-                    >
 
-                    <span class="expense-share-name">
-                        パパ
-                    </span>
+           <div class="expense-share-list">
 
-                    {{ form.papa_amount }}
-                </label>
+                {% for share in share_fields %}
 
-                <label class="expense-share-row">
-                    <input
-                        type="checkbox"
-                        class="expense-share-checkbox"
-                        data-share-input="{{ form.mama_amount.id_for_label }}"
-                    >
+                    <label class="expense-share-row">
 
-                    <span class="expense-share-name">
-                        ママ
-                    </span>
+                        <input
+                            type="checkbox"
+                            class="expense-share-checkbox"
+                            data-share-name="{{ share.field_name }}"
+                        >
 
-                    {{ form.mama_amount }}
-                </label>
+                        <span class="expense-share-name">
+                            {% if share.user.first_name %}
+                                {{ share.user.first_name }}
+                            {% else %}
+                                {{ share.user.username }}
+                            {% endif %}
+                        </span>
 
-                <label class="expense-share-row">
-                    <input
-                        type="checkbox"
-                        class="expense-share-checkbox"
-                        data-share-input="{{ form.yeye_amount.id_for_label }}"
-                    >
+                        {{ share.field }}
 
-                    <span class="expense-share-name">
-                        じいじ
-                    </span>
+                    </label>
 
-                    {{ form.yeye_amount }}
-                </label>
+                {% endfor %}
 
-                <label class="expense-share-row">
-                    <input
-                        type="checkbox"
-                        class="expense-share-checkbox"
-                        data-share-input="{{ form.nainai_amount.id_for_label }}"
-                    >
-
-                    <span class="expense-share-name">
-                        ばあば
-                    </span>
-
-                    {{ form.nainai_amount }}
-                </label>
             </div>
 
+
             <div class="expense-share-summary">
-                <span>内訳合計</span>
+
+                <span>
+                    内訳合計
+                </span>
 
                 <strong id="expense-share-total">
                     0
                 </strong>
+
             </div>
+
         </section>
 
+
         <div class="form-field">
+
             <label for="{{ form.note.id_for_label }}">
                 {{ form.note.label }}
             </label>
 
             {{ form.note }}
+
         </div>
 
+
         <div class="form-actions">
+
             <a
                 href="{% url 'travel:expense_list' %}"
                 class="secondary-button"
@@ -198,13 +227,282 @@
                 キャンセル
             </a>
 
+
             <button
                 type="submit"
                 class="primary-button"
             >
                 {{ submit_label }}
             </button>
+
         </div>
+
     </form>
+
 </div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const totalAmountInput =
+            document.getElementById(
+                "{{ form.total_amount.id_for_label }}"
+            );
+
+        const averageButton =
+            document.getElementById(
+                "expense-average-button"
+            );
+
+        const shareTotalElement =
+            document.getElementById(
+                "expense-share-total"
+            );
+
+        const checkboxes =
+            document.querySelectorAll(
+                ".expense-share-checkbox"
+            );
+
+
+        function getShareInput(checkbox) {
+
+            const inputName =
+                checkbox.dataset.shareName;
+
+            return document.querySelector(
+                `[name="${inputName}"]`
+            );
+
+        }
+
+
+        function updateInputState(checkbox) {
+
+            const input =
+                getShareInput(checkbox);
+
+            if (!input) {
+                return;
+            }
+
+            input.disabled =
+                !checkbox.checked;
+
+            if (!checkbox.checked) {
+                input.value = "";
+            }
+
+        }
+
+
+        function updateShareTotal() {
+
+            let total = 0;
+
+            checkboxes.forEach(
+                function (checkbox) {
+
+                    if (!checkbox.checked) {
+                        return;
+                    }
+
+                    const input =
+                        getShareInput(checkbox);
+
+                    if (!input) {
+                        return;
+                    }
+
+                    const value =
+                        parseFloat(
+                            input.value
+                        );
+
+                    if (!Number.isNaN(value)) {
+                        total += value;
+                    }
+
+                }
+            );
+
+            shareTotalElement.textContent =
+                total
+                    .toFixed(2)
+                    .replace(/\.00$/, "");
+
+        }
+
+
+        checkboxes.forEach(
+            function (checkbox) {
+
+                const input =
+                    getShareInput(checkbox);
+
+                if (!input) {
+                    return;
+                }
+
+
+                const currentValue =
+                    parseFloat(
+                        input.value
+                    );
+
+                if (
+                    !Number.isNaN(currentValue)
+                    && currentValue > 0
+                ) {
+                    checkbox.checked = true;
+                }
+
+
+                updateInputState(
+                    checkbox
+                );
+
+
+                checkbox.addEventListener(
+                    "change",
+                    function () {
+
+                        updateInputState(
+                            checkbox
+                        );
+
+                        if (checkbox.checked) {
+                            input.focus();
+                        }
+
+                        updateShareTotal();
+
+                    }
+                );
+
+
+                input.addEventListener(
+                    "input",
+                    updateShareTotal
+                );
+
+            }
+        );
+
+
+        if (averageButton) {
+
+            averageButton.addEventListener(
+                "click",
+                function () {
+
+                    const selectedCheckboxes =
+                        Array.from(
+                            checkboxes
+                        ).filter(
+                            function (checkbox) {
+                                return checkbox.checked;
+                            }
+                        );
+
+
+                    if (
+                        selectedCheckboxes.length === 0
+                    ) {
+                        return;
+                    }
+
+
+                    const totalAmount =
+                        parseFloat(
+                            totalAmountInput.value
+                        );
+
+
+                    if (
+                        Number.isNaN(totalAmount)
+                        || totalAmount <= 0
+                    ) {
+                        totalAmountInput.focus();
+                        return;
+                    }
+
+
+                    const average =
+                        Math.floor(
+                            (
+                                totalAmount
+                                / selectedCheckboxes.length
+                            )
+                            * 100
+                        )
+                        / 100;
+
+
+                    let assignedTotal = 0;
+
+
+                    selectedCheckboxes.forEach(
+                        function (
+                            checkbox,
+                            index
+                        ) {
+
+                            const input =
+                                getShareInput(
+                                    checkbox
+                                );
+
+                            if (!input) {
+                                return;
+                            }
+
+
+                            if (
+                                index
+                                ===
+                                selectedCheckboxes.length - 1
+                            ) {
+
+                                input.value =
+                                    (
+                                        totalAmount
+                                        - assignedTotal
+                                    ).toFixed(2);
+
+                            } else {
+
+                                input.value =
+                                    average.toFixed(2);
+
+                                assignedTotal +=
+                                    average;
+
+                            }
+
+                        }
+                    );
+
+
+                    updateShareTotal();
+
+                }
+            );
+
+        }
+
+
+        updateShareTotal();
+
+    }
+);
+</script>
+
 {% endblock %}

@@ -1720,6 +1720,28 @@ def expense_create(request):
             travel_group=current_travel_group,
         )
 
+
+    share_fields = []
+
+    for member in (
+        current_travel_group.members
+        .filter(is_active=True)
+        .order_by("username")
+    ):
+        field_name = (
+            f"share_user_{member.id}"
+        )
+
+        if field_name in form.fields:
+            share_fields.append(
+                {
+                    "user": member,
+                    "field": form[field_name],
+                    "field_name": field_name,
+                }
+            )
+
+
     return render(
         request,
         "travel/expense_form.html",
@@ -1730,8 +1752,10 @@ def expense_create(request):
             "current_travel_group": (
                 current_travel_group
             ),
+            "share_fields": share_fields,
         },
     )
+
 
 @login_required
 def expense_update(
@@ -1775,6 +1799,28 @@ def expense_update(
             travel_group=current_travel_group,
         )
 
+
+    share_fields = []
+
+    for member in (
+        current_travel_group.members
+        .filter(is_active=True)
+        .order_by("username")
+    ):
+        field_name = (
+            f"share_user_{member.id}"
+        )
+
+        if field_name in form.fields:
+            share_fields.append(
+                {
+                    "user": member,
+                    "field": form[field_name],
+                    "field_name": field_name,
+                }
+            )
+
+
     return render(
         request,
         "travel/expense_form.html",
@@ -1786,6 +1832,7 @@ def expense_update(
             "current_travel_group": (
                 current_travel_group
             ),
+            "share_fields": share_fields,
         },
     )
 
