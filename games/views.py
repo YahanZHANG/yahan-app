@@ -7,3 +7,6 @@ def game_list(request):
 
 def block_breaker(request):
     return render(request, "games/block_breaker/index.html")
+
+def tap_star(request):
+    return render(request, "games/tap_star/index.html")

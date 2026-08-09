@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
 
@@ -12,9 +13,10 @@
 
     <title>
         {% block title %}
-            旅行管理アプリ
+            Yahan App
         {% endblock %}
     </title>
+
 
     <!-- Bootstrap -->
     <link
@@ -22,48 +24,65 @@
         rel="stylesheet"
     >
 
+
     <!-- Bootstrap Icons -->
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
-    <!-- Leaflet --> 
+
+    <!-- Leaflet -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    >
 
-    <!-- 自分たちのCSS -->
+
+    <!-- 共通CSS -->
     <link
         rel="stylesheet"
         href="{% static 'css/style.css' %}"
     >
 
 
+    <!-- 各ページ専用CSS -->
+    {% block extra_css %}
+    {% endblock %}
+
 </head>
 
+
 <body>
-    {% if request.resolver_match.namespace != "portal" %}
-    <header class="app-header">
-        ...
-    </header>
-    {% endif %}
 
     <main class="container app-container page-content">
+
         {% block content %}
         {% endblock %}
+
     </main>
 
+
+    <!-- Bootstrap -->
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     ></script>
 
+
+    <!-- Leaflet -->
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ></script>
 
+
+    <!-- 共通JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
 
+
+    <!-- 各ページ専用JavaScript -->
+    {% block extra_js %}
+    {% endblock %}
+
 </body>
+
 </html>

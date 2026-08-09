@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}スタータップ | ゲーム{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'games/tap_star/tap_star.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<section class="tap-star-page">
+
+    <div class="tap-star-card">
+
+        <!-- ==============================
+             Header
+        =============================== -->
+
+        <div class="tap-star-header">
+
+            <a
+                href="{% url 'games:game_list' %}"
+                class="tap-star-back-button"
+            >
+                ← ゲーム一覧
+            </a>
+
+
+            <div class="tap-star-title-area">
+
+                <div class="tap-star-title-icon">
+                    ⭐
+                </div>
+
+                <div>
+
+                    <p class="tap-star-eyebrow">
+                        MINI GAME
+                    </p>
+
+                    <h1 class="tap-star-title">
+                        スタータップ
+                    </h1>
+
+                    <p class="tap-star-description">
+                        30秒で星を何回タップできるかな？
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             Score / Time
+        =============================== -->
+
+        <div class="tap-star-status">
+
+            <div class="tap-star-status-item">
+
+                <span class="tap-star-status-label">
+                    SCORE
+                </span>
+
+                <strong
+                    id="tap-star-score"
+                    class="tap-star-status-value"
+                >
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="tap-star-status-divider"></div>
+
+
+            <div class="tap-star-status-item">
+
+                <span class="tap-star-status-label">
+                    TIME
+                </span>
+
+                <strong
+                    id="tap-star-time"
+                    class="tap-star-status-value"
+                >
+                    30
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             Game Area
+        =============================== -->
+
+        <div
+            id="tap-star-game-area"
+            class="tap-star-game-area"
+        >
+
+            <!-- Ready Screen -->
+
+            <div
+                id="tap-star-ready"
+                class="tap-star-ready"
+            >
+
+                <div class="tap-star-ready-icon">
+                    ⭐
+                </div>
+
+                <p class="tap-star-ready-title">
+                    星をタップしよう！
+                </p>
+
+                <p class="tap-star-ready-text">
+                    30秒間で、できるだけたくさんの星をタップしてね。
+                </p>
+
+                <button
+                    id="tap-star-start-button"
+                    class="tap-star-start-button"
+                    type="button"
+                >
+                    ゲームスタート
+                </button>
+
+            </div>
+
+
+            <!-- Star -->
+
+            <button
+                id="tap-star-target"
+                class="tap-star-target"
+                type="button"
+                aria-label="星をタップ"
+                hidden
+            >
+                ⭐
+            </button>
+
+
+            <!-- Result Screen -->
+
+            <div
+                id="tap-star-result"
+                class="tap-star-result"
+                hidden
+            >
+
+                <div class="tap-star-result-icon">
+                    🎉
+                </div>
+
+                <p class="tap-star-result-label">
+                    FINISH!
+                </p>
+
+                <h2 class="tap-star-result-title">
+                    おつかれさま！
+                </h2>
+
+                <p class="tap-star-result-score">
+
+                    <span id="tap-star-final-score">
+                        0
+                    </span>
+
+                    <small>
+                        回
+                    </small>
+
+                </p>
+
+                <p
+                    id="tap-star-result-message"
+                    class="tap-star-result-message"
+                >
+                    ナイスチャレンジ！
+                </p>
+
+                <button
+                    id="tap-star-restart-button"
+                    class="tap-star-restart-button"
+                    type="button"
+                >
+                    もう一度遊ぶ
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             Hint
+        =============================== -->
+
+        <p class="tap-star-hint">
+            ⭐ 星が出たらすぐタップ！
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'games/tap_star/tap_star.js' %}"></script>
+{% endblock %}

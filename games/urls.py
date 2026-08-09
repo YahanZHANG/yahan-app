@@ -11,4 +11,5 @@ urlpatterns = [
         views.block_breaker,
         name="block_breaker",
     ),
+    path("tap-star/", views.tap_star, name="tap_star"),
 ]

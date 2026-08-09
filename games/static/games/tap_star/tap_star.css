@@ -1,0 +1,580 @@
+/* ========================================
+   Star Tap
+======================================== */
+
+.tap-star-page {
+    width: 100%;
+    min-height: calc(100vh - 100px);
+    padding: 28px 16px 48px;
+    box-sizing: border-box;
+}
+
+
+/* ========================================
+   Main card
+======================================== */
+
+.tap-star-card {
+    width: min(100%, 720px);
+    margin: 0 auto;
+}
+
+
+/* ========================================
+   Header
+======================================== */
+
+.tap-star-header {
+    margin-bottom: 22px;
+}
+
+.tap-star-back-button {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: 24px;
+
+    color: #6f7485;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.tap-star-back-button:hover {
+    color: #34384a;
+    transform: translateX(-2px);
+}
+
+
+.tap-star-title-area {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.tap-star-title-icon {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+
+    width: 72px;
+    height: 72px;
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff8d8,
+            #ffe89a
+        );
+
+    font-size: 2.5rem;
+
+    box-shadow:
+        0 10px 30px rgba(205, 170, 50, 0.15);
+}
+
+.tap-star-eyebrow {
+    margin: 0 0 3px;
+
+    color: #a78926;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+.tap-star-title {
+    margin: 0;
+
+    color: #292d3d;
+
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 800;
+
+    line-height: 1.15;
+}
+
+.tap-star-description {
+    margin: 7px 0 0;
+
+    color: #74798b;
+
+    font-size: 0.95rem;
+
+    line-height: 1.6;
+}
+
+
+/* ========================================
+   Score / Time
+======================================== */
+
+.tap-star-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 14px;
+    padding: 13px 20px;
+
+    border: 1px solid rgba(105, 110, 135, 0.1);
+    border-radius: 22px;
+
+    background: rgba(255, 255, 255, 0.85);
+
+    box-shadow:
+        0 8px 28px rgba(36, 40, 60, 0.06);
+}
+
+.tap-star-status-item {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+
+    min-width: 0;
+}
+
+.tap-star-status-label {
+    margin-bottom: 2px;
+
+    color: #9599a8;
+
+    font-size: 0.67rem;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+.tap-star-status-value {
+    color: #313647;
+
+    font-size: 1.8rem;
+    font-weight: 800;
+
+    line-height: 1.1;
+}
+
+.tap-star-status-divider {
+    width: 1px;
+    height: 35px;
+
+    margin: 0 20px;
+
+    background: #e7e8ee;
+}
+
+
+/* ========================================
+   Game area
+======================================== */
+
+.tap-star-game-area {
+    position: relative;
+
+    width: 100%;
+    height: min(60vh, 540px);
+    min-height: 420px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(114, 103, 50, 0.12);
+    border-radius: 34px;
+
+    background:
+        radial-gradient(
+            circle at 20% 10%,
+            rgba(255, 255, 255, 0.95),
+            transparent 32%
+        ),
+        linear-gradient(
+            145deg,
+            #fffdf1 0%,
+            #fff7d9 50%,
+            #ffefbd 100%
+        );
+
+    box-shadow:
+        0 18px 50px rgba(98, 80, 20, 0.1);
+
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+
+/* Decorative dots */
+
+.tap-star-game-area::before,
+.tap-star-game-area::after {
+    position: absolute;
+
+    width: 150px;
+    height: 150px;
+
+    border-radius: 50%;
+
+    content: "";
+
+    pointer-events: none;
+}
+
+.tap-star-game-area::before {
+    top: -55px;
+    right: -45px;
+
+    background: rgba(255, 221, 111, 0.22);
+}
+
+.tap-star-game-area::after {
+    bottom: -75px;
+    left: -50px;
+
+    width: 190px;
+    height: 190px;
+
+    background: rgba(255, 255, 255, 0.55);
+}
+
+
+/* ========================================
+   Ready screen
+======================================== */
+
+.tap-star-ready,
+.tap-star-result {
+    position: absolute;
+    z-index: 5;
+
+    top: 50%;
+    left: 50%;
+
+    width: calc(100% - 48px);
+    max-width: 420px;
+
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+}
+
+.tap-star-ready-icon {
+    margin-bottom: 15px;
+
+    font-size: 4.5rem;
+
+    animation: tap-star-float 2.2s ease-in-out infinite;
+}
+
+.tap-star-ready-title {
+    margin: 0;
+
+    color: #393526;
+
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.tap-star-ready-text {
+    max-width: 310px;
+
+    margin: 10px auto 23px;
+
+    color: #817b68;
+
+    font-size: 0.92rem;
+
+    line-height: 1.65;
+}
+
+
+/* ========================================
+   Buttons
+======================================== */
+
+.tap-star-start-button,
+.tap-star-restart-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 190px;
+
+    padding: 14px 24px;
+
+    border: 0;
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f6cb4e,
+            #eebd2c
+        );
+
+    color: #41350b;
+
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 9px 22px rgba(202, 156, 20, 0.22);
+
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease;
+}
+
+.tap-star-start-button:hover,
+.tap-star-restart-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 26px rgba(202, 156, 20, 0.27);
+}
+
+.tap-star-start-button:active,
+.tap-star-restart-button:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+
+/* ========================================
+   Star target
+======================================== */
+
+.tap-star-target {
+    position: absolute;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 82px;
+    height: 82px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.82);
+
+    font-size: 3.2rem;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 24px rgba(153, 118, 18, 0.18);
+
+    transform-origin: center;
+
+    touch-action: manipulation;
+
+    -webkit-tap-highlight-color: transparent;
+
+    animation: tap-star-pop 0.18s ease-out;
+}
+
+.tap-star-target:hover {
+    transform: scale(1.08);
+}
+
+.tap-star-target:active {
+    transform: scale(0.88);
+}
+
+
+/* ========================================
+   Result
+======================================== */
+
+.tap-star-result-icon {
+    margin-bottom: 8px;
+
+    font-size: 3.6rem;
+}
+
+.tap-star-result-label {
+    margin: 0 0 4px;
+
+    color: #b38c1d;
+
+    font-size: 0.7rem;
+    font-weight: 900;
+
+    letter-spacing: 0.13em;
+}
+
+.tap-star-result-title {
+    margin: 0;
+
+    color: #343022;
+
+    font-size: 1.65rem;
+    font-weight: 800;
+}
+
+.tap-star-result-score {
+    margin: 15px 0 5px;
+
+    color: #3e3822;
+
+    font-size: 4rem;
+    font-weight: 900;
+
+    line-height: 1;
+}
+
+.tap-star-result-score small {
+    margin-left: 3px;
+
+    color: #7c745d;
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.tap-star-result-message {
+    margin: 13px 0 22px;
+
+    color: #817b68;
+
+    font-size: 0.95rem;
+}
+
+
+/* ========================================
+   Hint
+======================================== */
+
+.tap-star-hint {
+    margin: 15px 0 0;
+
+    color: #8b8f9c;
+
+    font-size: 0.78rem;
+
+    text-align: center;
+}
+
+
+/* ========================================
+   Animations
+======================================== */
+
+@keyframes tap-star-pop {
+
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+@keyframes tap-star-float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-4deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
+
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 600px) {
+
+    .tap-star-page {
+        padding: 20px 12px 36px;
+    }
+
+    .tap-star-title-area {
+        gap: 13px;
+    }
+
+    .tap-star-title-icon {
+        width: 62px;
+        height: 62px;
+
+        border-radius: 20px;
+
+        font-size: 2.15rem;
+    }
+
+    .tap-star-description {
+        font-size: 0.86rem;
+    }
+
+    .tap-star-game-area {
+        height: min(58vh, 500px);
+        min-height: 390px;
+
+        border-radius: 28px;
+    }
+
+    .tap-star-target {
+        width: 76px;
+        height: 76px;
+
+        font-size: 2.9rem;
+    }
+
+    .tap-star-result-score {
+        font-size: 3.6rem;
+    }
+}
+
+
+/* ========================================
+   Very small screens
+======================================== */
+
+@media (max-width: 380px) {
+
+    .tap-star-title-icon {
+        width: 55px;
+        height: 55px;
+
+        font-size: 1.9rem;
+    }
+
+    .tap-star-game-area {
+        min-height: 370px;
+    }
+
+    .tap-star-target {
+        width: 70px;
+        height: 70px;
+
+        font-size: 2.6rem;
+    }
+}
