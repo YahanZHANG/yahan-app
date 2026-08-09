@@ -2,17 +2,17 @@
    Star Tap
 ======================================== */
 
+
+/* ========================================
+   Page / Layout
+======================================== */
+
 .tap-star-page {
     width: 100%;
     min-height: calc(100vh - 100px);
     padding: 28px 16px 48px;
     box-sizing: border-box;
 }
-
-
-/* ========================================
-   Main card
-======================================== */
 
 .tap-star-card {
     width: min(100%, 720px);
@@ -50,7 +50,6 @@
     color: #34384a;
     transform: translateX(-2px);
 }
-
 
 .tap-star-title-area {
     display: flex;
@@ -116,7 +115,269 @@
 
 
 /* ========================================
-   Score / Time
+   Level Select
+======================================== */
+
+.tap-star-level-section {
+    margin-bottom: 16px;
+    padding: 18px;
+
+    border: 1px solid rgba(90, 91, 115, 0.08);
+    border-radius: 24px;
+
+    background: rgba(255, 255, 255, 0.78);
+
+    box-shadow:
+        0 8px 26px rgba(40, 42, 60, 0.05);
+}
+
+.tap-star-level-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 14px;
+}
+
+.tap-star-level-label {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #999dac;
+
+    font-size: 0.64rem;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+.tap-star-level-title {
+    margin: 0;
+
+    color: #373b4d;
+
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.tap-star-selected-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 7px 12px;
+
+    border-radius: 999px;
+
+    background: #f6f4ff;
+
+    color: #85829b;
+
+    font-size: 0.65rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+.tap-star-selected-level strong {
+    color: #55516d;
+
+    font-size: 1rem;
+}
+
+
+/* ========================================
+   Level Buttons
+======================================== */
+
+.tap-star-level-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.tap-star-level-button {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    min-height: 68px;
+
+    padding: 8px 4px;
+
+    border: 2px solid transparent;
+    border-radius: 17px;
+
+    font: inherit;
+
+    cursor: pointer;
+
+    opacity: 0.7;
+
+    transition:
+        transform 0.16s ease,
+        border-color 0.16s ease,
+        background 0.16s ease,
+        box-shadow 0.16s ease,
+        opacity 0.16s ease;
+}
+
+.tap-star-level-button strong {
+    font-size: 1.25rem;
+    font-weight: 900;
+
+    line-height: 1;
+}
+
+.tap-star-level-button span {
+    margin-top: 5px;
+
+    font-size: 0.64rem;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.tap-star-level-button:hover:not(:disabled) {
+    opacity: 0.9;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 18px rgba(55, 56, 75, 0.1);
+}
+
+.tap-star-level-button:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.tap-star-level-button.is-active {
+    opacity: 1;
+
+    transform:
+        translateY(-2px)
+        scale(1.03);
+}
+
+
+.tap-star-level-button:disabled {
+    opacity: 0.48;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ========================================
+   Level Colors
+   Level 1 → Level 5
+======================================== */
+
+
+/* LEVEL 1 */
+
+.tap-star-level-button[data-level="1"] {
+    background: #f3f8fd;
+    color: #6d87a0;
+}
+
+.tap-star-level-button[data-level="1"].is-active {
+    border-color: #72afe2;
+
+    background: #ddecfa;
+
+    color: #356d9b;
+
+    box-shadow:
+        0 7px 18px rgba(72, 142, 199, 0.2);
+}
+
+
+/* LEVEL 2 */
+
+.tap-star-level-button[data-level="2"] {
+    background: #f2faf7;
+    color: #688c7e;
+}
+
+.tap-star-level-button[data-level="2"].is-active {
+    border-color: #72c5a6;
+
+    background: #dcf3ea;
+
+    color: #39745e;
+
+    box-shadow:
+        0 7px 18px rgba(70, 157, 125, 0.2);
+}
+
+
+/* LEVEL 3 */
+
+.tap-star-level-button[data-level="3"] {
+    background: #fffae9;
+    color: #9a823f;
+}
+
+.tap-star-level-button[data-level="3"].is-active {
+    border-color: #ddb943;
+
+    background: #fff0b2;
+
+    color: #735915;
+
+    box-shadow:
+        0 7px 18px rgba(191, 151, 26, 0.2);
+}
+
+
+/* LEVEL 4 */
+
+.tap-star-level-button[data-level="4"] {
+    background: #fff5eb;
+    color: #ac7955;
+}
+
+.tap-star-level-button[data-level="4"].is-active {
+    border-color: #e48b4d;
+
+    background: #ffdfc4;
+
+    color: #8d4c20;
+
+    box-shadow:
+        0 7px 18px rgba(210, 108, 39, 0.2);
+}
+
+
+/* LEVEL 5 */
+
+.tap-star-level-button[data-level="5"] {
+    background: #fff3f5;
+    color: #ad6874;
+}
+
+.tap-star-level-button[data-level="5"].is-active {
+    border-color: #d95d72;
+
+    background: #ffdce2;
+
+    color: #973449;
+
+    box-shadow:
+        0 7px 18px rgba(190, 62, 83, 0.22);
+}
+
+
+/* ========================================
+   Status
 ======================================== */
 
 .tap-star-status {
@@ -176,7 +437,7 @@
 
 
 /* ========================================
-   Game area
+   Game Area
 ======================================== */
 
 .tap-star-game-area {
@@ -208,19 +469,17 @@
         0 18px 50px rgba(98, 80, 20, 0.1);
 
     touch-action: manipulation;
+
     user-select: none;
     -webkit-user-select: none;
 }
 
 
-/* Decorative dots */
+/* Decorative circles */
 
 .tap-star-game-area::before,
 .tap-star-game-area::after {
     position: absolute;
-
-    width: 150px;
-    height: 150px;
 
     border-radius: 50%;
 
@@ -232,6 +491,9 @@
 .tap-star-game-area::before {
     top: -55px;
     right: -45px;
+
+    width: 150px;
+    height: 150px;
 
     background: rgba(255, 221, 111, 0.22);
 }
@@ -248,7 +510,7 @@
 
 
 /* ========================================
-   Ready screen
+   Ready / Result Common
 ======================================== */
 
 .tap-star-ready,
@@ -267,12 +529,18 @@
     text-align: center;
 }
 
+
+/* ========================================
+   Ready Screen
+======================================== */
+
 .tap-star-ready-icon {
     margin-bottom: 15px;
 
     font-size: 4.5rem;
 
-    animation: tap-star-float 2.2s ease-in-out infinite;
+    animation:
+        tap-star-float 2.2s ease-in-out infinite;
 }
 
 .tap-star-ready-title {
@@ -298,7 +566,7 @@
 
 
 /* ========================================
-   Buttons
+   Start / Restart Buttons
 ======================================== */
 
 .tap-star-start-button,
@@ -347,12 +615,14 @@
 
 .tap-star-start-button:active,
 .tap-star-restart-button:active {
-    transform: translateY(1px) scale(0.98);
+    transform:
+        translateY(1px)
+        scale(0.98);
 }
 
 
 /* ========================================
-   Star target
+   Star Target
 ======================================== */
 
 .tap-star-target {
@@ -386,7 +656,8 @@
 
     -webkit-tap-highlight-color: transparent;
 
-    animation: tap-star-pop 0.18s ease-out;
+    animation:
+        tap-star-pop 0.18s ease-out;
 }
 
 .tap-star-target:hover {
@@ -395,6 +666,10 @@
 
 .tap-star-target:active {
     transform: scale(0.88);
+}
+
+.tap-star-target.is-paused {
+    pointer-events: none;
 }
 
 
@@ -428,6 +703,32 @@
     font-weight: 800;
 }
 
+.tap-star-result-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    margin: 13px 0 0;
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.7);
+
+    color: #8d856b;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+.tap-star-result-level strong {
+    color: #554d32;
+
+    font-size: 0.9rem;
+}
+
 .tap-star-result-score {
     margin: 15px 0 5px;
 
@@ -458,6 +759,122 @@
 
 
 /* ========================================
+   Game Controls
+======================================== */
+
+.tap-star-game-controls {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+.tap-star-control-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+
+    padding: 11px 18px;
+
+    border: 0;
+    border-radius: 16px;
+
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.16s ease,
+        background 0.16s ease,
+        box-shadow 0.16s ease;
+}
+
+.tap-star-pause-button {
+    background: #f0eff8;
+    color: #5f5c78;
+}
+
+.tap-star-pause-button:hover {
+    background: #e6e4f3;
+
+    transform: translateY(-1px);
+}
+
+.tap-star-quit-button {
+    background: #fdecef;
+    color: #b95668;
+}
+
+.tap-star-quit-button:hover {
+    background: #f9dce2;
+
+    transform: translateY(-1px);
+}
+
+.tap-star-control-button:active {
+    transform: scale(0.98);
+}
+
+
+/* ========================================
+   Pause Overlay
+======================================== */
+
+.tap-star-pause-overlay {
+    position: absolute;
+    z-index: 30;
+
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    background: rgba(255, 251, 232, 0.88);
+
+    text-align: center;
+
+    backdrop-filter: blur(7px);
+}
+
+.tap-star-pause-icon {
+    margin-bottom: 10px;
+
+    color: #766f58;
+
+    font-size: 3rem;
+    font-weight: 800;
+}
+
+.tap-star-pause-title {
+    margin: 0;
+
+    color: #393526;
+
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.tap-star-pause-text {
+    margin: 8px 0 0;
+
+    color: #817b68;
+
+    font-size: 0.86rem;
+}
+
+
+/* ========================================
    Hint
 ======================================== */
 
@@ -469,6 +886,19 @@
     font-size: 0.78rem;
 
     text-align: center;
+}
+
+
+/* ========================================
+   Hidden Elements
+======================================== */
+
+.tap-star-target[hidden],
+.tap-star-ready[hidden],
+.tap-star-result[hidden],
+.tap-star-game-controls[hidden],
+.tap-star-pause-overlay[hidden] {
+    display: none !important;
 }
 
 
@@ -493,16 +923,19 @@
     }
 }
 
-
 @keyframes tap-star-float {
 
     0%,
     100% {
-        transform: translateY(0) rotate(-4deg);
+        transform:
+            translateY(0)
+            rotate(-4deg);
     }
 
     50% {
-        transform: translateY(-10px) rotate(5deg);
+        transform:
+            translateY(-10px)
+            rotate(5deg);
     }
 }
 
@@ -516,6 +949,9 @@
     .tap-star-page {
         padding: 20px 12px 36px;
     }
+
+
+    /* Header */
 
     .tap-star-title-area {
         gap: 13px;
@@ -534,6 +970,57 @@
         font-size: 0.86rem;
     }
 
+
+    /* Level Select */
+
+    .tap-star-level-section {
+        padding: 14px;
+
+        border-radius: 20px;
+    }
+
+    .tap-star-level-buttons {
+        gap: 5px;
+    }
+
+    .tap-star-level-button {
+        min-height: 61px;
+
+        padding: 7px 2px;
+
+        border-radius: 14px;
+    }
+
+    .tap-star-level-button strong {
+        font-size: 1.12rem;
+    }
+
+    .tap-star-level-button span {
+        font-size: 0.55rem;
+    }
+
+    .tap-star-level-button.is-active::after {
+        top: 4px;
+        right: 5px;
+
+        font-size: 0.58rem;
+    }
+
+
+    /* Status */
+
+    .tap-star-status {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .tap-star-status-divider {
+        margin: 0 12px;
+    }
+
+
+    /* Game */
+
     .tap-star-game-area {
         height: min(58vh, 500px);
         min-height: 390px;
@@ -548,14 +1035,32 @@
         font-size: 2.9rem;
     }
 
+
+    /* Result */
+
     .tap-star-result-score {
         font-size: 3.6rem;
+    }
+
+
+    /* Controls */
+
+    .tap-star-game-controls {
+        margin-top: 11px;
+    }
+
+    .tap-star-control-button {
+        min-height: 46px;
+
+        padding: 10px 12px;
+
+        border-radius: 15px;
     }
 }
 
 
 /* ========================================
-   Very small screens
+   Very Small Screens
 ======================================== */
 
 @media (max-width: 380px) {
@@ -565,6 +1070,14 @@
         height: 55px;
 
         font-size: 1.9rem;
+    }
+
+    .tap-star-level-button span {
+        font-size: 0.5rem;
+    }
+
+    .tap-star-status-divider {
+        margin: 0 8px;
     }
 
     .tap-star-game-area {

@@ -39,7 +39,6 @@
                 </div>
 
                 <div>
-
                     <p class="tap-star-eyebrow">
                         MINI GAME
                     </p>
@@ -51,7 +50,6 @@
                     <p class="tap-star-description">
                         30秒で星を何回タップできるかな？
                     </p>
-
                 </div>
 
             </div>
@@ -60,13 +58,112 @@
 
 
         <!-- ==============================
-             Score / Time
+             Level Selector
+        =============================== -->
+
+        <div class="tap-star-level-section">
+
+            <div class="tap-star-level-heading">
+
+                <div>
+                    <span class="tap-star-level-label">
+                        LEVEL SELECT
+                    </span>
+
+                    <p class="tap-star-level-title">
+                        難易度を選ぶ
+                    </p>
+                </div>
+
+                <div class="tap-star-selected-level">
+                    LEVEL
+                    <strong id="tap-star-selected-level">
+                        1
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div
+                id="tap-star-level-buttons"
+                class="tap-star-level-buttons"
+            >
+
+                <button
+                    type="button"
+                    class="tap-star-level-button is-active"
+                    data-level="1"
+                >
+                    <strong>1</strong>
+                    <span>やさしい</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="tap-star-level-button"
+                    data-level="2"
+                >
+                    <strong>2</strong>
+                    <span>ふつう</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="tap-star-level-button"
+                    data-level="3"
+                >
+                    <strong>3</strong>
+                    <span>むずかしい</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="tap-star-level-button"
+                    data-level="4"
+                >
+                    <strong>4</strong>
+                    <span>激ムズ</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="tap-star-level-button tap-star-level-button-danger"
+                    data-level="5"
+                >
+                    <strong>5</strong>
+                    <span>鬼</span>
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             Status
         =============================== -->
 
         <div class="tap-star-status">
 
             <div class="tap-star-status-item">
+                <span class="tap-star-status-label">
+                    LEVEL
+                </span>
 
+                <strong
+                    id="tap-star-current-level"
+                    class="tap-star-status-value"
+                >
+                    1
+                </strong>
+            </div>
+
+
+            <div class="tap-star-status-divider"></div>
+
+
+            <div class="tap-star-status-item">
                 <span class="tap-star-status-label">
                     SCORE
                 </span>
@@ -77,7 +174,6 @@
                 >
                     0
                 </strong>
-
             </div>
 
 
@@ -85,7 +181,6 @@
 
 
             <div class="tap-star-status-item">
-
                 <span class="tap-star-status-label">
                     TIME
                 </span>
@@ -96,7 +191,6 @@
                 >
                     30
                 </strong>
-
             </div>
 
         </div>
@@ -111,7 +205,7 @@
             class="tap-star-game-area"
         >
 
-            <!-- Ready Screen -->
+            <!-- Ready -->
 
             <div
                 id="tap-star-ready"
@@ -127,7 +221,8 @@
                 </p>
 
                 <p class="tap-star-ready-text">
-                    30秒間で、できるだけたくさんの星をタップしてね。
+                    レベルを選んで、30秒間で
+                    できるだけたくさんタップしてね。
                 </p>
 
                 <button
@@ -141,7 +236,7 @@
             </div>
 
 
-            <!-- Star -->
+            <!-- Target -->
 
             <button
                 id="tap-star-target"
@@ -154,7 +249,7 @@
             </button>
 
 
-            <!-- Result Screen -->
+            <!-- Result -->
 
             <div
                 id="tap-star-result"
@@ -173,6 +268,13 @@
                 <h2 class="tap-star-result-title">
                     おつかれさま！
                 </h2>
+
+                <p class="tap-star-result-level">
+                    LEVEL
+                    <strong id="tap-star-result-level">
+                        1
+                    </strong>
+                </p>
 
                 <p class="tap-star-result-score">
 
@@ -203,15 +305,58 @@
 
             </div>
 
+            <!-- Pause Overlay -->
+
+            <div
+                id="tap-star-pause-overlay"
+                class="tap-star-pause-overlay"
+                hidden
+            >
+                <div class="tap-star-pause-icon">
+                    ⏸
+                </div>
+
+                <p class="tap-star-pause-title">
+                    一時停止中
+                </p>
+
+                <p class="tap-star-pause-text">
+                    「再開」を押すとゲームに戻る
+                </p>
+            </div>
+
         </div>
 
-
         <!-- ==============================
-             Hint
+            Game Controls
         =============================== -->
 
+        <div
+            id="tap-star-game-controls"
+            class="tap-star-game-controls"
+            hidden
+        >
+
+            <button
+                id="tap-star-pause-button"
+                class="tap-star-control-button tap-star-pause-button"
+                type="button"
+            >
+                ⏸ 一時停止
+            </button>
+
+            <button
+                id="tap-star-quit-button"
+                class="tap-star-control-button tap-star-quit-button"
+                type="button"
+            >
+                やめる
+            </button>
+
+        </div>
+
         <p class="tap-star-hint">
-            ⭐ 星が出たらすぐタップ！
+            ⭐ レベルはゲーム開始前に自由に変更できる
         </p>
 
     </div>
