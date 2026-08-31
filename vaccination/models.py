@@ -112,7 +112,7 @@ class Child(models.Model):
         max_length=150,
     )
 
-    name_en = models.CharField(
+    name_en = models.CharField( 
         max_length=150,
         blank=True,
         default="",
@@ -944,6 +944,22 @@ class VaccinationSettings(models.Model):
 
     def __str__(self):
         return f"Vaccination settings: {self.user}"
+
+    FONT_SIZE_SMALL = "small"
+    FONT_SIZE_MEDIUM = "medium"
+    FONT_SIZE_LARGE = "large"
+
+    FONT_SIZE_CHOICES = [
+        (FONT_SIZE_SMALL, "Small"),
+        (FONT_SIZE_MEDIUM, "Medium"),
+        (FONT_SIZE_LARGE, "Large"),
+    ]
+
+    font_size = models.CharField(
+        max_length=20,
+        choices=FONT_SIZE_CHOICES,
+        default=FONT_SIZE_SMALL,
+    )
 
 
 class ChildCollaborator(models.Model):

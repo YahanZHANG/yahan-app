@@ -605,6 +605,7 @@ class VaccinationSettingsForm(forms.ModelForm):
             "doctor_language",
             "doctor_show_english",
             "date_format",
+            "font_size",
         ]
 
         labels = {
@@ -677,6 +678,10 @@ class VaccinationSettingsForm(forms.ModelForm):
             "date_format",
             language_code,
         )
+
+        self.fields["font_size"].widget.attrs.update({
+            "class": "vaccination-input",
+        })
 
 
 class CollaboratorForm(forms.Form):

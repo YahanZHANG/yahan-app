@@ -2,9 +2,20 @@
 {% load static %}
 {% load i18n %}
 
+
 {% block title %}
 予防接種
 {% endblock %}
+
+
+{# ========================================================= #}
+{# Vaccination font size                                    #}
+{# ========================================================= #}
+
+{% block html_class %}
+vaccination-font-{{ vac_font_size|default:"small" }}
+{% endblock %}
+
 
 {% block content %}
 
@@ -13,18 +24,35 @@
     href="{% static 'vaccination/css/vaccination.css' %}"
 >
 
+
 <div class="vaccination-app">
+
+    <!-- =====================================================
+         Main
+         ===================================================== -->
 
     <main class="vaccination-main">
 
+
+        <!-- =================================================
+             Back to yahan-app
+             ================================================= -->
+
         <div class="vaccination-portal-bar">
+
             <a
                 href="{% url 'portal:home' %}"
                 class="vaccination-portal-link"
             >
                 ← yahan-app
             </a>
+
         </div>
+
+
+        <!-- =================================================
+             Page content
+             ================================================= -->
 
         {% block vaccination_content %}
         {% endblock %}
@@ -32,7 +60,19 @@
     </main>
 
 
-    <nav class="vaccination-bottom-nav">
+    <!-- =====================================================
+         Bottom navigation
+         ===================================================== -->
+
+    <nav
+        class="vaccination-bottom-nav"
+        aria-label="Vaccination navigation"
+    >
+
+
+        <!-- =================================================
+             Home
+             ================================================= -->
 
         <a
             href="{% url 'vaccination:home' %}"
@@ -43,89 +83,134 @@
                 {% endif %}
             "
         >
-            <span class="vaccination-nav-icon">
+
+            <span
+                class="vaccination-nav-icon"
+                aria-hidden="true"
+            >
                 ⌂
             </span>
 
             <span>
                 {{ vac_ui.home }}
             </span>
+
         </a>
 
+
+        <!-- =================================================
+             Records
+             ================================================= -->
 
         <a
             href="{% url 'vaccination:records' %}"
             class="
                 vaccination-nav-item
-                {% if request.resolver_match.url_name == 'records' or request.resolver_match.url_name == 'record_detail' or request.resolver_match.url_name == 'record_create' or request.resolver_match.url_name == 'component_detail' %}
+
+                {% if request.resolver_match.url_name == 'records' or request.resolver_match.url_name == 'record_detail' or request.resolver_match.url_name == 'record_create' or request.resolver_match.url_name == 'record_edit' or request.resolver_match.url_name == 'record_delete' or request.resolver_match.url_name == 'component_detail' %}
                     active
                 {% endif %}
             "
         >
-            <span class="vaccination-nav-icon">
+
+            <span
+                class="vaccination-nav-icon"
+                aria-hidden="true"
+            >
                 ♡
             </span>
 
             <span>
                 {{ vac_ui.records }}
             </span>
+
         </a>
 
+
+        <!-- =================================================
+             Schedule
+             ================================================= -->
 
         <a
             href="{% url 'vaccination:schedule' %}"
             class="
                 vaccination-nav-item
+
                 {% if request.resolver_match.url_name == 'schedule' %}
                     active
                 {% endif %}
             "
         >
-            <span class="vaccination-nav-icon">
+
+            <span
+                class="vaccination-nav-icon"
+                aria-hidden="true"
+            >
                 ◷
             </span>
 
             <span>
                 {{ vac_ui.schedule }}
             </span>
+
         </a>
 
+
+        <!-- =================================================
+             Doctor Mode
+             ================================================= -->
 
         <a
             href="{% url 'vaccination:doctor' %}"
             class="
                 vaccination-nav-item
+
                 {% if request.resolver_match.url_name == 'doctor' %}
                     active
                 {% endif %}
             "
         >
-            <span class="vaccination-nav-icon">
+
+            <span
+                class="vaccination-nav-icon"
+                aria-hidden="true"
+            >
                 ✚
             </span>
 
             <span>
                 {{ vac_ui.doctor }}
             </span>
+
         </a>
 
+
+        <!-- =================================================
+             Settings
+             ================================================= -->
 
         <a
             href="{% url 'vaccination:settings' %}"
             class="
                 vaccination-nav-item
-                {% if request.resolver_match.url_name == 'settings' %}
+
+                {% if request.resolver_match.url_name == 'settings' or request.resolver_match.url_name == 'children' or request.resolver_match.url_name == 'child_create' or request.resolver_match.url_name == 'child_edit' or request.resolver_match.url_name == 'collaborators' or request.resolver_match.url_name == 'collaborator_permission_update' or request.resolver_match.url_name == 'collaborator_remove' %}
                     active
                 {% endif %}
             "
         >
-            <span class="vaccination-nav-icon">
+
+            <span
+                class="vaccination-nav-icon"
+                aria-hidden="true"
+            >
                 ⚙
             </span>
 
             <span>
                 {{ vac_ui.settings }}
             </span>
+
         </a>
 
     </nav>

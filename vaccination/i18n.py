@@ -166,6 +166,16 @@ UI_TEXT = {
         "save_settings": "設定を保存",
 
         # =====================================================
+        # Font
+        # =====================================================
+
+        "font_size": "文字の大きさ",
+        "font_size_help": "予防接種アプリ内の文字サイズを変更します。",
+        "font_size_small": "小",
+        "font_size_medium": "中",
+        "font_size_large": "大",
+
+        # =====================================================
         # Collaborator
         # =====================================================
 
@@ -399,6 +409,17 @@ UI_TEXT = {
         "managed_child": "Managing",
 
         "save_settings": "Save settings",
+
+        
+        # =====================================================
+        # Font
+        # =====================================================
+
+        "font_size": "Text size",
+        "font_size_help": "Change the text size in the vaccination app.",
+        "font_size_small": "Small",
+        "font_size_medium": "Medium",
+        "font_size_large": "Large",
 
         # =====================================================
         # Collaborator
@@ -645,6 +666,16 @@ UI_TEXT = {
 
 
         # =====================================================
+        # Font
+        # =====================================================
+
+        "font_size": "Textgröße",
+        "font_size_help": "Ändert die Textgröße in der Impf-App.",
+        "font_size_small": "Klein",
+        "font_size_medium": "Mittel",
+        "font_size_large": "Groß",
+
+        # =====================================================
         # Collaborator
         # =====================================================
 
@@ -876,6 +907,16 @@ UI_TEXT = {
 
         "save_settings": "保存设置",
 
+
+        # =====================================================
+        # Font
+        # =====================================================
+
+        "font_size": "文字大小",
+        "font_size_help": "调整APP中的文字大小。",
+        "font_size_small": "小",
+        "font_size_medium": "中",
+        "font_size_large": "大",
         
         # =====================================================
         # Collaborator

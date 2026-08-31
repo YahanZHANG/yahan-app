@@ -4,6 +4,10 @@
 
 <section class="vaccination-settings-page">
 
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
     <header class="vaccination-list-header">
 
         <div>
@@ -21,10 +25,18 @@
     </header>
 
 
+    <!-- =====================================================
+         Settings form
+         ===================================================== -->
+
     <form method="post">
 
         {% csrf_token %}
 
+
+        <!-- =================================================
+             Errors
+             ================================================= -->
 
         {% if form.errors %}
 
@@ -33,6 +45,7 @@
                 <strong>
                     {{ vac_ui.check_input }}
                 </strong>
+
 
                 {% for field in form %}
 
@@ -103,6 +116,58 @@
 
                     <div class="vaccination-field-error">
                         {{ form.ui_language.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             Text size
+             ===================================================== -->
+
+        <section class="vaccination-settings-card">
+
+            <div class="vaccination-settings-heading">
+
+                <div class="vaccination-settings-icon">
+                    Aa
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ vac_ui.font_size }}
+                    </h2>
+
+                    <p>
+                        {{ vac_ui.font_size_help }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.font_size.id_for_label }}"
+                >
+                    {{ form.font_size.label }}
+                </label>
+
+                {{ form.font_size }}
+
+
+                {% if form.font_size.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.font_size.errors }}
                     </div>
 
                 {% endif %}
@@ -320,7 +385,8 @@
 
                 </div>
 
-                <span>
+
+                <span aria-hidden="true">
                     ›
                 </span>
 
@@ -353,7 +419,8 @@
 
                 </div>
 
-                <span>
+
+                <span aria-hidden="true">
                     ›
                 </span>
 
