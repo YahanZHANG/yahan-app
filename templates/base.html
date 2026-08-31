@@ -1,12 +1,14 @@
 {% load static %}
 
 <!DOCTYPE html>
+
 <html
-    lang="ja"
+    lang="{% block html_lang %}ja{% endblock %}"
     class="{% block html_class %}{% endblock %}"
 >
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -14,42 +16,60 @@
         content="width=device-width, initial-scale=1, viewport-fit=cover"
     >
 
+
     <title>
+
         {% block title %}
             Yahan App
         {% endblock %}
+
     </title>
 
 
-    <!-- Bootstrap -->
+    <!-- =====================================================
+         Bootstrap
+         ===================================================== -->
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
 
-    <!-- Bootstrap Icons -->
+    <!-- =====================================================
+         Bootstrap Icons
+         ===================================================== -->
+
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
 
-    <!-- Leaflet -->
+    <!-- =====================================================
+         Leaflet
+         ===================================================== -->
+
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
 
-    <!-- 共通CSS -->
+    <!-- =====================================================
+         Global CSS
+         ===================================================== -->
+
     <link
         rel="stylesheet"
         href="{% static 'css/style.css' %}"
     >
 
 
-    <!-- 各ページ専用CSS -->
+    <!-- =====================================================
+         Page-specific CSS
+         ===================================================== -->
+
     {% block extra_css %}
     {% endblock %}
 
@@ -66,23 +86,37 @@
     </main>
 
 
-    <!-- Bootstrap -->
+    <!-- =====================================================
+         Bootstrap
+         ===================================================== -->
+
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     ></script>
 
 
-    <!-- Leaflet -->
+    <!-- =====================================================
+         Leaflet
+         ===================================================== -->
+
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ></script>
 
 
-    <!-- 共通JavaScript -->
-    <script src="{% static 'js/main.js' %}"></script>
+    <!-- =====================================================
+         Global JavaScript
+         ===================================================== -->
+
+    <script
+        src="{% static 'js/main.js' %}"
+    ></script>
 
 
-    <!-- 各ページ専用JavaScript -->
+    <!-- =====================================================
+         Page-specific JavaScript
+         ===================================================== -->
+
     {% block extra_js %}
     {% endblock %}
 

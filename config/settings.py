@@ -142,6 +142,7 @@ LANGUAGES = [
     ("ja", _("日本語")),
     ("en", _("English")),
     ("de", _("Deutsch")),
+    ("fr", "Français"),
     ("zh-hans", _("中文")),
 ]
 

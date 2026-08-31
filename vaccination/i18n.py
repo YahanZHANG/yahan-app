@@ -734,6 +734,274 @@ UI_TEXT = {
         "doctor_no_records": "Keine Impfungen eingetragen",
     },
 
+        "fr": {
+        # =====================================================
+        # Navigation
+        # =====================================================
+
+        "home": "Accueil",
+        "records": "Vaccinations",
+        "schedule": "Calendrier",
+        "doctor": "À montrer",
+        "settings": "Réglages",
+
+        # =====================================================
+        # General
+        # =====================================================
+
+        "optional": "Facultatif",
+        "save": "Enregistrer",
+        "view_all": "Tout afficher",
+        "no_record": "Aucune donnée",
+        "check_input": "Veuillez vérifier les informations saisies",
+
+        # =====================================================
+        # Home
+        # =====================================================
+
+        "record_vaccination": "Ajouter une vaccination",
+        "recent_vaccinations": "Vaccinations récentes",
+        "no_vaccinations": "Aucune vaccination enregistrée",
+        "add_first_record": (
+            "Ajoutez la première vaccination "
+            "à l’aide du bouton ci-dessus."
+        ),
+        "standard_schedule": "Calendrier vaccinal standard",
+
+        # =====================================================
+        # Child
+        # =====================================================
+
+        "lets_start": "Commençons",
+        "child_intro": (
+            "Ajoutez d’abord l’enfant dont vous souhaitez "
+            "gérer les vaccinations."
+        ),
+        "name": "Nom",
+        "date_of_birth": "Date de naissance",
+        "birth_country": "Pays de naissance",
+        "current_country": "Pays de résidence actuel",
+        "schedule_country_help": (
+            "Le calendrier vaccinal standard de ce pays "
+            "sera affiché."
+        ),
+        "start": "Ajouter l’enfant",
+
+        "child_name": "Nom",
+        "child_name_en": "Nom en anglais",
+        "child_name_en_help": (
+            "Utilisé pour présenter le carnet de vaccination "
+            "aux professionnels de santé."
+        ),
+        "edit_child": "Modifier les informations de l’enfant",
+        "save_child": "Enregistrer les modifications",
+
+        # =====================================================
+        # Records
+        # =====================================================
+
+        "vaccination_records": "Carnet de vaccination",
+        "by_vaccine": "Par vaccin",
+        "by_date": "Par date",
+        "times_vaccinated": " doses",
+        "vaccination_history": "Historique des vaccinations",
+        "times": " doses",
+        "dose": " dose",
+        "edit_record": "Modifier",
+        "update_record": "Enregistrer les modifications",
+        "delete_record": "Supprimer",
+        "delete_record_confirm": (
+            "Supprimer cet enregistrement de vaccination ?"
+        ),
+        "delete_record_warning": (
+            "Cette action est irréversible."
+        ),
+        "cancel": "Annuler",
+
+        # =====================================================
+        # New record
+        # =====================================================
+
+        "new_record": "Ajouter une vaccination",
+        "basic_information": "Informations de base",
+
+        "vaccine": "Vaccin",
+        "select_vaccine": "Sélectionner un vaccin",
+
+        "vaccination_date": "Date de vaccination",
+
+        "vaccination_country": "Pays de vaccination",
+        "select_country": "Sélectionner un pays",
+
+        "healthcare_provider": "Établissement de santé",
+        "recent_providers": "Récemment utilisés",
+
+        "add_provider": "Ajouter un établissement de santé",
+        "new_provider": "Nouvel établissement de santé",
+
+        "city_region": "Ville / région",
+
+        "provider_placeholder": (
+            "Hôpital, pédiatre ou clinique"
+        ),
+
+        "city_placeholder": "p. ex. Zürich",
+
+        "reactions": "Réactions",
+        "no_reaction": "Aucune réaction",
+        "other_reaction": "Autre réaction",
+
+        "product_notes": "Informations sur le produit et notes",
+
+        "preparation_dose": (
+            "Numéro de dose pour ce vaccin"
+        ),
+
+        "product_name": "Nom du produit",
+        "manufacturer": "Fabricant",
+        "lot_number": "Numéro de lot",
+        "notes": "Notes",
+
+        "save_record": "Enregistrer",
+
+        # =====================================================
+        # Reaction choices
+        # =====================================================
+
+        "reaction_fever": "Fièvre",
+        "reaction_swelling": "Gonflement au site d’injection",
+        "reaction_redness": "Rougeur",
+        "reaction_pain": "Douleur",
+        "reaction_rash": "Éruption cutanée",
+        "reaction_vomiting": "Vomissements",
+        "reaction_diarrhea": "Diarrhée",
+        "reaction_sleepiness": "Somnolence",
+        "reaction_irritability": "Irritabilité",
+
+        # =====================================================
+        # Record detail
+        # =====================================================
+
+        "included_vaccines": "Vaccins inclus",
+        "product_information": "Informations sur le produit",
+
+        # =====================================================
+        # Settings
+        # =====================================================
+
+        "language": "Langue",
+        "app_language": "Langue de l’application",
+        "app_language_help": (
+            "Langue utilisée dans l’application"
+        ),
+
+        "country": "Pays",
+        "country_help": (
+            "Pays de référence pour le calendrier vaccinal"
+        ),
+
+        "doctor_mode": "Mode médecin",
+        "doctor_mode_help": (
+            "Affichage à présenter à un médecin"
+        ),
+
+        "doctor_language": "Langue du mode médecin",
+
+        "show_english": "Afficher également l’anglais",
+        "show_english_help": (
+            "Afficher également le nom anglais "
+            "sous la langue sélectionnée"
+        ),
+
+        "date": "Date",
+        "date_format": "Format de date",
+        "date_help": "Format d’affichage des dates",
+
+        "managed_child": "Enfant sélectionné",
+
+        "save_settings": "Enregistrer les réglages",
+
+        # =====================================================
+        # Font
+        # =====================================================
+
+        "font_size": "Taille du texte",
+        "font_size_help": (
+            "Modifier la taille du texte "
+            "dans l’application."
+        ),
+        "font_size_small": "Petite",
+        "font_size_medium": "Moyenne",
+        "font_size_large": "Grande",
+
+        # =====================================================
+        # Collaborator
+        # =====================================================
+
+        "collaborators": "Accès partagé",
+        "collaborators_help": (
+            "Partager le carnet de vaccination de cet enfant "
+            "avec un autre utilisateur."
+        ),
+        "username": "Nom d’utilisateur",
+        "permission": "Autorisation",
+        "permission_edit": "Peut modifier",
+        "permission_view": "Lecture seule",
+        "add_collaborator": "Ajouter un utilisateur",
+        "no_collaborators": "Aucun utilisateur partagé",
+        "remove_collaborator": "Supprimer",
+        "shared_with_me": "Partagé",
+
+        # =====================================================
+        # Schedule
+        # =====================================================
+
+        "schedule_title": "Calendrier vaccinal standard",
+
+        "schedule_done": "Effectué",
+        "schedule_next": "Maintenant",
+        "schedule_future": "À venir",
+        "schedule_check": "À vérifier",
+
+        "schedule_next_help": (
+            "L’âge actuel de l’enfant correspond "
+            "à la période de vaccination recommandée."
+        ),
+
+        "schedule_reference": (
+            "Cette page présente le calendrier vaccinal "
+            "standard à titre indicatif. "
+            "Veuillez confirmer la date réelle de vaccination "
+            "avec un professionnel de santé."
+        ),
+
+        "schedule_source": "Source",
+
+        "schedule_not_available": (
+            "Aucun calendrier vaccinal n’est encore "
+            "enregistré pour ce pays."
+        ),
+
+        # =====================================================
+        # Doctor Mode
+        # =====================================================
+
+        "doctor_title": "Carnet de vaccination",
+        "doctor_patient": "Informations du patient",
+        "doctor_birth_date": "Date de naissance",
+        "doctor_current_country": "Pays actuel",
+        "doctor_vaccination_history": (
+            "Historique des vaccinations"
+        ),
+        "doctor_dose": "Dose",
+        "doctor_total": "Nombre total de doses",
+        "doctor_preparation": "Vaccin",
+        "doctor_country": "Pays de vaccination",
+        "doctor_no_records": (
+            "Aucune vaccination enregistrée"
+        ),
+    },
+
 
     "zh-hans": {
         # =====================================================
@@ -982,36 +1250,49 @@ def get_ui(language_code="ja"):
     """
     指定した言語のUI辞書を返す。
 
-    未登録の言語コードの場合は
-    日本語にフォールバックする。
+    選択した言語に翻訳がないキーは
+    英語へフォールバックする。
     """
 
-    return UI_TEXT.get(
+    english_ui = UI_TEXT["en"]
+
+    selected_ui = UI_TEXT.get(
         language_code,
-        UI_TEXT["ja"],
+        english_ui,
     )
+
+    return {
+        **english_ui,
+        **selected_ui,
+    }
 
 
 def t(key, language_code="ja"):
     """
     Python側から翻訳文字列を1件取得する。
 
-    指定言語にキーが存在しない場合は
-    日本語へフォールバックする。
+    指定言語にキーがない場合:
+        English
+        ↓
+        Japanese
+        ↓
+        key
 
-    日本語にも存在しない場合は
-    keyそのものを返す。
+    の順にフォールバックする。
     """
 
     language = UI_TEXT.get(
         language_code,
-        UI_TEXT["ja"],
+        UI_TEXT["en"],
     )
 
     if key in language:
         return language[key]
 
-    return UI_TEXT["ja"].get(
-        key,
-        key,
-    )
+    if key in UI_TEXT["en"]:
+        return UI_TEXT["en"][key]
+
+    if key in UI_TEXT["ja"]:
+        return UI_TEXT["ja"][key]
+
+    return key

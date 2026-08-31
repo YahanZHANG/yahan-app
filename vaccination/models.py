@@ -890,11 +890,44 @@ class VaccinationSettings(models.Model):
     予防接種アプリ専用設定。
     """
 
+    # -------------------------------------------------------------------------
+    # Font size
+    # -------------------------------------------------------------------------
+
+    FONT_SIZE_SMALL = "small"
+    FONT_SIZE_MEDIUM = "medium"
+    FONT_SIZE_LARGE = "large"
+
+    FONT_SIZE_CHOICES = [
+        (
+            FONT_SIZE_SMALL,
+            "Small",
+        ),
+        (
+            FONT_SIZE_MEDIUM,
+            "Medium",
+        ),
+        (
+            FONT_SIZE_LARGE,
+            "Large",
+        ),
+    ]
+
+
+    # -------------------------------------------------------------------------
+    # User
+    # -------------------------------------------------------------------------
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="vaccination_settings",
     )
+
+
+    # -------------------------------------------------------------------------
+    # Active child
+    # -------------------------------------------------------------------------
 
     active_child = models.ForeignKey(
         Child,
@@ -904,14 +937,29 @@ class VaccinationSettings(models.Model):
         related_name="active_vaccination_settings",
     )
 
-    # ja / en / de / zh-hans
+
+    # -------------------------------------------------------------------------
+    # UI language
+    #
+    # ja      = 日本語
+    # en      = English
+    # de      = Deutsch
+    # fr      = Français
+    # zh-hans = 简体中文
     #
     # choicesをModel側には固定しない。
     # 将来言語を増やしてもmigration不要にするため。
+    # -------------------------------------------------------------------------
+
     ui_language = models.CharField(
         max_length=20,
         default="ja",
     )
+
+
+    # -------------------------------------------------------------------------
+    # Country
+    # -------------------------------------------------------------------------
 
     current_country = models.ForeignKey(
         Country,
@@ -920,6 +968,11 @@ class VaccinationSettings(models.Model):
         blank=True,
         related_name="+",
     )
+
+
+    # -------------------------------------------------------------------------
+    # Doctor Mode
+    # -------------------------------------------------------------------------
 
     doctor_language = models.CharField(
         max_length=20,
@@ -930,10 +983,24 @@ class VaccinationSettings(models.Model):
         default=True,
     )
 
+
+    # -------------------------------------------------------------------------
+    # Date format
+    # -------------------------------------------------------------------------
+
     DATE_FORMAT_CHOICES = [
-        ("ymd", "2026/08/31"),
-        ("dmy_dot", "31.08.2026"),
-        ("dmy_text", "31 Aug 2026"),
+        (
+            "ymd",
+            "2026/08/31",
+        ),
+        (
+            "dmy_dot",
+            "31.08.2026",
+        ),
+        (
+            "dmy_text",
+            "31 Aug 2026",
+        ),
     ]
 
     date_format = models.CharField(
@@ -942,18 +1009,10 @@ class VaccinationSettings(models.Model):
         default="ymd",
     )
 
-    def __str__(self):
-        return f"Vaccination settings: {self.user}"
 
-    FONT_SIZE_SMALL = "small"
-    FONT_SIZE_MEDIUM = "medium"
-    FONT_SIZE_LARGE = "large"
-
-    FONT_SIZE_CHOICES = [
-        (FONT_SIZE_SMALL, "Small"),
-        (FONT_SIZE_MEDIUM, "Medium"),
-        (FONT_SIZE_LARGE, "Large"),
-    ]
+    # -------------------------------------------------------------------------
+    # Font size
+    # -------------------------------------------------------------------------
 
     font_size = models.CharField(
         max_length=20,
@@ -962,6 +1021,12 @@ class VaccinationSettings(models.Model):
     )
 
 
+    def __str__(self):
+        return (
+            f"Vaccination settings: "
+            f"{self.user}"
+        )
+    
 class ChildCollaborator(models.Model):
 
     PERMISSION_EDIT = "edit"
