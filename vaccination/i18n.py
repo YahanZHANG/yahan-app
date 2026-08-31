@@ -1,0 +1,866 @@
+UI_TEXT = {
+    "ja": {
+        # =====================================================
+        # Navigation
+        # =====================================================
+
+        "home": "ホーム",
+        "records": "記録",
+        "schedule": "予定",
+        "doctor": "見せる",
+        "settings": "設定",
+
+        # =====================================================
+        # General
+        # =====================================================
+
+        "optional": "任意",
+        "save": "保存",
+        "view_all": "すべて見る",
+        "no_record": "記録なし",
+        "check_input": "入力内容を確認してください",
+
+        # =====================================================
+        # Home
+        # =====================================================
+
+        "record_vaccination": "接種を記録",
+        "recent_vaccinations": "最近の接種",
+        "no_vaccinations": "まだ接種記録がない",
+        "add_first_record": "上のボタンから最初の記録を追加できる。",
+        "standard_schedule": "標準スケジュール",
+
+        # =====================================================
+        # Child
+        # =====================================================
+
+        "lets_start": "はじめよう",
+        "child_intro": (
+            "まずは予防接種を管理する子どもの情報を登録する。"
+        ),
+        "name": "名前",
+        "date_of_birth": "生年月日",
+        "birth_country": "出生国",
+        "current_country": "現在住んでいる国",
+        "schedule_country_help": (
+            "この国の標準予防接種スケジュールを表示する。"
+        ),
+        "start": "はじめる",
+
+        # =====================================================
+        # Records
+        # =====================================================
+
+        "vaccination_records": "接種記録",
+        "by_vaccine": "ワクチン別",
+        "by_date": "接種日順",
+        "times_vaccinated": "回接種",
+        "vaccination_history": "接種履歴",
+        "times": "回",
+        "dose": "回目",
+
+        # =====================================================
+        # New record
+        # =====================================================
+
+        "new_record": "接種を記録",
+        "basic_information": "基本情報",
+
+        "vaccine": "ワクチン",
+        "select_vaccine": "ワクチンを選択",
+
+        "vaccination_date": "接種日",
+
+        "vaccination_country": "接種した国",
+        "select_country": "国を選択",
+
+        "healthcare_provider": "医療機関",
+        "recent_providers": "最近使った医療機関",
+
+        "add_provider": "新しい医療機関を追加",
+        "new_provider": "新しい医療機関",
+
+        "city_region": "市・地域",
+
+        "provider_placeholder": (
+            "病院・小児科・クリニック名"
+        ),
+
+        "city_placeholder": "例：Zürich",
+
+        "reactions": "副反応",
+        "no_reaction": "副反応なし",
+        "other_reaction": "その他の副反応",
+
+        "product_notes": "製品情報・メモ",
+
+        "preparation_dose": "この製剤として何回目",
+
+        "product_name": "商品名",
+        "manufacturer": "メーカー",
+        "lot_number": "Lot番号",
+        "notes": "メモ",
+
+        "save_record": "記録を保存",
+
+        # =====================================================
+        # Reaction choices
+        # =====================================================
+
+        "reaction_fever": "発熱",
+        "reaction_swelling": "接種部位の腫れ",
+        "reaction_redness": "発赤",
+        "reaction_pain": "痛み",
+        "reaction_rash": "発疹",
+        "reaction_vomiting": "嘔吐",
+        "reaction_diarrhea": "下痢",
+        "reaction_sleepiness": "眠気",
+        "reaction_irritability": "不機嫌",
+
+        # =====================================================
+        # Record detail
+        # =====================================================
+
+        "included_vaccines": "含まれるワクチン",
+        "product_information": "製品情報",
+
+        # =====================================================
+        # Settings
+        # =====================================================
+
+        "language": "言語",
+        "app_language": "アプリの言語",
+        "app_language_help": "アプリで使う言語",
+
+        "country": "国",
+        "country_help": "標準スケジュールの基準",
+
+        "doctor_mode": "Doctor Mode",
+        "doctor_mode_help": "医師に見せるときの表示",
+
+        "doctor_language": "Doctor Modeの言語",
+
+        "show_english": "英語を併記",
+        "show_english_help": (
+            "現地語の下に英語名も表示する"
+        ),
+
+        "date": "日付",
+        "date_format": "日付形式",
+        "date_help": "日付の表示形式",
+
+        "managed_child": "管理中",
+
+        "save_settings": "設定を保存",
+
+        # =====================================================
+        # Schedule
+        # =====================================================
+
+        "schedule_title": "標準スケジュール",
+
+        "schedule_done": "済",
+        "schedule_next": "今の時期",
+        "schedule_future": "将来",
+        "schedule_check": "記録確認",
+
+        "schedule_next_help": (
+            "現在の年齢が標準的な接種時期に入っている。"
+        ),
+
+        "schedule_reference": (
+            "このページは標準的な接種スケジュールの参考表示。"
+            "実際の接種時期は医療機関で確認してください。"
+        ),
+
+        "schedule_source": "情報源",
+
+        "schedule_not_available": (
+            "この国のスケジュールはまだ登録されていない"
+        ),
+
+        # =====================================================
+        # Doctor Mode
+        # =====================================================
+
+        "doctor_title": "予防接種記録",
+        "doctor_patient": "患者情報",
+        "doctor_birth_date": "生年月日",
+        "doctor_current_country": "現在の国",
+        "doctor_vaccination_history": "接種履歴",
+        "doctor_dose": "回目",
+        "doctor_total": "接種回数",
+        "doctor_preparation": "製剤",
+        "doctor_country": "接種国",
+        "doctor_no_records": "接種記録なし",
+    },
+
+
+    "en": {
+        # =====================================================
+        # Navigation
+        # =====================================================
+
+        "home": "Home",
+        "records": "Records",
+        "schedule": "Schedule",
+        "doctor": "Show",
+        "settings": "Settings",
+
+        # =====================================================
+        # General
+        # =====================================================
+
+        "optional": "Optional",
+        "save": "Save",
+        "view_all": "View all",
+        "no_record": "No record",
+        "check_input": "Please check the information entered",
+
+        # =====================================================
+        # Home
+        # =====================================================
+
+        "record_vaccination": "Add vaccination",
+        "recent_vaccinations": "Recent vaccinations",
+        "no_vaccinations": "No vaccination records yet",
+        "add_first_record": (
+            "Add the first record using the button above."
+        ),
+        "standard_schedule": "Standard schedule",
+
+        # =====================================================
+        # Child
+        # =====================================================
+
+        "lets_start": "Let's start",
+        "child_intro": (
+            "First, add the child whose vaccinations "
+            "you want to manage."
+        ),
+        "name": "Name",
+        "date_of_birth": "Date of birth",
+        "birth_country": "Country of birth",
+        "current_country": "Current country",
+        "schedule_country_help": (
+            "The standard vaccination schedule for "
+            "this country will be shown."
+        ),
+        "start": "Start",
+
+        # =====================================================
+        # Records
+        # =====================================================
+
+        "vaccination_records": "Vaccination records",
+        "by_vaccine": "By vaccine",
+        "by_date": "By date",
+        "times_vaccinated": " doses",
+        "vaccination_history": "Vaccination history",
+        "times": " doses",
+        "dose": " dose",
+
+        # =====================================================
+        # New record
+        # =====================================================
+
+        "new_record": "Add vaccination",
+        "basic_information": "Basic information",
+
+        "vaccine": "Vaccine",
+        "select_vaccine": "Select a vaccine",
+
+        "vaccination_date": "Vaccination date",
+
+        "vaccination_country": "Country of vaccination",
+        "select_country": "Select a country",
+
+        "healthcare_provider": "Healthcare provider",
+        "recent_providers": "Recently used",
+
+        "add_provider": "Add a new healthcare provider",
+        "new_provider": "New healthcare provider",
+
+        "city_region": "City / region",
+
+        "provider_placeholder": (
+            "Hospital, pediatrician or clinic"
+        ),
+
+        "city_placeholder": "e.g. Zürich",
+
+        "reactions": "Reactions",
+        "no_reaction": "No reaction",
+        "other_reaction": "Other reaction",
+
+        "product_notes": "Product information & notes",
+
+        "preparation_dose": (
+            "Dose number for this vaccine"
+        ),
+
+        "product_name": "Product name",
+        "manufacturer": "Manufacturer",
+        "lot_number": "Lot number",
+        "notes": "Notes",
+
+        "save_record": "Save record",
+
+        # =====================================================
+        # Reaction choices
+        # =====================================================
+
+        "reaction_fever": "Fever",
+        "reaction_swelling": "Injection-site swelling",
+        "reaction_redness": "Redness",
+        "reaction_pain": "Pain",
+        "reaction_rash": "Rash",
+        "reaction_vomiting": "Vomiting",
+        "reaction_diarrhea": "Diarrhea",
+        "reaction_sleepiness": "Sleepiness",
+        "reaction_irritability": "Irritability",
+
+        # =====================================================
+        # Record detail
+        # =====================================================
+
+        "included_vaccines": "Included vaccines",
+        "product_information": "Product information",
+
+        # =====================================================
+        # Settings
+        # =====================================================
+
+        "language": "Language",
+        "app_language": "App language",
+        "app_language_help": "Language used in the app",
+
+        "country": "Country",
+        "country_help": (
+            "Used for the standard vaccination schedule"
+        ),
+
+        "doctor_mode": "Doctor Mode",
+        "doctor_mode_help": (
+            "Display used when showing records to a doctor"
+        ),
+
+        "doctor_language": "Doctor Mode language",
+
+        "show_english": "Show English",
+        "show_english_help": (
+            "Also show the English name below "
+            "the selected language"
+        ),
+
+        "date": "Date",
+        "date_format": "Date format",
+        "date_help": "How dates are displayed",
+
+        "managed_child": "Managing",
+
+        "save_settings": "Save settings",
+
+        # =====================================================
+        # Schedule
+        # =====================================================
+
+        "schedule_title": "Standard schedule",
+
+        "schedule_done": "Done",
+        "schedule_next": "Now",
+        "schedule_future": "Future",
+        "schedule_check": "Check record",
+
+        "schedule_next_help": (
+            "The child's current age is within "
+            "the standard vaccination period."
+        ),
+
+        "schedule_reference": (
+            "This page shows the standard vaccination schedule "
+            "for reference. Confirm the actual vaccination "
+            "timing with a healthcare professional."
+        ),
+
+        "schedule_source": "Source",
+
+        "schedule_not_available": (
+            "A schedule for this country has not been added yet."
+        ),
+
+
+        # =====================================================
+        # Doctor Mode
+        # =====================================================
+
+        "doctor_title": "Vaccination Record",
+        "doctor_patient": "Patient information",
+        "doctor_birth_date": "Date of birth",
+        "doctor_current_country": "Current country",
+        "doctor_vaccination_history": "Vaccination history",
+        "doctor_dose": "Dose",
+        "doctor_total": "Total doses",
+        "doctor_preparation": "Vaccine preparation",
+        "doctor_country": "Country",
+        "doctor_no_records": "No vaccination records",
+
+    },
+
+
+    "de": {
+        # =====================================================
+        # Navigation
+        # =====================================================
+
+        "home": "Start",
+        "records": "Impfungen",
+        "schedule": "Impfplan",
+        "doctor": "Vorzeigen",
+        "settings": "Einstellungen",
+
+        # =====================================================
+        # General
+        # =====================================================
+
+        "optional": "Optional",
+        "save": "Speichern",
+        "view_all": "Alle anzeigen",
+        "no_record": "Keine Angabe",
+        "check_input": "Bitte die Eingaben überprüfen",
+
+        # =====================================================
+        # Home
+        # =====================================================
+
+        "record_vaccination": "Impfung eintragen",
+        "recent_vaccinations": "Letzte Impfungen",
+        "no_vaccinations": (
+            "Noch keine Impfungen eingetragen"
+        ),
+        "add_first_record": (
+            "Mit der Schaltfläche oben kann die erste "
+            "Impfung eingetragen werden."
+        ),
+        "standard_schedule": "Standard-Impfplan",
+
+        # =====================================================
+        # Child
+        # =====================================================
+
+        "lets_start": "Los geht's",
+        "child_intro": (
+            "Zuerst das Kind hinzufügen, dessen Impfungen "
+            "verwaltet werden sollen."
+        ),
+        "name": "Name",
+        "date_of_birth": "Geburtsdatum",
+        "birth_country": "Geburtsland",
+        "current_country": "Aktuelles Wohnland",
+        "schedule_country_help": (
+            "Der Standard-Impfplan dieses Landes wird angezeigt."
+        ),
+        "start": "Starten",
+
+        # =====================================================
+        # Records
+        # =====================================================
+
+        "vaccination_records": "Impfungen",
+        "by_vaccine": "Nach Impfung",
+        "by_date": "Nach Datum",
+        "times_vaccinated": " Impfungen",
+        "vaccination_history": "Impfverlauf",
+        "times": " Impfungen",
+        "dose": ". Dosis",
+
+        # =====================================================
+        # New record
+        # =====================================================
+
+        "new_record": "Impfung eintragen",
+        "basic_information": "Grundinformationen",
+
+        "vaccine": "Impfstoff",
+        "select_vaccine": "Impfstoff auswählen",
+
+        "vaccination_date": "Impfdatum",
+
+        "vaccination_country": "Land der Impfung",
+        "select_country": "Land auswählen",
+
+        "healthcare_provider": "Medizinische Einrichtung",
+        "recent_providers": "Zuletzt verwendet",
+
+        "add_provider": "Neue Einrichtung hinzufügen",
+        "new_provider": "Neue medizinische Einrichtung",
+
+        "city_region": "Stadt / Region",
+
+        "provider_placeholder": (
+            "Spital, Kinderarzt oder Klinik"
+        ),
+
+        "city_placeholder": "z. B. Zürich",
+
+        "reactions": "Impfreaktionen",
+        "no_reaction": "Keine Impfreaktion",
+        "other_reaction": "Andere Reaktion",
+
+        "product_notes": "Produktinformationen & Notizen",
+
+        "preparation_dose": (
+            "Dosisnummer dieses Impfstoffs"
+        ),
+
+        "product_name": "Produktname",
+        "manufacturer": "Hersteller",
+        "lot_number": "Chargennummer",
+        "notes": "Notizen",
+
+        "save_record": "Eintrag speichern",
+
+        # =====================================================
+        # Reaction choices
+        # =====================================================
+
+        "reaction_fever": "Fieber",
+        "reaction_swelling": (
+            "Schwellung an der Einstichstelle"
+        ),
+        "reaction_redness": "Rötung",
+        "reaction_pain": "Schmerzen",
+        "reaction_rash": "Ausschlag",
+        "reaction_vomiting": "Erbrechen",
+        "reaction_diarrhea": "Durchfall",
+        "reaction_sleepiness": "Schläfrigkeit",
+        "reaction_irritability": "Reizbarkeit",
+
+        # =====================================================
+        # Record detail
+        # =====================================================
+
+        "included_vaccines": "Enthaltene Impfungen",
+        "product_information": "Produktinformationen",
+
+        # =====================================================
+        # Settings
+        # =====================================================
+
+        "language": "Sprache",
+        "app_language": "App-Sprache",
+        "app_language_help": "Sprache der App",
+
+        "country": "Land",
+        "country_help": (
+            "Grundlage für den Standard-Impfplan"
+        ),
+
+        "doctor_mode": "Arztmodus",
+        "doctor_mode_help": (
+            "Anzeige zum Vorzeigen beim Arzt"
+        ),
+
+        "doctor_language": "Sprache im Arztmodus",
+
+        "show_english": "Englisch zusätzlich anzeigen",
+        "show_english_help": (
+            "Englischen Namen zusätzlich unter der "
+            "ausgewählten Sprache anzeigen"
+        ),
+
+        "date": "Datum",
+        "date_format": "Datumsformat",
+        "date_help": "Darstellung des Datums",
+
+        "managed_child": "Verwaltet",
+
+        "save_settings": "Einstellungen speichern",
+
+        # =====================================================
+        # Schedule
+        # =====================================================
+
+        "schedule_title": "Standard-Impfplan",
+
+        "schedule_done": "Erledigt",
+        "schedule_next": "Jetzt",
+        "schedule_future": "Später",
+        "schedule_check": "Prüfen",
+
+        "schedule_next_help": (
+            "Das aktuelle Alter liegt im regulären Impfzeitraum."
+        ),
+
+        "schedule_reference": (
+            "Diese Seite zeigt den Standard-Impfplan als "
+            "Referenz. Den tatsächlichen Impfzeitpunkt bitte "
+            "mit medizinischem Fachpersonal abstimmen."
+        ),
+
+        "schedule_source": "Quelle",
+
+        "schedule_not_available": (
+            "Für dieses Land ist noch kein Impfplan hinterlegt."
+        ),
+
+
+        # =====================================================
+        # Doctor Mode
+        # =====================================================
+
+        "doctor_title": "Impfnachweis",
+        "doctor_patient": "Patienteninformationen",
+        "doctor_birth_date": "Geburtsdatum",
+        "doctor_current_country": "Aktuelles Land",
+        "doctor_vaccination_history": "Impfverlauf",
+        "doctor_dose": "Dosis",
+        "doctor_total": "Anzahl der Dosen",
+        "doctor_preparation": "Impfstoff",
+        "doctor_country": "Land",
+        "doctor_no_records": "Keine Impfungen eingetragen",
+    },
+
+
+    "zh-hans": {
+        # =====================================================
+        # Navigation
+        # =====================================================
+
+        "home": "首页",
+        "records": "接种记录",
+        "schedule": "接种计划",
+        "doctor": "出示",
+        "settings": "设置",
+
+        # =====================================================
+        # General
+        # =====================================================
+
+        "optional": "选填",
+        "save": "保存",
+        "view_all": "查看全部",
+        "no_record": "无记录",
+        "check_input": "请检查输入内容",
+
+        # =====================================================
+        # Home
+        # =====================================================
+
+        "record_vaccination": "添加接种记录",
+        "recent_vaccinations": "最近接种",
+        "no_vaccinations": "还没有接种记录",
+        "add_first_record": (
+            "点击上方按钮添加第一条接种记录。"
+        ),
+        "standard_schedule": "标准接种计划",
+
+        # =====================================================
+        # Child
+        # =====================================================
+
+        "lets_start": "开始使用",
+        "child_intro": (
+            "首先添加需要管理疫苗接种记录的孩子。"
+        ),
+        "name": "姓名",
+        "date_of_birth": "出生日期",
+        "birth_country": "出生国家",
+        "current_country": "目前居住国家",
+        "schedule_country_help": (
+            "将显示该国家的标准疫苗接种计划。"
+        ),
+        "start": "开始",
+
+        # =====================================================
+        # Records
+        # =====================================================
+
+        "vaccination_records": "接种记录",
+        "by_vaccine": "按疫苗",
+        "by_date": "按日期",
+        "times_vaccinated": "次接种",
+        "vaccination_history": "接种历史",
+        "times": "次",
+        "dose": "次",
+
+        # =====================================================
+        # New record
+        # =====================================================
+
+        "new_record": "添加接种记录",
+        "basic_information": "基本信息",
+
+        "vaccine": "疫苗",
+        "select_vaccine": "选择疫苗",
+
+        "vaccination_date": "接种日期",
+
+        "vaccination_country": "接种国家",
+        "select_country": "选择国家",
+
+        "healthcare_provider": "医疗机构",
+        "recent_providers": "最近使用的医疗机构",
+
+        "add_provider": "添加新的医疗机构",
+        "new_provider": "新的医疗机构",
+
+        "city_region": "城市 / 地区",
+
+        "provider_placeholder": (
+            "医院、儿科诊所或门诊"
+        ),
+
+        "city_placeholder": "例如：Zürich",
+
+        "reactions": "接种后反应",
+        "no_reaction": "无接种后反应",
+        "other_reaction": "其他反应",
+
+        "product_notes": "疫苗产品信息与备注",
+
+        "preparation_dose": "该疫苗第几剂",
+
+        "product_name": "产品名称",
+        "manufacturer": "生产厂家",
+        "lot_number": "批号",
+        "notes": "备注",
+
+        "save_record": "保存接种记录",
+
+        # =====================================================
+        # Reaction choices
+        # =====================================================
+
+        "reaction_fever": "发热",
+        "reaction_swelling": "接种部位肿胀",
+        "reaction_redness": "发红",
+        "reaction_pain": "疼痛",
+        "reaction_rash": "皮疹",
+        "reaction_vomiting": "呕吐",
+        "reaction_diarrhea": "腹泻",
+        "reaction_sleepiness": "嗜睡",
+        "reaction_irritability": "烦躁",
+
+        # =====================================================
+        # Record detail
+        # =====================================================
+
+        "included_vaccines": "包含的疫苗成分",
+        "product_information": "疫苗产品信息",
+
+        # =====================================================
+        # Settings
+        # =====================================================
+
+        "language": "语言",
+        "app_language": "应用语言",
+        "app_language_help": "应用中使用的语言",
+
+        "country": "国家",
+        "country_help": (
+            "用于显示标准疫苗接种计划"
+        ),
+
+        "doctor_mode": "医生模式",
+        "doctor_mode_help": (
+            "向医生出示记录时的显示方式"
+        ),
+
+        "doctor_language": "医生模式语言",
+
+        "show_english": "同时显示英语",
+        "show_english_help": (
+            "在所选语言下同时显示英文名称"
+        ),
+
+        "date": "日期",
+        "date_format": "日期格式",
+        "date_help": "日期的显示方式",
+
+        "managed_child": "当前管理",
+
+        "save_settings": "保存设置",
+
+        # =====================================================
+        # Schedule
+        # =====================================================
+
+        "schedule_title": "标准接种计划",
+
+        "schedule_done": "已完成",
+        "schedule_next": "当前",
+        "schedule_future": "以后",
+        "schedule_check": "确认记录",
+
+        "schedule_next_help": (
+            "目前年龄处于该疫苗的标准接种时期。"
+        ),
+
+        "schedule_reference": (
+            "本页面仅显示标准疫苗接种计划供参考。"
+            "实际接种时间请与医疗人员确认。"
+        ),
+
+        "schedule_source": "信息来源",
+
+        "schedule_not_available": (
+            "尚未添加该国家的接种计划。"
+        ),
+
+        
+        # =====================================================
+        # Doctor Mode
+        # =====================================================
+
+        "doctor_title": "疫苗接种记录",
+        "doctor_patient": "患者信息",
+        "doctor_birth_date": "出生日期",
+        "doctor_current_country": "目前所在国家",
+        "doctor_vaccination_history": "接种记录",
+        "doctor_dose": "第几剂",
+        "doctor_total": "接种次数",
+        "doctor_preparation": "疫苗制剂",
+        "doctor_country": "接种国家",
+        "doctor_no_records": "暂无接种记录",
+    },
+}
+
+
+def get_ui(language_code="ja"):
+    """
+    指定した言語のUI辞書を返す。
+
+    未登録の言語コードの場合は
+    日本語にフォールバックする。
+    """
+
+    return UI_TEXT.get(
+        language_code,
+        UI_TEXT["ja"],
+    )
+
+
+def t(key, language_code="ja"):
+    """
+    Python側から翻訳文字列を1件取得する。
+
+    指定言語にキーが存在しない場合は
+    日本語へフォールバックする。
+
+    日本語にも存在しない場合は
+    keyそのものを返す。
+    """
+
+    language = UI_TEXT.get(
+        language_code,
+        UI_TEXT["ja"],
+    )
+
+    if key in language:
+        return language[key]
+
+    return UI_TEXT["ja"].get(
+        key,
+        key,
+    )

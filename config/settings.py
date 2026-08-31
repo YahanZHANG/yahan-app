@@ -8,6 +8,7 @@ from pathlib import Path
 import os
 
 import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
 # ------------------------------------------------------------------------------
 # Paths
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     "travel.apps.TravelConfig",
     "feeding.apps.FeedingConfig",
     "games.apps.GamesConfig",
+    "vaccination.apps.VaccinationConfig",
 ]
 
 # ------------------------------------------------------------------------------
@@ -61,6 +63,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -85,6 +88,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "travel.context_processors.current_travel_group",
+                "vaccination.context_processors.vaccination_ui",
             ],
         },
     },
@@ -134,11 +138,22 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ja"
 
+LANGUAGES = [
+    ("ja", _("日本語")),
+    ("en", _("English")),
+    ("de", _("Deutsch")),
+    ("zh-hans", _("中文")),
+]
+
 TIME_ZONE = "Europe/Zurich"
 
 USE_I18N = True
 
 USE_TZ = True
+
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
 
 # ------------------------------------------------------------------------------
 # Static files

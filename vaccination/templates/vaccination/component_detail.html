@@ -1,0 +1,145 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-component-detail-page">
+
+    <header class="vaccination-detail-header">
+
+        <a
+            href="{% url 'vaccination:records' %}?view=component"
+            class="vaccination-back-button"
+            aria-label="Back"
+        >
+            ‹
+        </a>
+
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                VACCINE
+            </p>
+
+            <h1>
+                {{ component_name }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <div class="vaccination-component-summary">
+
+        <div class="vaccination-component-summary-icon">
+            ✓
+        </div>
+
+
+        <div>
+
+            <span>
+                {{ vac_ui.vaccination_records }}
+            </span>
+
+            <strong>
+                {{ rows|length }}{{ vac_ui.times }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <section class="vaccination-component-history-section">
+
+        <h2>
+            {{ vac_ui.vaccination_history }}
+        </h2>
+
+
+        <div class="vaccination-component-history-list">
+
+            {% for row in rows %}
+
+                <a
+                    href="{% url 'vaccination:record_detail' row.record.pk %}"
+                    class="vaccination-component-history-card"
+                >
+
+                    <div class="vaccination-component-dose">
+
+                        {% if row.item.dose_number %}
+
+                            <strong>
+                                {{ row.item.dose_number }}
+                            </strong>
+
+                            <span>
+                                {{ vac_ui.dose }}
+                            </span>
+
+                        {% else %}
+
+                            <strong>
+                                ✓
+                            </strong>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="vaccination-component-history-main">
+
+                        <strong>
+                            {{ row.preparation_name }}
+                        </strong>
+
+                        <span>
+                            {{ row.record.vaccination_date|date:"Y/m/d" }}
+                        </span>
+
+
+                        {% if row.country_name %}
+
+                            <small>
+                                {{ row.country_name }}
+                            </small>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <span class="vaccination-history-arrow">
+                        ›
+                    </span>
+
+                </a>
+
+
+            {% empty %}
+
+                <div class="vaccination-empty-state">
+
+                    <div class="vaccination-empty-icon">
+                        ♡
+                    </div>
+
+                    <strong>
+                        {{ vac_ui.no_vaccinations }}
+                    </strong>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}

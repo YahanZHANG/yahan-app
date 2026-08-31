@@ -1,0 +1,105 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-children-page">
+
+    <header class="vaccination-list-header">
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                CHILDREN
+            </p>
+
+            <h1>
+                子どもの管理
+            </h1>
+
+        </div>
+
+
+        <a
+            href="{% url 'vaccination:child_create' %}"
+            class="vaccination-header-add"
+            aria-label="子どもを追加"
+        >
+            ＋
+        </a>
+
+    </header>
+
+
+    <div class="vaccination-child-list">
+
+        {% for child in children %}
+
+            <a
+                href="{% url 'vaccination:child_switch' child.pk %}"
+                class="
+                    vaccination-child-card
+                    {% if active_child and active_child.pk == child.pk %}
+                        active
+                    {% endif %}
+                "
+            >
+
+                <div class="vaccination-child-avatar">
+                    ♡
+                </div>
+
+
+                <div class="vaccination-child-card-copy">
+
+                    <strong>
+                        {{ child.name }}
+                    </strong>
+
+                    <span>
+                        {{ child.date_of_birth|date:"Y/m/d" }}
+                    </span>
+
+                </div>
+
+
+                {% if active_child and active_child.pk == child.pk %}
+
+                    <div class="vaccination-child-current">
+                        選択中
+                    </div>
+
+                {% else %}
+
+                    <div class="vaccination-child-arrow">
+                        ›
+                    </div>
+
+                {% endif %}
+
+            </a>
+
+        {% empty %}
+
+            <div class="vaccination-empty-state">
+
+                <strong>
+                    子どもが登録されていない
+                </strong>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <a
+        href="{% url 'vaccination:child_create' %}"
+        class="vaccination-add-child-button"
+    >
+        ＋ 子どもを追加
+    </a>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-onboarding">
+
+    <div class="vaccination-onboarding-icon">
+        ♡
+    </div>
+
+    <p class="vaccination-eyebrow">
+        VACCINATION
+    </p>
+
+    <h1 class="vaccination-onboarding-title">
+        はじめよう
+    </h1>
+
+    <p class="vaccination-onboarding-description">
+        予防接種を管理する
+        子どもの情報を登録する。
+    </p>
+
+
+    <form
+        method="post"
+        class="vaccination-form-card"
+    >
+
+        {% csrf_token %}
+
+
+        {% if form.non_field_errors %}
+
+            <div class="vaccination-form-errors">
+                {{ form.non_field_errors }}
+            </div>
+
+        {% endif %}
+
+
+        <div class="vaccination-form-group">
+
+            <label
+                for="{{ form.name.id_for_label }}"
+            >
+                {{ form.name.label }}
+            </label>
+
+            {{ form.name }}
+
+            {% if form.name.errors %}
+                <div class="vaccination-field-error">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="vaccination-form-group">
+
+            <label
+                for="{{ form.date_of_birth.id_for_label }}"
+            >
+                {{ form.date_of_birth.label }}
+            </label>
+
+            {{ form.date_of_birth }}
+
+            {% if form.date_of_birth.errors %}
+                <div class="vaccination-field-error">
+                    {{ form.date_of_birth.errors }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="vaccination-form-group">
+
+            <label
+                for="{{ form.birth_country.id_for_label }}"
+            >
+                {{ form.birth_country.label }}
+            </label>
+
+            {{ form.birth_country }}
+
+        </div>
+
+
+        <div class="vaccination-form-group">
+
+            <label
+                for="{{ form.default_country.id_for_label }}"
+            >
+                {{ form.default_country.label }}
+            </label>
+
+            {{ form.default_country }}
+
+            <p class="vaccination-field-help">
+                この国の標準予防接種スケジュールを表示する。
+            </p>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="vaccination-primary-button"
+        >
+            はじめる
+        </button>
+
+    </form>
+
+</section>
+
+{% endblock %}

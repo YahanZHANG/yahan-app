@@ -1,0 +1,533 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-record-form-page">
+
+    <header class="vaccination-form-page-header">
+
+        <a
+            href="{% url 'vaccination:home' %}"
+            class="vaccination-back-button"
+            aria-label="Back"
+        >
+            ‹
+        </a>
+
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                NEW RECORD
+            </p>
+
+            <h1>
+                {{ vac_ui.new_record }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+
+        {% if form.errors %}
+
+            <div class="vaccination-form-error-summary">
+
+                <strong>
+                    {{ vac_ui.check_input }}
+                </strong>
+
+
+                {% for field in form %}
+
+                    {% for error in field.errors %}
+
+                        <p>
+                            {{ field.label }}：{{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                {% endfor %}
+
+
+                {% for error in form.non_field_errors %}
+
+                    <p>
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <section class="vaccination-form-section">
+
+            <h2>
+                {{ vac_ui.basic_information }}
+            </h2>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.preparation.id_for_label }}"
+                >
+                    {{ form.preparation.label }}
+                </label>
+
+                {{ form.preparation }}
+
+                {% if form.preparation.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.preparation.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="vaccination-form-row">
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.vaccination_date.id_for_label }}"
+                    >
+                        {{ form.vaccination_date.label }}
+                    </label>
+
+                    {{ form.vaccination_date }}
+
+                    {% if form.vaccination_date.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.vaccination_date.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.country.id_for_label }}"
+                    >
+                        {{ form.country.label }}
+                    </label>
+
+                    {{ form.country }}
+
+                    {% if form.country.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.country.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="vaccination-form-section">
+
+            <div class="vaccination-form-section-heading">
+
+                <h2>
+                    {{ vac_ui.healthcare_provider }}
+                </h2>
+
+                <span>
+                    {{ vac_ui.optional }}
+                </span>
+
+            </div>
+
+
+            {% if form.healthcare_provider.field.queryset %}
+
+                <p class="vaccination-form-hint">
+                    {{ vac_ui.recent_providers }}
+                </p>
+
+
+                <div class="vaccination-provider-choices">
+                    {{ form.healthcare_provider }}
+                </div>
+
+            {% endif %}
+
+
+            <details class="vaccination-details">
+
+                <summary>
+                    ＋ {{ vac_ui.add_provider }}
+                </summary>
+
+
+                <div class="vaccination-details-content">
+
+                    <div class="vaccination-form-group">
+
+                        <label
+                            for="{{ form.new_provider_name.id_for_label }}"
+                        >
+                            {{ form.new_provider_name.label }}
+                        </label>
+
+                        {{ form.new_provider_name }}
+
+                        {% if form.new_provider_name.errors %}
+
+                            <div class="vaccination-field-error">
+                                {{ form.new_provider_name.errors }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="vaccination-form-group">
+
+                        <label
+                            for="{{ form.new_provider_city.id_for_label }}"
+                        >
+                            {{ form.new_provider_city.label }}
+                        </label>
+
+                        {{ form.new_provider_city }}
+
+                        {% if form.new_provider_city.errors %}
+
+                            <div class="vaccination-field-error">
+                                {{ form.new_provider_city.errors }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </details>
+
+        </section>
+
+
+        <section class="vaccination-form-section">
+
+            <div class="vaccination-form-section-heading">
+
+                <h2>
+                    {{ vac_ui.reactions }}
+                </h2>
+
+                <span>
+                    {{ vac_ui.optional }}
+                </span>
+
+            </div>
+
+
+            <label class="vaccination-no-reaction">
+
+                {{ form.no_reaction }}
+
+                <span>
+                    {{ vac_ui.no_reaction }}
+                </span>
+
+            </label>
+
+
+            <div
+                class="vaccination-reaction-grid"
+                id="reaction-options"
+            >
+                {{ form.reactions }}
+            </div>
+
+
+            <div class="vaccination-form-group vaccination-other-reaction">
+
+                {{ form.reaction_other }}
+
+                {% if form.reaction_other.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.reaction_other.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <details class="vaccination-details vaccination-detail-fields">
+
+            <summary>
+                {{ vac_ui.product_notes }}
+            </summary>
+
+
+            <div class="vaccination-details-content">
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.preparation_dose_number.id_for_label }}"
+                    >
+                        {{ form.preparation_dose_number.label }}
+                    </label>
+
+                    {{ form.preparation_dose_number }}
+
+                    {% if form.preparation_dose_number.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.preparation_dose_number.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.product.id_for_label }}"
+                    >
+                        {{ form.product.label }}
+                    </label>
+
+                    {{ form.product }}
+
+                    <p class="vaccination-form-hint">
+                        製品が一覧にある場合はこちらから選択
+                    </p>
+
+                    {% if form.product.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.product.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.product_name.id_for_label }}"
+                    >
+                        {{ form.product_name.label }}
+                    </label>
+
+                    {{ form.product_name }}
+
+                    {% if form.product_name.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.product_name.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.manufacturer.id_for_label }}"
+                    >
+                        {{ form.manufacturer.label }}
+                    </label>
+
+                    {{ form.manufacturer }}
+
+                    {% if form.manufacturer.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.manufacturer.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.lot_number.id_for_label }}"
+                    >
+                        {{ form.lot_number.label }}
+                    </label>
+
+                    {{ form.lot_number }}
+
+                    {% if form.lot_number.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.lot_number.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="vaccination-form-group">
+
+                    <label
+                        for="{{ form.notes.id_for_label }}"
+                    >
+                        {{ form.notes.label }}
+                    </label>
+
+                    {{ form.notes }}
+
+                    {% if form.notes.errors %}
+
+                        <div class="vaccination-field-error">
+                            {{ form.notes.errors }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </details>
+
+
+        <button
+            type="submit"
+            class="vaccination-save-button"
+        >
+            {{ vac_ui.save_record }}
+        </button>
+
+    </form>
+
+</section>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const noReaction =
+        document.getElementById(
+            "id_no_reaction"
+        );
+
+    const reactionArea =
+        document.getElementById(
+            "reaction-options"
+        );
+
+    const otherReaction =
+        document.getElementById(
+            "id_reaction_other"
+        );
+
+    if (!noReaction || !reactionArea) {
+        return;
+    }
+
+    const checkboxes =
+        reactionArea.querySelectorAll(
+            'input[type="checkbox"]'
+        );
+
+
+    function updateReactionState() {
+
+        const disabled =
+            noReaction.checked;
+
+        checkboxes.forEach(
+            function (checkbox) {
+
+                checkbox.disabled =
+                    disabled;
+
+                if (disabled) {
+                    checkbox.checked =
+                        false;
+                }
+
+            }
+        );
+
+
+        if (otherReaction) {
+
+            otherReaction.disabled =
+                disabled;
+
+            if (disabled) {
+                otherReaction.value =
+                    "";
+            }
+
+        }
+
+
+        reactionArea.classList.toggle(
+            "is-disabled",
+            disabled
+        );
+    }
+
+    const productSelect =
+        document.getElementById(
+            "id_product"
+        );
+
+    const productNameInput =
+        document.getElementById(
+            "id_product_name"
+        );
+
+    const manufacturerInput =
+        document.getElementById(
+            "id_manufacturer"
+        );
+
+
+    noReaction.addEventListener(
+        "change",
+        updateReactionState
+    );
+
+
+    updateReactionState();
+
+});
+</script>
+
+{% endblock %}

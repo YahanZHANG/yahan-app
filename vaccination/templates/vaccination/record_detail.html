@@ -1,0 +1,262 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-detail-page">
+
+    <header class="vaccination-detail-header">
+
+        <a
+            href="{% url 'vaccination:records' %}?view=history"
+            class="vaccination-back-button"
+            aria-label="Back"
+        >
+            ‹
+        </a>
+
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                VACCINATION RECORD
+            </p>
+
+            <h1>
+                {{ preparation_name }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <div class="vaccination-detail-date-card">
+
+        <span>
+            {{ vac_ui.vaccination_date }}
+        </span>
+
+        <strong>
+            {{ record.vaccination_date|date:"Y/m/d" }}
+        </strong>
+
+
+        {% if country_name %}
+
+            <small>
+                {{ country_name }}
+            </small>
+
+        {% endif %}
+
+    </div>
+
+
+    <section class="vaccination-detail-section">
+
+        <h2>
+            {{ vac_ui.included_vaccines }}
+        </h2>
+
+
+        <div class="vaccination-detail-components">
+
+            {% for row in component_rows %}
+
+                <div class="vaccination-detail-component">
+
+                    <div class="vaccination-mini-check">
+                        ✓
+                    </div>
+
+
+                    <strong>
+                        {{ row.name }}
+                    </strong>
+
+
+                    {% if row.dose_number %}
+
+                        <span>
+                            {{ row.dose_number }}{{ vac_ui.dose }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    {% if record.healthcare_provider %}
+
+        <section class="vaccination-detail-section">
+
+            <h2>
+                {{ vac_ui.healthcare_provider }}
+            </h2>
+
+
+            <div class="vaccination-detail-value-card">
+
+                <strong>
+                    {{ record.healthcare_provider.name }}
+                </strong>
+
+
+                {% if record.healthcare_provider.city %}
+
+                    <span>
+                        {{ record.healthcare_provider.city }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    {% if record.product_name or record.manufacturer or record.lot_number %}
+
+        <section class="vaccination-detail-section">
+
+            <h2>
+                {{ vac_ui.product_information }}
+            </h2>
+
+
+            <div class="vaccination-information-list">
+
+                {% if record.product_name %}
+
+                    <div>
+
+                        <span>
+                            {{ vac_ui.product_name }}
+                        </span>
+
+                        <strong>
+                            {{ record.product_name }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if record.manufacturer %}
+
+                    <div>
+
+                        <span>
+                            {{ vac_ui.manufacturer }}
+                        </span>
+
+                        <strong>
+                            {{ record.manufacturer }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if record.lot_number %}
+
+                    <div>
+
+                        <span>
+                            {{ vac_ui.lot_number }}
+                        </span>
+
+                        <strong>
+                            {{ record.lot_number }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <section class="vaccination-detail-section">
+
+        <h2>
+            {{ vac_ui.reactions }}
+        </h2>
+
+
+        {% if record.no_reaction %}
+
+            <div class="vaccination-no-reaction-display">
+                ✓ {{ vac_ui.no_reaction }}
+            </div>
+
+
+        {% elif reactions or record.reaction_other %}
+
+            <div class="vaccination-reaction-tags">
+
+                {% for reaction in reactions %}
+
+                    <span>
+                        {{ reaction }}
+                    </span>
+
+                {% endfor %}
+
+
+                {% if record.reaction_other %}
+
+                    <span>
+                        {{ record.reaction_other }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+        {% else %}
+
+            <p class="vaccination-detail-muted">
+                {{ vac_ui.no_record }}
+            </p>
+
+        {% endif %}
+
+    </section>
+
+
+    {% if record.notes %}
+
+        <section class="vaccination-detail-section">
+
+            <h2>
+                {{ vac_ui.notes }}
+            </h2>
+
+
+            <div class="vaccination-note-card">
+                {{ record.notes|linebreaksbr }}
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

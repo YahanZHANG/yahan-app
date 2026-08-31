@@ -1,0 +1,222 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-schedule-page">
+
+    <header class="vaccination-list-header">
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                SCHEDULE
+            </p>
+
+            <h1>
+                {{ vac_ui.schedule_title }}
+            </h1>
+
+            {% if country_name %}
+
+                <p class="vaccination-schedule-country">
+                    {{ country_name }}
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Legend
+         ===================================================== -->
+
+    <div class="vaccination-schedule-legend">
+
+        <div>
+            <span class="vaccination-legend-dot done"></span>
+            {{ vac_ui.schedule_done }}
+        </div>
+
+        <div>
+            <span class="vaccination-legend-dot next"></span>
+            {{ vac_ui.schedule_next }}
+        </div>
+
+        <div>
+            <span class="vaccination-legend-dot future"></span>
+            {{ vac_ui.schedule_future }}
+        </div>
+
+    </div>
+
+
+    {% if schedule_version %}
+
+        <!-- =================================================
+             Schedule
+             ================================================= -->
+
+        <div class="vaccination-schedule-groups">
+
+            {% for group in schedule_groups %}
+
+                <section class="vaccination-schedule-group">
+
+                    <h2>
+                        {{ group.label }}
+                    </h2>
+
+
+                    <div class="vaccination-schedule-items">
+
+                        {% for row in group.rows %}
+
+                            <article
+                                class="
+                                    vaccination-schedule-item
+                                    vaccination-schedule-{{ row.status }}
+                                "
+                            >
+
+                                <div class="vaccination-schedule-marker">
+
+                                    {% if row.status == "done" %}
+                                        ✓
+                                    {% elif row.status == "next" %}
+                                        •
+                                    {% elif row.status == "future" %}
+                                        ○
+                                    {% else %}
+                                        ?
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="vaccination-schedule-copy">
+
+                                    <strong>
+                                        {{ row.name }}
+                                    </strong>
+
+
+                                    {% if row.note %}
+
+                                        <span>
+                                            {{ row.note }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="vaccination-schedule-status">
+
+                                    {% if row.status == "done" %}
+
+                                        {{ vac_ui.schedule_done }}
+
+                                    {% elif row.status == "next" %}
+
+                                        {{ vac_ui.schedule_next }}
+
+                                    {% elif row.status == "future" %}
+
+                                        {{ vac_ui.schedule_future }}
+
+                                    {% else %}
+
+                                        {{ vac_ui.schedule_check }}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="vaccination-schedule-explanation">
+
+            <div class="vaccination-schedule-explanation-icon">
+                i
+            </div>
+
+            <div>
+
+                <strong>
+                    {{ vac_ui.schedule_next }}
+                </strong>
+
+                <p>
+                    {{ vac_ui.schedule_next_help }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <p class="vaccination-schedule-reference">
+            {{ vac_ui.schedule_reference }}
+        </p>
+
+
+        {% if schedule_version.source_name %}
+
+            <a
+                href="{{ schedule_version.source_url }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="vaccination-schedule-source"
+            >
+
+                <span>
+                    {{ vac_ui.schedule_source }}
+                </span>
+
+                <strong>
+                    {{ schedule_version.source_name }}
+                </strong>
+
+                <span>
+                    ↗
+                </span>
+
+            </a>
+
+        {% endif %}
+
+
+    {% else %}
+
+        <div class="vaccination-empty-state">
+
+            <div class="vaccination-empty-icon">
+                ◷
+            </div>
+
+            <strong>
+                {{ vac_ui.schedule_not_available }}
+            </strong>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

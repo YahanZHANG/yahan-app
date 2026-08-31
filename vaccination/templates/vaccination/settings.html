@@ -1,0 +1,347 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-settings-page">
+
+    <header class="vaccination-list-header">
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                SETTINGS
+            </p>
+
+            <h1>
+                {{ vac_ui.settings }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+
+        {% if form.errors %}
+
+            <div class="vaccination-form-error-summary">
+
+                <strong>
+                    {{ vac_ui.check_input }}
+                </strong>
+
+                {% for field in form %}
+
+                    {% for error in field.errors %}
+
+                        <p>
+                            {{ field.label }}：{{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                {% endfor %}
+
+
+                {% for error in form.non_field_errors %}
+
+                    <p>
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             Language
+             ===================================================== -->
+
+        <section class="vaccination-settings-card">
+
+            <div class="vaccination-settings-heading">
+
+                <div class="vaccination-settings-icon">
+                    文
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ vac_ui.language }}
+                    </h2>
+
+                    <p>
+                        {{ vac_ui.app_language_help }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.ui_language.id_for_label }}"
+                >
+                    {{ form.ui_language.label }}
+                </label>
+
+                {{ form.ui_language }}
+
+
+                {% if form.ui_language.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.ui_language.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             Country
+             ===================================================== -->
+
+        <section class="vaccination-settings-card">
+
+            <div class="vaccination-settings-heading">
+
+                <div class="vaccination-settings-icon">
+                    ◉
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ vac_ui.country }}
+                    </h2>
+
+                    <p>
+                        {{ vac_ui.country_help }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.current_country.id_for_label }}"
+                >
+                    {{ form.current_country.label }}
+                </label>
+
+                {{ form.current_country }}
+
+
+                {% if form.current_country.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.current_country.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             Doctor Mode
+             ===================================================== -->
+
+        <section class="vaccination-settings-card">
+
+            <div class="vaccination-settings-heading">
+
+                <div class="vaccination-settings-icon">
+                    ✚
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ vac_ui.doctor_mode }}
+                    </h2>
+
+                    <p>
+                        {{ vac_ui.doctor_mode_help }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.doctor_language.id_for_label }}"
+                >
+                    {{ form.doctor_language.label }}
+                </label>
+
+                {{ form.doctor_language }}
+
+
+                {% if form.doctor_language.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.doctor_language.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <label class="vaccination-settings-toggle">
+
+                <div>
+
+                    <strong>
+                        {{ vac_ui.show_english }}
+                    </strong>
+
+                    <span>
+                        {{ vac_ui.show_english_help }}
+                    </span>
+
+                </div>
+
+
+                {{ form.doctor_show_english }}
+
+            </label>
+
+
+            {% if form.doctor_show_english.errors %}
+
+                <div class="vaccination-field-error">
+                    {{ form.doctor_show_english.errors }}
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- =====================================================
+             Date
+             ===================================================== -->
+
+        <section class="vaccination-settings-card">
+
+            <div class="vaccination-settings-heading">
+
+                <div class="vaccination-settings-icon">
+                    31
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ vac_ui.date }}
+                    </h2>
+
+                    <p>
+                        {{ vac_ui.date_help }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="vaccination-form-group">
+
+                <label
+                    for="{{ form.date_format.id_for_label }}"
+                >
+                    {{ form.date_format.label }}
+                </label>
+
+                {{ form.date_format }}
+
+
+                {% if form.date_format.errors %}
+
+                    <div class="vaccination-field-error">
+                        {{ form.date_format.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             Current child
+             ===================================================== -->
+
+        {% if child %}
+
+            <a
+                href="{% url 'vaccination:children' %}"
+                class="vaccination-settings-profile"
+            >
+
+                <div>
+
+                    <span>
+                        {{ vac_ui.managed_child }}
+                    </span>
+
+                    <strong>
+                        {{ child.name }}
+                    </strong>
+
+                </div>
+
+                <span>
+                    ›
+                </span>
+
+            </a>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             Save
+             ===================================================== -->
+
+        <button
+            type="submit"
+            class="vaccination-save-button"
+        >
+            {{ vac_ui.save_settings }}
+        </button>
+
+    </form>
+
+</section>
+
+{% endblock %}

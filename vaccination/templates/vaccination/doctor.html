@@ -1,0 +1,270 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-doctor-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="vaccination-doctor-header">
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                MEDICAL RECORD
+            </p>
+
+            <h1>
+                {{ doctor_ui.doctor_title }}
+            </h1>
+
+        </div>
+
+
+        <div class="vaccination-doctor-language">
+
+            {{ doctor_language|upper }}
+
+            {% if show_english %}
+                + EN
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Patient
+         ===================================================== -->
+
+    <section class="vaccination-doctor-patient">
+
+        <p class="vaccination-doctor-section-label">
+            {{ doctor_ui.doctor_patient }}
+        </p>
+
+
+        <h2>
+            {{ child.name }}
+        </h2>
+
+
+        <div class="vaccination-doctor-patient-grid">
+
+            <div>
+
+                <span>
+                    {{ doctor_ui.doctor_birth_date }}
+                </span>
+
+                <strong>
+                    {{ child.date_of_birth|date:"Y-m-d" }}
+                </strong>
+
+            </div>
+
+
+            {% if current_country_name %}
+
+                <div>
+
+                    <span>
+                        {{ doctor_ui.doctor_current_country }}
+                    </span>
+
+                    <strong>
+                        {{ current_country_name }}
+                    </strong>
+
+
+                    {% if show_english and current_country_name_en %}
+
+                        {% if current_country_name_en != current_country_name %}
+
+                            <small>
+                                {{ current_country_name_en }}
+                            </small>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Vaccination history
+         ===================================================== -->
+
+    <section class="vaccination-doctor-history">
+
+        <div class="vaccination-doctor-history-heading">
+
+            <p class="vaccination-doctor-section-label">
+                {{ doctor_ui.doctor_vaccination_history }}
+            </p>
+
+        </div>
+
+
+        {% if component_groups %}
+
+            <div class="vaccination-doctor-component-list">
+
+                {% for group in component_groups %}
+
+                    <section class="vaccination-doctor-component">
+
+                        <!-- Component name -->
+
+                        <header class="vaccination-doctor-component-header">
+
+                            <div>
+
+                                <h3>
+                                    {{ group.name }}
+                                </h3>
+
+
+                                {% if show_english and group.name_en %}
+
+                                    {% if group.name_en != group.name %}
+
+                                        <p>
+                                            {{ group.name_en }}
+                                        </p>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <span class="vaccination-doctor-dose-count">
+
+                                {{ doctor_ui.doctor_total }}
+
+                                <strong>
+                                    {{ group.rows|length }}
+                                </strong>
+
+                            </span>
+
+                        </header>
+
+
+                        <!-- Doses -->
+
+                        <div class="vaccination-doctor-dose-list">
+
+                            {% for row in group.rows %}
+
+                                <div class="vaccination-doctor-dose-row">
+
+                                    <div class="vaccination-doctor-dose-number">
+
+                                        {% if row.dose_number %}
+
+                                            {{ row.dose_number }}
+
+                                        {% else %}
+
+                                            ✓
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div class="vaccination-doctor-dose-main">
+
+                                        <strong>
+                                            {{ row.date|date:"Y-m-d" }}
+                                        </strong>
+
+
+                                        <span>
+                                            {{ row.preparation_name }}
+                                        </span>
+
+
+                                        {% if show_english and row.preparation_name_en %}
+
+                                            {% if row.preparation_name_en != row.preparation_name %}
+
+                                                <small>
+                                                    {{ row.preparation_name_en }}
+                                                </small>
+
+                                            {% endif %}
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    {% if row.country_name %}
+
+                                        <div class="vaccination-doctor-dose-country">
+
+                                            <span>
+                                                {{ row.country_name }}
+                                            </span>
+
+
+                                            {% if show_english and row.country_name_en %}
+
+                                                {% if row.country_name_en != row.country_name %}
+
+                                                    <small>
+                                                        {{ row.country_name_en }}
+                                                    </small>
+
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </section>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="vaccination-empty-state">
+
+                <strong>
+                    {{ doctor_ui.doctor_no_records }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</section>
+
+{% endblock %}

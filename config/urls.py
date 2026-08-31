@@ -54,4 +54,12 @@ urlpatterns = [
             namespace="games",
         ),
     ),
+
+    path(
+        "vaccination/",
+        include(
+            "vaccination.urls",
+            namespace="vaccination",
+        ),
+    ),
 ]

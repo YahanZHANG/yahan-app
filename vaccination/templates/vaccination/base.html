@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+予防接種
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'vaccination/css/vaccination.css' %}"
+>
+
+<div class="vaccination-app">
+
+    <main class="vaccination-main">
+
+        {% block vaccination_content %}
+        {% endblock %}
+
+    </main>
+
+
+    <nav class="vaccination-bottom-nav">
+
+        <a
+            href="{% url 'vaccination:home' %}"
+            class="
+                vaccination-nav-item
+                {% if request.resolver_match.url_name == 'home' %}
+                    active
+                {% endif %}
+            "
+        >
+            <span class="vaccination-nav-icon">
+                ⌂
+            </span>
+
+            <span>
+                {{ vac_ui.home }}
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'vaccination:records' %}"
+            class="
+                vaccination-nav-item
+                {% if request.resolver_match.url_name == 'records' or request.resolver_match.url_name == 'record_detail' or request.resolver_match.url_name == 'record_create' or request.resolver_match.url_name == 'component_detail' %}
+                    active
+                {% endif %}
+            "
+        >
+            <span class="vaccination-nav-icon">
+                ♡
+            </span>
+
+            <span>
+                {{ vac_ui.records }}
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'vaccination:schedule' %}"
+            class="
+                vaccination-nav-item
+                {% if request.resolver_match.url_name == 'schedule' %}
+                    active
+                {% endif %}
+            "
+        >
+            <span class="vaccination-nav-icon">
+                ◷
+            </span>
+
+            <span>
+                {{ vac_ui.schedule }}
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'vaccination:doctor' %}"
+            class="
+                vaccination-nav-item
+                {% if request.resolver_match.url_name == 'doctor' %}
+                    active
+                {% endif %}
+            "
+        >
+            <span class="vaccination-nav-icon">
+                ✚
+            </span>
+
+            <span>
+                {{ vac_ui.doctor }}
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'vaccination:settings' %}"
+            class="
+                vaccination-nav-item
+                {% if request.resolver_match.url_name == 'settings' %}
+                    active
+                {% endif %}
+            "
+        >
+            <span class="vaccination-nav-icon">
+                ⚙
+            </span>
+
+            <span>
+                {{ vac_ui.settings }}
+            </span>
+        </a>
+
+    </nav>
+
+</div>
+
+{% endblock %}
