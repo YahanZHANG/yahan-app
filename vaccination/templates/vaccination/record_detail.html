@@ -257,6 +257,28 @@
 
     {% endif %}
 
+    {% if can_edit_current_child %}
+
+        <div class="vaccination-record-actions">
+
+            <a
+                href="{% url 'vaccination:record_edit' record.pk %}"
+                class="vaccination-edit-record-button"
+            >
+                {{ vac_ui.edit_record }}
+            </a>
+
+            <a
+                href="{% url 'vaccination:record_delete' record.pk %}"
+                class="vaccination-delete-record-button"
+            >
+                {{ vac_ui.delete_record }}
+            </a>
+
+        </div>
+
+    {% endif %}
+
 </section>
 
 {% endblock %}

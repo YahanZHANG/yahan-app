@@ -47,9 +47,21 @@
         </p>
 
 
-        <h2>
-            {{ child.name }}
-        </h2>
+        <div class="vaccination-doctor-patient-name">
+
+            <strong>
+                {{ child.name }}
+            </strong>
+
+            {% if child.name_en and child.name_en != child.name %}
+
+                <span>
+                    {{ child.name_en }}
+                </span>
+
+            {% endif %}
+
+        </div>
 
 
         <div class="vaccination-doctor-patient-grid">

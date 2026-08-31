@@ -5,6 +5,8 @@
 .vaccination-app {
     --vac-bg: #faf9fc;
     --vac-card: #ffffff;
+    --vac-surface: #f8f7fa;
+    --vac-surface-soft: #f3f1f7;
 
     --vac-text: #373640;
     --vac-muted: #94929f;
@@ -16,13 +18,27 @@
     --vac-green: #e3f2eb;
     --vac-green-text: #4c7966;
 
+    --vac-yellow: #fff0c9;
+    --vac-yellow-text: #88662b;
+
     --vac-pink: #f8e8ee;
+
+    --vac-danger: #b25367;
+    --vac-danger-soft: #fceff1;
 
     --vac-border: #eceaf1;
 
     min-height: 100vh;
 
+    background: var(--vac-bg);
     color: var(--vac-text);
+}
+
+
+.vaccination-app *,
+.vaccination-app *::before,
+.vaccination-app *::after {
+    box-sizing: border-box;
 }
 
 
@@ -32,7 +48,6 @@
 
 .vaccination-main {
     width: min(100%, 700px);
-
     min-height: 100vh;
 
     margin: 0 auto;
@@ -45,7 +60,7 @@
 
 
 /* =========================================================
-   Typography
+   Common typography
    ========================================================= */
 
 .vaccination-eyebrow {
@@ -74,8 +89,102 @@
     );
 
     font-weight: 800;
-
     letter-spacing: -.045em;
+}
+
+
+/* =========================================================
+   Common interaction
+   ========================================================= */
+
+.vaccination-record-button,
+.vaccination-primary-button,
+.vaccination-save-button,
+.vaccination-header-add,
+.vaccination-back-button,
+.vaccination-small-link,
+.vaccination-schedule-link,
+.vaccination-component-card,
+.vaccination-history-card,
+.vaccination-component-history-card,
+.vaccination-settings-profile,
+.vaccination-add-child-button,
+.vaccination-child-switch-button,
+.vaccination-child-edit-link,
+.vaccination-edit-record-button,
+.vaccination-delete-record-button,
+.vaccination-cancel-button,
+.vaccination-portal-link {
+    transition:
+        transform .18s ease,
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.vaccination-header-add:hover,
+.vaccination-back-button:hover,
+.vaccination-small-link:hover,
+.vaccination-settings-profile:hover,
+.vaccination-add-child-button:hover,
+.vaccination-child-switch-button:hover,
+.vaccination-child-edit-link:hover,
+.vaccination-edit-record-button:hover,
+.vaccination-delete-record-button:hover,
+.vaccination-cancel-button:hover {
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   Portal
+   ========================================================= */
+
+.vaccination-portal-bar {
+    width: min(100%, 680px);
+
+    margin:
+        0 auto
+        14px;
+}
+
+
+.vaccination-portal-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding:
+        6px
+        10px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            .7
+        );
+
+    color: var(--vac-muted);
+
+    font-size: .64rem;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+
+.vaccination-portal-link:hover {
+    background: #fff;
+
+    color: var(--vac-primary);
+
+    transform: translateY(-1px);
 }
 
 
@@ -108,12 +217,14 @@
 
     border-radius: 999px;
 
-    background: var(--vac-primary-soft);
+    background:
+        var(--vac-primary-soft);
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     font-size: .76rem;
-    font-weight: 750;
+    font-weight: 700;
 
     white-space: nowrap;
 }
@@ -142,7 +253,6 @@
     gap: 9px;
 
     width: 100%;
-
     min-height: 63px;
 
     padding:
@@ -160,18 +270,14 @@
 
     color: #fff;
 
-    text-decoration: none;
-
     font-size: 1rem;
     font-weight: 800;
+
+    text-decoration: none;
 
     box-shadow:
         0 13px 29px
         rgba(110, 104, 167, .21);
-
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease;
 }
 
 
@@ -194,7 +300,7 @@
 
 
 /* =========================================================
-   Section
+   Home sections
    ========================================================= */
 
 .vaccination-home-section {
@@ -207,6 +313,8 @@
 
     align-items: center;
     justify-content: space-between;
+
+    gap: 12px;
 
     margin-bottom: 14px;
 }
@@ -226,9 +334,14 @@
     color: var(--vac-primary);
 
     font-size: .76rem;
-    font-weight: 750;
+    font-weight: 700;
 
     text-decoration: none;
+}
+
+
+.vaccination-small-link:hover {
+    color: var(--vac-primary-dark);
 }
 
 
@@ -262,7 +375,8 @@
 
     border-radius: 21px;
 
-    background: var(--vac-card);
+    background:
+        var(--vac-card);
 
     box-shadow:
         0 5px 18px
@@ -278,13 +392,18 @@
     width: 41px;
     height: 41px;
 
-    flex: 0 0 41px;
+    flex:
+        0
+        0
+        41px;
 
     border-radius: 14px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-weight: 900;
 }
@@ -326,12 +445,16 @@
 
     border-radius: 999px;
 
-    background: var(--vac-primary-soft);
+    background:
+        var(--vac-primary-soft);
 
-    color: var(--vac-primary);
+    color:
+        var(--vac-primary);
 
     font-size: .66rem;
     font-weight: 800;
+
+    white-space: nowrap;
 }
 
 
@@ -356,7 +479,12 @@
     border-radius: 22px;
 
     background:
-        rgba(255, 255, 255, .56);
+        rgba(
+            255,
+            255,
+            255,
+            .56
+        );
 
     text-align: center;
 }
@@ -374,7 +502,8 @@
 
     border-radius: 15px;
 
-    background: var(--vac-pink);
+    background:
+        var(--vac-pink);
 
     color: #a56f84;
 
@@ -397,7 +526,7 @@
 
 
 /* =========================================================
-   Schedule link
+   Home schedule link
    ========================================================= */
 
 .vaccination-schedule-link {
@@ -423,6 +552,13 @@
 }
 
 
+.vaccination-schedule-link:hover {
+    background: #eceaf3;
+
+    transform: translateY(-1px);
+}
+
+
 .vaccination-schedule-link-icon {
     display: grid;
 
@@ -431,7 +567,10 @@
     width: 37px;
     height: 37px;
 
-    flex: 0 0 37px;
+    flex:
+        0
+        0
+        37px;
 
     border-radius: 13px;
 
@@ -450,6 +589,8 @@
     flex-direction: column;
 
     gap: 2px;
+
+    min-width: 0;
 }
 
 
@@ -514,7 +655,12 @@
     border-radius: 25px;
 
     background:
-        rgba(255, 255, 255, .95);
+        rgba(
+            255,
+            255,
+            255,
+            .95
+        );
 
     box-shadow:
         0 13px 35px
@@ -541,14 +687,19 @@
 
     color: #aaa8b3;
 
-    text-decoration: none;
-
     font-size: .59rem;
     font-weight: 700;
 
+    text-decoration: none;
+
     transition:
         color .15s ease,
-        background .15s ease;
+        background-color .15s ease;
+}
+
+
+.vaccination-nav-item:hover {
+    color: var(--vac-primary);
 }
 
 
@@ -573,16 +724,20 @@
 
 
 /* =========================================================
-   Child registration
+   Child registration / edit
    ========================================================= */
 
 .vaccination-onboarding {
-    width: min(
-        100%,
-        520px
-    );
+    width:
+        min(
+            100%,
+            520px
+        );
 
-    margin: 30px auto 0;
+    margin:
+        30px
+        auto
+        0;
 }
 
 
@@ -627,7 +782,7 @@
 
 
 /* =========================================================
-   Form
+   Forms
    ========================================================= */
 
 .vaccination-form-card {
@@ -652,6 +807,11 @@
 }
 
 
+.vaccination-form-group:last-child {
+    margin-bottom: 0;
+}
+
+
 .vaccination-form-group label {
     display: block;
 
@@ -660,15 +820,12 @@
     color: #676571;
 
     font-size: .74rem;
-    font-weight: 750;
+    font-weight: 700;
 }
 
 
 .vaccination-input {
-    box-sizing: border-box;
-
     width: 100%;
-
     min-height: 48px;
 
     padding:
@@ -686,7 +843,6 @@
     color: var(--vac-text);
 
     font: inherit;
-
     font-size: .87rem;
 
     outline: none;
@@ -694,7 +850,7 @@
     transition:
         border-color .15s ease,
         box-shadow .15s ease,
-        background .15s ease;
+        background-color .15s ease;
 }
 
 
@@ -709,7 +865,9 @@
 }
 
 
-.vaccination-field-help {
+/* Support both old and new template class names */
+.vaccination-field-help,
+.vaccination-form-help {
     margin:
         7px
         3px
@@ -728,30 +886,119 @@
     color: #b56779;
 
     font-size: .7rem;
+    line-height: 1.5;
 }
 
 
-.vaccination-primary-button {
-    width: 100%;
+.vaccination-field-error p {
+    margin:
+        2px
+        0;
+}
 
-    min-height: 52px;
 
-    margin-top: 6px;
+/* Support both error containers */
+.vaccination-form-errors,
+.vaccination-form-error-summary {
+    margin-bottom: 16px;
 
-    border: none;
+    padding:
+        15px
+        16px;
+
+    border:
+        1px solid
+        #f0cfd8;
 
     border-radius: 17px;
 
-    background: var(--vac-primary);
+    background: #fff3f6;
+
+    color: #92586a;
+
+    font-size: .74rem;
+    line-height: 1.6;
+}
+
+
+.vaccination-form-errors strong,
+.vaccination-form-error-summary strong {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: .8rem;
+}
+
+
+.vaccination-form-errors p,
+.vaccination-form-error-summary p {
+    margin:
+        3px
+        0;
+}
+
+
+/* =========================================================
+   Primary buttons
+   ========================================================= */
+
+.vaccination-primary-button,
+.vaccination-save-button {
+    width: 100%;
+
+    border: none;
 
     color: #fff;
 
     font: inherit;
-
-    font-size: .9rem;
     font-weight: 800;
 
     cursor: pointer;
+}
+
+
+.vaccination-primary-button {
+    min-height: 52px;
+
+    margin-top: 6px;
+
+    border-radius: 17px;
+
+    background:
+        var(--vac-primary);
+
+    font-size: .9rem;
+}
+
+
+.vaccination-save-button {
+    min-height: 57px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8d87c5,
+            #776fb2
+        );
+
+    font-size: .92rem;
+
+    box-shadow:
+        0 12px 27px
+        rgba(110, 104, 167, .2);
+}
+
+
+.vaccination-primary-button:hover,
+.vaccination-save-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 14px 30px
+        rgba(110, 104, 167, .24);
 }
 
 
@@ -772,23 +1019,29 @@
     font-size: .82rem;
 }
 
+
 /* =========================================================
    Record form page
    ========================================================= */
 
 .vaccination-record-form-page {
     width: min(100%, 560px);
+
     margin: 0 auto;
 }
 
 
-.vaccination-form-page-header {
+.vaccination-form-page-header,
+.vaccination-detail-header {
     display: flex;
 
     align-items: center;
 
     gap: 13px;
+}
 
+
+.vaccination-form-page-header {
     margin-bottom: 25px;
 }
 
@@ -813,19 +1066,28 @@
     width: 42px;
     height: 42px;
 
-    flex: 0 0 42px;
+    flex:
+        0
+        0
+        42px;
 
     border-radius: 14px;
 
     background: #f0eef6;
 
-    color: var(--vac-primary-dark);
-
-    text-decoration: none;
+    color:
+        var(--vac-primary-dark);
 
     font-size: 1.7rem;
-
     line-height: 1;
+
+    text-decoration: none;
+}
+
+
+.vaccination-back-button:hover {
+    background:
+        var(--vac-primary-soft);
 }
 
 
@@ -868,6 +1130,8 @@
 
     align-items: center;
     justify-content: space-between;
+
+    gap: 12px;
 
     margin-bottom: 16px;
 }
@@ -960,7 +1224,7 @@
 
 
 /* =========================================================
-   Details
+   Details inputs
    ========================================================= */
 
 .vaccination-details {
@@ -976,7 +1240,8 @@
 }
 
 
-.vaccination-details + .vaccination-details {
+.vaccination-details
++ .vaccination-details {
     margin-top: 12px;
 }
 
@@ -986,10 +1251,11 @@
         13px
         15px;
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     font-size: .74rem;
-    font-weight: 750;
+    font-weight: 700;
 
     cursor: pointer;
 
@@ -1018,7 +1284,7 @@
 
 
 /* =========================================================
-   Reaction
+   Reactions
    ========================================================= */
 
 .vaccination-no-reaction {
@@ -1036,9 +1302,11 @@
 
     border-radius: 15px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .76rem;
     font-weight: 800;
@@ -1115,46 +1383,15 @@
 
 
 /* =========================================================
-   Save
-   ========================================================= */
-
-.vaccination-save-button {
-    width: 100%;
-
-    min-height: 57px;
-
-    border: none;
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8d87c5,
-            #776fb2
-        );
-
-    color: #fff;
-
-    font: inherit;
-
-    font-size: .92rem;
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 12px 27px
-        rgba(110, 104, 167, .2);
-}
-
-/* =========================================================
    Records page
    ========================================================= */
 
 .vaccination-records-page,
-.vaccination-detail-page {
+.vaccination-detail-page,
+.vaccination-component-detail-page,
+.vaccination-schedule-page {
     width: min(100%, 620px);
+
     margin: 0 auto;
 }
 
@@ -1164,6 +1401,8 @@
 
     align-items: center;
     justify-content: space-between;
+
+    gap: 14px;
 
     margin-bottom: 22px;
 }
@@ -1188,19 +1427,34 @@
     width: 45px;
     height: 45px;
 
+    flex:
+        0
+        0
+        45px;
+
     border-radius: 15px;
 
-    background: var(--vac-primary);
+    background:
+        var(--vac-primary);
 
     color: #fff;
 
-    text-decoration: none;
-
     font-size: 1.4rem;
+
+    text-decoration: none;
 
     box-shadow:
         0 8px 20px
         rgba(110, 104, 167, .2);
+}
+
+
+.vaccination-header-add:hover {
+    color: #fff;
+
+    box-shadow:
+        0 10px 23px
+        rgba(110, 104, 167, .24);
 }
 
 
@@ -1211,7 +1465,8 @@
 .vaccination-view-switch {
     display: grid;
 
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        1fr 1fr;
 
     gap: 4px;
 
@@ -1232,18 +1487,19 @@
 
     color: #92909b;
 
-    text-align: center;
-    text-decoration: none;
-
     font-size: .75rem;
     font-weight: 800;
+
+    text-align: center;
+    text-decoration: none;
 }
 
 
 .vaccination-view-switch-item.active {
     background: #fff;
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     box-shadow:
         0 3px 10px
@@ -1259,7 +1515,10 @@
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
 
     gap: 10px;
 }
@@ -1286,12 +1545,20 @@
 
     background: #fff;
 
+    color: var(--vac-text);
+
+    text-decoration: none;
+
     box-shadow:
         0 4px 16px
         rgba(40, 35, 60, .03);
+}
 
-    color: var(--vac-text);
-    text-decoration: none;
+
+.vaccination-component-card:hover {
+    border-color: #dcd8eb;
+
+    transform: translateY(-1px);
 }
 
 
@@ -1303,13 +1570,18 @@
     width: 36px;
     height: 36px;
 
-    flex: 0 0 36px;
+    flex:
+        0
+        0
+        36px;
 
     border-radius: 13px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .8rem;
     font-weight: 900;
@@ -1349,13 +1621,17 @@
     min-width: 27px;
     height: 27px;
 
-    padding: 0 6px;
+    padding:
+        0
+        6px;
 
     border-radius: 999px;
 
-    background: var(--vac-primary-soft);
+    background:
+        var(--vac-primary-soft);
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     font-size: .67rem;
     font-weight: 900;
@@ -1382,7 +1658,9 @@
 
     min-height: 78px;
 
-    padding: 13px 15px;
+    padding:
+        13px
+        15px;
 
     border:
         1px solid
@@ -1398,12 +1676,23 @@
 }
 
 
+.vaccination-history-card:hover {
+    border-color: #ddd9eb;
+
+    transform: translateY(-1px);
+}
+
+
 .vaccination-history-date {
     display: flex;
 
     width: 48px;
 
-    flex: 0 0 48px;
+    flex:
+        0
+        0
+        48px;
+
     flex-direction: column;
 
     text-align: center;
@@ -1412,6 +1701,7 @@
 
 .vaccination-history-date strong {
     font-size: 1.25rem;
+
     line-height: 1;
 }
 
@@ -1463,7 +1753,9 @@
 }
 
 
-.vaccination-history-meta span + span::before {
+.vaccination-history-meta
+span
++ span::before {
     content: "•";
 
     margin-right: 5px;
@@ -1482,17 +1774,12 @@
    ========================================================= */
 
 .vaccination-detail-header {
-    display: flex;
-
-    align-items: center;
-
-    gap: 13px;
-
     margin-bottom: 22px;
 }
 
 
-.vaccination-detail-header > div:last-child {
+.vaccination-detail-header
+> div:last-child {
     min-width: 0;
 }
 
@@ -1548,7 +1835,8 @@
 .vaccination-detail-date-card small {
     margin-top: 5px;
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     font-size: .7rem;
 }
@@ -1620,13 +1908,18 @@
     width: 29px;
     height: 29px;
 
-    flex: 0 0 29px;
+    flex:
+        0
+        0
+        29px;
 
     border-radius: 10px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .65rem;
     font-weight: 900;
@@ -1644,7 +1937,8 @@
 
     border-radius: 15px;
 
-    background: #f8f7fa;
+    background:
+        var(--vac-surface);
 }
 
 
@@ -1677,7 +1971,9 @@
 
     gap: 20px;
 
-    padding: 11px 2px;
+    padding:
+        11px
+        2px;
 
     border-bottom:
         1px solid
@@ -1685,7 +1981,8 @@
 }
 
 
-.vaccination-information-list > div:last-child {
+.vaccination-information-list
+> div:last-child {
     border-bottom: none;
 }
 
@@ -1699,7 +1996,7 @@
 
 .vaccination-information-list strong {
     font-size: .74rem;
-    font-weight: 750;
+    font-weight: 700;
 
     text-align: right;
 }
@@ -1710,13 +2007,17 @@
    ========================================================= */
 
 .vaccination-no-reaction-display {
-    padding: 12px 13px;
+    padding:
+        12px
+        13px;
 
     border-radius: 15px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .74rem;
     font-weight: 800;
@@ -1733,11 +2034,14 @@
 
 
 .vaccination-reaction-tags span {
-    padding: 7px 10px;
+    padding:
+        7px
+        10px;
 
     border-radius: 999px;
 
-    background: var(--vac-pink);
+    background:
+        var(--vac-pink);
 
     color: #8f6274;
 
@@ -1760,7 +2064,8 @@
 
     border-radius: 15px;
 
-    background: #f8f7fa;
+    background:
+        var(--vac-surface);
 
     color: #62606a;
 
@@ -1768,43 +2073,10 @@
     line-height: 1.7;
 }
 
-.vaccination-form-error-summary {
-    margin-bottom: 16px;
-    padding: 15px 16px;
-
-    border: 1px solid #f0cfd8;
-    border-radius: 17px;
-
-    background: #fff3f6;
-
-    color: #92586a;
-
-    font-size: .74rem;
-    line-height: 1.6;
-}
-
-
-.vaccination-form-error-summary strong {
-    display: block;
-    margin-bottom: 6px;
-
-    font-size: .8rem;
-}
-
-
-.vaccination-form-error-summary p {
-    margin: 3px 0;
-}
 
 /* =========================================================
    Component detail
    ========================================================= */
-
-.vaccination-component-detail-page {
-    width: min(100%, 620px);
-    margin: 0 auto;
-}
-
 
 .vaccination-component-summary {
     display: flex;
@@ -1836,20 +2108,25 @@
     width: 46px;
     height: 46px;
 
-    flex: 0 0 46px;
+    flex:
+        0
+        0
+        46px;
 
     border-radius: 16px;
 
     background: #fff;
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: 1rem;
     font-weight: 900;
 }
 
 
-.vaccination-component-summary > div:last-child {
+.vaccination-component-summary
+> div:last-child {
     display: flex;
 
     flex-direction: column;
@@ -1915,27 +2192,41 @@
 }
 
 
+.vaccination-component-history-card:hover {
+    border-color: #ddd9eb;
+
+    transform: translateY(-1px);
+}
+
+
 .vaccination-component-dose {
     display: flex;
 
     align-items: center;
     justify-content: center;
-    flex: 0 0 43px;
     flex-direction: column;
 
     width: 43px;
     height: 43px;
 
+    flex:
+        0
+        0
+        43px;
+
     border-radius: 14px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 }
 
 
 .vaccination-component-dose strong {
     font-size: .9rem;
+
     line-height: 1;
 }
 
@@ -1982,12 +2273,16 @@
     font-size: .62rem;
 }
 
+
 /* =========================================================
    Settings
    ========================================================= */
 
-.vaccination-settings-page {
+.vaccination-settings-page,
+.vaccination-children-page,
+.vaccination-collaborators-page {
     width: min(100%, 560px);
+
     margin: 0 auto;
 }
 
@@ -2030,7 +2325,10 @@
     width: 39px;
     height: 39px;
 
-    flex: 0 0 39px;
+    flex:
+        0
+        0
+        39px;
 
     border-radius: 14px;
 
@@ -2054,7 +2352,10 @@
 
 
 .vaccination-settings-heading p {
-    margin: 3px 0 0;
+    margin:
+        3px
+        0
+        0;
 
     color: var(--vac-muted);
 
@@ -2108,7 +2409,10 @@
     width: 20px;
     height: 20px;
 
-    flex: 0 0 20px;
+    flex:
+        0
+        0
+        20px;
 
     accent-color:
         var(--vac-primary);
@@ -2121,17 +2425,44 @@
     align-items: center;
     justify-content: space-between;
 
+    gap: 15px;
+
     margin:
-        20px
+        14px
         2px;
 
     padding:
         13px
         15px;
 
+    border:
+        1px solid
+        transparent;
+
     border-radius: 16px;
 
-    background: #f3f1f7;
+    background:
+        var(--vac-surface-soft);
+
+    color: var(--vac-text);
+
+    text-decoration: none;
+}
+
+
+.vaccination-settings-profile:hover {
+    border-color: #ded9ea;
+
+    background: #efedf6;
+}
+
+
+.vaccination-settings-profile > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
 }
 
 
@@ -2143,21 +2474,21 @@
 
 
 .vaccination-settings-profile strong {
+    color: var(--vac-text);
+
     font-size: .76rem;
 }
 
+
 /* =========================================================
-   Vaccination Schedule
+   Vaccination schedule
    ========================================================= */
 
-.vaccination-schedule-page {
-    width: min(100%, 620px);
-    margin: 0 auto;
-}
-
-
 .vaccination-schedule-country {
-    margin: 6px 0 0;
+    margin:
+        6px
+        0
+        0;
 
     color: var(--vac-muted);
 
@@ -2165,20 +2496,24 @@
 }
 
 
-/* =========================================================
-   Legend
-   ========================================================= */
+/* Legend */
 
 .vaccination-schedule-legend {
     display: flex;
 
     align-items: center;
 
-    gap: 17px;
+    flex-wrap: wrap;
+
+    gap:
+        10px
+        17px;
 
     margin-bottom: 25px;
 
-    padding: 0 3px;
+    padding:
+        0
+        3px;
 
     color: var(--vac-muted);
 
@@ -2219,9 +2554,7 @@
 }
 
 
-/* =========================================================
-   Groups
-   ========================================================= */
+/* Groups */
 
 .vaccination-schedule-groups {
     display: grid;
@@ -2253,9 +2586,7 @@
 }
 
 
-/* =========================================================
-   Schedule item
-   ========================================================= */
+/* Schedule item */
 
 .vaccination-schedule-item {
     display: flex;
@@ -2288,7 +2619,10 @@
     width: 36px;
     height: 36px;
 
-    flex: 0 0 36px;
+    flex:
+        0
+        0
+        36px;
 
     border-radius: 13px;
 
@@ -2337,9 +2671,7 @@
 }
 
 
-/* =========================================================
-   Done
-   ========================================================= */
+/* Done */
 
 .vaccination-schedule-done {
     border-color: #dcece4;
@@ -2350,15 +2682,15 @@
 .vaccination-schedule-marker,
 .vaccination-schedule-done
 .vaccination-schedule-status {
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 }
 
 
-/* =========================================================
-   Current standard period
-   ========================================================= */
+/* Current */
 
 .vaccination-schedule-next {
     border-color: #eee1bc;
@@ -2371,15 +2703,15 @@
 .vaccination-schedule-marker,
 .vaccination-schedule-next
 .vaccination-schedule-status {
-    background: #fff0c9;
+    background:
+        var(--vac-yellow);
 
-    color: #88662b;
+    color:
+        var(--vac-yellow-text);
 }
 
 
-/* =========================================================
-   Future
-   ========================================================= */
+/* Future */
 
 .vaccination-schedule-future {
     border-color: #ecebf0;
@@ -2398,13 +2730,10 @@
 }
 
 
-/* =========================================================
-   Check
-   ========================================================= */
+/* Check */
 
 .vaccination-schedule-check {
     border-style: dashed;
-
     border-color: #d9d7df;
 
     background: #faf9fc;
@@ -2421,9 +2750,7 @@
 }
 
 
-/* =========================================================
-   Explanation
-   ========================================================= */
+/* Explanation */
 
 .vaccination-schedule-explanation {
     display: flex;
@@ -2452,7 +2779,10 @@
     width: 25px;
     height: 25px;
 
-    flex: 0 0 25px;
+    flex:
+        0
+        0
+        25px;
 
     border-radius: 9px;
 
@@ -2475,7 +2805,10 @@
 
 
 .vaccination-schedule-explanation p {
-    margin: 3px 0 0;
+    margin:
+        3px
+        0
+        0;
 
     color: #967b47;
 
@@ -2484,9 +2817,7 @@
 }
 
 
-/* =========================================================
-   Reference
-   ========================================================= */
+/* Reference */
 
 .vaccination-schedule-reference {
     margin:
@@ -2516,7 +2847,8 @@
 
     border-radius: 15px;
 
-    background: #f3f1f7;
+    background:
+        var(--vac-surface-soft);
 
     color: var(--vac-text);
 
@@ -2544,13 +2876,17 @@
     font-size: .8rem;
 }
 
+
 /* =========================================================
    Doctor Mode
    ========================================================= */
 
 .vaccination-doctor-page {
     width: min(100%, 680px);
+
     margin: 0 auto;
+
+    font-family: inherit;
 }
 
 
@@ -2567,31 +2903,39 @@
 
 
 .vaccination-doctor-header h1 {
-    margin: 3px 0 0;
+    margin:
+        3px
+        0
+        0;
 
     font-size: 1.45rem;
+    font-weight: 800;
 }
 
 
 .vaccination-doctor-language {
-    padding: 7px 10px;
+    padding:
+        7px
+        10px;
 
     border-radius: 999px;
 
-    background: var(--vac-primary-soft);
+    background:
+        var(--vac-primary-soft);
 
-    color: var(--vac-primary-dark);
+    color:
+        var(--vac-primary-dark);
 
     font-size: .62rem;
     font-weight: 900;
 
     letter-spacing: .05em;
+
+    white-space: nowrap;
 }
 
 
-/* =========================================================
-   Patient
-   ========================================================= */
+/* Patient */
 
 .vaccination-doctor-patient {
     margin-bottom: 28px;
@@ -2609,7 +2953,10 @@
 
 
 .vaccination-doctor-section-label {
-    margin: 0 0 9px;
+    margin:
+        0
+        0
+        9px;
 
     color: var(--vac-muted);
 
@@ -2623,9 +2970,36 @@
 
 
 .vaccination-doctor-patient h2 {
-    margin: 0 0 18px;
+    margin:
+        0
+        0
+        18px;
 
     font-size: 1.15rem;
+    font-weight: 800;
+}
+
+
+.vaccination-doctor-patient-name {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.vaccination-doctor-patient-name strong {
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+
+.vaccination-doctor-patient-name span {
+    color: var(--vac-muted);
+
+    font-size: .7rem;
+    font-weight: 700;
 }
 
 
@@ -2633,7 +3007,10 @@
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
 
     gap: 12px;
 }
@@ -2663,6 +3040,7 @@
 
 .vaccination-doctor-patient-grid strong {
     font-size: .75rem;
+    font-weight: 700;
 }
 
 
@@ -2673,9 +3051,7 @@
 }
 
 
-/* =========================================================
-   Component history
-   ========================================================= */
+/* Component history */
 
 .vaccination-doctor-component-list {
     display: grid;
@@ -2719,11 +3095,15 @@
     margin: 0;
 
     font-size: .83rem;
+    font-weight: 800;
 }
 
 
 .vaccination-doctor-component-header p {
-    margin: 3px 0 0;
+    margin:
+        3px
+        0
+        0;
 
     color: var(--vac-muted);
 
@@ -2754,17 +3134,17 @@
 
     border-radius: 9px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .7rem;
 }
 
 
-/* =========================================================
-   Dose row
-   ========================================================= */
+/* Dose row */
 
 .vaccination-doctor-dose-list {
     display: grid;
@@ -2800,13 +3180,18 @@
     width: 34px;
     height: 34px;
 
-    flex: 0 0 34px;
+    flex:
+        0
+        0
+        34px;
 
     border-radius: 12px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
     font-size: .7rem;
     font-weight: 900;
@@ -2827,11 +3212,13 @@
 
 .vaccination-doctor-dose-main strong {
     font-size: .72rem;
+    font-weight: 800;
 }
 
 
 .vaccination-doctor-dose-main span {
     font-size: .65rem;
+    font-weight: 700;
 }
 
 
@@ -2845,9 +3232,8 @@
 .vaccination-doctor-dose-country {
     display: flex;
 
-    flex-direction: column;
-
     align-items: flex-end;
+    flex-direction: column;
 
     gap: 2px;
 
@@ -2857,6 +3243,7 @@
 
 .vaccination-doctor-dose-country span {
     font-size: .61rem;
+    font-weight: 700;
 }
 
 
@@ -2864,61 +3251,14 @@
     font-size: .54rem;
 }
 
-/* =========================================================
-   Doctor Mode typography
-   ========================================================= */
-
-.vaccination-doctor-page {
-    font-family: inherit;
-}
-
-
-.vaccination-doctor-header h1 {
-    font-weight: 800;
-}
-
-
-.vaccination-doctor-patient h2 {
-    font-weight: 800;
-}
-
-
-.vaccination-doctor-component-header h3 {
-    font-weight: 800;
-}
-
-
-.vaccination-doctor-dose-main strong {
-    font-weight: 800;
-}
-
-
-.vaccination-doctor-dose-main span {
-    font-weight: 700;
-}
-
-
-.vaccination-doctor-patient-grid strong {
-    font-weight: 700;
-}
-
-
-.vaccination-doctor-dose-country span {
-    font-weight: 700;
-}
 
 /* =========================================================
    Children
    ========================================================= */
 
-.vaccination-children-page {
-    width: min(100%, 560px);
-    margin: 0 auto;
-}
-
-
 .vaccination-child-list {
     display: grid;
+
     gap: 10px;
 }
 
@@ -2927,29 +3267,51 @@
     display: flex;
 
     align-items: center;
+    justify-content: space-between;
 
-    gap: 13px;
+    gap: 14px;
 
-    min-height: 74px;
+    min-height: 78px;
 
-    padding: 13px 15px;
+    padding:
+        13px
+        15px;
 
-    border: 1px solid var(--vac-border);
+    border:
+        1px solid
+        var(--vac-border);
 
     border-radius: 20px;
 
     background: #fff;
 
     color: var(--vac-text);
-
-    text-decoration: none;
 }
 
 
-.vaccination-child-card.active {
+/* supports old .active class too */
+.vaccination-child-card.active,
+.vaccination-child-card-active {
     border-color: #d8cfea;
 
     background: #faf8fd;
+
+    box-shadow:
+        0 4px 16px
+        rgba(98, 83, 135, .05);
+}
+
+
+.vaccination-child-card-main {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    flex: 1;
+
+    min-width: 0;
 }
 
 
@@ -2961,52 +3323,203 @@
     width: 42px;
     height: 42px;
 
-    flex: 0 0 42px;
+    flex:
+        0
+        0
+        42px;
 
     border-radius: 15px;
 
-    background: var(--vac-primary-soft);
+    background:
+        var(--vac-primary-soft);
 
-    color: var(--vac-primary);
+    color:
+        var(--vac-primary);
 
     font-size: 1rem;
+    font-weight: 800;
 }
 
 
-.vaccination-child-card-copy {
+/* old + current template compatibility */
+.vaccination-child-card-copy,
+.vaccination-child-copy {
     display: flex;
 
     flex: 1;
     flex-direction: column;
 
     gap: 3px;
+
+    min-width: 0;
 }
 
 
-.vaccination-child-card-copy strong {
+.vaccination-child-card-copy strong,
+.vaccination-child-copy strong {
     font-size: .82rem;
     font-weight: 800;
 }
 
 
-.vaccination-child-card-copy span {
+.vaccination-child-card-copy span,
+.vaccination-child-copy span {
     color: var(--vac-muted);
 
     font-size: .64rem;
 }
 
 
-.vaccination-child-current {
-    padding: 6px 9px;
+.vaccination-child-name-row {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+}
+
+
+.vaccination-child-name-row strong {
+    overflow: hidden;
+
+    max-width: 100%;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.vaccination-child-current,
+.vaccination-child-active-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    width: fit-content;
+
+    padding:
+        5px
+        8px;
 
     border-radius: 999px;
 
-    background: var(--vac-green);
+    background:
+        var(--vac-green);
 
-    color: var(--vac-green-text);
+    color:
+        var(--vac-green-text);
 
-    font-size: .6rem;
+    font-size: .58rem;
     font-weight: 800;
+}
+
+
+.vaccination-child-english-name {
+    color: #6e6b77 !important;
+
+    font-size: .67rem !important;
+    font-weight: 700;
+}
+
+
+.vaccination-child-birth-date {
+    color:
+        var(--vac-muted);
+
+    font-size: .62rem;
+}
+
+
+.vaccination-child-shared-badge {
+    display: inline-flex;
+
+    width: fit-content;
+
+    margin-top: 2px;
+
+    padding:
+        4px
+        7px;
+
+    border-radius: 999px;
+
+    background:
+        var(--vac-primary-soft);
+
+    color:
+        var(--vac-primary-dark) !important;
+
+    font-size: .56rem !important;
+    font-weight: 800;
+}
+
+
+.vaccination-child-card-actions {
+    display: flex;
+
+    align-items: flex-end;
+    flex-direction: column;
+
+    gap: 6px;
+
+    flex:
+        0
+        0
+        auto;
+}
+
+
+.vaccination-child-switch-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 32px;
+
+    padding:
+        6px
+        10px;
+
+    border-radius: 11px;
+
+    background:
+        var(--vac-primary-soft);
+
+    color:
+        var(--vac-primary-dark);
+
+    font-size: .61rem;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+
+.vaccination-child-switch-button:hover {
+    background: #e7e3f4;
+}
+
+
+.vaccination-child-edit-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    color: var(--vac-primary);
+
+    font-size: .61rem;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+
+.vaccination-child-edit-link:hover {
+    color:
+        var(--vac-primary-dark);
 }
 
 
@@ -3023,11 +3536,13 @@
     align-items: center;
     justify-content: center;
 
-    margin-top: 18px;
-
     min-height: 48px;
 
-    border: 1px dashed #d5cce4;
+    margin-top: 18px;
+
+    border:
+        1px dashed
+        #d5cce4;
 
     border-radius: 17px;
 
@@ -3041,10 +3556,481 @@
     text-decoration: none;
 }
 
-.vaccination-settings-profile {
-    color: var(--vac-text);
+
+.vaccination-add-child-button:hover {
+    border-color: #bfb2d7;
+
+    background:
+        var(--vac-primary-soft);
+
+    color:
+        var(--vac-primary-dark);
+}
+
+
+/* =========================================================
+   Record actions
+   ========================================================= */
+
+.vaccination-record-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 10px;
+
+    margin-top: 28px;
+}
+
+
+.vaccination-edit-record-button,
+.vaccination-delete-record-button {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+
+    border-radius: 16px;
+
+    font-size: .7rem;
+    font-weight: 800;
+
     text-decoration: none;
 }
+
+
+.vaccination-edit-record-button {
+    background:
+        var(--vac-primary-soft);
+
+    color:
+        var(--vac-primary-dark);
+}
+
+
+.vaccination-edit-record-button:hover {
+    background: #e6e2f3;
+}
+
+
+.vaccination-delete-record-button {
+    background:
+        var(--vac-danger-soft);
+
+    color:
+        var(--vac-danger);
+}
+
+
+.vaccination-delete-record-button:hover {
+    background: #f8e3e8;
+}
+
+
+/* =========================================================
+   Delete confirmation
+   ========================================================= */
+
+.vaccination-delete-page {
+    width: min(100%, 520px);
+
+    margin: 0 auto;
+}
+
+
+.vaccination-delete-card {
+    padding:
+        25px
+        20px;
+
+    border:
+        1px solid
+        #f0dfe3;
+
+    border-radius: 23px;
+
+    background: #fff;
+
+    text-align: center;
+}
+
+
+.vaccination-delete-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    margin:
+        0 auto
+        15px;
+
+    border-radius: 16px;
+
+    background: #fcecef;
+
+    color: #ba566b;
+
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+
+.vaccination-delete-card h2 {
+    margin: 0;
+
+    font-size: .95rem;
+    font-weight: 800;
+}
+
+
+.vaccination-delete-card > p {
+    margin:
+        13px
+        0
+        20px;
+
+    color: var(--vac-muted);
+
+    font-size: .65rem;
+}
+
+
+.vaccination-delete-record {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    margin:
+        18px
+        0;
+
+    padding: 14px;
+
+    border-radius: 16px;
+
+    background:
+        var(--vac-surface);
+}
+
+
+.vaccination-delete-record strong {
+    font-size: .8rem;
+}
+
+
+.vaccination-delete-record span {
+    color: var(--vac-muted);
+
+    font-size: .65rem;
+}
+
+
+.vaccination-delete-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 10px;
+}
+
+
+.vaccination-cancel-button,
+.vaccination-delete-confirm-button {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 45px;
+
+    border: 0;
+
+    border-radius: 15px;
+
+    font-size: .7rem;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    text-decoration: none;
+}
+
+
+.vaccination-cancel-button {
+    background: #f1f0f4;
+
+    color: var(--vac-text);
+}
+
+
+.vaccination-cancel-button:hover {
+    background: #e9e7ed;
+}
+
+
+.vaccination-delete-confirm-button {
+    background: #e47d91;
+
+    color: #fff;
+}
+
+
+.vaccination-delete-confirm-button:hover {
+    background: #d76f84;
+}
+
+
+/* =========================================================
+   Collaborators
+   ========================================================= */
+
+.vaccination-collaborator-child {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 10px;
+
+    padding:
+        13px
+        15px;
+
+    border-radius: 16px;
+
+    background:
+        var(--vac-surface-soft);
+}
+
+
+.vaccination-collaborator-child span {
+    color: var(--vac-muted);
+
+    font-size: .63rem;
+}
+
+
+.vaccination-collaborator-child strong {
+    font-size: .78rem;
+}
+
+
+.vaccination-collaborator-help {
+    margin:
+        0
+        2px
+        18px;
+
+    color: var(--vac-muted);
+
+    font-size: .65rem;
+    line-height: 1.6;
+}
+
+
+.vaccination-collaborator-form {
+    padding: 18px;
+
+    border:
+        1px solid
+        var(--vac-border);
+
+    border-radius: 21px;
+
+    background: #fff;
+}
+
+
+.vaccination-collaborator-list-section {
+    margin-top: 27px;
+}
+
+
+.vaccination-collaborator-list-section h2 {
+    margin:
+        0
+        0
+        11px;
+
+    font-size: .82rem;
+}
+
+
+.vaccination-collaborator-list {
+    display: grid;
+
+    gap: 9px;
+}
+
+
+.vaccination-collaborator-card {
+    display: grid;
+
+    grid-template-columns:
+        39px
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        var(--vac-border);
+
+    border-radius: 18px;
+
+    background: #fff;
+}
+
+
+.vaccination-collaborator-avatar {
+    display: grid;
+
+    place-items: center;
+
+    width: 39px;
+    height: 39px;
+
+    border-radius: 14px;
+
+    background:
+        var(--vac-primary-soft);
+
+    color:
+        var(--vac-primary);
+
+    font-size: .75rem;
+    font-weight: 900;
+}
+
+
+.vaccination-collaborator-copy {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    min-width: 0;
+}
+
+
+.vaccination-collaborator-copy strong {
+    overflow: hidden;
+
+    font-size: .76rem;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.vaccination-collaborator-copy span {
+    color: var(--vac-muted);
+
+    font-size: .61rem;
+}
+
+
+.vaccination-collaborator-permission-form {
+    margin:
+        3px
+        0
+        0;
+}
+
+
+.vaccination-collaborator-permission {
+    width: auto;
+
+    min-width: 100px;
+
+    padding:
+        6px
+        28px
+        6px
+        9px;
+
+    border:
+        1px solid
+        var(--vac-border);
+
+    border-radius: 10px;
+
+    background:
+        var(--vac-surface);
+
+    color: var(--vac-text);
+
+    font: inherit;
+    font-size: .62rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.vaccination-collaborator-permission:focus {
+    border-color: #bcb7dd;
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(129, 122, 185, .08);
+}
+
+
+.vaccination-collaborator-remove {
+    padding:
+        7px
+        10px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    background:
+        var(--vac-danger-soft);
+
+    color:
+        var(--vac-danger);
+
+    font: inherit;
+    font-size: .6rem;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background-color .18s ease,
+        transform .18s ease;
+}
+
+
+.vaccination-collaborator-remove:hover {
+    background: #f8e2e7;
+
+    transform: translateY(-1px);
+}
+
 
 /* =========================================================
    Mobile
@@ -3080,16 +4066,32 @@
             15px;
     }
 
+
+    .vaccination-form-section {
+        padding: 16px;
+    }
+
+
+    .vaccination-form-row {
+        grid-template-columns: 1fr;
+    }
+
+
     .vaccination-component-grid {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
     }
+
 
     .vaccination-component-card {
         min-height: 82px;
 
         padding: 12px;
     }
+
 
     .vaccination-component-icon {
         width: 32px;
@@ -3098,16 +4100,115 @@
         flex-basis: 32px;
     }
 
+
+    .vaccination-information-list > div {
+        align-items: flex-start;
+
+        gap: 12px;
+    }
+
+
     .vaccination-doctor-patient-grid {
         grid-template-columns: 1fr;
     }
+
 
     .vaccination-doctor-dose-row {
         align-items: flex-start;
     }
 
+
     .vaccination-doctor-dose-country {
         max-width: 90px;
+    }
+
+
+    .vaccination-child-card {
+        align-items: flex-start;
+    }
+
+
+    .vaccination-child-card-actions {
+        align-items: flex-end;
+    }
+
+
+    .vaccination-child-switch-button {
+        max-width: 100px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .vaccination-collaborator-card {
+        grid-template-columns:
+            39px
+            minmax(0, 1fr);
+
+        align-items: start;
+    }
+
+
+    .vaccination-collaborator-card
+    > form:last-child {
+        grid-column:
+            2;
+    }
+
+
+    .vaccination-collaborator-remove {
+        margin-top: 3px;
+    }
+
+}
+
+
+/* =========================================================
+   Very small screens
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .vaccination-component-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .vaccination-record-actions,
+    .vaccination-delete-actions {
+        grid-template-columns: 1fr;
+    }
+
+
+    .vaccination-schedule-item {
+        align-items: flex-start;
+    }
+
+
+    .vaccination-schedule-status {
+        padding:
+            5px
+            7px;
+
+        font-size: .56rem;
+    }
+
+
+    .vaccination-child-card {
+        flex-direction: column;
+    }
+
+
+    .vaccination-child-card-actions {
+        align-items: center;
+        flex-direction: row;
+
+        width: 100%;
+
+        padding-left: 55px;
     }
 
 }

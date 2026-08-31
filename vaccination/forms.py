@@ -1,9 +1,11 @@
 from .i18n import t
 from django import forms
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 from .models import (
     Child,
+    ChildCollaborator,
     Country,
     HealthcareProvider,
     VaccinationRecord,
@@ -82,6 +84,7 @@ class ChildForm(forms.ModelForm):
 
         fields = [
             "name",
+            "name_en",
             "date_of_birth",
             "birth_country",
             "default_country",
@@ -122,6 +125,12 @@ class ChildForm(forms.ModelForm):
                 }
             ),
         }
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.fields["name_en"].required = True
+            self.fields["name_en"].label = "English name"
 
 class VaccinationRecordForm(forms.ModelForm):
 
@@ -668,3 +677,99 @@ class VaccinationSettingsForm(forms.ModelForm):
             "date_format",
             language_code,
         )
+
+
+class CollaboratorForm(forms.Form):
+
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={
+                "class": "vaccination-input",
+                "placeholder": "username",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    permission = forms.ChoiceField(
+        choices=[],
+        widget=forms.Select(
+            attrs={
+                "class": "vaccination-input",
+            }
+        ),
+    )
+
+    def __init__(
+        self,
+        *args,
+        child=None,
+        language_code="ja",
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        self.child = child
+
+        self.fields[
+            "permission"
+        ].choices = [
+            (
+                ChildCollaborator
+                .PERMISSION_EDIT,
+                t(
+                    "permission_edit",
+                    language_code,
+                ),
+            ),
+            (
+                ChildCollaborator
+                .PERMISSION_VIEW,
+                t(
+                    "permission_view",
+                    language_code,
+                ),
+            ),
+        ]
+
+    def clean_username(self):
+
+        username = (
+            self.cleaned_data[
+                "username"
+            ]
+            .strip()
+        )
+
+        User = get_user_model()
+
+        user = (
+            User.objects
+            .filter(
+                username=username
+            )
+            .first()
+        )
+
+        if user is None:
+            raise forms.ValidationError(
+                "ユーザーが見つかりません。"
+            )
+
+        if (
+            self.child
+            and
+            self.child.owner_id
+            == user.id
+        ):
+            raise forms.ValidationError(
+                "このユーザーは所有者です。"
+            )
+
+        self.collaborator_user = user
+
+        return username

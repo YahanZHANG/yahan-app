@@ -36,7 +36,7 @@ UI_TEXT = {
 
         "lets_start": "はじめよう",
         "child_intro": (
-            "まずは予防接種を管理する子どもの情報を登録する。"
+            "予防接種を管理する子どもの情報を登録する。"
         ),
         "name": "名前",
         "date_of_birth": "生年月日",
@@ -45,7 +45,13 @@ UI_TEXT = {
         "schedule_country_help": (
             "この国の標準予防接種スケジュールを表示する。"
         ),
-        "start": "はじめる",
+        "start": "子供を追加する",
+
+        "child_name": "名前",
+        "child_name_en": "英語表記",
+        "child_name_en_help": "医療機関で見せるための英語表記です。",
+        "edit_child": "子どもの情報を編集",
+        "save_child": "変更を保存",
 
         # =====================================================
         # Records
@@ -58,6 +64,12 @@ UI_TEXT = {
         "vaccination_history": "接種履歴",
         "times": "回",
         "dose": "回目",
+        "edit_record": "記録を編集",
+        "update_record": "変更を保存",
+        "delete_record": "記録を削除",
+        "delete_record_confirm": "この接種記録を削除しますか？",
+        "delete_record_warning": "削除した記録は元に戻せません。",
+        "cancel": "キャンセル",
 
         # =====================================================
         # New record
@@ -154,6 +166,21 @@ UI_TEXT = {
         "save_settings": "設定を保存",
 
         # =====================================================
+        # Collaborator
+        # =====================================================
+
+        "collaborators": "共同管理",
+        "collaborators_help": "この子どもの予防接種記録をほかのユーザーと共有できます。",
+        "username": "ユーザー名",
+        "permission": "権限",
+        "permission_edit": "編集可能",
+        "permission_view": "閲覧のみ",
+        "add_collaborator": "共同管理者を追加",
+        "no_collaborators": "共同管理者はいません",
+        "remove_collaborator": "削除",
+        "shared_with_me": "共有",
+
+        # =====================================================
         # Schedule
         # =====================================================
 
@@ -248,6 +275,12 @@ UI_TEXT = {
         ),
         "start": "Start",
 
+        "child_name": "Name",
+        "child_name_en": "English name",
+        "child_name_en_help": "Used when showing vaccination records to healthcare providers.",
+        "edit_child": "Edit child",
+        "save_child": "Save changes",
+
         # =====================================================
         # Records
         # =====================================================
@@ -259,6 +292,12 @@ UI_TEXT = {
         "vaccination_history": "Vaccination history",
         "times": " doses",
         "dose": " dose",
+        "edit_record": "Edit record",
+        "update_record": "Save changes",
+        "delete_record": "Delete record",
+        "delete_record_confirm": "Delete this vaccination record?",
+        "delete_record_warning": "This action cannot be undone.",
+        "cancel": "Cancel",
 
         # =====================================================
         # New record
@@ -362,6 +401,21 @@ UI_TEXT = {
         "save_settings": "Save settings",
 
         # =====================================================
+        # Collaborator
+        # =====================================================
+
+        "collaborators": "Shared access",
+        "collaborators_help": "Share this child's vaccination records with another user.",
+        "username": "Username",
+        "permission": "Permission",
+        "permission_edit": "Can edit",
+        "permission_view": "View only",
+        "add_collaborator": "Add user",
+        "no_collaborators": "No shared users",
+        "remove_collaborator": "Remove",
+        "shared_with_me": "Shared",
+
+        # =====================================================
         # Schedule
         # =====================================================
 
@@ -462,6 +516,12 @@ UI_TEXT = {
         ),
         "start": "Starten",
 
+        "child_name": "Name",
+        "child_name_en": "Englischer Name",
+        "child_name_en_help": "Wird beim Vorzeigen der Impfunterlagen verwendet.",
+        "edit_child": "Kind bearbeiten",
+        "save_child": "Änderungen speichern",
+
         # =====================================================
         # Records
         # =====================================================
@@ -473,6 +533,12 @@ UI_TEXT = {
         "vaccination_history": "Impfverlauf",
         "times": " Impfungen",
         "dose": ". Dosis",
+        "edit_record": "Eintrag bearbeiten",
+        "update_record": "Änderungen speichern",
+        "delete_record": "Eintrag löschen",
+        "delete_record_confirm": "Diesen Impfeintrag löschen?",
+        "delete_record_warning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+        "cancel": "Abbrechen",
 
         # =====================================================
         # New record
@@ -577,6 +643,22 @@ UI_TEXT = {
 
         "save_settings": "Einstellungen speichern",
 
+
+        # =====================================================
+        # Collaborator
+        # =====================================================
+
+        "collaborators": "Gemeinsamer Zugriff",
+        "collaborators_help": "Impfunterlagen dieses Kindes mit anderen Benutzern teilen.",
+        "username": "Benutzername",
+        "permission": "Berechtigung",
+        "permission_edit": "Bearbeiten",
+        "permission_view": "Nur ansehen",
+        "add_collaborator": "Benutzer hinzufügen",
+        "no_collaborators": "Keine weiteren Benutzer",
+        "remove_collaborator": "Entfernen",
+        "shared_with_me": "Geteilt",
+
         # =====================================================
         # Schedule
         # =====================================================
@@ -630,7 +712,7 @@ UI_TEXT = {
         "home": "首页",
         "records": "接种记录",
         "schedule": "接种计划",
-        "doctor": "出示",
+        "doctor": "给医生看",
         "settings": "设置",
 
         # =====================================================
@@ -672,6 +754,12 @@ UI_TEXT = {
         ),
         "start": "开始",
 
+        "child_name": "姓名",
+        "child_name_en": "英文姓名",
+        "child_name_en_help": "用于向医疗机构出示疫苗接种记录。",
+        "edit_child": "编辑孩子信息",
+        "save_child": "保存修改",
+
         # =====================================================
         # Records
         # =====================================================
@@ -683,6 +771,12 @@ UI_TEXT = {
         "vaccination_history": "接种历史",
         "times": "次",
         "dose": "次",
+        "edit_record": "编辑记录",
+        "update_record": "保存修改",
+        "delete_record": "删除记录",
+        "delete_record_confirm": "确定删除这条接种记录吗？",
+        "delete_record_warning": "删除后无法恢复。",
+        "cancel": "取消",
 
         # =====================================================
         # New record
@@ -781,6 +875,22 @@ UI_TEXT = {
         "managed_child": "当前管理",
 
         "save_settings": "保存设置",
+
+        
+        # =====================================================
+        # Collaborator
+        # =====================================================
+
+        "collaborators": "共同管理",
+        "collaborators_help": "与其他用户共享孩子的疫苗接种记录。",
+        "username": "用户名",
+        "permission": "权限",
+        "permission_edit": "可编辑",
+        "permission_view": "仅查看",
+        "add_collaborator": "添加共同管理者",
+        "no_collaborators": "暂无共同管理者",
+        "remove_collaborator": "删除",
+        "shared_with_me": "共享",
 
         # =====================================================
         # Schedule

@@ -109,7 +109,13 @@ class Child(models.Model):
     )
 
     name = models.CharField(
-        max_length=100,
+        max_length=150,
+    )
+
+    name_en = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
     )
 
     date_of_birth = models.DateField()
@@ -938,3 +944,60 @@ class VaccinationSettings(models.Model):
 
     def __str__(self):
         return f"Vaccination settings: {self.user}"
+
+
+class ChildCollaborator(models.Model):
+
+    PERMISSION_EDIT = "edit"
+    PERMISSION_VIEW = "view"
+
+    PERMISSION_CHOICES = [
+        (
+            PERMISSION_EDIT,
+            "Can edit",
+        ),
+        (
+            PERMISSION_VIEW,
+            "View only",
+        ),
+    ]
+
+    child = models.ForeignKey(
+        Child,
+        on_delete=models.CASCADE,
+        related_name="collaborators",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="vaccination_collaborations",
+    )
+
+    permission = models.CharField(
+        max_length=20,
+        choices=PERMISSION_CHOICES,
+        default=PERMISSION_EDIT,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "child",
+                    "user",
+                ],
+                name="unique_child_collaborator",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.child.name} - "
+            f"{self.user.username} "
+            f"({self.permission})"
+        )

@@ -1,0 +1,89 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-delete-page">
+
+    <header class="vaccination-detail-header">
+
+        <a
+            href="{% url 'vaccination:record_detail' record.pk %}"
+            class="vaccination-back-button"
+            aria-label="Back"
+        >
+            ‹
+        </a>
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                DELETE RECORD
+            </p>
+
+            <h1>
+                {{ vac_ui.delete_record }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <div class="vaccination-delete-card">
+
+        <div class="vaccination-delete-icon">
+            !
+        </div>
+
+        <h2>
+            {{ vac_ui.delete_record_confirm }}
+        </h2>
+
+
+        <div class="vaccination-delete-record">
+
+            <strong>
+                {{ preparation_name }}
+            </strong>
+
+            <span>
+                {{ record.vaccination_date|date:"Y/m/d" }}
+            </span>
+
+        </div>
+
+
+        <p>
+            {{ vac_ui.delete_record_warning }}
+        </p>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="vaccination-delete-actions">
+
+                <a
+                    href="{% url 'vaccination:record_detail' record.pk %}"
+                    class="vaccination-cancel-button"
+                >
+                    {{ vac_ui.cancel }}
+                </a>
+
+                <button
+                    type="submit"
+                    class="vaccination-delete-confirm-button"
+                >
+                    {{ vac_ui.delete_record }}
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

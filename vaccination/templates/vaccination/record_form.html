@@ -6,14 +6,27 @@
 
     <header class="vaccination-form-page-header">
 
-        <a
-            href="{% url 'vaccination:home' %}"
-            class="vaccination-back-button"
-            aria-label="Back"
-        >
-            ‹
-        </a>
+        {% if is_edit %}
 
+            <a
+                href="{% url 'vaccination:record_detail' record.pk %}"
+                class="vaccination-back-button"
+                aria-label="Back"
+            >
+                ‹
+            </a>
+
+        {% else %}
+
+            <a
+                href="{% url 'vaccination:home' %}"
+                class="vaccination-back-button"
+                aria-label="Back"
+            >
+                ‹
+            </a>
+
+        {% endif %}
 
         <div>
 
@@ -22,7 +35,11 @@
             </p>
 
             <h1>
-                {{ vac_ui.new_record }}
+                {% if is_edit %}
+                    {{ vac_ui.edit_record }}
+                {% else %}
+                    {{ vac_ui.new_record }}
+                {% endif %}
             </h1>
 
         </div>
@@ -428,7 +445,11 @@
             type="submit"
             class="vaccination-save-button"
         >
-            {{ vac_ui.save_record }}
+            {% if is_edit %}
+                {{ vac_ui.update_record }}
+            {% else %}
+                {{ vac_ui.save_record }}
+            {% endif %}
         </button>
 
     </form>

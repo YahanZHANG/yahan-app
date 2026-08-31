@@ -35,20 +35,22 @@
     </header>
 
 
-    <a
-        href="{% url 'vaccination:record_create' %}"
-        class="vaccination-record-button"
-    >
+    {% if can_edit_current_child %}
+        <a
+            href="{% url 'vaccination:record_create' %}"
+            class="vaccination-record-button"
+        >
 
-        <span class="vaccination-record-button-plus">
-            ＋
-        </span>
+            <span class="vaccination-record-button-plus">
+                ＋
+            </span>
 
-        <span>
-            {{ vac_ui.record_vaccination }}
-        </span>
+            <span>
+                {{ vac_ui.record_vaccination }}
+            </span>
 
-    </a>
+        </a>
+    {% endif %}
 
 
     <section class="vaccination-home-section">

@@ -13,7 +13,7 @@
             </p>
 
             <h1>
-                子どもの管理
+                {{ vac_ui.managed_child }}
             </h1>
 
         </div>
@@ -22,7 +22,7 @@
         <a
             href="{% url 'vaccination:child_create' %}"
             class="vaccination-header-add"
-            aria-label="子どもを追加"
+            aria-label="Add child"
         >
             ＋
         </a>
@@ -34,56 +34,104 @@
 
         {% for child in children %}
 
-            <a
-                href="{% url 'vaccination:child_switch' child.pk %}"
+            <article
                 class="
                     vaccination-child-card
                     {% if active_child and active_child.pk == child.pk %}
-                        active
+                        vaccination-child-card-active
                     {% endif %}
                 "
             >
 
-                <div class="vaccination-child-avatar">
-                    ♡
+                <div class="vaccination-child-card-main">
+
+                    <div class="vaccination-child-avatar">
+                        {{ child.name|first }}
+                    </div>
+
+
+                    <div class="vaccination-child-copy">
+
+                        <div class="vaccination-child-name-row">
+
+                            <strong>
+                                {{ child.name }}
+                            </strong>
+
+
+                            {% if active_child and active_child.pk == child.pk %}
+
+                                <span class="vaccination-child-active-badge">
+                                    選択中
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if child.name_en %}
+
+                            <span class="vaccination-child-english-name">
+                                {{ child.name_en }}
+                            </span>
+
+                        {% endif %}
+
+
+                        <span class="vaccination-child-birth-date">
+                            {{ child.date_of_birth|date:"Y/m/d" }}
+                        </span>
+
+
+                        {% if child.owner != request.user %}
+
+                            <span class="vaccination-child-shared-badge">
+                                {{ vac_ui.shared_with_me }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
 
 
-                <div class="vaccination-child-card-copy">
+                <div class="vaccination-child-card-actions">
 
-                    <strong>
-                        {{ child.name }}
-                    </strong>
+                    {% if not active_child or active_child.pk != child.pk %}
 
-                    <span>
-                        {{ child.date_of_birth|date:"Y/m/d" }}
-                    </span>
+                        <a
+                            href="{% url 'vaccination:child_switch' child.pk %}"
+                            class="vaccination-child-switch-button"
+                        >
+                            {{ child.name }}
+                        </a>
+
+                    {% endif %}
+
+
+                    {% if child.owner == request.user %}
+
+                        <a
+                            href="{% url 'vaccination:child_edit' child.pk %}"
+                            class="vaccination-child-edit-link"
+                        >
+                            {{ vac_ui.edit_child }}
+                        </a>
+
+                    {% endif %}
 
                 </div>
 
-
-                {% if active_child and active_child.pk == child.pk %}
-
-                    <div class="vaccination-child-current">
-                        選択中
-                    </div>
-
-                {% else %}
-
-                    <div class="vaccination-child-arrow">
-                        ›
-                    </div>
-
-                {% endif %}
-
-            </a>
+            </article>
 
         {% empty %}
 
             <div class="vaccination-empty-state">
 
                 <strong>
-                    子どもが登録されていない
+                    {{ vac_ui.no_record }}
                 </strong>
 
             </div>
@@ -97,7 +145,7 @@
         href="{% url 'vaccination:child_create' %}"
         class="vaccination-add-child-button"
     >
-        ＋ 子どもを追加
+        ＋ {{ vac_ui.start }}
     </a>
 
 </section>

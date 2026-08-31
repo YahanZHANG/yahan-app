@@ -4,23 +4,64 @@
 
 <section class="vaccination-onboarding">
 
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    {% if is_edit %}
+
+        <div class="vaccination-detail-header">
+
+            <a
+                href="{% url 'vaccination:children' %}"
+                class="vaccination-back-button"
+                aria-label="Back"
+            >
+                ‹
+            </a>
+
+        </div>
+
+    {% endif %}
+
+
     <div class="vaccination-onboarding-icon">
         ♡
     </div>
+
 
     <p class="vaccination-eyebrow">
         VACCINATION
     </p>
 
+
     <h1 class="vaccination-onboarding-title">
-        はじめよう
+
+        {% if is_edit %}
+
+            {{ vac_ui.edit_child }}
+
+        {% else %}
+
+            {{ vac_ui.lets_start }}
+
+        {% endif %}
+
     </h1>
 
-    <p class="vaccination-onboarding-description">
-        予防接種を管理する
-        子どもの情報を登録する。
-    </p>
 
+    {% if not is_edit %}
+
+        <p class="vaccination-onboarding-description">
+            {{ vac_ui.child_intro }}
+        </p>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Form
+         ===================================================== -->
 
     <form
         method="post"
@@ -30,33 +71,103 @@
         {% csrf_token %}
 
 
+        <!-- =================================================
+             Form errors
+             ================================================= -->
+
         {% if form.non_field_errors %}
 
             <div class="vaccination-form-errors">
-                {{ form.non_field_errors }}
+
+                {% for error in form.non_field_errors %}
+
+                    <p>
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
             </div>
 
         {% endif %}
 
+
+        <!-- =================================================
+             Name
+             ================================================= -->
 
         <div class="vaccination-form-group">
 
             <label
                 for="{{ form.name.id_for_label }}"
             >
-                {{ form.name.label }}
+                {{ vac_ui.child_name }}
             </label>
 
             {{ form.name }}
 
+
             {% if form.name.errors %}
+
                 <div class="vaccination-field-error">
-                    {{ form.name.errors }}
+
+                    {% for error in form.name.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
                 </div>
+
             {% endif %}
 
         </div>
 
+
+        <!-- =================================================
+             English name
+             ================================================= -->
+
+        <div class="vaccination-form-group">
+
+            <label
+                for="{{ form.name_en.id_for_label }}"
+            >
+                {{ vac_ui.child_name_en }}
+            </label>
+
+            {{ form.name_en }}
+
+
+            <p class="vaccination-form-help">
+                {{ vac_ui.child_name_en_help }}
+            </p>
+
+
+            {% if form.name_en.errors %}
+
+                <div class="vaccination-field-error">
+
+                    {% for error in form.name_en.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             Date of birth
+             ================================================= -->
 
         <div class="vaccination-form-group">
 
@@ -68,14 +179,29 @@
 
             {{ form.date_of_birth }}
 
+
             {% if form.date_of_birth.errors %}
+
                 <div class="vaccination-field-error">
-                    {{ form.date_of_birth.errors }}
+
+                    {% for error in form.date_of_birth.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
                 </div>
+
             {% endif %}
 
         </div>
 
+
+        <!-- =================================================
+             Birth country
+             ================================================= -->
 
         <div class="vaccination-form-group">
 
@@ -87,8 +213,29 @@
 
             {{ form.birth_country }}
 
+
+            {% if form.birth_country.errors %}
+
+                <div class="vaccination-field-error">
+
+                    {% for error in form.birth_country.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
         </div>
 
+
+        <!-- =================================================
+             Default schedule country
+             ================================================= -->
 
         <div class="vaccination-form-group">
 
@@ -100,18 +247,50 @@
 
             {{ form.default_country }}
 
-            <p class="vaccination-field-help">
-                この国の標準予防接種スケジュールを表示する。
+
+            <p class="vaccination-form-help">
+                {{ vac_ui.schedule_country_help }}
             </p>
+
+
+            {% if form.default_country.errors %}
+
+                <div class="vaccination-field-error">
+
+                    {% for error in form.default_country.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
 
         </div>
 
+
+        <!-- =================================================
+             Save
+             ================================================= -->
 
         <button
             type="submit"
             class="vaccination-primary-button"
         >
-            はじめる
+
+            {% if is_edit %}
+
+                {{ vac_ui.save_child }}
+
+            {% else %}
+
+                {{ vac_ui.start }}
+
+            {% endif %}
+
         </button>
 
     </form>

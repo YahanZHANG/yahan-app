@@ -3265,6 +3265,56 @@ button {
     );
 }
 
+/* =========================================================
+   Vaccination card
+   ========================================================= */
+
+.portal-vaccination-card {
+    background:
+        linear-gradient(
+            145deg,
+            #f7f2ff 0%,
+            #fff7fb 100%
+        );
+
+    border-color:
+        rgba(167, 139, 210, .22);
+}
+
+
+.portal-vaccination-card:hover {
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 14px 32px
+        rgba(118, 93, 160, .13);
+}
+
+
+.portal-vaccination-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #eee4fb,
+            #fbeaf2
+        );
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(158, 126, 196, .12);
+}
+
+
+.portal-vaccination-card h3 {
+    color: #4d405d;
+}
+
+
+.portal-vaccination-card .portal-card-label {
+    color: #8b6ca7;
+}
+
 
 /* =========================
    Mobile app cards

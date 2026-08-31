@@ -330,6 +330,39 @@
 
 
         <!-- =====================================================
+             Shared access
+             Only the owner can manage collaborators
+             ===================================================== -->
+
+        {% if child and can_manage_current_child %}
+
+            <a
+                href="{% url 'vaccination:collaborators' %}"
+                class="vaccination-settings-profile"
+            >
+
+                <div>
+
+                    <span>
+                        SHARED ACCESS
+                    </span>
+
+                    <strong>
+                        {{ vac_ui.collaborators }}
+                    </strong>
+
+                </div>
+
+                <span>
+                    ›
+                </span>
+
+            </a>
+
+        {% endif %}
+
+
+        <!-- =====================================================
              Save
              ===================================================== -->
 

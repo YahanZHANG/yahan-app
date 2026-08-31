@@ -1,0 +1,193 @@
+{% extends "vaccination/base.html" %}
+
+{% block vaccination_content %}
+
+<section class="vaccination-collaborators-page">
+
+    <header class="vaccination-detail-header">
+
+        <a
+            href="{% url 'vaccination:settings' %}"
+            class="vaccination-back-button"
+        >
+            ‹
+        </a>
+
+        <div>
+
+            <p class="vaccination-eyebrow">
+                SHARED ACCESS
+            </p>
+
+            <h1>
+                {{ vac_ui.collaborators }}
+            </h1>
+
+        </div>
+
+    </header>
+
+
+    <div class="vaccination-collaborator-child">
+
+        <span>
+            {{ vac_ui.managed_child }}
+        </span>
+
+        <strong>
+            {{ child.name }}
+        </strong>
+
+    </div>
+
+
+    <p class="vaccination-collaborator-help">
+        {{ vac_ui.collaborators_help }}
+    </p>
+
+
+    <form
+        method="post"
+        class="vaccination-collaborator-form"
+    >
+
+        {% csrf_token %}
+
+
+        <div class="vaccination-form-group">
+
+            <label>
+                {{ vac_ui.username }}
+            </label>
+
+            {{ form.username }}
+
+            {% for error in form.username.errors %}
+
+                <div class="vaccination-field-error">
+                    {{ error }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="vaccination-form-group">
+
+            <label>
+                {{ vac_ui.permission }}
+            </label>
+
+            {{ form.permission }}
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="vaccination-save-button"
+        >
+            ＋ {{ vac_ui.add_collaborator }}
+        </button>
+
+    </form>
+
+
+    <section class="vaccination-collaborator-list-section">
+
+        <h2>
+            {{ vac_ui.collaborators }}
+        </h2>
+
+
+        <div class="vaccination-collaborator-list">
+
+            {% for row in collaborator_rows %}
+
+                <article class="vaccination-collaborator-card">
+
+                    <div class="vaccination-collaborator-avatar">
+                        {{ row.user.username|first|upper }}
+                    </div>
+
+
+                    <div class="vaccination-collaborator-copy">
+
+                        <strong>
+                            {{ row.user.username }}
+                        </strong>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'vaccination:collaborator_permission_update' row.pk %}"
+                            class="vaccination-collaborator-permission-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <select
+                                name="permission"
+                                class="vaccination-collaborator-permission"
+                                onchange="this.form.submit()"
+                            >
+
+                                <option
+                                    value="edit"
+                                    {% if row.permission == "edit" %}selected{% endif %}
+                                >
+                                    {{ vac_ui.permission_edit }}
+                                </option>
+
+                                <option
+                                    value="view"
+                                    {% if row.permission == "view" %}selected{% endif %}
+                                >
+                                    {{ vac_ui.permission_view }}
+                                </option>
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'vaccination:collaborator_remove' row.pk %}"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="vaccination-collaborator-remove"
+                        >
+                            {{ vac_ui.remove_collaborator }}
+                        </button>
+
+                    </form>
+
+                </article>
+
+            {% empty %}
+
+                <div class="vaccination-empty-state">
+
+                    <strong>
+                        {{ vac_ui.no_collaborators }}
+                    </strong>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}

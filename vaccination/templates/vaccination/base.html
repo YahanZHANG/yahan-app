@@ -17,6 +17,15 @@
 
     <main class="vaccination-main">
 
+        <div class="vaccination-portal-bar">
+            <a
+                href="{% url 'portal:home' %}"
+                class="vaccination-portal-link"
+            >
+                ← yahan-app
+            </a>
+        </div>
+
         {% block vaccination_content %}
         {% endblock %}
 

@@ -18,14 +18,15 @@
 
         </div>
 
-
-        <a
-            href="{% url 'vaccination:record_create' %}"
-            class="vaccination-header-add"
-            aria-label="{{ vac_ui.record_vaccination }}"
-        >
-            ＋
-        </a>
+        {% if can_edit_current_child %}
+            <a
+                href="{% url 'vaccination:record_create' %}"
+                class="vaccination-header-add"
+                aria-label="{{ vac_ui.record_vaccination }}"
+            >
+                ＋
+            </a>
+        {% endif %}
 
     </header>
 

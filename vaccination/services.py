@@ -2,19 +2,15 @@ from datetime import date, timedelta
 from django.db.models import Q
 from .models import VaccinationRecordComponent
 
-
 def sync_record_components(record):
-    """
-    1回の接種記録から、その製剤に含まれる成分を作成する。
+    old_component_ids = set(
+        record.record_components.values_list(
+            "component_id",
+            flat=True,
+        )
+    )
 
-    例:
-    MMR
-      -> Measles
-      -> Mumps
-      -> Rubella
-    """
-
-    component_ids = set(
+    new_component_ids = set(
         record.preparation.components.values_list(
             "id",
             flat=True,
@@ -26,22 +22,28 @@ def sync_record_components(record):
         for item in record.record_components.all()
     }
 
-    # 足りない成分を追加
-    for component_id in component_ids:
+    # 新しい製剤に含まれる成分を追加
+    for component_id in new_component_ids:
         if component_id not in existing:
             VaccinationRecordComponent.objects.create(
                 record=record,
                 component_id=component_id,
             )
 
-    # 製剤を変更した場合に不要になった成分を削除
+    # 新しい製剤に含まれなくなった成分を削除
     record.record_components.exclude(
-        component_id__in=component_ids
+        component_id__in=new_component_ids
     ).delete()
+
+    # 編集前・編集後の両方を再計算
+    affected_component_ids = (
+        old_component_ids
+        | new_component_ids
+    )
 
     recalculate_component_dose_numbers(
         record.child,
-        component_ids,
+        affected_component_ids,
     )
 
 

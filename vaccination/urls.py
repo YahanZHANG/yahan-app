@@ -26,6 +26,12 @@ urlpatterns = [
     ),
 
     path(
+        "children/<int:pk>/edit/",
+        views.child_edit,
+        name="child_edit",
+    ),
+
+    path(
         "children/<int:pk>/switch/",
         views.child_switch,
         name="child_switch",
@@ -42,6 +48,18 @@ urlpatterns = [
         "records/add/",
         views.record_create,
         name="record_create",
+    ),
+    
+    path(
+        "records/<int:pk>/edit/",
+        views.record_edit,
+        name="record_edit",
+    ),
+
+    path(
+        "records/<int:pk>/delete/",
+        views.record_delete,
+        name="record_delete",
     ),
 
     path(
@@ -72,5 +90,23 @@ urlpatterns = [
         "settings/",
         views.settings_view,
         name="settings",
+    ),
+
+    path(
+        "collaborators/",
+        views.collaborators,
+        name="collaborators",
+    ),
+
+    path(
+        "collaborators/<int:pk>/permission/",
+        views.collaborator_permission_update,
+        name="collaborator_permission_update",
+    ),
+
+    path(
+        "collaborators/<int:pk>/remove/",
+        views.collaborator_remove,
+        name="collaborator_remove",
     ),
 ]
