@@ -4230,3 +4230,41 @@ span
     }
 
 }
+
+/* =========================================================
+   Chinese typography
+   ========================================================= */
+
+.vaccination-lang-zh-hans {
+    font-family:
+        "PingFang SC",
+        "Microsoft YaHei",
+        "Noto Sans SC",
+        "Source Han Sans SC",
+        sans-serif;
+
+    font-weight: 400;
+}
+
+
+/*
+   Chinese text can become excessively heavy with
+   font-weight 800 / 900.
+*/
+
+.vaccination-lang-zh-hans h1,
+.vaccination-lang-zh-hans h2,
+.vaccination-lang-zh-hans h3,
+.vaccination-lang-zh-hans strong,
+.vaccination-lang-zh-hans button {
+    font-weight: 700;
+}
+
+
+.vaccination-lang-zh-hans label,
+.vaccination-lang-zh-hans .vaccination-nav-item,
+.vaccination-lang-zh-hans .vaccination-small-link,
+.vaccination-lang-zh-hans .vaccination-country-pill,
+.vaccination-lang-zh-hans .vaccination-dose-pill {
+    font-weight: 600;
+}

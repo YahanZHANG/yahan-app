@@ -25,7 +25,12 @@ vaccination-font-{{ vac_font_size|default:"small" }}
 >
 
 
-<div class="vaccination-app">
+<div
+    class="
+        vaccination-app
+        vaccination-lang-{{ vac_language|default:'ja' }}
+    "
+>
 
     <!-- =====================================================
          Main
