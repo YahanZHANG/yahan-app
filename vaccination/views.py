@@ -1247,6 +1247,10 @@ def doctor(request):
         doctor_language
     )
 
+    doctor_ui_en = get_ui(
+        "en"
+    )
+
     # ---------------------------------------------------------
     # Current country
     # ---------------------------------------------------------
@@ -1415,6 +1419,7 @@ def doctor(request):
             "settings_obj": settings_obj,
             "doctor_language": doctor_language,
             "doctor_ui": doctor_ui,
+            "doctor_ui_en": doctor_ui_en,
             "show_english": show_english,
             "current_country_name": (
                 current_country_name

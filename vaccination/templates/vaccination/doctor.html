@@ -18,6 +18,14 @@
 
             <h1>
                 {{ doctor_ui.doctor_title }}
+
+                {% if show_english and doctor_language != "en" %}
+
+                    <span class="vaccination-doctor-english">
+                        {{ doctor_ui_en.doctor_title }}
+                    </span>
+
+                {% endif %}
             </h1>
 
         </div>
@@ -27,7 +35,7 @@
 
             {{ doctor_language|upper }}
 
-            {% if show_english %}
+            {% if show_english and doctor_language != "en" %}
                 + EN
             {% endif %}
 
@@ -37,40 +45,81 @@
 
 
     <!-- =====================================================
-         Patient
+         Patient information
          ===================================================== -->
 
     <section class="vaccination-doctor-patient">
 
+        <!-- Section title -->
+
         <p class="vaccination-doctor-section-label">
+
             {{ doctor_ui.doctor_patient }}
-        </p>
 
+            {% if show_english and doctor_language != "en" %}
 
-        <div class="vaccination-doctor-patient-name">
-
-            <strong>
-                {{ child.name }}
-            </strong>
-
-            {% if child.name_en and child.name_en != child.name %}
-
-                <span>
-                    {{ child.name_en }}
+                <span class="vaccination-doctor-english">
+                    {{ doctor_ui_en.doctor_patient }}
                 </span>
 
             {% endif %}
 
+        </p>
+
+
+        <!-- =================================================
+             Patient name
+
+             Doctor Modeでは英語名を最優先で大きく表示する。
+             英語名が登録されていない場合のみ通常名を表示。
+             ================================================= -->
+
+        <div class="vaccination-doctor-patient-name">
+
+            <strong class="vaccination-doctor-patient-name-primary">
+
+                {% if child.name_en %}
+
+                    {{ child.name_en }}
+
+                {% else %}
+
+                    {{ child.name }}
+
+                {% endif %}
+
+            </strong>
+
         </div>
 
 
+        <!-- =================================================
+             Patient details
+             ================================================= -->
+
         <div class="vaccination-doctor-patient-grid">
+
+
+            <!-- =============================================
+                 Date of birth
+                 ============================================= -->
 
             <div>
 
                 <span>
+
                     {{ doctor_ui.doctor_birth_date }}
+
+                    {% if show_english and doctor_language != "en" %}
+
+                        <small class="vaccination-doctor-english">
+                            {{ doctor_ui_en.doctor_birth_date }}
+                        </small>
+
+                    {% endif %}
+
                 </span>
+
 
                 <strong>
                     {{ child.date_of_birth|date:"Y-m-d" }}
@@ -79,26 +128,45 @@
             </div>
 
 
+            <!-- =============================================
+                 Current country
+                 ============================================= -->
+
             {% if current_country_name %}
 
                 <div>
 
                     <span>
+
                         {{ doctor_ui.doctor_current_country }}
+
+                        {% if show_english and doctor_language != "en" %}
+
+                            <small class="vaccination-doctor-english">
+                                {{ doctor_ui_en.doctor_current_country }}
+                            </small>
+
+                        {% endif %}
+
                     </span>
+
 
                     <strong>
                         {{ current_country_name }}
                     </strong>
 
 
-                    {% if show_english and current_country_name_en %}
+                    {% if show_english and doctor_language != "en" %}
 
-                        {% if current_country_name_en != current_country_name %}
+                        {% if current_country_name_en %}
 
-                            <small>
-                                {{ current_country_name_en }}
-                            </small>
+                            {% if current_country_name_en != current_country_name %}
+
+                                <small class="vaccination-doctor-value-english">
+                                    {{ current_country_name_en }}
+                                </small>
+
+                            {% endif %}
 
                         {% endif %}
 
@@ -122,7 +190,17 @@
         <div class="vaccination-doctor-history-heading">
 
             <p class="vaccination-doctor-section-label">
+
                 {{ doctor_ui.doctor_vaccination_history }}
+
+                {% if show_english and doctor_language != "en" %}
+
+                    <span class="vaccination-doctor-english">
+                        {{ doctor_ui_en.doctor_vaccination_history }}
+                    </span>
+
+                {% endif %}
+
             </p>
 
         </div>
@@ -136,7 +214,10 @@
 
                     <section class="vaccination-doctor-component">
 
-                        <!-- Component name -->
+
+                        <!-- =====================================
+                             Vaccine component
+                             ===================================== -->
 
                         <header class="vaccination-doctor-component-header">
 
@@ -147,13 +228,17 @@
                                 </h3>
 
 
-                                {% if show_english and group.name_en %}
+                                {% if show_english and doctor_language != "en" %}
 
-                                    {% if group.name_en != group.name %}
+                                    {% if group.name_en %}
 
-                                        <p>
-                                            {{ group.name_en }}
-                                        </p>
+                                        {% if group.name_en != group.name %}
+
+                                            <p class="vaccination-doctor-value-english">
+                                                {{ group.name_en }}
+                                            </p>
+
+                                        {% endif %}
 
                                     {% endif %}
 
@@ -162,9 +247,26 @@
                             </div>
 
 
+                            <!-- =================================
+                                 Total doses
+                                 ================================= -->
+
                             <span class="vaccination-doctor-dose-count">
 
-                                {{ doctor_ui.doctor_total }}
+                                <span>
+
+                                    {{ doctor_ui.doctor_total }}
+
+                                    {% if show_english and doctor_language != "en" %}
+
+                                        <small class="vaccination-doctor-english">
+                                            {{ doctor_ui_en.doctor_total }}
+                                        </small>
+
+                                    {% endif %}
+
+                                </span>
+
 
                                 <strong>
                                     {{ group.rows|length }}
@@ -175,13 +277,20 @@
                         </header>
 
 
-                        <!-- Doses -->
+                        <!-- =====================================
+                             Doses
+                             ===================================== -->
 
                         <div class="vaccination-doctor-dose-list">
 
                             {% for row in group.rows %}
 
                                 <div class="vaccination-doctor-dose-row">
+
+
+                                    <!-- =========================
+                                         Dose number
+                                         ========================= -->
 
                                     <div class="vaccination-doctor-dose-number">
 
@@ -198,6 +307,10 @@
                                     </div>
 
 
+                                    <!-- =========================
+                                         Date / preparation
+                                         ========================= -->
+
                                     <div class="vaccination-doctor-dose-main">
 
                                         <strong>
@@ -210,13 +323,17 @@
                                         </span>
 
 
-                                        {% if show_english and row.preparation_name_en %}
+                                        {% if show_english and doctor_language != "en" %}
 
-                                            {% if row.preparation_name_en != row.preparation_name %}
+                                            {% if row.preparation_name_en %}
 
-                                                <small>
-                                                    {{ row.preparation_name_en }}
-                                                </small>
+                                                {% if row.preparation_name_en != row.preparation_name %}
+
+                                                    <small class="vaccination-doctor-value-english">
+                                                        {{ row.preparation_name_en }}
+                                                    </small>
+
+                                                {% endif %}
 
                                             {% endif %}
 
@@ -225,22 +342,47 @@
                                     </div>
 
 
+                                    <!-- =========================
+                                         Vaccination country
+                                         ========================= -->
+
                                     {% if row.country_name %}
 
                                         <div class="vaccination-doctor-dose-country">
 
                                             <span>
+
+                                                <small class="vaccination-doctor-field-label">
+
+                                                    {{ doctor_ui.doctor_country }}
+
+                                                    {% if show_english and doctor_language != "en" %}
+
+                                                        <span class="vaccination-doctor-english">
+                                                            {{ doctor_ui_en.doctor_country }}
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </small>
+
+
                                                 {{ row.country_name }}
+
                                             </span>
 
 
-                                            {% if show_english and row.country_name_en %}
+                                            {% if show_english and doctor_language != "en" %}
 
-                                                {% if row.country_name_en != row.country_name %}
+                                                {% if row.country_name_en %}
 
-                                                    <small>
-                                                        {{ row.country_name_en }}
-                                                    </small>
+                                                    {% if row.country_name_en != row.country_name %}
+
+                                                        <small class="vaccination-doctor-value-english">
+                                                            {{ row.country_name_en }}
+                                                        </small>
+
+                                                    {% endif %}
 
                                                 {% endif %}
 
@@ -265,11 +407,24 @@
 
         {% else %}
 
+            <!-- =================================================
+                 Empty state
+                 ================================================= -->
+
             <div class="vaccination-empty-state">
 
                 <strong>
                     {{ doctor_ui.doctor_no_records }}
                 </strong>
+
+
+                {% if show_english and doctor_language != "en" %}
+
+                    <span class="vaccination-doctor-english">
+                        {{ doctor_ui_en.doctor_no_records }}
+                    </span>
+
+                {% endif %}
 
             </div>
 

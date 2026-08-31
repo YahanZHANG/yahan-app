@@ -4268,3 +4268,75 @@ span
 .vaccination-lang-zh-hans .vaccination-dose-pill {
     font-weight: 600;
 }
+
+/* =========================================================
+   Doctor Mode
+   Bilingual text
+   ========================================================= */
+
+.vaccination-doctor-english {
+    display: block;
+
+    margin-top: 2px;
+
+    color: var(--vac-muted);
+
+    font-size: .78em;
+    font-weight: 600;
+
+    line-height: 1.35;
+}
+
+
+.vaccination-doctor-value-english {
+    display: block;
+
+    margin-top: 2px;
+
+    color: var(--vac-muted);
+
+    font-size: .82em;
+    font-weight: 600;
+
+    line-height: 1.4;
+}
+
+
+.vaccination-doctor-field-label {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--vac-muted);
+
+    font-size: .78em;
+    font-weight: 600;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   Doctor Mode
+   Patient name
+   ========================================================= */
+
+.vaccination-doctor-patient-name {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    margin-bottom: 18px;
+}
+
+
+.vaccination-doctor-patient-name-primary {
+    color: var(--vac-text);
+
+    font-size: 1.35rem;
+    font-weight: 800;
+
+    line-height: 1.25;
+}
