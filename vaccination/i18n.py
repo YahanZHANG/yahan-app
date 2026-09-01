@@ -1245,54 +1245,40 @@ UI_TEXT = {
     },
 }
 
-
 def get_ui(language_code="ja"):
     """
     指定した言語のUI辞書を返す。
 
-    選択した言語に翻訳がないキーは
-    英語へフォールバックする。
+    未登録の言語コードの場合は
+    日本語にフォールバックする。
     """
 
-    english_ui = UI_TEXT["en"]
-
-    selected_ui = UI_TEXT.get(
+    return UI_TEXT.get(
         language_code,
-        english_ui,
+        UI_TEXT["ja"],
     )
-
-    return {
-        **english_ui,
-        **selected_ui,
-    }
 
 
 def t(key, language_code="ja"):
     """
     Python側から翻訳文字列を1件取得する。
 
-    指定言語にキーがない場合:
-        English
-        ↓
-        Japanese
-        ↓
-        key
+    指定言語にキーが存在しない場合は
+    日本語へフォールバックする。
 
-    の順にフォールバックする。
+    日本語にも存在しない場合は
+    keyそのものを返す。
     """
 
     language = UI_TEXT.get(
         language_code,
-        UI_TEXT["en"],
+        UI_TEXT["ja"],
     )
 
     if key in language:
         return language[key]
 
-    if key in UI_TEXT["en"]:
-        return UI_TEXT["en"][key]
-
-    if key in UI_TEXT["ja"]:
-        return UI_TEXT["ja"][key]
-
-    return key
+    return UI_TEXT["ja"].get(
+        key,
+        key,
+    )

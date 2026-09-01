@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "feeding.apps.FeedingConfig",
     "games.apps.GamesConfig",
     "vaccination.apps.VaccinationConfig",
+    "colorcheck.apps.ColorCheckConfig",
 ]
 
 # ------------------------------------------------------------------------------

@@ -135,17 +135,6 @@
 
                 </div>
 
-
-                <span class="portal-app-count">
-
-                    {% if can_use_feeding %}
-                        4 apps
-                    {% else %}
-                        3 apps
-                    {% endif %}
-
-                </span>
-
             </div>
 
 
@@ -281,6 +270,46 @@
                     </div>
 
                 </a>
+
+                <!-- =============================================
+                Color Checker
+                ============================================= -->
+
+            <a
+                href="{% url 'colorcheck:index' %}"
+                class="portal-app-card portal-colorcheck-card"
+                aria-label="色判定アプリを開く"
+            >
+
+                <span
+                    class="portal-card-decoration portal-colorcheck-decoration"
+                    aria-hidden="true"
+                ></span>
+
+
+                <div
+                    class="portal-app-icon portal-colorcheck-icon"
+                    aria-hidden="true"
+                >
+                    <span>
+                        🎨
+                    </span>
+                </div>
+
+
+                <div class="portal-card-content">
+
+                    <h3>
+                        色判定
+                    </h3>
+
+                    <p class="portal-card-label">
+                        COLOR CHECKER
+                    </p>
+
+                </div>
+
+            </a>
 
 
                 <!-- =============================================

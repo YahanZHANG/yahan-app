@@ -62,4 +62,12 @@ urlpatterns = [
             namespace="vaccination",
         ),
     ),
+
+    path(
+        "colorcheck/", 
+        include(
+            "colorcheck.urls",
+            namespace="colorcheck",
+        ),
+    ),
 ]

@@ -93,7 +93,6 @@ class ChildForm(forms.ModelForm):
         labels = {
             "name": "名前",
             "date_of_birth": "生年月日",
-            "birth_country": "出生国",
             "default_country": "現在住んでいる国",
         }
 

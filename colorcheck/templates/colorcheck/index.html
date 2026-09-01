@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Color Checker | Yahan App
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'colorcheck/colorcheck.css' %}"
+>
+
+
+<main class="color-check-page">
+
+    <section class="color-check-shell">
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="color-check-back-link"
+        >
+            <i class="bi bi-arrow-left"></i>
+            yahan-app
+        </a>
+
+        <!-- Header -->
+        <header class="color-check-header">
+
+            <div>
+                <p class="color-check-eyebrow">
+                    YAHAN APP
+                </p>
+
+                <h1 class="color-check-title">
+                    Color Checker
+                </h1>
+
+                <p class="color-check-description">
+                    カメラ中央の色を判定する
+                </p>
+            </div>
+
+        </header>
+
+
+        <!-- Level selector -->
+        <section class="color-level-section">
+
+            <p class="section-label">
+                色名の細かさ
+            </p>
+
+            <div
+                class="color-level-selector"
+                role="group"
+                aria-label="色名の細かさ"
+            >
+
+                <button
+                    type="button"
+                    class="color-level-button is-active"
+                    data-level="1"
+                    aria-pressed="true"
+                >
+                    <span class="level-number">
+                        1
+                    </span>
+
+                    <span class="level-name">
+                        赤・緑
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="color-level-button"
+                    data-level="2"
+                    aria-pressed="false"
+                >
+                    <span class="level-number">
+                        2
+                    </span>
+
+                    <span class="level-name">
+                        標準
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="color-level-button"
+                    data-level="3"
+                    aria-pressed="false"
+                >
+                    <span class="level-number">
+                        3
+                    </span>
+
+                    <span class="level-name">
+                        詳細
+                    </span>
+                </button>
+
+            </div>
+
+
+            <p
+                id="level-description"
+                class="level-description"
+            >
+                赤・緑・その他の3つに分類する
+            </p>
+
+        </section>
+
+
+        <!-- Camera -->
+        <section class="camera-section">
+
+            <div
+                id="camera-frame"
+                class="camera-frame"
+            >
+
+                <video
+                    id="camera-video"
+                    class="camera-video"
+                    autoplay
+                    muted
+                    playsinline
+                ></video>
+
+
+                <div
+                    id="camera-placeholder"
+                    class="camera-placeholder"
+                >
+
+                    <div class="camera-placeholder-icon">
+                        <i class="bi bi-camera"></i>
+                    </div>
+
+                    <p>
+                        カメラを起動すると<br>
+                        ここに映像が表示される
+                    </p>
+
+                </div>
+
+
+                <!-- Center target -->
+                <div
+                    id="camera-target"
+                    class="camera-target"
+                    aria-hidden="true"
+                >
+                    <span class="camera-target-horizontal"></span>
+                    <span class="camera-target-vertical"></span>
+                    <span class="camera-target-dot"></span>
+                </div>
+
+
+                <div class="camera-guide">
+                    中央の色を判定
+                </div>
+
+            </div>
+
+
+            <!-- Hidden canvas used for sampling -->
+            <canvas
+                id="camera-canvas"
+                hidden
+            ></canvas>
+
+
+            <div class="camera-actions">
+
+                <button
+                    type="button"
+                    id="start-camera-button"
+                    class="camera-secondary-button"
+                >
+                    <i class="bi bi-camera-video"></i>
+
+                    カメラを起動
+                </button>
+
+
+                <button
+                    type="button"
+                    id="detect-color-button"
+                    class="detect-color-button"
+                    disabled
+                >
+                    <i class="bi bi-crosshair"></i>
+
+                    この色を判定
+                </button>
+
+
+                <button
+                    type="button"
+                    id="stop-camera-button"
+                    class="camera-stop-button"
+                    hidden
+                >
+                    カメラを終了
+                </button>
+
+            </div>
+
+
+            <p
+                id="camera-message"
+                class="camera-message"
+                aria-live="polite"
+            ></p>
+
+        </section>
+
+
+        <!-- Result -->
+        <section
+            id="color-result"
+            class="color-result"
+            hidden
+            aria-live="polite"
+        >
+
+            <p class="result-label">
+                判定結果
+            </p>
+
+
+            <div class="result-main">
+
+                <div
+                    id="result-color-sample"
+                    class="result-color-sample"
+                    aria-hidden="true"
+                ></div>
+
+
+                <div class="result-copy">
+
+                    <p
+                        id="result-name-ja"
+                        class="result-name-ja"
+                    >
+                    </p>
+
+                    <p
+                        id="result-name-en"
+                        class="result-name-en"
+                    >
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-details">
+
+                <div class="result-detail-item">
+                    <span>
+                        RGB
+                    </span>
+
+                    <strong id="result-rgb">
+                    </strong>
+                </div>
+
+
+                <div class="result-detail-item">
+                    <span>
+                        HEX
+                    </span>
+
+                    <strong id="result-hex">
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <p
+                id="result-level-note"
+                class="result-level-note"
+            >
+            </p>
+
+        </section>
+
+
+        <!-- Privacy -->
+        <aside class="privacy-note">
+
+            <i class="bi bi-shield-check"></i>
+
+            <p>
+                カメラ画像は端末内でのみ処理される。
+                写真や映像はサーバーへ送信・保存されない。
+            </p>
+
+        </aside>
+
+    </section>
+
+</main>
+
+
+<script
+    src="{% static 'colorcheck/colorcheck.js' %}"
+    defer
+></script>
+
+{% endblock %}

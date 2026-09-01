@@ -2011,28 +2011,6 @@ button {
     letter-spacing: -.035em;
 }
 
-
-.portal-app-count {
-    padding:
-        7px
-        11px;
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius: 999px;
-
-    background: #fff;
-
-    color:
-        var(--text-muted);
-
-    font-size: 11px;
-    font-weight: 800;
-}
-
-
 /* =========================================================
    Portal app cards
    ========================================================= */
@@ -2299,6 +2277,53 @@ button {
     opacity: 1;
 }
 
+/* =========================================================
+   Color Checker card
+   ========================================================= */
+
+.portal-colorcheck-card {
+    border-color: #e3ddec;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f8f5fb,
+            #ffffff
+        );
+}
+
+
+.portal-colorcheck-card::before {
+    background:
+        linear-gradient(
+            135deg,
+            #f3dce5,
+            #dcebf3
+        );
+}
+
+
+.portal-colorcheck-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #f4e8ef,
+            #e6edf5
+        );
+}
+
+
+.portal-colorcheck-card h3 {
+    color:
+        var(--text-main);
+}
+
+
+.portal-colorcheck-card .portal-card-label {
+    color: #766783;
+
+    opacity: 1;
+}
 
 /* =========================================================
    Games card

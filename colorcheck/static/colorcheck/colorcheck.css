@@ -1,0 +1,717 @@
+/* =========================================================
+   Color Checker
+========================================================= */
+
+.color-check-page {
+    width: 100%;
+    padding: 24px 16px 48px;
+}
+
+
+.color-check-shell {
+    width: min(100%, 720px);
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   Header
+========================================================= */
+
+.color-check-header {
+    margin-bottom: 28px;
+}
+
+
+.color-check-eyebrow {
+    margin: 0 0 6px;
+
+    color: #8a8f9d;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+
+.color-check-title {
+    margin: 0;
+
+    color: #252832;
+
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+
+.color-check-description {
+    margin: 10px 0 0;
+
+    color: #6f7482;
+
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================
+   Level selector
+========================================================= */
+
+.color-level-section {
+    margin-bottom: 22px;
+}
+
+
+.section-label {
+    margin: 0 0 10px;
+
+    color: #525764;
+
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+
+.color-level-selector {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+
+    padding: 6px;
+
+    border: 1px solid #e4e6ec;
+    border-radius: 20px;
+
+    background: #f4f5f8;
+}
+
+
+.color-level-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    min-width: 0;
+    min-height: 50px;
+
+    padding: 8px 10px;
+
+    border: none;
+    border-radius: 15px;
+
+    background: transparent;
+
+    color: #707583;
+
+    font: inherit;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+.color-level-button.is-active {
+    background: #ffffff;
+
+    color: #2c303a;
+
+    box-shadow:
+        0 3px 10px rgba(40, 45, 60, 0.09);
+}
+
+
+.level-number {
+    display: grid;
+    place-items: center;
+
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+
+    background: #e7e9ef;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+
+.color-level-button.is-active .level-number {
+    background: #f5dce6;
+
+    color: #a64d6d;
+}
+
+
+.level-name {
+    min-width: 0;
+
+    overflow: hidden;
+
+    font-size: 0.8rem;
+    font-weight: 750;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.level-description {
+    margin: 10px 4px 0;
+
+    color: #828795;
+
+    font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   Camera
+========================================================= */
+
+.camera-section {
+    margin-bottom: 22px;
+}
+
+
+.camera-frame {
+    position: relative;
+
+    width: 100%;
+    aspect-ratio: 3 / 4;
+
+    overflow: hidden;
+
+    border: 1px solid #e1e3e9;
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #eef0f4,
+            #e4e7ed
+        );
+}
+
+
+.camera-video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    background: #24262b;
+}
+
+
+.camera-placeholder {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    padding: 30px;
+
+    color: #777d8b;
+
+    text-align: center;
+}
+
+
+.camera-placeholder-icon {
+    display: grid;
+    place-items: center;
+
+    width: 72px;
+    height: 72px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.72);
+
+    font-size: 1.8rem;
+}
+
+
+.camera-placeholder p {
+    margin: 0;
+
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   Camera target
+========================================================= */
+
+.camera-target {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 78px;
+    height: 78px;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 2px rgba(0, 0, 0, 0.18),
+        0 3px 15px rgba(0, 0, 0, 0.25);
+
+    pointer-events: none;
+
+    transform: translate(-50%, -50%);
+}
+
+
+.camera-target-horizontal,
+.camera-target-vertical {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    background: #ffffff;
+
+    transform: translate(-50%, -50%);
+}
+
+
+.camera-target-horizontal {
+    width: 38px;
+    height: 2px;
+}
+
+
+.camera-target-vertical {
+    width: 2px;
+    height: 38px;
+}
+
+
+.camera-target-dot {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 7px;
+    height: 7px;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    transform: translate(-50%, -50%);
+}
+
+
+.camera-guide {
+    position: absolute;
+
+    bottom: 16px;
+    left: 50%;
+
+    padding: 8px 13px;
+
+    border-radius: 999px;
+
+    background: rgba(0, 0, 0, 0.54);
+
+    color: #ffffff;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    pointer-events: none;
+
+    transform: translateX(-50%);
+
+    backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   Camera buttons
+========================================================= */
+
+.camera-actions {
+    display: grid;
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+
+.camera-secondary-button,
+.detect-color-button,
+.camera-stop-button {
+    width: 100%;
+    min-height: 54px;
+
+    padding: 12px 18px;
+
+    border: none;
+    border-radius: 18px;
+
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease;
+}
+
+
+.camera-secondary-button {
+    background: #eef0f5;
+
+    color: #555c6b;
+}
+
+
+.detect-color-button {
+    background: #e9b7c9;
+
+    color: #29252a;
+
+    box-shadow:
+        0 7px 18px rgba(164, 88, 117, 0.16);
+}
+
+
+.detect-color-button:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+}
+
+
+.camera-stop-button {
+    background: transparent;
+
+    color: #777d89;
+}
+
+
+.camera-secondary-button:active,
+.detect-color-button:not(:disabled):active,
+.camera-stop-button:active {
+    transform: scale(0.985);
+}
+
+
+.camera-message {
+    min-height: 20px;
+
+    margin: 10px 4px 0;
+
+    color: #747a87;
+
+    font-size: 0.76rem;
+
+    text-align: center;
+}
+
+
+.camera-message.is-error {
+    color: #a94d59;
+}
+
+
+/* =========================================================
+   Result
+========================================================= */
+
+.color-result {
+    margin-bottom: 22px;
+
+    padding: 24px;
+
+    border: 1px solid #e1e4e9;
+    border-radius: 28px;
+
+    background: #ffffff;
+}
+
+
+.result-label {
+    margin: 0 0 18px;
+
+    color: #8a8f9b;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+
+.result-main {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+.result-color-sample {
+    flex: 0 0 auto;
+
+    width: 78px;
+    height: 78px;
+
+    border: 3px solid #ffffff;
+    border-radius: 22px;
+
+    background: #dddddd;
+
+    box-shadow:
+        0 0 0 1px #dfe1e6,
+        0 6px 18px rgba(45, 49, 60, 0.11);
+}
+
+
+.result-copy {
+    min-width: 0;
+}
+
+
+.result-name-ja {
+    margin: 0;
+
+    color: #252832;
+
+    font-size: clamp(1.8rem, 8vw, 2.7rem);
+    font-weight: 850;
+    line-height: 1.08;
+}
+
+
+.result-name-en {
+    margin: 7px 0 0;
+
+    color: #767c89;
+
+    font-size: 0.82rem;
+    font-weight: 800;
+
+    letter-spacing: 0.07em;
+
+    text-transform: uppercase;
+}
+
+
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-top: 22px;
+}
+
+
+.result-detail-item {
+    min-width: 0;
+
+    padding: 12px 14px;
+
+    border-radius: 15px;
+
+    background: #f4f5f7;
+}
+
+
+.result-detail-item span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #9196a1;
+
+    font-size: 0.65rem;
+    font-weight: 750;
+}
+
+
+.result-detail-item strong {
+    display: block;
+
+    overflow: hidden;
+
+    color: #4c515e;
+
+    font-size: 0.78rem;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.result-level-note {
+    margin: 16px 0 0;
+
+    color: #858b97;
+
+    font-size: 0.73rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   Privacy
+========================================================= */
+
+.privacy-note {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 16px 18px;
+
+    border-radius: 18px;
+
+    background: #f4f5f7;
+
+    color: #757b88;
+}
+
+
+.privacy-note i {
+    flex: 0 0 auto;
+
+    margin-top: 1px;
+
+    font-size: 1rem;
+}
+
+
+.privacy-note p {
+    margin: 0;
+
+    font-size: 0.72rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   Responsive
+========================================================= */
+
+@media (min-width: 620px) {
+
+    .color-check-page {
+        padding-top: 38px;
+    }
+
+
+    .camera-frame {
+        aspect-ratio: 4 / 3;
+    }
+
+
+    .camera-actions {
+        grid-template-columns: 1fr 1.35fr;
+    }
+
+
+    .camera-stop-button {
+        grid-column: 1 / -1;
+    }
+}
+
+
+@media (max-width: 380px) {
+
+    .color-level-button {
+        flex-direction: column;
+
+        gap: 3px;
+
+        min-height: 60px;
+    }
+
+
+    .level-name {
+        font-size: 0.7rem;
+    }
+
+
+    .result-main {
+        gap: 14px;
+    }
+
+
+    .result-color-sample {
+        width: 64px;
+        height: 64px;
+
+        border-radius: 18px;
+    }
+}
+
+/* =========================================================
+   Back to yahan-app
+========================================================= */
+
+.color-check-back-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-bottom: 22px;
+
+    padding:
+        9px
+        13px;
+
+    border-radius: 999px;
+
+    background: #eef0f5;
+
+    color: #5f6673;
+
+    font-size: 0.8rem;
+    font-weight: 750;
+
+    text-decoration: none;
+}
+
+
+.color-check-back-link:hover {
+    background: #e5e8ef;
+
+    color: #3f4652;
+}
+
+
+.color-check-back-link:active {
+    transform: scale(0.98);
+}
