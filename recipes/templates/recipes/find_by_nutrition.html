@@ -1,0 +1,213 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+    栄養から探す | Yahan App
+{% endblock %}
+
+
+{% block recipes_content %}
+
+<main class="recipe-page nutrition-search-page">
+
+
+    <a
+        href="{% url 'recipes:home' %}"
+        class="recipe-back-link"
+    >
+        ← レシピ
+    </a>
+
+
+    <section class="nutrition-search-header">
+
+        <h1>
+            栄養から探す
+        </h1>
+
+        <p>
+            今日摂りたい栄養を選んでね。
+            いくつ選んでもOK。
+        </p>
+
+    </section>
+
+
+
+    <form
+        method="get"
+        class="nutrition-search-form"
+    >
+
+        <div class="nutrition-selector">
+
+            {% for tag in nutrition_tags %}
+
+                <label class="nutrition-chip">
+
+                    <input
+                        type="checkbox"
+                        name="nutrition"
+                        value="{{ tag.id }}"
+                        {% if tag.id in selected_ids %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <span>
+                        {{ tag.name }}
+                    </span>
+
+                </label>
+
+            {% empty %}
+
+                <p class="recipe-detail-empty">
+                    栄養タグがまだ登録されていない。
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+
+
+        <div class="nutrition-search-actions">
+
+            <button
+                type="submit"
+                class="nutrition-search-button"
+            >
+                この栄養で探す
+            </button>
+
+
+            {% if selected_ids %}
+
+                <a
+                    href="{% url 'recipes:find_by_nutrition' %}"
+                    class="nutrition-clear-button"
+                >
+                    選択を解除
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </form>
+
+
+
+    {% if has_search %}
+
+        <section class="nutrition-results">
+
+            <div class="nutrition-results-heading">
+
+                <p class="section-label">
+                    RESULTS
+                </p>
+
+                <p class="nutrition-result-count">
+                    {{ results|length }}件
+                </p>
+
+            </div>
+
+
+            {% if results %}
+
+                <div class="nutrition-result-list">
+
+                    {% for result in results %}
+
+                        <a
+                            href="{% url 'recipes:detail' result.recipe.pk %}"
+                            class="nutrition-result-card"
+                        >
+
+                            <div class="nutrition-result-main">
+
+                                <div class="nutrition-result-top">
+
+                                    <span class="nutrition-result-appliance">
+                                        {{ result.recipe.appliance.name }}
+                                    </span>
+
+
+                                    {% if result.is_favorite %}
+
+                                        <span class="nutrition-result-favorite">
+                                            ★
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <h2>
+                                    {{ result.recipe.name }}
+                                </h2>
+
+
+                                <div class="nutrition-match-summary">
+
+                                    <strong>
+                                        {{ result.match_percent }}%
+                                    </strong>
+
+                                    <span>
+                                        {{ result.matched_count }}
+                                        個の栄養に一致
+                                    </span>
+
+                                </div>
+
+
+                                <div class="nutrition-mini-tags">
+
+                                    {% for tag in result.matched_tags %}
+
+                                        <span>
+                                            {{ tag.name }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="recipe-list-arrow">
+                                →
+                            </span>
+
+                        </a>
+
+                    {% endfor %}
+
+                </div>
+
+
+            {% else %}
+
+                <div class="recipe-empty-state">
+
+                    <p>
+                        この栄養に合うレシピがまだない。
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% endif %}
+
+
+</main>
+
+{% endblock %}

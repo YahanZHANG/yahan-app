@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'recipes/recipes.css' %}"
+>
+
+<div class="recipes-app">
+
+    <main class="recipes-main">
+        {% block recipes_content %}
+        {% endblock %}
+    </main>
+
+
+    <nav class="recipes-bottom-nav">
+
+        <a
+            href="{% url 'recipes:home' %}"
+            class="recipes-nav-item
+            {% if request.resolver_match.url_name == 'home' %}
+                is-active
+            {% endif %}"
+        >
+            <span class="recipes-nav-icon">
+                ⌂
+            </span>
+
+            <span>
+                ホーム
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'recipes:hotcook_list' %}"
+            class="recipes-nav-item
+            {% if request.resolver_match.url_name == 'hotcook_list' %}
+                is-active
+            {% endif %}"
+        >
+            <span class="recipes-nav-icon">
+                ◯
+            </span>
+
+            <span>
+                ホットクック
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'recipes:chefdrum_list' %}"
+            class="recipes-nav-item
+            {% if request.resolver_match.url_name == 'chefdrum_list' %}
+                is-active
+            {% endif %}"
+        >
+            <span class="recipes-nav-icon">
+                ◉
+            </span>
+
+            <span>
+                シェフドラム
+            </span>
+        </a>
+
+        <a
+            href="{% url 'recipes:my_recipes' %}"
+            class="recipes-nav-item
+            {% if request.resolver_match.url_name == 'my_recipes' %}
+                is-active
+            {% endif %}"
+        >
+            <span class="recipes-nav-icon">
+                ★
+            </span>
+
+            <span>
+                マイレシピ
+            </span>
+        </a>
+
+    </nav>
+
+</div>
+
+{% endblock %}

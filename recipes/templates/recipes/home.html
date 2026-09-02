@@ -1,0 +1,260 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+    レシピ | Yahan App
+{% endblock %}
+
+
+{% block recipes_content %}
+
+    <main class="recipe-page">
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="recipes-portal-link"
+        >
+            ← Yahan App
+        </a>
+
+        <!-- 今日の料理を探す -->
+        <section class="recipe-section">
+
+            <div class="section-heading">
+
+                <p class="section-label">
+                    FIND A MEAL
+                </p>
+            </div>
+
+
+            <div class="recipe-route-grid">
+
+
+                <!-- 食材 -->
+                    <a
+                        href="{% url 'recipes:find_by_ingredients' %}"
+                        class="recipe-route-card"
+                    >
+
+                    <div class="route-icon">
+                        🥕
+                    </div>
+
+                    <div class="route-copy">
+
+                        <h3>
+                            食材から探す
+                        </h3>
+
+                    </div>
+
+                </a>
+
+
+
+                <!-- 気分 -->
+                <a
+                    href="{% url 'recipes:find_by_mood' %}"
+                    class="recipe-route-card"
+                >
+
+                    <div class="route-icon">
+                        😀
+                    </div>
+
+                    <div class="route-copy">
+
+                        <h3>
+                            気分から探す
+                        </h3>
+
+                    </div>
+
+                </a>
+
+
+
+                <!-- 栄養 -->
+                <a
+                    href="{% url 'recipes:find_by_nutrition' %}"
+                    class="recipe-route-card"
+                >
+
+                    <div class="route-icon">
+                        🥕
+                    </div>
+
+                    <div class="route-copy">
+
+                        <h3>
+                            栄養から探す
+                        </h3>
+                    </div>
+
+                </a>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- レシピ一覧 -->
+        <section class="recipe-section">
+
+            <div class="section-heading">
+
+                <p class="section-label">
+                    RECIPES
+                </p>
+            </div>
+
+
+            <div class="appliance-grid">
+
+
+                <!-- Hotcook -->
+                    <a
+                        href="{% url 'recipes:hotcook_list' %}"
+                        class="appliance-card hotcook-card"
+                    >
+
+                        <div>
+
+                            <p class="appliance-label">
+                                HOTCOOK
+                            </p>
+
+                            <h3>
+                                ヘルシオ
+                            </h3>
+
+                            <p class="appliance-model">
+                                KN-HW16E-R
+                            </p>
+
+                        </div>
+
+                        <span class="appliance-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+
+                <!-- ChefDrum -->
+                    <a
+                        href="{% url 'recipes:chefdrum_list' %}"
+                        class="appliance-card chefdrum-card"
+                    >
+
+                        <div>
+
+                            <p class="appliance-label">
+                                CHEF DRUM
+                            </p>
+
+                            <h3>
+                                シェフドラム
+                            </h3>
+
+                            <p class="appliance-model">
+                                DAC-IA2
+                            </p>
+
+                        </div>
+
+                        <span class="appliance-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- マイレシピ -->
+        <section class="recipe-section">
+
+            <div class="section-heading">
+
+                <p class="section-label">
+                    MY RECIPES
+                </p>
+
+            </div>
+
+
+            <div class="my-recipe-grid">
+
+
+                <a
+                    href="{% url 'recipes:my_recipes' %}"
+                    class="my-recipe-card"
+                >
+
+                    <span class="my-recipe-symbol">
+                        ★
+                    </span>
+
+                    <div>
+
+                        <h3>
+                            お気に入り
+                        </h3>
+
+                        <p>
+                            また作りたいレシピ
+                        </p>
+
+                    </div>
+
+                    <span class="my-recipe-arrow">
+                        →
+                    </span>
+
+                </a>
+
+
+
+                <a
+                    href="{% url 'recipes:my_recipes' %}"
+                    class="my-recipe-card"
+                >
+
+                    <span class="my-recipe-symbol dislike-symbol">
+                        ×
+                    </span>
+
+                    <div>
+
+                        <h3>
+                            あまり好まない
+                        </h3>
+
+                        <p>
+                            おすすめから外したレシピ
+                        </p>
+
+                    </div>
+
+                    <span class="my-recipe-arrow">
+                        →
+                    </span>
+
+                </a>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+    {% endblock %}

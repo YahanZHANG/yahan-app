@@ -1,0 +1,261 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+    マイレシピ | Yahan App
+{% endblock %}
+
+
+{% block recipes_content %}
+
+<main class="recipe-page my-recipes-page">
+
+    <section class="my-recipes-header">
+
+        <h1>
+            マイレシピ
+        </h1>
+
+        <p>
+            お気に入りと、あまり好まない料理。
+        </p>
+
+    </section>
+
+
+    <div class="my-recipes-tabs">
+
+        <button
+            type="button"
+            class="my-recipes-tab is-active"
+            data-tab="favorites"
+        >
+            ★ お気に入り
+            <span>
+                {{ favorites|length }}
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            class="my-recipes-tab"
+            data-tab="dislikes"
+        >
+            × あまり好まない
+            <span>
+                {{ dislikes|length }}
+            </span>
+        </button>
+
+    </div>
+
+
+    <!-- お気に入り -->
+    <section
+        class="my-recipes-panel is-active"
+        data-panel="favorites"
+    >
+
+        {% if favorites %}
+
+            <div class="recipe-card-list">
+
+                {% for recipe in favorites %}
+
+                    <a
+                        href="{% url 'recipes:detail' recipe.pk %}"
+                        class="recipe-list-card"
+                    >
+
+                        <div class="recipe-list-card-main">
+
+                            <div class="my-recipe-card-top">
+
+                                <span class="my-recipe-appliance">
+                                    {{ recipe.appliance.name }}
+                                </span>
+
+                                <span class="my-recipe-status favorite-status">
+                                    ★
+                                </span>
+
+                            </div>
+
+
+                            <h2>
+                                {{ recipe.name }}
+                            </h2>
+
+
+                            <div class="recipe-meta">
+
+                                {% if recipe.cooking_time_minutes %}
+                                    <span>
+                                        {{ recipe.cooking_time_minutes }}分
+                                    </span>
+                                {% endif %}
+
+                                <span>
+                                    {{ recipe.get_cooking_mode_display }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="recipe-list-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="recipe-empty-state">
+
+                <p>
+                    お気に入りはまだない。
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+
+    <!-- あまり好まない -->
+    <section
+        class="my-recipes-panel"
+        data-panel="dislikes"
+    >
+
+        {% if dislikes %}
+
+            <div class="recipe-card-list">
+
+                {% for recipe in dislikes %}
+
+                    <a
+                        href="{% url 'recipes:detail' recipe.pk %}"
+                        class="recipe-list-card"
+                    >
+
+                        <div class="recipe-list-card-main">
+
+                            <div class="my-recipe-card-top">
+
+                                <span class="my-recipe-appliance">
+                                    {{ recipe.appliance.name }}
+                                </span>
+
+                                <span class="my-recipe-status dislike-status">
+                                    ×
+                                </span>
+
+                            </div>
+
+
+                            <h2>
+                                {{ recipe.name }}
+                            </h2>
+
+
+                            <div class="recipe-meta">
+
+                                {% if recipe.cooking_time_minutes %}
+                                    <span>
+                                        {{ recipe.cooking_time_minutes }}分
+                                    </span>
+                                {% endif %}
+
+                                <span>
+                                    {{ recipe.get_cooking_mode_display }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="recipe-list-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="recipe-empty-state">
+
+                <p>
+                    「あまり好まない」に登録した料理はまだない。
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const tabs = document.querySelectorAll(
+        ".my-recipes-tab"
+    );
+
+    const panels = document.querySelectorAll(
+        ".my-recipes-panel"
+    );
+
+
+    tabs.forEach((tab) => {
+
+        tab.addEventListener("click", () => {
+
+            const target = tab.dataset.tab;
+
+
+            tabs.forEach((item) => {
+                item.classList.remove("is-active");
+            });
+
+
+            panels.forEach((panel) => {
+                panel.classList.remove("is-active");
+            });
+
+
+            tab.classList.add("is-active");
+
+
+            const targetPanel = document.querySelector(
+                `[data-panel="${target}"]`
+            );
+
+            if (targetPanel) {
+                targetPanel.classList.add("is-active");
+            }
+
+        });
+
+    });
+
+});
+</script>
+
+{% endblock %}

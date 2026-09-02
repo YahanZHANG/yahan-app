@@ -1,0 +1,446 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+    {{ recipe.name }} | Yahan App
+{% endblock %}
+
+
+{% block recipes_content %}
+
+<main class="recipe-page recipe-detail-page">
+
+
+    <!-- Back -->
+    {% if recipe.appliance.appliance_type == "hotcook" %}
+
+        <a
+            href="{% url 'recipes:hotcook_list' %}"
+            class="recipe-back-link"
+        >
+            ← ホットクック
+        </a>
+
+    {% else %}
+
+        <a
+            href="{% url 'recipes:chefdrum_list' %}"
+            class="recipe-back-link"
+        >
+            ← シェフドラム
+        </a>
+
+    {% endif %}
+
+
+
+    <!-- Header -->
+    <section class="recipe-detail-header">
+
+        <div class="recipe-detail-heading">
+
+            <div>
+
+                <p class="recipe-detail-appliance">
+                    {{ recipe.appliance.name }}
+                </p>
+
+                <h1>
+                    {{ recipe.name }}
+                </h1>
+
+            </div>
+
+
+            <div
+                class="recipe-preference-actions"
+                data-preference-url="{% url 'recipes:toggle_preference' recipe.pk %}"
+            >
+
+                {% csrf_token %}
+
+                <button
+                    type="button"
+                    class="
+                        recipe-preference-button
+                        favorite-button
+                        {% if preference == 'favorite' %}
+                            is-active
+                        {% endif %}
+                    "
+                    data-preference="favorite"
+                    aria-label="お気に入り"
+                    aria-pressed="{% if preference == 'favorite' %}true{% else %}false{% endif %}"
+                >
+                    ★
+                </button>
+
+
+                <button
+                    type="button"
+                    class="
+                        recipe-preference-button
+                        dislike-button
+                        {% if preference == 'dislike' %}
+                            is-active
+                        {% endif %}
+                    "
+                    data-preference="dislike"
+                    aria-label="あまり好まない"
+                    aria-pressed="{% if preference == 'dislike' %}true{% else %}false{% endif %}"
+                >
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="recipe-detail-meta">
+
+            {% if recipe.cooking_time_minutes %}
+                <span>
+                    {{ recipe.cooking_time_minutes }}分
+                </span>
+            {% endif %}
+
+            <span>
+                {{ recipe.get_cooking_mode_display }}
+            </span>
+
+            {% if recipe.servings %}
+                <span>
+                    {{ recipe.servings }}人分
+                </span>
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Ingredients -->
+    <section class="recipe-detail-section">
+
+        <h2>
+            材料
+        </h2>
+
+        <div class="recipe-detail-list">
+
+            {% for item in food_ingredients %}
+
+                <div class="recipe-detail-list-row">
+
+                    <span>
+                        {{ item.ingredient.name }}
+                    </span>
+
+                    <strong>
+                        {{ item.amount }}
+                    </strong>
+
+                </div>
+
+            {% empty %}
+
+                <p class="recipe-detail-empty">
+                    材料情報なし
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Seasonings -->
+    {% if seasonings %}
+
+        <section class="recipe-detail-section">
+
+            <h2>
+                調味料
+            </h2>
+
+            <div class="recipe-detail-list">
+
+                {% for item in seasonings %}
+
+                    <div class="recipe-detail-list-row">
+
+                        <span>
+                            {{ item.ingredient.name }}
+                        </span>
+
+                        <strong>
+                            {{ item.amount }}
+                        </strong>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+
+    <!-- Appliance operation -->
+    <section class="recipe-detail-section">
+
+        <h2>
+            {{ recipe.appliance.name }}の操作
+        </h2>
+
+
+        <div class="appliance-operation-card">
+
+            <div class="operation-header">
+
+                <span class="operation-mode">
+                    {{ recipe.get_cooking_mode_display }}
+                </span>
+
+
+                {% if recipe.menu_number %}
+
+                    <span class="operation-menu-number">
+                        メニュー {{ recipe.menu_number }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="operation-body">
+
+                {{ recipe.appliance_operation|linebreaksbr }}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Preparation -->
+    {% if recipe.preparation %}
+
+        <section class="recipe-detail-section">
+
+            <h2>
+                作り方
+            </h2>
+
+            <div class="recipe-preparation">
+
+                {{ recipe.preparation|linebreaksbr }}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+
+    <!-- Tags -->
+    {% if recipe.mood_tags.all or recipe.nutrition_tags.all %}
+
+        <section class="recipe-detail-section recipe-tag-section">
+
+            {% if recipe.mood_tags.all %}
+
+                <div class="recipe-tag-group">
+
+                    <h2>
+                        気分
+                    </h2>
+
+                    <div class="recipe-tags">
+
+                        {% for tag in recipe.mood_tags.all %}
+
+                            <span>
+                                {{ tag.name }}
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            {% if recipe.nutrition_tags.all %}
+
+                <div class="recipe-tag-group">
+
+                    <h2>
+                        栄養
+                    </h2>
+
+                    <div class="recipe-tags">
+
+                        {% for tag in recipe.nutrition_tags.all %}
+
+                            <span>
+                                {{ tag.name }}
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% endif %}
+
+
+
+    <!-- Notes -->
+    {% if recipe.notes %}
+
+        <section class="recipe-detail-section">
+
+            <h2>
+                メモ
+            </h2>
+
+            <div class="recipe-note">
+
+                {{ recipe.notes|linebreaksbr }}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const actions = document.querySelector(
+        ".recipe-preference-actions"
+    );
+
+    if (!actions) {
+        return;
+    }
+
+    const buttons = actions.querySelectorAll(
+        ".recipe-preference-button"
+    );
+
+    const csrfToken = actions.querySelector(
+        "[name=csrfmiddlewaretoken]"
+    ).value;
+
+    const url = actions.dataset.preferenceUrl;
+
+
+    buttons.forEach((button) => {
+
+        button.addEventListener("click", async () => {
+
+            const preference =
+                button.dataset.preference;
+
+            const formData = new FormData();
+
+            formData.append(
+                "preference",
+                preference
+            );
+
+
+            try {
+
+                buttons.forEach((item) => {
+                    item.disabled = true;
+                });
+
+
+                const response = await fetch(
+                    url,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken": csrfToken,
+                        },
+
+                        body: formData,
+                    }
+                );
+
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Preference request failed"
+                    );
+                }
+
+
+                const data = await response.json();
+
+
+                buttons.forEach((item) => {
+
+                    const isActive =
+                        item.dataset.preference
+                        === data.preference;
+
+                    item.classList.toggle(
+                        "is-active",
+                        isActive
+                    );
+
+                    item.setAttribute(
+                        "aria-pressed",
+                        isActive
+                            ? "true"
+                            : "false"
+                    );
+
+                });
+
+
+            } catch (error) {
+
+                console.error(error);
+
+            } finally {
+
+                buttons.forEach((item) => {
+                    item.disabled = false;
+                });
+
+            }
+
+        });
+
+    });
+
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+    {{ appliance.name }} レシピ | Yahan App
+{% endblock %}
+
+{% block recipes_content %}
+
+
+<main class="recipe-page recipe-list-page">
+
+
+    <!-- Header -->
+    <section class="recipe-list-header">
+
+        <a
+            href="{% url 'recipes:home' %}"
+            class="recipe-back-link"
+        >
+            ← レシピ
+        </a>
+
+
+        <div class="recipe-list-title-row">
+
+            <div>
+
+                <h1>
+                    {{ appliance.name }}
+                </h1>
+
+                <p>
+                    {{ recipes|length }} レシピ
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Recipe list -->
+    <section class="recipe-list-section">
+
+        {% if recipes %}
+
+            <div class="recipe-card-list">
+
+                {% for recipe in recipes %}
+
+                    <a
+                        href="{% url 'recipes:detail' recipe.pk %}"
+                        class="recipe-list-card"
+                    >
+
+                        <div class="recipe-list-card-main">
+
+                            <h2>
+                                {{ recipe.name }}
+                            </h2>
+
+
+                            <div class="recipe-meta">
+
+                                {% if recipe.cooking_time_minutes %}
+                                    <span>
+                                        {{ recipe.cooking_time_minutes }}分
+                                    </span>
+                                {% endif %}
+
+                                <span>
+                                    {{ recipe.get_cooking_mode_display }}
+                                </span>
+
+                                {% if recipe.menu_number %}
+                                    <span>
+                                        メニュー {{ recipe.menu_number }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="recipe-ingredient-preview">
+
+                                {% for item in recipe.recipe_ingredients.all|slice:":4" %}
+
+                                    {% if not item.ingredient.is_seasoning %}
+
+                                        <span>
+                                            {{ item.ingredient.name }}
+                                        </span>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="recipe-list-arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="recipe-empty-state">
+
+                <p>
+                    まだレシピが登録されていない。
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+</main>
+
+{% endblock %}

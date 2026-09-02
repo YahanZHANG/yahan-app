@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "games.apps.GamesConfig",
     "vaccination.apps.VaccinationConfig",
     "colorcheck.apps.ColorCheckConfig",
+    "recipes.apps.RecipesConfig",
 ]
 
 # ------------------------------------------------------------------------------

@@ -70,4 +70,12 @@ urlpatterns = [
             namespace="colorcheck",
         ),
     ),
+
+    path(
+        "recipes/", 
+        include(
+            "recipes.urls",
+            namespace="recipes",
+        ),
+    ),
 ]
