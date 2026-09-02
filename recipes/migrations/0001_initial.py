@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Appliance',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('appliance_type', models.CharField(choices=[('hotcook', 'ホットクック'), ('chefdrum', 'シェフドラム')], max_length=20, verbose_name='種類')),
+                ('appliance_type', models.CharField(choices=[('hotcook', 'ヘルシオ'), ('chefdrum', 'シェフドラム')], max_length=20, verbose_name='種類')),
                 ('name', models.CharField(max_length=100, verbose_name='表示名')),
                 ('model_number', models.CharField(max_length=50, unique=True, verbose_name='型番')),
             ],
