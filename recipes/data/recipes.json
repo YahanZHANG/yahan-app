@@ -16,28 +16,32 @@
                 "category": "vegetable",
                 "amount": "3個（450g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "じゃがいも"
             },
             {
                 "name": "玉ねぎ",
                 "category": "vegetable",
                 "amount": "2個（400g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "玉ねぎ"
             },
             {
                 "name": "にんじん",
                 "category": "vegetable",
                 "amount": "1/2本（100g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "にんじん"
             },
             {
                 "name": "牛薄切り肉",
                 "category": "meat",
                 "amount": "200g",
                 "is_seasoning": false,
-                "switzerland_availability": 4
+                "switzerland_availability": 4,
+                "search_group": "牛肉"
             },
             {
                 "name": "しょうゆ",
@@ -70,8 +74,7 @@
         ],
         "mood_tags": [
             "あったかい",
-            "ご飯がすすむ",
-            "和食"
+            "ご飯がすすむ"
         ],
         "nutrition_tags": [
             "たんぱく質",
@@ -85,7 +88,6 @@
         "switzerland_score": 5,
         "is_active": true
     },
-
     {
         "name": "チキンと野菜のカレー（無水カレー）",
         "appliance_type": "hotcook",
@@ -103,42 +105,48 @@
                 "category": "vegetable",
                 "amount": "3個（450g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "トマト"
             },
             {
                 "name": "玉ねぎ",
                 "category": "vegetable",
                 "amount": "2個（400g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "玉ねぎ"
             },
             {
                 "name": "セロリ",
                 "category": "vegetable",
                 "amount": "1本（100g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "セロリ"
             },
             {
                 "name": "鶏手羽元",
                 "category": "meat",
                 "amount": "8本",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "鶏肉"
             },
             {
                 "name": "にんにく",
                 "category": "vegetable",
                 "amount": "適量",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "にんにく"
             },
             {
                 "name": "しょうが",
                 "category": "vegetable",
                 "amount": "適量",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "しょうが"
             },
             {
                 "name": "カレールウ",
@@ -165,7 +173,6 @@
         "switzerland_score": 5,
         "is_active": true
     },
-
     {
         "name": "麻婆豆腐",
         "appliance_type": "chefdrum",
@@ -183,35 +190,40 @@
                 "category": "soy",
                 "amount": "1丁（300g）",
                 "is_seasoning": false,
-                "switzerland_availability": 4
+                "switzerland_availability": 4,
+                "search_group": "豆腐"
             },
             {
                 "name": "豚ひき肉",
                 "category": "meat",
                 "amount": "90g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "豚肉"
             },
             {
                 "name": "長ねぎ",
                 "category": "vegetable",
                 "amount": "20g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "長ねぎ"
             },
             {
                 "name": "にんにく",
                 "category": "vegetable",
                 "amount": "1片",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "にんにく"
             },
             {
                 "name": "しょうが",
                 "category": "vegetable",
                 "amount": "1/3片",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "しょうが"
             },
             {
                 "name": "片栗粉",
@@ -273,13 +285,11 @@
         "mood_tags": [
             "辛い",
             "がっつり",
-            "ご飯がすすむ",
-            "中華"
+            "ご飯がすすむ"
         ],
         "nutrition_tags": [
             "たんぱく質",
-            "鉄",
-            "大豆"
+            "鉄"
         ],
         "source_name": "アイリスオーヤマ公式",
         "source_url": "https://www.irisohyama.co.jp/dac-chefdrum/recipe/detail/?c=1&r=52&s=1",
@@ -288,7 +298,6 @@
         "switzerland_score": 4,
         "is_active": true
     },
-
     {
         "name": "回鍋肉",
         "appliance_type": "chefdrum",
@@ -306,21 +315,24 @@
                 "category": "meat",
                 "amount": "100g",
                 "is_seasoning": false,
-                "switzerland_availability": 4
+                "switzerland_availability": 4,
+                "search_group": "豚肉"
             },
             {
                 "name": "キャベツ",
                 "category": "vegetable",
                 "amount": "200g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "キャベツ"
             },
             {
                 "name": "ピーマン",
                 "category": "vegetable",
                 "amount": "2個",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "ピーマン"
             },
             {
                 "name": "酒",
@@ -367,8 +379,7 @@
         ],
         "mood_tags": [
             "がっつり",
-            "ご飯がすすむ",
-            "中華"
+            "ご飯がすすむ"
         ],
         "nutrition_tags": [
             "たんぱく質",
@@ -381,8 +392,7 @@
         "switzerland_score": 4,
         "is_active": true
     },
-
-        {
+    {
         "name": "クリームシチュー",
         "appliance_type": "hotcook",
         "category": "western",
@@ -399,35 +409,40 @@
                 "category": "meat",
                 "amount": "250g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "鶏肉"
             },
             {
                 "name": "じゃがいも",
                 "category": "vegetable",
                 "amount": "3個（450g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "じゃがいも"
             },
             {
                 "name": "にんじん",
                 "category": "vegetable",
                 "amount": "1本（200g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "にんじん"
             },
             {
                 "name": "玉ねぎ",
                 "category": "vegetable",
                 "amount": "1個（200g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "玉ねぎ"
             },
             {
                 "name": "牛乳",
                 "category": "dairy",
                 "amount": "200mL",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "牛乳"
             },
             {
                 "name": "薄力粉",
@@ -460,8 +475,7 @@
         ],
         "mood_tags": [
             "あったかい",
-            "こってり",
-            "洋食"
+            "こってり"
         ],
         "nutrition_tags": [
             "たんぱく質",
@@ -469,13 +483,12 @@
             "野菜"
         ],
         "source_name": "SHARP公式",
-        "source_url": "",
+        "source_url": "https://cocoroplus.jp.sharp/kitchen/recipe/hotcook/KN-HW24F/R4009",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 5,
         "is_active": true
     },
-
     {
         "name": "スペアリブの煮こみ",
         "appliance_type": "hotcook",
@@ -493,14 +506,16 @@
                 "category": "meat",
                 "amount": "800g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "豚肉"
             },
             {
                 "name": "玉ねぎ",
                 "category": "vegetable",
                 "amount": "1個（200g）",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "玉ねぎ"
             },
             {
                 "name": "バルサミコ酢",
@@ -541,13 +556,12 @@
             "鉄"
         ],
         "source_name": "SHARP公式",
-        "source_url": "",
+        "source_url": "https://cocoroplus.jp.sharp/kitchen/recipe/hotcook/KN-HW24F/R4046",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 5,
         "is_active": true
     },
-
     {
         "name": "チャーハン",
         "appliance_type": "chefdrum",
@@ -565,28 +579,32 @@
                 "category": "grain",
                 "amount": "300g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "ごはん"
             },
             {
                 "name": "チャーシュー",
                 "category": "meat",
                 "amount": "100g",
                 "is_seasoning": false,
-                "switzerland_availability": 3
+                "switzerland_availability": 3,
+                "search_group": "チャーシュー"
             },
             {
                 "name": "長ねぎ",
                 "category": "vegetable",
                 "amount": "50g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "長ねぎ"
             },
             {
                 "name": "卵",
                 "category": "egg",
                 "amount": "2個",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "卵"
             },
             {
                 "name": "ごま油",
@@ -604,7 +622,6 @@
             }
         ],
         "mood_tags": [
-            "中華",
             "がっつり",
             "ご飯がすすむ"
         ],
@@ -612,13 +629,12 @@
             "たんぱく質"
         ],
         "source_name": "アイリスオーヤマ公式",
-        "source_url": "",
+        "source_url": "https://www.irisohyama.co.jp/dac-chefdrum/recipe/detail/?c=1&r=47&s=1",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 4,
         "is_active": true
     },
-
     {
         "name": "青椒肉絲",
         "appliance_type": "chefdrum",
@@ -636,21 +652,24 @@
                 "category": "meat",
                 "amount": "200g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "豚肉"
             },
             {
                 "name": "たけのこ水煮",
                 "category": "vegetable",
                 "amount": "200g",
                 "is_seasoning": false,
-                "switzerland_availability": 3
+                "switzerland_availability": 3,
+                "search_group": "たけのこ"
             },
             {
                 "name": "ピーマン",
                 "category": "vegetable",
                 "amount": "6個",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "ピーマン"
             },
             {
                 "name": "オイスターソース",
@@ -675,7 +694,6 @@
             }
         ],
         "mood_tags": [
-            "中華",
             "がっつり",
             "ご飯がすすむ"
         ],
@@ -685,20 +703,19 @@
             "ビタミンC"
         ],
         "source_name": "アイリスオーヤマ公式",
-        "source_url": "",
+        "source_url": "https://www.irisohyama.co.jp/dac-chefdrum/recipe/detail/?c=1&r=71&s=1",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 4,
         "is_active": true
     },
-
     {
         "name": "唐揚げ",
         "appliance_type": "chefdrum",
         "category": "japanese",
         "cooking_mode": "auto",
         "cooking_time_minutes": 6,
-        "servings": 2,
+        "servings": null,
         "menu_number": "6-10",
         "appliance_operation": "内鍋に油300mLを入れる\n→ 傾き1\n→ 自動モード 6-10で予熱\n→ 予熱後に鶏肉を入れる\n→ 蒸気口を「閉」\n→ 傾き2\n→ スタート",
         "preparation": "鶏肉を一口大に切り、しょうゆと酒で下味をつける。\n片栗粉を薄くまぶして、予熱した油に入れて調理する。",
@@ -709,7 +726,8 @@
                 "category": "meat",
                 "amount": "300g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "鶏肉"
             },
             {
                 "name": "しょうゆ",
@@ -742,20 +760,18 @@
         ],
         "mood_tags": [
             "がっつり",
-            "ご飯がすすむ",
-            "和食"
+            "ご飯がすすむ"
         ],
         "nutrition_tags": [
             "たんぱく質"
         ],
         "source_name": "アイリスオーヤマ公式",
-        "source_url": "",
+        "source_url": "https://www.irisohyama.co.jp/dac-chefdrum/recipe/detail/?c=3&r=91&s=1",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 5,
         "is_active": true
     },
-
     {
         "name": "サムゲタン",
         "appliance_type": "chefdrum",
@@ -773,54 +789,59 @@
                 "category": "meat",
                 "amount": "300g",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "鶏肉"
             },
             {
                 "name": "鶏手羽元",
                 "category": "meat",
                 "amount": "4本",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "鶏肉"
             },
             {
                 "name": "長ねぎ",
                 "category": "vegetable",
                 "amount": "1本",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "長ねぎ"
             },
             {
                 "name": "もち米",
                 "category": "grain",
                 "amount": "50g",
                 "is_seasoning": false,
-                "switzerland_availability": 3
+                "switzerland_availability": 3,
+                "search_group": "もち米"
             },
             {
                 "name": "しょうが",
                 "category": "vegetable",
                 "amount": "1片",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "しょうが"
             },
             {
                 "name": "にんにく",
                 "category": "vegetable",
                 "amount": "1片",
                 "is_seasoning": false,
-                "switzerland_availability": 5
+                "switzerland_availability": 5,
+                "search_group": "にんにく"
             }
         ],
         "mood_tags": [
             "あったかい",
-            "さっぱり",
-            "韓国料理"
+            "さっぱり"
         ],
         "nutrition_tags": [
             "たんぱく質"
         ],
         "source_name": "アイリスオーヤマ公式",
-        "source_url": "",
+        "source_url": "https://www.irisohyama.co.jp/dac-chefdrum/recipe/detail/?c=4&r=4&s=1",
         "is_official": true,
         "verified_for_model": true,
         "switzerland_score": 4,

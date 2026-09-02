@@ -13,6 +13,11 @@ from recipes.models import (
     RecipeIngredient,
 )
 
+from recipes.constants import (
+    MOOD_TAGS,
+    NUTRITION_TAGS,
+)
+
 
 class Command(BaseCommand):
     help = "recipes/data/recipes.json からレシピを一括登録する"
@@ -302,9 +307,24 @@ class Command(BaseCommand):
                 [],
             ):
 
+                if mood_name not in MOOD_TAGS:
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"  ⚠ 未使用の気分タグ: {mood_name}"
+                        )
+                    )
+
+                    continue
+
+
                 mood, _ = (
-                    MoodTag.objects.get_or_create(
+                    MoodTag.objects.update_or_create(
                         name=mood_name,
+                        defaults={
+                            "display_order":
+                                MOOD_TAGS[mood_name],
+                        },
                     )
                 )
 
@@ -323,16 +343,32 @@ class Command(BaseCommand):
                 [],
             ):
 
+                if nutrition_name not in NUTRITION_TAGS:
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"  ⚠ 未使用の栄養タグ: {nutrition_name}"
+                        )
+                    )
+
+                    continue
+
+
                 nutrition, _ = (
-                    NutritionTag.objects.get_or_create(
+                    NutritionTag.objects.update_or_create(
                         name=nutrition_name,
+                        defaults={
+                            "display_order":
+                                NUTRITION_TAGS[
+                                    nutrition_name
+                                ],
+                        },
                     )
                 )
 
                 recipe.nutrition_tags.add(
                     nutrition
                 )
-
 
             self.stdout.write(
                 f"✓ {recipe.appliance.name} / {recipe.name}"

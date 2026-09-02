@@ -15,6 +15,10 @@ from .models import (
     RecipePreference,
 )
 
+from .constants import (
+    MOOD_TAGS,
+    NUTRITION_TAGS,
+)
 
 
 def home(request):
@@ -554,7 +558,9 @@ def find_by_mood(request):
 
     moods = (
         MoodTag.objects
-        .all()
+        .filter(
+            name__in=MOOD_TAGS.keys(),
+        )
         .order_by(
             "display_order",
             "name",
@@ -699,7 +705,9 @@ def find_by_nutrition(request):
 
     nutrition_tags = (
         NutritionTag.objects
-        .all()
+        .filter(
+            name__in=NUTRITION_TAGS.keys(),
+        )
         .order_by(
             "display_order",
             "name",
