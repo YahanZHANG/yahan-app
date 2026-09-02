@@ -3386,13 +3386,9 @@
 
 .recipe-home-page .recipe-route-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
+    grid-template-columns: 1fr;
     gap: 12px;
 }
-
 
 /* -----------------------------------------
    Card
@@ -3403,27 +3399,23 @@
     grid-column: auto;
 
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
 
-    gap: 26px;
+    gap: 20px;
 
-    min-height: 154px;
+    min-height: 108px;
+    padding: 22px 24px;
 
-    padding: 21px;
-
-    border: 1px solid rgba(40, 38, 34, .07);
+    border: 1px solid rgba(40, 38, 34, .06);
     border-radius: 22px;
 
-    background: #fff;
-
-    color: #292824;
-
+    color: #262624;
     text-decoration: none;
 
     box-shadow:
-        0 2px 8px rgba(30, 27, 20, .025);
+        0 3px 12px rgba(30, 27, 20, .035);
 
     transition:
         transform .18s ease,
@@ -3437,50 +3429,28 @@
    ----------------------------------------- */
 
 
-/* 食材 — Coral */
+/* 食材・気分・栄養は同じ色 */
 
-.recipe-home-page .recipe-route-card:nth-child(1) {
-    background:
-        linear-gradient(
-            145deg,
-            #fff5f0,
-            #ffb89f
-        );
-}
-
-
-/* 気分 — Blue / Violet */
-
-.recipe-home-page .recipe-route-card:nth-child(2) {
-    background:
-        linear-gradient(
-            145deg,
-            #f4f2ff,
-            #b9b0ff
-        );
-}
-
-
-/* 栄養 — Mint */
-
+.recipe-home-page .recipe-route-card:nth-child(1),
+.recipe-home-page .recipe-route-card:nth-child(2),
 .recipe-home-page .recipe-route-card:nth-child(3) {
     background:
         linear-gradient(
-            145deg,
-            #f0fff8,
-            #9fdfc2
+            135deg,
+            #ffffff,
+            #f2f3ee
         );
 }
 
 
-/* ランダム — Deep Purple */
+/* ランダムだけ目立たせる */
 
 .recipe-home-page .recipe-route-card:nth-child(4) {
     background:
         linear-gradient(
-            145deg,
-            #334155,
-            #0f172a
+            135deg,
+            #e4b83f,
+            #c99517
         );
 
     color: #fff;
@@ -3488,8 +3458,10 @@
     border-color: transparent;
 
     box-shadow:
-        0 10px 28px rgba(60, 45, 130, .22);
+        0 8px 24px rgba(170, 125, 20, .18);
 }
+
+
 
 /* -----------------------------------------
    Icon
@@ -3500,31 +3472,31 @@
     align-items: center;
     justify-content: center;
 
-    width: 42px;
-    height: 42px;
+    width: 52px;
+    height: 52px;
 
-    flex: 0 0 42px;
+    flex: 0 0 52px;
 
-    border-radius: 14px;
+    border-radius: 16px;
 
-    background: rgba(255, 255, 255, .66);
+    background: #fff;
 
-    font-size: 1.08rem;
+    font-size: 1.35rem;
 
     box-shadow:
-        inset 0 0 0 1px rgba(30, 28, 25, .035);
+        0 3px 12px rgba(30, 27, 20, .05);
 }
 
 
-/* ランダムだけアイコン */
+/* ランダムのアイコン */
 
 .recipe-home-page
 .recipe-route-card:nth-child(4)
 .route-icon {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, .18);
 
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .08);
+        inset 0 0 0 1px rgba(255, 255, 255, .15);
 }
 
 
@@ -3532,17 +3504,22 @@
    Text
    ----------------------------------------- */
 
+.recipe-home-page .route-copy {
+    min-width: 0;
+}
+
+
 .recipe-home-page .route-copy h3 {
     margin: 0;
 
-    color: #302f2b;
+    color: #252523;
 
-    font-size: 1.15rem;
-    font-weight: 700;   
+    font-size: 1.3rem;
+    font-weight: 750;
 
-    line-height: 1.4;
+    line-height: 1.35;
 
-    letter-spacing: -.02em;
+    letter-spacing: -.025em;
 }
 
 
@@ -3560,30 +3537,30 @@
    ----------------------------------------- */
 
 .recipe-home-page .recipe-route-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
 
-    border-color: rgba(40, 38, 34, .11);
+    border-color: rgba(40, 38, 34, .1);
 
     box-shadow:
-        0 10px 26px rgba(30, 27, 20, .07);
+        0 10px 25px rgba(30, 27, 20, .07);
 }
 
 
 .recipe-home-page
 .recipe-route-card:nth-child(4):hover {
-
     border-color: transparent;
 
     background:
         linear-gradient(
-            145deg,
-            #413c4c,
-            #292631
+            135deg,
+            #e9c04a,
+            #bd8810
         );
 
     box-shadow:
-        0 12px 30px rgba(33, 29, 42, .20);
+        0 12px 30px rgba(170, 125, 20, .23);
 }
+
 
 
 /* =========================================================
@@ -3601,44 +3578,42 @@
 
 
     .recipe-home-page .recipes-portal-link {
-        margin-bottom: 30px;
+        margin-bottom: 28px;
     }
 
 
     .recipe-home-page .recipe-route-grid {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-
-        gap: 9px;
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
 
     .recipe-home-page .recipe-route-card,
     .recipe-home-page .recipe-route-card:nth-child(4) {
-        min-height: 135px;
+        min-height: 96px;
 
-        padding: 16px;
+        padding: 18px;
 
-        gap: 20px;
+        gap: 17px;
 
         border-radius: 18px;
     }
 
 
     .recipe-home-page .route-icon {
-        width: 38px;
-        height: 38px;
+        width: 46px;
+        height: 46px;
 
-        flex-basis: 38px;
+        flex-basis: 46px;
 
-        border-radius: 12px;
+        border-radius: 14px;
 
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
 
 
     .recipe-home-page .route-copy h3 {
-        font-size: .79rem;
+        font-size: 1.15rem;
     }
 
 }
