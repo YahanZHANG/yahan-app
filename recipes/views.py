@@ -36,6 +36,12 @@ from .models import (
     RecipeUserSettings,
 )
 
+from .constants import (
+    MOOD_TAGS,
+    NUTRITION_TAGS,
+)
+
+
 def get_household_members(user):
 
     if not user.is_authenticated:
