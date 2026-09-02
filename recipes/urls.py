@@ -58,4 +58,10 @@ urlpatterns = [
         views.find_by_nutrition,
         name="find_by_nutrition",
     ),
+
+    path(
+        "random/",
+        views.random_recipe,
+        name="random_recipe",
+    ),
 ]

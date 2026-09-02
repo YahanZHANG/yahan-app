@@ -1,0 +1,138 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+ランダムに決める | レシピ
+{% endblock %}
+
+
+{% block recipes_content %}
+
+<div class="recipe-page random-page">
+
+    <a
+        href="{% url 'recipes:home' %}"
+        class="recipe-back-link"
+    >
+        ← ホーム
+    </a>
+
+
+    <header class="random-header">
+
+        <div class="random-icon" aria-hidden="true">
+            🎲
+        </div>
+
+        <div>
+            <h1>
+                今日、何つくる？
+            </h1>
+
+            <p>
+                迷った日は、ランダムに決めよう。
+            </p>
+        </div>
+
+    </header>
+
+
+    {% if recipe %}
+
+        <main class="random-result">
+
+            <article class="random-pick">
+
+                <p class="random-appliance">
+                    {{ recipe.appliance.name }}
+                </p>
+
+
+                <h2>
+                    {{ recipe.name }}
+                </h2>
+
+
+                <div class="random-meta">
+
+                    {% if recipe.cooking_time_minutes %}
+                        <span>
+                            約{{ recipe.cooking_time_minutes }}分
+                        </span>
+                    {% endif %}
+
+                    <span>
+                        {{ recipe.get_cooking_mode_display }}
+                    </span>
+
+                    {% if recipe.menu_number %}
+                        <span>
+                            メニュー {{ recipe.menu_number }}
+                        </span>
+                    {% endif %}
+
+                    {% if recipe.is_make_ahead %}
+                        <span class="random-make-ahead">
+                            作りおき向き
+                        </span>
+                    {% endif %}
+
+                </div>
+
+
+                {% if recipe.mood_tags.all %}
+
+                    <div class="random-tags">
+
+                        {% for tag in recipe.mood_tags.all %}
+                            <span>
+                                {{ tag.name }}
+                            </span>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            </article>
+
+
+            <div class="random-actions">
+
+                <a
+                    href="{% url 'recipes:detail' recipe.pk %}"
+                    class="random-detail-button"
+                >
+                    このレシピにする
+                    <span aria-hidden="true">→</span>
+                </a>
+
+
+                <a
+                    href="{% url 'recipes:random_recipe' %}"
+                    class="random-again-button"
+                >
+                    <span aria-hidden="true">
+                        🎲
+                    </span>
+
+                    もう一回
+                </a>
+
+            </div>
+
+        </main>
+
+
+    {% else %}
+
+        <div class="recipe-empty-state">
+            <p>
+                ランダムに選べるレシピがありません。
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

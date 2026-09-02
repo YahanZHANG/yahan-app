@@ -7,7 +7,7 @@
 
 {% block recipes_content %}
 
-    <main class="recipe-page">
+    <main class="recipe-page recipe-home-page"></main>
 
         <a
             href="{% url 'portal:home' %}"
@@ -89,6 +89,28 @@
                         <h3>
                             栄養から探す
                         </h3>
+                    </div>
+
+                </a>
+
+
+                <!-- ランダム -->
+                <a
+                    href="{% url 'recipes:random_recipe' %}"
+                    class="recipe-route-card"
+                >
+
+                    <div class="route-icon">
+                        🎲
+                    </div>
+
+
+                    <div class="route-copy">
+
+                        <h3>
+                            ランダムに決める
+                        </h3>
+
                     </div>
 
                 </a>

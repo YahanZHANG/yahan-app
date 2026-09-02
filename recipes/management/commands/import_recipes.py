@@ -132,6 +132,12 @@ class Command(BaseCommand):
                         "",
                     ),
 
+                "is_make_ahead":
+                    recipe_data.get(
+                        "is_make_ahead",
+                        False,
+                    ),
+
                 "source_name":
                     recipe_data.get(
                         "source_name",

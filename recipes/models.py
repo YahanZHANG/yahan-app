@@ -221,6 +221,11 @@ class Recipe(models.Model):
         blank=True,
     )
 
+    is_make_ahead = models.BooleanField(
+        "作りおき向き",
+        default=False,
+    )
+
     # -------------------------
     # 検索用
     # -------------------------

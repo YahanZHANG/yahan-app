@@ -349,6 +349,25 @@ class Command(BaseCommand):
                     "verified_for_model がTrueではない"
                 )
 
+            # =====================================
+            # Make ahead
+            # =====================================
+
+            is_make_ahead = recipe_data.get(
+                "is_make_ahead",
+                False,
+            )
+
+            if not isinstance(
+                is_make_ahead,
+                bool,
+            ):
+                errors.append(
+                    f"{prefix} {recipe_label}: "
+                    "is_make_ahead は "
+                    "true / false にする"
+                )
+
 
             # =====================================
             # Source

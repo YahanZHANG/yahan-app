@@ -6,9 +6,7 @@
 
 {% block recipes_content %}
 
-
 <main class="recipe-page recipe-list-page">
-
 
     <!-- Header -->
     <section class="recipe-list-header">
@@ -17,9 +15,8 @@
             href="{% url 'recipes:home' %}"
             class="recipe-back-link"
         >
-            ← レシピ
+            ← ホーム
         </a>
-
 
         <div class="recipe-list-title-row">
 
@@ -41,80 +38,78 @@
 
 
     <!-- Filters -->
-        <section class="recipe-filter-section">
+    <section class="recipe-filter-section">
 
-            <form
-                method="get"
-                class="recipe-filter-form"
+        <form
+            method="get"
+            class="recipe-filter-form"
+        >
+
+        <!-- 現在選択中の「自動 / 手動」を保持する -->
+            <input
+                type="hidden"
+                name="mode"
+                value="{{ selected_mode }}"
             >
 
-                <!-- 料理名 -->
-                <div class="recipe-search-box">
 
-                    <input
-                        type="search"
-                        name="q"
-                        value="{{ query }}"
-                        placeholder="料理名を検索"
-                        autocomplete="off"
-                    >
+            <!-- 料理名 -->
+            <div class="recipe-search-box">
 
-                    <button
-                        type="submit"
-                        class="recipe-search-button"
-                        aria-label="検索"
-                    >
-                        検索
-                    </button>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="料理名を検索"
+                    autocomplete="off"
+                >
 
-                </div>
+                <button
+                    type="submit"
+                    class="recipe-search-button"
+                    aria-label="検索"
+                >
+                    検索
+                </button>
 
-
-                <!-- 自動 / 手動 -->
-                <div class="recipe-mode-filter">
-
-                    <button
-                        type="submit"
-                        name="mode"
-                        value=""
-                        class="recipe-mode-option
-                        {% if not selected_mode %}
-                            is-active
-                        {% endif %}"
-                    >
-                        すべて
-                    </button>
+            </div>
 
 
-                    <button
-                        type="submit"
-                        name="mode"
-                        value="auto"
-                        class="recipe-mode-option
-                        {% if selected_mode == 'auto' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        自動
-                    </button>
+            <!-- 自動 / 手動 -->
+            <div class="recipe-mode-filter">
+
+                <button
+                    type="submit"
+                    name="mode"
+                    value=""
+                    class="recipe-mode-option {% if not selected_mode %}is-active{% endif %}"
+                >
+                    すべて
+                </button>
+
+                <button
+                    type="submit"
+                    name="mode"
+                    value="auto"
+                    class="recipe-mode-option {% if selected_mode == 'auto' %}is-active{% endif %}"
+                >
+                    自動
+                </button>
+
+                <button
+                    type="submit"
+                    name="mode"
+                    value="manual"
+                    class="recipe-mode-option {% if selected_mode == 'manual' %}is-active{% endif %}"
+                >
+                    手動
+                </button>
+
+            </div>
 
 
-                    <button
-                        type="submit"
-                        name="mode"
-                        value="manual"
-                        class="recipe-mode-option
-                        {% if selected_mode == 'manual' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        手動
-                    </button>
+            <div class="recipe-filter-row">
 
-                </div>
-
-
-                <!-- Category -->
                 <div class="recipe-category-filter">
 
                     <label for="recipe-category">
@@ -130,7 +125,6 @@
                         <option value="">
                             すべて
                         </option>
-
 
                         {% for value, label in category_choices %}
 
@@ -150,33 +144,52 @@
                 </div>
 
 
-                <!--
-                    modeボタンを押した時も
-                    categoryの選択内容はselectから送られる。
+                <label class="recipe-make-ahead-filter">
 
-                    qもinputから送られる。
-                -->
+                    <input
+                        type="checkbox"
+                        name="make_ahead"
+                        value="1"
+                        onchange="this.form.submit()"
+                        {% if make_ahead %}
+                            checked
+                        {% endif %}
+                    >
 
-            </form>
-
-
-            {% if query or selected_mode or selected_category %}
-
-                <div class="recipe-filter-status">
-
-                    <span>
-                        {{ recipes|length }}件
+                    <span class="recipe-make-ahead-check">
+                        ✓
                     </span>
 
-                    <a href="?">
-                        絞り込みを解除
-                    </a>
+                    <span class="recipe-make-ahead-label">
+                        作りおき向き
+                    </span>
 
-                </div>
+                </label>
 
-            {% endif %}
+            </div>
 
-        </section>
+        </form>
+
+
+        <!-- 絞り込み状態 -->
+        {% if query or selected_mode or selected_category or make_ahead %}
+
+            <div class="recipe-filter-status">
+
+                <span>
+                    {{ recipes|length }}件
+                </span>
+
+                <a href="?">
+                    絞り込みを解除
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
 
     <!-- Recipe list -->
     <section class="recipe-list-section">
@@ -194,43 +207,61 @@
 
                         <div class="recipe-list-card-main">
 
+                            <!-- タイトル -->
                             <h2>
                                 {{ recipe.name }}
                             </h2>
 
 
+                            <!-- メタ情報 -->
                             <div class="recipe-meta">
 
                                 {% if recipe.cooking_time_minutes %}
+
                                     <span>
                                         {{ recipe.cooking_time_minutes }}分
                                     </span>
+
                                 {% endif %}
+
 
                                 <span>
                                     {{ recipe.get_cooking_mode_display }}
                                 </span>
 
+
                                 {% if recipe.menu_number %}
+
                                     <span>
                                         メニュー {{ recipe.menu_number }}
                                     </span>
+
+                                {% endif %}
+
+
+                                {% if recipe.is_make_ahead %}
+
+                                    <span class="recipe-list-make-ahead">
+                                        作りおき
+                                    </span>
+
                                 {% endif %}
 
                             </div>
 
 
+                            <!-- 主な食材 -->
                             <div class="recipe-ingredient-preview">
 
                                 {% for item in recipe.recipe_ingredients.all|slice:":4" %}
 
                                     {% if not item.is_seasoning %}
 
-                                    <span>
-                                        {{ item.ingredient.name }}
-                                    </span>
+                                        <span>
+                                            {{ item.ingredient.name }}
+                                        </span>
 
-                                {% endif %}
+                                    {% endif %}
 
                                 {% endfor %}
 
@@ -255,7 +286,7 @@
             <div class="recipe-empty-state">
 
                 <p>
-                    まだレシピが登録されていない。
+                    条件に合うレシピが見つからなかった。
                 </p>
 
             </div>
@@ -263,7 +294,6 @@
         {% endif %}
 
     </section>
-
 
 </main>
 
