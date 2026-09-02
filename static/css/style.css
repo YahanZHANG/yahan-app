@@ -2326,6 +2326,49 @@ button {
 }
 
 /* =========================================================
+   Recipes card
+   ========================================================= */
+
+.portal-recipes-card {
+    border-color: #dce8df;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f4faf5,
+            #ffffff
+        );
+}
+
+
+.portal-recipes-card::before {
+    background: #dcefe0;
+}
+
+
+.portal-recipes-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #eaf5ec,
+            #dceee1
+        );
+}
+
+
+.portal-recipes-card h3 {
+    color:
+        var(--text-main);
+}
+
+
+.portal-recipes-card .portal-card-label {
+    color: #607b68;
+
+    opacity: 1;
+}
+
+/* =========================================================
    Games card
    ========================================================= */
 

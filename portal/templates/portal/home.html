@@ -1,215 +1,172 @@
-{% extends "base.html" %}
+    {% extends "base.html" %}
 
-{% block title %}ホーム | yahan-app{% endblock %}
+    {% block title %}ホーム | yahan-app{% endblock %}
 
-{% block content %}
+    {% block content %}
 
-<div class="portal-page">
+    <div class="portal-page">
 
-    <!-- =====================================================
-         Hero
-         ===================================================== -->
+        <!-- =====================================================
+            Hero
+            ===================================================== -->
 
-    <header class="portal-hero">
+        <header class="portal-hero">
 
-        <div
-            class="portal-hero-decoration portal-decoration-one"
-            aria-hidden="true"
-        ></div>
+            <div
+                class="portal-hero-decoration portal-decoration-one"
+                aria-hidden="true"
+            ></div>
 
-        <div
-            class="portal-hero-decoration portal-decoration-two"
-            aria-hidden="true"
-        ></div>
-
-
-        <div class="portal-hero-content">
-
-            <div class="portal-brand-row">
-
-                <div
-                    class="portal-brand-icon"
-                    aria-hidden="true"
-                >
-                    Y
-                </div>
+            <div
+                class="portal-hero-decoration portal-decoration-two"
+                aria-hidden="true"
+            ></div>
 
 
-                <div>
+            <div class="portal-hero-content">
 
-                    <p class="portal-eyebrow">
-                        APP HUB
-                    </p>
-
-                    <h1>
-                        yahan-app
-                    </h1>
-
-                </div>
-
-            </div>
-
-
-            <p class="portal-hero-description">
-                いろんなアプリを作ってみた～
-            </p>
-
-
-            {% if user.is_authenticated %}
-
-                <div class="portal-user-row">
+                <div class="portal-brand-row">
 
                     <div
-                        class="portal-user-avatar"
+                        class="portal-brand-icon"
                         aria-hidden="true"
                     >
-                        {{ user.username|first|upper }}
+                        Y
                     </div>
 
 
-                    <div class="portal-user-copy">
+                    <div>
 
-                        <span>
-                            ログイン中
-                        </span>
-
-                        <strong>
-                            {{ user.username }}
-                        </strong>
-
-                    </div>
-
-
-                    <form
-                        method="post"
-                        action="{% url 'logout' %}"
-                        class="portal-logout-form"
-                    >
-
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="portal-logout-button"
-                        >
-                            ログアウト
-                        </button>
-
-                    </form>
-
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </header>
-
-
-    <!-- =====================================================
-         Main
-         ===================================================== -->
-
-    <main class="portal-main">
-
-        <section
-            class="portal-section"
-            aria-labelledby="portal-apps-heading"
-        >
-
-            <!-- =================================================
-                 Section heading
-                 ================================================= -->
-
-            <div class="portal-section-heading">
-
-                <div>
-
-                    <p class="portal-section-eyebrow">
-                        YOUR APPS
-                    </p>
-
-                    <h2 id="portal-apps-heading">
-                        使うアプリを選ぶ
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 App grid
-                 ================================================= -->
-
-            <div class="portal-app-grid">
-
-
-                <!-- =============================================
-                     Travel
-                     ============================================= -->
-
-                <a
-                    href="{% url 'travel:home' %}"
-                    class="portal-app-card portal-travel-card"
-                    aria-label="旅行管理アプリを開く"
-                >
-
-                    <span
-                        class="portal-card-decoration portal-travel-decoration"
-                        aria-hidden="true"
-                    ></span>
-
-
-                    <div
-                        class="portal-app-icon portal-travel-icon"
-                        aria-hidden="true"
-                    >
-                        <span>
-                            ✈️
-                        </span>
-                    </div>
-
-
-                    <div class="portal-card-content">
-
-                        <h3>
-                            旅行管理
-                        </h3>
-
-                        <p class="portal-card-label">
-                            FAMILY TRIP
+                        <p class="portal-eyebrow">
+                            APP HUB
                         </p>
 
+                        <h1>
+                            yahan-app
+                        </h1>
+
                     </div>
 
-                </a>
+                </div>
 
 
-                <!-- =============================================
-                     Feeding
-                     ============================================= -->
+                <p class="portal-hero-description">
+                    いろんなアプリを作ってみた～
+                </p>
 
-                {% if can_use_feeding %}
+
+                {% if user.is_authenticated %}
+
+                    <div class="portal-user-row">
+
+                        <div
+                            class="portal-user-avatar"
+                            aria-hidden="true"
+                        >
+                            {{ user.username|first|upper }}
+                        </div>
+
+
+                        <div class="portal-user-copy">
+
+                            <span>
+                                ログイン中
+                            </span>
+
+                            <strong>
+                                {{ user.username }}
+                            </strong>
+
+                        </div>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'logout' %}"
+                            class="portal-logout-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="portal-logout-button"
+                            >
+                                ログアウト
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+            Main
+            ===================================================== -->
+
+        <main class="portal-main">
+
+            <section
+                class="portal-section"
+                aria-labelledby="portal-apps-heading"
+            >
+
+                <!-- =================================================
+                    Section heading
+                    ================================================= -->
+
+                <div class="portal-section-heading">
+
+                    <div>
+
+                        <p class="portal-section-eyebrow">
+                            YOUR APPS
+                        </p>
+
+                        <h2 id="portal-apps-heading">
+                            使うアプリを選ぶ
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                    App grid
+                    ================================================= -->
+
+                <div class="portal-app-grid">
+
+
+                    <!-- =============================================
+                        Travel
+                        ============================================= -->
 
                     <a
-                        href="{% url 'feeding:today' %}"
-                        class="portal-app-card portal-feeding-card"
-                        aria-label="離乳食ノートを開く"
+                        href="{% url 'travel:home' %}"
+                        class="portal-app-card portal-travel-card"
+                        aria-label="旅行管理アプリを開く"
                     >
 
                         <span
-                            class="portal-card-decoration portal-feeding-decoration"
+                            class="portal-card-decoration portal-travel-decoration"
                             aria-hidden="true"
                         ></span>
 
 
                         <div
-                            class="portal-app-icon portal-feeding-icon"
+                            class="portal-app-icon portal-travel-icon"
                             aria-hidden="true"
                         >
                             <span>
-                                🥣
+                                ✈️
                             </span>
                         </div>
 
@@ -217,42 +174,125 @@
                         <div class="portal-card-content">
 
                             <h3>
-                                離乳食記録
+                                旅行管理
                             </h3>
 
                             <p class="portal-card-label">
-                                BABY FOOD
+                                FAMILY TRIP
                             </p>
 
                         </div>
 
                     </a>
 
-                {% endif %}
+
+                    <!-- =============================================
+                        Feeding
+                        ============================================= -->
+
+                    {% if can_use_feeding %}
+
+                        <a
+                            href="{% url 'feeding:today' %}"
+                            class="portal-app-card portal-feeding-card"
+                            aria-label="離乳食ノートを開く"
+                        >
+
+                            <span
+                                class="portal-card-decoration portal-feeding-decoration"
+                                aria-hidden="true"
+                            ></span>
 
 
-                <!-- =============================================
-                     Vaccination
-                     ============================================= -->
+                            <div
+                                class="portal-app-icon portal-feeding-icon"
+                                aria-hidden="true"
+                            >
+                                <span>
+                                    🥣
+                                </span>
+                            </div>
+
+
+                            <div class="portal-card-content">
+
+                                <h3>
+                                    離乳食記録
+                                </h3>
+
+                                <p class="portal-card-label">
+                                    BABY FOOD
+                                </p>
+
+                            </div>
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <!-- =============================================
+                        Vaccination
+                        ============================================= -->
+
+                    <a
+                        href="{% url 'vaccination:home' %}"
+                        class="portal-app-card portal-vaccination-card"
+                        aria-label="予防接種アプリを開く"
+                    >
+
+                        <span
+                            class="portal-card-decoration portal-vaccination-decoration"
+                            aria-hidden="true"
+                        ></span>
+
+
+                        <div
+                            class="portal-app-icon portal-vaccination-icon"
+                            aria-hidden="true"
+                        >
+                            <span>
+                                💉
+                            </span>
+                        </div>
+
+
+                        <div class="portal-card-content">
+
+                            <h3>
+                                予防接種
+                            </h3>
+
+                            <p class="portal-card-label">
+                                VACCINATION
+                            </p>
+
+                        </div>
+
+                    </a>
+
+                    <!-- =============================================
+                    Color Checker
+                    ============================================= -->
 
                 <a
-                    href="{% url 'vaccination:home' %}"
-                    class="portal-app-card portal-vaccination-card"
-                    aria-label="予防接種アプリを開く"
+                    href="{% url 'colorcheck:index' %}"
+                    class="portal-app-card portal-colorcheck-card"
+                    aria-label="色判定アプリを開く"
                 >
 
                     <span
-                        class="portal-card-decoration portal-vaccination-decoration"
+                        class="portal-card-decoration portal-colorcheck-decoration"
                         aria-hidden="true"
                     ></span>
 
 
                     <div
-                        class="portal-app-icon portal-vaccination-icon"
+                        class="portal-app-icon portal-colorcheck-icon"
                         aria-hidden="true"
                     >
                         <span>
-                            💉
+                            🎨
                         </span>
                     </div>
 
@@ -260,11 +300,11 @@
                     <div class="portal-card-content">
 
                         <h3>
-                            予防接種
+                            色判定
                         </h3>
 
                         <p class="portal-card-label">
-                            VACCINATION
+                            COLOR CHECKER
                         </p>
 
                     </div>
@@ -272,27 +312,27 @@
                 </a>
 
                 <!-- =============================================
-                Color Checker
+                Recipes
                 ============================================= -->
 
             <a
-                href="{% url 'colorcheck:index' %}"
-                class="portal-app-card portal-colorcheck-card"
-                aria-label="色判定アプリを開く"
+                href="{% url 'recipes:home' %}"
+                class="portal-app-card portal-recipes-card"
+                aria-label="レシピアプリを開く"
             >
 
                 <span
-                    class="portal-card-decoration portal-colorcheck-decoration"
+                    class="portal-card-decoration portal-recipes-decoration"
                     aria-hidden="true"
                 ></span>
 
 
                 <div
-                    class="portal-app-icon portal-colorcheck-icon"
+                    class="portal-app-icon portal-recipes-icon"
                     aria-hidden="true"
                 >
                     <span>
-                        🎨
+                        🍳
                     </span>
                 </div>
 
@@ -300,11 +340,11 @@
                 <div class="portal-card-content">
 
                     <h3>
-                        色判定
+                        レシピ検索
                     </h3>
 
                     <p class="portal-card-label">
-                        COLOR CHECKER
+                        RECIPE FINDER
                     </p>
 
                 </div>
@@ -312,59 +352,59 @@
             </a>
 
 
-                <!-- =============================================
-                     Games
-                     ============================================= -->
+                    <!-- =============================================
+                        Games
+                        ============================================= -->
 
-                <a
-                    href="{% url 'games:game_list' %}"
-                    class="portal-app-card portal-games-card"
-                    aria-label="ゲームを開く"
-                >
-
-                    <div
-                        class="portal-app-icon portal-games-icon"
-                        aria-hidden="true"
+                    <a
+                        href="{% url 'games:game_list' %}"
+                        class="portal-app-card portal-games-card"
+                        aria-label="ゲームを開く"
                     >
-                        <span>
-                            🎮
-                        </span>
-                    </div>
+
+                        <div
+                            class="portal-app-icon portal-games-icon"
+                            aria-hidden="true"
+                        >
+                            <span>
+                                🎮
+                            </span>
+                        </div>
 
 
-                    <div class="portal-card-content">
+                        <div class="portal-card-content">
 
-                        <h3>
-                            ゲーム
-                        </h3>
+                            <h3>
+                                ゲーム
+                            </h3>
 
-                        <p class="portal-card-label">
-                            MINI GAMES
-                        </p>
+                            <p class="portal-card-label">
+                                MINI GAMES
+                            </p>
 
-                    </div>
+                        </div>
 
-                </a>
+                    </a>
 
-            </div>
+                </div>
 
-        </section>
+            </section>
 
-    </main>
+        </main>
 
 
-    <!-- =====================================================
-         Footer
-         ===================================================== -->
+        <!-- =====================================================
+            Footer
+            ===================================================== -->
 
-    <footer class="portal-footer">
+        <footer class="portal-footer">
 
-        <span>
-            yahan-app
-        </span>
+            <span>
+                yahan-app
+            </span>
 
-    </footer>
+        </footer>
 
-</div>
+    </div>
 
-{% endblock %}
+    {% endblock %}
