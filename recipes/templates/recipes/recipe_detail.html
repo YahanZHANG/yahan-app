@@ -245,8 +245,27 @@
     {% endif %}
 
 
+    <!-- Preparation -->
+    {% if recipe.preparation %}
 
-    <!-- Appliance operation -->
+        <section class="recipe-detail-section">
+
+            <h2>
+                作り方
+            </h2>
+
+            <div class="recipe-preparation">
+
+                {{ recipe.preparation|linebreaksbr }}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+        <!-- Appliance operation -->
     <section class="recipe-detail-section">
 
         <h2>
@@ -283,27 +302,6 @@
         </div>
 
     </section>
-
-
-
-    <!-- Preparation -->
-    {% if recipe.preparation %}
-
-        <section class="recipe-detail-section">
-
-            <h2>
-                作り方
-            </h2>
-
-            <div class="recipe-preparation">
-
-                {{ recipe.preparation|linebreaksbr }}
-
-            </div>
-
-        </section>
-
-    {% endif %}
 
 
 
