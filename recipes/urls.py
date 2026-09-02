@@ -24,6 +24,42 @@ urlpatterns = [
     ),
 
     path(
+        "settings/",
+        views.settings_page,
+        name="settings",
+    ),
+
+    path(
+        "settings/invite/",
+        views.invite_family_member,
+        name="invite_family_member",
+    ),
+
+    path(
+        "settings/invites/<int:invite_id>/respond/",
+        views.respond_family_invite,
+        name="respond_family_invite",
+    ),
+
+    path(
+        "settings/font-size/",
+        views.set_font_size,
+        name="set_font_size",
+    ),
+
+    path(
+        "<int:pk>/rating/",
+        views.set_rating,
+        name="set_rating",
+    ),
+
+    path(
+        "<int:pk>/make-ahead/toggle/",
+        views.toggle_make_ahead,
+        name="toggle_make_ahead",
+    ),
+
+    path(
         "<int:pk>/preference/",
         views.toggle_preference,
         name="toggle_preference",

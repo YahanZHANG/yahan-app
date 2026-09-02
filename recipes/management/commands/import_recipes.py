@@ -177,7 +177,7 @@ class Command(BaseCommand):
 
 
             # 同じ料理名でも、
-            # ホットクックとシェフドラムは別レシピとして扱う
+            # ヘルシオとシェフドラムは別レシピとして扱う
             recipe, created = (
                 Recipe.objects.update_or_create(
                     name=recipe_name,

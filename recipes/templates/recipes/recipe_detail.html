@@ -51,49 +51,103 @@
             </div>
 
 
-            <div
-                class="recipe-preference-actions"
-                data-preference-url="{% url 'recipes:toggle_preference' recipe.pk %}"
-            >
+            <div class="recipe-rating-actions">
 
-                {% csrf_token %}
-
-                <button
-                    type="button"
-                    class="
-                        recipe-preference-button
-                        favorite-button
-                        {% if preference == 'favorite' %}
-                            is-active
-                        {% endif %}
-                    "
-                    data-preference="favorite"
-                    aria-label="お気に入り"
-                    aria-pressed="{% if preference == 'favorite' %}true{% else %}false{% endif %}"
+                <form
+                    method="post"
+                    action="{% url 'recipes:set_rating' recipe.pk %}"
+                    class="recipe-rating-form"
                 >
-                    ★
-                </button>
+
+                    {% csrf_token %}
+
+                    {% for value in rating_choices %}
+
+                        <button
+                            type="submit"
+                            name="rating"
+                            value="{{ value }}"
+                            class="
+                                recipe-rating-star
+                                {% if current_rating and value <= current_rating %}
+                                    is-active
+                                {% endif %}
+                            "
+                            aria-label="{{ value }}点"
+                        >
+                            ★
+                        </button>
+
+                    {% endfor %}
+
+                    {% if current_rating %}
+
+                        <button
+                            type="submit"
+                            name="rating"
+                            value=""
+                            class="recipe-rating-clear"
+                        >
+                            評価をなくす
+                        </button>
+
+                    {% endif %}
+
+                </form>
 
 
-                <button
-                    type="button"
-                    class="
-                        recipe-preference-button
-                        dislike-button
-                        {% if preference == 'dislike' %}
-                            is-active
-                        {% endif %}
-                    "
-                    data-preference="dislike"
-                    aria-label="あまり好まない"
-                    aria-pressed="{% if preference == 'dislike' %}true{% else %}false{% endif %}"
+                <form
+                    method="post"
+                    action="{% url 'recipes:toggle_make_ahead' recipe.pk %}"
                 >
-                    ×
-                </button>
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="
+                            recipe-make-ahead-toggle
+                            {% if effective_make_ahead %}
+                                is-active
+                            {% endif %}
+                        "
+                    >
+                        作りおき
+                    </button>
+
+                </form>
 
             </div>
 
+
         </div>
+
+
+
+        <!-- Family ratings -->
+        {% if family_ratings %}
+
+            <div class="recipe-family-ratings">
+
+                {% for item in family_ratings %}
+
+                    <div class="recipe-family-rating-row">
+
+                        <span>
+                            {{ item.username }}
+                        </span>
+
+                        <strong>
+                            {{ item.stars }}
+                        </strong>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
 
 
         <div class="recipe-detail-meta">
@@ -334,113 +388,5 @@
 
 
 </main>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    const actions = document.querySelector(
-        ".recipe-preference-actions"
-    );
-
-    if (!actions) {
-        return;
-    }
-
-    const buttons = actions.querySelectorAll(
-        ".recipe-preference-button"
-    );
-
-    const csrfToken = actions.querySelector(
-        "[name=csrfmiddlewaretoken]"
-    ).value;
-
-    const url = actions.dataset.preferenceUrl;
-
-
-    buttons.forEach((button) => {
-
-        button.addEventListener("click", async () => {
-
-            const preference =
-                button.dataset.preference;
-
-            const formData = new FormData();
-
-            formData.append(
-                "preference",
-                preference
-            );
-
-
-            try {
-
-                buttons.forEach((item) => {
-                    item.disabled = true;
-                });
-
-
-                const response = await fetch(
-                    url,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "X-CSRFToken": csrfToken,
-                        },
-
-                        body: formData,
-                    }
-                );
-
-
-                if (!response.ok) {
-                    throw new Error(
-                        "Preference request failed"
-                    );
-                }
-
-
-                const data = await response.json();
-
-
-                buttons.forEach((item) => {
-
-                    const isActive =
-                        item.dataset.preference
-                        === data.preference;
-
-                    item.classList.toggle(
-                        "is-active",
-                        isActive
-                    );
-
-                    item.setAttribute(
-                        "aria-pressed",
-                        isActive
-                            ? "true"
-                            : "false"
-                    );
-
-                });
-
-
-            } catch (error) {
-
-                console.error(error);
-
-            } finally {
-
-                buttons.forEach((item) => {
-                    item.disabled = false;
-                });
-
-            }
-
-        });
-
-    });
-
-});
-</script>
 
 {% endblock %}

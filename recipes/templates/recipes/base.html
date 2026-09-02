@@ -3,6 +3,10 @@
 
 {% block content %}
 
+{% block html_class %}
+    recipe-font-{{ recipe_font_size }}
+{% endblock %}
+
 <link
     rel="stylesheet"
     href="{% static 'recipes/recipes.css' %}"

@@ -1,15 +1,26 @@
 import random
 
+from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_POST
-
-from .constants import (
-    MOOD_TAGS,
-    NUTRITION_TAGS,
+from django.db import transaction
+from django.db.models import (
+    BooleanField,
+    F,
+    IntegerField,
+    OuterRef,
+    Prefetch,
+    Subquery,
+    Value,
 )
+from django.db.models.functions import Coalesce
+from django.http import JsonResponse
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+    render,
+)
+from django.views.decorators.http import require_POST
 
 from .models import (
     Appliance,
@@ -17,10 +28,121 @@ from .models import (
     MoodTag,
     NutritionTag,
     Recipe,
+    RecipeHousehold,
+    RecipeHouseholdInvite,
+    RecipeHouseholdMembership,
     RecipeIngredient,
     RecipePreference,
+    RecipeUserSettings,
 )
 
+def get_household_members(user):
+
+    if not user.is_authenticated:
+        return []
+
+    membership = (
+        RecipeHouseholdMembership.objects
+        .filter(
+            user=user,
+        )
+        .select_related(
+            "household",
+        )
+        .first()
+    )
+
+    if membership is None:
+
+        return [
+            user
+        ]
+
+    return [
+        member.user
+        for member
+        in (
+            membership.household
+            .members
+            .select_related(
+                "user"
+            )
+            .order_by(
+                "id"
+            )
+        )
+    ]
+
+
+def with_effective_make_ahead(
+    queryset,
+    user,
+):
+
+    if not user.is_authenticated:
+
+        return queryset.annotate(
+            effective_make_ahead=F(
+                "is_make_ahead"
+            )
+        )
+
+    override_query = (
+        RecipePreference.objects
+        .filter(
+            user=user,
+            recipe=OuterRef("pk"),
+        )
+        .values(
+            "make_ahead_override"
+        )[:1]
+    )
+
+    return queryset.annotate(
+        effective_make_ahead=Coalesce(
+            Subquery(
+                override_query,
+                output_field=BooleanField(),
+            ),
+            F(
+                "is_make_ahead"
+            ),
+            output_field=BooleanField(),
+        )
+    )
+
+
+def with_my_rating(
+    queryset,
+    user,
+):
+
+    if not user.is_authenticated:
+
+        return queryset.annotate(
+            my_rating=Value(
+                None,
+                output_field=IntegerField(),
+            )
+        )
+
+    rating_query = (
+        RecipePreference.objects
+        .filter(
+            user=user,
+            recipe=OuterRef("pk"),
+        )
+        .values(
+            "rating"
+        )[:1]
+    )
+
+    return queryset.annotate(
+        my_rating=Subquery(
+            rating_query,
+            output_field=IntegerField(),
+        )
+    )
 
 def home(request):
     return render(
@@ -75,6 +197,11 @@ def recipe_list(request, appliance_type):
         == "1"
     )
 
+    recipes = with_effective_make_ahead(
+        recipes,
+        request.user,
+    )
+    
 
     # =====================================
     # 料理名検索
@@ -119,13 +246,13 @@ def recipe_list(request, appliance_type):
 
 
     # =====================================
-    # 作りおき向き
+    # 作りおき
     # =====================================
 
     if make_ahead:
 
         recipes = recipes.filter(
-            is_make_ahead=True,
+            effective_make_ahead=True,
         )
 
 
@@ -152,7 +279,6 @@ def recipe_list(request, appliance_type):
         "recipes/recipe_list.html",
         context,
     )
-
 
 def recipe_detail(request, pk):
 
@@ -189,7 +315,8 @@ def recipe_detail(request, pk):
             )
 
 
-    preference = None
+    preference_obj = None
+    current_rating = None
 
 
     if request.user.is_authenticated:
@@ -203,22 +330,110 @@ def recipe_detail(request, pk):
             .first()
         )
 
-        if preference_obj:
 
-            preference = (
-                preference_obj.preference
+    if preference_obj:
+
+        current_rating = (
+            preference_obj.rating
+        )
+
+
+    if (
+        preference_obj
+        and preference_obj.make_ahead_override
+        is not None
+    ):
+
+        effective_make_ahead = (
+            preference_obj.make_ahead_override
+        )
+
+    else:
+
+        effective_make_ahead = (
+            recipe.is_make_ahead
+        )
+
+
+    family_ratings = []
+
+
+    if request.user.is_authenticated:
+
+        family_members = (
+            get_household_members(
+                request.user
+            )
+        )
+
+        family_user_ids = [
+            member.id
+            for member in family_members
+        ]
+
+
+        rating_map = {
+            item.user_id: item.rating
+            for item in (
+                RecipePreference.objects
+                .filter(
+                    recipe=recipe,
+                    user_id__in=family_user_ids,
+                    rating__isnull=False,
+                )
+            )
+        }
+
+
+        for member in family_members:
+
+            rating = rating_map.get(
+                member.id
+            )
+
+            family_ratings.append(
+                {
+                    "username":
+                        member.username,
+
+                    "rating":
+                        rating,
+
+                    "stars":
+                        (
+                            "★" * rating
+                            + "☆" * (
+                                5 - rating
+                            )
+                        )
+                        if rating
+                        else "未評価",
+                }
             )
 
 
     context = {
-        "recipe": recipe,
+        "recipe":
+            recipe,
+
         "food_ingredients":
             food_ingredients,
+
         "seasonings":
             seasonings,
-        "preference":
-            preference,
-    }
+
+        "current_rating":
+            current_rating,
+
+    "rating_choices":
+        [1, 2, 3, 4, 5],
+
+    "effective_make_ahead":
+        effective_make_ahead,
+
+    "family_ratings":
+        family_ratings,
+}
 
     return render(
         request,
@@ -316,63 +531,58 @@ def toggle_preference(request, pk):
 @login_required
 def my_recipes(request):
 
-    favorites = (
+    rated_recipes = (
         Recipe.objects
         .filter(
-            preferences__user=
-                request.user,
-            preferences__preference=
-                "favorite",
+            preferences__user=request.user,
+            preferences__rating__isnull=False,
             is_active=True,
             verified_for_model=True,
+        )
+        .annotate(
+            my_rating=F(
+                "preferences__rating"
+            )
         )
         .select_related(
             "appliance"
         )
-        .prefetch_related(
-            "recipe_ingredients__ingredient",
-        )
+        .distinct()
+    )
+
+
+    high_to_low = (
+        rated_recipes
         .order_by(
-            "name"
+            "-my_rating",
+            "name",
         )
     )
 
 
-    dislikes = (
-        Recipe.objects
-        .filter(
-            preferences__user=
-                request.user,
-            preferences__preference=
-                "dislike",
-            is_active=True,
-            verified_for_model=True,
-        )
-        .select_related(
-            "appliance"
-        )
-        .prefetch_related(
-            "recipe_ingredients__ingredient",
-        )
+    low_to_high = (
+        rated_recipes
         .order_by(
-            "name"
+            "my_rating",
+            "name",
         )
     )
 
 
     context = {
-        "favorites":
-            favorites,
-        "dislikes":
-            dislikes,
+        "high_to_low":
+            high_to_low,
+
+        "low_to_high":
+            low_to_high,
     }
+
 
     return render(
         request,
         "recipes/my_recipes.html",
         context,
     )
-
 
 def find_by_ingredients(request):
 
@@ -1095,10 +1305,63 @@ def find_by_nutrition(request):
         context,
     )
 
+def calculate_random_weight(
+    ratings,
+):
+
+    if not ratings:
+        return 4.0
+
+
+    average = (
+        sum(ratings)
+        / len(ratings)
+    )
+
+
+    if average < 1.5:
+        weight = 0.5
+
+    elif average < 2.5:
+        weight = 1.5
+
+    elif average < 3.5:
+        weight = 3.5
+
+    elif average < 4.5:
+        weight = 6.5
+
+    else:
+        weight = 10.0
+
+
+    if len(ratings) >= 2:
+
+        # 家族全員かなり好き
+        if min(ratings) >= 4:
+
+            weight += 5.0
+
+
+        # 好みが大きく割れている
+        elif (
+            max(ratings)
+            - min(ratings)
+            >= 3
+        ):
+
+            weight *= 0.5
+
+
+    return max(
+        weight,
+        0.25,
+    )
+
 
 def random_recipe(request):
 
-    recipes = (
+    recipes = list(
         Recipe.objects
         .filter(
             is_active=True,
@@ -1107,30 +1370,10 @@ def random_recipe(request):
         .select_related(
             "appliance",
         )
-    )
-
-
-    # =====================================
-    # × あまり好まないレシピを除外
-    # =====================================
-
-    if (
-        request.user
-        .is_authenticated
-    ):
-
-        recipes = recipes.exclude(
-            preferences__user=
-                request.user,
-            preferences__preference=
-                "dislike",
-        )
-
-
-    recipe_ids = list(
-        recipes.values_list(
-            "id",
-            flat=True,
+        .prefetch_related(
+            "mood_tags",
+            "nutrition_tags",
+            "recipe_ingredients__ingredient",
         )
     )
 
@@ -1138,27 +1381,91 @@ def random_recipe(request):
     recipe = None
 
 
-    if recipe_ids:
+    if recipes:
 
-        recipe_id = random.choice(
-            recipe_ids
-        )
+        if request.user.is_authenticated:
+
+            family_members = (
+                get_household_members(
+                    request.user
+                )
+            )
+
+            family_user_ids = [
+                member.id
+                for member
+                in family_members
+            ]
 
 
-        recipe = (
-            Recipe.objects
-            .select_related(
-                "appliance",
+            recipe_ids = [
+                item.id
+                for item
+                in recipes
+            ]
+
+
+            rating_map = {
+                recipe_id: []
+                for recipe_id
+                in recipe_ids
+            }
+
+
+            preferences = (
+                RecipePreference.objects
+                .filter(
+                    recipe_id__in=
+                        recipe_ids,
+
+                    user_id__in=
+                        family_user_ids,
+
+                    rating__isnull=False,
+                )
+                .values(
+                    "recipe_id",
+                    "rating",
+                )
             )
-            .prefetch_related(
-                "mood_tags",
-                "nutrition_tags",
-                "recipe_ingredients__ingredient",
+
+
+            for item in preferences:
+
+                rating_map[
+                    item[
+                        "recipe_id"
+                    ]
+                ].append(
+                    item[
+                        "rating"
+                    ]
+                )
+
+
+            weights = [
+                calculate_random_weight(
+                    rating_map[
+                        item.id
+                    ]
+                )
+                for item
+                in recipes
+            ]
+
+
+            recipe = random.choices(
+                recipes,
+                weights=weights,
+                k=1,
+            )[0]
+
+
+        else:
+
+            recipe = random.choice(
+                recipes
             )
-            .get(
-                pk=recipe_id
-            )
-        )
 
 
     return render(
@@ -1169,3 +1476,512 @@ def random_recipe(request):
                 recipe,
         },
     )
+
+@login_required
+@require_POST
+def set_rating(request, pk):
+
+    recipe = get_object_or_404(
+        Recipe,
+        pk=pk,
+        is_active=True,
+        verified_for_model=True,
+    )
+
+    raw_rating = request.POST.get(
+        "rating",
+        "",
+    )
+
+    preference, _ = (
+        RecipePreference.objects
+        .get_or_create(
+            user=request.user,
+            recipe=recipe,
+        )
+    )
+
+
+    # 評価をなくす
+    if raw_rating == "":
+
+        preference.rating = None
+
+        preference.save(
+            update_fields=[
+                "rating",
+            ]
+        )
+
+        return redirect(
+            "recipes:detail",
+            pk=recipe.pk,
+        )
+
+
+    if (
+        not raw_rating.isdigit()
+        or int(raw_rating) not in range(1, 6)
+    ):
+
+        return redirect(
+            "recipes:detail",
+            pk=recipe.pk,
+        )
+
+
+    rating = int(
+        raw_rating
+    )
+
+
+    # 同じ評価を押した場合も解除
+    if preference.rating == rating:
+
+        preference.rating = None
+
+    else:
+
+        preference.rating = rating
+
+
+    preference.save(
+        update_fields=[
+            "rating",
+        ]
+    )
+
+
+    return redirect(
+        "recipes:detail",
+        pk=recipe.pk,
+    )
+
+@login_required
+@require_POST
+def toggle_make_ahead(request, pk):
+
+    recipe = get_object_or_404(
+        Recipe,
+        pk=pk,
+        is_active=True,
+        verified_for_model=True,
+    )
+
+    preference, _ = (
+        RecipePreference.objects
+        .get_or_create(
+            user=request.user,
+            recipe=recipe,
+        )
+    )
+
+    if (
+        preference.make_ahead_override
+        is None
+    ):
+
+        current_value = (
+            recipe.is_make_ahead
+        )
+
+    else:
+
+        current_value = (
+            preference.make_ahead_override
+        )
+
+    preference.make_ahead_override = (
+        not current_value
+    )
+
+    preference.save(
+        update_fields=[
+            "make_ahead_override",
+        ]
+    )
+
+    return redirect(
+        "recipes:detail",
+        pk=recipe.pk,
+    )
+
+@login_required
+def settings_page(request):
+
+    membership = (
+        RecipeHouseholdMembership.objects
+        .filter(
+            user=request.user,
+        )
+        .select_related(
+            "household",
+        )
+        .first()
+    )
+
+    members = []
+
+    pending_sent_invites = []
+
+    if membership:
+
+        members = (
+            membership.household
+            .members
+            .select_related(
+                "user",
+            )
+            .order_by(
+                "id",
+            )
+        )
+
+        pending_sent_invites = (
+            membership.household
+            .invites
+            .filter(
+                status="pending",
+            )
+            .select_related(
+                "invited_user",
+            )
+            .order_by(
+                "-created_at",
+            )
+        )
+
+
+    received_invites = (
+        RecipeHouseholdInvite.objects
+        .filter(
+            invited_user=request.user,
+            status="pending",
+        )
+        .select_related(
+            "invited_by",
+        )
+        .order_by(
+            "-created_at",
+        )
+    )
+
+
+    user_settings, _ = (
+        RecipeUserSettings.objects
+        .get_or_create(
+            user=request.user,
+        )
+    )
+
+
+    context = {
+        "membership":
+            membership,
+
+        "members":
+            members,
+
+        "pending_sent_invites":
+            pending_sent_invites,
+
+        "received_invites":
+            received_invites,
+
+        "recipe_user_settings":
+            user_settings,
+    }
+
+
+    return render(
+        request,
+        "recipes/settings.html",
+        context,
+    )
+
+
+@login_required
+@require_POST
+def invite_family_member(request):
+
+    username = (
+        request.POST.get(
+            "username",
+            "",
+        )
+        .strip()
+    )
+
+    User = get_user_model()
+
+
+    invited_user = (
+        User.objects
+        .filter(
+            username__iexact=username,
+        )
+        .first()
+    )
+
+
+    if invited_user is None:
+
+        messages.error(
+            request,
+            "そのユーザー名は見つからなかった。",
+        )
+
+        return redirect(
+            "recipes:settings",
+        )
+
+
+    if invited_user == request.user:
+
+        messages.error(
+            request,
+            "自分自身は招待できない。",
+        )
+
+        return redirect(
+            "recipes:settings",
+        )
+
+
+    membership = (
+        RecipeHouseholdMembership.objects
+        .filter(
+            user=request.user,
+        )
+        .select_related(
+            "household",
+        )
+        .first()
+    )
+
+
+    # 初めて招待するとき家族を自動作成
+    if membership is None:
+
+        household = (
+            RecipeHousehold.objects
+            .create(
+                created_by=request.user,
+            )
+        )
+
+        membership = (
+            RecipeHouseholdMembership.objects
+            .create(
+                household=household,
+                user=request.user,
+            )
+        )
+
+    else:
+
+        household = (
+            membership.household
+        )
+
+
+    existing_membership = (
+        RecipeHouseholdMembership.objects
+        .filter(
+            user=invited_user,
+        )
+        .select_related(
+            "household",
+        )
+        .first()
+    )
+
+
+    if existing_membership:
+
+        if (
+            existing_membership.household_id
+            == household.id
+        ):
+
+            messages.error(
+                request,
+                "そのユーザーはすでに家族メンバーです。",
+            )
+
+        else:
+
+            messages.error(
+                request,
+                "そのユーザーはすでに別の家族に参加しています。",
+            )
+
+        return redirect(
+            "recipes:settings",
+        )
+
+
+    if (
+        RecipeHouseholdInvite.objects
+        .filter(
+            household=household,
+            invited_user=invited_user,
+            status="pending",
+        )
+        .exists()
+    ):
+
+        messages.error(
+            request,
+            "そのユーザーはすでに招待中です。",
+        )
+
+        return redirect(
+            "recipes:settings",
+        )
+
+
+    RecipeHouseholdInvite.objects.create(
+        household=household,
+        invited_by=request.user,
+        invited_user=invited_user,
+    )
+
+
+    messages.success(
+        request,
+        f"{invited_user.username} を招待しました。",
+    )
+
+
+    return redirect(
+        "recipes:settings",
+    )
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def respond_family_invite(
+    request,
+    invite_id,
+):
+
+    invite = get_object_or_404(
+        RecipeHouseholdInvite.objects
+        .select_related(
+            "household",
+        ),
+        pk=invite_id,
+        invited_user=request.user,
+        status="pending",
+    )
+
+
+    action = request.POST.get(
+        "action"
+    )
+
+
+    if action == "accept":
+
+        if (
+            RecipeHouseholdMembership.objects
+            .filter(
+                user=request.user,
+            )
+            .exists()
+        ):
+
+            messages.error(
+                request,
+                "すでに別の家族に参加しています。",
+            )
+
+            return redirect(
+                "recipes:settings",
+            )
+
+
+        RecipeHouseholdMembership.objects.create(
+            household=invite.household,
+            user=request.user,
+        )
+
+        invite.status = "accepted"
+
+        invite.save(
+            update_fields=[
+                "status",
+                "updated_at",
+            ]
+        )
+
+
+        # 他の招待は自動的に辞退
+        RecipeHouseholdInvite.objects.filter(
+            invited_user=request.user,
+            status="pending",
+        ).exclude(
+            pk=invite.pk,
+        ).update(
+            status="declined",
+        )
+
+
+        messages.success(
+            request,
+            "家族に参加しました。",
+        )
+
+
+    elif action == "decline":
+
+        invite.status = "declined"
+
+        invite.save(
+            update_fields=[
+                "status",
+                "updated_at",
+            ]
+        )
+
+
+    return redirect(
+        "recipes:settings",
+    )
+
+
+@login_required
+@require_POST
+def set_font_size(request):
+
+    font_size = request.POST.get(
+        "font_size"
+    )
+
+    if font_size not in {
+        "small",
+        "medium",
+        "large",
+    }:
+
+        return redirect(
+            "recipes:settings",
+        )
+
+
+    RecipeUserSettings.objects.update_or_create(
+        user=request.user,
+        defaults={
+            "font_size":
+                font_size,
+        },
+    )
+
+
+    return redirect(
+        "recipes:settings",
+    )
+
+

@@ -9,12 +9,23 @@
 
     <main class="recipe-page recipe-home-page">
 
-        <a
-            href="{% url 'portal:home' %}"
-            class="recipes-portal-link"
-        >
-            ← Yahan App
-        </a>
+        <div class="recipe-home-topbar">
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="recipes-portal-link"
+            >
+                ← Yahan App
+            </a>
+
+            <a
+                href="{% url 'recipes:settings' %}"
+                class="recipe-settings-top-link"
+            >
+                ⚙ 設定
+            </a>
+
+        </div>
 
         <!-- 今日の料理を探す -->
         <section class="recipe-section">

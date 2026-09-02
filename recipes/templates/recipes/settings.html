@@ -1,0 +1,237 @@
+{% extends "recipes/base.html" %}
+
+{% block title %}
+設定 | レシピ
+{% endblock %}
+
+
+{% block recipes_content %}
+
+<main class="recipe-page recipe-settings-page">
+
+    <a
+        href="{% url 'recipes:home' %}"
+        class="recipe-back-link"
+    >
+        ← レシピ
+    </a>
+
+
+    <header class="recipe-settings-header">
+
+        <h1>
+            設定
+        </h1>
+
+    </header>
+
+
+    {% if messages %}
+
+        <div class="recipe-settings-messages">
+
+            {% for message in messages %}
+
+                <p>
+                    {{ message }}
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- Family -->
+    <section class="recipe-settings-section">
+
+        <h2>
+            家族
+        </h2>
+
+
+        {% if members %}
+
+            <div class="recipe-family-member-list">
+
+                {% for membership_item in members %}
+
+                    <div class="recipe-family-member">
+
+                        <span>
+                            {{ membership_item.user.username }}
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <form
+            method="post"
+            action="{% url 'recipes:invite_family_member' %}"
+            class="recipe-family-invite-form"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="text"
+                name="username"
+                placeholder="ユーザー名"
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">
+                招待する
+            </button>
+
+        </form>
+
+
+        {% if pending_sent_invites %}
+
+            <div class="recipe-pending-invites">
+
+                {% for invite in pending_sent_invites %}
+
+                    <p>
+                        {{ invite.invited_user.username }}
+                        <span>
+                            承認待ち
+                        </span>
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    {% if received_invites %}
+
+        <section class="recipe-settings-section">
+
+            <h2>
+                あなたへの招待
+            </h2>
+
+
+            {% for invite in received_invites %}
+
+                <div class="recipe-received-invite">
+
+                    <p>
+                        {{ invite.invited_by.username }}
+                        さんから家族への招待
+                    </p>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'recipes:respond_family_invite' invite.pk %}"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="accept"
+                        >
+                            参加する
+                        </button>
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="decline"
+                        >
+                            断る
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% endfor %}
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- Display -->
+    <section class="recipe-settings-section">
+
+        <h2>
+            文字サイズ
+        </h2>
+
+
+        <form
+            method="post"
+            action="{% url 'recipes:set_font_size' %}"
+            class="recipe-font-size-options"
+        >
+
+            {% csrf_token %}
+
+
+            <button
+                type="submit"
+                name="font_size"
+                value="small"
+                class="
+                    {% if recipe_user_settings.font_size == 'small' %}
+                        is-active
+                    {% endif %}
+                "
+            >
+                小
+            </button>
+
+
+            <button
+                type="submit"
+                name="font_size"
+                value="medium"
+                class="
+                    {% if recipe_user_settings.font_size == 'medium' %}
+                        is-active
+                    {% endif %}
+                "
+            >
+                中
+            </button>
+
+
+            <button
+                type="submit"
+                name="font_size"
+                value="large"
+                class="
+                    {% if recipe_user_settings.font_size == 'large' %}
+                        is-active
+                    {% endif %}
+                "
+            >
+                大
+            </button>
+
+        </form>
+
+    </section>
+
+</main>
+
+{% endblock %}

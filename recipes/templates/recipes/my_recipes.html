@@ -14,6 +14,7 @@
         <h1>
             マイレシピ
         </h1>
+
     </section>
 
 
@@ -22,40 +23,44 @@
         <button
             type="button"
             class="my-recipes-tab is-active"
-            data-tab="favorites"
+            data-tab="high"
         >
-            ★ お気に入り
+            ★ 多い順
+
             <span>
-                {{ favorites|length }}
+                {{ high_to_low|length }}
             </span>
+
         </button>
 
 
         <button
             type="button"
             class="my-recipes-tab"
-            data-tab="dislikes"
+            data-tab="low"
         >
-            × あまり好まない
+            ☆ 少ない順
+
             <span>
-                {{ dislikes|length }}
+                {{ low_to_high|length }}
             </span>
+
         </button>
 
     </div>
 
 
-    <!-- お気に入り -->
+    <!-- ★ 多い順 -->
     <section
         class="my-recipes-panel is-active"
-        data-panel="favorites"
+        data-panel="high"
     >
 
-        {% if favorites %}
+        {% if high_to_low %}
 
             <div class="recipe-card-list">
 
-                {% for recipe in favorites %}
+                {% for recipe in high_to_low %}
 
                     <a
                         href="{% url 'recipes:detail' recipe.pk %}"
@@ -70,8 +75,26 @@
                                     {{ recipe.appliance.name }}
                                 </span>
 
+
                                 <span class="my-recipe-status favorite-status">
-                                    ★
+
+                                    {% if recipe.my_rating == 5 %}
+                                        ★★★★★
+
+                                    {% elif recipe.my_rating == 4 %}
+                                        ★★★★☆
+
+                                    {% elif recipe.my_rating == 3 %}
+                                        ★★★☆☆
+
+                                    {% elif recipe.my_rating == 2 %}
+                                        ★★☆☆☆
+
+                                    {% elif recipe.my_rating == 1 %}
+                                        ★☆☆☆☆
+
+                                    {% endif %}
+
                                 </span>
 
                             </div>
@@ -85,10 +108,13 @@
                             <div class="recipe-meta">
 
                                 {% if recipe.cooking_time_minutes %}
+
                                     <span>
                                         {{ recipe.cooking_time_minutes }}分
                                     </span>
+
                                 {% endif %}
+
 
                                 <span>
                                     {{ recipe.get_cooking_mode_display }}
@@ -109,12 +135,13 @@
 
             </div>
 
+
         {% else %}
 
             <div class="recipe-empty-state">
 
                 <p>
-                    お気に入りはまだない。
+                    評価したレシピはまだない。
                 </p>
 
             </div>
@@ -125,17 +152,17 @@
 
 
 
-    <!-- あまり好まない -->
+    <!-- ★ 少ない順 -->
     <section
         class="my-recipes-panel"
-        data-panel="dislikes"
+        data-panel="low"
     >
 
-        {% if dislikes %}
+        {% if low_to_high %}
 
             <div class="recipe-card-list">
 
-                {% for recipe in dislikes %}
+                {% for recipe in low_to_high %}
 
                     <a
                         href="{% url 'recipes:detail' recipe.pk %}"
@@ -150,8 +177,26 @@
                                     {{ recipe.appliance.name }}
                                 </span>
 
-                                <span class="my-recipe-status dislike-status">
-                                    ×
+
+                                <span class="my-recipe-status favorite-status">
+
+                                    {% if recipe.my_rating == 5 %}
+                                        ★★★★★
+
+                                    {% elif recipe.my_rating == 4 %}
+                                        ★★★★☆
+
+                                    {% elif recipe.my_rating == 3 %}
+                                        ★★★☆☆
+
+                                    {% elif recipe.my_rating == 2 %}
+                                        ★★☆☆☆
+
+                                    {% elif recipe.my_rating == 1 %}
+                                        ★☆☆☆☆
+
+                                    {% endif %}
+
                                 </span>
 
                             </div>
@@ -165,10 +210,13 @@
                             <div class="recipe-meta">
 
                                 {% if recipe.cooking_time_minutes %}
+
                                     <span>
                                         {{ recipe.cooking_time_minutes }}分
                                     </span>
+
                                 {% endif %}
+
 
                                 <span>
                                     {{ recipe.get_cooking_mode_display }}
@@ -189,12 +237,13 @@
 
             </div>
 
+
         {% else %}
 
             <div class="recipe-empty-state">
 
                 <p>
-                    「あまり好まない」に登録した料理はまだない。
+                    評価したレシピはまだない。
                 </p>
 
             </div>
@@ -226,24 +275,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             tabs.forEach((item) => {
-                item.classList.remove("is-active");
+                item.classList.remove(
+                    "is-active"
+                );
             });
 
 
             panels.forEach((panel) => {
-                panel.classList.remove("is-active");
+                panel.classList.remove(
+                    "is-active"
+                );
             });
 
 
-            tab.classList.add("is-active");
-
-
-            const targetPanel = document.querySelector(
-                `[data-panel="${target}"]`
+            tab.classList.add(
+                "is-active"
             );
 
+
+            const targetPanel =
+                document.querySelector(
+                    `[data-panel="${target}"]`
+                );
+
+
             if (targetPanel) {
-                targetPanel.classList.add("is-active");
+
+                targetPanel.classList.add(
+                    "is-active"
+                );
+
             }
 
         });

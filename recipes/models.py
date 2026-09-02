@@ -1,17 +1,20 @@
 from django.conf import settings
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+)
 from django.db import models
-
 
 class Appliance(models.Model):
     """
     調理家電
     例:
-    - ホットクック KN-HW16E-R
+    - ヘルシオ KN-HW16E-R
     - シェフドラム DAC-IA2
     """
 
     APPLIANCE_TYPES = [
-        ("hotcook", "ホットクック"),
+        ("hotcook", "ヘルシオ"),
         ("chefdrum", "シェフドラム"),
     ]
 
@@ -391,9 +394,27 @@ class RecipePreference(models.Model):
     )
 
     preference = models.CharField(
-        "評価",
+        "好み（旧方式）",
         max_length=20,
         choices=PREFERENCE_CHOICES,
+        blank=True,
+        default="",
+    )
+
+    rating = models.PositiveSmallIntegerField(
+        "評価",
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ],
+    )
+
+    make_ahead_override = models.BooleanField(
+        "作りおき判定の上書き",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(
@@ -417,4 +438,126 @@ class RecipePreference(models.Model):
             f"{self.user} - "
             f"{self.recipe.name} - "
             f"{self.get_preference_display()}"
+        )
+
+
+class RecipeHousehold(models.Model):
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recipe_households_created",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+
+        if self.created_by:
+            return f"{self.created_by.username}の家族"
+
+        return f"家族 {self.pk}"
+
+
+class RecipeHouseholdMembership(models.Model):
+
+    household = models.ForeignKey(
+        RecipeHousehold,
+        on_delete=models.CASCADE,
+        related_name="members",
+    )
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipe_household_membership",
+    )
+
+    joined_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.user.username
+
+
+class RecipeHouseholdInvite(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "承認待ち"),
+        ("accepted", "参加済み"),
+        ("declined", "辞退"),
+    ]
+
+    household = models.ForeignKey(
+        RecipeHousehold,
+        on_delete=models.CASCADE,
+        related_name="invites",
+    )
+
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipe_invites_sent",
+    )
+
+    invited_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipe_invites_received",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+
+        return (
+            f"{self.invited_by.username}"
+            f" → "
+            f"{self.invited_user.username}"
+        )
+
+
+class RecipeUserSettings(models.Model):
+
+    FONT_SIZE_CHOICES = [
+        ("small", "小"),
+        ("medium", "中"),
+        ("large", "大"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipe_settings",
+    )
+
+    font_size = models.CharField(
+        "文字サイズ",
+        max_length=10,
+        choices=FONT_SIZE_CHOICES,
+        default="medium",
+    )
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username}: "
+            f"{self.get_font_size_display()}"
         )

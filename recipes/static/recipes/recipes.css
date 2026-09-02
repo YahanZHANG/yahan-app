@@ -503,7 +503,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 7px;
-    margin-top: 18px;
+    margin-top: 12px;
 }
 
 .recipe-detail-meta span {
@@ -3304,4 +3304,504 @@
     .random-again-button {
         font-size: .86rem;
     }
+}
+
+
+
+/* ========================================================
+   Recipe font size
+   ======================================================== */
+
+html.recipe-font-small {
+    font-size: 14px;
+}
+
+html.recipe-font-medium {
+    font-size: 16px;
+}
+
+html.recipe-font-large {
+    font-size: 18px;
+}
+
+
+/* ========================================================
+   Home settings link
+   ======================================================== */
+.recipe-home-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    margin-bottom: 10px;
+}
+
+
+.recipe-settings-top-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    min-height: 34px;
+
+    padding: 0 10px;
+
+    border-radius: 999px;
+
+    color: #8f8b95;
+
+    font-size: 1.1rem;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+
+.recipe-settings-top-link:hover {
+    color: #66616c;
+
+    background: rgba(
+        255,
+        255,
+        255,
+        .65
+    );
+}
+
+/* ========================================================
+   Rating
+   ======================================================== */
+
+.recipe-rating-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+}
+
+.recipe-rating-form {
+    display: flex;
+
+    gap: 3px;
+}
+
+.recipe-rating-star {
+    padding: 0;
+
+    border: 0;
+
+    background:
+        transparent;
+
+    color:
+        #d9d9d4;
+
+    font-size: 1.45rem;
+
+    cursor: pointer;
+}
+
+.recipe-rating-star.is-active {
+    color:
+        #e5b329;
+}
+
+
+/* ========================================================
+   Make Ahead Toggle
+   ======================================================== */
+
+.recipe-make-ahead-toggle {
+    min-height: 35px;
+
+    padding:
+        0
+        12px;
+
+    border:
+        1px solid
+        #e1e1dc;
+
+    border-radius: 999px;
+
+    background:
+        #f4f4f1;
+
+    color:
+        #b0b0aa;
+
+    font-size: .66rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.recipe-make-ahead-toggle.is-active {
+    border-color:
+        #a6ceb1;
+
+    background:
+        #eaf5ed;
+
+    color:
+        #4d7b59;
+}
+
+
+/* ========================================================
+   Family Ratings
+   ======================================================== */
+
+.recipe-family-ratings {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-top: 14px;
+}
+
+
+.recipe-family-rating-row {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+
+    gap: 3px;
+
+    padding:
+        7px
+        4px;
+
+    border-radius: 10px;
+
+    background:
+        #f7f7f4;
+
+    color:
+        #777772;
+
+    font-size: .62rem;
+
+    text-align: center;
+}
+
+
+.recipe-family-rating-row span {
+    max-width: 100%;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+.recipe-family-rating-row strong {
+    color:
+        #dfac28;
+
+    font-size: .61rem;
+
+    font-weight: 600;
+
+    letter-spacing: 0;
+
+    white-space: nowrap;
+}
+
+
+/* ========================================================
+   Settings
+   ======================================================== */
+
+.recipe-settings-page {
+    max-width: 700px;
+}
+
+.recipe-settings-header {
+    margin-bottom: 30px;
+}
+
+.recipe-settings-header h1 {
+    margin: 0;
+
+    color: #292927;
+
+    font-size: 1.8rem;
+}
+
+.recipe-settings-section {
+    padding:
+        24px
+        0;
+
+    border-top:
+        1px solid
+        #ecece8;
+}
+
+.recipe-settings-section h2 {
+    margin:
+        0
+        0
+        16px;
+
+    color:
+        #555550;
+
+    font-size: .78rem;
+}
+
+.recipe-family-member-list {
+    display: grid;
+
+    gap: 7px;
+
+    margin-bottom: 15px;
+}
+
+.recipe-family-member {
+    padding:
+        10px
+        12px;
+
+    border-radius: 11px;
+
+    background:
+        #f5f5f2;
+
+    color:
+        #666661;
+
+    font-size: .72rem;
+}
+
+.recipe-family-invite-form {
+    display: flex;
+
+    gap: 8px;
+}
+
+.recipe-family-invite-form input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding:
+        10px
+        12px;
+
+    border:
+        1px solid
+        #dededa;
+
+    border-radius: 11px;
+
+    background: #fff;
+
+    font-size: .72rem;
+}
+
+.recipe-family-invite-form button {
+    padding:
+        0
+        14px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    background:
+        #555550;
+
+    color: #fff;
+
+    font-size: .7rem;
+}
+
+.recipe-pending-invites {
+    margin-top: 12px;
+}
+
+.recipe-pending-invites p {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin:
+        6px
+        0;
+
+    color:
+        #888883;
+
+    font-size: .68rem;
+}
+
+.recipe-pending-invites span {
+    color:
+        #aaa;
+}
+
+.recipe-received-invite {
+    padding:
+        14px;
+
+    border-radius: 13px;
+
+    background:
+        #f6f6f3;
+}
+
+.recipe-received-invite form {
+    display: flex;
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+.recipe-received-invite button {
+    min-height: 34px;
+
+    padding:
+        0
+        11px;
+
+    border:
+        1px solid
+        #ddddda;
+
+    border-radius: 10px;
+
+    background: #fff;
+
+    color:
+        #666661;
+
+    font-size: .67rem;
+}
+
+
+/* Font size */
+
+.recipe-font-size-options {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    gap: 6px;
+
+    max-width: 300px;
+
+    padding: 4px;
+
+    border-radius: 13px;
+
+    background:
+        #f1f1ee;
+}
+
+.recipe-font-size-options button {
+    min-height: 38px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background:
+        transparent;
+
+    color:
+        #999994;
+
+    font-size: .72rem;
+
+    cursor: pointer;
+}
+
+.recipe-font-size-options button.is-active {
+    background: #fff;
+
+    color:
+        #444440;
+
+    box-shadow:
+        0 2px 7px
+        rgba(
+            0,
+            0,
+            0,
+            .05
+        );
+}
+
+.recipe-rating-clear {
+    margin-left: 8px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #aaa6af;
+
+    font-size: .6rem;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.recipe-rating-clear:hover {
+    color: #77717c;
+}
+
+
+/* My Recipes: appliance left / rating right */
+.my-recipe-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.my-recipe-appliance {
+    min-width: 0;
+}
+
+.my-recipe-status {
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* My Recipes: rating stars without old favorite badge */
+.my-recipe-status.favorite-status {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+
+    color: #dfac28;
+    box-shadow: none;
 }
