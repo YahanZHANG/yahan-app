@@ -380,5 +380,450 @@
         "verified_for_model": true,
         "switzerland_score": 4,
         "is_active": true
+    },
+
+        {
+        "name": "クリームシチュー",
+        "appliance_type": "hotcook",
+        "category": "western",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 45,
+        "servings": 4,
+        "menu_number": "009",
+        "appliance_operation": "まぜ技ユニットをセット\n→ メニューを選ぶ\n→ メニュー番号で探す\n→ No.009 クリームシチュー\n→ 調理を開始する\n→ スタート\n→ 残り約5分で音が鳴ったら牛乳を加える\n→ ふたを閉めてスタート",
+        "preparation": "鶏肉、じゃがいも、にんじんに塩・こしょうをし、薄力粉を全体にまぶす。\n玉ねぎ、材料、調味料を内鍋に入れて調理し、最後に牛乳を加える。",
+        "notes": "牛乳は最初から入れず、途中の報知音が鳴ってから加える。",
+        "ingredients": [
+            {
+                "name": "鶏もも肉",
+                "category": "meat",
+                "amount": "250g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "じゃがいも",
+                "category": "vegetable",
+                "amount": "3個（450g）",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "にんじん",
+                "category": "vegetable",
+                "amount": "1本（200g）",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "玉ねぎ",
+                "category": "vegetable",
+                "amount": "1個（200g）",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "牛乳",
+                "category": "dairy",
+                "amount": "200mL",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "薄力粉",
+                "category": "seasoning",
+                "amount": "大さじ4",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "バター",
+                "category": "seasoning",
+                "amount": "30g",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "白ワイン",
+                "category": "seasoning",
+                "amount": "大さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "コンソメ",
+                "category": "seasoning",
+                "amount": "大さじ1",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            }
+        ],
+        "mood_tags": [
+            "あったかい",
+            "こってり",
+            "洋食"
+        ],
+        "nutrition_tags": [
+            "たんぱく質",
+            "カルシウム",
+            "野菜"
+        ],
+        "source_name": "SHARP公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 5,
+        "is_active": true
+    },
+
+    {
+        "name": "スペアリブの煮こみ",
+        "appliance_type": "hotcook",
+        "category": "western",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 90,
+        "servings": 4,
+        "menu_number": "046",
+        "appliance_operation": "まぜ技ユニットをセット\n→ メニューを選ぶ\n→ メニュー番号で探す\n→ No.046 スペアリブの煮こみ\n→ 調理を開始する\n→ スタート",
+        "preparation": "玉ねぎを薄切りにする。\n玉ねぎ、スペアリブ、調味料を内鍋に入れて調理する。",
+        "notes": "",
+        "ingredients": [
+            {
+                "name": "スペアリブ",
+                "category": "meat",
+                "amount": "800g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "玉ねぎ",
+                "category": "vegetable",
+                "amount": "1個（200g）",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "バルサミコ酢",
+                "category": "seasoning",
+                "amount": "大さじ3",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "しょうゆ",
+                "category": "seasoning",
+                "amount": "大さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "はちみつ",
+                "category": "seasoning",
+                "amount": "大さじ1と1/2",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "ケチャップ",
+                "category": "seasoning",
+                "amount": "大さじ1と1/2",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            }
+        ],
+        "mood_tags": [
+            "がっつり",
+            "こってり",
+            "ご飯がすすむ"
+        ],
+        "nutrition_tags": [
+            "たんぱく質",
+            "鉄"
+        ],
+        "source_name": "SHARP公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 5,
+        "is_active": true
+    },
+
+    {
+        "name": "チャーハン",
+        "appliance_type": "chefdrum",
+        "category": "chinese",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 15,
+        "servings": 2,
+        "menu_number": "3-16",
+        "appliance_operation": "ふたを閉めない\n→ 傾き3\n→ 自動モード 3-16\n→ スタート",
+        "preparation": "長ねぎとチャーシューを切る。卵とごま油を混ぜ、ごはんになじませる。\nすべての材料を混ぜて内鍋に入れて調理する。",
+        "notes": "ごはんが固まった場合は途中でほぐす。",
+        "ingredients": [
+            {
+                "name": "ごはん",
+                "category": "grain",
+                "amount": "300g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "チャーシュー",
+                "category": "meat",
+                "amount": "100g",
+                "is_seasoning": false,
+                "switzerland_availability": 3
+            },
+            {
+                "name": "長ねぎ",
+                "category": "vegetable",
+                "amount": "50g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "卵",
+                "category": "egg",
+                "amount": "2個",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "ごま油",
+                "category": "seasoning",
+                "amount": "小さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            },
+            {
+                "name": "しょうゆ",
+                "category": "seasoning",
+                "amount": "小さじ1",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            }
+        ],
+        "mood_tags": [
+            "中華",
+            "がっつり",
+            "ご飯がすすむ"
+        ],
+        "nutrition_tags": [
+            "たんぱく質"
+        ],
+        "source_name": "アイリスオーヤマ公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 4,
+        "is_active": true
+    },
+
+    {
+        "name": "青椒肉絲",
+        "appliance_type": "chefdrum",
+        "category": "chinese",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 7,
+        "servings": 4,
+        "menu_number": "3-20",
+        "appliance_operation": "蒸気口を「開」\n→ 傾き3\n→ 自動モード 3-20\n→ スタート",
+        "preparation": "豚肉、たけのこ、ピーマンを細切りにする。\n調味料とすべての材料を内鍋に入れて調理する。",
+        "notes": "",
+        "ingredients": [
+            {
+                "name": "豚肉",
+                "category": "meat",
+                "amount": "200g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "たけのこ水煮",
+                "category": "vegetable",
+                "amount": "200g",
+                "is_seasoning": false,
+                "switzerland_availability": 3
+            },
+            {
+                "name": "ピーマン",
+                "category": "vegetable",
+                "amount": "6個",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "オイスターソース",
+                "category": "seasoning",
+                "amount": "大さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            },
+            {
+                "name": "しょうゆ",
+                "category": "seasoning",
+                "amount": "大さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "ごま油",
+                "category": "seasoning",
+                "amount": "小さじ2",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            }
+        ],
+        "mood_tags": [
+            "中華",
+            "がっつり",
+            "ご飯がすすむ"
+        ],
+        "nutrition_tags": [
+            "たんぱく質",
+            "野菜",
+            "ビタミンC"
+        ],
+        "source_name": "アイリスオーヤマ公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 4,
+        "is_active": true
+    },
+
+    {
+        "name": "唐揚げ",
+        "appliance_type": "chefdrum",
+        "category": "japanese",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 6,
+        "servings": 2,
+        "menu_number": "6-10",
+        "appliance_operation": "内鍋に油300mLを入れる\n→ 傾き1\n→ 自動モード 6-10で予熱\n→ 予熱後に鶏肉を入れる\n→ 蒸気口を「閉」\n→ 傾き2\n→ スタート",
+        "preparation": "鶏肉を一口大に切り、しょうゆと酒で下味をつける。\n片栗粉を薄くまぶして、予熱した油に入れて調理する。",
+        "notes": "油を使うため、予熱後に鶏肉を静かに入れる。",
+        "ingredients": [
+            {
+                "name": "鶏もも肉",
+                "category": "meat",
+                "amount": "300g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "しょうゆ",
+                "category": "seasoning",
+                "amount": "大さじ1",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "酒",
+                "category": "seasoning",
+                "amount": "大さじ1",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            },
+            {
+                "name": "片栗粉",
+                "category": "seasoning",
+                "amount": "適量",
+                "is_seasoning": true,
+                "switzerland_availability": 4
+            },
+            {
+                "name": "サラダ油",
+                "category": "seasoning",
+                "amount": "300mL",
+                "is_seasoning": true,
+                "switzerland_availability": 5
+            }
+        ],
+        "mood_tags": [
+            "がっつり",
+            "ご飯がすすむ",
+            "和食"
+        ],
+        "nutrition_tags": [
+            "たんぱく質"
+        ],
+        "source_name": "アイリスオーヤマ公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 5,
+        "is_active": true
+    },
+
+    {
+        "name": "サムゲタン",
+        "appliance_type": "chefdrum",
+        "category": "korean",
+        "cooking_mode": "auto",
+        "cooking_time_minutes": 40,
+        "servings": 4,
+        "menu_number": "1-4",
+        "appliance_operation": "蒸気口を「閉」\n→ 傾き2\n→ 自動モード 1-4\n→ スタート",
+        "preparation": "長ねぎ、しょうが、にんにく、鶏肉を切る。\n鶏肉に塩・こしょうをなじませ、すべての材料を内鍋に入れて調理する。",
+        "notes": "",
+        "ingredients": [
+            {
+                "name": "鶏もも肉",
+                "category": "meat",
+                "amount": "300g",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "鶏手羽元",
+                "category": "meat",
+                "amount": "4本",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "長ねぎ",
+                "category": "vegetable",
+                "amount": "1本",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "もち米",
+                "category": "grain",
+                "amount": "50g",
+                "is_seasoning": false,
+                "switzerland_availability": 3
+            },
+            {
+                "name": "しょうが",
+                "category": "vegetable",
+                "amount": "1片",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            },
+            {
+                "name": "にんにく",
+                "category": "vegetable",
+                "amount": "1片",
+                "is_seasoning": false,
+                "switzerland_availability": 5
+            }
+        ],
+        "mood_tags": [
+            "あったかい",
+            "さっぱり",
+            "韓国料理"
+        ],
+        "nutrition_tags": [
+            "たんぱく質"
+        ],
+        "source_name": "アイリスオーヤマ公式",
+        "source_url": "",
+        "is_official": true,
+        "verified_for_model": true,
+        "switzerland_score": 4,
+        "is_active": true
     }
 ]

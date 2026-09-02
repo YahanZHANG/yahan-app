@@ -202,32 +202,68 @@ class Command(BaseCommand):
                 ]
 
 
-                ingredient_defaults = {
-                    "category":
-                        ingredient_data.get(
-                            "category",
-                            "other",
-                        ),
-
-                    "is_seasoning":
-                        ingredient_data.get(
-                            "is_seasoning",
-                            False,
-                        ),
-
-                    "switzerland_availability":
-                        ingredient_data.get(
-                            "switzerland_availability",
-                            5,
-                        ),
-                }
-
-
-                ingredient, _ = (
-                    Ingredient.objects.update_or_create(
+                ingredient, ingredient_created = (
+                    Ingredient.objects.get_or_create(
                         name=ingredient_name,
-                        defaults=ingredient_defaults,
+                        defaults={
+                            "category":
+                                ingredient_data.get(
+                                    "category",
+                                    "other",
+                                ),
+
+                            "search_group":
+                                ingredient_data.get(
+                                    "search_group",
+                                    ingredient_name,
+                                ),
+
+                            "switzerland_availability":
+                                ingredient_data.get(
+                                    "switzerland_availability",
+                                    5,
+                                ),
+                        },
                     )
+                )
+
+
+                ingredient.category = (
+                    ingredient_data.get(
+                        "category",
+                        "other",
+                    )
+                )
+
+
+                ingredient.switzerland_availability = (
+                    ingredient_data.get(
+                        "switzerland_availability",
+                        5,
+                    )
+                )
+
+
+                # JSON側にsearch_groupが書いてあれば更新する。
+                # 書いていなければ既存の設定を残す。
+                if "search_group" in ingredient_data:
+
+                    ingredient.search_group = (
+                        ingredient_data["search_group"]
+                        or ingredient_name
+                    )
+
+                elif not ingredient.search_group:
+
+                    ingredient.search_group = ingredient_name
+
+
+                ingredient.save(
+                    update_fields=[
+                        "category",
+                        "search_group",
+                        "switzerland_availability",
+                    ]
                 )
 
 
@@ -238,6 +274,11 @@ class Command(BaseCommand):
                     amount=ingredient_data.get(
                         "amount",
                         "",
+                    ),
+
+                    is_seasoning=ingredient_data.get(
+                        "is_seasoning",
+                        False,
                     ),
 
                     is_optional=ingredient_data.get(

@@ -41,7 +41,7 @@
 
         <div class="ingredient-selector">
 
-            {% regroup ingredients by get_category_display as ingredient_groups %}
+            {% regroup search_options by category_label as ingredient_groups %}
 
 
             {% for group in ingredient_groups %}
@@ -55,21 +55,21 @@
 
                     <div class="ingredient-chip-grid">
 
-                        {% for ingredient in group.list %}
+                        {% for option in group.list %}
 
                             <label class="ingredient-chip">
 
                                 <input
                                     type="checkbox"
-                                    name="ingredients"
-                                    value="{{ ingredient.id }}"
-                                    {% if ingredient.id in selected_ids %}
+                                    name="groups"
+                                    value="{{ option.name }}"
+                                    {% if option.name in selected_groups %}
                                         checked
                                     {% endif %}
                                 >
 
                                 <span>
-                                    {{ ingredient.name }}
+                                    {{ option.name }}
                                 </span>
 
                             </label>
@@ -78,11 +78,11 @@
 
                     </div>
 
-                </section>
+        </section>
 
-            {% endfor %}
+    {% endfor %}
 
-        </div>
+</div>
 
 
 

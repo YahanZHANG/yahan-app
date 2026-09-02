@@ -40,6 +40,143 @@
     </section>
 
 
+    <!-- Filters -->
+        <section class="recipe-filter-section">
+
+            <form
+                method="get"
+                class="recipe-filter-form"
+            >
+
+                <!-- 料理名 -->
+                <div class="recipe-search-box">
+
+                    <input
+                        type="search"
+                        name="q"
+                        value="{{ query }}"
+                        placeholder="料理名を検索"
+                        autocomplete="off"
+                    >
+
+                    <button
+                        type="submit"
+                        class="recipe-search-button"
+                        aria-label="検索"
+                    >
+                        検索
+                    </button>
+
+                </div>
+
+
+                <!-- 自動 / 手動 -->
+                <div class="recipe-mode-filter">
+
+                    <button
+                        type="submit"
+                        name="mode"
+                        value=""
+                        class="recipe-mode-option
+                        {% if not selected_mode %}
+                            is-active
+                        {% endif %}"
+                    >
+                        すべて
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        name="mode"
+                        value="auto"
+                        class="recipe-mode-option
+                        {% if selected_mode == 'auto' %}
+                            is-active
+                        {% endif %}"
+                    >
+                        自動
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        name="mode"
+                        value="manual"
+                        class="recipe-mode-option
+                        {% if selected_mode == 'manual' %}
+                            is-active
+                        {% endif %}"
+                    >
+                        手動
+                    </button>
+
+                </div>
+
+
+                <!-- Category -->
+                <div class="recipe-category-filter">
+
+                    <label for="recipe-category">
+                        カテゴリー
+                    </label>
+
+                    <select
+                        id="recipe-category"
+                        name="category"
+                        onchange="this.form.submit()"
+                    >
+
+                        <option value="">
+                            すべて
+                        </option>
+
+
+                        {% for value, label in category_choices %}
+
+                            <option
+                                value="{{ value }}"
+                                {% if selected_category == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!--
+                    modeボタンを押した時も
+                    categoryの選択内容はselectから送られる。
+
+                    qもinputから送られる。
+                -->
+
+            </form>
+
+
+            {% if query or selected_mode or selected_category %}
+
+                <div class="recipe-filter-status">
+
+                    <span>
+                        {{ recipes|length }}件
+                    </span>
+
+                    <a href="?">
+                        絞り込みを解除
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
 
     <!-- Recipe list -->
     <section class="recipe-list-section">
@@ -87,13 +224,13 @@
 
                                 {% for item in recipe.recipe_ingredients.all|slice:":4" %}
 
-                                    {% if not item.ingredient.is_seasoning %}
+                                    {% if not item.is_seasoning %}
 
-                                        <span>
-                                            {{ item.ingredient.name }}
-                                        </span>
+                                    <span>
+                                        {{ item.ingredient.name }}
+                                    </span>
 
-                                    {% endif %}
+                                {% endif %}
 
                                 {% endfor %}
 

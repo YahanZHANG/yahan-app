@@ -40,12 +40,76 @@ def recipe_list(request, appliance_type):
             "mood_tags",
             "nutrition_tags",
         )
-        .order_by("name")
     )
+
+
+    # =====================================
+    # 検索条件
+    # =====================================
+
+    query = request.GET.get(
+        "q",
+        "",
+    ).strip()
+
+    cooking_mode = request.GET.get(
+        "mode",
+        "",
+    )
+
+    category = request.GET.get(
+        "category",
+        "",
+    )
+
+
+    # 料理名検索
+    if query:
+
+        recipes = recipes.filter(
+            name__icontains=query,
+        )
+
+
+    # 自動 / 手動
+    if cooking_mode in {
+        "auto",
+        "manual",
+    }:
+
+        recipes = recipes.filter(
+            cooking_mode=cooking_mode,
+        )
+
+
+    # カテゴリー
+    valid_categories = {
+        choice[0]
+        for choice in Recipe.CATEGORY_CHOICES
+    }
+
+    if category in valid_categories:
+
+        recipes = recipes.filter(
+            category=category,
+        )
+
+
+    recipes = recipes.order_by(
+        "name"
+    )
+
 
     context = {
         "appliance": appliance,
         "recipes": recipes,
+
+        "query": query,
+        "selected_mode": cooking_mode,
+        "selected_category": category,
+
+        "category_choices":
+            Recipe.CATEGORY_CHOICES,
     }
 
     return render(
@@ -73,7 +137,7 @@ def recipe_detail(request, pk):
     seasonings = []
 
     for item in recipe.recipe_ingredients.all():
-        if item.ingredient.is_seasoning:
+        if item.is_seasoning:
             seasonings.append(item)
         else:
             food_ingredients.append(item)
@@ -219,15 +283,16 @@ def my_recipes(request):
 
 def find_by_ingredients(request):
 
-    # -----------------------------
-    # 選択肢として表示する食材
-    # -----------------------------
+    # =====================================
+    # ユーザーが選択する食材グループ
+    # =====================================
 
-    ingredients = (
+    ingredient_queryset = (
         Ingredient.objects
         .filter(
-            is_seasoning=False,
+            recipe_ingredients__is_seasoning=False,
         )
+        .distinct()
         .order_by(
             "category",
             "name",
@@ -235,27 +300,55 @@ def find_by_ingredients(request):
     )
 
 
-    # GETで選択された食材ID
-    selected_ids = request.GET.getlist(
-        "ingredients"
+    # 同じsearch_groupを1回だけ表示する
+    option_map = {}
+
+
+    for ingredient in ingredient_queryset:
+
+        group_name = (
+            ingredient.search_group
+            or ingredient.name
+        )
+
+
+        if group_name not in option_map:
+
+            option_map[group_name] = {
+                "name": group_name,
+                "category": ingredient.category,
+                "category_label":
+                    ingredient.get_category_display(),
+            }
+
+
+    search_options = sorted(
+        option_map.values(),
+        key=lambda item: (
+            item["category_label"],
+            item["name"],
+        ),
     )
 
-    selected_ids = [
-        int(ingredient_id)
-        for ingredient_id in selected_ids
-        if ingredient_id.isdigit()
-    ]
+
+    # =====================================
+    # GETで選択されたグループ
+    # =====================================
+
+    selected_groups = request.GET.getlist(
+        "groups"
+    )
+
+
+    selected_group_set = set(
+        selected_groups
+    )
 
 
     results = []
 
 
-    if selected_ids:
-
-        selected_id_set = set(
-            selected_ids
-        )
-
+    if selected_groups:
 
         recipes = (
             Recipe.objects
@@ -275,7 +368,7 @@ def find_by_ingredients(request):
                             "ingredient"
                         )
                         .filter(
-                            ingredient__is_seasoning=False,
+                            is_seasoning=False,
                             is_optional=False,
                         )
                     ),
@@ -285,9 +378,9 @@ def find_by_ingredients(request):
         )
 
 
-        # -----------------------------
-        # × を付けた料理は除外
-        # -----------------------------
+        # =====================================
+        # × あまり好まない料理を除外
+        # =====================================
 
         if request.user.is_authenticated:
 
@@ -304,39 +397,42 @@ def find_by_ingredients(request):
             )
 
 
-            required_ids = {
-                item.ingredient_id
+            # レシピに必要な「検索グループ」
+            required_groups = {
+                (
+                    item.ingredient.search_group
+                    or item.ingredient.name
+                )
                 for item in required_items
             }
 
 
-            if not required_ids:
+            if not required_groups:
                 continue
 
 
-            matched_ids = (
-                required_ids
-                & selected_id_set
+            matched_groups = (
+                required_groups
+                & selected_group_set
+            )
+
+
+            if not matched_groups:
+                continue
+
+
+            missing_groups = (
+                required_groups
+                - selected_group_set
             )
 
 
             matched_count = len(
-                matched_ids
+                matched_groups
             )
 
             required_count = len(
-                required_ids
-            )
-
-
-            # 1個も一致しない料理は出さない
-            if matched_count == 0:
-                continue
-
-
-            missing_ids = (
-                required_ids
-                - selected_id_set
+                required_groups
             )
 
 
@@ -346,11 +442,12 @@ def find_by_ingredients(request):
             )
 
 
-            # -----------------------------
+            # =====================================
             # お気に入り判定
-            # -----------------------------
+            # =====================================
 
             is_favorite = False
+
 
             if request.user.is_authenticated:
 
@@ -364,51 +461,62 @@ def find_by_ingredients(request):
                 )
 
 
+            # =====================================
+            # 実際のレシピ食材を表示
+            # =====================================
+
             matched_items = [
                 item
                 for item in required_items
-                if item.ingredient_id
-                in matched_ids
+                if (
+                    item.ingredient.search_group
+                    or item.ingredient.name
+                )
+                in matched_groups
             ]
 
 
             missing_items = [
                 item
                 for item in required_items
-                if item.ingredient_id
-                in missing_ids
+                if (
+                    item.ingredient.search_group
+                    or item.ingredient.name
+                )
+                in missing_groups
             ]
 
 
             results.append(
                 {
                     "recipe": recipe,
+
                     "matched_count":
                         matched_count,
+
                     "required_count":
                         required_count,
+
                     "match_percent":
                         round(
                             match_ratio * 100
                         ),
+
                     "matched_items":
                         matched_items,
+
                     "missing_items":
                         missing_items,
+
                     "is_favorite":
                         is_favorite,
                 }
             )
 
 
-        # -----------------------------
-        # 並び順
-        #
-        # 1. 一致率
-        # 2. 一致食材数
-        # 3. お気に入り
-        # 4. スイスでの作りやすさ
-        # -----------------------------
+        # =====================================
+        # おすすめ順
+        # =====================================
 
         results.sort(
             key=lambda item: (
@@ -422,12 +530,17 @@ def find_by_ingredients(request):
 
 
     context = {
-        "ingredients": ingredients,
-        "selected_ids": selected_ids,
-        "results": results,
-        "has_search": bool(
-            selected_ids
-        ),
+        "search_options":
+            search_options,
+
+        "selected_groups":
+            selected_groups,
+
+        "results":
+            results,
+
+        "has_search":
+            bool(selected_groups),
     }
 
 

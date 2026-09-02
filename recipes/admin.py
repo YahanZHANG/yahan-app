@@ -27,20 +27,18 @@ class ApplianceAdmin(admin.ModelAdmin):
         "name",
         "model_number",
     )
-
+    
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "category",
-        "is_seasoning",
         "switzerland_availability",
     )
 
     list_filter = (
         "category",
-        "is_seasoning",
         "switzerland_availability",
     )
 
@@ -100,6 +98,7 @@ class RecipeIngredientInline(admin.TabularInline):
     fields = (
         "ingredient",
         "amount",
+        "is_seasoning",
         "is_optional",
         "display_order",
     )
@@ -108,7 +107,6 @@ class RecipeIngredientInline(admin.TabularInline):
         "display_order",
         "id",
     )
-
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
@@ -260,11 +258,13 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
         "recipe",
         "ingredient",
         "amount",
+        "is_seasoning",
         "is_optional",
         "display_order",
     )
 
     list_filter = (
+        "is_seasoning",
         "is_optional",
         "ingredient__category",
     )

@@ -70,9 +70,12 @@ class Ingredient(models.Model):
         default="other",
     )
 
-    is_seasoning = models.BooleanField(
-        "調味料",
-        default=False,
+    search_group = models.CharField(
+        "食材検索グループ",
+        max_length=100,
+        blank=True,
+        db_index=True,
+        help_text="例：牛薄切り肉→牛肉、鶏もも肉→鶏肉。空欄の場合は食材名と同じ扱い。",
     )
 
     switzerland_availability = models.PositiveSmallIntegerField(
@@ -326,6 +329,12 @@ class RecipeIngredient(models.Model):
         "分量",
         max_length=100,
         blank=True,
+    )
+
+    is_seasoning = models.BooleanField(
+        "調味料として扱う",
+        default=False,
+        help_text="このレシピ内で食材検索の対象外にする場合はON。",
     )
 
     is_optional = models.BooleanField(
