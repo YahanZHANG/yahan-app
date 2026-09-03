@@ -4,6 +4,10 @@
 
 <section class="vaccination-collaborators-page">
 
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
     <header class="vaccination-detail-header">
 
         <a
@@ -28,6 +32,10 @@
     </header>
 
 
+    <!-- =====================================================
+         Current child
+         ===================================================== -->
+
     <div class="vaccination-collaborator-child">
 
         <span>
@@ -45,6 +53,11 @@
         {{ vac_ui.collaborators_help }}
     </p>
 
+
+    <!-- =====================================================
+         Add collaborator
+         招待時はユーザーIDを使用
+         ===================================================== -->
 
     <form
         method="post"
@@ -94,6 +107,12 @@
     </form>
 
 
+    <!-- =====================================================
+         Collaborator list
+         表示時はニックネームを使用
+         ニックネーム未設定ならユーザーID
+         ===================================================== -->
+
     <section class="vaccination-collaborator-list-section">
 
         <h2>
@@ -107,15 +126,22 @@
 
                 <article class="vaccination-collaborator-card">
 
+
+                    <!-- Avatar -->
+
                     <div class="vaccination-collaborator-avatar">
-                        {{ row.user.username|first|upper }}
+
+                        {{ row.user.profile.display_name|first|upper }}
+
                     </div>
 
+
+                    <!-- User / Permission -->
 
                     <div class="vaccination-collaborator-copy">
 
                         <strong>
-                            {{ row.user.username }}
+                            {{ row.user.profile.display_name }}
                         </strong>
 
 
@@ -127,6 +153,7 @@
 
                             {% csrf_token %}
 
+
                             <select
                                 name="permission"
                                 class="vaccination-collaborator-permission"
@@ -135,14 +162,19 @@
 
                                 <option
                                     value="edit"
-                                    {% if row.permission == "edit" %}selected{% endif %}
+                                    {% if row.permission == "edit" %}
+                                        selected
+                                    {% endif %}
                                 >
                                     {{ vac_ui.permission_edit }}
                                 </option>
 
+
                                 <option
                                     value="view"
-                                    {% if row.permission == "view" %}selected{% endif %}
+                                    {% if row.permission == "view" %}
+                                        selected
+                                    {% endif %}
                                 >
                                     {{ vac_ui.permission_view }}
                                 </option>
@@ -153,6 +185,8 @@
 
                     </div>
 
+
+                    <!-- Remove -->
 
                     <form
                         method="post"
@@ -171,6 +205,7 @@
                     </form>
 
                 </article>
+
 
             {% empty %}
 

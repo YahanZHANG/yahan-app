@@ -3522,7 +3522,7 @@ def baby_member_add(
             messages.success(
                 request,
                 (
-                    f"{membership.user.username}を"
+                    f"{membership.user.profile.display_name}を"
                     f"{baby.name}の共同管理者に追加した。"
                 ),
             )
@@ -3603,7 +3603,7 @@ def baby_member_toggle_edit(
     messages.success(
         request,
         (
-            f"{membership.user.username}を"
+            f"{membership.user.profile.display_name}を"
             f"{permission_label}に変更した。"
         ),
     )
@@ -3652,7 +3652,7 @@ def baby_member_delete(
             "feeding:settings",
         )
 
-    username = membership.user.username
+    username = membership.user.profile.display_name
 
     membership.delete()
 
@@ -3932,7 +3932,10 @@ def settings_view(request):
         baby_memberships = list(
             BabyMembership.objects
             .filter(baby=baby)
-            .select_related("user")
+            .select_related(
+                "user",
+                "user__profile",
+            )
             .order_by(
                 "user__username"
             )

@@ -1495,6 +1495,7 @@ def settings_view(request):
 
 @login_required
 def collaborators(request):
+
     child = get_current_child(
         request.user
     )
@@ -1504,11 +1505,13 @@ def collaborators(request):
             "vaccination:child_create"
         )
 
+
     if not user_can_manage_child(
         request.user,
         child,
     ):
         raise PermissionDenied
+
 
     settings_obj = (
         get_vaccination_settings(
@@ -1520,6 +1523,11 @@ def collaborators(request):
         settings_obj.ui_language
         or "ja"
     )
+
+
+    # =========================================================
+    # Add collaborator
+    # =========================================================
 
     if request.method == "POST":
 
@@ -1547,9 +1555,8 @@ def collaborators(request):
                     child=child,
                     user=user,
                     defaults={
-                        "permission": (
-                            permission
-                        ),
+                        "permission":
+                            permission,
                     },
                 )
             )
@@ -1558,6 +1565,7 @@ def collaborators(request):
                 "vaccination:collaborators"
             )
 
+
     else:
 
         form = CollaboratorForm(
@@ -1565,15 +1573,26 @@ def collaborators(request):
             language_code=language_code,
         )
 
+
+    # =========================================================
+    # Collaborator list
+    # =========================================================
+
     collaborator_rows = (
         child.collaborators
         .select_related(
-            "user"
+            "user",
+            "user__profile",
         )
         .order_by(
             "user__username"
         )
     )
+
+
+    # =========================================================
+    # Template
+    # =========================================================
 
     return render(
         request,
@@ -1581,11 +1600,11 @@ def collaborators(request):
         {
             "child": child,
             "form": form,
-            "collaborator_rows": (
-                collaborator_rows
-            ),
+            "collaborator_rows":
+                collaborator_rows,
         },
     )
+
 
 @login_required
 @require_POST

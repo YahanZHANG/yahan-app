@@ -181,7 +181,7 @@ UI_TEXT = {
 
         "collaborators": "共同管理",
         "collaborators_help": "この子どもの予防接種記録をほかのユーザーと共有できます。",
-        "username": "ユーザー名",
+        "username": "ユーザーID",
         "permission": "権限",
         "permission_edit": "編集可能",
         "permission_view": "閲覧のみ",
@@ -427,7 +427,7 @@ UI_TEXT = {
 
         "collaborators": "Shared access",
         "collaborators_help": "Share this child's vaccination records with another user.",
-        "username": "Username",
+        "username": "User ID",
         "permission": "Permission",
         "permission_edit": "Can edit",
         "permission_view": "View only",
@@ -681,7 +681,7 @@ UI_TEXT = {
 
         "collaborators": "Gemeinsamer Zugriff",
         "collaborators_help": "Impfunterlagen dieses Kindes mit anderen Benutzern teilen.",
-        "username": "Benutzername",
+        "username": "Benutzer ID",
         "permission": "Berechtigung",
         "permission_edit": "Bearbeiten",
         "permission_view": "Nur ansehen",
@@ -943,7 +943,7 @@ UI_TEXT = {
             "Partager le carnet de vaccination de cet enfant "
             "avec un autre utilisateur."
         ),
-        "username": "Nom d’utilisateur",
+        "username": "ID d’utilisateur",
         "permission": "Autorisation",
         "permission_edit": "Peut modifier",
         "permission_view": "Lecture seule",
@@ -1192,7 +1192,7 @@ UI_TEXT = {
 
         "collaborators": "共同管理",
         "collaborators_help": "与其他用户共享孩子的疫苗接种记录。",
-        "username": "用户名",
+        "username": "用户ID",
         "permission": "权限",
         "permission_edit": "可编辑",
         "permission_view": "仅查看",

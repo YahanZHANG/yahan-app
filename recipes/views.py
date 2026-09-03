@@ -71,10 +71,8 @@ def get_household_members(user):
             membership.household
             .members
             .select_related(
-                "user"
-            )
-            .order_by(
-                "id"
+                "user",
+                "user__profile",
             )
         )
     ]
@@ -399,8 +397,8 @@ def recipe_detail(request, pk):
 
             family_ratings.append(
                 {
-                    "username":
-                        member.username,
+                    "display_name":
+                        member.profile.display_name,
 
                     "rating":
                         rating,
@@ -1637,6 +1635,7 @@ def settings_page(request):
             .members
             .select_related(
                 "user",
+                "user__profile",
             )
             .order_by(
                 "id",
@@ -1651,6 +1650,7 @@ def settings_page(request):
             )
             .select_related(
                 "invited_user",
+                "invited_user__profile",
             )
             .order_by(
                 "-created_at",
@@ -1666,6 +1666,7 @@ def settings_page(request):
         )
         .select_related(
             "invited_by",
+            "invited_by__profile",
         )
         .order_by(
             "-created_at",
@@ -1856,7 +1857,7 @@ def invite_family_member(request):
 
     messages.success(
         request,
-        f"{invited_user.username} を招待しました。",
+        f"{invited_user.profile.display_name} を招待しました。",
     )
 
 

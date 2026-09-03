@@ -60,7 +60,7 @@
                     <div class="recipe-family-member">
 
                         <span>
-                            {{ membership_item.user.username }}
+                            {{ membership_item.user.profile.display_name }}
                         </span>
 
                     </div>
@@ -83,7 +83,7 @@
             <input
                 type="text"
                 name="username"
-                placeholder="ユーザー名"
+                placeholder="ユーザーのログインID"
                 autocomplete="off"
                 required
             >
@@ -102,7 +102,7 @@
                 {% for invite in pending_sent_invites %}
 
                     <p>
-                        {{ invite.invited_user.username }}
+                        {{ invite.invited_user.profile.display_name }}
                         <span>
                             承認待ち
                         </span>
@@ -131,7 +131,7 @@
                 <div class="recipe-received-invite">
 
                     <p>
-                        {{ invite.invited_by.username }}
+                        {{ invite.invited_by.profile.display_name }}
                         さんから家族への招待
                     </p>
 

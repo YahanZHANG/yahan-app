@@ -211,12 +211,12 @@
         {% for membership in baby_memberships %}
             <div class="baby-member-row">
                 <span class="baby-member-avatar">
-                    {{ membership.user.username|first|upper }}
+                    {{ membership.user.profile.display_name|first|upper }}
                 </span>
 
                 <div class="baby-member-main">
                     <strong>
-                        {{ membership.user.username }}
+                        {{ membership.user.profile.display_name }}
 
                         {% if membership.user == user %}
                             <span class="baby-member-self-label">
@@ -257,7 +257,7 @@
                         <form
                             method="post"
                             action="{% url 'feeding:baby_member_delete' baby.pk membership.pk %}"
-                            onsubmit="return confirm('{{ membership.user.username }}を共同管理者から削除する？');"
+                            onsubmit="return confirm('{{ membership.user.profile.display_name }}を共同管理者から削除する？');"
                         >
                             {% csrf_token %}
 
@@ -315,7 +315,7 @@
         <div class="header-user-actions">
             <div class="header-user-info">
                 <span>ログイン中</span>
-                <strong>{{ user.username }}</strong>
+                <strong>{{ user.profile.display_name }}</strong>
             </div>
 
             <form
