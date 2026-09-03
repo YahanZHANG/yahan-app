@@ -57,45 +57,104 @@
 
                 {% if user.is_authenticated %}
 
-                    <div class="portal-user-row">
+                    <div class="portal-user-area">
 
-                        <div
-                            class="portal-user-avatar"
-                            aria-hidden="true"
-                        >
-                            {{ user.username|first|upper }}
-                        </div>
+                        <div class="portal-user-row">
 
-
-                        <div class="portal-user-copy">
-
-                            <span>
-                                ログイン中
-                            </span>
-
-                            <strong>
-                                {{ user.username }}
-                            </strong>
-
-                        </div>
-
-
-                        <form
-                            method="post"
-                            action="{% url 'logout' %}"
-                            class="portal-logout-form"
-                        >
-
-                            {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="portal-logout-button"
+                            <div
+                                class="portal-user-avatar"
+                                aria-hidden="true"
                             >
-                                ログアウト
-                            </button>
+                                {{ profile.display_name|first|upper }}
+                            </div>
 
-                        </form>
+
+                            <div class="portal-user-copy">
+
+                                <span>
+                                    ログイン中
+                                </span>
+
+                                <strong>
+                                    {{ profile.display_name }}
+                                </strong>
+
+                                <small>
+                                    ID: {{ user.username }}
+                                </small>
+
+                            </div>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'logout' %}"
+                                class="portal-logout-form"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="portal-logout-button"
+                                >
+                                    ログアウト
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        <div class="portal-nickname-panel">
+
+                            <div class="portal-nickname-copy">
+
+                                <span class="portal-nickname-label">
+                                    DISPLAY NAME
+                                </span>
+
+                                <strong>
+                                    ニックネーム
+                                </strong>
+
+                            </div>
+
+
+                            <form
+                                method="post"
+                                class="portal-nickname-form"
+                            >
+
+                                {% csrf_token %}
+
+                                {{ nickname_form.nickname }}
+
+                                <button
+                                    type="submit"
+                                    class="portal-nickname-save-button"
+                                >
+                                    保存
+                                </button>
+
+                            </form>
+
+
+                            {% if nickname_form.nickname.errors %}
+
+                                <div class="portal-nickname-error">
+
+                                    {% for error in nickname_form.nickname.errors %}
+
+                                        {{ error }}
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
 
                     </div>
 

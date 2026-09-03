@@ -1967,6 +1967,174 @@ button {
     font-weight: 800;
 }
 
+.portal-user-area {
+    display: grid;
+
+    gap: 10px;
+
+    width: fit-content;
+    max-width: 100%;
+
+    margin-top: 34px;
+}
+
+
+.portal-user-area .portal-user-row {
+    margin-top: 0;
+}
+
+
+.portal-user-copy small {
+    overflow: hidden;
+
+    margin-top: 2px;
+
+    color: #929aa0;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   Portal nickname
+   ========================================================= */
+
+.portal-nickname-panel {
+    width: 100%;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, .75);
+
+    border-radius: 20px;
+
+    background:
+        rgba(255, 255, 255, .58);
+
+    box-shadow:
+        0 10px 26px
+        rgba(54, 95, 117, .07);
+}
+
+
+.portal-nickname-copy {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+
+.portal-nickname-label {
+    color: #7f8990;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: .13em;
+}
+
+
+.portal-nickname-copy strong {
+    color: #34424a;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+.portal-nickname-form {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    gap: 8px;
+
+    margin: 0;
+}
+
+
+.portal-nickname-input {
+    width: 100%;
+    min-width: 0;
+
+    padding:
+        9px
+        12px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .16);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, .82);
+
+    color: #34424a;
+
+    font-size: 12px;
+
+    outline: none;
+}
+
+
+.portal-nickname-input:focus {
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(54, 95, 117, .10);
+}
+
+
+.portal-nickname-save-button {
+    padding:
+        8px
+        13px;
+
+    border: 0;
+    border-radius: 999px;
+
+    background:
+        var(--primary);
+
+    color: #fff;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+
+.portal-nickname-save-button:hover {
+    background:
+        var(--primary-dark);
+}
+
+
+.portal-nickname-error {
+    margin-top: 7px;
+
+    color:
+        var(--danger);
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
 
 /* =========================================================
    Portal content
@@ -2521,6 +2689,15 @@ button {
 
     .portal-user-copy {
         flex: 1;
+    }
+
+    .portal-user-area {
+        width: 100%;
+    }
+
+
+    .portal-nickname-panel {
+        width: 100%;
     }
 
 }

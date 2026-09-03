@@ -14,7 +14,13 @@
 
 {% block content %}
 
-<section class="tap-star-page">
+<section
+    class="tap-star-page"
+
+    data-score-url="{% url 'games:save_score' %}"
+    data-ranking-url="{% url 'games:ranking' 'tap_star' %}"
+    data-csrf-token="{{ csrf_token }}"
+>
 
     <div class="tap-star-card">
 
@@ -194,6 +200,94 @@
             </div>
 
         </div>
+
+        <section
+            class="tap-star-ranking"
+            aria-labelledby="tap-star-ranking-title"
+        >
+
+            <div class="tap-star-ranking-header">
+
+                <div>
+
+                    <span class="tap-star-ranking-label">
+                        HIGH SCORES
+                    </span>
+
+                    <h2 id="tap-star-ranking-title">
+                        🏆 LEVEL
+                        <span id="tap-star-ranking-level">
+                            1
+                        </span>
+                        ランキング
+                    </h2>
+
+                </div>
+
+
+                <div class="tap-star-personal-best">
+
+                    <span>
+                        MY BEST
+                    </span>
+
+                    <strong id="tap-star-personal-best">
+
+                        {% if personal_best is not None %}
+                            {{ personal_best }}
+                        {% else %}
+                            --
+                        {% endif %}
+
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <ol
+                id="tap-star-ranking-list"
+                class="tap-star-ranking-list"
+            >
+
+                {% for item in ranking_entries %}
+
+                    <li
+                        {% if item.is_me %}
+                            class="is-me"
+                        {% endif %}
+                    >
+
+                        <span class="tap-star-ranking-position">
+                            {{ item.rank }}
+                        </span>
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <span>
+                            {{ item.score }} 回
+                        </span>
+
+                    </li>
+
+                {% empty %}
+
+                    <li class="tap-star-ranking-empty">
+                        まだ記録がない
+                    </li>
+
+                {% endfor %}
+
+            </ol>
+
+        </section>
 
 
         <!-- ==============================

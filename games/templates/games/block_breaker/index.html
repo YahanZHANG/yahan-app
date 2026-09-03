@@ -7,6 +7,10 @@
 <section
     id="game-shell"
     class="block-breaker-page"
+
+    data-score-url="{% url 'games:save_score' %}"
+    data-ranking-url="{% url 'games:ranking' 'block_breaker' %}"
+    data-csrf-token="{{ csrf_token }}"
 >
     <button
         type="button"
@@ -141,6 +145,94 @@
             一時停止
         </button>
     </div>
+
+    <section
+        class="block-ranking-card fullscreen-hidden"
+        aria-labelledby="block-ranking-title"
+    >
+
+        <div class="block-ranking-header">
+
+            <div>
+                <p class="block-ranking-eyebrow">
+                    HIGH SCORES
+                </p>
+
+                <h2 id="block-ranking-title">
+                    🏆 ランキング
+                </h2>
+            </div>
+
+
+            <div class="block-personal-best">
+
+                <span>
+                    あなたのベスト
+                </span>
+
+                <strong id="block-personal-best">
+
+                    {% if personal_best is not None %}
+                        {{ personal_best }}
+                    {% else %}
+                        --
+                    {% endif %}
+
+                </strong>
+
+                <small>
+                    点
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <ol
+            id="block-ranking-list"
+            class="block-ranking-list"
+        >
+
+            {% for item in ranking_entries %}
+
+                <li
+                    {% if item.is_me %}
+                        class="is-me"
+                    {% endif %}
+                >
+
+                    <span class="block-ranking-position">
+                        {{ item.rank }}
+                    </span>
+
+                    <strong>
+                        {{ item.name }}
+                    </strong>
+
+                    <span class="block-ranking-score">
+                        {{ item.score }} 点
+                    </span>
+
+                </li>
+
+            {% empty %}
+
+                <li class="block-ranking-empty">
+                    まだランキング記録がない
+                </li>
+
+            {% endfor %}
+
+        </ol>
+
+
+        <p class="block-ranking-note">
+            ステージ1から開始したプレイのみランキング対象
+        </p>
+
+    </section>
+
 </section>
 
 <link

@@ -41,6 +41,25 @@ const stageSelectButton = document.getElementById(
     "stage-select-button",
 );
 
+const scoreSaveUrl =
+    gameShell.dataset.scoreUrl;
+
+const rankingUrl =
+    gameShell.dataset.rankingUrl;
+
+const csrfToken =
+    gameShell.dataset.csrfToken;
+
+const rankingList =
+    document.getElementById(
+        "block-ranking-list",
+    );
+
+const personalBestDisplay =
+    document.getElementById(
+        "block-personal-best",
+    );
+
 canvas.width = GAME_CONFIG.canvasWidth;
 canvas.height = GAME_CONFIG.canvasHeight;
 
@@ -48,6 +67,9 @@ const state = {
     score: 0,
     lives: GAME_CONFIG.lives,
     levelIndex: 0,
+
+    rankingEligible: true,
+    scoreSubmitted: false,
 
     running: false,
     paused: false,
@@ -1405,6 +1427,9 @@ function checkStageClear() {
 
         startButton.dataset.action = "next-level";
     } else {
+
+        void submitScoreIfEligible();
+
         showOverlay(
             "全ステージクリア！",
             `最終スコアは${state.score}点。`,
@@ -1433,6 +1458,8 @@ function handleBallLoss() {
     if (state.lives <= 0) {
         state.running = false;
         startButton.dataset.action = "restart";
+
+        void submitScoreIfEligible();
 
         showOverlay(
             "ゲームオーバー",
@@ -1635,6 +1662,175 @@ function showOverlay(title, message, buttonText) {
     overlay.classList.remove("is-hidden");
 }
 
+function renderRanking(data) {
+
+    if (
+        !rankingList
+        || !personalBestDisplay
+    ) {
+        return;
+    }
+
+    rankingList.innerHTML = "";
+
+    const entries =
+        data.entries ?? [];
+
+    if (entries.length === 0) {
+
+        const emptyItem =
+            document.createElement("li");
+
+        emptyItem.className =
+            "block-ranking-empty";
+
+        emptyItem.textContent =
+            "まだランキング記録がない";
+
+        rankingList.appendChild(
+            emptyItem
+        );
+
+    } else {
+
+        entries.forEach((entry) => {
+
+            const item =
+                document.createElement("li");
+
+            if (entry.is_me) {
+                item.classList.add(
+                    "is-me"
+                );
+            }
+
+
+            const position =
+                document.createElement(
+                    "span"
+                );
+
+            position.className =
+                "block-ranking-position";
+
+            position.textContent =
+                String(entry.rank);
+
+
+            const name =
+                document.createElement(
+                    "strong"
+                );
+
+            name.textContent =
+                entry.name;
+
+
+            const score =
+                document.createElement(
+                    "span"
+                );
+
+            score.className =
+                "block-ranking-score";
+
+            score.textContent =
+                `${entry.score} 点`;
+
+
+            item.append(
+                position,
+                name,
+                score,
+            );
+
+            rankingList.appendChild(
+                item
+            );
+
+        });
+
+    }
+
+
+    personalBestDisplay.textContent = (
+        data.personal_best === null
+        ? "--"
+        : String(data.personal_best)
+    );
+
+}
+
+async function submitScoreIfEligible() {
+
+    if (
+        !state.rankingEligible
+        || state.scoreSubmitted
+        || state.score < 0
+    ) {
+        return;
+    }
+
+    state.scoreSubmitted = true;
+
+    try {
+
+        const response =
+            await fetch(
+                scoreSaveUrl,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "X-CSRFToken":
+                            csrfToken,
+                    },
+
+                    credentials:
+                        "same-origin",
+
+                    body:
+                        JSON.stringify(
+                            {
+                                game:
+                                    "block_breaker",
+
+                                score:
+                                    state.score,
+                            }
+                        ),
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Score save failed."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+        if (data.ok) {
+            renderRanking(data);
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "ランキングを保存できませんでした。",
+            error,
+        );
+
+    }
+
+}
+
 
 function restorePausedEffectTimers() {
     const currentTime = performance.now();
@@ -1749,6 +1945,11 @@ function selectStage() {
 
     state.levelIndex = selectedLevelIndex;
 
+    // ステージ選択から開始したプレイは
+    // 練習扱いにしてランキングへ登録しない。
+    state.rankingEligible = false;
+    state.scoreSubmitted = false;
+
     // ステージ選択時もスコアを残したい場合は、selectStage()内のこの2行だけ削除
     // state.score = 0;
     // state.lives = GAME_CONFIG.lives;
@@ -1784,6 +1985,9 @@ function startOrContinueGame() {
         state.score = 0;
         state.lives = GAME_CONFIG.lives;
         state.levelIndex = 0;
+
+        state.rankingEligible = true;
+        state.scoreSubmitted = false;
 
         initialiseLevel();
     }

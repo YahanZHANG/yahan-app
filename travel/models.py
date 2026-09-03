@@ -728,6 +728,12 @@ class UserProfile(models.Model):
         related_name="profile",
     )
 
+    nickname = models.CharField(
+        "ニックネーム",
+        max_length=30,
+        blank=True,
+    )
+
     photo = models.ImageField(
         "プロフィール写真",
         upload_to="profile_photos/",
@@ -745,7 +751,16 @@ class UserProfile(models.Model):
         verbose_name_plural = "家族プロフィール"
 
     def __str__(self):
-        return f"{self.user} のプロフィール"
+        return f"{self.display_name} のプロフィール"
+
+    @property
+    def display_name(self):
+        nickname = self.nickname.strip()
+
+        if nickname:
+            return nickname
+
+        return self.user.username
 
 class ImportantNotice(models.Model):
     """ホーム画面に表示する重要なお知らせ。"""

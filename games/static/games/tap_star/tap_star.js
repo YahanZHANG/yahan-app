@@ -103,6 +103,35 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultMessage =
         document.getElementById("tap-star-result-message");
 
+    const page =
+        document.querySelector(
+            ".tap-star-page"
+        );
+
+    const scoreSaveUrl =
+        page.dataset.scoreUrl;
+
+    const rankingUrl =
+        page.dataset.rankingUrl;
+
+    const csrfToken =
+        page.dataset.csrfToken;
+
+    const rankingList =
+        document.getElementById(
+            "tap-star-ranking-list"
+        );
+
+    const rankingLevelDisplay =
+        document.getElementById(
+            "tap-star-ranking-level"
+        );
+
+    const personalBestDisplay =
+        document.getElementById(
+            "tap-star-personal-best"
+        );
+
 
     // ========================================
     // State
@@ -148,6 +177,8 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
         });
+
+        loadRanking(selectedLevel);
 
     }
 
@@ -485,6 +516,233 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+// ========================================
+// Ranking
+// ========================================
+
+function renderRanking(
+    data,
+    level,
+) {
+
+    rankingLevelDisplay.textContent =
+        String(level);
+
+    rankingList.innerHTML = "";
+
+    const entries =
+        data.entries ?? [];
+
+    if (entries.length === 0) {
+
+        const emptyItem =
+            document.createElement("li");
+
+        emptyItem.className =
+            "tap-star-ranking-empty";
+
+        emptyItem.textContent =
+            "まだ記録がない";
+
+        rankingList.appendChild(
+            emptyItem
+        );
+
+    } else {
+
+        entries.forEach(function (entry) {
+
+            const item =
+                document.createElement("li");
+
+            if (entry.is_me) {
+                item.classList.add(
+                    "is-me"
+                );
+            }
+
+
+            const position =
+                document.createElement(
+                    "span"
+                );
+
+            position.className =
+                "tap-star-ranking-position";
+
+            position.textContent =
+                String(entry.rank);
+
+
+            const name =
+                document.createElement(
+                    "strong"
+                );
+
+            name.textContent =
+                entry.name;
+
+
+            const scoreElement =
+                document.createElement(
+                    "span"
+                );
+
+            scoreElement.textContent =
+                `${entry.score} 回`;
+
+
+            item.append(
+                position,
+                name,
+                scoreElement,
+            );
+
+            rankingList.appendChild(
+                item
+            );
+
+        });
+
+    }
+
+
+    personalBestDisplay.textContent = (
+        data.personal_best === null
+        ? "--"
+        : String(data.personal_best)
+    );
+
+}
+
+
+async function loadRanking(level) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${rankingUrl}?level=${level}`,
+                {
+                    credentials:
+                        "same-origin",
+                }
+            );
+
+
+        if (!response.ok) {
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        // 読み込み中に別レベルへ
+        // 切り替えた場合は表示しない
+        if (
+            selectedLevel
+            !== level
+        ) {
+            return;
+        }
+
+
+        if (data.ok) {
+            renderRanking(
+                data,
+                level,
+            );
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "ランキングを取得できませんでした。",
+            error,
+        );
+
+    }
+
+}
+
+
+async function saveScore(
+    level,
+    currentScore,
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                scoreSaveUrl,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "X-CSRFToken":
+                            csrfToken,
+                    },
+
+                    credentials:
+                        "same-origin",
+
+                    body:
+                        JSON.stringify(
+                            {
+                                game:
+                                    "tap_star",
+
+                                level:
+                                    level,
+
+                                score:
+                                    currentScore,
+                            }
+                        ),
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Score save failed."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data.ok
+            && selectedLevel === level
+        ) {
+
+            renderRanking(
+                data,
+                level,
+            );
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "スコアを保存できませんでした。",
+            error,
+        );
+
+    }
+
+}
+
 
     // ========================================
     // End Game
@@ -518,6 +776,11 @@ document.addEventListener("DOMContentLoaded", function () {
         resultScreen.hidden = false;
 
         enableLevelButtons();
+
+        saveScore(
+            selectedLevel,
+            score,
+        );
 
     }
 
