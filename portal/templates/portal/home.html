@@ -59,6 +59,10 @@
 
                     <div class="portal-user-area">
 
+                        <!-- =================================================
+                            Logged-in user
+                            ================================================= -->
+
                         <div class="portal-user-row">
 
                             <div
@@ -86,25 +90,41 @@
                             </div>
 
 
-                            <form
-                                method="post"
-                                action="{% url 'logout' %}"
-                                class="portal-logout-form"
-                            >
+                            <div class="portal-user-actions">
 
-                                {% csrf_token %}
-
-                                <button
-                                    type="submit"
-                                    class="portal-logout-button"
+                                <a
+                                    href="{% url 'password_change' %}"
+                                    class="portal-password-change-button"
                                 >
-                                    ログアウト
-                                </button>
+                                    🔑 パスワードを変更
+                                </a>
 
-                            </form>
+
+                                <form
+                                    method="post"
+                                    action="{% url 'logout' %}"
+                                    class="portal-logout-form"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="portal-logout-button"
+                                    >
+                                        ログアウト
+                                    </button>
+
+                                </form>
+
+                            </div>
 
                         </div>
 
+
+                        <!-- =================================================
+                            Nickname
+                            ================================================= -->
 
                         <div class="portal-nickname-panel">
 
@@ -145,9 +165,7 @@
                                 <div class="portal-nickname-error">
 
                                     {% for error in nickname_form.nickname.errors %}
-
                                         {{ error }}
-
                                     {% endfor %}
 
                                 </div>

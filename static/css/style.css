@@ -2837,3 +2837,99 @@ button {
     }
 
 }
+
+/* ========================================
+   User actions
+======================================== */
+
+.portal-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+.portal-user-actions .portal-logout-form {
+    margin: 0;
+}
+
+
+.portal-password-change-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        8px
+        12px;
+
+    border: 0;
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, .78);
+
+    color: #626d74;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.portal-password-change-button:hover {
+    background:
+        rgba(255, 255, 255, .9);
+
+    color: #626d74;
+
+    text-decoration: none;
+}
+
+.portal-password-change-button:active {
+    transform: translateY(1px);
+}
+
+
+.portal-password-change-button:active {
+    transform: scale(0.98);
+}
+
+
+@media (max-width: 760px) {
+
+    .portal-user-row {
+        flex-wrap: wrap;
+    }
+
+
+    .portal-user-actions {
+        width: 100%;
+
+        justify-content: flex-end;
+
+        margin-top: 8px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .portal-user-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    .portal-password-change-button,
+    .portal-user-actions .portal-logout-button {
+        width: 100%;
+    }
+
+}
