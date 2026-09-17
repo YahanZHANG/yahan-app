@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import internal_views
 
 
 app_name = "news"
@@ -41,5 +42,11 @@ urlpatterns = [
         "favorite/<int:article_id>/toggle/",
         views.toggle_favorite,
         name="toggle_favorite",
+    ),
+
+    path(
+        "internal/refresh/",
+        internal_views.refresh_news_internal,
+        name="internal_refresh",
     ),
 ]
