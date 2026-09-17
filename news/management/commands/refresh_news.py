@@ -1,13 +1,13 @@
-from django.core.management import (
+from django.core.management import call_command
+from django.core.management.base import (
     BaseCommand,
-    call_command,
 )
 
 
 class Command(BaseCommand):
     help = (
-        "Fetch, AI-process, and clean up "
-        "Yahan News articles."
+        "Fetch, clean, classify, translate, "
+        "and summarize Swiss news."
     )
 
 
@@ -19,20 +19,30 @@ class Command(BaseCommand):
         parser.add_argument(
             "--feed-limit",
             type=int,
-            default=10,
+            default=20,
             help=(
-                "Maximum number of RSS articles "
-                "to inspect per source."
+                "Maximum articles to inspect "
+                "per RSS source."
+            ),
+        )
+
+        parser.add_argument(
+            "--web-limit",
+            type=int,
+            default=20,
+            help=(
+                "Maximum articles to inspect "
+                "per webpage source."
             ),
         )
 
         parser.add_argument(
             "--admin-limit",
             type=int,
-            default=10,
+            default=20,
             help=(
-                "Maximum number of admin.ch "
-                "articles to inspect."
+                "Maximum admin.ch articles "
+                "to inspect."
             ),
         )
 
@@ -41,8 +51,30 @@ class Command(BaseCommand):
             type=int,
             default=100,
             help=(
-                "Maximum number of new articles "
-                "to AI-process."
+                "Maximum unprocessed foreign-language "
+                "articles to send to OpenAI."
+            ),
+        )
+
+        parser.add_argument(
+            "--period",
+            choices=[
+                "morning",
+                "afternoon",
+            ],
+            default=None,
+            help=(
+                "Force digest period. "
+                "Normally detected automatically."
+            ),
+        )
+
+        parser.add_argument(
+            "--skip-digest",
+            action="store_true",
+            help=(
+                "Run refresh without generating "
+                "a news digest."
             ),
         )
 
@@ -53,137 +85,191 @@ class Command(BaseCommand):
         **options,
     ):
 
-        feed_limit = options[
-            "feed_limit"
-        ]
-
-        admin_limit = options[
-            "admin_limit"
-        ]
-
-        ai_limit = options[
-            "ai_limit"
-        ]
-
-
         self.stdout.write("")
         self.stdout.write(
-            self.style.MIGRATE_HEADING(
-                "=== Yahan News Refresh ==="
+            self.style.SUCCESS(
+                "========================================"
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "YAHAN NEWS REFRESH"
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "========================================"
             )
         )
 
 
-        # -------------------------
-        # 1. RSS news
-        # -------------------------
+        # ========================================
+        # 1. RSS feeds
+        # ========================================
 
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.MIGRATE_LABEL(
-                "1/4 Fetching RSS news..."
-            )
+        self._run_step(
+            "1/8 Fetch RSS news",
+            "fetch_news",
+            limit=options["feed_limit"],
         )
 
-        try:
 
-            call_command(
-                "fetch_news",
-                limit=feed_limit,
-            )
+        # ========================================
+        # 2. Web sources
+        # ========================================
 
-        except Exception as exc:
+        self._run_step(
+            "2/8 Fetch webpage news",
+            "fetch_web_news",
+            limit=options["web_limit"],
+        )
 
+
+        # ========================================
+        # 3. admin.ch
+        # ========================================
+
+        self._run_step(
+            "3/8 Fetch admin.ch news",
+            "fetch_admin_news",
+            limit=options["admin_limit"],
+        )
+
+
+        # ========================================
+        # 4. Remove ads / promotions
+        # ========================================
+
+        self._run_step(
+            "4/8 Remove non-news content",
+            "cleanup_non_news",
+        )
+
+
+        # ========================================
+        # 5. Remove old articles
+        #
+        # Do this BEFORE OpenAI processing so
+        # old articles do not consume API tokens.
+        # ========================================
+
+        self._run_step(
+            "5/8 Remove old articles",
+            "cleanup_news",
+        )
+
+
+        # ========================================
+        # 6. Japanese local classification
+        #
+        # No OpenAI API usage.
+        # ========================================
+
+        self._run_step(
+            "6/8 Classify Japanese news",
+            "classify_japanese_news",
+        )
+
+
+        # ========================================
+        # 7. AI enrichment
+        #
+        # Only foreign-language articles that
+        # have not already been processed.
+        # ========================================
+
+        self._run_step(
+            "7/8 Translate and classify news",
+            "enrich_news",
+            limit=options["ai_limit"],
+        )
+
+
+        # ========================================
+        # 8. Digest
+        # ========================================
+
+        if options["skip_digest"]:
+
+            self.stdout.write("")
             self.stdout.write(
-                self.style.ERROR(
-                    f"RSS fetch failed: {exc}"
+                self.style.WARNING(
+                    "8/8 News digest skipped."
                 )
             )
 
+        else:
 
-        # -------------------------
-        # 2. admin.ch
-        # -------------------------
+            digest_options = {}
 
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.MIGRATE_LABEL(
-                "2/4 Fetching admin.ch..."
-            )
-        )
+            if options["period"]:
+                digest_options[
+                    "period"
+                ] = options["period"]
 
-        try:
-
-            call_command(
-                "fetch_admin_news",
-                limit=admin_limit,
-            )
-
-        except Exception as exc:
-
-            self.stdout.write(
-                self.style.ERROR(
-                    f"admin.ch fetch failed: {exc}"
-                )
-            )
-
-
-        # -------------------------
-        # 3. AI processing
-        # -------------------------
-
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.MIGRATE_LABEL(
-                "3/4 AI processing..."
-            )
-        )
-
-        try:
-
-            call_command(
-                "enrich_news",
-                limit=ai_limit,
-            )
-
-        except Exception as exc:
-
-            self.stdout.write(
-                self.style.ERROR(
-                    f"AI processing failed: {exc}"
-                )
-            )
-
-
-        # -------------------------
-        # 4. Cleanup
-        # -------------------------
-
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.MIGRATE_LABEL(
-                "4/4 Cleaning old articles..."
-            )
-        )
-
-        try:
-
-            call_command(
-                "cleanup_news"
-            )
-
-        except Exception as exc:
-
-            self.stdout.write(
-                self.style.ERROR(
-                    f"Cleanup failed: {exc}"
-                )
+            self._run_step(
+                "8/8 Generate news digest",
+                "generate_news_digest",
+                **digest_options,
             )
 
 
         self.stdout.write("")
         self.stdout.write(
             self.style.SUCCESS(
-                "=== Yahan News refresh finished ==="
+                "========================================"
             )
         )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "NEWS REFRESH FINISHED"
+            )
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "========================================"
+            )
+        )
+
+
+    def _run_step(
+        self,
+        label,
+        command_name,
+        **kwargs,
+    ):
+
+        self.stdout.write("")
+        self.stdout.write(
+            self.style.HTTP_INFO(
+                f"--- {label} ---"
+            )
+        )
+
+        try:
+
+            call_command(
+                command_name,
+                **kwargs,
+            )
+
+        except Exception as exc:
+
+            self.stdout.write(
+                self.style.ERROR(
+                    (
+                        f"{command_name} failed: "
+                        f"{exc}"
+                    )
+                )
+            )
+
+            self.stdout.write(
+                self.style.WARNING(
+                    "Continuing with next step."
+                )
+            )
