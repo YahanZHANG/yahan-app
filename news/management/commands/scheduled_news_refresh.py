@@ -1,6 +1,8 @@
+import os
 from zoneinfo import ZoneInfo
 
-from django.core.management import call_command
+import requests
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -12,8 +14,8 @@ ZURICH_TZ = ZoneInfo(
 
 class Command(BaseCommand):
     help = (
-        "Run the Swiss news refresh at "
-        "06:00 or 15:00 Europe/Zurich time."
+        "Ask the Yahan-app web service to refresh "
+        "Swiss news at 06:00 or 15:00 Zurich time."
     )
 
 
@@ -21,13 +23,26 @@ class Command(BaseCommand):
         self,
         parser,
     ):
-
         parser.add_argument(
             "--force",
             action="store_true",
             help=(
-                "Run immediately regardless "
-                "of the current Zurich time."
+                "Send a refresh request immediately "
+                "regardless of Zurich time."
+            ),
+        )
+
+        parser.add_argument(
+            "--period",
+            choices=[
+                "morning",
+                "afternoon",
+            ],
+            default=None,
+            help=(
+                "Period to use with --force. "
+                "If omitted, it is determined "
+                "from Zurich time."
             ),
         )
 
@@ -37,11 +52,37 @@ class Command(BaseCommand):
         *args,
         **options,
     ):
+        refresh_url = os.environ.get(
+            "NEWS_REFRESH_URL",
+            "",
+        )
 
-        now_utc = timezone.now()
+        refresh_token = os.environ.get(
+            "NEWS_REFRESH_TOKEN",
+            "",
+        )
+
+
+        if not refresh_url:
+            self.stderr.write(
+                self.style.ERROR(
+                    "NEWS_REFRESH_URL is not configured."
+                )
+            )
+            return
+
+
+        if not refresh_token:
+            self.stderr.write(
+                self.style.ERROR(
+                    "NEWS_REFRESH_TOKEN is not configured."
+                )
+            )
+            return
+
 
         now_zurich = (
-            now_utc
+            timezone.now()
             .astimezone(
                 ZURICH_TZ
             )
@@ -56,84 +97,99 @@ class Command(BaseCommand):
         )
 
 
-        # -------------------------
-        # Manual test
-        # -------------------------
+        # ========================================
+        # Determine period
+        # ========================================
 
         if options["force"]:
 
-            period = (
-                "morning"
-                if now_zurich.hour < 12
-                else "afternoon"
-            )
+            period = options["period"]
+
+            if not period:
+                period = (
+                    "morning"
+                    if now_zurich.hour < 12
+                    else "afternoon"
+                )
 
             self.stdout.write(
                 self.style.WARNING(
                     (
-                        "Forced refresh. "
+                        "Forced refresh request. "
                         f"Period: {period}"
                     )
                 )
             )
 
-            call_command(
-                "refresh_news",
-                period=period,
-            )
 
-            return
+        elif now_zurich.hour == 6:
+
+            period = "morning"
 
 
-        # -------------------------
-        # Morning
-        # -------------------------
+        elif now_zurich.hour == 15:
 
-        if now_zurich.hour == 6:
+            period = "afternoon"
+
+
+        else:
 
             self.stdout.write(
-                self.style.SUCCESS(
-                    "Starting morning refresh."
+                self.style.WARNING(
+                    (
+                        "Not a scheduled Zurich "
+                        "refresh hour. Skipping."
+                    )
                 )
             )
 
-            call_command(
-                "refresh_news",
-                period="morning",
-            )
-
             return
 
 
-        # -------------------------
-        # Afternoon
-        # -------------------------
+        # ========================================
+        # Send request to Web Service
+        # ========================================
 
-        if now_zurich.hour == 15:
+        try:
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "Starting afternoon refresh."
+            response = requests.post(
+                refresh_url,
+                headers={
+                    "X-News-Refresh-Token":
+                        refresh_token,
+                },
+                data={
+                    "period": period,
+                },
+                timeout=30,
+            )
+
+            response.raise_for_status()
+
+
+        except requests.RequestException as exc:
+
+            self.stderr.write(
+                self.style.ERROR(
+                    (
+                        "Refresh request failed: "
+                        f"{exc}"
+                    )
                 )
             )
 
-            call_command(
-                "refresh_news",
-                period="afternoon",
-            )
+            raise
 
-            return
-
-
-        # -------------------------
-        # DST helper run
-        # -------------------------
 
         self.stdout.write(
-            self.style.WARNING(
+            self.style.SUCCESS(
                 (
-                    "Not a scheduled Zurich "
-                    "refresh hour. Skipping."
+                    "Refresh request accepted. "
+                    f"Period: {period}"
                 )
             )
+        )
+
+        self.stdout.write(
+            response.text
         )
