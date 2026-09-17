@@ -44,11 +44,6 @@ urlpatterns = [
     ),
 
     path(
-        "",
-        include("portal.urls"),
-    ),
-
-    path(
         "travel/",
         include(
             "travel.urls",
@@ -81,7 +76,7 @@ urlpatterns = [
     ),
 
     path(
-        "colorcheck/", 
+        "colorcheck/",
         include(
             "colorcheck.urls",
             namespace="colorcheck",
@@ -89,10 +84,23 @@ urlpatterns = [
     ),
 
     path(
-        "recipes/", 
+        "recipes/",
         include(
             "recipes.urls",
             namespace="recipes",
         ),
+    ),
+
+    path(
+        "news/",
+        include(
+            "news.urls",
+            namespace="news",
+        ),
+    ),
+
+    path(
+        "",
+        include("portal.urls"),
     ),
 ]

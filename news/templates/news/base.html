@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'news/css/news.css' %}"
+>
+
+<div class="
+    news-app
+    news-font-{{ preference.font_size|default:'medium' }}
+">
+
+    <header class="news-header">
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="news-back-link"
+        >
+            ← Yahan App
+        </a>
+
+        <div class="news-header-copy">
+            <div class="news-eyebrow">
+                SWITZERLAND
+            </div>
+
+            <h1>
+                Swiss News
+            </h1>
+
+            <p>
+                スイスのニュースを日本語で
+            </p>
+        </div>
+
+    </header>
+
+
+    {% if messages %}
+
+        <div class="news-messages">
+
+            {% for message in messages %}
+
+                <div class="
+                    news-message
+                    news-message-{{ message.tags }}
+                ">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <main class="news-main">
+
+        {% block news_content %}
+        {% endblock %}
+
+    </main>
+
+
+    <nav class="news-bottom-nav">
+
+        <a
+            href="{% url 'news:home' %}"
+            class="
+                news-nav-item
+                {% if request.resolver_match.url_name == 'home' %}
+                    is-active
+                {% endif %}
+            "
+        >
+            <span class="news-nav-icon">
+                🏠
+            </span>
+
+            <span>
+                HOME
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'news:topic_list' %}"
+            class="
+                news-nav-item
+                {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' %}
+                    is-active
+                {% endif %}
+            "
+        >
+            <span class="news-nav-icon">
+                ▦
+            </span>
+
+            <span>
+                テーマ別
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'news:favorites' %}"
+            class="
+                news-nav-item
+                {% if request.resolver_match.url_name == 'favorites' %}
+                    is-active
+                {% endif %}
+            "
+        >
+            <span class="news-nav-icon">
+                ☆
+            </span>
+
+            <span>
+                お気に入り
+            </span>
+        </a>
+
+
+        <a
+            href="{% url 'news:settings' %}"
+            class="
+                news-nav-item
+                {% if request.resolver_match.url_name == 'settings' %}
+                    is-active
+                {% endif %}
+            "
+        >
+            <span class="news-nav-icon">
+                ⚙
+            </span>
+
+            <span>
+                設定
+            </span>
+        </a>
+
+    </nav>
+
+</div>
+
+{% endblock %}

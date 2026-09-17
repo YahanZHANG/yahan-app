@@ -1,0 +1,112 @@
+<article class="news-card">
+
+    <div class="news-card-meta">
+
+        <span class="news-source">
+            {{ article.source.name }}
+        </span>
+
+        <span>
+            {{ article.published_at|date:"n/j H:i" }}
+        </span>
+
+    </div>
+
+
+    <h2 class="news-card-title">
+
+        {% if preference.display_language == "original" %}
+
+            {{ article.title_original }}
+
+        {% else %}
+
+            {{ article.title_ja|default:article.title_original }}
+
+        {% endif %}
+
+    </h2>
+
+
+    <div class="news-topic-row">
+
+        {% for topic in article.topics.all %}
+
+            <a
+                href="{% url 'news:topic_detail' topic.slug %}"
+                class="news-topic-badge"
+            >
+                {{ topic.icon }}
+                {{ topic.name }}
+            </a>
+
+        {% endfor %}
+
+    </div>
+
+
+    <p class="news-card-summary">
+
+        {% if preference.display_language == "original" %}
+
+            {{ article.summary_original }}
+
+        {% else %}
+
+            {{ article.summary_ja|default:article.summary_original }}
+
+        {% endif %}
+
+    </p>
+
+
+    <div class="news-card-footer">
+
+        <a
+            href="{{ article.source_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="news-source-link"
+        >
+            出典：{{ article.source.name }}
+            ↗
+        </a>
+
+
+        <form
+            method="post"
+            action="{% url 'news:toggle_favorite' article.id %}"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="next"
+                value="{{ request.path }}"
+            >
+
+            <button
+                type="submit"
+                class="
+                    news-favorite-button
+                    {% if article.is_favorite %}
+                        is-favorite
+                    {% endif %}
+                "
+                aria-label="お気に入り"
+            >
+
+                {% if article.is_favorite %}
+                    ★
+                {% else %}
+                    ☆
+                {% endif %}
+
+            </button>
+
+        </form>
+
+    </div>
+
+</article>

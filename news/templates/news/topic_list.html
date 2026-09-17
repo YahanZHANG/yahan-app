@@ -1,0 +1,56 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+テーマ別 | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            TOPICS
+        </div>
+
+        <h2>
+            テーマから読む
+        </h2>
+
+    </div>
+
+</section>
+
+
+<div class="news-topic-grid">
+
+    {% for topic in topics %}
+
+        <a
+            href="{% url 'news:topic_detail' topic.slug %}"
+            class="news-topic-card"
+        >
+
+            <div class="news-topic-card-icon">
+                {{ topic.icon }}
+            </div>
+
+            <strong>
+                {{ topic.name }}
+            </strong>
+
+        </a>
+
+    {% empty %}
+
+        <p>
+            表示するテーマがありません。
+        </p>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

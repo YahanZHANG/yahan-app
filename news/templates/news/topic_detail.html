@@ -1,0 +1,48 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+{{ topic.name }} | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            TOPIC
+        </div>
+
+        <h2>
+            {{ topic.icon }}
+            {{ topic.name }}
+        </h2>
+
+    </div>
+
+</section>
+
+
+<div class="news-list">
+
+    {% for article in articles %}
+
+        {% include "news/_article_card.html" %}
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <p>
+                このテーマの記事はまだありません。
+            </p>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

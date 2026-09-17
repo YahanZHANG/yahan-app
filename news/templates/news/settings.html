@@ -1,0 +1,144 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+設定 | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            SETTINGS
+        </div>
+
+        <h2>
+            設定
+        </h2>
+
+    </div>
+
+</section>
+
+
+<form
+    method="post"
+    class="news-settings-form"
+>
+
+    {% csrf_token %}
+
+
+    <section class="news-settings-card">
+
+        <h3>
+            表示言語
+        </h3>
+
+        <div class="news-radio-list">
+
+            {% for radio in form.display_language %}
+
+                <label class="news-radio-option">
+
+                    {{ radio.tag }}
+
+                    <span>
+                        {{ radio.choice_label }}
+                    </span>
+
+                </label>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="news-settings-card">
+
+        <h3>
+            文字サイズ
+        </h3>
+
+        <div class="news-radio-list">
+
+            {% for radio in form.font_size %}
+
+                <label class="news-radio-option">
+
+                    {{ radio.tag }}
+
+                    <span>
+                        {{ radio.choice_label }}
+                    </span>
+
+                </label>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="news-settings-card">
+
+        <div class="news-setting-heading">
+
+            <div>
+
+                <h3>
+                    表示するテーマ
+                </h3>
+
+                <p>
+                    HOMEに表示したいニュースを選択
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="news-toggle-list">
+
+            {% for checkbox in form.enabled_topics %}
+
+                <label class="news-toggle-row">
+
+                    <span>
+                        {{ checkbox.choice_label }}
+                    </span>
+
+                    <span class="news-switch">
+
+                        {{ checkbox.tag }}
+
+                        <span class="news-slider"></span>
+
+                    </span>
+
+                </label>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <button
+        type="submit"
+        class="news-save-button"
+    >
+        設定を保存
+    </button>
+
+</form>
+
+{% endblock %}

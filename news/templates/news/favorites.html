@@ -1,0 +1,60 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+お気に入り | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            SAVED
+        </div>
+
+        <h2>
+            お気に入り
+        </h2>
+
+    </div>
+
+    <div class="news-favorite-count">
+        ★ {{ favorite_count }}/10
+    </div>
+
+</section>
+
+
+<div class="news-list">
+
+    {% for article in articles %}
+
+        {% include "news/_article_card.html" %}
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <div class="news-empty-icon">
+                ☆
+            </div>
+
+            <h3>
+                保存した記事はありません
+            </h3>
+
+            <p>
+                気になる記事の☆を押すと、
+                ここに保存できます。
+            </p>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
