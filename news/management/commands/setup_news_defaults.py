@@ -143,7 +143,7 @@ class Command(BaseCommand):
             (
                 "RTS",
                 "https://www.rts.ch/info/",
-                "",
+                "https://www.rts.ch/info/suisse?format=rss/news",
                 "fr",
                 90,
             ),
