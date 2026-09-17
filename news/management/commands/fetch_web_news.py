@@ -1,11 +1,10 @@
 import re
+import requests
 from datetime import datetime
 from urllib.parse import (
     urljoin,
     urlparse,
 )
-
-import requests
 
 from bs4 import BeautifulSoup
 
@@ -119,13 +118,12 @@ def parse_datetime(value):
 
 def discover_urls(
     session,
-    source_name,
     config,
     limit,
 ):
     response = session.get(
         config["list_url"],
-        timeout=20,
+        timeout=(5, 15),
     )
 
     response.raise_for_status()
@@ -245,7 +243,7 @@ def parse_article(
 ):
     response = session.get(
         url,
-        timeout=20,
+        timeout=(5, 15),
     )
 
     response.raise_for_status()
@@ -491,12 +489,23 @@ class Command(BaseCommand):
                     )
                 )
 
-                urls = discover_urls(
-                    session,
-                    source_name,
-                    config,
-                    limit,
-                )
+                try:
+
+                    urls = discover_urls(
+                        session,
+                        config,
+                        limit,
+                    )
+
+                except requests.RequestException as exc:
+
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"{source_name}: failed to fetch list page: {exc}"
+                        )
+                    )
+
+                    continue
 
 
             except Exception as exc:
