@@ -1,5 +1,10 @@
 import re
 import requests
+
+from news.services.japanese_classifier import (
+    assign_japanese_topics,
+)
+
 from datetime import datetime
 from urllib.parse import (
     urljoin,
@@ -620,7 +625,7 @@ class Command(BaseCommand):
                     summary_ja = ""
 
 
-                Article.objects.create(
+                article = Article.objects.create(
                     source=source,
                     source_url=data["url"],
                     original_language=language,
@@ -638,6 +643,12 @@ class Command(BaseCommand):
                 )
 
 
+                if language == "ja":
+
+                    assign_japanese_topics(
+                        article
+                    )
+                
                 source_new += 1
                 total_new += 1
 
