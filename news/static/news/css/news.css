@@ -1213,3 +1213,59 @@
     color:
         #ffffff;
 }
+
+/* =========================================================
+   Settings guide
+   ========================================================= */
+
+.news-settings-guide {
+    margin-top: 24px;
+
+    padding: 18px;
+
+    border:
+        1px solid
+        #e9faef;
+
+    border-radius: 18px;
+
+    background:
+        #eaf8f1;
+
+    color:
+        #626d68;
+}
+
+
+.news-settings-guide h3 {
+    margin:
+        0
+        0
+        10px;
+
+    color:
+        #3f4c46;
+
+    font-size:
+        .95rem;
+    font-weight:
+        800;
+}
+
+
+.news-settings-guide p {
+    margin:
+        0;
+
+    font-size:
+        .78rem;
+
+    line-height:
+        1.75;
+}
+
+
+.news-settings-guide p + p {
+    margin-top:
+        9px;
+}
