@@ -18,70 +18,21 @@ MODEL = "gpt-5.6-luna"
 
 MAX_ARTICLES = 100
 
-
 OUTPUT_SCHEMA = {
     "type": "object",
 
     "properties": {
-
         "summary_ja": {
             "type": "string",
-        },
-
-        "highlights": {
-            "type": "array",
-
-            "items": {
-                "type": "object",
-
-                "properties": {
-
-                    "tag": {
-                        "type": "string",
-                        "enum": [
-                            "重要",
-                            "複数媒体",
-                            "暮らし",
-                            "注目",
-                        ],
-                    },
-
-                    "title": {
-                        "type": "string",
-                    },
-
-                    "summary": {
-                        "type": "string",
-                    },
-
-                    "sources": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                        },
-                    },
-                },
-
-                "required": [
-                    "tag",
-                    "title",
-                    "summary",
-                    "sources",
-                ],
-
-                "additionalProperties": False,
-            },
         },
     },
 
     "required": [
         "summary_ja",
-        "highlights",
     ],
 
     "additionalProperties": False,
 }
-
 
 INSTRUCTIONS = """
 あなたはスイス在住の日本人向けニュースアプリ
@@ -122,23 +73,21 @@ INSTRUCTIONS = """
 その時間帯のスイスで何が起きているのか、
 日本人が短時間で把握できる自然な日本語でまとめてください。
 
-目安は4～8文程度です。
+重要度は以下を考慮してください。
 
+1. 複数の異なるニュース媒体で報じられている出来事
+2. スイス在住者の生活に直接影響するニュース
+3. 政府、法律、国民投票、移民、税、健康保険、
+   公共交通、安全、災害など重要性の高いニュース
+4. スイス経済や雇用への影響が大きいニュース
+
+目安は4～8文程度です。
 ニュースが少ない場合は無理に長くしないでください。
 
 【Highlights】
 
-重要な話題を最大4件選択してください。
+重要な話題を最大5件選択してください。
 
-同じ出来事が複数媒体で報道されている場合は、
-sources にその媒体名を入れてください。
-
-tag は以下から選択してください。
-
-重要
-複数媒体
-暮らし
-注目
 """
 
 
@@ -328,8 +277,7 @@ SUMMARY:
                 "summary_ja":
                     result["summary_ja"],
 
-                "highlights":
-                    result["highlights"],
+                "highlights": [],
 
                 "article_count":
                     len(articles),
