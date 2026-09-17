@@ -1860,6 +1860,18 @@ button {
    Portal user
    ========================================================= */
 
+.portal-user-area {
+    display: grid;
+
+    gap: 10px;
+
+    width: fit-content;
+    max-width: 100%;
+
+    margin-top: 34px;
+}
+
+
 .portal-user-row {
     display: flex;
 
@@ -1870,7 +1882,7 @@ button {
     width: fit-content;
     max-width: 100%;
 
-    margin-top: 34px;
+    margin-top: 0;
 
     padding:
         9px
@@ -1944,12 +1956,43 @@ button {
 }
 
 
+.portal-user-copy small {
+    overflow: hidden;
+
+    margin-top: 2px;
+
+    color: #929aa0;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.portal-user-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
 .portal-logout-form {
     margin: 0;
 }
 
 
-.portal-logout-button {
+.portal-logout-button,
+.portal-password-change-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
     padding:
         8px
         12px;
@@ -1965,36 +2008,25 @@ button {
     font: inherit;
     font-size: 11px;
     font-weight: 800;
-}
 
-.portal-user-area {
-    display: grid;
+    text-decoration: none;
 
-    gap: 10px;
-
-    width: fit-content;
-    max-width: 100%;
-
-    margin-top: 34px;
-}
-
-
-.portal-user-area .portal-user-row {
-    margin-top: 0;
-}
-
-
-.portal-user-copy small {
-    overflow: hidden;
-
-    margin-top: 2px;
-
-    color: #929aa0;
-
-    font-size: 9px;
-
-    text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+
+.portal-password-change-button:hover {
+    background:
+        rgba(255, 255, 255, .9);
+
+    color: #626d74;
+
+    text-decoration: none;
+}
+
+
+.portal-password-change-button:active {
+    transform: scale(.98);
 }
 
 
@@ -2179,6 +2211,7 @@ button {
     letter-spacing: -.035em;
 }
 
+
 /* =========================================================
    Portal app cards
    ========================================================= */
@@ -2240,7 +2273,10 @@ button {
 }
 
 
-/* Decorative circle */
+/*
+   All standard app cards use the same
+   clipped circle in the upper-right corner.
+*/
 
 .portal-app-card::before {
     position: absolute;
@@ -2432,18 +2468,13 @@ button {
 }
 
 
-.portal-vaccination-card h3 {
-    color:
-        var(--text-main);
-}
-
-
 .portal-vaccination-card .portal-card-label {
     color:
         var(--primary);
 
     opacity: 1;
 }
+
 
 /* =========================================================
    Color Checker card
@@ -2481,17 +2512,12 @@ button {
 }
 
 
-.portal-colorcheck-card h3 {
-    color:
-        var(--text-main);
-}
-
-
 .portal-colorcheck-card .portal-card-label {
     color: #766783;
 
     opacity: 1;
 }
+
 
 /* =========================================================
    Recipes card
@@ -2524,17 +2550,66 @@ button {
 }
 
 
-.portal-recipes-card h3 {
-    color:
-        var(--text-main);
-}
-
-
 .portal-recipes-card .portal-card-label {
     color: #607b68;
 
     opacity: 1;
 }
+
+
+/* =========================================================
+   News card
+   ========================================================= */
+
+.portal-news-card {
+    border-color: #eadfe0;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff7f7,
+            #ffffff
+        );
+}
+
+
+/*
+   Uses the same clipped upper-right circle
+   as the other portal cards.
+*/
+
+.portal-news-card::before {
+    background: #f1d9da;
+}
+
+
+.portal-news-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #fbecec,
+            #f2dfe0
+        );
+}
+
+
+.portal-news-card .portal-card-label {
+    color: #8b6265;
+
+    opacity: 1;
+}
+
+
+/*
+   The HTML currently contains an extra
+   decorative span for News.
+   The common ::before circle is used instead.
+*/
+
+.portal-news-decoration {
+    display: none;
+}
+
 
 /* =========================================================
    Games card
@@ -2680,8 +2755,15 @@ button {
     }
 
 
+    .portal-user-area {
+        width: 100%;
+    }
+
+
     .portal-user-row {
         width: 100%;
+
+        flex-wrap: wrap;
 
         border-radius: 20px;
     }
@@ -2691,8 +2773,13 @@ button {
         flex: 1;
     }
 
-    .portal-user-area {
+
+    .portal-user-actions {
         width: 100%;
+
+        justify-content: flex-end;
+
+        margin-top: 8px;
     }
 
 
@@ -2759,6 +2846,22 @@ button {
             1
             /
             -1;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .portal-user-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    .portal-password-change-button,
+    .portal-user-actions .portal-logout-button {
+        width: 100%;
     }
 
 }
@@ -2834,102 +2937,6 @@ button {
 
     .portal-card-content h3 {
         font-size: .92rem;
-    }
-
-}
-
-/* ========================================
-   User actions
-======================================== */
-
-.portal-user-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    flex-shrink: 0;
-}
-
-
-.portal-user-actions .portal-logout-form {
-    margin: 0;
-}
-
-
-.portal-password-change-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    padding:
-        8px
-        12px;
-
-    border: 0;
-    border-radius: 999px;
-
-    background:
-        rgba(255, 255, 255, .78);
-
-    color: #626d74;
-
-    font: inherit;
-    font-size: 11px;
-    font-weight: 800;
-
-    text-decoration: none;
-
-    white-space: nowrap;
-}
-
-.portal-password-change-button:hover {
-    background:
-        rgba(255, 255, 255, .9);
-
-    color: #626d74;
-
-    text-decoration: none;
-}
-
-.portal-password-change-button:active {
-    transform: translateY(1px);
-}
-
-
-.portal-password-change-button:active {
-    transform: scale(0.98);
-}
-
-
-@media (max-width: 760px) {
-
-    .portal-user-row {
-        flex-wrap: wrap;
-    }
-
-
-    .portal-user-actions {
-        width: 100%;
-
-        justify-content: flex-end;
-
-        margin-top: 8px;
-    }
-
-}
-
-
-@media (max-width: 480px) {
-
-    .portal-user-actions {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-
-    .portal-password-change-button,
-    .portal-user-actions .portal-logout-button {
-        width: 100%;
     }
 
 }
