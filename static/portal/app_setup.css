@@ -1,0 +1,265 @@
+/* =========================================================
+   Initial app selection
+   ========================================================= */
+
+.setup-choice-list {
+    display: grid;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   App item
+   ========================================================= */
+
+.setup-choice-item {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        52px
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-height: 78px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .11);
+
+    border-radius: 19px;
+
+    background:
+        rgba(255, 255, 255, .92);
+
+    box-shadow:
+        0 5px 16px
+        rgba(32, 45, 55, .035);
+
+    cursor: pointer;
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.setup-choice-item:hover {
+    border-color:
+        rgba(54, 95, 117, .19);
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 8px 22px
+        rgba(32, 45, 55, .055);
+}
+
+
+/* Real checkbox */
+
+.setup-choice-item > input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   Not selected
+   ========================================================= */
+
+.setup-choice-item.is-hidden {
+    border-color:
+        rgba(54, 95, 117, .065);
+
+    background:
+        rgba(247, 248, 249, .72);
+
+    opacity: .62;
+}
+
+
+.setup-choice-item.is-hidden:hover {
+    opacity: .82;
+}
+
+
+/* =========================================================
+   Copy
+   ========================================================= */
+
+.setup-choice-info {
+    min-width: 0;
+}
+
+
+.setup-choice-info .manage-app-title-row h2 {
+    overflow: hidden;
+
+    margin: 0;
+
+    color:
+        #354149;
+
+    font-size: .84rem;
+    font-weight: 850;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.setup-choice-info > p {
+    margin:
+        4px
+        0
+        0;
+
+    color:
+        #9ba2a7;
+
+    font-size: .56rem;
+    font-weight: 800;
+
+    letter-spacing: .1em;
+}
+
+
+/* =========================================================
+   Switch
+   ========================================================= */
+
+/*
+   app_setupではinputとswitchが離れているため、
+   checked状態をlabelの:has()で判定する。
+*/
+
+.setup-choice-item
+.manage-switch {
+    pointer-events: none;
+}
+
+
+.setup-choice-item
+.manage-switch-ui {
+    background:
+        #e1e6e8;
+}
+
+
+.setup-choice-item
+.manage-switch-knob {
+    transform:
+        translateX(0);
+}
+
+
+.setup-choice-item:has(
+    input:checked
+)
+.manage-switch-ui {
+    background:
+        #6f92a5;
+}
+
+
+.setup-choice-item:has(
+    input:checked
+)
+.manage-switch-knob {
+    transform:
+        translateX(20px);
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .setup-choice-item {
+        grid-template-columns:
+            46px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 10px;
+
+        min-height: 70px;
+
+        padding:
+            10px;
+    }
+
+
+    .setup-choice-item
+    .manage-app-icon {
+        width: 46px;
+        height: 46px;
+
+        border-radius: 14px;
+
+        font-size: 22px;
+    }
+
+
+    .setup-choice-item
+    .manage-app-status {
+        display: none;
+    }
+
+}
+
+
+@media (max-width: 390px) {
+
+    .setup-choice-info
+    .manage-app-title-row h2 {
+        font-size: .77rem;
+    }
+
+
+    .setup-choice-item
+    .manage-switch-ui {
+        width: 44px;
+        height: 26px;
+    }
+
+
+    .setup-choice-item
+    .manage-switch-knob {
+        width: 18px;
+        height: 18px;
+    }
+
+
+    .setup-choice-item:has(
+        input:checked
+    )
+    .manage-switch-knob {
+        transform:
+            translateX(18px);
+    }
+
+}

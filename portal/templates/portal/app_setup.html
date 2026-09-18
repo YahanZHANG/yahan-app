@@ -10,7 +10,12 @@
 
 <link
     rel="stylesheet"
-    href="{% static 'portal/password_change.css' %}"
+    href="{% static 'portal/manage_apps.css' %}"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/app_setup.css' %}"
 >
 
 {% endblock %}
@@ -18,28 +23,35 @@
 
 {% block content %}
 
-<div class="password-page">
+<div class="manage-page">
 
-    <main class="password-card">
+    <div
+        class="manage-bg-orb manage-bg-orb-one"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        class="manage-bg-orb manage-bg-orb-two"
+        aria-hidden="true"
+    ></div>
 
 
-        <!-- =============================================
+    <main class="manage-card">
+
+        <!-- =================================================
              Header
-             ============================================= -->
+             ================================================= -->
 
-        <header class="password-header">
+        <header class="manage-header">
 
-            <div
-                class="password-icon"
-                aria-hidden="true"
-            >
+            <div class="manage-header-icon">
                 📱
             </div>
 
 
-            <div>
+            <div class="manage-header-copy">
 
-                <p class="password-eyebrow">
+                <p class="manage-eyebrow">
                     STEP 3 / 3
                 </p>
 
@@ -47,7 +59,7 @@
                     使いたいアプリを選ぼう
                 </h1>
 
-                <p class="password-description">
+                <p>
                     Portalに表示したいアプリを選択する。
                     あとからいつでも変更できる。
                 </p>
@@ -57,32 +69,46 @@
         </header>
 
 
-        <!-- =============================================
-             Current user
-             ============================================= -->
+        <!-- =================================================
+             User / count
+             ================================================= -->
 
-        <div class="password-user-card">
+        <div class="manage-summary">
 
-            <div
-                class="password-user-avatar"
-                aria-hidden="true"
-            >
-                {{ profile.display_name|first|upper }}
+            <div class="manage-user">
+
+                <div class="manage-user-avatar">
+                    {{ profile.display_name|first|upper }}
+                </div>
+
+
+                <div class="manage-user-copy">
+
+                    <span>
+                        {{ profile.display_name }}
+                    </span>
+
+                    <small>
+                        {{ user.username }}
+                    </small>
+
+                </div>
+
             </div>
 
 
-            <div class="password-user-copy">
+            <div class="manage-visible-count">
 
                 <span>
-                    ログイン中
+                    選択中
                 </span>
 
-                <strong>
-                    {{ profile.display_name }}
+                <strong id="selected-count">
+                    0
                 </strong>
 
                 <small>
-                    ID: {{ user.username }}
+                    apps
                 </small>
 
             </div>
@@ -90,13 +116,63 @@
         </div>
 
 
-        <!-- =============================================
+        <!-- =================================================
+             Guide
+             ================================================= -->
+
+        <div class="manage-guide">
+
+            <div class="manage-guide-item">
+
+                <span class="manage-guide-icon">
+                    ✓
+                </span>
+
+                <div>
+                    <strong>
+                        使いたいアプリを選択
+                    </strong>
+
+                    <small>
+                        カードまたはスイッチをタップ
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="manage-guide-divider"></div>
+
+
+            <div class="manage-guide-item">
+
+                <span class="manage-guide-icon">
+                    ⚙
+                </span>
+
+                <div>
+                    <strong>
+                        あとから変更できる
+                    </strong>
+
+                    <small>
+                        Portalの「アプリを管理」から変更可能
+                    </small>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
              Form
-             ============================================= -->
+             ================================================= -->
 
         <form
             method="post"
-            class="password-form"
+            id="app-setup-form"
+            class="manage-form"
         >
 
             {% csrf_token %}
@@ -104,13 +180,13 @@
 
             {% if form.apps.errors %}
 
-                <div class="password-error-summary">
+                <div class="manage-messages">
 
                     {% for error in form.apps.errors %}
 
-                        <p>
+                        <div class="manage-message manage-message-error">
                             {{ error }}
-                        </p>
+                        </div>
 
                     {% endfor %}
 
@@ -119,23 +195,88 @@
             {% endif %}
 
 
-            <div class="setup-app-grid">
+            <!-- =============================================
+                 Apps
+                 ============================================= -->
+
+            <div
+                class="setup-choice-list"
+                id="setup-choice-list"
+            >
 
                 {% for checkbox in form.apps %}
 
-                    <label class="setup-app-card">
+                    <label
+                        class="
+                            setup-choice-item
+                            {% if not checkbox.data.selected %}
+                                is-hidden
+                            {% endif %}
+                        "
+                    >
 
                         {{ checkbox.tag }}
 
 
+                        <!-- Icon -->
 
-                        <span class="setup-app-copy">
+                        <div
+                            class="
+                                manage-app-icon
+                                manage-app-icon-{{ checkbox.data.value }}
+                            "
+                            aria-hidden="true"
+                        >
 
-                            <strong>
-                                {{ checkbox.choice_label }}
-                            </strong>
+                            {% if checkbox.data.value == "news" %}
+                                📰
 
-                            <small>
+                            {% elif checkbox.data.value == "feeding" %}
+                                🥣
+
+                            {% elif checkbox.data.value == "vaccination" %}
+                                💉
+
+                            {% elif checkbox.data.value == "recipes" %}
+                                🍳
+
+                            {% elif checkbox.data.value == "games" %}
+                                🎮
+
+                            {% elif checkbox.data.value == "colorcheck" %}
+                                🎨
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Copy -->
+
+                        <div class="setup-choice-info">
+
+                            <div class="manage-app-title-row">
+
+                                <h2>
+                                    {{ checkbox.choice_label }}
+                                </h2>
+
+
+                                <span
+                                    class="manage-app-status"
+                                    data-status
+                                >
+                                    {% if checkbox.data.selected %}
+                                        選択中
+                                    {% else %}
+                                        未選択
+                                    {% endif %}
+                                </span>
+
+                            </div>
+
+
+                            <p>
 
                                 {% if checkbox.data.value == "news" %}
                                     SWISS NEWS
@@ -157,7 +298,21 @@
 
                                 {% endif %}
 
-                            </small>
+                            </p>
+
+                        </div>
+
+
+                        <!-- Switch -->
+
+                        <span class="manage-switch">
+
+                            <span class="manage-switch-ui">
+
+                                <span class="manage-switch-knob">
+                                </span>
+
+                            </span>
 
                         </span>
 
@@ -168,28 +323,148 @@
             </div>
 
 
-            <button
-                type="submit"
-                class="password-save-button"
-            >
+            <!-- =============================================
+                 Save
+                 ============================================= -->
 
-                <span aria-hidden="true">
-                    ✓
-                </span>
+            <div class="manage-save-area">
 
-                yahan-appをはじめる
+                <div class="manage-save-copy">
 
-            </button>
+                    <strong>
+                        最初のPortalをつくる
+                    </strong>
+
+                    <small>
+                        選んだアプリだけを表示する。
+                    </small>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="manage-save-button"
+                >
+                    <span aria-hidden="true">
+                        ✓
+                    </span>
+
+                    yahan-appをはじめる
+                </button>
+
+            </div>
 
         </form>
 
 
-        <p class="password-footer-note">
-            表示するアプリはあとからいつでも変更できる。
+        <p class="manage-footer-note">
+            選ばなかったアプリも、あとからいつでも追加できる。
         </p>
 
     </main>
 
 </div>
+
+
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const list =
+            document.getElementById(
+                "setup-choice-list"
+            );
+
+        const selectedCount =
+            document.getElementById(
+                "selected-count"
+            );
+
+
+        if (!list) {
+            return;
+        }
+
+
+        function updateUI() {
+
+            const items =
+                list.querySelectorAll(
+                    ".setup-choice-item"
+                );
+
+            let count = 0;
+
+
+            items.forEach(
+                function (item) {
+
+                    const checkbox =
+                        item.querySelector(
+                            'input[type="checkbox"]'
+                        );
+
+                    const status =
+                        item.querySelector(
+                            "[data-status]"
+                        );
+
+
+                    if (!checkbox) {
+                        return;
+                    }
+
+
+                    if (checkbox.checked) {
+
+                        item.classList.remove(
+                            "is-hidden"
+                        );
+
+                        if (status) {
+                            status.textContent =
+                                "選択中";
+                        }
+
+                        count += 1;
+
+                    } else {
+
+                        item.classList.add(
+                            "is-hidden"
+                        );
+
+                        if (status) {
+                            status.textContent =
+                                "未選択";
+                        }
+
+                    }
+
+                }
+            );
+
+
+            if (selectedCount) {
+                selectedCount.textContent =
+                    count;
+            }
+
+        }
+
+
+        list.addEventListener(
+            "change",
+            updateUI
+        );
+
+
+        updateUI();
+
+    }
+);
+</script>
 
 {% endblock %}

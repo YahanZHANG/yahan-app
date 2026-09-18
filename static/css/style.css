@@ -2643,56 +2643,53 @@ button {
    ========================================================= */
 
 .portal-games-card {
-    border-color: #323747;
+    border-color:
+        #e3e0ed;
 
     background:
         linear-gradient(
             145deg,
-            #32364a,
-            #1f2230
+            #f7f6fb,
+            #ffffff
         );
-
-    color: #fff;
 }
 
 
 .portal-games-card::before {
-    display: none;
-}
-
-
-.portal-games-card:hover {
-    border-color: #4c587f;
+    display: block;
 
     background:
-        linear-gradient(
-            145deg,
-            #323c6c,
-            #5769ba
-        );
+        #e8e4f3;
 }
 
 
 .portal-games-icon {
-    background: #c9c5f4;
+    background:
+        linear-gradient(
+            145deg,
+            #f0edf8,
+            #e7e3f3
+        );
 }
 
 
 .portal-games-icon span {
-    opacity: .7;
-}
-
-
-.portal-games-card h3,
-.portal-games-card .portal-card-label {
-    color: #fff;
-}
-
-
-.portal-games-card .portal-card-label {
     opacity: 1;
 }
 
+
+.portal-games-card h3 {
+    color:
+        var(--text-main);
+}
+
+
+.portal-games-card .portal-card-label {
+    color:
+        #756e88;
+
+    opacity: 1;
+}
 
 /* =========================================================
    Portal footer
@@ -2868,12 +2865,6 @@ button {
     }
 
 
-    .portal-games-card {
-        grid-column:
-            1
-            /
-            -1;
-    }
 
 }
 
