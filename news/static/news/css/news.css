@@ -502,7 +502,7 @@
         24px;
 
     background:
-        #fff;
+        #ffffff;
 
     box-shadow:
         0 7px 22px
@@ -1280,4 +1280,62 @@
     color: #969e9a;
 
     font-size: .66rem;
+}
+
+/* =========================
+   Settings guide
+========================= */
+
+.news-settings-guide {
+    margin-top:
+        6px;
+
+    padding:
+        16px 18px;
+
+    border:
+        1px solid
+        #e2ebe6;
+
+    border-radius:
+        18px;
+
+    background:
+        #f3f8f5;
+
+    color:
+        #68736e;
+}
+
+
+.news-settings-guide h3 {
+    margin:
+        0 0 10px;
+
+    color:
+        #4f5f57;
+
+    font-size:
+        .88rem;
+
+    font-weight:
+        800;
+}
+
+
+.news-settings-guide p {
+    margin:
+        0;
+
+    font-size:
+        .73rem;
+
+    line-height:
+        1.75;
+}
+
+
+.news-settings-guide p + p {
+    margin-top:
+        9px;
 }
