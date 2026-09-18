@@ -2103,35 +2103,62 @@ button {
     min-width: 0;
 
     padding:
-        9px
-        12px;
+        10px
+        15px;
 
     border:
         1px solid
-        rgba(54, 95, 117, .16);
+        rgba(54, 95, 117, .08);
 
     border-radius: 999px;
 
     background:
-        rgba(255, 255, 255, .82);
+        rgba(255, 255, 255, .72);
 
-    color: #34424a;
+    color: #46535b;
+
+    font-family:
+        "Hiragino Maru Gothic ProN",
+        "Yu Gothic",
+        "Noto Sans JP",
+        sans-serif;
 
     font-size: 12px;
+    font-weight: 500;
+
+    letter-spacing: .015em;
 
     outline: none;
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(54, 95, 117, .025);
+
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
 }
 
 
 .portal-nickname-input:focus {
     border-color:
-        var(--primary);
+        rgba(54, 95, 117, .22);
+
+    background:
+        rgba(255, 255, 255, .92);
 
     box-shadow:
-        0 0 0 3px
-        rgba(54, 95, 117, .10);
+        0 0 0 4px
+        rgba(54, 95, 117, .055);
 }
 
+.portal-nickname-input::placeholder {
+    color:
+        rgba(98, 109, 116, .48);
+
+    font-weight: 400;
+}
 
 .portal-nickname-save-button {
     padding:
@@ -2937,6 +2964,610 @@ button {
 
     .portal-card-content h3 {
         font-size: .92rem;
+    }
+
+}
+
+/* =========================================================
+   Portal first setup
+   ========================================================= */
+
+.portal-setup-page {
+    width: min(100%, 720px);
+
+    margin: 0 auto;
+
+    padding:
+        48px
+        20px;
+}
+
+
+.portal-setup-card {
+    padding:
+        42px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, .75);
+
+    border-radius:
+        32px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f8fbfc,
+            #ffffff
+        );
+
+    box-shadow:
+        0 24px 70px
+        rgba(54, 95, 117, .12);
+
+    text-align: center;
+}
+
+
+.portal-setup-step {
+    margin-bottom: 18px;
+
+    color:
+        var(--primary);
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: .15em;
+}
+
+
+.portal-setup-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 68px;
+    height: 68px;
+
+    margin:
+        0 auto
+        18px;
+
+    border-radius: 22px;
+
+    background:
+        var(--primary-soft);
+
+    font-size: 32px;
+}
+
+
+.portal-setup-card h1 {
+    margin: 0;
+
+    color:
+        var(--text-main);
+
+    font-size:
+        clamp(
+            26px,
+            5vw,
+            36px
+        );
+
+    letter-spacing: -.035em;
+}
+
+
+.portal-setup-description {
+    max-width: 480px;
+
+    margin:
+        14px auto
+        30px;
+
+    color:
+        var(--text-muted);
+
+    font-size: .9rem;
+
+    line-height: 1.7;
+}
+
+
+.portal-setup-form {
+    max-width: 500px;
+
+    margin: 0 auto;
+
+    text-align: left;
+}
+
+
+.portal-setup-field {
+    margin-bottom: 22px;
+}
+
+
+.portal-setup-field label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+
+.portal-setup-field .portal-nickname-input {
+    width: 100%;
+
+    padding:
+        13px
+        16px;
+
+    border-radius: 14px;
+}
+
+
+.portal-setup-button {
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-top: 20px;
+
+    border: 0;
+    border-radius: 15px;
+
+    background:
+        var(--primary);
+
+    color: #fff;
+
+    font-size: .9rem;
+    font-weight: 900;
+}
+
+
+.portal-setup-button:hover {
+    background:
+        var(--primary-dark);
+}
+
+
+.portal-setup-errors {
+    margin-bottom: 14px;
+
+    padding:
+        10px
+        12px;
+
+    border-radius: 12px;
+
+    background:
+        var(--danger-soft);
+
+    color:
+        var(--danger);
+
+    font-size: .78rem;
+}
+
+
+.portal-setup-errors p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   Portal app selection
+   ========================================================= */
+
+.portal-app-selection-list {
+    display: grid;
+
+    gap: 10px;
+}
+
+
+.portal-app-selection-item {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-height: 58px;
+
+    padding:
+        12px
+        15px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius: 16px;
+
+    background:
+        var(--surface);
+
+    cursor: pointer;
+
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        transform .18s ease;
+}
+
+
+.portal-app-selection-item:hover {
+    border-color:
+        #c9d6dc;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.portal-app-selection-item input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.portal-app-selection-check {
+    display: grid;
+
+    place-items: center;
+
+    width: 30px;
+    height: 30px;
+
+    flex:
+        0
+        0
+        30px;
+
+    border:
+        2px solid
+        #d7dfe3;
+
+    border-radius: 10px;
+
+    background:
+        #fff;
+
+    color:
+        transparent;
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+
+.portal-app-selection-item:has(
+    input:checked
+) {
+    border-color:
+        rgba(54, 95, 117, .32);
+
+    background:
+        var(--primary-soft);
+}
+
+
+.portal-app-selection-item:has(
+    input:checked
+)
+.portal-app-selection-check {
+    border-color:
+        var(--primary);
+
+    background:
+        var(--primary);
+
+    color: #fff;
+}
+
+
+.portal-app-selection-name {
+    color:
+        var(--text-main);
+
+    font-size: .88rem;
+    font-weight: 800;
+}
+
+
+@media (max-width: 600px) {
+
+    .portal-setup-page {
+        padding:
+            24px
+            14px;
+    }
+
+
+    .portal-setup-card {
+        padding:
+            30px
+            20px;
+
+        border-radius: 26px;
+    }
+
+}
+
+/* =========================================================
+   Initial setup - App cards
+   ========================================================= */
+
+.setup-app-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 12px;
+
+    margin-bottom: 22px;
+}
+
+
+/* =========================================================
+   App card
+   ========================================================= */
+
+.setup-app-card {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-width: 0;
+    min-height: 88px;
+
+    padding:
+        15px;
+
+    border:
+        1px solid
+        #e4e8eb;
+
+    border-radius: 18px;
+
+    background:
+        #ffffff;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 16px
+        rgba(32, 45, 55, .035);
+
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.setup-app-card:hover {
+    border-color:
+        #ccd9df;
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 9px 22px
+        rgba(32, 45, 55, .07);
+}
+
+
+/* Hide real checkbox */
+
+.setup-app-card input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   Icon
+   ========================================================= */
+
+.setup-app-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    flex:
+        0
+        0
+        48px;
+
+    border-radius: 15px;
+
+    background:
+        #f2f5f7;
+
+    font-size: 24px;
+
+    transition:
+        transform .18s ease,
+        background .18s ease;
+}
+
+
+/* =========================================================
+   Text
+   ========================================================= */
+
+.setup-app-copy {
+    display: flex;
+
+    min-width: 0;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.setup-app-copy strong {
+    color:
+        #2f3740;
+
+    font-size: .83rem;
+    font-weight: 800;
+
+    line-height: 1.35;
+}
+
+
+.setup-app-copy small {
+    color:
+        #8a9299;
+
+    font-size: .57rem;
+    font-weight: 800;
+
+    letter-spacing: .09em;
+}
+
+
+/* =========================================================
+   Selected check
+   ========================================================= */
+
+.setup-app-selected {
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    display: grid;
+
+    place-items: center;
+
+    width: 23px;
+    height: 23px;
+
+    border:
+        1px solid
+        #dfe5e8;
+
+    border-radius: 50%;
+
+    background:
+        #ffffff;
+
+    color:
+        transparent;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    transition:
+        color .18s ease,
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+
+/* =========================================================
+   Selected state
+   ========================================================= */
+
+.setup-app-card:has(
+    input:checked
+) {
+    border-color:
+        rgba(54, 95, 117, .34);
+
+    background:
+        linear-gradient(
+            145deg,
+            #f1f6f8,
+            #ffffff
+        );
+
+    box-shadow:
+        0 8px 20px
+        rgba(54, 95, 117, .08);
+}
+
+
+.setup-app-card:has(
+    input:checked
+)
+.setup-app-selected {
+    border-color:
+        #365f75;
+
+    background:
+        #365f75;
+
+    color:
+        #ffffff;
+
+    transform:
+        scale(1.05);
+}
+
+
+.setup-app-card:has(
+    input:checked
+)
+.setup-app-icon {
+    background:
+        #e4eef2;
+
+    transform:
+        scale(1.03);
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 540px) {
+
+    .setup-app-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .setup-app-card {
+        min-height: 78px;
     }
 
 }

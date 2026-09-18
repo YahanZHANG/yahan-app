@@ -2,6 +2,8 @@ from django import forms
 
 from travel.models import UserProfile
 
+from .models import PortalAppPreference
+
 
 class NicknameForm(forms.ModelForm):
 
@@ -11,7 +13,7 @@ class NicknameForm(forms.ModelForm):
         label="ニックネーム",
         widget=forms.TextInput(
             attrs={
-                "class": "portal-nickname-input",
+                "class": "password-input",
                 "placeholder": "ニックネームを入力",
                 "autocomplete": "off",
             }
@@ -33,3 +35,16 @@ class NicknameForm(forms.ModelForm):
             )
 
         return nickname
+
+
+class AppSelectionForm(forms.Form):
+
+    apps = forms.MultipleChoiceField(
+        label="表示するアプリ",
+        choices=PortalAppPreference.AppKey.choices,
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "少なくとも1つのアプリを選んでください。",
+        },
+    )

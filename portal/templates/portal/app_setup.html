@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+アプリを選択 | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/password_change.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="password-page">
+
+    <main class="password-card">
+
+
+        <!-- =============================================
+             Header
+             ============================================= -->
+
+        <header class="password-header">
+
+            <div
+                class="password-icon"
+                aria-hidden="true"
+            >
+                📱
+            </div>
+
+
+            <div>
+
+                <p class="password-eyebrow">
+                    STEP 3 / 3
+                </p>
+
+                <h1>
+                    使いたいアプリを選ぼう
+                </h1>
+
+                <p class="password-description">
+                    Portalに表示したいアプリを選択する。
+                    あとからいつでも変更できる。
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- =============================================
+             Current user
+             ============================================= -->
+
+        <div class="password-user-card">
+
+            <div
+                class="password-user-avatar"
+                aria-hidden="true"
+            >
+                {{ profile.display_name|first|upper }}
+            </div>
+
+
+            <div class="password-user-copy">
+
+                <span>
+                    ログイン中
+                </span>
+
+                <strong>
+                    {{ profile.display_name }}
+                </strong>
+
+                <small>
+                    ID: {{ user.username }}
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             Form
+             ============================================= -->
+
+        <form
+            method="post"
+            class="password-form"
+        >
+
+            {% csrf_token %}
+
+
+            {% if form.apps.errors %}
+
+                <div class="password-error-summary">
+
+                    {% for error in form.apps.errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="setup-app-grid">
+
+                {% for checkbox in form.apps %}
+
+                    <label class="setup-app-card">
+
+                        {{ checkbox.tag }}
+
+
+
+                        <span class="setup-app-copy">
+
+                            <strong>
+                                {{ checkbox.choice_label }}
+                            </strong>
+
+                            <small>
+
+                                {% if checkbox.data.value == "news" %}
+                                    SWISS NEWS
+
+                                {% elif checkbox.data.value == "feeding" %}
+                                    BABY FOOD
+
+                                {% elif checkbox.data.value == "vaccination" %}
+                                    VACCINATION
+
+                                {% elif checkbox.data.value == "recipes" %}
+                                    RECIPE FINDER
+
+                                {% elif checkbox.data.value == "games" %}
+                                    MINI GAMES
+
+                                {% elif checkbox.data.value == "colorcheck" %}
+                                    COLOR CHECKER
+
+                                {% endif %}
+
+                            </small>
+
+                        </span>
+
+                    </label>
+
+                {% endfor %}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="password-save-button"
+            >
+
+                <span aria-hidden="true">
+                    ✓
+                </span>
+
+                yahan-appをはじめる
+
+            </button>
+
+        </form>
+
+
+        <p class="password-footer-note">
+            表示するアプリはあとからいつでも変更できる。
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

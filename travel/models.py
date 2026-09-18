@@ -741,6 +741,25 @@ class UserProfile(models.Model):
         null=True,
     )
 
+    # =========================================================
+    # 初回セットアップ
+    # =========================================================
+
+    password_setup_completed = models.BooleanField(
+        "初回パスワード変更完了",
+        default=False,
+    )
+
+    nickname_setup_completed = models.BooleanField(
+        "初回ニックネーム設定完了",
+        default=False,
+    )
+
+    app_setup_completed = models.BooleanField(
+        "初回アプリ選択完了",
+        default=False,
+    )
+
     updated_at = models.DateTimeField(
         "更新日時",
         auto_now=True,

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+ニックネーム設定 | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/password_change.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="password-page">
+
+    <main class="password-card">
+
+        <!-- =============================================
+             Header
+             ============================================= -->
+
+        <header class="password-header">
+
+            <div
+                class="password-icon"
+                aria-hidden="true"
+            >
+                👤
+            </div>
+
+
+            <div>
+
+                <p class="password-eyebrow">
+                    STEP 2 / 3
+                </p>
+
+                <h1>
+                    ニックネームを設定
+                </h1>
+
+                <p class="password-description">
+                    yahan-appで表示する名前を設定する。
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- =============================================
+             Current user
+             ============================================= -->
+
+        <div class="password-user-card">
+
+            <div
+                class="password-user-avatar"
+                aria-hidden="true"
+            >
+                {{ user.username|first|upper }}
+            </div>
+
+
+            <div class="password-user-copy">
+
+                <span>
+                    ログイン中
+                </span>
+
+                <strong>
+                    {{ user.username }}
+                </strong>
+
+                <small>
+                    ID: {{ user.username }}
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             Form
+             ============================================= -->
+
+        <form
+            method="post"
+            class="password-form"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="password-field">
+
+                <label
+                    for="{{ form.nickname.id_for_label }}"
+                >
+                    <span class="password-field-label">
+                        ニックネーム
+                    </span>
+
+                    <small>
+                        DISPLAY NAME
+                    </small>
+                </label>
+
+
+                {{ form.nickname }}
+
+
+                {% if form.nickname.errors %}
+
+                    <div class="password-field-errors">
+
+                        {% for error in form.nickname.errors %}
+                            <p>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="password-save-button"
+            >
+                <span aria-hidden="true">
+                    ✓
+                </span>
+
+                ニックネームを設定
+            </button>
+
+        </form>
+
+
+        <p class="password-footer-note">
+            ニックネームはあとからいつでも変更できる。
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

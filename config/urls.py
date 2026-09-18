@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from portal.views import PortalPasswordChangeView
 
 
 urlpatterns = [
@@ -11,10 +12,7 @@ urlpatterns = [
 
     path(
         "password/change/",
-        auth_views.PasswordChangeView.as_view(
-            template_name="registration/password_change_form.html",
-            success_url="/password/change/done/",
-        ),
+        PortalPasswordChangeView.as_view(),
         name="password_change",
     ),
 
