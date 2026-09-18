@@ -13,49 +13,76 @@
     href="{% static 'portal/password_change.css' %}"
 >
 
+<link
+    rel="stylesheet"
+    href="{% static 'portal/manage_apps.css' %}"
+>
+
 {% endblock %}
 
 
 {% block content %}
 
-<div class="password-page">
+<div class="manage-page">
 
-    <a
-        href="{% url 'portal:home' %}"
-        class="password-back-link"
-    >
-        ← yahan-app
-    </a>
+    <!-- =====================================================
+         Background decoration
+         ===================================================== -->
+
+    <div
+        class="manage-bg-orb manage-bg-orb-one"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        class="manage-bg-orb manage-bg-orb-two"
+        aria-hidden="true"
+    ></div>
 
 
-    <main class="password-card">
+    <!-- =====================================================
+         Top navigation
+         ===================================================== -->
 
-        <!-- =============================================
+    <div class="manage-topbar">
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="manage-back-button"
+        >
+            <span aria-hidden="true">←</span>
+            <span>Portalへ戻る</span>
+        </a>
+
+    </div>
+
+
+    <main class="manage-card">
+
+        <!-- =================================================
              Header
-             ============================================= -->
+             ================================================= -->
 
-        <header class="password-header">
+        <header class="manage-header">
 
-            <div
-                class="password-icon"
-                aria-hidden="true"
-            >
+            <div class="manage-header-icon">
                 ⚙️
             </div>
 
 
-            <div>
+            <div class="manage-header-copy">
 
-                <p class="password-eyebrow">
-                    MY APPS
+                <p class="manage-eyebrow">
+                    CUSTOMIZE YOUR PORTAL
                 </p>
 
                 <h1>
                     アプリを管理
                 </h1>
 
-                <p class="password-description">
-                    表示するアプリと並び順を変更できる。
+                <p>
+                    表示するアプリと、
+                    Portalでの並び順を自由に変更できる。
                 </p>
 
             </div>
@@ -63,32 +90,46 @@
         </header>
 
 
-        <!-- =============================================
-             User
-             ============================================= -->
+        <!-- =================================================
+             User / summary
+             ================================================= -->
 
-        <div class="password-user-card">
+        <div class="manage-summary">
 
-            <div
-                class="password-user-avatar"
-                aria-hidden="true"
-            >
-                {{ profile.display_name|first|upper }}
+            <div class="manage-user">
+
+                <div class="manage-user-avatar">
+                    {{ profile.display_name|first|upper }}
+                </div>
+
+
+                <div class="manage-user-copy">
+
+                    <span>
+                        {{ profile.display_name }}
+                    </span>
+
+                    <small>
+                        {{ user.username }}
+                    </small>
+
+                </div>
+
             </div>
 
 
-            <div class="password-user-copy">
+            <div class="manage-visible-count">
 
                 <span>
-                    ログイン中
+                    表示中
                 </span>
 
-                <strong>
-                    {{ profile.display_name }}
+                <strong id="visible-count">
+                    0
                 </strong>
 
                 <small>
-                    ID: {{ user.username }}
+                    apps
                 </small>
 
             </div>
@@ -96,14 +137,89 @@
         </div>
 
 
-        <!-- =============================================
+        <!-- =================================================
+             Messages
+             ================================================= -->
+
+        {% if messages %}
+
+            <div class="manage-messages">
+
+                {% for message in messages %}
+
+                    <div
+                        class="
+                            manage-message
+                            manage-message-{{ message.tags|default:'info' }}
+                        "
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             Guide
+             ================================================= -->
+
+        <div class="manage-guide">
+
+            <div class="manage-guide-item">
+
+                <span class="manage-guide-icon">
+                    ↕
+                </span>
+
+                <div>
+                    <strong>
+                        並び替える
+                    </strong>
+
+                    <small>
+                        左のハンドルをドラッグ
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="manage-guide-divider"></div>
+
+
+            <div class="manage-guide-item">
+
+                <span class="manage-guide-icon">
+                    ◉
+                </span>
+
+                <div>
+                    <strong>
+                        表示を切り替える
+                    </strong>
+
+                    <small>
+                        右のスイッチをON / OFF
+                    </small>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
              Form
-             ============================================= -->
+             ================================================= -->
 
         <form
             method="post"
-            class="password-form"
             id="manage-app-form"
+            class="manage-form"
         >
 
             {% csrf_token %}
@@ -116,20 +232,9 @@
             >
 
 
-            {% if messages %}
-
-                {% for message in messages %}
-
-                    <div class="password-error-summary">
-                        <p>
-                            {{ message }}
-                        </p>
-                    </div>
-
-                {% endfor %}
-
-            {% endif %}
-
+            <!-- =============================================
+                 App list
+                 ============================================= -->
 
             <div
                 class="manage-app-list"
@@ -138,49 +243,85 @@
 
                 {% for app in apps %}
 
-                    <div
-                        class="manage-app-row"
+                    <article
+                        class="
+                            manage-app-item
+                            {% if not app.is_visible %}
+                                is-hidden
+                            {% endif %}
+                        "
                         data-app-key="{{ app.key }}"
                     >
 
                         <!-- Drag handle -->
 
-                        <div
-                            class="manage-app-drag"
-                            aria-label="ドラッグして並び替え"
+                        <button
+                            type="button"
+                            class="manage-drag-handle"
+                            aria-label="{{ app.name }}を並び替える"
                         >
-                            ⋮⋮
-                        </div>
+
+                            <span></span>
+                            <span></span>
+                            <span></span>
+
+                            <span></span>
+                            <span></span>
+                            <span></span>
+
+                        </button>
 
 
-                        <!-- Icon -->
+                        <!-- App icon -->
 
                         <div
-                            class="manage-app-icon"
+                            class="
+                                manage-app-icon
+                                manage-app-icon-{{ app.key }}
+                            "
                             aria-hidden="true"
                         >
                             {{ app.icon }}
                         </div>
 
 
-                        <!-- Name -->
+                        <!-- App text -->
 
-                        <div class="manage-app-copy">
+                        <div class="manage-app-info">
 
-                            <strong>
-                                {{ app.name }}
-                            </strong>
+                            <div class="manage-app-title-row">
 
-                            <small>
+                                <h2>
+                                    {{ app.name }}
+                                </h2>
+
+
+                                <span
+                                    class="manage-app-status"
+                                    data-status
+                                >
+
+                                    {% if app.is_visible %}
+                                        表示中
+                                    {% else %}
+                                        非表示
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            <p>
                                 {{ app.label }}
-                            </small>
+                            </p>
 
                         </div>
 
 
                         <!-- Switch -->
 
-                        <label class="manage-app-switch">
+                        <label class="manage-switch">
 
                             <input
                                 type="checkbox"
@@ -191,44 +332,61 @@
                                 {% endif %}
                             >
 
-                            <span class="manage-app-switch-track">
+                            <span class="manage-switch-ui">
 
-                                <span class="manage-app-switch-knob">
+                                <span class="manage-switch-knob">
                                 </span>
 
                             </span>
 
                         </label>
 
-                    </div>
+                    </article>
 
                 {% endfor %}
 
             </div>
 
 
-            <p class="manage-app-hint">
-                左の ⋮⋮ をつかんで上下に動かすと、
-                Portalでの表示順を変更できる。
-            </p>
+            <!-- =============================================
+                 Save area
+                 ============================================= -->
+
+            <div class="manage-save-area">
+
+                <div class="manage-save-copy">
+
+                    <strong>
+                        変更をPortalに反映
+                    </strong>
+
+                    <small>
+                        並び順と表示設定をまとめて保存する。
+                    </small>
+
+                </div>
 
 
-            <button
-                type="submit"
-                class="password-save-button"
-            >
-                <span aria-hidden="true">
-                    ✓
-                </span>
+                <button
+                    type="submit"
+                    class="manage-save-button"
+                >
 
-                変更を保存
-            </button>
+                    <span aria-hidden="true">
+                        ✓
+                    </span>
+
+                    保存する
+
+                </button>
+
+            </div>
 
         </form>
 
 
-        <p class="password-footer-note">
-            非表示にしてもアプリのデータは削除されない。
+        <p class="manage-footer-note">
+            非表示にしてもアプリや保存済みデータは削除されない。
         </p>
 
     </main>
@@ -236,86 +394,181 @@
 </div>
 
 
-<!-- SortableJS -->
-
 <script
     src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"
 ></script>
 
 
 <script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-            const list =
-                document.getElementById(
-                    "manage-app-list"
+        const list =
+            document.getElementById(
+                "manage-app-list"
+            );
+
+        const orderInput =
+            document.getElementById(
+                "app-order"
+            );
+
+        const form =
+            document.getElementById(
+                "manage-app-form"
+            );
+
+        const visibleCount =
+            document.getElementById(
+                "visible-count"
+            );
+
+
+        if (
+            !list
+            || !orderInput
+            || !form
+        ) {
+            return;
+        }
+
+
+        function updateOrder() {
+
+            const rows =
+                list.querySelectorAll(
+                    ".manage-app-item"
                 );
 
-            const orderInput =
-                document.getElementById(
-                    "app-order"
+            const order =
+                Array.from(rows).map(
+                    function (row) {
+                        return row.dataset.appKey;
+                    }
                 );
 
-            const form =
-                document.getElementById(
-                    "manage-app-form"
+            orderInput.value =
+                order.join(",");
+        }
+
+
+        function updateVisibilityUI() {
+
+            const items =
+                list.querySelectorAll(
+                    ".manage-app-item"
                 );
 
+            let count = 0;
 
-            function updateOrder() {
 
-                const rows =
-                    list.querySelectorAll(
-                        ".manage-app-row"
-                    );
+            items.forEach(
+                function (item) {
 
-                const order =
-                    Array.from(rows).map(
-                        function (row) {
-                            return row.dataset.appKey;
+                    const checkbox =
+                        item.querySelector(
+                            'input[name="visible_apps"]'
+                        );
+
+                    const status =
+                        item.querySelector(
+                            "[data-status]"
+                        );
+
+
+                    if (!checkbox) {
+                        return;
+                    }
+
+
+                    if (checkbox.checked) {
+
+                        item.classList.remove(
+                            "is-hidden"
+                        );
+
+                        if (status) {
+                            status.textContent =
+                                "表示中";
                         }
-                    );
 
-                orderInput.value =
-                    order.join(",");
-            }
+                        count += 1;
 
+                    } else {
 
-            new Sortable(
-                list,
-                {
-                    animation: 180,
+                        item.classList.add(
+                            "is-hidden"
+                        );
 
-                    handle:
-                        ".manage-app-drag",
+                        if (status) {
+                            status.textContent =
+                                "非表示";
+                        }
 
-                    ghostClass:
-                        "manage-app-ghost",
+                    }
 
-                    chosenClass:
-                        "manage-app-chosen",
-
-                    dragClass:
-                        "manage-app-dragging",
-
-                    onSort:
-                        updateOrder,
                 }
             );
 
 
-            updateOrder();
-
-
-            form.addEventListener(
-                "submit",
-                updateOrder
-            );
-
+            if (visibleCount) {
+                visibleCount.textContent =
+                    count;
+            }
         }
-    );
+
+
+        new Sortable(
+            list,
+            {
+                animation: 180,
+
+                handle:
+                    ".manage-drag-handle",
+
+                ghostClass:
+                    "manage-app-ghost",
+
+                chosenClass:
+                    "manage-app-chosen",
+
+                dragClass:
+                    "manage-app-dragging",
+
+                onSort:
+                    updateOrder,
+            }
+        );
+
+
+        list.addEventListener(
+            "change",
+            function (event) {
+
+                if (
+                    event.target.matches(
+                        'input[name="visible_apps"]'
+                    )
+                ) {
+                    updateVisibilityUI();
+                }
+
+            }
+        );
+
+
+        form.addEventListener(
+            "submit",
+            updateOrder
+        );
+
+
+        updateOrder();
+        updateVisibilityUI();
+
+    }
+);
 </script>
 
 {% endblock %}

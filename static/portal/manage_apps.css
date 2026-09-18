@@ -1,0 +1,1163 @@
+/* =========================================================
+   Manage apps
+   ========================================================= */
+
+.manage-page {
+    position: relative;
+
+    isolation: isolate;
+
+    overflow: hidden;
+
+    width: min(100%, 760px);
+
+    min-height: 100vh;
+
+    margin: 0 auto;
+
+    padding:
+        36px
+        20px
+        60px;
+}
+
+
+/* =========================================================
+   Background
+   ========================================================= */
+
+.manage-bg-orb {
+    position: fixed;
+
+    z-index: -1;
+
+    border-radius: 999px;
+
+    pointer-events: none;
+}
+
+
+.manage-bg-orb-one {
+    top: 70px;
+    right: -80px;
+
+    width: 300px;
+    height: 300px;
+
+    background:
+        rgba(88, 127, 157, .10);
+}
+
+
+.manage-bg-orb-two {
+    bottom: 40px;
+    left: -100px;
+
+    width: 260px;
+    height: 260px;
+
+    background:
+        rgba(232, 164, 90, .09);
+}
+
+
+/* =========================================================
+   Top bar
+   ========================================================= */
+
+.manage-topbar {
+    margin-bottom: 14px;
+}
+
+
+.manage-back-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding:
+        8px
+        12px;
+
+    border-radius: 999px;
+
+    color: #66737b;
+
+    font-size: .75rem;
+    font-weight: 800;
+
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+
+.manage-back-button:hover {
+    background:
+        rgba(255, 255, 255, .7);
+
+    transform:
+        translateX(-2px);
+}
+
+
+/* =========================================================
+   Main card
+   ========================================================= */
+
+.manage-card {
+    padding:
+        36px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, .8);
+
+    border-radius:
+        32px;
+
+    background:
+        rgba(255, 255, 255, .82);
+
+    box-shadow:
+        0 24px 70px
+        rgba(54, 95, 117, .11);
+
+    backdrop-filter:
+        blur(18px);
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.manage-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 17px;
+}
+
+
+.manage-header-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 58px;
+    height: 58px;
+
+    flex:
+        0
+        0
+        58px;
+
+    border-radius: 19px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #e8f0f4,
+            #f4f8fa
+        );
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, .9);
+
+    font-size: 26px;
+}
+
+
+.manage-header-copy {
+    min-width: 0;
+}
+
+
+.manage-eyebrow {
+    margin:
+        2px
+        0
+        5px;
+
+    color: #78909c;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: .15em;
+}
+
+
+.manage-header h1 {
+    margin: 0;
+
+    color: #2d3941;
+
+    font-size:
+        clamp(
+            27px,
+            5vw,
+            36px
+        );
+
+    letter-spacing: -.04em;
+}
+
+
+.manage-header-copy > p:last-child {
+    margin:
+        9px
+        0
+        0;
+
+    color: #7e888f;
+
+    font-size: .82rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   Summary
+   ========================================================= */
+
+.manage-summary {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-top: 26px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .07);
+
+    border-radius: 18px;
+
+    background:
+        rgba(246, 249, 250, .78);
+}
+
+
+.manage-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-width: 0;
+}
+
+
+.manage-user-avatar {
+    display: grid;
+
+    place-items: center;
+
+    width: 38px;
+    height: 38px;
+
+    flex:
+        0
+        0
+        38px;
+
+    border-radius: 50%;
+
+    background:
+        #ffffff;
+
+    color: #365f75;
+
+    box-shadow:
+        0 4px 12px
+        rgba(54, 95, 117, .08);
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+
+.manage-user-copy {
+    display: flex;
+
+    min-width: 0;
+
+    flex-direction: column;
+}
+
+
+.manage-user-copy span {
+    overflow: hidden;
+
+    color: #3e4b53;
+
+    font-size: .77rem;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.manage-user-copy small {
+    margin-top: 2px;
+
+    color: #9ba2a7;
+
+    font-size: .62rem;
+}
+
+
+.manage-visible-count {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 4px;
+
+    padding:
+        7px
+        11px;
+
+    border-radius: 999px;
+
+    background:
+        #edf4f7;
+
+    color: #587487;
+}
+
+
+.manage-visible-count span {
+    font-size: .64rem;
+    font-weight: 800;
+}
+
+
+.manage-visible-count strong {
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+
+.manage-visible-count small {
+    font-size: .56rem;
+    font-weight: 800;
+
+    letter-spacing: .06em;
+}
+
+
+/* =========================================================
+   Guide
+   ========================================================= */
+
+.manage-guide {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        auto
+        1fr;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin:
+        22px
+        0
+        14px;
+
+    padding:
+        14px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(232, 240, 244, .68),
+            rgba(247, 249, 250, .9)
+        );
+}
+
+
+.manage-guide-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.manage-guide-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+
+    flex:
+        0
+        0
+        32px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, .8);
+
+    color: #587487;
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+
+.manage-guide-item div {
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.manage-guide-item strong {
+    color: #45535b;
+
+    font-size: .7rem;
+}
+
+
+.manage-guide-item small {
+    margin-top: 2px;
+
+    color: #8d969b;
+
+    font-size: .6rem;
+}
+
+
+.manage-guide-divider {
+    width: 1px;
+    height: 34px;
+
+    background:
+        rgba(54, 95, 117, .09);
+}
+
+
+/* =========================================================
+   App list
+   ========================================================= */
+
+.manage-app-list {
+    display: grid;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   App item
+   ========================================================= */
+
+.manage-app-item {
+    display: grid;
+
+    grid-template-columns:
+        28px
+        52px
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 12px;
+
+    min-height: 78px;
+
+    padding:
+        12px
+        14px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .09);
+
+    border-radius: 19px;
+
+    background:
+        rgba(255, 255, 255, .9);
+
+    box-shadow:
+        0 5px 16px
+        rgba(32, 45, 55, .035);
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.manage-app-item:hover {
+    border-color:
+        rgba(54, 95, 117, .17);
+
+    box-shadow:
+        0 8px 22px
+        rgba(32, 45, 55, .055);
+}
+
+
+.manage-app-item.is-hidden {
+    background:
+        rgba(247, 248, 249, .72);
+
+    opacity: .62;
+}
+
+
+.manage-app-item.is-hidden:hover {
+    opacity: .82;
+}
+
+
+/* =========================================================
+   Drag handle
+   ========================================================= */
+
+.manage-drag-handle {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 4px);
+
+    grid-template-rows:
+        repeat(3, 4px);
+
+    gap: 4px;
+
+    place-content: center;
+
+    width: 28px;
+    height: 42px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 9px;
+
+    background:
+        transparent;
+
+    cursor: grab;
+
+    touch-action: none;
+
+    transition:
+        background .18s ease;
+}
+
+
+.manage-drag-handle:hover {
+    background:
+        rgba(54, 95, 117, .055);
+}
+
+
+.manage-drag-handle:active {
+    cursor: grabbing;
+}
+
+
+.manage-drag-handle span {
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background:
+        #aab3b8;
+}
+
+
+/* =========================================================
+   App icon
+   ========================================================= */
+
+.manage-app-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 52px;
+    height: 52px;
+
+    border-radius: 16px;
+
+    background:
+        #f2f5f6;
+
+    font-size: 25px;
+
+    transition:
+        transform .18s ease;
+}
+
+
+.manage-app-item:hover
+.manage-app-icon {
+    transform:
+        scale(1.035);
+}
+
+
+.manage-app-icon-news {
+    background:
+        #f8eaea;
+}
+
+
+.manage-app-icon-feeding {
+    background:
+        #fff0e8;
+}
+
+
+.manage-app-icon-vaccination {
+    background:
+        #eaf3f5;
+}
+
+
+.manage-app-icon-recipes {
+    background:
+        #edf6ee;
+}
+
+
+.manage-app-icon-games {
+    background:
+        #eceafb;
+}
+
+
+.manage-app-icon-colorcheck {
+    background:
+        linear-gradient(
+            145deg,
+            #f7eaf0,
+            #eaf2f7
+        );
+}
+
+
+/* =========================================================
+   App info
+   ========================================================= */
+
+.manage-app-info {
+    min-width: 0;
+}
+
+
+.manage-app-title-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.manage-app-title-row h2 {
+    overflow: hidden;
+
+    margin: 0;
+
+    color: #354149;
+
+    font-size: .84rem;
+    font-weight: 850;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.manage-app-info > p {
+    margin:
+        4px
+        0
+        0;
+
+    color: #9ba2a7;
+
+    font-size: .56rem;
+    font-weight: 800;
+
+    letter-spacing: .1em;
+}
+
+
+.manage-app-status {
+    flex-shrink: 0;
+
+    padding:
+        3px
+        7px;
+
+    border-radius: 999px;
+
+    background:
+        #e9f2f5;
+
+    color: #587487;
+
+    font-size: .52rem;
+    font-weight: 900;
+}
+
+
+.manage-app-item.is-hidden
+.manage-app-status {
+    background:
+        #eff1f2;
+
+    color: #9ba1a5;
+}
+
+
+/* =========================================================
+   Switch
+   ========================================================= */
+
+.manage-switch {
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    cursor: pointer;
+}
+
+
+.manage-switch input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.manage-switch-ui {
+    position: relative;
+
+    display: block;
+
+    width: 48px;
+    height: 28px;
+
+    border-radius: 999px;
+
+    background:
+        #e1e6e8;
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(32, 45, 55, .08);
+
+    transition:
+        background .2s ease;
+}
+
+
+.manage-switch-knob {
+    position: absolute;
+
+    top: 4px;
+    left: 4px;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        0 2px 5px
+        rgba(32, 45, 55, .16);
+
+    transition:
+        transform .2s ease;
+}
+
+
+.manage-switch input:checked
++ .manage-switch-ui {
+    background:
+        #6f92a5;
+}
+
+
+.manage-switch input:checked
++ .manage-switch-ui
+.manage-switch-knob {
+    transform:
+        translateX(20px);
+}
+
+
+/* =========================================================
+   Save
+   ========================================================= */
+
+.manage-save-area {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    margin-top: 22px;
+
+    padding-top: 20px;
+
+    border-top:
+        1px solid
+        rgba(54, 95, 117, .08);
+}
+
+
+.manage-save-copy {
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.manage-save-copy strong {
+    color: #3d4a52;
+
+    font-size: .75rem;
+}
+
+
+.manage-save-copy small {
+    margin-top: 3px;
+
+    color: #999fa4;
+
+    font-size: .61rem;
+}
+
+
+.manage-save-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    min-width: 128px;
+    min-height: 46px;
+
+    padding:
+        0
+        18px;
+
+    border: 0;
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #365f75,
+            #527a90
+        );
+
+    color: #fff;
+
+    box-shadow:
+        0 9px 22px
+        rgba(54, 95, 117, .18);
+
+    font-size: .78rem;
+    font-weight: 900;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.manage-save-button:hover {
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 12px 26px
+        rgba(54, 95, 117, .23);
+}
+
+
+.manage-save-button:active {
+    transform:
+        translateY(0);
+}
+
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.manage-footer-note {
+    margin:
+        21px
+        0
+        0;
+
+    color: #a0a7ab;
+
+    font-size: .62rem;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   Messages
+   ========================================================= */
+
+.manage-messages {
+    margin-top: 18px;
+}
+
+
+.manage-message {
+    padding:
+        11px
+        13px;
+
+    border-radius: 13px;
+
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+
+.manage-message-success {
+    background:
+        #eaf5ed;
+
+    color:
+        #487653;
+}
+
+
+.manage-message-error {
+    background:
+        #fff0f0;
+
+    color:
+        #a24b4b;
+}
+
+
+.manage-message-info {
+    background:
+        #edf4f7;
+
+    color:
+        #587487;
+}
+
+
+/* =========================================================
+   Drag state
+   ========================================================= */
+
+.manage-app-ghost {
+    opacity: .25;
+}
+
+
+.manage-app-chosen {
+    border-color:
+        rgba(54, 95, 117, .24);
+
+    box-shadow:
+        0 14px 32px
+        rgba(54, 95, 117, .12);
+}
+
+
+.manage-app-dragging {
+    transform:
+        scale(1.018);
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .manage-page {
+        padding:
+            22px
+            14px
+            40px;
+    }
+
+
+    .manage-card {
+        padding:
+            27px
+            19px;
+
+        border-radius: 27px;
+    }
+
+
+    .manage-header {
+        gap: 13px;
+    }
+
+
+    .manage-header-icon {
+        width: 51px;
+        height: 51px;
+
+        flex-basis: 51px;
+
+        border-radius: 17px;
+
+        font-size: 23px;
+    }
+
+
+    .manage-guide {
+        grid-template-columns:
+            1fr;
+
+        gap: 10px;
+    }
+
+
+    .manage-guide-divider {
+        width: 100%;
+        height: 1px;
+    }
+
+
+    .manage-app-item {
+        grid-template-columns:
+            24px
+            46px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 9px;
+
+        min-height: 70px;
+
+        padding:
+            10px;
+    }
+
+
+    .manage-app-icon {
+        width: 46px;
+        height: 46px;
+
+        border-radius: 14px;
+
+        font-size: 22px;
+    }
+
+
+    .manage-app-status {
+        display: none;
+    }
+
+
+    .manage-save-area {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    .manage-save-button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 390px) {
+
+    .manage-card {
+        padding:
+            24px
+            15px;
+    }
+
+
+    .manage-app-title-row h2 {
+        font-size: .77rem;
+    }
+
+
+    .manage-switch-ui {
+        width: 44px;
+        height: 26px;
+    }
+
+
+    .manage-switch-knob {
+        width: 18px;
+        height: 18px;
+    }
+
+
+    .manage-switch input:checked
+    + .manage-switch-ui
+    .manage-switch-knob {
+        transform:
+            translateX(18px);
+    }
+
+}

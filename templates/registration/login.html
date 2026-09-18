@@ -1,109 +1,338 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
+{% block title %}
+ログイン | yahan-app
+{% endblock %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover"
-    >
 
-    <title>ログイン | yahan-app</title>
+{% block extra_css %}
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+<link
+    rel="stylesheet"
+    href="{% static 'portal/login.css' %}"
+>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-        rel="stylesheet"
-    >
+{% endblock %}
 
-    <link
-        rel="stylesheet"
-        href="{% static 'css/style.css' %}"
-    >
-</head>
 
-<body class="login-body">
+{% block content %}
 
-<main class="login-container">
+<div class="login-page">
 
-    <section class="login-introduction">
+    <!-- Decorative background -->
 
-        <p class="app-eyebrow mb-2">
-            YAHAN APP
-        </p>
+    <div
+        class="login-decoration login-decoration-one"
+        aria-hidden="true"
+    ></div>
 
-        <h1>yahan-app</h1>
+    <div
+        class="login-decoration login-decoration-two"
+        aria-hidden="true"
+    ></div>
 
-        <p>
-            ログインして利用するアプリを選択してください。
-        </p>
 
-    </section>
+    <main class="login-card">
 
-    <form
-        method="post"
-        class="app-card login-card"
-    >
+        <!-- =============================================
+             Brand
+             ============================================= -->
 
-    {% csrf_token %}
+        <div class="login-brand">
 
-    {% if next %}
-        <input
-            type="hidden"
-            name="next"
-            value="{{ next }}"
-        >
-    {% endif %}
+            <div
+                class="login-brand-icon"
+                aria-hidden="true"
+            >
+                Y
+            </div>
 
-    <div class="login-icon">    
 
-            <i class="bi bi-grid-1x2-fill"></i>
+            <div>
+
+                <p class="login-eyebrow">
+                    WELCOME BACK
+                </p>
+
+                <h1>
+                    yahan-app
+                </h1>
+
+            </div>
+
         </div>
 
-        <h2>ログイン</h2>
 
-        {% if form.errors %}
-            <div class="form-errors">
-                ユーザー名またはパスワードが違います。
+        <p class="login-description">
+            ログインして、あなたのアプリを開く。
+        </p>
+
+
+        <!-- =============================================
+             Errors
+             ============================================= -->
+
+        {% if form.non_field_errors %}
+
+            <div class="login-error">
+
+                {% for error in form.non_field_errors %}
+
+                    <p>
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
             </div>
+
         {% endif %}
 
-        <div class="form-field">
 
-            <label for="{{ form.username.id_for_label }}">
-                ユーザー名
-            </label>
+        <!-- =============================================
+             Login form
+             ============================================= -->
 
-            {{ form.username }}
-
-        </div>
-
-        <div class="form-field">
-
-            <label for="{{ form.password.id_for_label }}">
-                パスワード
-            </label>
-
-            {{ form.password }}
-
-        </div>
-
-        <button
-            type="submit"
-            class="primary-button login-button"
+        <form
+            method="post"
+            class="login-form"
         >
-            ログイン
-        </button>
 
-    </form>
+            {% csrf_token %}
 
-</main>
 
-</body>
-</html>
+            <!-- Username -->
+
+            <div class="login-field">
+
+                <label
+                    for="{{ form.username.id_for_label }}"
+                >
+
+                    <span>
+                        ユーザーID
+                    </span>
+
+                    <small>
+                        USER ID
+                    </small>
+
+                </label>
+
+
+                <div class="login-input-wrap">
+
+                    <span
+                        class="login-input-icon"
+                        aria-hidden="true"
+                    >
+                        👤
+                    </span>
+
+                    <input
+                        type="text"
+                        name="{{ form.username.html_name }}"
+                        id="{{ form.username.id_for_label }}"
+                        value="{{ form.username.value|default:'' }}"
+                        autocomplete="username"
+                        required
+                        autofocus
+                        placeholder="ユーザーIDを入力"
+                    >
+
+                </div>
+
+
+                {% if form.username.errors %}
+
+                    <div class="login-field-error">
+
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="login-field">
+
+                <label
+                    for="{{ form.password.id_for_label }}"
+                >
+
+                    <span>
+                        パスワード
+                    </span>
+
+                    <small>
+                        PASSWORD
+                    </small>
+
+                </label>
+
+
+                <div class="login-input-wrap">
+
+                    <span
+                        class="login-input-icon"
+                        aria-hidden="true"
+                    >
+                        🔑
+                    </span>
+
+                    <input
+                        type="password"
+                        name="{{ form.password.html_name }}"
+                        id="{{ form.password.id_for_label }}"
+                        autocomplete="current-password"
+                        required
+                        placeholder="パスワードを入力"
+                    >
+
+                    <button
+                        type="button"
+                        class="login-password-toggle"
+                        id="password-toggle"
+                        aria-label="パスワードを表示"
+                    >
+                        👁
+                    </button>
+
+                </div>
+
+
+                {% if form.password.errors %}
+
+                    <div class="login-field-error">
+
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if next %}
+
+                <input
+                    type="hidden"
+                    name="next"
+                    value="{{ next }}"
+                >
+
+            {% endif %}
+
+
+            <!-- Submit -->
+
+            <button
+                type="submit"
+                class="login-button"
+            >
+
+                <span>
+                    ログイン
+                </span>
+
+                <span
+                    class="login-button-arrow"
+                    aria-hidden="true"
+                >
+                    →
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- =============================================
+             Footer
+             ============================================= -->
+
+        <div class="login-footer">
+
+            <span>
+                YAHAN
+            </span>
+
+            <small>
+                personal app hub
+            </small>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const passwordInput =
+                document.getElementById(
+                    "{{ form.password.id_for_label }}"
+                );
+
+            const toggle =
+                document.getElementById(
+                    "password-toggle"
+                );
+
+
+            if (!passwordInput || !toggle) {
+                return;
+            }
+
+
+            toggle.addEventListener(
+                "click",
+                function () {
+
+                    const isPassword =
+                        passwordInput.type === "password";
+
+
+                    passwordInput.type =
+                        isPassword
+                            ? "text"
+                            : "password";
+
+
+                    toggle.textContent =
+                        isPassword
+                            ? "🙈"
+                            : "👁";
+
+
+                    toggle.setAttribute(
+                        "aria-label",
+                        isPassword
+                            ? "パスワードを隠す"
+                            : "パスワードを表示"
+                    );
+
+                }
+            );
+
+        }
+    );
+
+</script>
+
+{% endblock %}
