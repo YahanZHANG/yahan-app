@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+アプリを管理 | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/password_change.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="password-page">
+
+    <a
+        href="{% url 'portal:home' %}"
+        class="password-back-link"
+    >
+        ← yahan-app
+    </a>
+
+
+    <main class="password-card">
+
+        <!-- =============================================
+             Header
+             ============================================= -->
+
+        <header class="password-header">
+
+            <div
+                class="password-icon"
+                aria-hidden="true"
+            >
+                ⚙️
+            </div>
+
+
+            <div>
+
+                <p class="password-eyebrow">
+                    MY APPS
+                </p>
+
+                <h1>
+                    アプリを管理
+                </h1>
+
+                <p class="password-description">
+                    表示するアプリと並び順を変更できる。
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- =============================================
+             User
+             ============================================= -->
+
+        <div class="password-user-card">
+
+            <div
+                class="password-user-avatar"
+                aria-hidden="true"
+            >
+                {{ profile.display_name|first|upper }}
+            </div>
+
+
+            <div class="password-user-copy">
+
+                <span>
+                    ログイン中
+                </span>
+
+                <strong>
+                    {{ profile.display_name }}
+                </strong>
+
+                <small>
+                    ID: {{ user.username }}
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             Form
+             ============================================= -->
+
+        <form
+            method="post"
+            class="password-form"
+            id="manage-app-form"
+        >
+
+            {% csrf_token %}
+
+
+            <input
+                type="hidden"
+                name="app_order"
+                id="app-order"
+            >
+
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="password-error-summary">
+                        <p>
+                            {{ message }}
+                        </p>
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+            <div
+                class="manage-app-list"
+                id="manage-app-list"
+            >
+
+                {% for app in apps %}
+
+                    <div
+                        class="manage-app-row"
+                        data-app-key="{{ app.key }}"
+                    >
+
+                        <!-- Drag handle -->
+
+                        <div
+                            class="manage-app-drag"
+                            aria-label="ドラッグして並び替え"
+                        >
+                            ⋮⋮
+                        </div>
+
+
+                        <!-- Icon -->
+
+                        <div
+                            class="manage-app-icon"
+                            aria-hidden="true"
+                        >
+                            {{ app.icon }}
+                        </div>
+
+
+                        <!-- Name -->
+
+                        <div class="manage-app-copy">
+
+                            <strong>
+                                {{ app.name }}
+                            </strong>
+
+                            <small>
+                                {{ app.label }}
+                            </small>
+
+                        </div>
+
+
+                        <!-- Switch -->
+
+                        <label class="manage-app-switch">
+
+                            <input
+                                type="checkbox"
+                                name="visible_apps"
+                                value="{{ app.key }}"
+                                {% if app.is_visible %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <span class="manage-app-switch-track">
+
+                                <span class="manage-app-switch-knob">
+                                </span>
+
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <p class="manage-app-hint">
+                左の ⋮⋮ をつかんで上下に動かすと、
+                Portalでの表示順を変更できる。
+            </p>
+
+
+            <button
+                type="submit"
+                class="password-save-button"
+            >
+                <span aria-hidden="true">
+                    ✓
+                </span>
+
+                変更を保存
+            </button>
+
+        </form>
+
+
+        <p class="password-footer-note">
+            非表示にしてもアプリのデータは削除されない。
+        </p>
+
+    </main>
+
+</div>
+
+
+<!-- SortableJS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"
+></script>
+
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const list =
+                document.getElementById(
+                    "manage-app-list"
+                );
+
+            const orderInput =
+                document.getElementById(
+                    "app-order"
+                );
+
+            const form =
+                document.getElementById(
+                    "manage-app-form"
+                );
+
+
+            function updateOrder() {
+
+                const rows =
+                    list.querySelectorAll(
+                        ".manage-app-row"
+                    );
+
+                const order =
+                    Array.from(rows).map(
+                        function (row) {
+                            return row.dataset.appKey;
+                        }
+                    );
+
+                orderInput.value =
+                    order.join(",");
+            }
+
+
+            new Sortable(
+                list,
+                {
+                    animation: 180,
+
+                    handle:
+                        ".manage-app-drag",
+
+                    ghostClass:
+                        "manage-app-ghost",
+
+                    chosenClass:
+                        "manage-app-chosen",
+
+                    dragClass:
+                        "manage-app-dragging",
+
+                    onSort:
+                        updateOrder,
+                }
+            );
+
+
+            updateOrder();
+
+
+            form.addEventListener(
+                "submit",
+                updateOrder
+            );
+
+        }
+    );
+</script>
+
+{% endblock %}

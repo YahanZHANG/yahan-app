@@ -194,9 +194,9 @@
                 aria-labelledby="portal-apps-heading"
             >
 
-                <!-- =================================================
+                <!-- =============================================
                     Section heading
-                    ================================================= -->
+                    ============================================= -->
 
                 <div class="portal-section-heading">
 
@@ -207,86 +207,48 @@
                         </p>
 
                         <h2 id="portal-apps-heading">
-                            使うアプリを選ぶ
+                            マイアプリ
                         </h2>
 
                     </div>
 
+
+                    <a
+                        href="{% url 'portal:manage_apps' %}"
+                        class="portal-manage-apps-button"
+                    >
+                        ⚙ アプリを管理
+                    </a>
+
                 </div>
 
 
-                <!-- =================================================
+                <!-- =============================================
                     App grid
-                    ================================================= -->
+                    ============================================= -->
 
                 <div class="portal-app-grid">
 
-
-                    <!-- =============================================
-                        Travel
-                        ============================================= -->
-
-                    <a
-                        href="{% url 'travel:home' %}"
-                        class="portal-app-card portal-travel-card"
-                        aria-label="旅行管理アプリを開く"
-                    >
-
-                        <span
-                            class="portal-card-decoration portal-travel-decoration"
-                            aria-hidden="true"
-                        ></span>
-
-
-                        <div
-                            class="portal-app-icon portal-travel-icon"
-                            aria-hidden="true"
-                        >
-                            <span>
-                                ✈️
-                            </span>
-                        </div>
-
-
-                        <div class="portal-card-content">
-
-                            <h3>
-                                旅行管理
-                            </h3>
-
-                            <p class="portal-card-label">
-                                FAMILY TRIP
-                            </p>
-
-                        </div>
-
-                    </a>
-
-
-                    <!-- =============================================
-                        Feeding
-                        ============================================= -->
-
-                    {% if can_use_feeding %}
+                    {% for app in visible_apps %}
 
                         <a
-                            href="{% url 'feeding:today' %}"
-                            class="portal-app-card portal-feeding-card"
-                            aria-label="離乳食ノートを開く"
+                            href="{{ app.url }}"
+                            class="
+                                portal-app-card
+                                {{ app.card_class }}
+                            "
+                            aria-label="{{ app.name }}を開く"
                         >
 
-                            <span
-                                class="portal-card-decoration portal-feeding-decoration"
-                                aria-hidden="true"
-                            ></span>
-
-
                             <div
-                                class="portal-app-icon portal-feeding-icon"
+                                class="
+                                    portal-app-icon
+                                    {{ app.icon_class }}
+                                "
                                 aria-hidden="true"
                             >
                                 <span>
-                                    🥣
+                                    {{ app.icon }}
                                 </span>
                             </div>
 
@@ -294,217 +256,38 @@
                             <div class="portal-card-content">
 
                                 <h3>
-                                    離乳食記録
+                                    {{ app.name }}
                                 </h3>
 
                                 <p class="portal-card-label">
-                                    BABY FOOD
+                                    {{ app.label }}
                                 </p>
 
                             </div>
 
                         </a>
 
-                    {% endif %}
+                    {% empty %}
 
+                        <div class="portal-app-empty">
 
-                    <!-- =============================================
-                        Vaccination
-                        ============================================= -->
-
-                    <a
-                        href="{% url 'vaccination:home' %}"
-                        class="portal-app-card portal-vaccination-card"
-                        aria-label="予防接種アプリを開く"
-                    >
-
-                        <span
-                            class="portal-card-decoration portal-vaccination-decoration"
-                            aria-hidden="true"
-                        ></span>
-
-
-                        <div
-                            class="portal-app-icon portal-vaccination-icon"
-                            aria-hidden="true"
-                        >
                             <span>
-                                💉
+                                📱
                             </span>
-                        </div>
 
-
-                        <div class="portal-card-content">
-
-                            <h3>
-                                予防接種
-                            </h3>
-
-                            <p class="portal-card-label">
-                                VACCINATION
+                            <p>
+                                表示中のアプリがありません。
                             </p>
 
-                        </div>
-
-                    </a>
-
-                    <!-- =============================================
-                    Color Checker
-                    ============================================= -->
-
-                <a
-                    href="{% url 'colorcheck:index' %}"
-                    class="portal-app-card portal-colorcheck-card"
-                    aria-label="色判定アプリを開く"
-                >
-
-                    <span
-                        class="portal-card-decoration portal-colorcheck-decoration"
-                        aria-hidden="true"
-                    ></span>
-
-
-                    <div
-                        class="portal-app-icon portal-colorcheck-icon"
-                        aria-hidden="true"
-                    >
-                        <span>
-                            🎨
-                        </span>
-                    </div>
-
-
-                    <div class="portal-card-content">
-
-                        <h3>
-                            色判定
-                        </h3>
-
-                        <p class="portal-card-label">
-                            COLOR CHECKER
-                        </p>
-
-                    </div>
-
-                </a>
-
-                <!-- =============================================
-                Recipes
-                ============================================= -->
-
-            <a
-                href="{% url 'recipes:home' %}"
-                class="portal-app-card portal-recipes-card"
-                aria-label="レシピアプリを開く"
-            >
-
-                <span
-                    class="portal-card-decoration portal-recipes-decoration"
-                    aria-hidden="true"
-                ></span>
-
-
-                <div
-                    class="portal-app-icon portal-recipes-icon"
-                    aria-hidden="true"
-                >
-                    <span>
-                        🍳
-                    </span>
-                </div>
-
-
-                <div class="portal-card-content">
-
-                    <h3>
-                        レシピ検索
-                    </h3>
-
-                    <p class="portal-card-label">
-                        RECIPE FINDER
-                    </p>
-
-                </div>
-
-            </a>
-
-            </a>
-
-
-                <!-- =============================================
-                    News
-                    ============================================= -->
-
-                <a
-                    href="{% url 'news:home' %}"
-                    class="portal-app-card portal-news-card"
-                    aria-label="スイスニュースアプリを開く"
-                >
-
-                    <span
-                        class="portal-card-decoration portal-news-decoration"
-                        aria-hidden="true"
-                    ></span>
-
-
-                    <div
-                        class="portal-app-icon portal-news-icon"
-                        aria-hidden="true"
-                    >
-                        <span>
-                            📰
-                        </span>
-                    </div>
-
-
-                    <div class="portal-card-content">
-
-                        <h3>
-                            スイスニュース
-                        </h3>
-
-                        <p class="portal-card-label">
-                            SWISS NEWS
-                        </p>
-
-                    </div>
-
-                </a>
-
-
-                    <!-- =============================================
-                        Games
-                        ============================================= -->
-
-                    <a
-                        href="{% url 'games:game_list' %}"
-                        class="portal-app-card portal-games-card"
-                        aria-label="ゲームを開く"
-                    >
-
-                        <div
-                            class="portal-app-icon portal-games-icon"
-                            aria-hidden="true"
-                        >
-                            <span>
-                                🎮
-                            </span>
-                        </div>
-
-
-                        <div class="portal-card-content">
-
-                            <h3>
-                                ゲーム
-                            </h3>
-
-                            <p class="portal-card-label">
-                                MINI GAMES
-                            </p>
+                            <a
+                                href="{% url 'portal:manage_apps' %}"
+                            >
+                                アプリを管理
+                            </a>
 
                         </div>
 
-                    </a>
+                    {% endfor %}
 
                 </div>
 

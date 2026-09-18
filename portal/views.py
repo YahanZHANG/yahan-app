@@ -16,19 +16,108 @@ from .models import PortalAppPreference
 
 
 # =========================================================
-# 通常のパスワード変更
+# Portal app definitions
+# =========================================================
+
+APP_CONFIG = {
+    "news": {
+        "name": "スイスニュース",
+        "label": "SWISS NEWS",
+        "icon": "📰",
+        "url_name": "news:home",
+        "card_class": "portal-news-card",
+        "icon_class": "portal-news-icon",
+    },
+    "feeding": {
+        "name": "離乳食記録",
+        "label": "BABY FOOD",
+        "icon": "🥣",
+        "url_name": "feeding:today",
+        "card_class": "portal-feeding-card",
+        "icon_class": "portal-feeding-icon",
+    },
+    "vaccination": {
+        "name": "予防接種",
+        "label": "VACCINATION",
+        "icon": "💉",
+        "url_name": "vaccination:home",
+        "card_class": "portal-vaccination-card",
+        "icon_class": "portal-vaccination-icon",
+    },
+    "recipes": {
+        "name": "レシピ検索",
+        "label": "RECIPE FINDER",
+        "icon": "🍳",
+        "url_name": "recipes:home",
+        "card_class": "portal-recipes-card",
+        "icon_class": "portal-recipes-icon",
+    },
+    "games": {
+        "name": "ゲーム",
+        "label": "MINI GAMES",
+        "icon": "🎮",
+        "url_name": "games:game_list",
+        "card_class": "portal-games-card",
+        "icon_class": "portal-games-icon",
+    },
+    "colorcheck": {
+        "name": "色判定",
+        "label": "COLOR CHECKER",
+        "icon": "🎨",
+        "url_name": "colorcheck:index",
+        "card_class": "portal-colorcheck-card",
+        "icon_class": "portal-colorcheck-icon",
+    },
+}
+
+
+# =========================================================
+# Helpers
+# =========================================================
+
+def ensure_app_preferences(user):
+    """
+    ユーザーに6アプリ分の設定が存在しなければ作成する。
+    """
+
+    for index, (app_key, label) in enumerate(
+        PortalAppPreference.AppKey.choices
+    ):
+        PortalAppPreference.objects.get_or_create(
+            user=user,
+            app_key=app_key,
+            defaults={
+                "is_visible": True,
+                "display_order": index,
+            },
+        )
+
+
+def redirect_to_setup_if_needed(profile):
+    """
+    初回セットアップが終わっていなければ
+    適切な画面名を返す。
+    """
+
+    if not profile.password_setup_completed:
+        return "portal:password_setup"
+
+    if not profile.nickname_setup_completed:
+        return "portal:nickname_setup"
+
+    if not profile.app_setup_completed:
+        return "portal:app_setup"
+
+    return None
+
+
+# =========================================================
+# Normal password change
 # =========================================================
 
 class PortalPasswordChangeView(
     auth_views.PasswordChangeView
 ):
-    """
-    Portalから通常のパスワード変更を行う。
-
-    通常変更では、
-    現在のパスワードの入力が必要。
-    """
-
     template_name = (
         "registration/password_change_form.html"
     )
@@ -40,19 +129,12 @@ class PortalPasswordChangeView(
 
 
 # =========================================================
-# 初回パスワード設定
+# Initial password setup
 # =========================================================
 
 class InitialPasswordSetupView(
     auth_views.PasswordChangeView
 ):
-    """
-    初回ログイン専用。
-
-    現在のパスワードは入力させず、
-    新しいパスワードを2回入力して設定する。
-    """
-
     template_name = (
         "registration/password_change_form.html"
     )
@@ -73,10 +155,6 @@ class InitialPasswordSetupView(
                 )
             )
 
-            # すでに初回パスワード設定が
-            # 完了しているユーザーには、
-            # 現在のパスワードなしで
-            # 再設定させない。
             if profile.password_setup_completed:
 
                 if not profile.nickname_setup_completed:
@@ -125,7 +203,7 @@ class InitialPasswordSetupView(
 
 
 # =========================================================
-# 初回ニックネーム設定
+# Initial nickname setup
 # =========================================================
 
 @login_required
@@ -135,14 +213,11 @@ def nickname_setup(request):
         user=request.user
     )
 
-    # パスワード設定がまだなら
-    # 先にパスワード設定へ
     if not profile.password_setup_completed:
         return redirect(
             "portal:password_setup"
         )
 
-    # すでにニックネーム設定済み
     if profile.nickname_setup_completed:
 
         if not profile.app_setup_completed:
@@ -192,7 +267,7 @@ def nickname_setup(request):
 
 
 # =========================================================
-# 初回アプリ選択
+# Initial app setup
 # =========================================================
 
 @login_required
@@ -202,19 +277,16 @@ def app_setup(request):
         user=request.user
     )
 
-    # パスワード設定がまだ
     if not profile.password_setup_completed:
         return redirect(
             "portal:password_setup"
         )
 
-    # ニックネーム設定がまだ
     if not profile.nickname_setup_completed:
         return redirect(
             "portal:nickname_setup"
         )
 
-    # 初回設定完了済み
     if profile.app_setup_completed:
         return redirect(
             "portal:home"
@@ -247,15 +319,12 @@ def app_setup(request):
                 )
 
                 if is_visible:
-
                     display_order = (
                         selected_apps.index(
                             app_key
                         )
                     )
-
                 else:
-
                     display_order = (
                         100 + index
                     )
@@ -295,8 +364,6 @@ def app_setup(request):
 
     else:
 
-        # 初期状態では
-        # 6アプリすべて選択済みにする
         form = AppSelectionForm(
             initial={
                 "apps": all_app_keys,
@@ -314,6 +381,165 @@ def app_setup(request):
 
 
 # =========================================================
+# Manage apps
+# =========================================================
+
+@login_required
+def manage_apps(request):
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    setup_redirect = redirect_to_setup_if_needed(
+        profile
+    )
+
+    if setup_redirect:
+        return redirect(
+            setup_redirect
+        )
+
+    ensure_app_preferences(
+        request.user
+    )
+
+    allowed_keys = [
+        value
+        for value, label
+        in PortalAppPreference.AppKey.choices
+    ]
+
+    if request.method == "POST":
+
+        visible_keys = set(
+            request.POST.getlist(
+                "visible_apps"
+            )
+        )
+
+        visible_keys = {
+            key
+            for key in visible_keys
+            if key in allowed_keys
+        }
+
+        if not visible_keys:
+
+            messages.error(
+                request,
+                "少なくとも1つのアプリを表示してください。",
+            )
+
+        else:
+
+            raw_order = (
+                request.POST
+                .get(
+                    "app_order",
+                    "",
+                )
+                .split(",")
+            )
+
+            submitted_order = []
+
+            for key in raw_order:
+
+                if (
+                    key in allowed_keys
+                    and key not in submitted_order
+                ):
+                    submitted_order.append(
+                        key
+                    )
+
+            # 万一JavaScriptから一部送られなくても
+            # 残りを後ろに補完する
+            ordered_keys = (
+                submitted_order
+                + [
+                    key
+                    for key in allowed_keys
+                    if key not in submitted_order
+                ]
+            )
+
+            for index, app_key in enumerate(
+                ordered_keys
+            ):
+
+                (
+                    PortalAppPreference
+                    .objects
+                    .update_or_create(
+                        user=request.user,
+                        app_key=app_key,
+                        defaults={
+                            "is_visible": (
+                                app_key
+                                in visible_keys
+                            ),
+                            "display_order": index,
+                        },
+                    )
+                )
+
+            messages.success(
+                request,
+                "アプリの表示と順番を保存しました。",
+            )
+
+            return redirect(
+                "portal:home"
+            )
+
+    preferences = (
+        PortalAppPreference
+        .objects
+        .filter(
+            user=request.user
+        )
+        .order_by(
+            "display_order",
+            "id",
+        )
+    )
+
+    apps = []
+
+    for preference in preferences:
+
+        config = APP_CONFIG.get(
+            preference.app_key
+        )
+
+        if not config:
+            continue
+
+        apps.append(
+            {
+                "key": preference.app_key,
+                "name": config["name"],
+                "label": config["label"],
+                "icon": config["icon"],
+                "is_visible": (
+                    preference.is_visible
+                ),
+            }
+        )
+
+    return render(
+        request,
+        "portal/manage_apps.html",
+        {
+            "profile": profile,
+            "apps": apps,
+        },
+    )
+
+
+# =========================================================
 # Portal home
 # =========================================================
 
@@ -324,24 +550,18 @@ def home(request):
         user=request.user
     )
 
-    # =====================================================
-    # 初回セットアップ
-    # =====================================================
+    setup_redirect = redirect_to_setup_if_needed(
+        profile
+    )
 
-    if not profile.password_setup_completed:
+    if setup_redirect:
         return redirect(
-            "portal:password_setup"
+            setup_redirect
         )
 
-    if not profile.nickname_setup_completed:
-        return redirect(
-            "portal:nickname_setup"
-        )
-
-    if not profile.app_setup_completed:
-        return redirect(
-            "portal:app_setup"
-        )
+    ensure_app_preferences(
+        request.user
+    )
 
     # =====================================================
     # Feeding permission
@@ -384,10 +604,65 @@ def home(request):
             instance=profile
         )
 
+    # =====================================================
+    # Visible apps
+    # =====================================================
+
+    preferences = (
+        PortalAppPreference
+        .objects
+        .filter(
+            user=request.user,
+            is_visible=True,
+        )
+        .order_by(
+            "display_order",
+            "id",
+        )
+    )
+
+    visible_apps = []
+
+    for preference in preferences:
+
+        # 離乳食アプリの利用権限がない場合は
+        # Portalには表示しない
+        if (
+            preference.app_key == "feeding"
+            and not can_use_feeding
+        ):
+            continue
+
+        config = APP_CONFIG.get(
+            preference.app_key
+        )
+
+        if not config:
+            continue
+
+        visible_apps.append(
+            {
+                "key": preference.app_key,
+                "name": config["name"],
+                "label": config["label"],
+                "icon": config["icon"],
+                "url": reverse(
+                    config["url_name"]
+                ),
+                "card_class": (
+                    config["card_class"]
+                ),
+                "icon_class": (
+                    config["icon_class"]
+                ),
+            }
+        )
+
     context = {
         "can_use_feeding": can_use_feeding,
         "profile": profile,
         "nickname_form": nickname_form,
+        "visible_apps": visible_apps,
     }
 
     return render(

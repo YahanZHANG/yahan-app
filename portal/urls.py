@@ -15,6 +15,12 @@ urlpatterns = [
     ),
 
     path(
+        "setup/password/",
+        views.InitialPasswordSetupView.as_view(),
+        name="password_setup",
+    ),
+
+    path(
         "setup/nickname/",
         views.nickname_setup,
         name="nickname_setup",
@@ -27,9 +33,9 @@ urlpatterns = [
     ),
 
     path(
-        "setup/password/",
-        views.InitialPasswordSetupView.as_view(),
-        name="password_setup",
+        "apps/manage/",
+        views.manage_apps,
+        name="manage_apps",
     ),
 
 ]

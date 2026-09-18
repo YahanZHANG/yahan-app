@@ -3571,3 +3571,449 @@ button {
     }
 
 }
+
+/* =========================================================
+   Manage apps
+   ========================================================= */
+
+.manage-app-list {
+    display: grid;
+
+    gap: 9px;
+}
+
+
+.manage-app-row {
+    display: grid;
+
+    grid-template-columns:
+        28px
+        46px
+        minmax(0, 1fr)
+        auto;
+
+    align-items: center;
+
+    gap: 11px;
+
+    min-height: 70px;
+
+    padding:
+        11px
+        13px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .09);
+
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, .82);
+
+    box-shadow:
+        0 4px 14px
+        rgba(32, 45, 55, .035);
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+}
+
+
+.manage-app-row:hover {
+    border-color:
+        rgba(54, 95, 117, .18);
+}
+
+
+/* =========================================================
+   Drag
+   ========================================================= */
+
+.manage-app-drag {
+    display: grid;
+
+    place-items: center;
+
+    width: 28px;
+    height: 38px;
+
+    color:
+        #aab2b7;
+
+    font-size: 18px;
+    font-weight: 900;
+
+    letter-spacing: -4px;
+
+    cursor: grab;
+
+    user-select: none;
+
+    touch-action: none;
+}
+
+
+.manage-app-drag:active {
+    cursor: grabbing;
+}
+
+
+.manage-app-ghost {
+    opacity: .35;
+}
+
+
+.manage-app-chosen {
+    border-color:
+        rgba(54, 95, 117, .25);
+
+    box-shadow:
+        0 12px 26px
+        rgba(54, 95, 117, .10);
+}
+
+
+.manage-app-dragging {
+    transform:
+        scale(1.015);
+}
+
+
+/* =========================================================
+   App icon
+   ========================================================= */
+
+.manage-app-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 14px;
+
+    background:
+        #f1f5f7;
+
+    font-size: 23px;
+}
+
+
+/* =========================================================
+   App copy
+   ========================================================= */
+
+.manage-app-copy {
+    display: flex;
+
+    min-width: 0;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.manage-app-copy strong {
+    color:
+        #34424a;
+
+    font-size: .84rem;
+    font-weight: 800;
+}
+
+
+.manage-app-copy small {
+    color:
+        #969da2;
+
+    font-size: .57rem;
+    font-weight: 800;
+
+    letter-spacing: .09em;
+}
+
+
+/* =========================================================
+   Toggle
+   ========================================================= */
+
+.manage-app-switch {
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    cursor: pointer;
+}
+
+
+.manage-app-switch input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.manage-app-switch-track {
+    position: relative;
+
+    display: block;
+
+    width: 45px;
+    height: 26px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .10);
+
+    border-radius: 999px;
+
+    background:
+        #e8ecee;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease;
+}
+
+
+.manage-app-switch-knob {
+    position: absolute;
+
+    top: 3px;
+    left: 3px;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background:
+        #ffffff;
+
+    box-shadow:
+        0 2px 5px
+        rgba(32, 45, 55, .14);
+
+    transition:
+        transform .18s ease;
+}
+
+
+.manage-app-switch input:checked
++ .manage-app-switch-track {
+    border-color:
+        rgba(54, 95, 117, .22);
+
+    background:
+        #6f92a5;
+}
+
+
+.manage-app-switch input:checked
++ .manage-app-switch-track
+.manage-app-switch-knob {
+    transform:
+        translateX(19px);
+}
+
+
+/* =========================================================
+   Hint
+   ========================================================= */
+
+.manage-app-hint {
+    margin:
+        14px
+        2px
+        4px;
+
+    color:
+        #92999e;
+
+    font-size: .68rem;
+
+    line-height: 1.55;
+}
+
+
+@media (max-width: 480px) {
+
+    .manage-app-row {
+        grid-template-columns:
+            24px
+            42px
+            minmax(0, 1fr)
+            auto;
+
+        gap: 9px;
+
+        padding:
+            10px;
+    }
+
+
+    .manage-app-icon {
+        width: 42px;
+        height: 42px;
+
+        font-size: 21px;
+    }
+
+
+    .manage-app-copy strong {
+        font-size: .78rem;
+    }
+
+
+    .manage-app-switch-track {
+        width: 42px;
+        height: 24px;
+    }
+
+
+    .manage-app-switch-knob {
+        width: 16px;
+        height: 16px;
+    }
+
+
+    .manage-app-switch input:checked
+    + .manage-app-switch-track
+    .manage-app-switch-knob {
+        transform:
+            translateX(18px);
+    }
+
+}
+
+/* =========================================================
+   Portal app management
+   ========================================================= */
+
+.portal-manage-apps-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        9px
+        13px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .10);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, .72);
+
+    color:
+        #626d74;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    box-shadow:
+        0 4px 12px
+        rgba(54, 95, 117, .04);
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+
+.portal-manage-apps-button:hover {
+    border-color:
+        rgba(54, 95, 117, .18);
+
+    background:
+        #ffffff;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.portal-app-empty {
+    grid-column:
+        1
+        /
+        -1;
+
+    padding:
+        36px
+        20px;
+
+    border:
+        1px dashed
+        rgba(54, 95, 117, .16);
+
+    border-radius: 20px;
+
+    color:
+        var(--text-muted);
+
+    text-align: center;
+}
+
+
+.portal-app-empty span {
+    display: block;
+
+    margin-bottom: 10px;
+
+    font-size: 28px;
+}
+
+
+.portal-app-empty p {
+    margin:
+        0
+        0
+        10px;
+}
+
+
+.portal-app-empty a {
+    color:
+        var(--primary);
+
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+
+@media (max-width: 600px) {
+
+    .portal-section-heading {
+        align-items: flex-start;
+    }
+
+
+    .portal-manage-apps-button {
+        flex-shrink: 0;
+
+        padding:
+            8px
+            10px;
+
+        font-size: 10px;
+    }
+
+}
