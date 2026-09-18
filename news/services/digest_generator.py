@@ -104,11 +104,19 @@ def generate_news_digest(
 
     if period is None:
 
-        if local_now.hour < 12:
+        hour = local_now.hour
+
+        if hour < 9:
             period = "morning"
 
-        else:
+        elif hour < 13:
+            period = "late_morning"
+
+        elif hour < 18:
             period = "afternoon"
+
+        else:
+            period = "evening"
 
 
     digest_date = timezone.localdate()

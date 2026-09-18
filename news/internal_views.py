@@ -51,7 +51,9 @@ def refresh_news_internal(request):
 
     if period not in {
         "morning",
+        "late_morning",
         "afternoon",
+        "evening",
     }:
         return JsonResponse(
             {

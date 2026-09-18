@@ -12,11 +12,12 @@ ZURICH_TZ = ZoneInfo(
 )
 
 
+# スイス時間での更新時刻
 REFRESH_HOURS = {
     6: "morning",
-    10: "morning",
-    15: "afternoon",
-    20: "afternoon",
+    11: "late_morning",
+    16: "afternoon",
+    21: "evening",
 }
 
 
@@ -44,7 +45,9 @@ class Command(BaseCommand):
             "--period",
             choices=[
                 "morning",
+                "late_morning",
                 "afternoon",
+                "evening",
             ],
             default=None,
             help=(
@@ -71,23 +74,35 @@ class Command(BaseCommand):
         )
 
 
+        # ========================================
+        # Environment check
+        # ========================================
+
         if not refresh_url:
+
             self.stderr.write(
                 self.style.ERROR(
                     "NEWS_REFRESH_URL is not configured."
                 )
             )
+
             return
 
 
         if not refresh_token:
+
             self.stderr.write(
                 self.style.ERROR(
                     "NEWS_REFRESH_TOKEN is not configured."
                 )
             )
+
             return
 
+
+        # ========================================
+        # Zurich local time
+        # ========================================
 
         now_zurich = (
             timezone.now()
@@ -106,19 +121,36 @@ class Command(BaseCommand):
 
 
         # ========================================
-        # Determine period
+        # Determine digest period
         # ========================================
 
         if options["force"]:
 
             period = options["period"]
 
+
+            # --forceだけ指定した場合
+            # 現在時刻からperiodを決定
             if not period:
-                period = (
-                    "morning"
-                    if now_zurich.hour < 12
-                    else "afternoon"
-                )
+
+                hour = now_zurich.hour
+
+                if hour < 9:
+
+                    period = "morning"
+
+                elif hour < 14:
+
+                    period = "late_morning"
+
+                elif hour < 19:
+
+                    period = "afternoon"
+
+                else:
+
+                    period = "evening"
+
 
             self.stdout.write(
                 self.style.WARNING(
@@ -132,9 +164,12 @@ class Command(BaseCommand):
 
         else:
 
+            # 通常のCron実行
+            # 06 / 11 / 16 / 21時だけ実行
             period = REFRESH_HOURS.get(
                 now_zurich.hour
             )
+
 
             if not period:
 
@@ -161,20 +196,23 @@ class Command(BaseCommand):
 
 
         # ========================================
-        # Send request to Web Service
+        # Send refresh request to Web Service
         # ========================================
 
         try:
 
             response = requests.post(
                 refresh_url,
+
                 headers={
                     "X-News-Refresh-Token":
                         refresh_token,
                 },
+
                 data={
                     "period": period,
                 },
+
                 timeout=30,
             )
 
@@ -195,6 +233,10 @@ class Command(BaseCommand):
             raise
 
 
+        # ========================================
+        # Success
+        # ========================================
+
         self.stdout.write(
             self.style.SUCCESS(
                 (
@@ -203,6 +245,7 @@ class Command(BaseCommand):
                 )
             )
         )
+
 
         self.stdout.write(
             response.text

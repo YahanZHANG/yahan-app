@@ -1,0 +1,97 @@
+{% extends "news/base.html" %}
+
+
+{% block title %}
+ニュースまとめ | Yahan News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            NEWS BRIEF
+        </div>
+
+        <h2>
+            ニュースまとめ
+        </h2>
+
+    </div>
+
+</section>
+
+
+{% regroup digests by digest_date as digest_groups %}
+
+
+<div class="news-digest-history">
+
+    {% for group in digest_groups %}
+
+        <section class="news-digest-day">
+
+            <h3 class="news-digest-day-title">
+                {{ group.grouper|date:"Y年n月j日" }}
+            </h3>
+
+
+            <div class="news-digest-day-list">
+
+                {% for digest in group.list %}
+
+                    <article class="news-digest-history-card">
+
+                        <div class="news-digest-history-top">
+
+                            <span class="news-digest-history-period">
+                                {{ digest.get_period_display }}
+                            </span>
+
+                            <time>
+                                {{ digest.generated_at|date:"H:i" }}
+                            </time>
+
+                        </div>
+
+
+                        <div class="news-digest-history-text">
+
+                            {{ digest.summary_ja|linebreaksbr }}
+
+                        </div>
+
+
+                        <div class="news-digest-history-meta">
+
+                            {{ digest.article_count }}
+                            件の新着記事から生成
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <h3>
+                まだニュースまとめがありません
+            </h3>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

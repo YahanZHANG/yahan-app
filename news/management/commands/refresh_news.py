@@ -60,12 +60,14 @@ class Command(BaseCommand):
             "--period",
             choices=[
                 "morning",
+                "late_morning",
                 "afternoon",
+                "evening",
             ],
             default=None,
             help=(
                 "Force digest period. "
-                "Normally detected automatically."
+                "Normally provided by the scheduler."
             ),
         )
 

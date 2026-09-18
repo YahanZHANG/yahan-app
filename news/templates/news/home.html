@@ -53,15 +53,7 @@ Swiss News
 
         <div class="news-digest-time">
 
-            {% if latest_digest.period == "morning" %}
-
-                朝のまとめ
-
-            {% else %}
-
-                午後のまとめ
-
-            {% endif %}
+            {{ latest_digest.get_period_display }}
 
         </div>
 
@@ -76,10 +68,22 @@ Swiss News
 
 
 
-    <div class="news-digest-footer">
+    <div class="news-digest-bottom">
 
-        {{ latest_digest.article_count }}
-        件の新着記事から生成
+        <div class="news-digest-footer">
+
+            {{ latest_digest.article_count }}
+            件の新着記事から生成
+
+        </div>
+
+
+        <a
+            href="{% url 'news:digest_list' %}"
+            class="news-digest-history-link"
+        >
+            過去のまとめを見る →
+        </a>
 
     </div>
 

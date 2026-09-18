@@ -37,7 +37,9 @@ class Command(BaseCommand):
             "--period",
             choices=[
                 "morning",
+                "late_morning",
                 "afternoon",
+                "evening",
             ],
             required=True,
         )

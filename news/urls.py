@@ -49,4 +49,10 @@ urlpatterns = [
         internal_views.refresh_news_internal,
         name="internal_refresh",
     ),
+
+    path(
+        "digests/",
+        views.digest_list,
+        name="digest_list",
+    ),
 ]

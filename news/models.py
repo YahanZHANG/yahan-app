@@ -246,8 +246,10 @@ class NewsPreference(models.Model):
 class NewsDigest(models.Model):
 
     PERIOD_CHOICES = [
-        ("morning", "朝"),
-        ("afternoon", "午後"),
+        ("morning", "朝のまとめ"),
+        ("late_morning", "午前のまとめ"),
+        ("afternoon", "午後のまとめ"),
+        ("evening", "夜のまとめ"),
     ]
 
     digest_date = models.DateField()

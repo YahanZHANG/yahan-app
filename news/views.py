@@ -400,3 +400,22 @@ def settings_view(request):
             "preference": preference,
         },
     )
+
+@login_required
+def digest_list(request):
+
+    digests = (
+        NewsDigest.objects
+        .order_by(
+            "-digest_date",
+            "-generated_at",
+        )
+    )
+
+    return render(
+        request,
+        "news/digest_list.html",
+        {
+            "digests": digests,
+        },
+    )
