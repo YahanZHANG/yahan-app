@@ -1,6 +1,3 @@
-from datetime import timedelta
-from django.utils import timezone
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q
@@ -129,110 +126,15 @@ def home(request):
         request.user
     )
 
-    queryset = _article_queryset(
-        request.user,
-        preference,
-    )
-
-    # ========================================
-    # Topic filter
-    # ========================================
-
-    selected_topic = request.GET.get(
-        "topic",
-        ""
-    )
-
-    if selected_topic:
-        queryset = queryset.filter(
-            topics__slug=selected_topic
-        )
-
-
-    # ========================================
-    # Date filter
-    # ========================================
-
-    selected_range = request.GET.get(
-        "range",
-        ""
-    )
-
-    now = timezone.now()
-
-    if selected_range == "today":
-
-        today = timezone.localdate()
-
-        queryset = queryset.filter(
-            published_at__date=today
-        )
-
-    elif selected_range == "yesterday":
-
-        yesterday = (
-            timezone.localdate()
-            - timedelta(days=1)
-        )
-
-        queryset = queryset.filter(
-            published_at__date=yesterday
-        )
-
-    elif selected_range == "3":
-
-        queryset = queryset.filter(
-            published_at__gte=(
-                now
-                - timedelta(days=3)
-            )
-        )
-
-    elif selected_range == "7":
-
-        queryset = queryset.filter(
-            published_at__gte=(
-                now
-                - timedelta(days=7)
-            )
-        )
-
-
-    # ========================================
-    # Visible topics
-    # ========================================
-
-    hidden_topic_ids = (
-        preference
-        .hidden_topics
-        .values_list(
-            "id",
-            flat=True,
-        )
-    )
-
-    topics = (
-        Topic.objects
-        .filter(
-            is_active=True
-        )
-        .exclude(
-            id__in=hidden_topic_ids
-        )
-        .order_by(
-            "display_order",
-            "name",
-        )
-    )
-
-
     articles = (
-        queryset
+        _article_queryset(
+            request.user,
+            preference,
+        )
         .order_by(
             "-published_at"
         )[:50]
     )
-
 
     favorite_count = (
         Favorite.objects
@@ -242,7 +144,6 @@ def home(request):
         .count()
     )
 
-
     latest_digest = (
         NewsDigest.objects
         .order_by(
@@ -250,7 +151,6 @@ def home(request):
         )
         .first()
     )
-
 
     return render(
         request,
@@ -260,9 +160,6 @@ def home(request):
             "preference": preference,
             "favorite_count": favorite_count,
             "latest_digest": latest_digest,
-            "topics": topics,
-            "selected_topic": selected_topic,
-            "selected_range": selected_range,
         },
     )
 

@@ -12,10 +12,18 @@ ZURICH_TZ = ZoneInfo(
 )
 
 
+REFRESH_HOURS = {
+    6: "morning",
+    10: "morning",
+    15: "afternoon",
+    20: "afternoon",
+}
+
+
 class Command(BaseCommand):
     help = (
         "Ask the Yahan-app web service to refresh "
-        "Swiss news at 06:00 or 15:00 Zurich time."
+        "Swiss news at scheduled Zurich times."
     )
 
 
@@ -122,28 +130,34 @@ class Command(BaseCommand):
             )
 
 
-        elif now_zurich.hour == 6:
-
-            period = "morning"
-
-
-        elif now_zurich.hour == 15:
-
-            period = "afternoon"
-
-
         else:
 
+            period = REFRESH_HOURS.get(
+                now_zurich.hour
+            )
+
+            if not period:
+
+                self.stdout.write(
+                    self.style.WARNING(
+                        (
+                            "Not a scheduled Zurich "
+                            "refresh hour. Skipping."
+                        )
+                    )
+                )
+
+                return
+
+
             self.stdout.write(
-                self.style.WARNING(
+                self.style.SUCCESS(
                     (
-                        "Not a scheduled Zurich "
-                        "refresh hour. Skipping."
+                        "Scheduled refresh. "
+                        f"Period: {period}"
                     )
                 )
             )
-
-            return
 
 
         # ========================================
