@@ -27,6 +27,10 @@ APP_CONFIG = {
         "url_name": "news:home",
         "card_class": "portal-news-card",
         "icon_class": "portal-news-icon",
+        "description": (
+            "スイスの最新ニュースを日本語でチェック。"
+            "現地の情報をいち早くキャッチ。"
+        ),
     },
     "feeding": {
         "name": "離乳食記録",
@@ -35,6 +39,10 @@ APP_CONFIG = {
         "url_name": "feeding:today",
         "card_class": "portal-feeding-card",
         "icon_class": "portal-feeding-icon",
+        "description": (
+                "赤ちゃんの離乳食を簡単に管理・記録。"
+                "アレルギーや毎日の歯磨きの記録も。"
+            ),
     },
     "vaccination": {
         "name": "予防接種",
@@ -43,6 +51,10 @@ APP_CONFIG = {
         "url_name": "vaccination:home",
         "card_class": "portal-vaccination-card",
         "icon_class": "portal-vaccination-icon",
+        "description": (
+            "赤ちゃんの予防接種を簡単に管理・記録。"
+            "多言語対応で旅行中も安心。"
+        ),
     },
     "recipes": {
         "name": "レシピ検索",
@@ -51,6 +63,10 @@ APP_CONFIG = {
         "url_name": "recipes:home",
         "card_class": "portal-recipes-card",
         "icon_class": "portal-recipes-icon",
+        "description": (
+            "ホットクックやシェフドラムを使ったレシピを検索。"
+            "毎日の献立づくりをサポート。"
+        ),
     },
     "games": {
         "name": "ゲーム",
@@ -59,6 +75,9 @@ APP_CONFIG = {
         "url_name": "games:game_list",
         "card_class": "portal-games-card",
         "icon_class": "portal-games-icon",
+        "description": (
+            "ちょっとした空き時間に楽しめるミニゲーム。"
+        ),
     },
     "colorcheck": {
         "name": "色判定",
@@ -67,6 +86,10 @@ APP_CONFIG = {
         "url_name": "colorcheck:index",
         "card_class": "portal-colorcheck-card",
         "icon_class": "portal-colorcheck-icon",
+        "description": (
+            "色の認識に悩む方のために。"
+            "気になる色の情報を3段階の細かさで簡単に確認。"
+        ),
     },
 }
 
@@ -523,6 +546,7 @@ def manage_apps(request):
                 "name": config["name"],
                 "label": config["label"],
                 "icon": config["icon"],
+                "description": config["description"],
                 "is_visible": (
                     preference.is_visible
                 ),

@@ -1161,3 +1161,52 @@
     }
 
 }
+
+/* =========================================================
+   App description
+   ========================================================= */
+
+.manage-app-info > .manage-app-description {
+    margin:
+        7px
+        0
+        0;
+
+    color:
+        #88959d;
+
+    font-size:
+        .72rem;
+
+    font-weight:
+        400;
+
+    line-height:
+        1.65;
+
+    letter-spacing:
+        .01em;
+
+    white-space:
+        normal;
+
+    overflow-wrap:
+        anywhere;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .manage-app-info > .manage-app-description {
+        margin-top: 6px;
+
+        font-size: .68rem;
+
+        line-height: 1.55;
+    }
+
+}

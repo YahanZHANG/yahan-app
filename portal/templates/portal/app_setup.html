@@ -259,6 +259,42 @@
 
                                 <h2>
                                     {{ checkbox.choice_label }}
+
+                                    <p class="setup-app-description">
+
+                                        {% if checkbox.data.value == "news" %}
+
+                                            スイスの最新ニュースを日本語でチェック。
+                                            現地の情報をいち早くキャッチ。
+
+                                        {% elif checkbox.data.value == "feeding" %}
+
+                                            赤ちゃんの離乳食を簡単に管理・記録。
+                                            アレルギーや毎日の歯磨きの記録も。
+
+                                        {% elif checkbox.data.value == "vaccination" %}
+
+                                            赤ちゃんの予防接種を簡単に管理・記録。
+                                            多言語対応で旅行中も安心。
+
+                                        {% elif checkbox.data.value == "recipes" %}
+
+                                            ホットクックやシェフドラムを使ったレシピを検索。
+                                            毎日の献立づくりをサポート。
+
+                                        {% elif checkbox.data.value == "games" %}
+
+                                            ちょっとした空き時間に楽しめる、
+                                            シンプルなミニゲーム。
+
+                                        {% elif checkbox.data.value == "colorcheck" %}
+
+                                            色の認識に悩む方のために。
+                                            気になる色の情報を3段階の細かさで簡単に確認。
+
+                                        {% endif %}
+
+                                    </p>
                                 </h2>
 
 
