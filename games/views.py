@@ -21,23 +21,27 @@ def get_display_name(user):
         return user.username
     return profile.display_name
 
-
 def normalise_level(game, raw_level):
+
     if game == GameScore.Game.BLOCK_BREAKER:
         return 0
 
     if game in (
         GameScore.Game.TAP_STAR,
         GameScore.Game.MAZE_CHASE,
+        GameScore.Game.MAAARIO,
     ):
+
         try:
             level = int(raw_level)
+
         except (TypeError, ValueError):
             return None
+
         if 1 <= level <= 5:
             return level
-    return None
 
+    return None
 
 def get_ranking_data(user, game, level):
     base_queryset = (
@@ -185,3 +189,31 @@ def ranking(request, game):
 
     ranking_data = get_ranking_data(request.user, game, level)
     return JsonResponse({"ok": True, **ranking_data})
+
+
+@login_required
+def maaario(request):
+
+    ranking = get_ranking_data(
+        request.user,
+        GameScore.Game.MAAARIO,
+        1,
+    )
+
+    context = {
+        "ranking_entries": (
+            ranking["entries"]
+        ),
+        "personal_best": (
+            ranking["personal_best"]
+        ),
+        "personal_rank": (
+            ranking["personal_rank"]
+        ),
+    }
+
+    return render(
+        request,
+        "games/maaario/index.html",
+        context,
+    )

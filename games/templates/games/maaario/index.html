@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}マアアアリオ | ゲーム{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'games/maaario/maaario.css' %}">
+{% endblock %}
+
+{% block content %}
+<section id="jump-shell" class="jump-page"
+    data-score-url="{% url 'games:save_score' %}"
+    data-ranking-url="{% url 'games:ranking' 'maaario' %}"
+    data-csrf-token="{{ csrf_token }}">
+  <div class="jump-card">
+    <div class="jump-heading">
+      <a href="{% url 'games:game_list' %}" class="jump-back">← ゲーム一覧</a>
+      <button id="jump-fullscreen" type="button" class="jump-fullscreen">⛶ 全画面</button>
+      <button id="jump-exit-fullscreen" type="button" class="jump-exit-fullscreen" hidden>× 全画面終了</button>
+    </div>
+    <header class="jump-title-row">
+      <div class="jump-title-icon" aria-hidden="true">🍄</div>
+      <div><p class="jump-eyebrow">MINI GAME</p><h1>マアアアリオ</h1>
+        <p>コインを集めて、敵を飛び越え、ゴールを目指そう！</p></div>
+    </header>
+    <section class="jump-level-section" aria-label="難易度選択">
+      <div class="jump-section-heading"><div><span class="jump-caption">LEVEL SELECT</span><h2>難易度を選ぶ</h2></div>
+        <div class="jump-level-indicator">LEVEL <strong id="jump-selected-level">1</strong></div></div>
+      <div class="jump-level-buttons">
+        <button class="jump-level-button is-active" type="button" data-level="1" aria-pressed="true"><strong>1</strong><span>やさしい</span></button>
+        <button class="jump-level-button" type="button" data-level="2" aria-pressed="false"><strong>2</strong><span>ふつう</span></button>
+        <button class="jump-level-button" type="button" data-level="3" aria-pressed="false"><strong>3</strong><span>むずかしい</span></button>
+        <button class="jump-level-button" type="button" data-level="4" aria-pressed="false"><strong>4</strong><span>激ムズ</span></button>
+        <button class="jump-level-button" type="button" data-level="5" aria-pressed="false"><strong>5</strong><span>鬼</span></button>
+      </div>
+    </section>
+    <div class="jump-status" aria-live="polite">
+      <div><span>LEVEL</span><strong id="jump-current-level">1</strong></div>
+      <div><span>SCORE</span><strong id="jump-score">0</strong></div>
+      <div><span>残機</span><strong id="jump-lives">❤️❤️❤️</strong></div>
+      <div><span>TIME</span><strong id="jump-time">110</strong></div>
+    </div>
+    <div class="jump-stage" id="jump-stage">
+      <canvas id="jump-canvas" width="960" height="540" aria-label="横スクロールアクションゲームの画面"></canvas>
+      <div id="jump-overlay" class="jump-overlay">
+        <div class="jump-overlay-panel">
+          <div id="jump-overlay-icon" class="jump-overlay-icon">🍄</div>
+          <p id="jump-overlay-label" class="jump-overlay-label">READY?</p>
+          <h2 id="jump-overlay-title">LEVEL 1</h2>
+          <p id="jump-overlay-message">左右に動いてジャンプ！ コインを集めて旗まで進もう。</p>
+          <button id="jump-overlay-button" type="button" class="jump-primary">ゲームスタート</button>
+        </div>
+      </div>
+    </div>
+    <div class="jump-controls" aria-label="ゲーム操作">
+      <div class="jump-move-controls">
+        <button type="button" class="jump-direction" data-direction="left" aria-label="左に移動">◀</button>
+        <button type="button" class="jump-direction" data-direction="right" aria-label="右に移動">▶</button>
+      </div>
+      <button id="jump-action" type="button" class="jump-action" aria-label="ジャンプする">↑ ジャンプ</button>
+      <div class="jump-secondary-controls">
+        <button id="jump-pause" type="button" disabled>⏸ 一時停止</button>
+        <button id="jump-quit" type="button" disabled>やめる</button>
+      </div>
+    </div>
+    <p class="jump-hint">PC：← →／A D で移動、スペース・↑・W でジャンプ。スマホ：左右を長押し＋ジャンプ。</p>
+    <p id="jump-save-status" class="jump-save-status" role="status" aria-live="polite"></p>
+    <section class="jump-ranking" aria-labelledby="jump-ranking-title">
+      <div class="jump-ranking-header">
+        <div><span class="jump-caption">HIGH SCORES</span><h2 id="jump-ranking-title">🏆 LEVEL <span id="jump-ranking-level">1</span> ランキング</h2></div>
+        <div class="jump-best"><span>MY BEST</span><strong id="jump-personal-best">{% if personal_best is not None %}{{ personal_best }}{% else %}--{% endif %}</strong><small>点</small></div>
+      </div>
+      <ol id="jump-ranking-list" class="jump-ranking-list">
+        {% for item in ranking_entries %}
+        <li{% if item.is_me %} class="is-me"{% endif %}><span class="jump-rank-position">{{ item.rank }}</span><strong>{{ item.name }}</strong><span>{{ item.score }} 点</span></li>
+        {% empty %}<li class="jump-ranking-empty">まだ記録がない</li>{% endfor %}
+      </ol>
+      <p class="jump-ranking-note">各レベルの自己ベストを保存。クリア前の得点もランキング対象。</p>
+    </section>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'games/maaario/maaario.js' %}"></script>
+{% endblock %}

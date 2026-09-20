@@ -1,4 +1,4 @@
-/* 迷路チェイス：他のゲームへの影響を避けるため全クラスをmaze-で限定 */
+/* パッックマン：他のゲームへの影響を避けるため全クラスをmaze-で限定 */
 .maze-page {width:100%;padding:22px 12px 50px;box-sizing:border-box;color:#303448;}
 .maze-page * {box-sizing:border-box;}
 .maze-card {max-width:760px;margin:0 auto;}

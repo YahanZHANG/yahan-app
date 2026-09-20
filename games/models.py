@@ -5,6 +5,7 @@ from django.db import models
 class GameScore(models.Model):
 
     class Game(models.TextChoices):
+
         BLOCK_BREAKER = (
             "block_breaker",
             "ブロック崩し",
@@ -17,7 +18,12 @@ class GameScore(models.Model):
 
         MAZE_CHASE = (
             "maze_chase",
-            "迷路チェイス",
+            "パッックマン",
+        )
+
+        MAAARIO = (
+            "maaario",
+            "マアアアリオ",
         )
 
     user = models.ForeignKey(

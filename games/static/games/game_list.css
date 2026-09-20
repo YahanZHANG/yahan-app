@@ -253,7 +253,7 @@
         );
 }
 
-/* Maze chase */
+/* Pacccck Man */
 
 .games-card-maze {
 
@@ -262,6 +262,18 @@
             145deg,
             #e9f8ff 0%,
             #d9eaff 100%
+        );
+
+}
+
+/* Maaaario */
+.games-card-jump {
+
+    background:
+        linear-gradient(
+            145deg,
+            #eafaf0 0%,
+            #d3f2df 100%
         );
 
 }

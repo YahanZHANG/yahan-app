@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='gamescore',
             name='game',
-            field=models.CharField(choices=[('block_breaker', 'ブロック崩し'), ('tap_star', 'スタータップ'), ('maze_chase', '迷路チェイス')], max_length=30),
+            field=models.CharField(choices=[('block_breaker', 'ブロック崩し'), ('tap_star', 'スタータップ'), ('maze_chase', 'パッックマン')], max_length=30),
         ),
     ]
