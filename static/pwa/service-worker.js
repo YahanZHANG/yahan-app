@@ -14,9 +14,7 @@ self.addEventListener(
     (event) => {
 
         event.waitUntil(
-
             self.skipWaiting()
-
         );
 
     }
@@ -35,8 +33,77 @@ self.addEventListener(
     (event) => {
 
         event.waitUntil(
-
             self.clients.claim()
+        );
+
+    }
+
+);
+
+
+// =====================================================
+// Receive Push
+// =====================================================
+
+self.addEventListener(
+
+    "push",
+
+    (event) => {
+
+        let data = {};
+
+        try {
+
+            data = event.data
+                ? event.data.json()
+                : {};
+
+        } catch (error) {
+
+            data = {};
+
+        }
+
+
+        // Yahan News専用
+
+        const title = (
+            data.title
+            || "Yahan News"
+        );
+
+        const body = (
+            data.body
+            || "スイスニュースが更新されたよ！"
+        );
+
+
+        event.waitUntil(
+
+            self.registration.showNotification(
+
+                title,
+
+                {
+
+                    body: body,
+
+                    // Different update batches can
+                    // have separate notifications.
+
+                    tag: (
+                        "yahan-news-"
+                        + (data.batch_id || "update")
+                    ),
+
+                    data: {
+                        url: "/news/",
+                    },
+
+                }
+
+            )
 
         );
 
@@ -45,11 +112,73 @@ self.addEventListener(
 );
 
 
-/* =====================================================
-   Future features
+// =====================================================
+// Notification click
+// =====================================================
 
-   - Web Push notifications
-   - Notification click handling
+self.addEventListener(
 
-   No fetch interception or offline cache yet.
-   ===================================================== */
+    "notificationclick",
+
+    (event) => {
+
+        event.notification.close();
+
+
+        event.waitUntil(
+
+            (async () => {
+
+                const destination = (
+                    self.location.origin
+                    + "/news/"
+                );
+
+
+                const windows = (
+
+                    await self.clients.matchAll({
+
+                        type: "window",
+
+                        includeUncontrolled: true,
+
+                    })
+
+                );
+
+
+                for (const client of windows) {
+
+                    if (
+
+                        client.url.startsWith(
+                            self.location.origin
+                        )
+
+                    ) {
+
+                        await client.navigate(
+                            destination
+                        );
+
+                        await client.focus();
+
+                        return;
+
+                    }
+
+                }
+
+
+                await self.clients.openWindow(
+                    destination
+                );
+
+            })()
+
+        );
+
+    }
+
+);

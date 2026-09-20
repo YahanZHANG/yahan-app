@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    ニュース通知設定 | Yahan News
+{% endblock %}
+
+
+{% block content %}
+
+<div
+    style="
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 24px;
+    "
+>
+
+    <p>
+        YAHAN NEWS
+    </p>
+
+
+    <h1>
+        🔔 ニュース通知設定
+    </h1>
+
+
+    <p>
+        スイスニュースが更新されたら、
+        スマホにPush通知を届ける。
+    </p>
+
+
+    <p>
+        1日4回のニュース更新後、
+        新着記事がある場合に通知する。
+    </p>
+
+
+    <hr>
+
+
+    <form id="news-push-form">
+
+        {% csrf_token %}
+
+    </form>
+
+
+    <div
+        id="news-push-settings"
+
+        data-public-key="{{ vapid_public_key }}"
+
+        data-subscribe-url="{% url 'news_push_subscribe' %}"
+
+        data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+    >
+
+        <p id="news-push-status">
+            通知設定を確認中...
+        </p>
+
+
+        <button
+            type="button"
+            id="news-push-enable"
+            disabled
+        >
+            🔔 Push通知をONにする
+        </button>
+
+
+        <button
+            type="button"
+            id="news-push-disable"
+            hidden
+        >
+            Push通知をOFFにする
+        </button>
+
+    </div>
+
+
+    <hr>
+
+
+    <a href="{% url 'news:home' %}">
+        ← スイスニュースに戻る
+    </a>
+
+</div>
+
+
+{% load static %}
+
+<script
+    src="{% static 'news/push_settings.js' %}"
+    defer
+></script>
+
+{% endblock %}

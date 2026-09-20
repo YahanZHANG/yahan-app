@@ -1,4 +1,5 @@
 from . import pwa
+from news import push_views
 
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
@@ -41,6 +42,28 @@ urlpatterns = [
             next_page="/accounts/login/",
         ),
         name="logout",
+    ),
+
+    # =====================================================
+    # News Push
+    # =====================================================
+
+    path(
+        "news/notifications/",
+        push_views.push_settings,
+        name="news_push_settings",
+    ),
+
+    path(
+        "news/push/subscribe/",
+        push_views.subscribe,
+        name="news_push_subscribe",
+    ),
+
+    path(
+        "news/push/unsubscribe/",
+        push_views.unsubscribe,
+        name="news_push_unsubscribe",
     ),
 
     path(

@@ -311,3 +311,86 @@ class NewsDigest(models.Model):
             f"{self.digest_date} "
             f"{self.get_period_display()}"
         )
+
+# =========================================================
+# Yahan News Push Subscription
+# =========================================================
+
+from django.conf import settings as django_settings
+from django.db import models as django_models
+
+
+class NewsPushSubscription(django_models.Model):
+
+    user = django_models.ForeignKey(
+        django_settings.AUTH_USER_MODEL,
+        on_delete=django_models.CASCADE,
+        related_name="news_push_subscriptions",
+    )
+
+    endpoint = django_models.TextField(
+        unique=True,
+    )
+
+    p256dh = django_models.TextField()
+
+    auth = django_models.TextField()
+
+    created_at = django_models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = django_models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+
+        verbose_name = "ニュースPush登録"
+
+        verbose_name_plural = "ニュースPush登録"
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username} - "
+            f"Push subscription {self.pk}"
+        )
+
+# =========================================================
+# News Push Batch
+# =========================================================
+
+class NewsPushBatch(django_models.Model):
+
+    batch_key = django_models.CharField(
+        max_length=150,
+        unique=True,
+    )
+
+    started_at = django_models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    completed_at = django_models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    sent_count = django_models.PositiveIntegerField(
+        default=0,
+    )
+
+    failed_count = django_models.PositiveIntegerField(
+        default=0,
+    )
+
+    class Meta:
+
+        verbose_name = "ニュースPush送信履歴"
+
+        verbose_name_plural = "ニュースPush送信履歴"
+
+    def __str__(self):
+
+        return self.batch_key
