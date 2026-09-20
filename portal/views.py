@@ -1,3 +1,7 @@
+from django.db.models import Count
+from board.models import BoardPost
+from board.permissions import can_post_board
+
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
@@ -740,12 +744,48 @@ def home(request):
             }
         )
 
+    # =====================================================
+    # Board - Latest posts
+    # =====================================================
+
+    board_posts = (
+        BoardPost.objects
+        .select_related("author")
+        .annotate(
+            comment_count=Count("comments")
+        )
+        .order_by(
+            "-is_pinned",
+            "-created_at",
+        )[:3]
+    )
+
+    # =====================================================
+    # Context
+    # =====================================================
+
     context = {
+
         "can_use_feeding": can_use_feeding,
-        "can_view_analytics": can_view_analytics(request.user),
+
+        "can_view_analytics": can_view_analytics(
+            request.user
+        ),
+
         "profile": profile,
+
         "nickname_form": nickname_form,
+
         "visible_apps": visible_apps,
+
+        # 掲示板
+
+        "board_posts": board_posts,
+
+        "can_post_board": can_post_board(
+            request.user
+        ),
+
     }
 
     return render(

@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 
+{% load static %}
+{% load board_extras %}
+
+
 {% block title %}
     ホーム | yahan-app
 {% endblock %}
 
 
 {% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'board/board.css' %}"
+>
 
 <div class="portal-page">
 
@@ -78,10 +87,187 @@
 
     <main class="portal-main">
 
+
+        <!-- =====================================================
+            Board
+            ===================================================== -->
+
+        <section
+            class="portal-board"
+            aria-labelledby="portal-board-heading"
+        >
+
+            <!-- =============================================
+                 Section heading
+                 ============================================= -->
+
+            <div class="portal-section-heading">
+
+                <div>
+
+                    <p class="portal-section-eyebrow">
+                        UPDATES
+                    </p>
+
+                    <h2 id="portal-board-heading">
+                        掲示板
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 Notice feed
+                 ============================================= -->
+
+            <div class="portal-board-feed">
+
+                {% for post in board_posts %}
+
+                    <a
+                        href="{% url 'board:post_detail' post.pk %}"
+                        class="portal-board-item"
+                    >
+
+                        <!-- =================================
+                             Top
+                             ================================= -->
+
+                        <div class="portal-board-item-top">
+
+                            <div class="portal-board-tags">
+
+                                {% if post.is_pinned %}
+
+                                    <span class="portal-board-pin">
+                                        📌 固定
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if post.is_new %}
+
+                                    <span class="portal-board-new">
+                                        NEW
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <time class="portal-board-date">
+                                {{ post.created_at|date:"n.j" }}
+                            </time>
+
+                        </div>
+
+
+                        <!-- =================================
+                             Title
+                             ================================= -->
+
+                        <h3 class="portal-board-title">
+                            {{ post.title }}
+                        </h3>
+
+
+                        <!-- =================================
+                             Body
+                             ================================= -->
+
+                        <p class="portal-board-excerpt">
+                            {{ post.body|truncatechars:100 }}
+                        </p>
+
+
+                        <!-- =================================
+                             Meta
+                             ================================= -->
+
+                        <div class="portal-board-meta">
+
+                            <span>
+                                {{ post.author|board_name }}
+                            </span>
+
+                            <span class="portal-board-dot">
+                                ·
+                            </span>
+
+                            <span>
+                                💬 {{ post.comment_count }}
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                {% empty %}
+
+                    <!-- =====================================
+                         Empty state
+                         ===================================== -->
+
+                    <div class="portal-board-empty">
+
+                        <p>
+                            まだお知らせはありません。
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- =============================================
+                 Actions
+                 ============================================= -->
+
+            <div class="portal-board-actions">
+
+                {% if can_post_board %}
+
+                    <a
+                        href="{% url 'board:post_create' %}"
+                        class="portal-board-create"
+                    >
+                        ＋ 新しく投稿
+                    </a>
+
+                {% else %}
+
+                    <span></span>
+
+                {% endif %}
+
+
+                <a
+                    href="{% url 'board:post_list' %}"
+                    class="portal-board-view-all"
+                >
+                    すべて見る
+                    <span>→</span>
+                </a>
+
+            </div>
+
+        </section>
+
+         <!-- =====================================================
+             My Apps
+             ===================================================== -->
+
         <section
             class="portal-section"
             aria-labelledby="portal-apps-heading"
         >
+
 
             <!-- =============================================
                  Section heading

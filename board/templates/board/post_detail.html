@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load board_extras %}
+
+
+{% block title %}
+    {{ post.title }} | yahan-app
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'board/board.css' %}"
+>
+
+
+<div class="board-page">
+
+    <!-- =========================================
+         Back
+         ========================================= -->
+
+    <a
+        href="{% url 'board:post_list' %}"
+        class="board-back-link"
+    >
+        ← 掲示板に戻る
+    </a>
+
+
+    <!-- =========================================
+         Post
+         ========================================= -->
+
+    <article class="board-detail-card">
+
+        <div class="board-card-badges">
+
+            {% if post.is_pinned %}
+
+                <span class="board-pinned-badge">
+                    📌 固定のお知らせ
+                </span>
+
+            {% endif %}
+
+
+            {% if post.is_new %}
+
+                <span class="board-new-badge">
+                    NEW
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <h1>
+            {{ post.title }}
+        </h1>
+
+
+        <div class="board-detail-meta">
+
+            <span>
+                👤 {{ post.author|board_name }}
+            </span>
+
+            <span>
+                {{ post.created_at|date:"Y/m/d H:i" }}
+            </span>
+
+        </div>
+
+
+        <div class="board-detail-body">
+            {{ post.body|linebreaks }}
+        </div>
+
+
+        <!-- =====================================
+             Post management
+             ===================================== -->
+
+        {% if can_manage_post %}
+
+            <div class="board-management">
+
+                <a
+                    href="{% url 'board:post_edit' post.pk %}"
+                    class="board-secondary-button"
+                >
+                    ✏️ 編集
+                </a>
+
+
+                <form
+                    method="post"
+                    action="{% url 'board:post_delete' post.pk %}"
+                    onsubmit="return confirm('このお知らせを削除する？');"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="board-danger-button"
+                    >
+                        削除
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% endif %}
+
+    </article>
+
+
+    <!-- =========================================
+         Comments
+         ========================================= -->
+
+    <section
+        id="comments"
+        class="board-comments-section"
+    >
+
+        <h2>
+            💬 コメント
+            <span>
+                {{ comments|length }}
+            </span>
+        </h2>
+
+
+        <!-- =====================================
+             Comment list
+             ===================================== -->
+
+        <div class="board-comment-list">
+
+            {% for comment in comments %}
+
+                <div class="board-comment-card">
+
+                    <div class="board-comment-header">
+
+                        <strong>
+                            {{ comment.author|board_name }}
+                        </strong>
+
+                        <time>
+                            {{ comment.created_at|date:"Y/m/d H:i" }}
+                        </time>
+
+                    </div>
+
+
+                    <div class="board-comment-body">
+                        {{ comment.body|linebreaks }}
+                    </div>
+
+
+                    <!-- Comment deletion -->
+
+                    {% if user.is_superuser or comment.author == user %}
+
+                        <form
+                            method="post"
+                            action="{% url 'board:comment_delete' comment.pk %}"
+                            onsubmit="return confirm('このコメントを削除する？');"
+                            class="board-comment-delete-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="board-comment-delete"
+                            >
+                                削除
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+            {% empty %}
+
+                <div class="board-empty-comments">
+
+                    まだコメントはありません。
+                    最初のコメントを書いてみよう！
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =====================================
+             New comment
+             ===================================== -->
+
+        <form
+            method="post"
+            class="board-comment-form"
+        >
+
+            {% csrf_token %}
+
+            <h3>
+                コメントを書く
+            </h3>
+
+
+            {{ comment_form.body.errors }}
+
+            {{ comment_form.body }}
+
+
+            <div class="board-form-actions">
+
+                <button
+                    type="submit"
+                    class="board-primary-button"
+                >
+                    コメントを投稿 →
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+
+    {% if is_edit %}
+        お知らせを編集
+    {% else %}
+        新しいお知らせ
+    {% endif %}
+
+    | yahan-app
+
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'board/board.css' %}"
+>
+
+
+<div class="board-page">
+
+    <!-- =========================================
+         Back
+         ========================================= -->
+
+    <a
+        href="{% url 'board:post_list' %}"
+        class="board-back-link"
+    >
+        ← 掲示板に戻る
+    </a>
+
+
+    <!-- =========================================
+         Post form
+         ========================================= -->
+
+    <div class="board-form-card">
+
+        <p class="board-eyebrow">
+            COMMUNITY BOARD
+        </p>
+
+
+        {% if is_edit %}
+
+            <h1>
+                ✏️ お知らせを編集
+            </h1>
+
+        {% else %}
+
+            <h1>
+                ✨ 新しいお知らせ
+            </h1>
+
+        {% endif %}
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+
+            <!-- Title -->
+
+            <div class="board-field">
+
+                <label for="{{ form.title.id_for_label }}">
+                    タイトル
+                </label>
+
+                {{ form.title.errors }}
+
+                {{ form.title }}
+
+            </div>
+
+
+            <!-- Body -->
+
+            <div class="board-field">
+
+                <label for="{{ form.body.id_for_label }}">
+                    お知らせの内容
+                </label>
+
+                {{ form.body.errors }}
+
+                {{ form.body }}
+
+            </div>
+
+
+            <!-- Pin -->
+
+            <div class="board-pin-option">
+
+                {{ form.is_pinned }}
+
+                <label for="{{ form.is_pinned.id_for_label }}">
+
+                    <strong>
+                        📌 固定のお知らせにする
+                    </strong>
+
+                    <small>
+                        通常のお知らせより上に表示する
+                    </small>
+
+                </label>
+
+            </div>
+
+
+            <!-- Actions -->
+
+            <div class="board-form-actions">
+
+                <a
+                    href="{% url 'board:post_list' %}"
+                    class="board-secondary-button"
+                >
+                    キャンセル
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="board-primary-button"
+                >
+
+                    {% if is_edit %}
+
+                        変更を保存
+
+                    {% else %}
+
+                        お知らせを投稿 →
+
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
