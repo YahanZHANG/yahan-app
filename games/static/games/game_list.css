@@ -253,6 +253,19 @@
         );
 }
 
+/* Maze chase */
+
+.games-card-maze {
+
+    background:
+        linear-gradient(
+            145deg,
+            #e9f8ff 0%,
+            #d9eaff 100%
+        );
+
+}
+
 
 /* ========================================
    Card Top

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}迷路チェイス | ゲーム{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'games/maze_chase/maze_chase.css' %}">
+{% endblock %}
+
+{% block content %}
+<section
+    id="maze-shell"
+    class="maze-page"
+    data-score-url="{% url 'games:save_score' %}"
+    data-ranking-url="{% url 'games:ranking' 'maze_chase' %}"
+    data-csrf-token="{{ csrf_token }}"
+>
+    <div class="maze-card">
+        <div class="maze-heading">
+            <a class="maze-back" href="{% url 'games:game_list' %}">← ゲーム一覧</a>
+            <button id="maze-fullscreen" class="maze-fullscreen" type="button">⛶ 全画面</button>
+            <button id="maze-exit-fullscreen" class="maze-exit-fullscreen" type="button" hidden>× 全画面終了</button>
+        </div>
+
+        <header class="maze-title-row">
+            <div class="maze-title-icon" aria-hidden="true">🟡</div>
+            <div>
+                <p class="maze-eyebrow">MINI GAME</p>
+                <h1>迷路チェイス</h1>
+                <p>ドットを集めて、ゴーストから逃げよう！</p>
+            </div>
+        </header>
+
+        <section class="maze-level-section" aria-label="難易度選択">
+            <div class="maze-section-heading">
+                <div>
+                    <span class="maze-caption">LEVEL SELECT</span>
+                    <h2>難易度を選ぶ</h2>
+                </div>
+                <div class="maze-level-indicator">LEVEL <strong id="maze-selected-level">1</strong></div>
+            </div>
+            <div class="maze-level-buttons" id="maze-level-buttons">
+                <button class="maze-level-button is-active" type="button" data-level="1" aria-pressed="true"><strong>1</strong><span>やさしい</span></button>
+                <button class="maze-level-button" type="button" data-level="2" aria-pressed="false"><strong>2</strong><span>ふつう</span></button>
+                <button class="maze-level-button" type="button" data-level="3" aria-pressed="false"><strong>3</strong><span>むずかしい</span></button>
+                <button class="maze-level-button" type="button" data-level="4" aria-pressed="false"><strong>4</strong><span>激ムズ</span></button>
+                <button class="maze-level-button" type="button" data-level="5" aria-pressed="false"><strong>5</strong><span>鬼</span></button>
+            </div>
+        </section>
+
+        <div class="maze-status" aria-live="polite">
+            <div><span>LEVEL</span><strong id="maze-current-level">1</strong></div>
+            <div><span>SCORE</span><strong id="maze-score">0</strong></div>
+            <div><span>残機</span><strong id="maze-lives">❤️❤️❤️</strong></div>
+            <div><span>ドット</span><strong id="maze-dots">0</strong></div>
+        </div>
+
+        <div class="maze-board-wrap" id="maze-board-wrap">
+            <canvas id="maze-canvas" width="570" height="570" aria-label="迷路チェイスのゲーム画面"></canvas>
+            <div id="maze-overlay" class="maze-overlay">
+                <div class="maze-overlay-panel">
+                    <div id="maze-overlay-icon" class="maze-overlay-icon">🟡</div>
+                    <p id="maze-overlay-label" class="maze-overlay-label">READY?</p>
+                    <h2 id="maze-overlay-title">LEVEL 1</h2>
+                    <p id="maze-overlay-message">黄色いドットを全部集めよう。大きなドットで敵が青くなる！</p>
+                    <button id="maze-overlay-button" class="maze-primary-button" type="button">ゲームスタート</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="maze-mobile-controls" aria-label="移動操作">
+            <div class="maze-dpad">
+                <button class="maze-direction maze-up" data-direction="up" type="button" aria-label="上に移動">▲</button>
+                <button class="maze-direction maze-left" data-direction="left" type="button" aria-label="左に移動">◀</button>
+                <button class="maze-direction maze-down" data-direction="down" type="button" aria-label="下に移動">▼</button>
+                <button class="maze-direction maze-right" data-direction="right" type="button" aria-label="右に移動">▶</button>
+            </div>
+            <div class="maze-action-controls">
+                <button id="maze-pause" type="button" disabled>⏸ 一時停止</button>
+                <button id="maze-quit" type="button" disabled>やめる</button>
+            </div>
+        </div>
+
+        <p class="maze-hint">PC：矢印キー・WASD ／ スマホ：方向ボタン・迷路上のスワイプ</p>
+        <p id="maze-save-status" class="maze-save-status" role="status" aria-live="polite"></p>
+
+        <section class="maze-ranking" aria-labelledby="maze-ranking-title">
+            <div class="maze-ranking-header">
+                <div>
+                    <span class="maze-caption">HIGH SCORES</span>
+                    <h2 id="maze-ranking-title">🏆 LEVEL <span id="maze-ranking-level">1</span> ランキング</h2>
+                </div>
+                <div class="maze-best"><span>MY BEST</span><strong id="maze-personal-best">{% if personal_best is not None %}{{ personal_best }}{% else %}--{% endif %}</strong><small>点</small></div>
+            </div>
+            <ol id="maze-ranking-list" class="maze-ranking-list">
+                {% for item in ranking_entries %}
+                <li{% if item.is_me %} class="is-me"{% endif %}>
+                    <span class="maze-rank-position">{{ item.rank }}</span>
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.score }} 点</span>
+                </li>
+                {% empty %}
+                <li class="maze-ranking-empty">まだ記録がない</li>
+                {% endfor %}
+            </ol>
+            <p class="maze-ranking-note">各レベルでの自己ベストを保存。クリア前の得点も記録される。</p>
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="{% static 'games/maze_chase/maze_chase.js' %}"></script>
+{% endblock %}

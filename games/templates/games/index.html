@@ -3,125 +3,58 @@
 
 {% block title %}ゲーム | Yahan App{% endblock %}
 
-
 {% block extra_css %}
-<link
-    rel="stylesheet"
-    href="{% static 'games/game_list.css' %}"
->
+<link rel="stylesheet" href="{% static 'games/game_list.css' %}">
 {% endblock %}
 
-
 {% block content %}
-
 <section class="games-page">
-
     <div class="games-page-nav">
-        <a href="/" class="games-back-button">
-            ← ポータルに戻る
-        </a>
+        <a href="/" class="games-back-button">← ポータルに戻る</a>
     </div>
 
-
-    <!-- Header -->
     <div class="games-hero">
-
         <div class="games-hero-copy">
-
-            <p class="games-eyebrow">
-                MINI GAMES
-            </p>
-
-            <h1 class="games-title">
-                ミニゲーム
-            </h1>
-
+            <p class="games-eyebrow">MINI GAMES</p>
+            <h1 class="games-title">ミニゲーム</h1>
         </div>
-
-        <div
-            class="games-hero-decoration"
-            aria-hidden="true"
-        >
-            🎮
-        </div>
-
+        <div class="games-hero-decoration" aria-hidden="true">🎮</div>
     </div>
 
-
-    <!-- Game cards -->
     <div class="games-grid">
-
-        <!-- Block Breaker -->
-        <a
-            href="{% url 'games:block_breaker' %}"
-            class="games-card games-card-block"
-        >
-
+        <a href="{% url 'games:block_breaker' %}" class="games-card games-card-block">
             <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    🧱
-                </div>
-
-                <span class="games-card-badge">
-                    ARCADE
-                </span>
-
+                <div class="games-card-icon">🧱</div>
+                <span class="games-card-badge">ARCADE</span>
             </div>
-
-
             <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    ブロック崩し
-                </h2>
-
-                <p class="games-card-description">
-                    バーでボールを跳ね返して、
-                    ブロックを全部壊そう。
-                </p>
-
+                <h2 class="games-card-title">ブロック崩し</h2>
+                <p class="games-card-description">バーでボールを跳ね返して、ブロックを全部壊そう。</p>
             </div>
-
         </a>
 
-
-        <!-- Star Tap -->
-        <a
-            href="{% url 'games:tap_star' %}"
-            class="games-card games-card-star"
-        >
-
+        <a href="{% url 'games:tap_star' %}" class="games-card games-card-star">
             <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    ⭐
-                </div>
-
-                <span class="games-card-badge">
-                    30 SEC
-                </span>
-
+                <div class="games-card-icon">⭐</div>
+                <span class="games-card-badge">30 SEC</span>
             </div>
-
-
             <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    スタータップ
-                </h2>
-
-                <p class="games-card-description">
-                    次々に現れる星をタップ。
-                    30秒で何回押せるかな？
-                </p>
-
+                <h2 class="games-card-title">スタータップ</h2>
+                <p class="games-card-description">次々に現れる星をタップ。30秒で何回押せるかな？</p>
             </div>
-
         </a>
 
+        <!-- New: Maze Chase -->
+        <a href="{% url 'games:maze_chase' %}" class="games-card games-card-maze">
+            <div class="games-card-top">
+                <div class="games-card-icon">🟡</div>
+                <span class="games-card-badge">MAZE</span>
+            </div>
+            <div class="games-card-body">
+                <h2 class="games-card-title">迷路チェイス</h2>
+                <p class="games-card-description">ドットを集めて、ゴーストから逃げよう。5つの迷路に挑戦！</p>
+            </div>
+        </a>
     </div>
-
 </section>
-
 {% endblock %}

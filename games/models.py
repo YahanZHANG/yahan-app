@@ -15,6 +15,11 @@ class GameScore(models.Model):
             "スタータップ",
         )
 
+        MAZE_CHASE = (
+            "maze_chase",
+            "迷路チェイス",
+        )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -26,45 +31,23 @@ class GameScore(models.Model):
         choices=Game.choices,
     )
 
-    # ブロック崩しでは 0
-    # スタータップでは 1〜5
-    level = models.PositiveSmallIntegerField(
-        default=0,
-    )
+    # ブロック崩しでは0、スタータップと迷路チェイスでは1〜5
+    level = models.PositiveSmallIntegerField(default=0)
 
     # 各ユーザーの自己ベストだけ保存する
-    score = models.PositiveIntegerField(
-        default=0,
-    )
+    score = models.PositiveIntegerField(default=0)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=[
-                    "user",
-                    "game",
-                    "level",
-                ],
+                fields=["user", "game", "level"],
                 name="unique_game_best_score",
             ),
         ]
-
-        ordering = [
-            "-score",
-            "updated_at",
-        ]
+        ordering = ["-score", "updated_at"]
 
     def __str__(self):
-        return (
-            f"{self.user} - "
-            f"{self.get_game_display()} - "
-            f"{self.score}"
-        )
+        return f"{self.user} - {self.get_game_display()} - {self.score}"
