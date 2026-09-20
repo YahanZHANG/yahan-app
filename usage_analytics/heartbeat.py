@@ -28,7 +28,7 @@ from .permissions import can_view_analytics
 # Settings
 # =========================================================
 
-ONLINE_TIMEOUT_SECONDS = 20
+ONLINE_TIMEOUT_SECONDS = 45
 
 APP_LABELS = dict(
     UsageEvent.AppKey.choices

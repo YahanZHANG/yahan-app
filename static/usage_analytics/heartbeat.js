@@ -11,7 +11,7 @@
     // Configuration
     // =================================================
 
-    const HEARTBEAT_INTERVAL = 5000;
+    const HEARTBEAT_INTERVAL = 15000;
 
     const TAB_STORAGE_KEY =
         "yahan_heartbeat_tab_id";
