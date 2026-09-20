@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings as django_settings
 from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import (
     get_object_or_404,
@@ -398,6 +399,7 @@ def settings_view(request):
         {
             "form": form,
             "preference": preference,
+            "vapid_public_key": django_settings.VAPID_PUBLIC_KEY,
         },
     )
 

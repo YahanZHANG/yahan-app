@@ -2,13 +2,11 @@ import json
 
 from urllib.parse import urlsplit
 
-from django.conf import settings
-
 from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse
 
-from django.shortcuts import render
+from django.shortcuts import redirect
 
 from django.views.decorators.http import (
     require_GET,
@@ -19,21 +17,19 @@ from .models import NewsPushSubscription
 
 
 # =========================================================
-# Settings page
+# Old notification settings URL
 # =========================================================
 
 @login_required
 @require_GET
 def push_settings(request):
+    """
+    旧 /news/notifications/ から
+    Newsの通常設定画面へ移動する。
+    """
 
-    return render(
-        request,
-        "news/push_settings.html",
-        {
-            "vapid_public_key": (
-                settings.VAPID_PUBLIC_KEY
-            ),
-        },
+    return redirect(
+        "news:settings"
     )
 
 
@@ -42,6 +38,9 @@ def push_settings(request):
 # =========================================================
 
 def parse_subscription(request):
+    """
+    ブラウザから送られたPush購読情報を検証する。
+    """
 
     try:
 
@@ -58,6 +57,11 @@ def parse_subscription(request):
 
     if not isinstance(data, dict):
         return None
+
+
+    # -----------------------------------------------------
+    # Required fields
+    # -----------------------------------------------------
 
     endpoint = data.get(
         "endpoint"
@@ -91,6 +95,11 @@ def parse_subscription(request):
     ):
         return None
 
+
+    # -----------------------------------------------------
+    # Length validation
+    # -----------------------------------------------------
+
     if (
         not endpoint
         or not p256dh
@@ -101,17 +110,26 @@ def parse_subscription(request):
     ):
         return None
 
-    # Allow trusted Web Push providers only.
-    # This also prevents arbitrary server-side URLs
-    # from being registered as push endpoints.
 
-    parsed = urlsplit(
-        endpoint
-    )
+    # -----------------------------------------------------
+    # Trusted Push providers
+    # -----------------------------------------------------
 
-    hostname = (
-        parsed.hostname or ""
-    ).lower()
+    try:
+
+        parsed = urlsplit(
+            endpoint
+        )
+
+        hostname = (
+            parsed.hostname or ""
+        ).lower()
+
+        port = parsed.port
+
+    except ValueError:
+
+        return None
 
     trusted_endpoint = (
 
@@ -134,9 +152,14 @@ def parse_subscription(request):
         or not trusted_endpoint
         or parsed.username is not None
         or parsed.password is not None
-        or parsed.port not in (None, 443)
+        or port not in (None, 443)
     ):
         return None
+
+
+    # -----------------------------------------------------
+    # Validated data
+    # -----------------------------------------------------
 
     return {
         "endpoint": endpoint,
@@ -152,6 +175,10 @@ def parse_subscription(request):
 @login_required
 @require_POST
 def subscribe(request):
+    """
+    ログイン中のユーザーの端末を
+    Push通知の送信先として登録する。
+    """
 
     data = parse_subscription(
         request
@@ -160,13 +187,15 @@ def subscribe(request):
     if data is None:
 
         return JsonResponse(
+
             {
-                "error": (
-                    "Invalid subscription."
-                ),
+                "error": "Invalid subscription.",
             },
+
             status=400,
+
         )
+
 
     NewsPushSubscription.objects.update_or_create(
 
@@ -184,6 +213,7 @@ def subscribe(request):
 
     )
 
+
     return JsonResponse(
         {
             "success": True,
@@ -198,6 +228,10 @@ def subscribe(request):
 @login_required
 @require_POST
 def unsubscribe(request):
+    """
+    ログイン中のユーザーの
+    指定された端末の登録を解除する。
+    """
 
     try:
 
@@ -205,28 +239,55 @@ def unsubscribe(request):
             request.body
         )
 
-        endpoint = data.get(
-            "endpoint"
-        )
-
     except (
         ValueError,
         UnicodeDecodeError,
-        AttributeError,
     ):
 
-        endpoint = None
+        return JsonResponse(
 
-    if not isinstance(endpoint, str):
+            {
+                "error": "Invalid endpoint.",
+            },
+
+            status=400,
+
+        )
+
+
+    if not isinstance(data, dict):
 
         return JsonResponse(
+
             {
-                "error": (
-                    "Invalid endpoint."
-                ),
+                "error": "Invalid endpoint.",
             },
+
             status=400,
+
         )
+
+
+    endpoint = data.get(
+        "endpoint"
+    )
+
+    if (
+        not isinstance(endpoint, str)
+        or not endpoint
+        or len(endpoint) > 2048
+    ):
+
+        return JsonResponse(
+
+            {
+                "error": "Invalid endpoint.",
+            },
+
+            status=400,
+
+        )
+
 
     NewsPushSubscription.objects.filter(
 
@@ -235,6 +296,7 @@ def unsubscribe(request):
         endpoint=endpoint,
 
     ).delete()
+
 
     return JsonResponse(
         {

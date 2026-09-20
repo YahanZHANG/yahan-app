@@ -1,169 +1,285 @@
 {% extends "news/base.html" %}
+{% load static %}
+
 
 {% block title %}
-設定 | Swiss News
+    設定 | Yahan News
 {% endblock %}
 
 
 {% block news_content %}
 
-<section class="news-page-heading">
+<main class="news-main news-settings-page">
 
-    <div>
+    <!-- =========================
+         ご利用について
+    ========================= -->
 
-        <div class="news-page-kicker">
-            SETTINGS
+    <section class="news-settings-guide">
+
+        <h3>
+            💡 ご利用について
+        </h3>
+
+        <p>
+            ニュースは原則7日間表示されます。
+            お気に入りの記事は削除されず、
+            最大10件まで保存できます。
+        </p>
+
+        <p>
+            ニュースは毎日4回、
+            6時・11時・16時・21時（スイス時間）に更新されます。
+        </p>
+
+        <p>
+            AIによる翻訳・要約のため、
+            内容に誤りや不足が含まれる場合があります。
+            原文リンクをご参考ください。
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+        Push通知
+    ========================= -->
+
+    <section class="news-settings-card news-push-inline">
+
+        <div
+            id="news-push-settings"
+            data-public-key="{{ vapid_public_key }}"
+            data-csrf-token="{{ csrf_token }}"
+            data-subscribe-url="{% url 'news_push_subscribe' %}"
+            data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+        >
+
+            <button
+                type="button"
+                id="news-push-toggle"
+                class="news-push-toggle-row"
+                aria-pressed="false"
+                aria-label="ニュース更新通知"
+                disabled
+            >
+
+                <span class="news-push-toggle-copy">
+
+                    <strong>
+                        通知
+                    </strong>
+
+                    <small>
+        毎日4回、ニュースの更新後に新着記事があれば通知します。
+    </small>
+
+</span>
+
+                <span
+                    class="news-switch"
+                    aria-hidden="true"
+                >
+                    <span class="news-slider"></span>
+                </span>
+
+                <!-- JavaScriptがON/OFF状態を更新するために残す -->
+                <span
+                    id="news-push-toggle-state"
+                    class="news-push-visually-hidden"
+                >
+                    …
+                </span>
+
+            </button>
+
+            <!-- エラー・処理状況の通知用に残す -->
+            <p
+                id="news-push-status"
+                class="news-push-status"
+                role="status"
+                aria-live="polite"
+            >
+                通知設定を確認中...
+            </p>
+
         </div>
 
-        <h2>
-            設定
-        </h2>
+    </section>
 
-    </div>
+    <p> </p>
 
-</section>
+    <!-- =========================
+         既存のニュース設定
+    ========================= -->
+
+    <form
+        method="post"
+        action="{% url 'news:settings' %}"
+        class="news-settings-form"
+    >
+
+        {% csrf_token %}
 
 
-<form
-    method="post"
-    class="news-settings-form"
->
+        <!-- 表示言語 -->
 
-    {% csrf_token %}
-
-        <section class="news-settings-guide">
+        <section class="news-settings-card">
 
             <h3>
-                ご利用について
+                表示言語
             </h3>
 
-            <p>
-                ニュースは原則7日間表示されます。
-                お気に入りの記事は削除されず、
-                最大10件まで保存できます。
-            </p>
+            <div class="news-radio-list">
 
-            <p>
-                ニュースは毎日4回、
-                6時・11時・16時・21時（スイス時間）に更新されます。
-            </p>
+                {% for radio in form.display_language %}
 
-            <p>
-                AIによる翻訳・要約のため、
-                内容に誤りや不足が含まれる場合があります。
-                詳しくは原文リンクをご確認のうえ、
-                必要に応じてGoogle翻訳などをご利用ください。
-            </p>
+                    <label class="news-radio-option">
+
+                        {{ radio.tag }}
+
+                        <span>
+                            {{ radio.choice_label }}
+                        </span>
+
+                    </label>
+
+                {% endfor %}
+
+            </div>
+
+            {% for error in form.display_language.errors %}
+
+                <p class="news-message news-message-error">
+                    {{ error }}
+                </p>
+
+            {% endfor %}
 
         </section>
 
 
-    <section class="news-settings-card">
+        <!-- 文字サイズ -->
 
-        <h3>
-            表示言語
-        </h3>
+        <section class="news-settings-card">
 
-        <div class="news-radio-list">
+            <h3>
+                文字サイズ
+            </h3>
 
-            {% for radio in form.display_language %}
+            <div class="news-radio-list">
 
-                <label class="news-radio-option">
+                {% for radio in form.font_size %}
 
-                    {{ radio.tag }}
+                    <label class="news-radio-option">
 
-                    <span>
-                        {{ radio.choice_label }}
-                    </span>
+                        {{ radio.tag }}
 
-                </label>
+                        <span>
+                            {{ radio.choice_label }}
+                        </span>
 
-            {% endfor %}
+                    </label>
 
-        </div>
+                {% endfor %}
 
-    </section>
+            </div>
 
+            {% for error in form.font_size.errors %}
 
-    <section class="news-settings-card">
-
-        <h3>
-            文字サイズ
-        </h3>
-
-        <div class="news-radio-list">
-
-            {% for radio in form.font_size %}
-
-                <label class="news-radio-option">
-
-                    {{ radio.tag }}
-
-                    <span>
-                        {{ radio.choice_label }}
-                    </span>
-
-                </label>
+                <p class="news-message news-message-error">
+                    {{ error }}
+                </p>
 
             {% endfor %}
 
-        </div>
-
-    </section>
+        </section>
 
 
-    <section class="news-settings-card">
+        <!-- 表示するニューステーマ -->
 
-        <div class="news-setting-heading">
+        <section class="news-settings-card">
 
-            <div>
+            <div class="news-setting-heading">
 
                 <h3>
-                    表示するテーマ
+                    表示するニューステーマ
                 </h3>
 
                 <p>
-                    HOMEに表示したいニュースを選択
+                    興味のあるテーマを選んでね。
                 </p>
 
             </div>
 
-        </div>
+            <div class="news-toggle-list">
 
+                {% for checkbox in form.enabled_topics %}
 
-        <div class="news-toggle-list">
+                    <label class="news-toggle-row">
 
-            {% for checkbox in form.enabled_topics %}
+                        <span>
+                            {{ checkbox.choice_label }}
+                        </span>
 
-                <label class="news-toggle-row">
+                        <span class="news-switch">
 
-                    <span>
-                        {{ checkbox.choice_label }}
-                    </span>
+                            {{ checkbox.tag }}
 
-                    <span class="news-switch">
+                            <span
+                                class="news-slider"
+                                aria-hidden="true"
+                            ></span>
 
-                        {{ checkbox.tag }}
+                        </span>
 
-                        <span class="news-slider"></span>
+                    </label>
 
-                    </span>
+                {% endfor %}
 
-                </label>
+            </div>
+
+            {% for error in form.enabled_topics.errors %}
+
+                <p class="news-message news-message-error">
+                    {{ error }}
+                </p>
 
             {% endfor %}
 
-        </div>
+        </section>
 
-    </section>
 
-    <button
-        type="submit"
-        class="news-save-button"
-    >
-        設定を保存
-    </button>
+        <!-- フォームのエラー -->
 
-</form>
+        {% if form.non_field_errors %}
+
+            <div class="news-message news-message-error">
+
+                {{ form.non_field_errors }}
+
+            </div>
+
+        {% endif %}
+
+
+        <button
+            type="submit"
+            class="news-save-button"
+        >
+            設定を保存
+        </button>
+
+    </form>
+
+
+
+</main>
+
+
+<script
+    src="{% static 'news/push_toggle.js' %}"
+    defer
+></script>
 
 {% endblock %}

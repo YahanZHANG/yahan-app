@@ -1,99 +1,235 @@
 {% extends "base.html" %}
+{% load static %}
 
 
 {% block title %}
-    ニュース通知設定 | Yahan News
+    通知設定 | Yahan News
 {% endblock %}
 
 
 {% block content %}
 
-<div
-    style="
-        max-width: 600px;
-        margin: 30px auto;
-        padding: 24px;
-    "
->
+<div class="news-app news-push-page">
 
-    <p>
-        YAHAN NEWS
-    </p>
+    <!-- =========================
+         Header
+    ========================= -->
 
+    <header class="news-header">
 
-    <h1>
-        🔔 ニュース通知設定
-    </h1>
+        <div class="news-header-copy">
 
+            <a
+                href="{% url 'news:home' %}"
+                class="news-back-link"
+            >
+                ← スイスニュースに戻る
+            </a>
 
-    <p>
-        スイスニュースが更新されたら、
-        スマホにPush通知を届ける。
-    </p>
+            <div class="news-eyebrow">
+                YAHAN NEWS
+            </div>
 
+            <h1>
+                通知設定
+            </h1>
 
-    <p>
-        1日4回のニュース更新後、
-        新着記事がある場合に通知する。
-    </p>
+            <p>
+                スイスのニュースを、もっと身近に。
+            </p>
 
+        </div>
 
-    <hr>
-
-
-    <form id="news-push-form">
-
-        {% csrf_token %}
-
-    </form>
+    </header>
 
 
-    <div
-        id="news-push-settings"
+    <!-- =========================
+         Main
+    ========================= -->
 
-        data-public-key="{{ vapid_public_key }}"
+    <main class="news-main">
 
-        data-subscribe-url="{% url 'news_push_subscribe' %}"
+        <section class="news-push-intro">
 
-        data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
-    >
+            <div
+                class="news-push-intro-icon"
+                aria-hidden="true"
+            >
+                🔔
+            </div>
 
-        <p id="news-push-status">
-            通知設定を確認中...
-        </p>
+            <div class="news-page-kicker">
+                NEWS NOTIFICATIONS
+            </div>
+
+            <h2>
+                新しいニュースを<br>
+                お知らせするよ
+            </h2>
+
+            <p>
+                スイスニュースが更新されたら、
+                スマホやパソコンにお知らせ。
+                気になるニュースを見逃さずに
+                チェックできるよ。
+            </p>
+
+            <div class="news-push-frequency">
+
+                <span aria-hidden="true">
+                    📰
+                </span>
+
+                <span>
+                    1日4回の更新後、
+                    新着記事があるときに通知
+                </span>
+
+            </div>
+
+        </section>
 
 
-        <button
-            type="button"
-            id="news-push-enable"
-            disabled
+        <!-- =========================
+             Push settings
+        ========================= -->
+
+        <section class="news-settings-card news-push-card">
+
+            <div class="news-push-card-heading">
+
+                <div>
+
+                    <div class="news-page-kicker">
+                        YOUR PREFERENCES
+                    </div>
+
+                    <h3>
+                        Push通知
+                    </h3>
+
+                </div>
+
+                <span
+                    class="news-push-card-icon"
+                    aria-hidden="true"
+                >
+                    ✨
+                </span>
+
+            </div>
+
+
+            <p class="news-push-card-description">
+                この端末で受け取る通知を
+                いつでもON・OFFできるよ。
+            </p>
+
+
+            <form id="news-push-form">
+
+                {% csrf_token %}
+
+            </form>
+
+
+            <div
+                id="news-push-settings"
+
+                data-public-key="{{ vapid_public_key }}"
+
+                data-subscribe-url="{% url 'news_push_subscribe' %}"
+
+                data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+            >
+
+                <div
+                    class="news-push-status"
+                    role="status"
+                    aria-live="polite"
+                >
+
+                    <span
+                        class="news-push-status-dot"
+                        aria-hidden="true"
+                    ></span>
+
+                    <p id="news-push-status">
+                        通知設定を確認中...
+                    </p>
+
+                </div>
+
+
+                <div class="news-push-actions">
+
+                    <button
+                        type="button"
+                        id="news-push-enable"
+                        class="news-push-button news-push-button-primary"
+                        disabled
+                    >
+                        🔔 Push通知をONにする
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="news-push-disable"
+                        class="news-push-button news-push-button-secondary"
+                        hidden
+                    >
+                        Push通知をOFFにする
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             Guide
+        ========================= -->
+
+        <section class="news-settings-guide news-push-guide">
+
+            <h3>
+                💡 通知について
+            </h3>
+
+            <p>
+                通知をONにすると、
+                ニュース更新後に新着記事がある場合、
+                この端末にお知らせするよ。
+            </p>
+
+            <p>
+                iPhoneでは、
+                Yahan-appをホーム画面に追加して、
+                そのアイコンから開いてね。
+            </p>
+
+            <p>
+                通知の表示には、
+                端末やブラウザ側での許可も必要だよ。
+            </p>
+
+        </section>
+
+
+        <a
+            href="{% url 'news:home' %}"
+            class="news-push-bottom-link"
         >
-            🔔 Push通知をONにする
-        </button>
+            ← ニュースに戻る
+        </a>
 
-
-        <button
-            type="button"
-            id="news-push-disable"
-            hidden
-        >
-            Push通知をOFFにする
-        </button>
-
-    </div>
-
-
-    <hr>
-
-
-    <a href="{% url 'news:home' %}">
-        ← スイスニュースに戻る
-    </a>
+    </main>
 
 </div>
 
-
-{% load static %}
 
 <script
     src="{% static 'news/push_settings.js' %}"

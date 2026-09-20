@@ -23,6 +23,7 @@
         </a>
 
         <div class="news-header-copy">
+
             <div class="news-eyebrow">
                 SWITZERLAND
             </div>
@@ -66,6 +67,10 @@
 
     <nav class="news-bottom-nav">
 
+        <!-- =========================
+             HOME
+        ========================= -->
+
         <a
             href="{% url 'news:home' %}"
             class="
@@ -75,6 +80,7 @@
                 {% endif %}
             "
         >
+
             <span class="news-nav-icon">
                 🏠
             </span>
@@ -82,8 +88,13 @@
             <span>
                 HOME
             </span>
+
         </a>
 
+
+        <!-- =========================
+             テーマ別
+        ========================= -->
 
         <a
             href="{% url 'news:topic_list' %}"
@@ -94,6 +105,7 @@
                 {% endif %}
             "
         >
+
             <span class="news-nav-icon">
                 ▦
             </span>
@@ -101,27 +113,38 @@
             <span>
                 テーマ別
             </span>
+
         </a>
 
 
+        <!-- =========================
+             過去のまとめ
+        ========================= -->
+
         <a
-            href="{% url 'news:favorites' %}"
+            href="{% url 'news:digest_list' %}"
             class="
                 news-nav-item
-                {% if request.resolver_match.url_name == 'favorites' %}
+                {% if request.resolver_match.url_name == 'digest_list' %}
                     is-active
                 {% endif %}
             "
         >
+
             <span class="news-nav-icon">
-                ☆
+                📰
             </span>
 
             <span>
-                お気に入り
+                過去のまとめ
             </span>
+
         </a>
 
+
+        <!-- =========================
+             設定
+        ========================= -->
 
         <a
             href="{% url 'news:settings' %}"
@@ -132,6 +155,7 @@
                 {% endif %}
             "
         >
+
             <span class="news-nav-icon">
                 ⚙
             </span>
@@ -139,6 +163,7 @@
             <span>
                 設定
             </span>
+
         </a>
 
     </nav>
