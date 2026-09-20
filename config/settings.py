@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "recipes.apps.RecipesConfig",
     "news.apps.NewsConfig",
 
-    # 掲示板
+    # お知らせ
     "board.apps.BoardConfig",
 
     "usage_analytics.apps.UsageAnalyticsConfig",

@@ -778,7 +778,7 @@ def home(request):
 
         "visible_apps": visible_apps,
 
-        # 掲示板
+        # お知らせ
 
         "board_posts": board_posts,
 
