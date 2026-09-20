@@ -1,329 +1,248 @@
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block title %}ホーム | yahan-app{% endblock %}
-
-    {% block content %}
-
-    <div class="portal-page">
-
-        <!-- =====================================================
-            Hero
-            ===================================================== -->
-
-        <header class="portal-hero">
-
-            <div
-                class="portal-hero-decoration portal-decoration-one"
-                aria-hidden="true"
-            ></div>
-
-            <div
-                class="portal-hero-decoration portal-decoration-two"
-                aria-hidden="true"
-            ></div>
+{% block title %}
+    ホーム | yahan-app
+{% endblock %}
 
 
-            <div class="portal-hero-content">
+{% block content %}
 
-                <div class="portal-brand-row">
+<div class="portal-page">
 
-                    <div
-                        class="portal-brand-icon"
-                        aria-hidden="true"
-                    >
-                        Y
-                    </div>
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
+    <header class="portal-hero portal-hero-compact">
+
+        <!-- =============================================
+             Decorations
+             ============================================= -->
+
+        <div
+            class="
+                portal-hero-decoration
+                portal-decoration-one
+            "
+            aria-hidden="true"
+        ></div>
 
 
-                    <div>
+        <div
+            class="
+                portal-hero-decoration
+                portal-decoration-two
+            "
+            aria-hidden="true"
+        ></div>
 
-                        <p class="portal-eyebrow">
-                            APP HUB
-                        </p>
 
-                        <h1>
-                            yahan-app
-                        </h1>
+        <!-- =============================================
+             Brand
+             ============================================= -->
 
-                    </div>
+        <div class="portal-hero-content">
+
+            <div class="portal-brand-row">
+
+                <div
+                    class="portal-brand-icon"
+                    aria-hidden="true"
+                >
+                    Y
+                </div>
+
+
+                <div>
+
+                    <p class="portal-eyebrow">
+                        APP HUB
+                    </p>
+
+                    <h1>
+                        yahan-app
+                    </h1>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
+    <main class="portal-main">
+
+        <section
+            class="portal-section"
+            aria-labelledby="portal-apps-heading"
+        >
+
+            <!-- =============================================
+                 Section heading
+                 ============================================= -->
+
+            <div class="portal-section-heading">
+
+                <div>
+
+                    <p class="portal-section-eyebrow">
+                        YOUR APPS
+                    </p>
+
+                    <h2 id="portal-apps-heading">
+                        マイアプリ
+                    </h2>
 
                 </div>
 
 
-                <p class="portal-hero-description">
-                    いろんなアプリを作ってみた～
-                </p>
+                <!-- =========================================
+                     Actions
+                     ========================================= -->
+
+                <div class="portal-heading-actions">
+
+                    <!-- =====================================
+                         Analytics
+                         ===================================== -->
+
+                    {% if can_view_analytics %}
+
+                        <a
+                            href="{% url 'usage_analytics:dashboard' %}"
+                            class="portal-manage-apps-button"
+                        >
+                            📊 利用状況
+                        </a>
+
+                    {% endif %}
 
 
-                {% if user.is_authenticated %}
+                    <!-- =====================================
+                         App management
+                         ===================================== -->
 
-                    <div class="portal-user-area">
+                    <a
+                        href="{% url 'portal:manage_apps' %}"
+                        class="portal-manage-apps-button"
+                    >
+                        ⚙ アプリを管理
+                    </a>
 
-                        <!-- =================================================
-                            Logged-in user
-                            ================================================= -->
-
-                        <div class="portal-user-row">
-
-                            <div
-                                class="portal-user-avatar"
-                                aria-hidden="true"
-                            >
-                                {{ profile.display_name|first|upper }}
-                            </div>
-
-
-                            <div class="portal-user-copy">
-
-                                <span>
-                                    ログイン中
-                                </span>
-
-                                <strong>
-                                    {{ profile.display_name }}
-                                </strong>
-
-                                <small>
-                                    ID: {{ user.username }}
-                                </small>
-
-                            </div>
-
-
-                            <div class="portal-user-actions">
-
-                                <a
-                                    href="{% url 'password_change' %}"
-                                    class="portal-password-change-button"
-                                >
-                                    🔑 パスワードを変更
-                                </a>
-
-
-                                <form
-                                    method="post"
-                                    action="{% url 'logout' %}"
-                                    class="portal-logout-form"
-                                >
-
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="portal-logout-button"
-                                    >
-                                        ログアウト
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- =================================================
-                            Nickname
-                            ================================================= -->
-
-                        <div class="portal-nickname-panel">
-
-                            <div class="portal-nickname-copy">
-
-                                <span class="portal-nickname-label">
-                                    DISPLAY NAME
-                                </span>
-
-                                <strong>
-                                    ニックネーム
-                                </strong>
-
-                            </div>
-
-
-                            <form
-                                method="post"
-                                class="portal-nickname-form"
-                            >
-
-                                {% csrf_token %}
-
-                                {{ nickname_form.nickname }}
-
-                                <button
-                                    type="submit"
-                                    class="portal-nickname-save-button"
-                                >
-                                    保存
-                                </button>
-
-                            </form>
-
-
-                            {% if nickname_form.nickname.errors %}
-
-                                <div class="portal-nickname-error">
-
-                                    {% for error in nickname_form.nickname.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-                {% endif %}
+                </div>
 
             </div>
 
-        </header>
+
+            <!-- =============================================
+                 App grid
+                 ============================================= -->
+
+            <div class="portal-app-grid">
+
+                {% for app in visible_apps %}
+
+                    <a
+                        href="{{ app.url }}"
+                        class="
+                            portal-app-card
+                            {{ app.card_class }}
+                        "
+                        aria-label="{{ app.name }}を開く"
+                    >
+
+                        <!-- =================================
+                             App icon
+                             ================================= -->
+
+                        <div
+                            class="
+                                portal-app-icon
+                                {{ app.icon_class }}
+                            "
+                            aria-hidden="true"
+                        >
+
+                            <span>
+                                {{ app.icon }}
+                            </span>
+
+                        </div>
 
 
-        <!-- =====================================================
-            Main
-            ===================================================== -->
+                        <!-- =================================
+                             App information
+                             ================================= -->
 
-        <main class="portal-main">
+                        <div class="portal-card-content">
 
-            <section
-                class="portal-section"
-                aria-labelledby="portal-apps-heading"
-            >
+                            <h3>
+                                {{ app.name }}
+                            </h3>
 
-                <!-- =============================================
-                    Section heading
-                    ============================================= -->
 
-                <div class="portal-section-heading">
+                            <p class="portal-card-label">
+                                {{ app.label }}
+                            </p>
 
-                    <div>
+                        </div>
 
-                        <p class="portal-section-eyebrow">
-                            YOUR APPS
+                    </a>
+
+
+                {% empty %}
+
+                    <!-- =====================================
+                         Empty state
+                         ===================================== -->
+
+                    <div class="portal-app-empty">
+
+                        <span>
+                            📱
+                        </span>
+
+
+                        <p>
+                            表示中のアプリがありません。
                         </p>
-
-                        <h2 id="portal-apps-heading">
-                            マイアプリ
-                        </h2>
-
-                    </div>
-
-
-                    <div class="portal-heading-actions">
-
-                        {% if can_view_analytics %}
-
-                            <a
-                                href="{% url 'usage_analytics:dashboard' %}"
-                                class="portal-manage-apps-button"
-                            >
-                                📊 利用状況
-                            </a>
-
-                        {% endif %}
 
 
                         <a
                             href="{% url 'portal:manage_apps' %}"
-                            class="portal-manage-apps-button"
                         >
-                            ⚙ アプリを管理
+                            アプリを管理
                         </a>
 
                     </div>
 
-                </div>
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    </main>
 
 
-                <!-- =============================================
-                    App grid
-                    ============================================= -->
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
 
-                <div class="portal-app-grid">
+    <footer class="portal-footer">
 
-                    {% for app in visible_apps %}
+        <span>
+            yahan-app
+        </span>
 
-                        <a
-                            href="{{ app.url }}"
-                            class="
-                                portal-app-card
-                                {{ app.card_class }}
-                            "
-                            aria-label="{{ app.name }}を開く"
-                        >
+    </footer>
 
-                            <div
-                                class="
-                                    portal-app-icon
-                                    {{ app.icon_class }}
-                                "
-                                aria-hidden="true"
-                            >
-                                <span>
-                                    {{ app.icon }}
-                                </span>
-                            </div>
+</div>
 
-
-                            <div class="portal-card-content">
-
-                                <h3>
-                                    {{ app.name }}
-                                </h3>
-
-                                <p class="portal-card-label">
-                                    {{ app.label }}
-                                </p>
-
-                            </div>
-
-                        </a>
-
-                    {% empty %}
-
-                        <div class="portal-app-empty">
-
-                            <span>
-                                📱
-                            </span>
-
-                            <p>
-                                表示中のアプリがありません。
-                            </p>
-
-                            <a
-                                href="{% url 'portal:manage_apps' %}"
-                            >
-                                アプリを管理
-                            </a>
-
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-            </section>
-
-        </main>
-
-
-        <!-- =====================================================
-            Footer
-            ===================================================== -->
-
-        <footer class="portal-footer">
-
-            <span>
-                yahan-app
-            </span>
-
-        </footer>
-
-    </div>
-
-    {% endblock %}
+{% endblock %}

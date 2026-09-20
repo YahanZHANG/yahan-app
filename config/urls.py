@@ -1,3 +1,5 @@
+from . import pwa
+
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
@@ -105,6 +107,27 @@ urlpatterns = [
         ),
     ),
 
+
+    # =====================================================
+    # PWA
+    # =====================================================
+
+    path(
+        "manifest.webmanifest",
+        pwa.manifest,
+        name="pwa_manifest",
+    ),
+
+    path(
+        "service-worker.js",
+        pwa.service_worker,
+        name="pwa_service_worker",
+    ),
+
+    # =====================================================
+    # Portal
+    # =====================================================
+    
     path(
         "",
         include("portal.urls"),

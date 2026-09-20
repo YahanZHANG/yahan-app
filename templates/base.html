@@ -73,6 +73,45 @@
     {% block extra_css %}
     {% endblock %}
 
+    <!-- =====================================================
+        PWA
+        ===================================================== -->
+
+    <link
+        rel="manifest"
+        href="{% url 'pwa_manifest' %}"
+    >
+
+    <meta
+        name="theme-color"
+        content="#6577B6"
+    >
+
+
+    <!-- =====================================================
+        iPhone / iPad
+        ===================================================== -->
+
+    <link
+        rel="apple-touch-icon"
+        href="{% static 'pwa/apple-touch-icon.png' %}"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="default"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="Yahan App"
+    >
+
 </head>
 
 
@@ -136,6 +175,49 @@
 
     {% block extra_js %}
     {% endblock %}
+
+    <!-- =====================================================
+        PWA Service Worker
+        ===================================================== -->
+
+    <script>
+
+        if ("serviceWorker" in navigator) {
+
+            window.addEventListener(
+
+                "load",
+
+                () => {
+
+                    navigator.serviceWorker.register(
+
+                        "{% url 'pwa_service_worker' %}",
+
+                        {
+                            scope: "/",
+                        }
+
+                    ).catch(
+
+                        (error) => {
+
+                            console.warn(
+                                "PWA registration failed:",
+                                error
+                            );
+
+                        }
+
+                    );
+
+                }
+
+            );
+
+        }
+
+    </script>
 
 </body>
 

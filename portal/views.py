@@ -405,7 +405,7 @@ def app_setup(request):
 
 
 # =========================================================
-# Manage apps
+# Manage apps and account settings
 # =========================================================
 
 @login_required
@@ -434,7 +434,46 @@ def manage_apps(request):
         in PortalAppPreference.AppKey.choices
     ]
 
-    if request.method == "POST":
+    # =====================================================
+    # Nickname form
+    # =====================================================
+
+    nickname_form = NicknameForm(
+        instance=profile
+    )
+
+    # =====================================================
+    # POST: Save nickname
+    # =====================================================
+
+    if (
+        request.method == "POST"
+        and request.POST.get("form_type") == "nickname"
+    ):
+
+        nickname_form = NicknameForm(
+            request.POST,
+            instance=profile,
+        )
+
+        if nickname_form.is_valid():
+
+            nickname_form.save()
+
+            messages.success(
+                request,
+                "ニックネームを保存しました。",
+            )
+
+            return redirect(
+                "portal:manage_apps"
+            )
+
+    # =====================================================
+    # POST: Save app preferences
+    # =====================================================
+
+    elif request.method == "POST":
 
         visible_keys = set(
             request.POST.getlist(
@@ -474,12 +513,14 @@ def manage_apps(request):
                     key in allowed_keys
                     and key not in submitted_order
                 ):
+
                     submitted_order.append(
                         key
                     )
 
-            # 万一JavaScriptから一部送られなくても
-            # 残りを後ろに補完する
+            # JavaScriptから一部送られなかった場合も
+            # 残りのアプリを後ろに補完する
+
             ordered_keys = (
                 submitted_order
                 + [
@@ -497,15 +538,18 @@ def manage_apps(request):
                     PortalAppPreference
                     .objects
                     .update_or_create(
+
                         user=request.user,
+
                         app_key=app_key,
+
                         defaults={
                             "is_visible": (
-                                app_key
-                                in visible_keys
+                                app_key in visible_keys
                             ),
                             "display_order": index,
                         },
+
                     )
                 )
 
@@ -517,6 +561,10 @@ def manage_apps(request):
             return redirect(
                 "portal:home"
             )
+
+    # =====================================================
+    # App preferences
+    # =====================================================
 
     preferences = (
         PortalAppPreference
@@ -544,15 +592,24 @@ def manage_apps(request):
         apps.append(
             {
                 "key": preference.app_key,
+
                 "name": config["name"],
+
                 "label": config["label"],
+
                 "icon": config["icon"],
+
                 "description": config["description"],
+
                 "is_visible": (
                     preference.is_visible
                 ),
             }
         )
+
+    # =====================================================
+    # Render
+    # =====================================================
 
     return render(
         request,
@@ -560,9 +617,9 @@ def manage_apps(request):
         {
             "profile": profile,
             "apps": apps,
+            "nickname_form": nickname_form,
         },
     )
-
 
 # =========================================================
 # Portal home

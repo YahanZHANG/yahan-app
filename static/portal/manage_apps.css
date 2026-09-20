@@ -1210,3 +1210,449 @@
     }
 
 }
+
+/* =========================================================
+   Settings sections
+   ========================================================= */
+
+.manage-settings-section {
+    margin-top: 32px;
+}
+
+
+.manage-section-heading {
+    margin-bottom: 18px;
+}
+
+
+.manage-section-eyebrow {
+    margin:
+        0
+        0
+        6px;
+
+    color: #78909c;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: .15em;
+}
+
+
+.manage-section-heading h2 {
+    margin: 0;
+
+    color: #354149;
+
+    font-size: 1.15rem;
+    font-weight: 850;
+}
+
+
+.manage-section-heading > p:last-child {
+    margin:
+        9px
+        0
+        0;
+
+    color: #88959d;
+
+    font-size: .76rem;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   Account settings section
+   ========================================================= */
+
+.manage-account-section {
+    margin-top: 42px;
+
+    padding-top: 30px;
+
+    border-top:
+        1px solid
+        rgba(54, 95, 117, .1);
+}
+
+
+/* =========================================================
+   Account items
+   ========================================================= */
+
+.manage-account-item {
+    margin-top: 13px;
+
+    padding: 22px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .08);
+
+    border-radius: 21px;
+
+    background:
+        rgba(249, 251, 253, .9);
+}
+
+
+.manage-account-item-heading {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.manage-account-item-icon {
+    display: grid;
+
+    place-items: center;
+
+    width: 44px;
+    height: 44px;
+
+    flex:
+        0
+        0
+        44px;
+
+    border-radius: 14px;
+
+    background: #edf3f7;
+
+    font-size: 20px;
+}
+
+
+.manage-account-item-heading h3 {
+    margin: 0;
+
+    color: #394750;
+
+    font-size: .88rem;
+    font-weight: 850;
+}
+
+
+.manage-account-item-heading p {
+    margin:
+        5px
+        0
+        0;
+
+    color: #8a969e;
+
+    font-size: .69rem;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   Nickname form
+   ========================================================= */
+
+.manage-nickname-form {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+.manage-field-label {
+    color: #62727d;
+
+    font-size: .72rem;
+    font-weight: 800;
+}
+
+
+.manage-nickname-form input {
+    box-sizing: border-box;
+
+    display: block;
+
+    width: 100%;
+    max-width: 440px;
+
+    min-height: 45px;
+
+    padding:
+        11px
+        15px;
+
+    border:
+        1px solid
+        #dce5eb;
+
+    border-radius: 13px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: #354149;
+
+    font: inherit;
+    font-size: .85rem;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.manage-nickname-form input:focus {
+    border-color: #779eb7;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(111, 146, 165, .12);
+}
+
+
+.manage-field-errors {
+    color: #ac5260;
+
+    font-size: .7rem;
+
+    line-height: 1.6;
+}
+
+
+.manage-field-errors p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   Nickname save button
+   ========================================================= */
+
+.manage-account-save-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+
+    margin-top: 3px;
+
+    padding:
+        10px
+        20px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #365f75,
+            #527a90
+        );
+
+    color: #fff;
+
+    font: inherit;
+    font-size: .73rem;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.manage-account-save-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 16px
+        rgba(54, 95, 117, .15);
+}
+
+
+/* =========================================================
+   Password change link
+   ========================================================= */
+
+.manage-account-link {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 22px;
+
+    margin-top: 20px;
+
+    padding:
+        12px
+        19px;
+
+    border:
+        1px solid
+        #dce6ee;
+
+    border-radius: 999px;
+
+    background: #fff;
+
+    color: #476d83;
+
+    font-size: .75rem;
+    font-weight: 850;
+
+    text-decoration: none;
+
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+
+.manage-account-link:hover {
+    background: #edf4f8;
+
+    color: #365f75;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   Logout
+   ========================================================= */
+
+.manage-account-logout
+.manage-account-item-icon {
+    background: #fff0f1;
+}
+
+
+.manage-logout-form {
+    margin-top: 20px;
+}
+
+
+.manage-logout-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+
+    padding:
+        10px
+        20px;
+
+    border:
+        1px solid
+        #f3d7dc;
+
+    border-radius: 999px;
+
+    background: #fff;
+
+    color: #b85b6a;
+
+    font: inherit;
+    font-size: .73rem;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+
+.manage-logout-button:hover {
+    background: #fff0f1;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   Keyboard accessibility
+   ========================================================= */
+
+.manage-account-save-button:focus-visible,
+.manage-account-link:focus-visible,
+.manage-logout-button:focus-visible {
+    outline:
+        3px solid
+        rgba(111, 146, 165, .45);
+
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .manage-settings-section {
+        margin-top: 27px;
+    }
+
+
+    .manage-account-section {
+        margin-top: 34px;
+
+        padding-top: 26px;
+    }
+
+
+    .manage-account-item {
+        padding: 18px;
+
+        border-radius: 18px;
+    }
+
+
+    .manage-account-item-icon {
+        width: 40px;
+        height: 40px;
+
+        flex-basis: 40px;
+
+        border-radius: 13px;
+
+        font-size: 18px;
+    }
+
+
+    .manage-nickname-form input {
+        max-width: 100%;
+    }
+
+
+    .manage-account-save-button,
+    .manage-account-link,
+    .manage-logout-button {
+        width: 100%;
+    }
+
+}

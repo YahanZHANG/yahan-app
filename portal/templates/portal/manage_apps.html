@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}
-アプリを管理 | yahan-app
+    アプリを管理 | yahan-app
 {% endblock %}
 
 
@@ -73,7 +74,7 @@
             <div class="manage-header-copy">
 
                 <p class="manage-eyebrow">
-                    CUSTOMIZE YOUR PORTAL
+                    APP & ACCOUNT SETTINGS
                 </p>
 
                 <h1>
@@ -81,8 +82,8 @@
                 </h1>
 
                 <p>
-                    表示するアプリと、
-                    Portalでの並び順を自由に変更できる。
+                    アプリの表示・並び順と、
+                    アカウントの設定を変更できる。
                 </p>
 
             </div>
@@ -164,239 +165,485 @@
 
 
         <!-- =================================================
-             Guide
+             App settings
              ================================================= -->
 
-        <div class="manage-guide">
+        <section class="manage-settings-section">
 
-            <div class="manage-guide-item">
+            <div class="manage-section-heading">
 
-                <span class="manage-guide-icon">
-                    ↕
-                </span>
+                <p class="manage-section-eyebrow">
+                    MY APPS
+                </p>
 
-                <div>
-                    <strong>
-                        並び替える
-                    </strong>
+                <h2>
+                    📱 マイアプリ設定
+                </h2>
 
-                    <small>
-                        左のハンドルをドラッグ
-                    </small>
-                </div>
-
-            </div>
-
-
-            <div class="manage-guide-divider"></div>
-
-
-            <div class="manage-guide-item">
-
-                <span class="manage-guide-icon">
-                    ◉
-                </span>
-
-                <div>
-                    <strong>
-                        表示を切り替える
-                    </strong>
-
-                    <small>
-                        右のスイッチをON / OFF
-                    </small>
-                </div>
+                <p>
+                    Portalに表示するアプリと
+                    並び順を変更できる。
+                </p>
 
             </div>
-
-        </div>
-
-
-        <!-- =================================================
-             Form
-             ================================================= -->
-
-        <form
-            method="post"
-            id="manage-app-form"
-            class="manage-form"
-        >
-
-            {% csrf_token %}
-
-
-            <input
-                type="hidden"
-                name="app_order"
-                id="app-order"
-            >
 
 
             <!-- =============================================
-                 App list
+                 Guide
                  ============================================= -->
 
-            <div
-                class="manage-app-list"
-                id="manage-app-list"
+            <div class="manage-guide">
+
+                <div class="manage-guide-item">
+
+                    <span class="manage-guide-icon">
+                        ↕
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            並び替える
+                        </strong>
+
+                        <small>
+                            左のハンドルをドラッグ
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="manage-guide-divider"></div>
+
+
+                <div class="manage-guide-item">
+
+                    <span class="manage-guide-icon">
+                        ◉
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            表示を切り替える
+                        </strong>
+
+                        <small>
+                            右のスイッチをON / OFF
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 App form
+                 ============================================= -->
+
+            <form
+                method="post"
+                id="manage-app-form"
+                class="manage-form"
             >
 
-                {% for app in apps %}
-
-                    <article
-                        class="
-                            manage-app-item
-                            {% if not app.is_visible %}
-                                is-hidden
-                            {% endif %}
-                        "
-                        data-app-key="{{ app.key }}"
-                    >
-
-                        <!-- Drag handle -->
-
-                        <button
-                            type="button"
-                            class="manage-drag-handle"
-                            aria-label="{{ app.name }}を並び替える"
-                        >
-
-                            <span></span>
-                            <span></span>
-                            <span></span>
-
-                            <span></span>
-                            <span></span>
-                            <span></span>
-
-                        </button>
+                {% csrf_token %}
 
 
-                        <!-- App icon -->
+                <input
+                    type="hidden"
+                    name="form_type"
+                    value="apps"
+                >
 
-                        <div
+
+                <input
+                    type="hidden"
+                    name="app_order"
+                    id="app-order"
+                >
+
+
+                <!-- =========================================
+                     App list
+                     ========================================= -->
+
+                <div
+                    class="manage-app-list"
+                    id="manage-app-list"
+                >
+
+                    {% for app in apps %}
+
+                        <article
                             class="
-                                manage-app-icon
-                                manage-app-icon-{{ app.key }}
+                                manage-app-item
+                                {% if not app.is_visible %}
+                                    is-hidden
+                                {% endif %}
                             "
-                            aria-hidden="true"
+                            data-app-key="{{ app.key }}"
                         >
-                            {{ app.icon }}
-                        </div>
+
+                            <!-- Drag handle -->
+
+                            <button
+                                type="button"
+                                class="manage-drag-handle"
+                                aria-label="{{ app.name }}を並び替える"
+                            >
+
+                                <span></span>
+                                <span></span>
+                                <span></span>
+
+                                <span></span>
+                                <span></span>
+                                <span></span>
+
+                            </button>
 
 
-                        <!-- App text -->
+                            <!-- App icon -->
 
-                        <div class="manage-app-info">
+                            <div
+                                class="
+                                    manage-app-icon
+                                    manage-app-icon-{{ app.key }}
+                                "
+                                aria-hidden="true"
+                            >
+                                {{ app.icon }}
+                            </div>
 
-                            <div class="manage-app-title-row">
 
-                                <h2>
-                                    {{ app.name }}
-                                </h2>
+                            <!-- App information -->
+
+                            <div class="manage-app-info">
+
+                                <div class="manage-app-title-row">
+
+                                    <h2>
+                                        {{ app.name }}
+                                    </h2>
 
 
-                                <span
-                                    class="manage-app-status"
-                                    data-status
-                                >
+                                    <span
+                                        class="manage-app-status"
+                                        data-status
+                                    >
 
-                                    {% if app.is_visible %}
-                                        表示中
-                                    {% else %}
-                                        非表示
-                                    {% endif %}
+                                        {% if app.is_visible %}
+                                            表示中
+                                        {% else %}
+                                            非表示
+                                        {% endif %}
 
-                                </span>
+                                    </span>
+
+                                </div>
+
+
+                                <p>
+                                    {{ app.label }}
+                                </p>
+
+
+                                <p class="manage-app-description">
+                                    {{ app.description }}
+                                </p>
 
                             </div>
 
 
-                            <p>
-                                {{ app.label }}
-                            </p>
+                            <!-- Switch -->
 
-                            <p class="manage-app-description">
-                                {{ app.description }}
-                            </p>
+                            <label class="manage-switch">
 
-                        </div>
+                                <input
+                                    type="checkbox"
+                                    name="visible_apps"
+                                    value="{{ app.key }}"
+                                    aria-label="{{ app.name }}をPortalに表示する"
+
+                                    {% if app.is_visible %}
+                                        checked
+                                    {% endif %}
+                                >
 
 
-                        <!-- Switch -->
+                                <span class="manage-switch-ui">
 
-                        <label class="manage-switch">
+                                    <span class="manage-switch-knob">
+                                    </span>
 
-                            <input
-                                type="checkbox"
-                                name="visible_apps"
-                                value="{{ app.key }}"
-                                {% if app.is_visible %}
-                                    checked
-                                {% endif %}
-                            >
-
-                            <span class="manage-switch-ui">
-
-                                <span class="manage-switch-knob">
                                 </span>
 
-                            </span>
+                            </label>
 
-                        </label>
+                        </article>
 
-                    </article>
+                    {% endfor %}
 
-                {% endfor %}
+                </div>
+
+
+                <!-- =========================================
+                     Save area
+                     ========================================= -->
+
+                <div class="manage-save-area">
+
+                    <div class="manage-save-copy">
+
+                        <strong>
+                            変更をPortalに反映
+                        </strong>
+
+                        <small>
+                            並び順と表示設定をまとめて保存する。
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="manage-save-button"
+                    >
+
+                        <span aria-hidden="true">
+                            ✓
+                        </span>
+
+                        保存する
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <p class="manage-footer-note">
+                非表示にしてもアプリや保存済みデータは削除されない。
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
+             Account settings
+             ================================================= -->
+
+        <section class="manage-settings-section manage-account-section">
+
+            <div class="manage-section-heading">
+
+                <p class="manage-section-eyebrow">
+                    ACCOUNT SETTINGS
+                </p>
+
+                <h2>
+                    👤 アカウント設定
+                </h2>
+
+                <p>
+                    ニックネームやログイン情報を変更できる。
+                </p>
 
             </div>
 
 
             <!-- =============================================
-                 Save area
+                 Nickname
                  ============================================= -->
 
-            <div class="manage-save-area">
+            <div class="manage-account-item">
 
-                <div class="manage-save-copy">
+                <div class="manage-account-item-heading">
 
-                    <strong>
-                        変更をPortalに反映
-                    </strong>
+                    <div class="manage-account-item-icon">
+                        ✏️
+                    </div>
 
-                    <small>
-                        並び順と表示設定をまとめて保存する。
-                    </small>
+
+                    <div>
+
+                        <h3>
+                            ニックネーム
+                        </h3>
+
+                        <p>
+                            アプリ内で表示する名前
+                        </p>
+
+                    </div>
 
                 </div>
 
 
-                <button
-                    type="submit"
-                    class="manage-save-button"
+                <form
+                    method="post"
+                    class="manage-nickname-form"
                 >
 
-                    <span aria-hidden="true">
-                        ✓
-                    </span>
+                    {% csrf_token %}
 
-                    保存する
 
-                </button>
+                    <input
+                        type="hidden"
+                        name="form_type"
+                        value="nickname"
+                    >
+
+
+                    <label
+                        for="{{ nickname_form.nickname.id_for_label }}"
+                        class="manage-field-label"
+                    >
+                        表示名
+                    </label>
+
+
+                    {{ nickname_form.nickname }}
+
+
+                    {% if nickname_form.nickname.errors %}
+
+                        <div class="manage-field-errors">
+
+                            {% for error in nickname_form.nickname.errors %}
+
+                                <p>
+                                    {{ error }}
+                                </p>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <button
+                        type="submit"
+                        class="manage-account-save-button"
+                    >
+                        ニックネームを保存
+                    </button>
+
+                </form>
 
             </div>
 
-        </form>
+
+            <!-- =============================================
+                 Password
+                 ============================================= -->
+
+            <div class="manage-account-item">
+
+                <div class="manage-account-item-heading">
+
+                    <div class="manage-account-item-icon">
+                        🔑
+                    </div>
 
 
-        <p class="manage-footer-note">
-            非表示にしてもアプリや保存済みデータは削除されない。
-        </p>
+                    <div>
+
+                        <h3>
+                            パスワード
+                        </h3>
+
+                        <p>
+                            ログイン用のパスワードを変更
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="{% url 'password_change' %}"
+                    class="manage-account-link"
+                >
+                    <span>
+                        パスワードを変更
+                    </span>
+
+                    <span aria-hidden="true">
+                        →
+                    </span>
+                </a>
+
+            </div>
+
+
+            <!-- =============================================
+                 Logout
+                 ============================================= -->
+
+            <div class="manage-account-item manage-account-logout">
+
+                <div class="manage-account-item-heading">
+
+                    <div class="manage-account-item-icon">
+                        👋
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            ログアウト
+                        </h3>
+
+                        <p>
+                            現在のアカウントからログアウトする
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="post"
+                    action="{% url 'logout' %}"
+                    class="manage-logout-form"
+                >
+
+                    {% csrf_token %}
+
+
+                    <button
+                        type="submit"
+                        class="manage-logout-button"
+                    >
+                        ログアウト
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
 
     </main>
 
 </div>
 
+
+<!-- =====================================================
+     SortableJS
+     ===================================================== -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"
@@ -404,6 +651,7 @@
 
 
 <script>
+
 document.addEventListener(
     "DOMContentLoaded",
     function () {
@@ -438,6 +686,10 @@ document.addEventListener(
         }
 
 
+        /* =============================================
+           Update order
+           ============================================= */
+
         function updateOrder() {
 
             const rows =
@@ -448,14 +700,21 @@ document.addEventListener(
             const order =
                 Array.from(rows).map(
                     function (row) {
+
                         return row.dataset.appKey;
+
                     }
                 );
 
             orderInput.value =
                 order.join(",");
+
         }
 
+
+        /* =============================================
+           Update visibility
+           ============================================= */
 
         function updateVisibilityUI() {
 
@@ -493,8 +752,10 @@ document.addEventListener(
                         );
 
                         if (status) {
+
                             status.textContent =
                                 "表示中";
+
                         }
 
                         count += 1;
@@ -506,8 +767,10 @@ document.addEventListener(
                         );
 
                         if (status) {
+
                             status.textContent =
                                 "非表示";
+
                         }
 
                     }
@@ -517,34 +780,51 @@ document.addEventListener(
 
 
             if (visibleCount) {
+
                 visibleCount.textContent =
                     count;
+
             }
+
         }
 
 
-        new Sortable(
-            list,
-            {
-                animation: 180,
+        /* =============================================
+           Sortable
+           ============================================= */
 
-                handle:
-                    ".manage-drag-handle",
+        if (typeof Sortable !== "undefined") {
 
-                ghostClass:
-                    "manage-app-ghost",
+            new Sortable(
+                list,
+                {
 
-                chosenClass:
-                    "manage-app-chosen",
+                    animation: 180,
 
-                dragClass:
-                    "manage-app-dragging",
+                    handle:
+                        ".manage-drag-handle",
 
-                onSort:
-                    updateOrder,
-            }
-        );
+                    ghostClass:
+                        "manage-app-ghost",
 
+                    chosenClass:
+                        "manage-app-chosen",
+
+                    dragClass:
+                        "manage-app-dragging",
+
+                    onSort:
+                        updateOrder,
+
+                }
+            );
+
+        }
+
+
+        /* =============================================
+           Visibility switch
+           ============================================= */
 
         list.addEventListener(
             "change",
@@ -555,12 +835,18 @@ document.addEventListener(
                         'input[name="visible_apps"]'
                     )
                 ) {
+
                     updateVisibilityUI();
+
                 }
 
             }
         );
 
+
+        /* =============================================
+           Save
+           ============================================= */
 
         form.addEventListener(
             "submit",
@@ -569,10 +855,12 @@ document.addEventListener(
 
 
         updateOrder();
+
         updateVisibilityUI();
 
     }
 );
+
 </script>
 
 {% endblock %}

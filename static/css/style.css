@@ -4087,3 +4087,127 @@ button {
     }
 
 }
+
+/* =====================================================
+   Compact Portal hero
+   ===================================================== */
+
+.portal-hero.portal-hero-compact {
+
+    min-height: 0;
+
+    padding: 24px 30px;
+
+    border-radius: 26px;
+
+}
+
+.portal-hero-compact .portal-brand-row {
+
+    margin-bottom: 0;
+
+}
+
+.portal-hero-compact h1 {
+
+    margin-bottom: 0;
+
+}
+
+@media (max-width: 760px) {
+
+    .portal-hero.portal-hero-compact {
+
+        padding: 20px 22px;
+
+        border-radius: 22px;
+
+    }
+
+}
+
+/* =====================================================
+   Compact Portal Hero
+   ===================================================== */
+
+.portal-hero.portal-hero-compact {
+
+    min-height: 0;
+
+    padding: 26px 32px;
+
+    border-radius: 28px;
+
+}
+
+
+.portal-hero-compact .portal-hero-content {
+
+    position: relative;
+
+    z-index: 1;
+
+}
+
+
+.portal-hero-compact .portal-brand-row {
+
+    margin-bottom: 0;
+
+}
+
+
+.portal-hero-compact h1 {
+
+    margin-bottom: 0;
+
+}
+
+
+/* =====================================================
+   Portal Heading Actions
+   ===================================================== */
+
+.portal-heading-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+}
+
+
+/* =====================================================
+   Mobile
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+    .portal-hero.portal-hero-compact {
+
+        min-height: 0;
+
+        padding: 22px 24px;
+
+        border-radius: 24px;
+
+    }
+
+
+    .portal-heading-actions {
+
+        width: 100%;
+
+        justify-content: flex-start;
+
+        gap: 8px;
+
+    }
+
+}
