@@ -13,19 +13,249 @@ document.addEventListener("DOMContentLoaded", () => {
     const JUMP_VELOCITY = -660;
     const STEP = 1 / 120;
 
-    const LEVELS = {
-        1: { name: "やさしい", length: 2550, speed: 262, enemySpeed: 38, time: 120,
-            gaps: [[775, 74], [1490, 82]], enemies: [495, 1080, 1770, 2150] },
-        2: { name: "ふつう", length: 2920, speed: 270, enemySpeed: 46, time: 110,
-            gaps: [[615, 90], [1270, 95], [2080, 95]], enemies: [425, 975, 1640, 1910, 2460] },
-        3: { name: "むずかしい", length: 3240, speed: 280, enemySpeed: 54, time: 105,
-            gaps: [[615, 105], [1210, 108], [1885, 110], [2630, 110]], enemies: [420, 980, 1480, 1705, 2300, 2880] },
-        4: { name: "激ムズ", length: 3610, speed: 288, enemySpeed: 64, time: 100,
-            gaps: [[625, 115], [1260, 120], [1910, 120], [2540, 124], [3140, 125]], enemies: [420, 1000, 1530, 1760, 2220, 2830, 3380] },
-        5: { name: "鬼", length: 4000, speed: 293, enemySpeed: 75, time: 95,
-            gaps: [[630, 130], [1220, 132], [1800, 134], [2370, 138], [2980, 140], [3540, 140]], enemies: [420, 990, 1510, 1665, 2110, 2670, 2830, 3260, 3820] },
-    };
+    
+    /* ========================================
+    LEVEL SETTINGS
+    ======================================== */
 
+    const LEVELS = {
+
+        // ====================================
+        // LEVEL 1 - はじまりの草原
+        // ====================================
+
+        1: {
+
+            name: "はじまりの草原",
+
+            length: 2550,
+
+            speed: 262,
+
+            enemySpeed: 38,
+
+            time: 120,
+
+            gaps: [
+                [775, 74],
+                [1490, 82],
+            ],
+
+            platforms: [
+                [430, 345, 120],
+                [1060, 335, 125],
+                [1930, 345, 115],
+            ],
+
+            enemies: [
+                [475, 0.85, 55],
+                [1805, 1.0, 70],
+            ],
+
+        },
+
+
+        // ====================================
+        // LEVEL 2 - さばくの冒険
+        // ====================================
+
+        2: {
+
+            name: "さばくの冒険",
+
+            length: 2920,
+
+            speed: 270,
+
+            enemySpeed: 47,
+
+            time: 110,
+
+            gaps: [
+                [615, 90],
+                [1270, 95],
+                [2080, 95],
+            ],
+
+            platforms: [
+                [340, 340, 110],
+                [780, 315, 100],
+                [1100, 345, 115],
+                [1540, 325, 95],
+                [2200, 340, 110],
+                [2670, 310, 100],
+            ],
+
+            enemies: [
+                [400, 0.9, 60],
+                [880, 1.0, 85],
+                [1650, 1.1, 80],
+                [2460, 1.2, 95],
+            ],
+
+        },
+
+
+        // ====================================
+        // LEVEL 3 - まほうの森
+        // ====================================
+
+        3: {
+
+            name: "まほうの森",
+
+            length: 3240,
+
+            speed: 280,
+
+            enemySpeed: 56,
+
+            time: 105,
+
+            gaps: [
+                [615, 105],
+                [1210, 108],
+                [1885, 110],
+                [2630, 110],
+            ],
+
+            platforms: [
+                [350, 335, 100],
+                [745, 345, 85],
+                [1020, 315, 90],
+                [1370, 340, 75],
+                [1580, 320, 95],
+                [2020, 345, 85],
+                [2370, 310, 90],
+                [2770, 340, 75],
+                [3010, 325, 90],
+            ],
+
+            enemies: [
+                [360, 0.9, 65],
+                [940, 1.0, 85],
+                [1460, 1.1, 90],
+                [1770, 1.15, 90],
+                [2250, 1.2, 100],
+                [2850, 1.25, 100],
+            ],
+
+        },
+
+
+        // ====================================
+        // LEVEL 4 - こおりの世界
+        // ====================================
+
+        4: {
+
+            name: "こおりの世界",
+
+            length: 3610,
+
+            speed: 288,
+
+            enemySpeed: 66,
+
+            time: 100,
+
+            gaps: [
+                [625, 115],
+                [1260, 120],
+                [1910, 120],
+                [2540, 124],
+                [3140, 125],
+            ],
+
+            platforms: [
+                [315, 345, 90],
+                [710, 315, 80],
+                [945, 340, 85],
+                [1100, 315, 80],
+                [1450, 345, 75],
+                [1720, 320, 85],
+                [2050, 340, 75],
+                [2390, 310, 85],
+                [2700, 345, 75],
+                [2900, 320, 85],
+                [3230, 340, 80],
+                [3460, 315, 75],
+            ],
+
+            enemies: [
+                [405, 0.9, 70],
+                [885, 1.0, 80],
+                [1510, 1.05, 75],
+                [1660, 1.1, 90],
+                [2180, 1.15, 90],
+                [2360, 1.2, 95],
+                [2840, 1.25, 100],
+                [3380, 1.3, 100],
+            ],
+
+        },
+
+
+        // ====================================
+        // LEVEL 5 - さいごの火山
+        // ====================================
+
+        5: {
+
+            name: "さいごの火山",
+
+            length: 4000,
+
+            speed: 293,
+
+            enemySpeed: 90,
+
+            time: 85,
+
+            gaps: [
+                [630, 130],
+                [1220, 132],
+                [1800, 134],
+                [2370, 138],
+                [2980, 140],
+                [3540, 140],
+            ],
+
+            platforms: [
+                [300, 344, 115],
+                [545, 314, 65],
+                [785, 343, 86],
+                [1040, 313, 70],
+                [1365, 340, 72],
+                [1570, 310, 60],
+                [1900, 339, 77],
+                [2140, 315, 62],
+                [2460, 341, 72],
+                [2690, 310, 60],
+                [2910, 344, 58],
+                [3110, 315, 78],
+                [3340, 337, 65],
+                [3610, 313, 74],
+                [3775, 344, 68],
+            ],
+
+            enemies: [
+                [410, 0.9, 65],
+                [915, 1.0, 85],
+                [1140, 1.05, 65],
+                [1480, 1.1, 75],
+                [1690, 1.15, 80],
+                [2220, 1.2, 85],
+                [2600, 1.25, 75],
+                [2790, 1.3, 100],
+                [3240, 1.35, 95],
+                [3430, 1.4, 75],
+                [3830, 1.5, 65],
+            ],
+
+        },
+
+    };
     
     /* ========================================
     World Themes
@@ -152,48 +382,756 @@ document.addEventListener("DOMContentLoaded", () => {
         return clamp(candidate, 80, length - 210);
     }
 
-    function createWorld(level) {
-        const config = LEVELS[level];
-        const gaps = config.gaps;
-        const surfaces = [];
-        let start = 0;
-        for (const [gapX, gapW] of gaps) {
-            surfaces.push({ x: start, y: GROUND, w: gapX - start, h: VIEW_H - GROUND + 200, kind: "ground" });
-            start = gapX + gapW;
-        }
-        surfaces.push({ x: start, y: GROUND, w: config.length - start, h: VIEW_H - GROUND + 200, kind: "ground" });
 
-        // ジャンプで届く高さの足場。足場の下から抜けられる一方向の当たり判定。
-        for (let n = 0, x = 430; x < config.length - 280; n++, x += level <= 2 ? 385 : 315) {
-            const w = 92 + Math.floor(rand(n, level) * 44);
-            const px = nearestSafe(x, gaps, config.length);
-            if (safeGround(px, gaps, 85)) {
-                surfaces.push({ x: px, y: n % 3 === 0 ? 311 : 344, w, h: 16, kind: "platform" });
-            }
+    /* ========================================
+    Create World
+    ======================================== */
+
+    function createWorld(level) {
+
+        const config =
+            LEVELS[level];
+
+        const gaps =
+            config.gaps;
+
+        const surfaces = [];
+
+        let start = 0;
+
+
+                
+        /* ========================================
+        Level-specific platforms
+        ======================================== */
+
+        config.platforms.forEach(
+            ([x, y, w], index) => {
+
+                // LEVEL 5では一部の足場が動く
+                const isMoving =
+                    level === 5
+                    && (
+                        index % 2 === 0
+                        || index === 13
+                    );
+
+
+                // 動く方向をランダムに決める
+                const axis =
+                    Math.random() < 0.5
+                        ? "horizontal"
+                        : "vertical";
+
+
+                // 移動幅をランダムに決める
+                const amplitude =
+                    axis === "horizontal"
+
+                        // 左右：45〜90px
+                        ? 45 + Math.floor(
+                            Math.random() * 46
+                        )
+
+                        // 上下：22〜50px
+                        : 22 + Math.floor(
+                            Math.random() * 29
+                        );
+
+
+                // 移動速度もランダム
+                const speed =
+                    2.0
+                    + Math.random() * 1.3;
+
+
+                // 最初に進む方向もランダム
+                const direction =
+                    Math.random() < 0.5
+                        ? -1
+                        : 1;
+
+
+                surfaces.push({
+
+                    x: x,
+                    y: y,
+
+                    baseX: x,
+                    baseY: y,
+
+                    w: w,
+                    h: 16,
+
+                    kind: "platform",
+
+                    motion: isMoving
+
+                        ? {
+
+                            axis: axis,
+
+                            amplitude: amplitude,
+
+                            speed: speed,
+
+                            direction: direction,
+
+                        }
+
+                : null,
+
+        });
+
+    }
+);
+
+        // Last ground section
+
+        surfaces.push({
+
+            x: start,
+
+            y: GROUND,
+
+            w: config.length - start,
+
+            h: VIEW_H - GROUND + 200,
+
+            kind: "ground",
+
+        });
+
+
+        // ====================================
+        // Level-specific platforms
+        // ====================================
+
+        // 足場を自動生成せず、
+        // LEVELSで定義した位置に配置する
+
+        for (
+            const [x, y, w]
+            of config.platforms
+        ) {
+
+            surfaces.push({
+
+                x: x,
+
+                y: y,
+
+                w: w,
+
+                h: 16,
+
+                kind: "platform",
+
+            });
+
         }
+
+
+        // ====================================
+        // Coins
+        // ====================================
 
         const coins = [];
-        // 地面の上と空中の足場にコインを配置。
-        for (let x = 230, i = 0; x < config.length - 120; x += 88, i++) {
-            if (safeGround(x, gaps, 27)) coins.push({ x, y: GROUND - (i % 5 === 0 ? 105 : 33), taken: false });
-        }
-        for (const [gapX, gapW] of gaps) {
-            for (let j = 0; j < 3; j++) coins.push({
-                x: gapX + gapW * (j + 1) / 4,
-                y: GROUND - 87 - (j === 1 ? 16 : 0), taken: false,
-            });
-        }
-        for (const p of surfaces.filter(p => p.kind === "platform")) {
-            coins.push({ x: p.x + p.w / 2, y: p.y - 26, taken: false });
+
+
+        // Coins on the ground
+
+        for (
+            let x = 230, i = 0;
+            x < config.length - 120;
+            x += 88, i++
+        ) {
+
+            if (
+                safeGround(
+                    x,
+                    gaps,
+                    27
+                )
+            ) {
+
+                coins.push({
+
+                    x: x,
+
+                    y:
+                        GROUND
+                        - (
+                            i % 5 === 0
+                                ? 105
+                                : 33
+                        ),
+
+                    taken: false,
+
+                });
+
+            }
+
         }
 
-        const enemies = config.enemies.filter(x => safeGround(x, gaps, 66)).map((x, i) => ({
-            x, y: GROUND - 32, w: 33, h: 32, home: x,
-            min: Math.max(80, x - 64), max: Math.min(config.length - 115, x + 64),
-            dir: i % 2 === 0 ? -1 : 1, alive: true,
-        }));
-        const checkpointX = nearestSafe(Math.floor(config.length * .5), gaps, config.length);
-        return { ...config, surfaces, coins, enemies, checkpointX, flagX: config.length - 126 };
+
+        // Coins above holes
+
+        for (
+            const [gapX, gapW]
+            of gaps
+        ) {
+
+            for (
+                let j = 0;
+                j < 3;
+                j++
+            ) {
+
+                coins.push({
+
+                    x:
+                        gapX
+                        + gapW
+                        * (j + 1) / 4,
+
+                    y:
+                        GROUND
+                        - 87
+                        - (
+                            j === 1
+                                ? 16
+                                : 0
+                        ),
+
+                    taken: false,
+
+                });
+
+            }
+
+        }
+
+        
+        /* ========================================
+        Coins above platforms
+        ======================================== */
+
+        for (
+            const platform
+            of surfaces.filter(
+                p => p.kind === "platform"
+            )
+        ) {
+
+            coins.push({
+
+                x:
+                    platform.x
+                    + platform.w / 2,
+
+                y:
+                    platform.y - 26,
+
+                taken: false,
+
+                // どの足場の上にあるコインか
+                platform: platform,
+
+            });
+
+        }
+
+
+        /* ========================================
+        Coin animation settings
+        ======================================== */
+
+        coins.forEach(
+            (coin, index) => {
+
+                // 初期位置を保存
+                coin.baseX = coin.x;
+
+                coin.baseY = coin.y;
+
+                coin.motionIndex = index;
+
+            }
+        );
+
+
+        // ====================================
+        // Checkpoint
+        // ====================================
+
+        const checkpointX =
+            nearestSafe(
+
+                Math.floor(
+                    config.length * 0.5
+                ),
+
+                gaps,
+
+                config.length,
+
+            );
+
+
+        // ====================================
+        // Level-specific enemies
+        // ====================================
+
+        const enemies = [];
+
+
+        config.enemies.forEach(
+
+            (
+                [
+                    x,
+                    speedMultiplier,
+                    patrolRadius,
+                ],
+
+                i,
+
+            ) => {
+
+
+                // 穴の近くには敵を置かない
+
+                if (
+                    !safeGround(
+                        x + 16,
+                        gaps,
+                        40
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                // 開始地点とチェックポイント
+                // のすぐ近くには置かない
+
+                if (
+                    x < 200
+                    || Math.abs(
+                        x - checkpointX
+                    ) < 120
+                ) {
+
+                    return;
+
+                }
+
+
+                // =================================
+                // Find ground section
+                // =================================
+
+                let segmentStart = 0;
+
+                let segmentEnd =
+                    config.length;
+
+
+                for (
+                    const [gapX, gapW]
+                    of gaps
+                ) {
+
+                    const gapEnd =
+                        gapX + gapW;
+
+
+                    if (
+                        x >= gapEnd
+                    ) {
+
+                        segmentStart =
+                            gapEnd;
+
+                    } else if (
+                        x < gapX
+                    ) {
+
+                        segmentEnd =
+                            gapX;
+
+                        break;
+
+                    }
+
+                }
+
+
+                // =================================
+                // Patrol range
+                // =================================
+
+                const enemyWidth =
+                    33;
+
+
+                const minX =
+                    Math.max(
+
+                        80,
+
+                        segmentStart + 10,
+
+                        x - patrolRadius,
+
+                    );
+
+
+                const maxX =
+                    Math.min(
+
+                        config.length - 115,
+
+                        segmentEnd
+                            - enemyWidth
+                            - 10,
+
+                        x + patrolRadius,
+
+                    );
+
+
+                if (
+                    minX > maxX
+                    || x < minX
+                    || x > maxX
+                ) {
+
+                    return;
+
+                }
+
+
+                // =================================
+                // Create enemy
+                // =================================
+
+                enemies.push({
+
+                    x: x,
+
+                    y:
+                        GROUND - 32,
+
+                    w: enemyWidth,
+
+                    h: 32,
+
+                    home: x,
+
+                    min: minX,
+
+                    max: maxX,
+
+                    dir:
+                        i % 2 === 0
+                            ? -1
+                            : 1,
+
+                    speed:
+                        config.enemySpeed
+                        * speedMultiplier,
+
+                    alive: true,
+
+                });
+
+            }
+
+        );
+
+
+        // ====================================
+        // Return world
+        // ====================================
+
+        return {
+
+            ...config,
+
+            surfaces: surfaces,
+
+            coins: coins,
+
+            enemies: enemies,
+
+            checkpointX: checkpointX,
+
+            flagX:
+                config.length - 126,
+
+            // 動く足場・コイン用の時間
+            motionTime: 0,
+
+        };
+
+    }
+
+
+    
+    /* ========================================
+    Moving Platforms and Coins
+    ======================================== */
+
+    function updateMovingObjects(dt) {
+
+        if (!world) {
+            return;
+        }
+
+        // アニメーション時間を進める
+        world.motionTime += dt;
+
+        const t = world.motionTime;
+
+
+                
+        /* ========================================
+        LEVEL 5 - Moving Platforms
+        ======================================== */
+
+        if (selectedLevel === 5) {
+
+            for (
+                const platform
+                of world.surfaces
+            ) {
+
+                if (
+                    platform.kind !== "platform"
+                    || !platform.motion
+                ) {
+
+                    continue;
+
+                }
+
+
+                const motion =
+                    platform.motion;
+
+
+                // 移動前の位置を保存
+                const oldX =
+                    platform.x;
+
+                const oldY =
+                    platform.y;
+
+
+                // ====================================
+                // Horizontal movement
+                // ====================================
+
+                if (
+                    motion.axis === "horizontal"
+                ) {
+
+                    platform.x =
+
+                        platform.baseX
+
+                        + Math.sin(
+                            t * motion.speed
+                        )
+
+                        * motion.amplitude
+
+                        * motion.direction;
+
+
+                    // 上下方向には動かさない
+                    platform.y =
+                        platform.baseY;
+
+                }
+
+
+                // ====================================
+                // Vertical movement
+                // ====================================
+
+                else {
+
+                    platform.y =
+
+                        platform.baseY
+
+                        + Math.sin(
+                            t * motion.speed
+                        )
+
+                        * motion.amplitude
+
+                        * motion.direction;
+
+
+                    // 左右方向には動かさない
+                    platform.x =
+                        platform.baseX;
+
+                }
+
+
+                // ====================================
+                // Calculate movement
+                // ====================================
+
+                const dx =
+                    platform.x - oldX;
+
+                const dy =
+                    platform.y - oldY;
+
+
+                // ====================================
+                // Carry player
+                // ====================================
+
+                // 足場に乗っている場合、
+                // プレイヤーも一緒に移動する
+
+                if (
+                    hero.onGround
+                    && hero.support === platform
+                ) {
+
+                    hero.x += dx;
+
+                    hero.y += dy;
+
+                }
+
+            }
+
+        }
+
+
+        // LEVEL 1〜3はコインを動かさない
+        if (selectedLevel < 4) {
+
+            return;
+
+        }
+
+
+        // ====================================
+        // LEVEL 4 & 5 - Moving Coins
+        // ====================================
+
+        for (
+            const coin
+            of world.coins
+        ) {
+
+            if (coin.taken) {
+                continue;
+            }
+
+            const index =
+                coin.motionIndex;
+
+
+            // =================================
+            // 足場の上にあるコイン
+            // =================================
+
+            if (coin.platform) {
+
+                const platform =
+                    coin.platform;
+
+
+                // 足場に追従しながら左右にも動く
+                coin.x =
+                    platform.x
+                    + platform.w / 2
+                    + Math.sin(
+                        t * (
+                            1.5
+                            + (index % 4) * 0.25
+                        )
+                    )
+                    * (
+                        selectedLevel === 5
+                            ? 18
+                            : 13
+                    );
+
+
+                // 上下に浮遊
+                coin.y =
+                    platform.y
+                    - 26
+                    + Math.sin(
+                        t * (
+                            2.1
+                            + (index % 3) * 0.35
+                        )
+                    )
+                    * 7;
+
+            }
+
+
+            // =================================
+            // 地面・穴の上にあるコイン
+            // =================================
+
+            else {
+
+                const amplitudeX =
+                    selectedLevel === 5
+                        ? 32
+                        : 18;
+
+                const amplitudeY =
+                    selectedLevel === 5
+                        ? 16
+                        : 10;
+
+
+                // 左右移動
+                coin.x =
+                    coin.baseX
+                    + Math.sin(
+                        t * (
+                            1.4
+                            + (index % 5) * 0.28
+                        )
+                    )
+                    * amplitudeX;
+
+
+                // 上下移動
+                coin.y =
+                    coin.baseY
+                    + Math.sin(
+                        t * (
+                            1.9
+                            + (index % 4) * 0.32
+                        )
+                    )
+                    * amplitudeY;
+
+            }
+
+        }
+
     }
 
     function status() {
@@ -231,8 +1169,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resetWorld() {
         world = createWorld(selectedLevel);
-        hero = { x: 82, y: GROUND - HERO_H, w: HERO_W, h: HERO_H, vx: 0, vy: 0, onGround: true, face: 1 };
-        lives = 3;
+        hero = {
+            x: 82,
+            y: GROUND - HERO_H,
+            w: HERO_W,
+            h: HERO_H,
+            vx: 0,
+            vy: 0,
+            onGround: true,
+            // 現在乗っている足場
+            support: null,
+            face: 1,
+        };
         score = 0;
         timeLeft = world.time;
         checkpoint = 82;
@@ -328,8 +1276,19 @@ document.addEventListener("DOMContentLoaded", () => {
         saveScore(level, finalScore);
     }
 
-    function hurt() {
-        if (mode !== "playing" || invulnerable > 0) return;
+    function hurt(force = false) {
+
+        if (
+            mode !== "playing"
+            || (
+                !force
+                && invulnerable > 0
+            )
+        ) {
+
+            return;
+
+        }
         lives--;
         status();
         if (lives <= 0) { finish(false); return; }
@@ -338,6 +1297,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hero.vx = 0;
         hero.vy = 0;
         hero.onGround = true;
+        hero.support = null;
         invulnerable = 1.8;
         coyote = .12;
         jumpBuffer = 0;
@@ -353,13 +1313,26 @@ document.addEventListener("DOMContentLoaded", () => {
         invulnerable = Math.max(0, invulnerable - dt);
         jumpBuffer = Math.max(0, jumpBuffer - dt);
         coyote = Math.max(0, coyote - dt);
+        updateMovingObjects(dt);
 
         const horizontal = Number(pressed.right) - Number(pressed.left);
         hero.vx = horizontal * world.speed;
         if (horizontal) hero.face = horizontal;
-        if (jumpBuffer > 0 && (hero.onGround || coyote > 0)) {
-            hero.vy = JUMP_VELOCITY;
-            hero.onGround = false;
+        if (
+            jumpBuffer > 0
+            && (
+                hero.onGround
+                || coyote > 0
+            )
+        ) {
+
+            hero.vy =
+                JUMP_VELOCITY;
+            hero.onGround =
+                false;
+            // 足場から離れた
+            hero.support =
+                null;
             coyote = 0;
             jumpBuffer = 0;
         }
@@ -368,21 +1341,71 @@ document.addEventListener("DOMContentLoaded", () => {
         const beforeBottom = hero.y + hero.h;
         hero.vy = Math.min(hero.vy + GRAVITY * dt, 1000);
         hero.y += hero.vy * dt;
+                
+        /* ========================================
+        Landing on Platforms
+        ======================================== */
+
         hero.onGround = false;
 
-        // 上から着地する足場（地面にも適用）。下からぶつかった場合は通り抜ける。
+        // 現在の足場を解除
+        hero.support = null;
+
+
+        // 上からの着地判定
+
         if (hero.vy >= 0) {
-            for (const p of world.surfaces) {
-                if (hero.x + hero.w <= p.x || hero.x >= p.x + p.w) continue;
-                if (beforeBottom <= p.y + 5 && hero.y + hero.h >= p.y) {
-                    hero.y = p.y - hero.h;
-                    hero.vy = 0;
-                    hero.onGround = true;
-                    coyote = .11;
+
+            for (
+                const p
+                of world.surfaces
+            ) {
+
+                // 足場と横方向が重なっていない
+                if (
+                    hero.x + hero.w <= p.x
+                    || hero.x >= p.x + p.w
+                ) {
+
+                    continue;
+
                 }
+
+
+                // 上から足場に着地した
+                if (
+                    beforeBottom <= p.y + 5
+                    && hero.y + hero.h >= p.y
+                ) {
+
+                    hero.y =
+                        p.y - hero.h;
+
+                    hero.vy = 0;
+
+                    hero.onGround = true;
+
+                    coyote = 0.11;
+
+
+                    // 浮いている足場なら記録する
+                    hero.support =
+                        p.kind === "platform"
+                            ? p
+                            : null;
+
+                }
+
+            }
+
+        }
+
+        if (hero.y > VIEW_H + 100) {
+            hurt(true);
+            if (mode !== "playing") {
+                return;
             }
         }
-        if (hero.y > VIEW_H + 100) { hurt(); if (mode !== "playing") return; }
 
         // コインの当たり判定（重心からの距離）。
         const midX = hero.x + hero.w / 2;
@@ -397,7 +1420,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (const enemy of world.enemies) {
             if (!enemy.alive) continue;
-            const nextX = enemy.x + enemy.dir * world.enemySpeed * dt;
+            const nextX =
+                enemy.x
+                + enemy.dir
+                * enemy.speed
+                * dt;
+            
+            for (const enemy of world.enemies) {
+
+                if (!enemy.alive) {
+                    continue;
+                }
+
+                // 敵ごとの移動速度
+                const nextX =
+                    enemy.x
+                    + enemy.dir
+                    * enemy.speed
+                    * dt;
+
+
+                // 巡回範囲の端で方向転換
+                if (
+                    nextX < enemy.min
+                    || nextX > enemy.max
+                ) {
+
+                    enemy.dir *= -1;
+
+                } else {
+
+                    enemy.x = nextX;
+
+                }
+
+
+                // プレイヤーとの接触判定
+                if (!overlap(hero, enemy)) {
+                    continue;
+                }
+
+
+                // 上から踏んだ場合
+                const stomp =
+                    hero.vy > 0
+                    && beforeBottom <= enemy.y + 14;
+
+
+                if (stomp) {
+
+                    enemy.alive = false;
+
+                    hero.vy = -480;
+
+                    hero.onGround = false;
+
+                    score += 100;
+
+                    addPopup(
+                        enemy.x,
+                        enemy.y - 15,
+                        "+100"
+                    );
+
+                } else if (
+                    invulnerable <= 0
+                ) {
+
+                    hurt();
+
+                    if (mode !== "playing") {
+                        return;
+                    }
+
+                    break;
+
+                }
+
+            }
+
             if (nextX < enemy.min || nextX > enemy.max || !safeGround(nextX + enemy.w / 2, world.gaps, 5)) enemy.dir *= -1;
             else enemy.x = nextX;
             if (!overlap(hero, enemy)) continue;
