@@ -1,13 +1,91 @@
+
 /* ========================================
    Games Page
 ======================================== */
 
 .games-page {
+
     width: 100%;
-    max-width: 980px;
+
+    max-width: 1060px;
 
     margin: 0 auto;
-    padding: 28px 0 56px;
+
+    padding: 22px 0 48px;
+
+}
+
+
+/* ========================================
+   Back to Portal
+======================================== */
+
+.games-page-nav {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-bottom: 18px;
+
+}
+
+
+.games-back-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 9px 15px;
+
+    border-radius: 999px;
+
+    background: #ffffff;
+
+    color: #65697b;
+
+    font-size: 0.82rem;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 5px 18px
+        rgba(40, 42, 65, 0.07);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        color 0.18s ease;
+
+}
+
+
+.games-back-button:hover {
+
+    color: #343748;
+
+    text-decoration: none;
+
+    transform: translateX(-2px);
+
+    box-shadow:
+        0 8px 22px
+        rgba(40, 42, 65, 0.11);
+
+}
+
+
+.games-back-button:active {
+
+    transform:
+        translateX(-1px)
+        scale(0.98);
+
 }
 
 
@@ -16,27 +94,33 @@
 ======================================== */
 
 .games-hero {
+
     position: relative;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
-    min-height: 220px;
+    min-height: 155px;
 
-    margin-bottom: 30px;
-    padding: 38px 42px;
+    margin-bottom: 25px;
+
+    padding: 27px 35px;
 
     overflow: hidden;
 
-    border-radius: 34px;
+    border-radius: 28px;
 
     background:
+
         radial-gradient(
             circle at 90% 10%,
             rgba(255, 255, 255, 0.32),
             transparent 35%
         ),
+
         linear-gradient(
             135deg,
             #7775d9 0%,
@@ -45,125 +129,188 @@
         );
 
     box-shadow:
-        0 18px 45px rgba(77, 71, 157, 0.18);
+        0 14px 36px
+        rgba(77, 71, 157, 0.16);
+
 }
 
 
+/* Hero decorations */
+
 .games-hero::before {
+
     position: absolute;
 
     top: -80px;
+
     right: -20px;
 
-    width: 230px;
-    height: 230px;
+    width: 210px;
+
+    height: 210px;
 
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, 0.09);
+    background:
+        rgba(255, 255, 255, 0.09);
 
     content: "";
+
 }
 
 
 .games-hero::after {
+
     position: absolute;
 
-    right: 150px;
+    right: 135px;
+
     bottom: -100px;
 
-    width: 180px;
-    height: 180px;
+    width: 170px;
+
+    height: 170px;
 
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, 0.07);
+    background:
+        rgba(255, 255, 255, 0.07);
 
     content: "";
+
 }
 
 
+/* ========================================
+   Hero Copy
+======================================== */
+
 .games-hero-copy {
+
     position: relative;
+
     z-index: 2;
+
 }
 
 
 .games-eyebrow {
-    margin: 0 0 8px;
 
-    color: rgba(255, 255, 255, 0.82);
+    margin: 0 0 6px;
 
-    font-size: 0.74rem;
+    color:
+        rgba(255, 255, 255, 0.82);
+
+    font-size: 0.69rem;
+
     font-weight: 800;
 
     letter-spacing: 0.16em;
+
 }
 
 
 .games-title {
+
     margin: 0;
 
     color: #ffffff;
 
-    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-size:
+        clamp(
+            1.8rem,
+            5vw,
+            2.65rem
+        );
+
     font-weight: 800;
 
     letter-spacing: -0.04em;
+
 }
 
 
 .games-description {
-    margin: 13px 0 0;
 
-    color: rgba(255, 255, 255, 0.88);
+    margin: 10px 0 0;
 
-    font-size: 0.95rem;
+    color:
+        rgba(255, 255, 255, 0.88);
+
+    font-size: 0.86rem;
+
     font-weight: 500;
+
 }
 
 
+/* ========================================
+   Hero Icon
+======================================== */
+
 .games-hero-decoration {
+
     position: relative;
+
     z-index: 2;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
-    width: 112px;
-    height: 112px;
+    width: 85px;
+
+    height: 85px;
 
     flex: 0 0 auto;
 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 34px;
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.2);
 
-    background: rgba(255, 255, 255, 0.14);
+    border-radius: 26px;
 
-    font-size: 4rem;
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    font-size: 3rem;
 
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.16),
-        0 12px 30px rgba(53, 46, 129, 0.14);
+
+        inset
+        0 1px 0
+        rgba(255, 255, 255, 0.16),
+
+        0 12px 30px
+        rgba(53, 46, 129, 0.14);
 
     backdrop-filter: blur(8px);
 
     transform: rotate(5deg);
+
 }
 
 
 /* ========================================
    Game Grid
+
+   Desktop: 3 columns
 ======================================== */
 
 .games-grid {
+
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
 
-    gap: 22px;
+    gap: 18px;
+
 }
 
 
@@ -172,92 +319,144 @@
 ======================================== */
 
 .games-card {
+
     position: relative;
 
     display: flex;
+
     flex-direction: column;
 
-    min-height: 330px;
+    min-width: 0;
 
-    padding: 27px;
+    min-height: 205px;
+
+    padding: 20px;
 
     overflow: hidden;
 
-    border: 1px solid rgba(78, 78, 110, 0.08);
-    border-radius: 30px;
+    border:
+        1px solid
+        rgba(78, 78, 110, 0.08);
+
+    border-radius: 24px;
 
     color: inherit;
 
     text-decoration: none;
 
     box-shadow:
-        0 12px 36px rgba(38, 40, 65, 0.08);
+        0 9px 25px
+        rgba(38, 40, 65, 0.07);
 
     transition:
         transform 0.22s ease,
         box-shadow 0.22s ease;
+
 }
 
 
 .games-card:hover {
+
     color: inherit;
 
     text-decoration: none;
 
-    transform: translateY(-5px);
+    transform:
+        translateY(-4px);
 
     box-shadow:
-        0 20px 44px rgba(38, 40, 65, 0.13);
+        0 15px 34px
+        rgba(38, 40, 65, 0.12);
+
 }
 
 
+.games-card:active {
+
+    transform:
+        translateY(-1px)
+        scale(0.99);
+
+}
+
+
+.games-card:focus-visible {
+
+    outline:
+        3px solid #7775d9;
+
+    outline-offset: 4px;
+
+}
+
+
+/* Decorative circle */
+
 .games-card::after {
+
     position: absolute;
 
-    right: -55px;
-    bottom: -65px;
+    right: -45px;
 
-    width: 180px;
-    height: 180px;
+    bottom: -50px;
+
+    width: 130px;
+
+    height: 130px;
 
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, 0.45);
+    background:
+        rgba(255, 255, 255, 0.42);
 
     content: "";
 
     pointer-events: none;
+
 }
 
 
-/* Block breaker */
+/* ========================================
+   Game Colors
+======================================== */
+
+
+/* Block Breaker */
 
 .games-card-block {
+
     background:
+
         linear-gradient(
             145deg,
             #f0efff 0%,
             #e5e3fb 100%
         );
+
 }
 
 
-/* Star tap */
+/* Star Tap */
 
 .games-card-star {
+
     background:
+
         linear-gradient(
             145deg,
             #fffcef 0%,
             #fff1bc 100%
         );
+
 }
+
 
 /* Pacccck Man */
 
 .games-card-maze {
 
     background:
+
         linear-gradient(
             145deg,
             #e9f8ff 0%,
@@ -266,10 +465,13 @@
 
 }
 
+
 /* Maaaario */
+
 .games-card-jump {
 
     background:
+
         linear-gradient(
             145deg,
             #eafaf0 0%,
@@ -284,52 +486,85 @@
 ======================================== */
 
 .games-card-top {
+
     position: relative;
+
     z-index: 2;
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
+
+    gap: 8px;
+
 }
 
+
+/* Game icon */
 
 .games-card-icon {
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
-    width: 76px;
-    height: 76px;
+    width: 56px;
 
-    border-radius: 24px;
+    height: 56px;
 
-    background: rgba(255, 255, 255, 0.62);
+    flex: 0 0 auto;
 
-    font-size: 2.8rem;
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, 0.65);
+
+    font-size: 2rem;
 
     box-shadow:
-        0 8px 22px rgba(55, 54, 90, 0.08);
+        0 6px 17px
+        rgba(55, 54, 90, 0.07);
+
 }
 
 
+/* Game badge */
+
 .games-card-badge {
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
-    padding: 7px 11px;
+    max-width: 100%;
 
-    border: 1px solid rgba(50, 50, 70, 0.06);
+    padding: 6px 9px;
+
+    border:
+        1px solid
+        rgba(50, 50, 70, 0.06);
+
     border-radius: 999px;
 
-    background: rgba(255, 255, 255, 0.58);
+    background:
+        rgba(255, 255, 255, 0.58);
 
     color: #77798b;
 
-    font-size: 0.64rem;
+    font-size: 0.58rem;
+
     font-weight: 800;
 
-    letter-spacing: 0.1em;
+    letter-spacing: 0.07em;
+
+    white-space: nowrap;
+
 }
 
 
@@ -338,150 +573,355 @@
 ======================================== */
 
 .games-card-body {
+
     position: relative;
+
     z-index: 2;
 
-    margin-top: 30px;
+    min-width: 0;
+
+    margin-top: 19px;
+
 }
 
 
+/* Game title */
+
 .games-card-title {
+
     margin: 0;
 
     color: #303342;
 
-    font-size: 1.55rem;
+    font-size: 1.16rem;
+
     font-weight: 800;
 
+    line-height: 1.35;
+
     letter-spacing: -0.02em;
+
 }
 
 
-.games-card-description {
-    max-width: 330px;
+/* Game description */
 
-    margin: 11px 0 0;
+.games-card-description {
+
+    display: -webkit-box;
+
+    max-width: 100%;
+
+    margin: 7px 0 0;
+
+    overflow: hidden;
 
     color: #747789;
 
-    font-size: 0.91rem;
+    font-size: 0.78rem;
 
-    line-height: 1.75;
+    line-height: 1.6;
+
+    -webkit-box-orient: vertical;
+
+    -webkit-line-clamp: 2;
+
+    line-clamp: 2;
+
 }
 
 
 /* ========================================
-   Card Footer
+   Optional Card Footer
 ======================================== */
 
 .games-card-footer {
+
     position: relative;
+
     z-index: 2;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     margin-top: auto;
-    padding-top: 28px;
+
+    padding-top: 16px;
 
     color: #5d6074;
 
-    font-size: 0.7rem;
+    font-size: 0.67rem;
+
     font-weight: 800;
 
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
+
 }
 
 
 .games-card-arrow {
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
-    width: 40px;
-    height: 40px;
+    width: 34px;
+
+    height: 34px;
 
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, 0.72);
+    background:
+        rgba(255, 255, 255, 0.72);
 
     color: #55586b;
 
-    font-size: 1.15rem;
+    font-size: 1rem;
 
     transition:
         transform 0.2s ease,
         background 0.2s ease;
+
 }
 
 
-.games-card:hover .games-card-arrow {
-    background: rgba(255, 255, 255, 0.95);
+.games-card:hover
+.games-card-arrow {
 
-    transform: translateX(3px);
+    background:
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateX(3px);
+
 }
 
 
 /* ========================================
-   Tablet / Mobile
+   Tablet
+
+   2 columns
 ======================================== */
 
-@media (max-width: 760px) {
+@media (max-width: 850px) {
 
     .games-page {
-        padding: 18px 0 38px;
-    }
 
+        padding: 20px 0 42px;
 
-    .games-hero {
-        min-height: 190px;
-
-        margin-bottom: 20px;
-        padding: 29px 25px;
-
-        border-radius: 28px;
-    }
-
-
-    .games-hero-decoration {
-        width: 84px;
-        height: 84px;
-
-        border-radius: 26px;
-
-        font-size: 3rem;
     }
 
 
     .games-grid {
-        grid-template-columns: 1fr;
 
-        gap: 17px;
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 16px;
+
     }
 
 
     .games-card {
-        min-height: 280px;
 
-        padding: 23px;
+        min-height: 200px;
 
-        border-radius: 27px;
+        padding: 19px;
+
     }
 
 
-    .games-card-icon {
+    .games-hero {
+
+        margin-bottom: 22px;
+
+    }
+
+}
+
+
+/* ========================================
+   Mobile
+
+   Keep 2 columns
+======================================== */
+
+@media (max-width: 600px) {
+
+    .games-page {
+
+        padding: 16px 0 36px;
+
+    }
+
+
+    /* Back button */
+
+    .games-page-nav {
+
+        margin-bottom: 15px;
+
+    }
+
+
+    .games-back-button {
+
+        padding: 8px 13px;
+
+        font-size: 0.78rem;
+
+    }
+
+
+    /* Hero */
+
+    .games-hero {
+
+        min-height: 125px;
+
+        margin-bottom: 20px;
+
+        padding: 22px;
+
+        border-radius: 24px;
+
+    }
+
+
+    .games-eyebrow {
+
+        font-size: 0.63rem;
+
+    }
+
+
+    .games-title {
+
+        font-size: 1.9rem;
+
+    }
+
+
+    .games-hero-decoration {
+
         width: 67px;
+
         height: 67px;
 
-        border-radius: 21px;
+        border-radius: 20px;
 
-        font-size: 2.45rem;
+        font-size: 2.35rem;
+
     }
 
 
+    /* Grid */
+
+    .games-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 12px;
+
+    }
+
+
+    /* Card */
+
+    .games-card {
+
+        min-height: 175px;
+
+        padding: 15px;
+
+        border-radius: 20px;
+
+        box-shadow:
+            0 6px 19px
+            rgba(38, 40, 65, 0.07);
+
+    }
+
+
+    .games-card::after {
+
+        width: 110px;
+
+        height: 110px;
+
+        right: -45px;
+
+        bottom: -50px;
+
+    }
+
+
+    /* Icon */
+
+    .games-card-icon {
+
+        width: 49px;
+
+        height: 49px;
+
+        border-radius: 16px;
+
+        font-size: 1.75rem;
+
+    }
+
+
+    /* Hide badges on mobile */
+
+    .games-card-badge {
+
+        display: none;
+
+    }
+
+
+    /* Body */
+
     .games-card-body {
-        margin-top: 24px;
+
+        margin-top: 16px;
+
+    }
+
+
+    .games-card-title {
+
+        font-size: 1.04rem;
+
+        line-height: 1.35;
+
+    }
+
+
+    .games-card-description {
+
+        margin-top: 6px;
+
+        font-size: 0.73rem;
+
+        line-height: 1.5;
+
+        -webkit-line-clamp: 2;
+
+        line-clamp: 2;
+
     }
 
 }
@@ -491,96 +931,114 @@
    Small Mobile
 ======================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 380px) {
 
     .games-hero {
-        min-height: 170px;
 
-        padding: 25px 21px;
+        min-height: 115px;
+
+        padding: 19px;
+
+        border-radius: 21px;
+
     }
 
 
-    .games-description {
-        max-width: 190px;
+    .games-title {
 
-        font-size: 0.86rem;
+        font-size: 1.7rem;
 
-        line-height: 1.6;
     }
 
 
     .games-hero-decoration {
-        width: 68px;
-        height: 68px;
 
-        border-radius: 22px;
+        width: 58px;
 
-        font-size: 2.45rem;
+        height: 58px;
+
+        border-radius: 18px;
+
+        font-size: 2rem;
+
+    }
+
+
+    .games-grid {
+
+        gap: 10px;
+
     }
 
 
     .games-card {
-        min-height: 260px;
 
-        padding: 21px;
+        min-height: 165px;
+
+        padding: 12px;
+
+        border-radius: 18px;
+
+    }
+
+
+    .games-card-icon {
+
+        width: 44px;
+
+        height: 44px;
+
+        border-radius: 14px;
+
+        font-size: 1.55rem;
+
+    }
+
+
+    .games-card-body {
+
+        margin-top: 13px;
+
     }
 
 
     .games-card-title {
-        font-size: 1.4rem;
+
+        font-size: 0.96rem;
+
+    }
+
+
+    .games-card-description {
+
+        font-size: 0.7rem;
+
     }
 
 }
 
+
 /* ========================================
-   Back to Portal
+   Reduced Motion
 ======================================== */
 
-.games-page-nav {
-    display: flex;
-    align-items: center;
+@media (
+    prefers-reduced-motion: reduce
+) {
 
-    margin-bottom: 18px;
-}
+    .games-card,
+    .games-back-button,
+    .games-card-arrow {
 
-.games-back-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+        transition: none;
 
-    padding: 10px 16px;
+    }
 
-    border-radius: 999px;
+    .games-card:hover,
+    .games-back-button:hover {
 
-    background: #ffffff;
+        transform: none;
 
-    color: #65697b;
+    }
 
-    font-size: 0.86rem;
-    font-weight: 700;
-
-    text-decoration: none;
-
-    box-shadow:
-        0 5px 18px rgba(40, 42, 65, 0.07);
-
-    transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        color 0.18s ease;
-}
-
-.games-back-button:hover {
-    color: #343748;
-
-    text-decoration: none;
-
-    transform: translateX(-2px);
-
-    box-shadow:
-        0 8px 22px rgba(40, 42, 65, 0.11);
-}
-
-.games-back-button:active {
-    transform: translateX(-1px) scale(0.98);
 }
