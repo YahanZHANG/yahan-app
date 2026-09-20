@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ display_name }} | 利用状況
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+<div class="analytics-page">
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            USER ANALYTICS
+        </p>
+
+        <h1>
+            {{ display_name }}
+        </h1>
+
+        <p>
+            ID: {{ target_user.username }}
+        </p>
+
+        <div class="analytics-actions">
+
+            <a href="{% url 'usage_analytics:dashboard' %}?days={{ days }}">
+                ← 利用状況に戻る
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+        <nav class="analytics-period">
+
+            <a
+                href="?days=7"
+                class="{% if days == '7' %}is-active{% endif %}"
+            >
+                7日間
+            </a>
+
+            <a
+                href="?days=30"
+                class="{% if days == '30' %}is-active{% endif %}"
+            >
+                30日間
+            </a>
+
+            <a
+                href="?days=all"
+                class="{% if days == 'all' %}is-active{% endif %}"
+            >
+                全期間
+            </a>
+
+        </nav>
+
+
+        <section class="analytics-summary">
+
+            <div class="analytics-stat-card">
+
+                <span>利用日数</span>
+
+                <strong>
+                    {{ summary.active_days }}
+                </strong>
+
+                <small>日</small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>訪問回数</span>
+
+                <strong>
+                    {{ summary.visits }}
+                </strong>
+
+                <small>回</small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>ページ閲覧数</span>
+
+                <strong>
+                    {{ summary.page_views }}
+                </strong>
+
+                <small>回</small>
+
+            </div>
+
+        </section>
+
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    APP BREAKDOWN
+                </p>
+
+                <h2>
+                    アプリ別の利用状況
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>アプリ</th>
+
+                            <th>利用日数</th>
+
+                            <th>訪問</th>
+
+                            <th>閲覧</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for app in apps %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ app.name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ app.active_days }}日
+                                </td>
+
+                                <td>
+                                    {{ app.visits }}回
+                                </td>
+
+                                <td>
+                                    {{ app.page_views }}回
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    LAST ACTIVITY
+                </p>
+
+                <h2>
+                    最終アクセス
+                </h2>
+
+            </div>
+
+            <div class="analytics-info-card">
+
+                {% if summary.last_seen %}
+
+                    {{ summary.last_seen|date:"Y年m月d日 H:i" }}
+
+                {% else %}
+
+                    この期間の利用記録はありません。
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}

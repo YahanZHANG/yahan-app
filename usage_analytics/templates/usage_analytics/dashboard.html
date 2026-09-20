@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    利用状況 | yahan-app
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+<div class="analytics-page">
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            YAHAN APP ANALYTICS
+        </p>
+
+        <h1>
+            📊 利用状況
+        </h1>
+
+        <p>
+            アプリとユーザーの利用状況を確認
+        </p>
+
+        <div class="analytics-actions">
+
+            <a href="{% url 'portal:home' %}">
+                ← Portal
+            </a>
+
+            {% if user.is_superuser %}
+
+                <a
+                    href="{% url 'usage_analytics:access_control' %}"
+                >
+                    🔐 閲覧権限
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+        <!-- =====================================
+             Period selector
+             ===================================== -->
+
+        <nav class="analytics-period">
+
+            <a
+                href="?days=7"
+                class="{% if days == '7' %}is-active{% endif %}"
+            >
+                7日間
+            </a>
+
+            <a
+                href="?days=30"
+                class="{% if days == '30' %}is-active{% endif %}"
+            >
+                30日間
+            </a>
+
+            <a
+                href="?days=all"
+                class="{% if days == 'all' %}is-active{% endif %}"
+            >
+                全期間
+            </a>
+
+        </nav>
+
+
+        <!-- =====================================
+             Summary
+             ===================================== -->
+
+        <section class="analytics-summary">
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    登録ユーザー
+                </span>
+
+                <strong>
+                    {{ registered_users }}
+                </strong>
+
+                <small>人</small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    期間中の利用者
+                </span>
+
+                <strong>
+                    {{ active_users }}
+                </strong>
+
+                <small>人</small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    訪問回数
+                </span>
+
+                <strong>
+                    {{ total_visits }}
+                </strong>
+
+                <small>回</small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    ページ閲覧数
+                </span>
+
+                <strong>
+                    {{ total_page_views }}
+                </strong>
+
+                <small>回</small>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================
+             App statistics
+             ===================================== -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    APP STATISTICS
+                </p>
+
+                <h2>
+                    アプリ別の利用状況
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>アプリ</th>
+
+                            <th>利用者</th>
+
+                            <th>訪問</th>
+
+                            <th>閲覧</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for app in apps %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ app.name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ app.users }}人
+                                </td>
+
+                                <td>
+                                    {{ app.visits }}回
+                                </td>
+
+                                <td>
+                                    {{ app.page_views }}回
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================
+             User statistics
+             ===================================== -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    USER STATISTICS
+                </p>
+
+                <h2>
+                    ユーザー別の利用状況
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-user-grid">
+
+                {% for account in users %}
+
+                    <a
+                        class="analytics-user-card"
+
+                        href="{% url 'usage_analytics:user_detail' account.id %}?days={{ days }}"
+                    >
+
+                        <div class="analytics-user-top">
+
+                            <div class="analytics-avatar">
+
+                                {{ account.display_name|first|upper }}
+
+                            </div>
+
+
+                            <div class="analytics-user-name">
+
+                                <strong>
+                                    {{ account.display_name }}
+                                </strong>
+
+                                <span>
+                                    @{{ account.username }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="analytics-user-numbers">
+
+                            <div>
+
+                                <strong>
+                                    {{ account.active_days }}
+                                </strong>
+
+                                <span>
+                                    利用日数
+                                </span>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    {{ account.visits }}
+                                </strong>
+
+                                <span>
+                                    訪問
+                                </span>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    {{ account.page_views }}
+                                </strong>
+
+                                <span>
+                                    閲覧
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="analytics-last-seen">
+
+                            最終アクセス：
+
+                            {% if account.last_seen %}
+
+                                {{ account.last_seen|date:"Y/m/d H:i" }}
+
+                            {% else %}
+
+                                記録なし
+
+                            {% endif %}
+
+                        </div>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <p class="analytics-note">
+
+            ※ 利用状況は記録機能の導入後から集計。
+
+            訪問回数は30分以上アクセスが空いた場合に
+            新しい訪問として計算。
+
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

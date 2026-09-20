@@ -213,12 +213,28 @@
                     </div>
 
 
-                    <a
-                        href="{% url 'portal:manage_apps' %}"
-                        class="portal-manage-apps-button"
-                    >
-                        ⚙ アプリを管理
-                    </a>
+                    <div class="portal-heading-actions">
+
+                        {% if can_view_analytics %}
+
+                            <a
+                                href="{% url 'usage_analytics:dashboard' %}"
+                                class="portal-manage-apps-button"
+                            >
+                                📊 利用状況
+                            </a>
+
+                        {% endif %}
+
+
+                        <a
+                            href="{% url 'portal:manage_apps' %}"
+                            class="portal-manage-apps-button"
+                        >
+                            ⚙ アプリを管理
+                        </a>
+
+                    </div>
 
                 </div>
 

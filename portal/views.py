@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from usage_analytics.permissions import can_view_analytics
 
 from feeding.models import BabyMembership
 from travel.models import UserProfile
@@ -684,6 +685,7 @@ def home(request):
 
     context = {
         "can_use_feeding": can_use_feeding,
+        "can_view_analytics": can_view_analytics(request.user),
         "profile": profile,
         "nickname_form": nickname_form,
         "visible_apps": visible_apps,

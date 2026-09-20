@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    閲覧権限 | yahan-app
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+<div class="analytics-page">
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            ACCESS CONTROL
+        </p>
+
+        <h1>
+            🔐 閲覧権限
+        </h1>
+
+        <p>
+            利用状況を確認できるアカウントを設定
+        </p>
+
+        <div class="analytics-actions">
+
+            <a href="{% url 'usage_analytics:dashboard' %}">
+                ← 利用状況に戻る
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ALLOWED USERS
+                </p>
+
+                <h2>
+                    閲覧を許可するユーザー
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+
+                チェックを入れたアカウントは、
+                管理ダッシュボードと
+                ユーザー別の利用状況を閲覧できる。
+
+                Superuserは常に閲覧可能。
+
+            </p>
+
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="analytics-message">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+
+                <div class="analytics-access-list">
+
+                    {% for account in accounts %}
+
+                        <label class="analytics-access-user">
+
+                            <input
+                                type="checkbox"
+
+                                name="viewer_ids"
+
+                                value="{{ account.id }}"
+
+                                {% if account.is_viewer %}
+                                    checked
+                                {% endif %}
+                            >
+
+
+                            <span class="analytics-avatar">
+
+                                {{ account.display_name|first|upper }}
+
+                            </span>
+
+
+                            <span class="analytics-user-name">
+
+                                <strong>
+                                    {{ account.display_name }}
+                                </strong>
+
+                                <span>
+                                    @{{ account.username }}
+                                </span>
+
+                            </span>
+
+                        </label>
+
+                    {% empty %}
+
+                        <p>
+                            設定可能なユーザーはいません。
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="analytics-save-button"
+                >
+                    変更を保存
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}

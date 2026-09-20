@@ -98,6 +98,14 @@ urlpatterns = [
     ),
 
     path(
+        "analytics/",
+        include(
+            "usage_analytics.urls",
+            namespace="usage_analytics",
+        ),
+    ),
+
+    path(
         "",
         include("portal.urls"),
     ),

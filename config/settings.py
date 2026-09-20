@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     "colorcheck.apps.ColorCheckConfig",
     "recipes.apps.RecipesConfig",
     "news.apps.NewsConfig",
+
+    "usage_analytics.apps.UsageAnalyticsConfig",
 ]
 
 # ------------------------------------------------------------------------------
@@ -70,6 +72,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
+    # Yahan-app usage tracking
+    "usage_analytics.middleware.UsageAnalyticsMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
