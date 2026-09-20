@@ -76,6 +76,23 @@
 </head>
 
 
+<!-- =====================================================
+     Yahan App Heartbeat
+     ===================================================== -->
+
+{% if user.is_authenticated %}
+
+    <script
+        src="{% static 'usage_analytics/heartbeat.js' %}"
+
+        data-heartbeat-url="{% url 'usage_analytics:heartbeat' %}"
+
+        data-csrf-token="{{ csrf_token }}"
+    ></script>
+
+{% endif %}
+
+
 <body>
 
     <main class="container app-container page-content">

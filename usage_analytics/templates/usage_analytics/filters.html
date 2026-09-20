@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+
+    集計対象を設定 | yahan-app
+
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+
+<div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            ANALYTICS SETTINGS
+        </p>
+
+
+        <h1>
+            ⚙ 集計対象を設定
+        </h1>
+
+
+        <p>
+            統計から除外するユーザーを選択
+        </p>
+
+
+        <div class="analytics-actions">
+
+            <a
+                href="{% url 'usage_analytics:dashboard' %}?days={{ days }}{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+            >
+                ← 利用状況に戻る
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
+    <main class="analytics-main">
+
+        <section class="analytics-section">
+
+            <!-- =============================================
+                 Section heading
+                 ============================================= -->
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    USER FILTER
+                </p>
+
+                <h2>
+                    除外するユーザー
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+
+                チェックしたユーザーを
+                利用状況の統計から除外する。
+
+                誰も選択しなければ、
+                全ユーザーを集計する。
+
+            </p>
+
+
+            <!-- =============================================
+                 Filter form
+                 ============================================= -->
+
+            <form
+                method="get"
+                action="{% url 'usage_analytics:dashboard' %}"
+            >
+
+                <!-- =========================================
+                     Preserve selected period
+                     ========================================= -->
+
+                <input
+                    type="hidden"
+                    name="days"
+                    value="{{ days }}"
+                >
+
+
+                <!-- =========================================
+                     Account selection
+                     ========================================= -->
+
+                <div class="analytics-checkbox-list">
+
+                    {% for account in exclusion_accounts %}
+
+                        <label class="analytics-access-user">
+
+                            <input
+                                type="checkbox"
+
+                                name="exclude_users"
+
+                                value="{{ account.id }}"
+
+                                {% if account.is_excluded %}
+                                    checked
+                                {% endif %}
+                            >
+
+
+                            <span class="analytics-avatar">
+
+                                {{ account.display_name|first|upper }}
+
+                            </span>
+
+
+                            <span class="analytics-user-name">
+
+                                <strong>
+                                    {{ account.display_name }}
+                                </strong>
+
+                                <span>
+                                    @{{ account.username }}
+                                </span>
+
+                            </span>
+
+                        </label>
+
+
+                    {% empty %}
+
+                        <p class="analytics-description">
+
+                            登録済みユーザーがいません。
+
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- =========================================
+                     Save
+                     ========================================= -->
+
+                <button
+                    type="submit"
+                    class="analytics-save-button"
+                >
+                    この条件で集計する
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
+        <p class="analytics-note">
+
+            ※ 除外したユーザーの利用履歴は削除されない。
+
+            集計対象から一時的に除外するだけなので、
+            いつでも元に戻せる。
+
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

@@ -13,7 +13,12 @@
     href="{% static 'usage_analytics/analytics.css' %}"
 >
 
+
 <div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
 
     <header class="analytics-hero">
 
@@ -21,17 +26,22 @@
             USER ANALYTICS
         </p>
 
+
         <h1>
             {{ display_name }}
         </h1>
+
 
         <p>
             ID: {{ target_user.username }}
         </p>
 
+
         <div class="analytics-actions">
 
-            <a href="{% url 'usage_analytics:dashboard' %}?days={{ days }}">
+            <a
+                href="{% url 'usage_analytics:dashboard' %}?{{ request.GET.urlencode }}"
+            >
                 ← 利用状況に戻る
             </a>
 
@@ -40,76 +50,147 @@
     </header>
 
 
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
     <main class="analytics-main">
 
-        <nav class="analytics-period">
 
-            <a
-                href="?days=7"
-                class="{% if days == '7' %}is-active{% endif %}"
-            >
-                7日間
-            </a>
+        <!-- =================================================
+             Period selector
+             ================================================= -->
 
-            <a
-                href="?days=30"
-                class="{% if days == '30' %}is-active{% endif %}"
-            >
-                30日間
-            </a>
+        <form method="get">
 
-            <a
-                href="?days=all"
-                class="{% if days == 'all' %}is-active{% endif %}"
-            >
-                全期間
-            </a>
+            <!-- =============================================
+                 Preserve excluded users
+                 ============================================= -->
 
-        </nav>
+            {% for excluded_id in excluded_ids %}
 
+                <input
+                    type="hidden"
+
+                    name="exclude_users"
+
+                    value="{{ excluded_id }}"
+                >
+
+            {% endfor %}
+
+
+            <!-- =============================================
+                 Period buttons
+                 ============================================= -->
+
+            <nav class="analytics-period">
+
+                <button
+                    type="submit"
+
+                    name="days"
+
+                    value="7"
+
+                    class="{% if days == '7' %}is-active{% endif %}"
+                >
+                    7日間
+                </button>
+
+
+                <button
+                    type="submit"
+
+                    name="days"
+
+                    value="30"
+
+                    class="{% if days == '30' %}is-active{% endif %}"
+                >
+                    30日間
+                </button>
+
+
+                <button
+                    type="submit"
+
+                    name="days"
+
+                    value="all"
+
+                    class="{% if days == 'all' %}is-active{% endif %}"
+                >
+                    全期間
+                </button>
+
+            </nav>
+
+        </form>
+
+
+        <!-- =================================================
+             Summary
+             ================================================= -->
 
         <section class="analytics-summary">
 
             <div class="analytics-stat-card">
 
-                <span>利用日数</span>
+                <span>
+                    利用日数
+                </span>
 
                 <strong>
                     {{ summary.active_days }}
                 </strong>
 
-                <small>日</small>
+                <small>
+                    日
+                </small>
 
             </div>
 
 
             <div class="analytics-stat-card">
 
-                <span>訪問回数</span>
+                <span>
+                    訪問回数
+                </span>
 
                 <strong>
                     {{ summary.visits }}
                 </strong>
 
-                <small>回</small>
+                <small>
+                    回
+                </small>
 
             </div>
 
 
             <div class="analytics-stat-card">
 
-                <span>ページ閲覧数</span>
+                <span>
+                    ページ閲覧数
+                </span>
 
                 <strong>
                     {{ summary.page_views }}
                 </strong>
 
-                <small>回</small>
+                <small>
+                    回
+                </small>
 
             </div>
 
         </section>
 
+
+        <!-- =================================================
+             App statistics
+             ================================================= -->
 
         <section class="analytics-section">
 
@@ -134,13 +215,21 @@
 
                         <tr>
 
-                            <th>アプリ</th>
+                            <th>
+                                アプリ
+                            </th>
 
-                            <th>利用日数</th>
+                            <th>
+                                利用日数
+                            </th>
 
-                            <th>訪問</th>
+                            <th>
+                                訪問
+                            </th>
 
-                            <th>閲覧</th>
+                            <th>
+                                閲覧
+                            </th>
 
                         </tr>
 
@@ -154,18 +243,23 @@
                             <tr>
 
                                 <td>
+
                                     <strong>
                                         {{ app.name }}
                                     </strong>
+
                                 </td>
+
 
                                 <td>
                                     {{ app.active_days }}日
                                 </td>
 
+
                                 <td>
                                     {{ app.visits }}回
                                 </td>
+
 
                                 <td>
                                     {{ app.page_views }}回
@@ -184,6 +278,10 @@
         </section>
 
 
+        <!-- =================================================
+             Last activity
+             ================================================= -->
+
         <section class="analytics-section">
 
             <div class="analytics-section-heading">
@@ -193,10 +291,11 @@
                 </p>
 
                 <h2>
-                    最終アクセス
+                    選択期間の最終アクセス
                 </h2>
 
             </div>
+
 
             <div class="analytics-info-card">
 
@@ -213,6 +312,23 @@
             </div>
 
         </section>
+
+
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
+        <p class="analytics-note">
+
+            ※ 利用状況は記録機能の導入後から集計。
+
+            利用日数はスイス時間の日付で計算。
+
+            訪問回数は同じアプリで
+            30分以上アクセスが空いた場合に
+            新しい訪問として計算。
+
+        </p>
 
     </main>
 

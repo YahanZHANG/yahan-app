@@ -502,3 +502,427 @@
     }
 
 }
+
+/* =====================================================
+   Analytics filter summary
+   ===================================================== */
+
+.analytics-filter-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 16px;
+
+    padding: 22px;
+
+    border: 1px solid #edf0f7;
+    border-radius: 20px;
+
+    background: #f8faff;
+}
+
+.analytics-filter-summary-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.analytics-filter-summary-copy strong {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #394654;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.analytics-filter-summary-copy p {
+    margin: 0;
+
+    color: #8290a2;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* =====================================================
+   Filter settings button
+   ===================================================== */
+
+.analytics-filter-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 12px 20px;
+
+    border-radius: 999px;
+
+    background: #687fc0;
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    text-decoration: none;
+
+    transition: .2s;
+}
+
+.analytics-filter-link:hover {
+    background: #536db1;
+    color: #fff;
+
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   Mobile
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+    .analytics-filter-summary {
+        flex-direction: column;
+        align-items: stretch;
+
+        padding: 18px;
+    }
+
+    .analytics-filter-link {
+        width: 100%;
+    }
+
+}
+
+/* =====================================================
+   Online users
+   ===================================================== */
+
+.analytics-online-section {
+    margin-bottom: 28px;
+    padding: 30px;
+
+    border: 1px solid #dcece4;
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff 0%,
+            #f0faf5 100%
+        );
+
+    box-shadow:
+        0 8px 28px rgba(63, 80, 112, .05);
+}
+
+
+/* =====================================================
+   Heading
+   ===================================================== */
+
+.analytics-online-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.analytics-online-eyebrow {
+    margin: 0 0 6px;
+
+    color: #65a486;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+.analytics-online-heading h2 {
+    margin: 0;
+
+    color: #344a3e;
+
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.analytics-live-badge {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 7px 13px;
+
+    border-radius: 999px;
+
+    background: #dbf4e6;
+    color: #37865d;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.analytics-live-badge::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #4bb77c;
+}
+
+.analytics-online-description {
+    margin: 10px 0 22px;
+
+    color: #82918a;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* =====================================================
+   Online count
+   ===================================================== */
+
+.analytics-online-summary {
+    padding: 22px;
+
+    border: 1px solid #def0e5;
+    border-radius: 20px;
+
+    background: #ffffff;
+}
+
+.analytics-online-summary > span {
+    display: block;
+
+    color: #71877a;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.analytics-online-total {
+    display: flex;
+    align-items: baseline;
+
+    gap: 6px;
+
+    margin-top: 9px;
+}
+
+.analytics-online-total strong {
+    color: #319466;
+
+    font-size: 43px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.analytics-online-total span {
+    color: #71877a;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   Status
+   ===================================================== */
+
+.analytics-online-status {
+    margin-top: 16px;
+    padding: 13px 16px;
+
+    border-radius: 14px;
+
+    background: #f0f3f6;
+    color: #657182;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.7;
+}
+
+.analytics-online-status.is-empty {
+    background: #e8f7ee;
+    color: #37865d;
+}
+
+.analytics-online-status.is-active {
+    background: #fff3e5;
+    color: #aa7535;
+}
+
+.analytics-online-status.is-error {
+    background: #fff0f0;
+    color: #bb5656;
+}
+
+
+/* =====================================================
+   Online user list
+   ===================================================== */
+
+.analytics-online-users {
+    display: grid;
+    gap: 10px;
+
+    margin-top: 16px;
+}
+
+.analytics-online-user {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 16px;
+
+    border: 1px solid #e5eee8;
+    border-radius: 18px;
+
+    background: #ffffff;
+}
+
+.analytics-online-avatar {
+    display: flex;
+    flex: 0 0 43px;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 43px;
+    height: 43px;
+
+    border-radius: 15px;
+
+    background: #e0f5e9;
+    color: #47956b;
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.analytics-online-user-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    min-width: 0;
+    gap: 4px;
+}
+
+.analytics-online-user-info strong {
+    color: #3c5045;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    overflow-wrap: anywhere;
+}
+
+.analytics-online-user-info small {
+    color: #91a198;
+
+    font-size: 11px;
+
+    overflow-wrap: anywhere;
+}
+
+.analytics-online-apps {
+    color: #6c8576;
+
+    font-size: 11px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
+}
+
+.analytics-online-time {
+    flex-shrink: 0;
+
+    padding: 7px 11px;
+
+    border-radius: 999px;
+
+    background: #e6f7ec;
+    color: #3e9564;
+
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   Footer
+   ===================================================== */
+
+.analytics-online-footer {
+    display: flex;
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-top: 19px;
+
+    color: #94a39a;
+
+    font-size: 11px;
+}
+
+.analytics-online-note {
+    margin: 15px 0 0;
+
+    color: #94a39a;
+
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+
+/* =====================================================
+   Mobile
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+    .analytics-online-section {
+        padding: 23px 17px;
+        border-radius: 23px;
+    }
+
+    .analytics-online-heading h2 {
+        font-size: 19px;
+    }
+
+    .analytics-online-total strong {
+        font-size: 37px;
+    }
+
+    .analytics-online-user {
+        flex-wrap: wrap;
+    }
+
+    .analytics-online-time {
+        margin-left: 56px;
+    }
+
+}

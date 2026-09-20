@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class UsageEvent(models.Model):
@@ -97,4 +98,80 @@ class UsageEvent(models.Model):
             f"{self.user.username} | "
             f"{self.get_app_key_display()} | "
             f"{self.accessed_at}"
+        )
+
+# =========================================================
+# Online presence
+# =========================================================
+
+class OnlinePresence(models.Model):
+    """
+    ユーザーのオンライン状態を管理する。
+
+    ブラウザのタブごとに1件保存し、
+    Heartbeatを受信するたびに
+    last_seenを更新する。
+
+    UsageEventとは独立しているため、
+    ページ閲覧数には影響しない。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="online_presences",
+        verbose_name="ユーザー",
+    )
+
+    tab_id = models.UUIDField(
+        "タブID",
+    )
+
+    app_key = models.CharField(
+        "利用中のアプリ",
+        max_length=30,
+        choices=UsageEvent.AppKey.choices,
+    )
+
+    last_seen = models.DateTimeField(
+        "最終生存確認",
+        default=timezone.now,
+        db_index=True,
+    )
+
+    class Meta:
+
+        verbose_name = "オンライン状態"
+
+        verbose_name_plural = "オンライン状態"
+
+        constraints = [
+
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "tab_id",
+                ],
+                name="unique_online_presence_per_tab",
+            ),
+
+        ]
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "user",
+                    "last_seen",
+                ],
+            ),
+
+        ]
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username} | "
+            f"{self.get_app_key_display()} | "
+            f"{self.last_seen}"
         )

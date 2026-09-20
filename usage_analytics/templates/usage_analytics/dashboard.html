@@ -13,7 +13,12 @@
     href="{% static 'usage_analytics/analytics.css' %}"
 >
 
+
 <div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
 
     <header class="analytics-hero">
 
@@ -29,11 +34,15 @@
             アプリとユーザーの利用状況を確認
         </p>
 
+
         <div class="analytics-actions">
 
-            <a href="{% url 'portal:home' %}">
+            <a
+                href="{% url 'portal:home' %}"
+            >
                 ← Portal
             </a>
+
 
             {% if user.is_superuser %}
 
@@ -50,55 +59,254 @@
     </header>
 
 
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
     <main class="analytics-main">
 
-        <!-- =====================================
-             Period selector
-             ===================================== -->
 
-        <nav class="analytics-period">
+        <!-- =================================================
+             Online users
+             ================================================= -->
 
-            <a
-                href="?days=7"
-                class="{% if days == '7' %}is-active{% endif %}"
+        <section
+            class="analytics-online-section"
+            id="analytics-online"
+            data-online-url="{% url 'usage_analytics:online_users' %}"
+        >
+
+            <div class="analytics-online-heading">
+
+                <div>
+
+                    <p class="analytics-online-eyebrow">
+                        LIVE ACTIVITY
+                    </p>
+
+                    <h2>
+                        🟢 現在の利用状況
+                    </h2>
+
+                </div>
+
+
+                <span class="analytics-live-badge">
+                    LIVE
+                </span>
+
+            </div>
+
+
+            <p class="analytics-online-description">
+                5秒ごとに自動更新・直近20秒の生存信号で判定
+            </p>
+
+
+            <!-- =============================================
+                 Online count
+                 ============================================= -->
+
+            <div class="analytics-online-summary">
+
+                <span>
+                    現在オンラインと推定されるユーザー
+                </span>
+
+
+                <div class="analytics-online-total">
+
+                    <strong id="analytics-online-count">
+                        —
+                    </strong>
+
+                    <span>
+                        人
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 Online status
+                 ============================================= -->
+
+            <div
+                id="analytics-online-status"
+                class="analytics-online-status"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
             >
-                7日間
-            </a>
-
-            <a
-                href="?days=30"
-                class="{% if days == '30' %}is-active{% endif %}"
-            >
-                30日間
-            </a>
-
-            <a
-                href="?days=all"
-                class="{% if days == 'all' %}is-active{% endif %}"
-            >
-                全期間
-            </a>
-
-        </nav>
+                オンライン状況を確認中...
+            </div>
 
 
-        <!-- =====================================
+            <!-- =============================================
+                 Online user list
+                 ============================================= -->
+
+            <div
+                id="analytics-online-users"
+                class="analytics-online-users"
+            ></div>
+
+
+            <!-- =============================================
+                 Last check
+                 ============================================= -->
+
+            <div class="analytics-online-footer">
+
+                <span id="analytics-online-checked-at">
+
+                    最終確認：—
+
+                </span>
+
+
+                <span>
+                    自動更新：5秒
+                </span>
+
+            </div>
+
+
+            <p class="analytics-online-note">
+
+                ※ オンライン状態は推定値。
+                記事を開いたまま読んでいる場合など、
+                実際の利用状況と一致しないことがある。
+
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
+             Analytics filters
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ANALYTICS FILTERS
+                </p>
+
+                <h2>
+                    集計条件
+                </h2>
+
+            </div>
+
+
+            <!-- =============================================
+                 Period selector
+                 ============================================= -->
+
+            <p class="analytics-description">
+                集計期間
+            </p>
+
+
+            <nav class="analytics-period">
+
+                <a
+                    href="?days=7{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+
+                    class="{% if days == '7' %}is-active{% endif %}"
+                >
+                    7日間
+                </a>
+
+
+                <a
+                    href="?days=30{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+
+                    class="{% if days == '30' %}is-active{% endif %}"
+                >
+                    30日間
+                </a>
+
+
+                <a
+                    href="?days=all{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+
+                    class="{% if days == 'all' %}is-active{% endif %}"
+                >
+                    全期間
+                </a>
+
+            </nav>
+
+
+            <!-- =============================================
+                 User filter
+                 ============================================= -->
+
+            <div class="analytics-filter-summary">
+
+                <div class="analytics-filter-summary-copy">
+
+                    <strong>
+                        集計対象ユーザー
+                    </strong>
+
+
+                    <p>
+
+                        {% if excluded_ids %}
+
+                            {{ excluded_ids|length }}人のユーザーを
+                            除外して集計中
+
+                        {% else %}
+
+                            全ユーザーを集計中
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{% url 'usage_analytics:filters' %}?days={{ days }}{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+
+                    class="analytics-filter-link"
+                >
+                    ⚙ 集計対象を設定
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
              Summary
-             ===================================== -->
+             ================================================= -->
 
         <section class="analytics-summary">
 
             <div class="analytics-stat-card">
 
                 <span>
-                    登録ユーザー
+                    集計対象ユーザー
                 </span>
 
                 <strong>
                     {{ registered_users }}
                 </strong>
 
-                <small>人</small>
+                <small>
+                    人
+                </small>
 
             </div>
 
@@ -113,7 +321,9 @@
                     {{ active_users }}
                 </strong>
 
-                <small>人</small>
+                <small>
+                    人
+                </small>
 
             </div>
 
@@ -128,7 +338,9 @@
                     {{ total_visits }}
                 </strong>
 
-                <small>回</small>
+                <small>
+                    回
+                </small>
 
             </div>
 
@@ -143,16 +355,18 @@
                     {{ total_page_views }}
                 </strong>
 
-                <small>回</small>
+                <small>
+                    回
+                </small>
 
             </div>
 
         </section>
 
 
-        <!-- =====================================
+        <!-- =================================================
              App statistics
-             ===================================== -->
+             ================================================= -->
 
         <section class="analytics-section">
 
@@ -177,13 +391,21 @@
 
                         <tr>
 
-                            <th>アプリ</th>
+                            <th>
+                                アプリ
+                            </th>
 
-                            <th>利用者</th>
+                            <th>
+                                利用者
+                            </th>
 
-                            <th>訪問</th>
+                            <th>
+                                訪問
+                            </th>
 
-                            <th>閲覧</th>
+                            <th>
+                                閲覧
+                            </th>
 
                         </tr>
 
@@ -197,18 +419,23 @@
                             <tr>
 
                                 <td>
+
                                     <strong>
                                         {{ app.name }}
                                     </strong>
+
                                 </td>
+
 
                                 <td>
                                     {{ app.users }}人
                                 </td>
 
+
                                 <td>
                                     {{ app.visits }}回
                                 </td>
+
 
                                 <td>
                                     {{ app.page_views }}回
@@ -227,9 +454,9 @@
         </section>
 
 
-        <!-- =====================================
+        <!-- =================================================
              User statistics
-             ===================================== -->
+             ================================================= -->
 
         <section class="analytics-section">
 
@@ -253,8 +480,12 @@
                     <a
                         class="analytics-user-card"
 
-                        href="{% url 'usage_analytics:user_detail' account.id %}?days={{ days }}"
+                        href="{% url 'usage_analytics:user_detail' account.id %}?{{ request.GET.urlencode }}"
                     >
+
+                        <!-- =================================
+                             User information
+                             ================================= -->
 
                         <div class="analytics-user-top">
 
@@ -279,6 +510,10 @@
 
                         </div>
 
+
+                        <!-- =================================
+                             Statistics
+                             ================================= -->
 
                         <div class="analytics-user-numbers">
 
@@ -323,9 +558,13 @@
                         </div>
 
 
+                        <!-- =================================
+                             Last seen
+                             ================================= -->
+
                         <div class="analytics-last-seen">
 
-                            最終アクセス：
+                            選択期間の最終アクセス：
 
                             {% if account.last_seen %}
 
@@ -341,6 +580,14 @@
 
                     </a>
 
+                {% empty %}
+
+                    <p class="analytics-description">
+
+                        集計対象のユーザーがいません。
+
+                    </p>
+
                 {% endfor %}
 
             </div>
@@ -348,17 +595,34 @@
         </section>
 
 
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
         <p class="analytics-note">
 
             ※ 利用状況は記録機能の導入後から集計。
 
-            訪問回数は30分以上アクセスが空いた場合に
+            訪問回数は同じアプリで30分以上
+            アクセスが空いた場合に
             新しい訪問として計算。
+
+            除外したユーザーの利用履歴は削除されない。
 
         </p>
 
     </main>
 
 </div>
+
+
+<!-- =====================================================
+     Online users auto refresh
+     ===================================================== -->
+
+<script
+    src="{% static 'usage_analytics/online.js' %}"
+    defer
+></script>
 
 {% endblock %}
