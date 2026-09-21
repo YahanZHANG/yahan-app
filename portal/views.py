@@ -19,6 +19,13 @@ from .forms import (
 )
 from .models import PortalAppPreference
 
+from django.db.models import Q
+
+from chat.models import (
+    ChatMessage,
+    ChatConnection,
+)
+
 
 # =========================================================
 # Portal app definitions
@@ -745,6 +752,57 @@ def home(request):
         )
 
     # =====================================================
+    # Chat - Unread messages
+    # =====================================================
+
+    current_user = request.user
+
+    # 承認済みの友達関係のみ取得
+
+    accepted_connections = (
+        ChatConnection.objects.filter(
+
+            Q(user_low=current_user)
+            |
+            Q(user_high=current_user),
+
+            status=ChatConnection.Status.ACCEPTED,
+
+        )
+    )
+
+    # 友達のユーザーIDを取得
+    # 数字IDは内部処理にのみ使用
+
+    friend_ids = []
+
+    for connection in accepted_connections:
+
+        other_user = connection.other_user(
+            current_user
+        )
+
+        if other_user.is_active:
+
+            friend_ids.append(
+                other_user.pk
+            )
+
+    # 友達から届いた未読メッセージ数
+
+    unread_chat_count = (
+        ChatMessage.objects.filter(
+
+            recipient=current_user,
+
+            sender_id__in=friend_ids,
+
+            is_read=False,
+
+        ).count()
+    )
+
+    # =====================================================
     # Board - Latest posts
     # =====================================================
 
@@ -765,26 +823,22 @@ def home(request):
     # =====================================================
 
     context = {
-
         "can_use_feeding": can_use_feeding,
-
         "can_view_analytics": can_view_analytics(
             request.user
         ),
-
         "profile": profile,
-
         "nickname_form": nickname_form,
-
         "visible_apps": visible_apps,
 
         # お知らせ
-
         "board_posts": board_posts,
-
         "can_post_board": can_post_board(
             request.user
         ),
+
+        # Chat
+        "unread_chat_count": unread_chat_count,
 
     }
 

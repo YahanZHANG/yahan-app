@@ -47,10 +47,12 @@
 
 
         <!-- =============================================
-             Brand
-             ============================================= -->
+            Brand + Chat
+            ============================================= -->
 
         <div class="portal-hero-content">
+
+            <!-- Brand -->
 
             <div class="portal-brand-row">
 
@@ -60,7 +62,6 @@
                 >
                     Y
                 </div>
-
 
                 <div>
 
@@ -75,6 +76,56 @@
                 </div>
 
             </div>
+
+
+            <!-- =========================
+                Chat Button
+            ========================= -->
+
+            <a
+
+                href="{% url 'chat:list' %}"
+
+                class="portal-chat-button"
+
+                aria-label="Chatを開く{% if unread_chat_count %}。未読メッセージ{{ unread_chat_count }}件{% endif %}"
+
+            >
+
+                <span
+                    class="portal-chat-icon"
+                    aria-hidden="true"
+                >
+                    💬
+                </span>
+
+
+                <span class="portal-chat-label">
+
+                    Chat
+
+                </span>
+
+
+                {% if unread_chat_count > 0 %}
+
+                    <span class="portal-chat-badge">
+
+                        {% if unread_chat_count > 99 %}
+
+                            99+
+
+                        {% else %}
+
+                            {{ unread_chat_count }}
+
+                        {% endif %}
+
+                    </span>
+
+                {% endif %}
+
+            </a>
 
         </div>
 
