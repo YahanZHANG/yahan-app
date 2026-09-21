@@ -1,0 +1,1893 @@
+/* ========================================
+   Yahan Chat
+======================================== */
+
+.ychat-page {
+
+    --chat-pink: #cf7894;
+    --chat-pink-light: #fff0f4;
+
+    --chat-green: #e4f3ea;
+
+    --chat-text: #46515a;
+    --chat-muted: #89939b;
+
+    width: 100%;
+    max-width: 780px;
+
+    margin: 0 auto;
+
+    padding: 24px 16px 60px;
+
+    color: var(--chat-text);
+
+    font-family: inherit;
+
+}
+
+
+/* ========================================
+   Hero
+======================================== */
+
+.ychat-hero {
+
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 26px 30px 36px;
+
+    border-radius: 30px;
+
+    background: linear-gradient(
+        135deg,
+        #f9dce7 0%,
+        #f8e8ed 55%,
+        #e7f4eb 100%
+    );
+
+    box-shadow:
+        0 12px 32px
+        rgba(118, 88, 101, .08);
+
+}
+
+
+.ychat-hero-top {
+
+    position: relative;
+
+    z-index: 2;
+
+    margin-bottom: 28px;
+
+}
+
+
+.ychat-back-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 8px 14px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, .65);
+
+    color: #856675;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.ychat-back-button:hover {
+
+    color: #856675;
+
+    background: #fff;
+
+}
+
+
+.ychat-hero-content {
+
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+}
+
+
+.ychat-eyebrow {
+
+    margin: 0 0 8px;
+
+    color: #bc7890;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: .18em;
+
+}
+
+
+.ychat-hero h1 {
+
+    margin: 0 0 10px;
+
+    color: #79566c;
+
+    font-size: 32px;
+    font-weight: 800;
+
+    letter-spacing: -.03em;
+
+}
+
+
+.ychat-hero-content p {
+
+    margin: 0;
+
+    color: #876c7a;
+
+    font-size: 13px;
+
+    line-height: 1.8;
+
+}
+
+
+.ychat-hero-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 84px;
+    height: 84px;
+
+    border-radius: 28px;
+
+    background:
+        rgba(255, 255, 255, .45);
+
+    font-size: 38px;
+
+    transform: rotate(8deg);
+
+}
+
+
+/* ========================================
+   Section
+======================================== */
+
+.ychat-section {
+
+    margin-top: 32px;
+
+}
+
+
+.ychat-section-heading {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 15px;
+
+    padding: 0 6px;
+
+}
+
+
+.ychat-section-heading h2 {
+
+    margin: 0;
+
+    color: #5d6269;
+
+    font-size: 17px;
+    font-weight: 800;
+
+}
+
+
+.ychat-section-heading span {
+
+    color: var(--chat-muted);
+
+    font-size: 11px;
+
+}
+
+
+/* ========================================
+   User List
+======================================== */
+
+.ychat-user-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+
+.ychat-user-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 17px 18px;
+
+    border: 1px solid #f0e9ed;
+
+    border-radius: 22px;
+
+    background: #fff;
+
+    box-shadow:
+        0 5px 18px
+        rgba(0, 0, 0, .035);
+
+    color: inherit;
+
+    text-decoration: none;
+
+    transition:
+        transform .2s,
+        box-shadow .2s,
+        border-color .2s;
+
+}
+
+
+.ychat-user-card:hover {
+
+    transform: translateY(-2px);
+
+    border-color: #e9c6d3;
+
+    box-shadow:
+        0 10px 24px
+        rgba(143, 90, 111, .09);
+
+    color: inherit;
+
+}
+
+
+/* ========================================
+   Avatar
+======================================== */
+
+.ychat-avatar {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        #f9dbe5,
+        #e8e3f7
+    );
+
+    color: #a76b89;
+
+    font-size: 19px;
+    font-weight: 800;
+
+}
+
+
+/* ========================================
+   User Info
+======================================== */
+
+.ychat-user-info {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.ychat-user-name {
+
+    margin-bottom: 5px;
+
+    color: #50555e;
+
+    font-size: 14px;
+    font-weight: 800;
+
+}
+
+
+.ychat-user-preview {
+
+    overflow: hidden;
+
+    color: var(--chat-muted);
+
+    font-size: 12px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+}
+
+
+.ychat-user-meta {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+
+}
+
+
+.ychat-user-meta time {
+
+    color: #a4a9af;
+
+    font-size: 10px;
+
+}
+
+
+.ychat-unread {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 21px;
+    height: 21px;
+
+    padding: 0 5px;
+
+    border-radius: 999px;
+
+    background: #d97d9a;
+
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 800;
+
+}
+
+
+/* ========================================
+   Empty State
+======================================== */
+
+.ychat-empty {
+
+    padding: 55px 20px;
+
+    border: 1px dashed #e9d9df;
+
+    border-radius: 24px;
+
+    background: #fff;
+
+    text-align: center;
+
+}
+
+
+.ychat-empty-icon {
+
+    margin-bottom: 14px;
+
+    font-size: 36px;
+
+}
+
+
+.ychat-empty p {
+
+    margin: 0;
+
+    color: var(--chat-muted);
+
+    font-size: 13px;
+
+}
+
+
+/* ========================================
+   Chat Room
+======================================== */
+
+.ychat-room-page {
+
+    display: flex;
+
+    flex-direction: column;
+
+    height: calc(
+        100dvh - 110px
+    );
+
+    min-height: 480px;
+
+    max-height: 850px;
+
+    padding-bottom: 16px;
+
+}
+
+
+/* ========================================
+   Room Header
+======================================== */
+
+.ychat-room-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    flex-shrink: 0;
+
+    padding: 15px 18px;
+
+    border: 1px solid #f0e7eb;
+
+    border-radius: 25px 25px 0 0;
+
+    background: #fff;
+
+}
+
+
+.ychat-room-back {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 50%;
+
+    background: #f8eff3;
+
+    color: #a66b85;
+
+    font-size: 20px;
+
+    text-decoration: none;
+
+}
+
+
+.ychat-room-user {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.ychat-room-user h1 {
+
+    margin: 0 0 3px;
+
+    color: #51565e;
+
+    font-size: 15px;
+    font-weight: 800;
+
+}
+
+
+.ychat-room-user p {
+
+    margin: 0;
+
+    color: #a3aab0;
+
+    font-size: 10px;
+
+}
+
+
+.ychat-home-button {
+
+    padding: 8px 12px;
+
+    border-radius: 999px;
+
+    background: #f8eff3;
+
+    color: #ae758d;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-decoration: none;
+
+}
+
+
+/* ========================================
+   Messages
+======================================== */
+
+.ychat-messages {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+
+    flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
+
+    padding: 26px 18px;
+
+    border-left:
+        1px solid #f0e7eb;
+
+    border-right:
+        1px solid #f0e7eb;
+
+    background: linear-gradient(
+        180deg,
+        #fff9fb,
+        #faf8fb
+    );
+
+    scrollbar-width: thin;
+
+}
+
+
+.ychat-message-row {
+
+    display: flex;
+
+    width: 100%;
+
+}
+
+
+.ychat-message-row.is-mine {
+
+    justify-content: flex-end;
+
+}
+
+
+.ychat-message-row.is-other {
+
+    justify-content: flex-start;
+
+}
+
+
+/* ========================================
+   Message Bubble
+======================================== */
+
+.ychat-message-bubble {
+
+    max-width: 78%;
+
+    min-width: 70px;
+
+    padding: 12px 15px 8px;
+
+    border-radius: 19px;
+
+    box-shadow:
+        0 3px 10px
+        rgba(0, 0, 0, .025);
+
+}
+
+
+.is-mine .ychat-message-bubble {
+
+    border-bottom-right-radius: 5px;
+
+    background: var(--chat-green);
+
+}
+
+
+.is-other .ychat-message-bubble {
+
+    border: 1px solid #f0e9ed;
+
+    border-bottom-left-radius: 5px;
+
+    background: #fff;
+
+}
+
+
+.ychat-message-body {
+
+    color: #4d555b;
+
+    font-size: 13px;
+
+    line-height: 1.75;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+}
+
+
+.ychat-message-time {
+
+    margin-top: 5px;
+
+    color: #9ca5aa;
+
+    font-size: 9px;
+
+    text-align: right;
+
+}
+
+
+/* ========================================
+   Room Empty
+======================================== */
+
+.ychat-room-empty {
+
+    margin: auto;
+
+    padding: 40px 20px;
+
+    text-align: center;
+
+}
+
+
+.ychat-room-empty > div {
+
+    margin-bottom: 15px;
+
+    font-size: 44px;
+
+}
+
+
+.ychat-room-empty h2 {
+
+    margin: 0 0 10px;
+
+    color: #937b88;
+
+    font-size: 15px;
+    font-weight: 800;
+
+}
+
+
+.ychat-room-empty p {
+
+    margin: 0;
+
+    color: #aaa0a6;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+}
+
+
+/* ========================================
+   Compose
+======================================== */
+
+.ychat-compose {
+
+    flex-shrink: 0;
+
+    padding: 14px 16px 12px;
+
+    border: 1px solid #f0e7eb;
+
+    border-top: 0;
+
+    border-radius: 0 0 25px 25px;
+
+    background: #fff;
+
+}
+
+
+.ychat-compose-inner {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    gap: 10px;
+
+}
+
+
+/* ========================================
+   Input
+======================================== */
+
+.ychat-message-input {
+
+    display: block;
+
+    flex: 1;
+
+    width: 100%;
+
+    min-width: 0;
+
+    min-height: 48px;
+    max-height: 130px;
+
+    padding: 13px 16px;
+
+    border: 1px solid #eee5ea;
+
+    border-radius: 20px;
+
+    outline: none;
+
+    background: #fcf9fb;
+
+    color: #4d555b;
+
+    font: inherit;
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    resize: vertical;
+
+}
+
+
+.ychat-message-input:focus {
+
+    border-color: #d7a2b5;
+
+    background: #fff;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(207, 120, 148, .09);
+
+}
+
+
+.ychat-message-input::placeholder {
+
+    color: #b7abb2;
+
+}
+
+
+/* ========================================
+   Send Button
+======================================== */
+
+.ychat-send-button {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 46px;
+    height: 46px;
+
+    border: 0;
+
+    border-radius: 17px;
+
+    background: linear-gradient(
+        135deg,
+        #df9ab1,
+        #c87897
+    );
+
+    color: #fff;
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 13px
+        rgba(200, 120, 151, .2);
+
+    transition:
+        transform .2s,
+        box-shadow .2s;
+
+}
+
+
+.ychat-send-button:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 17px
+        rgba(200, 120, 151, .25);
+
+}
+
+
+/* ========================================
+   Form Note / Errors
+======================================== */
+
+.ychat-compose-note {
+
+    margin: 9px 0 0;
+
+    color: #b2aab0;
+
+    font-size: 10px;
+
+    text-align: center;
+
+}
+
+
+.ychat-form-errors {
+
+    margin-top: 10px;
+
+    color: #cf6580;
+
+    font-size: 12px;
+
+}
+
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 600px) {
+
+    .ychat-page {
+
+        padding:
+            12px
+            10px
+            28px;
+
+    }
+
+
+    .ychat-hero {
+
+        padding:
+            22px
+            22px
+            30px;
+
+        border-radius: 26px;
+
+    }
+
+
+    .ychat-hero h1 {
+
+        font-size: 28px;
+
+    }
+
+
+    .ychat-hero-icon {
+
+        width: 65px;
+        height: 65px;
+
+        border-radius: 22px;
+
+        font-size: 30px;
+
+    }
+
+
+    .ychat-user-card {
+
+        gap: 11px;
+
+        padding: 14px;
+
+        border-radius: 19px;
+
+    }
+
+
+    .ychat-avatar {
+
+        width: 42px;
+        height: 42px;
+
+        font-size: 17px;
+
+    }
+
+
+    .ychat-room-page {
+
+        height: calc(
+            100dvh - 85px
+        );
+
+        min-height: 350px;
+
+        max-height: none;
+
+        padding-bottom: 8px;
+
+    }
+
+
+    .ychat-room-header {
+
+        padding: 12px;
+
+        border-radius:
+            20px
+            20px
+            0
+            0;
+
+    }
+
+
+    .ychat-messages {
+
+        padding: 20px 12px;
+
+    }
+
+
+    .ychat-message-bubble {
+
+        max-width: 85%;
+
+    }
+
+
+    .ychat-compose {
+
+        padding: 12px;
+
+        border-radius:
+            0
+            0
+            20px
+            20px;
+
+    }
+
+}
+
+/* ========================================
+   Yahan Chat
+   Friends / Requests / Pin
+======================================== */
+
+
+/* ========================================
+   My ID
+======================================== */
+
+.ychat-my-id {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-top: 20px;
+
+    padding: 18px 22px;
+
+    border: 1px solid #f0e4ea;
+
+    border-radius: 22px;
+
+    background: #fff;
+
+    box-shadow:
+        0 5px 18px
+        rgba(0, 0, 0, .025);
+
+}
+
+
+.ychat-my-id > div {
+
+    min-width: 0;
+
+}
+
+
+.ychat-small-label {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #a38d99;
+
+    font-size: 11px;
+    font-weight: 700;
+
+}
+
+
+.ychat-my-id strong {
+
+    display: block;
+
+    color: #b66d8a;
+
+    font-size: 23px;
+    font-weight: 800;
+
+    letter-spacing: .04em;
+
+}
+
+
+.ychat-my-id p {
+
+    margin: 5px 0 0;
+
+    color: #a5a0a5;
+
+    font-size: 11px;
+
+}
+
+
+.ychat-copy-button {
+
+    flex-shrink: 0;
+
+    padding: 10px 17px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    background: #fae9f0;
+
+    color: #ae6c86;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+}
+
+
+/* ========================================
+   Friend Search
+======================================== */
+
+.ychat-friend-search {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 15px;
+
+    padding: 7px 8px 7px 17px;
+
+    border: 1px solid #eee8ec;
+
+    border-radius: 999px;
+
+    background: #fff;
+
+}
+
+
+.ychat-friend-search span {
+
+    flex-shrink: 0;
+
+    font-size: 15px;
+
+}
+
+
+.ychat-friend-search input {
+
+    flex: 1;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 9px 0;
+
+    border: 0;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #515860;
+
+    font: inherit;
+    font-size: 13px;
+
+}
+
+
+.ychat-friend-search input::placeholder {
+
+    color: #b6aeb4;
+
+}
+
+
+.ychat-friend-search button {
+
+    flex-shrink: 0;
+
+    padding: 10px 18px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    background: #f8e5ec;
+
+    color: #ad6b85;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+}
+
+
+/* ========================================
+   Friend List + Pin
+======================================== */
+
+.ychat-friend-row {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.ychat-friend-row .ychat-user-card {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.ychat-pin-form {
+
+    flex-shrink: 0;
+
+    margin: 0;
+
+}
+
+
+.ychat-pin-button {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid #eee8ec;
+
+    border-radius: 15px;
+
+    background: #fff;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    opacity: .35;
+
+    filter: grayscale(1);
+
+    transition:
+        opacity .2s,
+        background .2s,
+        transform .2s;
+
+}
+
+
+.ychat-pin-button:hover {
+
+    opacity: 1;
+
+    transform: translateY(-2px);
+
+}
+
+
+.ychat-pin-button.is-pinned {
+
+    opacity: 1;
+
+    filter: none;
+
+    border-color: #f5deb4;
+
+    background: #fff4df;
+
+}
+
+
+/* ========================================
+   Add Friend Card
+======================================== */
+
+.ychat-add-friend-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 22px;
+
+    padding: 20px;
+
+    border: 1px dashed #e7c9d5;
+
+    border-radius: 23px;
+
+    background: linear-gradient(
+        135deg,
+        #fff7fa,
+        #fff
+    );
+
+    color: #6f626a;
+
+    text-decoration: none;
+
+    transition:
+        transform .2s,
+        background .2s;
+
+}
+
+
+.ychat-add-friend-card:hover {
+
+    transform: translateY(-2px);
+
+    background: #fff1f6;
+
+    color: #6f626a;
+
+}
+
+
+.ychat-add-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 43px;
+    height: 43px;
+
+    border-radius: 15px;
+
+    background: #f9e1eb;
+
+    color: #c47794;
+
+    font-size: 25px;
+    font-weight: 600;
+
+}
+
+
+.ychat-add-friend-card > span:nth-child(2) {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.ychat-add-friend-card strong {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+}
+
+
+.ychat-add-friend-card small {
+
+    display: block;
+
+    color: #aaa0a7;
+
+    font-size: 11px;
+
+}
+
+
+.ychat-add-arrow {
+
+    color: #c68ca3;
+
+    font-size: 20px;
+
+}
+
+
+/* ========================================
+   Friend Requests
+======================================== */
+
+.ychat-request-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+}
+
+
+.ychat-request-card {
+
+    padding: 19px;
+
+    border: 1px solid #f0dce4;
+
+    border-radius: 23px;
+
+    background: #fffafc;
+
+}
+
+
+.ychat-request-person {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+
+.ychat-request-person > div:last-child {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+.ychat-request-person strong {
+
+    display: block;
+
+    color: #525860;
+
+    font-size: 14px;
+    font-weight: 800;
+
+}
+
+
+.ychat-request-person small {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: #a59aa2;
+
+    font-size: 11px;
+
+}
+
+
+.ychat-request-person p {
+
+    margin: 7px 0 0;
+
+    color: #9d8491;
+
+    font-size: 12px;
+
+}
+
+
+.ychat-request-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 17px;
+
+}
+
+
+.ychat-request-actions button {
+
+    flex: 1;
+
+    min-height: 40px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+}
+
+
+.ychat-decline-button {
+
+    background: #f0edf0;
+
+    color: #8c858b;
+
+}
+
+
+.ychat-accept-button {
+
+    background: #d987a3;
+
+    color: #fff;
+
+}
+
+
+/* ========================================
+   Add Friend Panel
+======================================== */
+
+.ychat-add-panel {
+
+    padding: 27px;
+
+    border: 1px solid #f0e7eb;
+
+    border-radius: 25px;
+
+    background: #fff;
+
+    box-shadow:
+        0 5px 20px
+        rgba(0, 0, 0, .025);
+
+}
+
+
+.ychat-add-panel h2 {
+
+    margin: 0 0 10px;
+
+    color: #66616a;
+
+    font-size: 17px;
+    font-weight: 800;
+
+}
+
+
+.ychat-add-panel > p {
+
+    margin: 0 0 21px;
+
+    color: #a19ba2;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+}
+
+
+.ychat-id-search {
+
+    display: flex;
+
+    gap: 10px;
+
+}
+
+
+.ychat-id-search input {
+
+    flex: 1;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 13px 17px;
+
+    border: 1px solid #eee3e9;
+
+    border-radius: 16px;
+
+    outline: none;
+
+    background: #fcf9fb;
+
+    color: #505860;
+
+    font: inherit;
+    font-size: 15px;
+
+}
+
+
+.ychat-id-search input:focus {
+
+    border-color: #d79bb0;
+
+    background: #fff;
+
+}
+
+
+.ychat-id-search button {
+
+    flex-shrink: 0;
+
+    padding: 12px 19px;
+
+    border: 0;
+
+    border-radius: 16px;
+
+    background: #d987a3;
+
+    color: #fff;
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+}
+
+
+/* ========================================
+   Search Result
+======================================== */
+
+.ychat-search-result {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+
+    padding: 22px;
+
+    border: 1px solid #eee3e9;
+
+    border-radius: 24px;
+
+    background: #fff;
+
+}
+
+
+.ychat-status-message {
+
+    padding: 15px;
+
+    border-radius: 15px;
+
+    background: #f9f4f7;
+
+    color: #937c89;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+}
+
+
+.ychat-primary-button,
+.ychat-primary-link {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 14px 18px;
+
+    border: 0;
+
+    border-radius: 999px;
+
+    background: #d987a3;
+
+    color: #fff;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+
+    text-align: center;
+    text-decoration: none;
+
+    cursor: pointer;
+
+}
+
+
+.ychat-primary-button:hover,
+.ychat-primary-link:hover {
+
+    background: #c87593;
+
+    color: #fff;
+
+}
+
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 600px) {
+
+    .ychat-my-id {
+
+        padding: 16px;
+
+    }
+
+
+    .ychat-my-id strong {
+
+        font-size: 21px;
+
+    }
+
+
+    .ychat-friend-row {
+
+        gap: 6px;
+
+    }
+
+
+    .ychat-friend-row .ychat-user-card {
+
+        padding: 13px 11px;
+
+    }
+
+
+    .ychat-pin-button {
+
+        width: 37px;
+        height: 37px;
+
+        border-radius: 13px;
+
+        font-size: 15px;
+
+    }
+
+
+    .ychat-add-panel {
+
+        padding: 21px;
+
+    }
+
+
+    .ychat-id-search {
+
+        flex-direction: column;
+
+    }
+
+
+    .ychat-id-search button {
+
+        width: 100%;
+
+    }
+
+}
+
+/* ========================================
+   Chat Message - Compact Design
+======================================== */
+
+.ychat-messages {
+
+    gap: 10px;
+
+    padding: 18px 15px;
+
+}
+
+
+/* 吹き出し */
+
+.ychat-message-bubble {
+
+    width: fit-content;
+
+    max-width: 72%;
+
+    min-width: 0;
+
+    padding: 9px 12px 6px;
+
+    border-radius: 16px;
+
+}
+
+
+/* メッセージ本文 */
+
+.ychat-message-body {
+
+    font-size: 12.5px;
+
+    line-height: 1.55;
+
+    white-space: pre-wrap;
+
+    overflow-wrap: anywhere;
+
+}
+
+
+/* 送信日時 */
+
+.ychat-message-time {
+
+    margin-top: 3px;
+
+    font-size: 9px;
+
+}
+
+
+/* スマホ */
+
+@media (max-width: 600px) {
+
+    .ychat-message-bubble {
+
+        max-width: 78%;
+
+        padding: 8px 11px 6px;
+
+    }
+
+}

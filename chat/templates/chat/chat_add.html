@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+友達を追加 | Yahan Chat
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'chat/chat.css' %}"
+>
+
+
+<div class="ychat-page">
+
+    <!-- =========================
+         Header
+    ========================= -->
+
+    <header class="ychat-hero">
+
+        <div class="ychat-hero-top">
+
+            <a
+
+                href="{% url 'chat:list' %}"
+
+                class="ychat-back-button"
+
+            >
+                ← チャットに戻る
+            </a>
+
+        </div>
+
+        <div class="ychat-hero-content">
+
+            <div>
+
+                <p class="ychat-eyebrow">
+                    YAHAN CHAT
+                </p>
+
+                <h1>
+                    友達を追加
+                </h1>
+
+                <p>
+                    IDで友達を探そう！
+                </p>
+
+            </div>
+
+            <div class="ychat-hero-icon">
+                💌
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         Search
+    ========================= -->
+
+    <section class="ychat-section">
+
+        <div class="ychat-add-panel">
+
+            <h2>
+                ユーザーIDで検索
+            </h2>
+
+            <p>
+                友達から教えてもらった
+                IDを入力してね。
+            </p>
+
+
+            <form
+
+                method="get"
+
+                action="{% url 'chat:add' %}"
+
+                class="ychat-id-search"
+
+            >
+
+                <input
+                    type="text"
+                    name="login_id"
+                    value="{{ search_login_id }}"
+                    placeholder="ログインIDを入力"
+                    maxlength="150"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button type="submit">
+
+                    検索する
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         Search Result
+    ========================= -->
+
+    {% if searched %}
+
+    <section class="ychat-section">
+
+        <div class="ychat-section-heading">
+
+            <h2>
+                検索結果
+            </h2>
+
+        </div>
+
+
+        {% if found_user %}
+
+        <div class="ychat-search-result">
+
+            <div class="ychat-request-person">
+
+                <div class="ychat-avatar">
+
+                    {{ display_name|slice:":1" }}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        {{ display_name }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- My own ID -->
+
+            {% if is_self %}
+
+                <div class="ychat-status-message">
+
+                    これはあなた自身のIDだよ！
+
+                </div>
+
+
+            <!-- Already Friends -->
+
+            {% elif connection.status == "accepted" %}
+
+                <div class="ychat-status-message">
+
+                    すでに友達だよ！ 🌷
+
+                </div>
+
+                <a
+
+                    href="{% url 'chat:room' found_user.pk %}"
+
+                    class="ychat-primary-link"
+
+                >
+
+                    チャットを開く
+
+                </a>
+
+
+            <!-- Pending -->
+
+            {% elif connection.status == "pending" %}
+
+                {% if connection.requested_by_id == request.user.pk %}
+
+                    <div class="ychat-status-message">
+
+                        友達申請を送信済みだよ。
+                        相手の承認を待ってね！
+
+                    </div>
+
+                {% else %}
+
+                    <div class="ychat-status-message">
+
+                        この人から友達申請が届いているよ！
+
+                    </div>
+
+                    <a
+
+                        href="{% url 'chat:list' %}"
+
+                        class="ychat-primary-link"
+
+                    >
+
+                        友達申請を確認する
+
+                    </a>
+
+                {% endif %}
+
+
+            <!-- Declined -->
+
+            {% elif connection.status == "declined" %}
+
+                <div class="ychat-status-message">
+
+                    現在、このユーザーには
+                    友達申請できないよ。
+
+                </div>
+
+
+            <!-- Not Friends -->
+
+            {% else %}
+
+                <form
+
+                    method="post"
+
+                    action="{% url 'chat:friend_request' found_user.pk %}"
+
+                >
+
+                    {% csrf_token %}
+
+                    <button
+
+                        type="submit"
+
+                        class="ychat-primary-button"
+
+                    >
+
+                        友達申請を送る 💌
+
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+        </div>
+
+
+        {% else %}
+
+        <div class="ychat-empty">
+
+            <div class="ychat-empty-icon">
+                🔍
+            </div>
+
+            <p>
+                このIDのユーザーは
+                見つからなかったよ。
+            </p>
+
+            <p>
+                IDを確認して
+                もう一度検索してね。
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Yahan Chat
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'chat/chat.css' %}"
+>
+
+<div class="ychat-page">
+
+    <!-- =========================
+         Hero
+    ========================= -->
+
+    <header class="ychat-hero">
+
+        <div class="ychat-hero-top">
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="ychat-back-button"
+            >
+                ← アプリ一覧
+            </a>
+
+        </div>
+
+        <div class="ychat-hero-content">
+
+            <div>
+
+                <p class="ychat-eyebrow">
+                    YAHAN APP
+                </p>
+
+                <h1>
+                    Chat 💬
+                </h1>
+
+                <p>
+                    このアプリのユーザー仲間と、
+                    気軽におしゃべり。
+                </p>
+
+            </div>
+
+            <div class="ychat-hero-icon">
+                ✉️
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         My ID
+    ========================= -->
+
+    <section class="ychat-my-id">
+
+        <div>
+
+            <span class="ychat-small-label">
+                あなたのログインID
+            </span>
+
+            <strong>
+                {{ request.user.get_username }}
+            </strong>
+
+            <p>
+                このIDを友達に教えてね
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="ychat-copy-button"
+            id="copy-chat-id"
+            data-user-id="{{ request.user.get_username }}"
+        >
+            コピー
+        </button>
+
+    </section>
+
+
+    <!-- =========================
+         Friend Requests
+    ========================= -->
+
+    {% if pending_requests %}
+
+    <section class="ychat-section">
+
+        <div class="ychat-section-heading">
+
+            <h2>
+                友達申請 💌
+            </h2>
+
+            <span>
+                {{ pending_requests|length }} 件
+            </span>
+
+        </div>
+
+
+        <div class="ychat-request-list">
+
+            {% for item in pending_requests %}
+
+            <div class="ychat-request-card">
+
+                <div class="ychat-request-person">
+
+                    <div class="ychat-avatar">
+
+                        {{ item.display_name|slice:":1" }}
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            {{ item.display_name }}
+                        </strong>
+
+
+                        <p>
+                            友達申請が届いているよ！
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form
+
+                    method="post"
+
+                    action="{% url 'chat:friend_decision' item.connection.pk %}"
+
+                    class="ychat-request-actions"
+
+                >
+
+                    {% csrf_token %}
+
+                    <button
+
+                        type="submit"
+
+                        name="action"
+
+                        value="decline"
+
+                        class="ychat-decline-button"
+
+                    >
+                        拒否
+                    </button>
+
+
+                    <button
+
+                        type="submit"
+
+                        name="action"
+
+                        value="accept"
+
+                        class="ychat-accept-button"
+
+                    >
+                        承認する
+                    </button>
+
+                </form>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =========================
+         Friends
+    ========================= -->
+
+    <section class="ychat-section">
+
+        <div class="ychat-section-heading">
+
+            <h2>
+                友達
+            </h2>
+
+            <span>
+                {{ chat_users|length }} friends
+            </span>
+
+        </div>
+
+
+        <!-- Friend Search -->
+
+        <form
+
+            method="get"
+
+            action="{% url 'chat:list' %}"
+
+            class="ychat-friend-search"
+
+        >
+
+            <span>
+                🔍
+            </span>
+
+            <input
+
+                type="search"
+
+                name="q"
+
+                value="{{ search_query }}"
+
+                placeholder="友達を検索..."
+
+                aria-label="友達を検索"
+
+            >
+
+            <button type="submit">
+
+                検索
+
+            </button>
+
+        </form>
+
+
+        <!-- Friend List -->
+
+        <div class="ychat-user-list">
+
+            {% for item in chat_users %}
+
+            <div class="ychat-friend-row">
+
+                <a
+
+                    href="{% url 'chat:room' item.user.pk %}"
+
+                    class="ychat-user-card"
+
+                >
+
+                    <div class="ychat-avatar">
+
+                        {{ item.display_name|slice:":1" }}
+
+                    </div>
+
+
+                    <div class="ychat-user-info">
+
+                        <div class="ychat-user-name">
+
+                            {{ item.display_name }}
+
+                        </div>
+
+                        <div class="ychat-user-preview">
+
+                            {% if item.last_message %}
+
+                                {% if item.last_message.sender_id == request.user.pk %}
+
+                                    あなた：
+
+                                {% endif %}
+
+                                {{ item.last_message.body|truncatechars:35 }}
+
+                            {% else %}
+
+                                メッセージを送ってみよう！
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ychat-user-meta">
+
+                        {% if item.last_message %}
+
+                            <time>
+
+                                {{ item.last_message.created_at|date:"m/d H:i" }}
+
+                            </time>
+
+                        {% endif %}
+
+
+                        {% if item.unread_count > 0 %}
+
+                            <span class="ychat-unread">
+
+                                {{ item.unread_count }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+
+                <!-- Pin -->
+
+                <form
+
+                    method="post"
+
+                    action="{% url 'chat:pin' item.user.pk %}"
+
+                    class="ychat-pin-form"
+
+                >
+
+                    {% csrf_token %}
+
+                    <button
+
+                        type="submit"
+
+                        class="
+                            ychat-pin-button
+
+                            {% if item.is_pinned %}
+                                is-pinned
+                            {% endif %}
+                        "
+
+                        title="{% if item.is_pinned %}ピン留め解除{% else %}ピン留め{% endif %}"
+
+                    >
+
+                        📌
+
+                    </button>
+
+                </form>
+
+            </div>
+
+            {% empty %}
+
+                <div class="ychat-empty">
+
+                    <div class="ychat-empty-icon">
+                        💌
+                    </div>
+
+                    {% if search_query %}
+
+                        <p>
+                            該当する友達が見つからないよ。
+                        </p>
+
+                    {% else %}
+
+                        <p>
+                            まだ友達がいないよ。
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Add Friend -->
+
+        <a
+
+            href="{% url 'chat:add' %}"
+
+            class="ychat-add-friend-card"
+
+        >
+
+            <span class="ychat-add-icon">
+                ＋
+            </span>
+
+            <span>
+
+                <strong>
+                    新しい友達を追加
+                </strong>
+
+                <small>
+                    IDを検索して友達申請しよう
+                </small>
+
+            </span>
+
+            <span class="ychat-add-arrow">
+                →
+            </span>
+
+        </a>
+
+    </section>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const copyButton =
+            document.getElementById(
+                "copy-chat-id"
+            );
+
+        if (!copyButton) {
+            return;
+        }
+
+        copyButton.addEventListener(
+            "click",
+            async function () {
+
+                const userId =
+                    copyButton.dataset.userId;
+
+                try {
+
+                    await navigator.clipboard.writeText(
+                        userId
+                    );
+
+                    copyButton.textContent =
+                        "コピーしたよ ✓";
+
+                } catch (error) {
+
+                    copyButton.textContent =
+                        "コピーできなかった";
+
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}

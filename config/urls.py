@@ -135,6 +135,11 @@ urlpatterns = [
         include("board.urls"),
     ),
 
+    path(
+        "chat/",
+        include("chat.urls"),
+    ),
+
 
     # =====================================================
     # PWA

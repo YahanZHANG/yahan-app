@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+
+{{ other_display_name }} | Yahan Chat
+
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'chat/chat.css' %}"
+>
+
+
+<div class="ychat-page ychat-room-page">
+
+    <!-- =========================
+         Header
+    ========================= -->
+
+    <header class="ychat-room-header">
+
+        <a
+
+            href="{% url 'chat:list' %}"
+
+            class="ychat-room-back"
+
+        >
+            ←
+        </a>
+
+
+        <div class="ychat-avatar">
+
+            {{ other_display_name|slice:":1" }}
+
+        </div>
+
+
+        <div class="ychat-room-user">
+
+            <h1>
+
+                {{ other_display_name }}
+
+            </h1>
+
+            <p>
+                Yahan Chat
+            </p>
+
+        </div>
+
+
+        <a
+
+            href="{% url 'portal:home' %}"
+
+            class="ychat-home-button"
+
+        >
+            HOME
+        </a>
+
+    </header>
+
+
+    <!-- =========================
+         Messages
+    ========================= -->
+
+    <div
+        class="ychat-messages"
+        id="chat-messages"
+    >
+
+        {% for item in chat_messages %}
+
+            <div
+
+                class="
+                    ychat-message-row
+
+                    {% if item.is_mine %}
+                        is-mine
+                    {% else %}
+                        is-other
+                    {% endif %}
+                "
+
+            >
+
+                <div class="ychat-message-bubble">
+
+                    <div class="ychat-message-body">{{ item.message.body }}</div>
+                    <div class="ychat-message-time">
+                        {{ item.message.created_at|date:"m/d H:i" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="ychat-room-empty">
+
+                <div>
+                    💌
+                </div>
+
+                <h2>
+                    最初のメッセージを送ろう！
+                </h2>
+
+                <p>
+                    {{ other_display_name }}との会話は
+                    ここから始まるよ。
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =========================
+         Message Form
+    ========================= -->
+
+    <form
+
+        method="post"
+
+        class="ychat-compose"
+
+    >
+
+        {% csrf_token %}
+
+
+        <div class="ychat-compose-inner">
+
+            {{ form.body }}
+
+
+            <button
+
+                type="submit"
+
+                class="ychat-send-button"
+
+                aria-label="メッセージを送信"
+
+            >
+
+                ➤
+
+            </button>
+
+        </div>
+
+
+        {% if form.body.errors %}
+
+            <div class="ychat-form-errors">
+
+                {% for error in form.body.errors %}
+
+                    {{ error }}
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <p class="ychat-compose-note">
+
+            メッセージは送信後に保存されるよ
+
+        </p>
+
+    </form>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const messageArea =
+            document.getElementById(
+                "chat-messages"
+            );
+
+        if (messageArea) {
+
+            messageArea.scrollTop =
+                messageArea.scrollHeight;
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

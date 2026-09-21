@@ -59,6 +59,8 @@ INSTALLED_APPS = [
 
     # お知らせ
     "board.apps.BoardConfig",
+    # チャット
+    "chat.apps.ChatConfig",
 
     "usage_analytics.apps.UsageAnalyticsConfig",
 ]
