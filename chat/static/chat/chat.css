@@ -1331,6 +1331,7 @@
     gap: 14px;
 
     margin-top: 22px;
+    margin-bottom: 24px;
 
     padding: 20px;
 
@@ -1889,5 +1890,230 @@
         padding: 8px 11px 6px;
 
     }
+
+}
+
+
+/* ========================================
+   Chat Quick Actions
+   My ID + Add Friend
+======================================== */
+
+.ychat-quick-actions {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 12px;
+
+    margin-top: 20px;
+
+}
+
+
+/* ========================================
+   My Login ID
+======================================== */
+
+.ychat-quick-actions .ychat-my-id {
+
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 5px;
+
+    min-width: 0;
+    min-height: 70px;
+
+    margin: 0;
+
+    padding: 14px 18px;
+
+    border-radius: 20px;
+
+}
+
+
+.ychat-quick-actions .ychat-my-id strong {
+
+    max-width: 100%;
+
+    font-size: 15px;
+
+    overflow-wrap: anywhere;
+
+    line-height: 1.35;
+
+}
+
+
+/* ========================================
+   Add Friend
+======================================== */
+
+.ychat-quick-actions .ychat-add-friend-card {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    min-width: 0;
+    min-height: 70px;
+
+    margin: 0;
+
+    padding: 14px;
+
+    border-radius: 20px;
+
+}
+
+
+.ychat-quick-actions .ychat-add-icon {
+
+    width: 34px;
+    height: 34px;
+
+    flex:
+        0 0 34px;
+
+    border-radius: 12px;
+
+    font-size: 21px;
+
+}
+
+
+.ychat-quick-actions .ychat-add-friend-card strong {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+}
+
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 600px) {
+
+    .ychat-quick-actions {
+
+        gap: 8px;
+
+        margin-top: 12px;
+
+    }
+
+
+    .ychat-quick-actions .ychat-my-id,
+    .ychat-quick-actions .ychat-add-friend-card {
+
+        min-height: 64px;
+
+        padding: 11px 12px;
+
+        border-radius: 17px;
+
+    }
+
+
+    .ychat-quick-actions .ychat-my-id strong {
+
+        font-size: 13px;
+
+    }
+
+
+    .ychat-quick-actions .ychat-add-icon {
+
+        width: 29px;
+        height: 29px;
+
+        flex:
+            0 0 29px;
+
+        font-size: 18px;
+
+    }
+
+
+    .ychat-quick-actions .ychat-add-friend-card strong {
+
+        font-size: 12px;
+
+    }
+
+}
+
+/* ========================================
+   My ID + Copy Button
+======================================== */
+
+.ychat-quick-actions .ychat-my-id {
+
+    align-items: stretch;
+
+}
+
+
+.ychat-my-id-bottom {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+
+    width: 100%;
+
+}
+
+
+.ychat-my-id-bottom strong {
+
+    flex: 1;
+
+    min-width: 0;
+
+    overflow-wrap: anywhere;
+
+}
+
+
+.ychat-my-id-bottom .ychat-copy-button {
+
+    flex-shrink: 0;
+
+    padding: 7px 10px;
+
+    font-size: 10px;
+
+}
+
+
+/* ========================================
+   Add Friend - Left Align
+======================================== */
+
+.ychat-quick-actions .ychat-add-friend-card {
+
+    justify-content: flex-start;
+
+    text-align: left;
 
 }

@@ -15,13 +15,7 @@ Yahan Chat
 
 <div class="ychat-page">
 
-    <!-- =========================
-         Hero
-    ========================= -->
-
-    <header class="ychat-hero">
-
-        <div class="ychat-hero-top">
+    <div class="ychat-hero-top">
 
             <a
                 href="{% url 'portal:home' %}"
@@ -31,34 +25,6 @@ Yahan Chat
             </a>
 
         </div>
-
-        <div class="ychat-hero-content">
-
-            <div>
-
-                <p class="ychat-eyebrow">
-                    YAHAN APP
-                </p>
-
-                <h1>
-                    Chat 💬
-                </h1>
-
-                <p>
-                    このアプリのユーザー仲間と、
-                    気軽におしゃべり。
-                </p>
-
-            </div>
-
-            <div class="ychat-hero-icon">
-                ✉️
-            </div>
-
-        </div>
-
-    </header>
-
 
     <!-- =========================
          My ID
@@ -75,10 +41,6 @@ Yahan Chat
             <strong>
                 {{ request.user.get_username }}
             </strong>
-
-            <p>
-                このIDを友達に教えてね
-            </p>
 
         </div>
 
@@ -216,6 +178,38 @@ Yahan Chat
             </span>
 
         </div>
+
+                <!-- Add Friend -->
+
+        <a
+
+            href="{% url 'chat:add' %}"
+
+            class="ychat-add-friend-card"
+
+        >
+
+            <span class="ychat-add-icon">
+                ＋
+            </span>
+
+            <span>
+
+                <strong>
+                    新しい友達を追加
+                </strong>
+
+                <small>
+                    IDを検索して友達申請しよう
+                </small>
+
+            </span>
+
+            <span class="ychat-add-arrow">
+                →
+            </span>
+
+        </a>
 
 
         <!-- Friend Search -->
@@ -404,39 +398,6 @@ Yahan Chat
             {% endfor %}
 
         </div>
-
-
-        <!-- Add Friend -->
-
-        <a
-
-            href="{% url 'chat:add' %}"
-
-            class="ychat-add-friend-card"
-
-        >
-
-            <span class="ychat-add-icon">
-                ＋
-            </span>
-
-            <span>
-
-                <strong>
-                    新しい友達を追加
-                </strong>
-
-                <small>
-                    IDを検索して友達申請しよう
-                </small>
-
-            </span>
-
-            <span class="ychat-add-arrow">
-                →
-            </span>
-
-        </a>
 
     </section>
 
