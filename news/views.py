@@ -134,7 +134,7 @@ def home(request):
         )
         .order_by(
             "-published_at"
-        )[:50]
+        )[:100]
     )
 
     favorite_count = (
