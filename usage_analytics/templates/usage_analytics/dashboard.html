@@ -216,27 +216,21 @@
             <nav class="analytics-period">
 
                 <a
-                    href="?days=7{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
-
-                    class="{% if days == '7' %}is-active{% endif %}"
+                    href="?days=7&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
                 >
                     7日間
                 </a>
 
 
                 <a
-                    href="?days=30{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
-
-                    class="{% if days == '30' %}is-active{% endif %}"
+                    href="?days=30&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
                 >
                     30日間
                 </a>
 
 
                 <a
-                    href="?days=all{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
-
-                    class="{% if days == 'all' %}is-active{% endif %}"
+                    href="?days=all&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
                 >
                     全期間
                 </a>
@@ -276,8 +270,7 @@
 
 
                 <a
-                    href="{% url 'usage_analytics:filters' %}?days={{ days }}{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
-
+                    href="{% url 'usage_analytics:filters' %}?days={{ days }}&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
                     class="analytics-filter-link"
                 >
                     ⚙ 集計対象を設定

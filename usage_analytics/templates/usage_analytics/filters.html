@@ -43,7 +43,7 @@
         <div class="analytics-actions">
 
             <a
-                href="{% url 'usage_analytics:dashboard' %}?days={{ days }}{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
+                href="{% url 'usage_analytics:dashboard' %}?days={{ days }}&amp;filter_applied=1{% for excluded_id in excluded_ids %}&amp;exclude_users={{ excluded_id }}{% endfor %}"
             >
                 ← 利用状況に戻る
             </a>
@@ -97,6 +97,21 @@
                 method="get"
                 action="{% url 'usage_analytics:dashboard' %}"
             >
+
+                <!-- =========================================
+                     Explicit filter selection
+
+                     チェックが0件でも、
+                     「全員を集計する」という
+                     明示的な選択として扱う
+                     ========================================= -->
+
+                <input
+                    type="hidden"
+                    name="filter_applied"
+                    value="1"
+                >
+
 
                 <!-- =========================================
                      Preserve selected period
