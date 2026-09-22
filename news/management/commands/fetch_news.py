@@ -4,7 +4,6 @@ from datetime import (
     timezone as datetime_timezone,
 )
 from html import unescape
-from news.services.classifier import classify_article
 
 import feedparser
 import requests
@@ -16,6 +15,10 @@ from django.utils.html import strip_tags
 from news.models import (
     Article,
     NewsSource,
+)
+
+from news.services.classifier import (
+    classify_article,
 )
 
 from news.services.content_filter import (
@@ -31,7 +34,7 @@ USER_AGENT = (
 
 def clean_text(value):
     """
-    RSS内に含まれるHTMLタグや余分な空白を除去する。
+    RSS内のHTMLタグや余分な空白を除去する。
     """
 
     if not value:
@@ -47,7 +50,7 @@ def clean_text(value):
 
 def get_published_at(entry):
     """
-    RSSの日付をDjangoで扱えるtimezone aware datetimeに変換する。
+    RSSの日付をtimezone aware datetimeに変換する。
     """
 
     date_fields = [
@@ -57,9 +60,11 @@ def get_published_at(entry):
     ]
 
     for field in date_fields:
+
         value = entry.get(field)
 
         if value:
+
             return datetime(
                 value.tm_year,
                 value.tm_mon,
@@ -74,23 +79,22 @@ def get_published_at(entry):
 
 
 class Command(BaseCommand):
+
     help = (
         "Fetch articles from active RSS news sources."
     )
-
 
     def add_arguments(self, parser):
 
         parser.add_argument(
             "--limit",
             type=int,
-            default=20,
+            default=40,
             help=(
                 "Maximum number of entries "
                 "to process per feed."
             ),
         )
-
 
     def handle(self, *args, **options):
 
@@ -119,7 +123,6 @@ class Command(BaseCommand):
 
             return
 
-
         total_created = 0
         total_existing = 0
         total_skipped = 0
@@ -129,13 +132,9 @@ class Command(BaseCommand):
             - timedelta(days=7)
         )
 
-
         for source in sources:
 
-            self.stdout.write(
-                ""
-            )
-
+            self.stdout.write("")
             self.stdout.write(
                 f"Fetching: {source.name}"
             )
@@ -162,11 +161,9 @@ class Command(BaseCommand):
 
                 continue
 
-
             feed = feedparser.parse(
                 response.content
             )
-
 
             if feed.bozo:
 
@@ -176,14 +173,9 @@ class Command(BaseCommand):
                     )
                 )
 
-
-            entries = feed.entries[
-                :limit
-            ]
-
+            entries = feed.entries[:limit]
 
             source_created = 0
-
 
             for entry in entries:
 
@@ -199,30 +191,22 @@ class Command(BaseCommand):
                     )
                 )
 
-
                 if not source_url or not title:
 
                     total_skipped += 1
-
                     continue
 
-
-                published_at = (
-                    get_published_at(
-                        entry
-                    )
+                published_at = get_published_at(
+                    entry
                 )
 
+                # 7日より古い記事は取得しない
 
-                # 7日より古い記事は
-                # 新規取得しない
                 if published_at < cutoff:
 
                     total_skipped += 1
-
                     continue
 
-
                 summary = clean_text(
                     entry.get(
                         "summary",
@@ -234,33 +218,12 @@ class Command(BaseCommand):
                     )
                 )
 
+                # 長い本文を保存しすぎない
 
-                # RSSに非常に長い本文が
-                # 入っている場合でも保存しすぎない
-                summary = summary[
-                    :2500
-                ]
+                summary = summary[:2500]
 
-                summary = clean_text(
-                    entry.get(
-                        "summary",
-                        "",
-                    )
-                    or entry.get(
-                        "description",
-                        "",
-                    )
-                )
+                # 広告・宣伝等を除外
 
-
-                # RSSに非常に長い本文が
-                # 入っている場合でも保存しすぎない
-                summary = summary[
-                    :2500
-                ]
-
-
-                # 広告・ニュースレター・漫画・懸賞などを除外
                 if should_skip_article(
                     source_name=source.name,
                     title=title,
@@ -272,12 +235,16 @@ class Command(BaseCommand):
 
                     self.stdout.write(
                         self.style.WARNING(
-                            f"  - skipped non-news: {title[:80]}"
+                            "  - skipped non-news: "
+                            f"{title[:80]}"
                         )
                     )
 
                     continue
 
+                # ========================================
+                # Language
+                # ========================================
 
                 if source.language == "ja":
 
@@ -303,39 +270,11 @@ class Command(BaseCommand):
 
                     else:
 
-                        original_language = (
-                            "other"
-                        )
+                        original_language = "other"
 
-
-                if source.language == "ja":
-
-                    title_ja = title
-                    summary_ja = summary
-                    original_language = "ja"
-
-                else:
-
-                    title_ja = ""
-                    summary_ja = ""
-
-                    if source.language in {
-                        "de",
-                        "fr",
-                        "it",
-                        "en",
-                    }:
-
-                        original_language = (
-                            source.language
-                        )
-
-                    else:
-
-                        original_language = (
-                            "other"
-                        )
-
+                # ========================================
+                # Save
+                # ========================================
 
                 article, created = (
                     Article.objects
@@ -359,7 +298,6 @@ class Command(BaseCommand):
                     )
                 )
 
-
                 if created:
 
                     classify_article(
@@ -379,16 +317,12 @@ class Command(BaseCommand):
 
                     total_existing += 1
 
-
             self.stdout.write(
                 f"{source.name}: "
                 f"{source_created} new"
             )
 
-
-        self.stdout.write(
-            ""
-        )
+        self.stdout.write("")
 
         self.stdout.write(
             self.style.SUCCESS(

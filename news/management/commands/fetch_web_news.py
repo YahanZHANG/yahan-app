@@ -1,16 +1,14 @@
 import re
-import requests
-
-from news.services.japanese_classifier import (
-    assign_japanese_topics,
+from datetime import (
+    datetime,
+    timedelta,
 )
-
-from datetime import datetime
 from urllib.parse import (
     urljoin,
     urlparse,
 )
 
+import requests
 from bs4 import BeautifulSoup
 
 from django.core.management.base import BaseCommand
@@ -25,40 +23,62 @@ from news.services.content_filter import (
     should_skip_article,
 )
 
+from news.services.japanese_classifier import (
+    assign_japanese_topics,
+)
+
+
+# ========================================
+# Source configuration
+# ========================================
+
 SOURCE_CONFIG = {
+
     "20 Minuten": {
-        "list_url": "https://www.20min.ch/schweiz",
+        "list_url":
+            "https://www.20min.ch/schweiz",
+
         "language": "de",
+
+        "limit": 25,
+
         "article_pattern": re.compile(
             r"^/story/"
         ),
     },
 
     "Nau.ch": {
-        "list_url": "https://www.nau.ch/news/schweiz",
+        "list_url":
+            "https://www.nau.ch/news/schweiz",
+
         "language": "de",
+
+        "limit": 25,
+
         "article_pattern": re.compile(
             r"^/news/.+-\d+$"
         ),
     },
 
-    "Watson": {
-        "list_url": "https://www.watson.ch/schweiz/",
-        "language": "de",
-        "article_pattern": re.compile(
-            r"^/[^/]+/[^/]+/\d+-"
-        ),
-    },
-
     "SWI swissinfo.ch": {
-        "list_url": "https://www.swissinfo.ch/jpn/",
+        "list_url":
+            "https://www.swissinfo.ch/jpn/",
+
         "language": "ja",
+
+        "limit": 40,
+
         "swissinfo": True,
     },
 
     "Blick": {
-        "list_url": "https://www.blick.ch/schweiz/",
+        "list_url":
+            "https://www.blick.ch/schweiz/",
+
         "language": "de",
+
+        "limit": 25,
+
         "article_pattern": re.compile(
             r"^/schweiz/.+-id\d+\.html$"
         ),
@@ -83,7 +103,12 @@ SWI_EXCLUDED_TITLES = {
 }
 
 
+# ========================================
+# Helpers
+# ========================================
+
 def clean_text(value):
+
     if not value:
         return ""
 
@@ -93,6 +118,7 @@ def clean_text(value):
 
 
 def parse_datetime(value):
+
     if not value:
         return None
 
@@ -101,6 +127,7 @@ def parse_datetime(value):
     try:
 
         if value.endswith("Z"):
+
             value = (
                 value[:-1]
                 + "+00:00"
@@ -111,6 +138,7 @@ def parse_datetime(value):
         )
 
         if timezone.is_naive(dt):
+
             dt = timezone.make_aware(
                 dt
             )
@@ -118,14 +146,20 @@ def parse_datetime(value):
         return dt
 
     except ValueError:
+
         return None
 
+
+# ========================================
+# Discover article URLs
+# ========================================
 
 def discover_urls(
     session,
     config,
     limit,
 ):
+
     response = session.get(
         config["list_url"],
         timeout=(5, 15),
@@ -140,7 +174,6 @@ def discover_urls(
 
     urls = []
     seen = set()
-
 
     for link in soup.find_all(
         "a",
@@ -159,19 +192,13 @@ def discover_urls(
             )
         )
 
-
         # --------------------
         # SWI
         # --------------------
 
-        if config.get(
-            "swissinfo"
-        ):
+        if config.get("swissinfo"):
 
-            if (
-                "もっと読む"
-                not in text
-            ):
+            if "もっと読む" not in text:
                 continue
 
             display_title = (
@@ -195,7 +222,6 @@ def discover_urls(
                 config["list_url"],
                 href,
             )
-
 
         # --------------------
         # Other sites
@@ -227,25 +253,27 @@ def discover_urls(
                 href,
             )
 
-
         if url in seen:
             continue
 
         seen.add(url)
         urls.append(url)
 
-
         if len(urls) >= limit:
             break
 
-
     return urls
 
+
+# ========================================
+# Parse article
+# ========================================
 
 def parse_article(
     session,
     url,
 ):
+
     response = session.get(
         url,
         timeout=(5, 15),
@@ -257,7 +285,6 @@ def parse_article(
         response.text,
         "html.parser",
     )
-
 
     # --------------------
     # Title
@@ -271,6 +298,7 @@ def parse_article(
     )
 
     if og_title:
+
         title = clean_text(
             og_title.get(
                 "content",
@@ -278,12 +306,12 @@ def parse_article(
             )
         )
 
-
     if not title:
 
         h1 = soup.find("h1")
 
         if h1:
+
             title = clean_text(
                 h1.get_text(
                     " ",
@@ -291,13 +319,11 @@ def parse_article(
                 )
             )
 
-
     if not title:
         return None
 
-
     # --------------------
-    # Short description
+    # Summary
     # --------------------
 
     summary = ""
@@ -318,7 +344,6 @@ def parse_article(
             )
         )
 
-
     if not summary:
 
         og_description = soup.find(
@@ -334,7 +359,6 @@ def parse_article(
                     "",
                 )
             )
-
 
     if not summary:
 
@@ -356,13 +380,11 @@ def parse_article(
             )
 
             if len(text) >= 80:
+
                 summary = text
                 break
 
-
-    # DBには記事全文を保存しない
     summary = summary[:1500]
-
 
     # --------------------
     # Published date
@@ -384,7 +406,6 @@ def parse_article(
             )
         )
 
-
     if not published_at:
 
         time_tag = soup.find(
@@ -401,10 +422,9 @@ def parse_article(
                 )
             )
 
-
     if not published_at:
-        published_at = timezone.now()
 
+        published_at = timezone.now()
 
     # --------------------
     # Canonical URL
@@ -425,8 +445,11 @@ def parse_article(
         )
 
         if canonical_url:
-            url = canonical_url
 
+            url = urljoin(
+                url,
+                canonical_url,
+            )
 
     return {
         "url": url,
@@ -436,12 +459,16 @@ def parse_article(
     }
 
 
+# ========================================
+# Management command
+# ========================================
+
 class Command(BaseCommand):
+
     help = (
         "Fetch news from public Swiss "
         "news webpages."
     )
-
 
     def add_arguments(
         self,
@@ -451,9 +478,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--limit",
             type=int,
-            default=10,
+            default=None,
+            help=(
+                "Override individual source limits. "
+                "If omitted, use configured limits."
+            ),
         )
-
 
     def handle(
         self,
@@ -461,7 +491,9 @@ class Command(BaseCommand):
         **options,
     ):
 
-        limit = options["limit"]
+        override_limit = options[
+            "limit"
+        ]
 
         session = requests.Session()
 
@@ -469,11 +501,15 @@ class Command(BaseCommand):
             HEADERS
         )
 
-
         total_new = 0
         total_existing = 0
         total_errors = 0
+        total_skipped = 0
 
+        cutoff = (
+            timezone.now()
+            - timedelta(days=7)
+        )
 
         for (
             source_name,
@@ -481,58 +517,80 @@ class Command(BaseCommand):
         ) in SOURCE_CONFIG.items():
 
             self.stdout.write("")
+
             self.stdout.write(
                 f"Fetching: {source_name}"
             )
 
+            # ========================================
+            # Source limit
+            # ========================================
 
-            try:
+            limit = (
+                override_limit
+                if override_limit is not None
+                else config["limit"]
+            )
 
-                source = (
-                    NewsSource.objects.get(
-                        name=source_name
-                    )
+            # ========================================
+            # Source model
+            # ========================================
+
+            source = (
+                NewsSource.objects
+                .filter(
+                    name=source_name,
+                    is_active=True,
                 )
+                .first()
+            )
 
-                try:
-
-                    urls = discover_urls(
-                        session,
-                        config,
-                        limit,
-                    )
-
-                except requests.RequestException as exc:
-
-                    self.stdout.write(
-                        self.style.ERROR(
-                            f"{source_name}: failed to fetch list page: {exc}"
-                        )
-                    )
-
-                    continue
-
-
-            except Exception as exc:
+            if source is None:
 
                 self.stdout.write(
-                    self.style.ERROR(
-                        f"List failed: {exc}"
+                    self.style.WARNING(
+                        "Source not configured or inactive: "
+                        f"{source_name}"
                     )
                 )
-
-                total_errors += 1
 
                 continue
 
+            # ========================================
+            # Discover URLs
+            # ========================================
+
+            try:
+
+                urls = discover_urls(
+                    session,
+                    config,
+                    limit,
+                )
+
+            except requests.RequestException as exc:
+
+                total_errors += 1
+
+                self.stdout.write(
+                    self.style.ERROR(
+                        f"{source_name}: "
+                        f"failed to fetch list page: {exc}"
+                    )
+                )
+
+                continue
 
             self.stdout.write(
-                f"Found {len(urls)} URLs."
+                f"Found {len(urls)} URLs "
+                f"(limit: {limit})."
             )
-
 
             source_new = 0
 
+            # ========================================
+            # Fetch articles
+            # ========================================
 
             for index, url in enumerate(
                 urls,
@@ -544,9 +602,7 @@ class Command(BaseCommand):
                 ).exists():
 
                     total_existing += 1
-
                     continue
-
 
                 try:
 
@@ -555,26 +611,35 @@ class Command(BaseCommand):
                         url,
                     )
 
-
                 except Exception as exc:
 
                     total_errors += 1
 
                     self.stdout.write(
                         self.style.ERROR(
-                            (
-                                f"  [{index}] "
-                                f"ERROR: {exc}"
-                            )
+                            f"  [{index}] ERROR: {exc}"
                         )
                     )
 
                     continue
 
-
                 if not data:
+
                     total_errors += 1
                     continue
+
+                # ========================================
+                # Skip old articles
+                # ========================================
+
+                if data["published_at"] < cutoff:
+
+                    total_skipped += 1
+                    continue
+
+                # ========================================
+                # Skip non-news content
+                # ========================================
 
                 if should_skip_article(
                     source_name=source_name,
@@ -583,19 +648,21 @@ class Command(BaseCommand):
                     url=data["url"],
                 ):
 
+                    total_skipped += 1
+
                     self.stdout.write(
                         self.style.WARNING(
-                            (
-                                "  - skipped non-news: "
-                                f"{data['title'][:90]}"
-                            )
+                            "  - skipped non-news: "
+                            f"{data['title'][:90]}"
                         )
                     )
 
                     continue
 
-                # canonical URLでも
-                # 重複チェック
+                # ========================================
+                # Canonical duplicate check
+                # ========================================
+
                 if Article.objects.filter(
                     source_url=data["url"]
                 ).exists():
@@ -603,11 +670,13 @@ class Command(BaseCommand):
                     total_existing += 1
                     continue
 
+                # ========================================
+                # Language
+                # ========================================
 
                 language = config[
                     "language"
                 ]
-
 
                 if language == "ja":
 
@@ -624,6 +693,9 @@ class Command(BaseCommand):
                     title_ja = ""
                     summary_ja = ""
 
+                # ========================================
+                # Save
+                # ========================================
 
                 article = Article.objects.create(
                     source=source,
@@ -642,44 +714,37 @@ class Command(BaseCommand):
                     ],
                 )
 
-
                 if language == "ja":
 
                     assign_japanese_topics(
                         article
                     )
-                
+
                 source_new += 1
                 total_new += 1
 
-
                 self.stdout.write(
                     self.style.SUCCESS(
-                        (
-                            f"  + "
-                            f"{data['title'][:90]}"
-                        )
+                        "  + "
+                        f"{data['title'][:90]}"
                     )
                 )
 
-
             self.stdout.write(
-                (
-                    f"{source_name}: "
-                    f"{source_new} new"
-                )
+                f"{source_name}: "
+                f"{source_new} new"
             )
 
+        session.close()
 
         self.stdout.write("")
+
         self.stdout.write(
             self.style.SUCCESS(
-                (
-                    "Finished. "
-                    f"New: {total_new}, "
-                    f"Existing: "
-                    f"{total_existing}, "
-                    f"Errors: {total_errors}"
-                )
+                "Finished. "
+                f"New: {total_new}, "
+                f"Existing: {total_existing}, "
+                f"Skipped: {total_skipped}, "
+                f"Errors: {total_errors}"
             )
         )

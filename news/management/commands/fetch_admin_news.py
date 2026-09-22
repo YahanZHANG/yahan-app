@@ -1,5 +1,9 @@
 import re
-from datetime import datetime
+
+from datetime import (
+    datetime,
+    timedelta,
+)
 
 import requests
 
@@ -24,7 +28,6 @@ LIST_URL = (
 )
 
 
-
 ARTICLE_URL_PATTERN = re.compile(
     r"^/de/newnsb/[^/?#]+$"
 )
@@ -47,6 +50,7 @@ GERMAN_MONTHS = {
 
 
 def clean_text(value):
+
     if not value:
         return ""
 
@@ -60,8 +64,7 @@ def discover_article_urls(
     limit,
 ):
     """
-    admin.chのニュース一覧から、
-    最新ニュースの記事URLを取得する。
+    admin.chのニュース一覧から記事URLを取得する。
     """
 
     response = session.get(
@@ -83,6 +86,7 @@ def discover_article_urls(
         "a",
         href=True,
     ):
+
         href = link.get(
             "href",
             "",
@@ -112,7 +116,7 @@ def discover_article_urls(
 
 def parse_german_date(text):
     """
-    例:
+    例：
     Veröffentlicht am 17. September 2026
     """
 
@@ -183,10 +187,9 @@ def parse_article(
         "html.parser",
     )
 
-
-    # -------------------------
+    # ========================================
     # Title
-    # -------------------------
+    # ========================================
 
     h1 = soup.find("h1")
 
@@ -203,10 +206,9 @@ def parse_article(
     if not title:
         return None
 
-
-    # -------------------------
+    # ========================================
     # Published date
-    # -------------------------
+    # ========================================
 
     page_text = clean_text(
         soup.get_text(
@@ -222,10 +224,9 @@ def parse_article(
         or timezone.now()
     )
 
-
-    # -------------------------
+    # ========================================
     # Summary
-    # -------------------------
+    # ========================================
 
     summary = ""
 
@@ -237,6 +238,7 @@ def parse_article(
     )
 
     if description:
+
         summary = clean_text(
             description.get(
                 "content",
@@ -244,9 +246,6 @@ def parse_article(
             )
         )
 
-
-    # meta descriptionがなければ
-    # 本文の最初の段落を利用
     if not summary:
 
         main = soup.find(
@@ -274,13 +273,11 @@ def parse_article(
             )
 
             if len(text) >= 80:
+
                 summary = text
                 break
 
-
-    # 異常に長いものを保存しない
     summary = summary[:3000]
-
 
     return {
         "title": title,
@@ -290,11 +287,11 @@ def parse_article(
 
 
 class Command(BaseCommand):
+
     help = (
         "Fetch latest news from "
         "Swiss Federal Administration."
     )
-
 
     def add_arguments(
         self,
@@ -304,9 +301,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--limit",
             type=int,
-            default=10,
+            default=40,
         )
-
 
     def handle(
         self,
@@ -318,7 +314,6 @@ class Command(BaseCommand):
             "limit"
         ]
 
-
         source = (
             NewsSource.objects.get(
                 name=(
@@ -328,14 +323,11 @@ class Command(BaseCommand):
             )
         )
 
-
         session = requests.Session()
-
 
         self.stdout.write(
             "Fetching admin.ch..."
         )
-
 
         try:
 
@@ -354,18 +346,23 @@ class Command(BaseCommand):
                 )
             )
 
+            session.close()
             return
 
-
         self.stdout.write(
-            f"Found {len(urls)} article URLs."
+            f"Found {len(urls)} article URLs "
+            f"(limit: {limit})."
         )
-
 
         created_count = 0
         existing_count = 0
+        skipped_count = 0
         error_count = 0
 
+        cutoff = (
+            timezone.now()
+            - timedelta(days=7)
+        )
 
         for index, url in enumerate(
             urls,
@@ -379,14 +376,11 @@ class Command(BaseCommand):
                 existing_count += 1
 
                 self.stdout.write(
-                    (
-                        f"[{index}/{len(urls)}] "
-                        "existing"
-                    )
+                    f"[{index}/{len(urls)}] "
+                    "existing"
                 )
 
                 continue
-
 
             try:
 
@@ -401,74 +395,65 @@ class Command(BaseCommand):
 
                 self.stdout.write(
                     self.style.ERROR(
-                        (
-                            f"[{index}/{len(urls)}] "
-                            f"ERROR: {exc}"
-                        )
+                        f"[{index}/{len(urls)}] "
+                        f"ERROR: {exc}"
                     )
                 )
 
                 continue
-
 
             if not data:
 
                 error_count += 1
-
-                self.stdout.write(
-                    self.style.WARNING(
-                        (
-                            f"[{index}/{len(urls)}] "
-                            "Could not parse article."
-                        )
-                    )
-                )
-
                 continue
 
+            # ========================================
+            # Skip old articles
+            # ========================================
+
+            if data["published_at"] < cutoff:
+
+                skipped_count += 1
+                continue
+
+            # ========================================
+            # Save
+            # ========================================
 
             Article.objects.create(
                 source=source,
                 source_url=url,
                 original_language="de",
-                title_original=(
-                    data["title"]
-                ),
-                summary_original=(
-                    data["summary"]
-                ),
-                published_at=(
-                    data[
-                        "published_at"
-                    ]
-                ),
+                title_original=data[
+                    "title"
+                ],
+                summary_original=data[
+                    "summary"
+                ],
+                published_at=data[
+                    "published_at"
+                ],
             )
-
 
             created_count += 1
 
-
             self.stdout.write(
                 self.style.SUCCESS(
-                    (
-                        f"[{index}/{len(urls)}] "
-                        f"+ {data['title'][:90]}"
-                    )
+                    f"[{index}/{len(urls)}] "
+                    f"+ {data['title'][:90]}"
                 )
             )
 
+        session.close()
 
-        self.stdout.write(
-            ""
-        )
+        self.stdout.write("")
 
         self.stdout.write(
             self.style.SUCCESS(
-                (
-                    "Finished. "
-                    f"New: {created_count}, "
-                    f"Existing: {existing_count}, "
-                    f"Errors: {error_count}"
-                )
+                "Finished. "
+                f"New: {created_count}, "
+                f"Existing: {existing_count}, "
+                f"Skipped: {skipped_count}, "
+                f"Errors: {error_count}"
             )
         )
