@@ -8,6 +8,10 @@ from config.services.openai_client import (
 
 from news.models import Topic
 
+from news.services.japanese_classifier import (
+    get_other_topic,
+)
+
 
 MODEL = "gpt-5.6-luna"
 
@@ -152,6 +156,7 @@ sports
 複数選択可能です。
 """
 
+
 def enrich_article(article):
 
     client = get_openai_client()
@@ -160,7 +165,6 @@ def enrich_article(article):
         article.summary_original
         or ""
     )[:MAX_INPUT_CHARS]
-
 
     input_text = f"""
     ニュース提供元:
@@ -177,7 +181,6 @@ def enrich_article(article):
 
     上記の情報だけを使って処理してください。
     """
-
 
     response = client.responses.create(
         model=MODEL,
@@ -204,11 +207,9 @@ def enrich_article(article):
         store=False,
     )
 
-
     result = json.loads(
         response.output_text
     )
-
 
     article.title_ja = (
         result["title_ja"].strip()
@@ -236,25 +237,36 @@ def enrich_article(article):
         ]
     )
 
+    # ========================================
+    # Topic classification
+    # ========================================
 
-    topics = Topic.objects.filter(
-        slug__in=result["topics"],
-        is_active=True,
+    topics = list(
+        Topic.objects.filter(
+            slug__in=result["topics"],
+            is_active=True,
+        )
     )
+
+    # AIがテーマを返さなかった場合、
+    # または有効なTopicが見つからない場合。
+
+    if not topics:
+
+        topics = [
+            get_other_topic()
+        ]
 
     article.topics.set(
         topics
     )
 
-
     return {
         "title_ja": article.title_ja,
         "summary_ja": article.summary_ja,
-        "topics": list(
-            topics.values_list(
-                "name",
-                flat=True,
-            )
-        ),
+        "topics": [
+            topic.name
+            for topic in topics
+        ],
         "usage": response.usage,
     }

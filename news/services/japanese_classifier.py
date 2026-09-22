@@ -159,6 +159,40 @@ TOPIC_KEYWORDS = {
 MAX_TOPICS = 3
 
 
+def get_other_topic():
+    """
+    「その他」ジャンルを取得する。
+
+    存在しなければ作成する。
+    既存のジャンルが非表示なら有効化する。
+    """
+
+    topic, _ = Topic.objects.get_or_create(
+        slug="other",
+        defaults={
+            "name": "その他",
+            "is_active": True,
+        },
+    )
+
+    if (
+        topic.name != "その他"
+        or not topic.is_active
+    ):
+
+        topic.name = "その他"
+        topic.is_active = True
+
+        topic.save(
+            update_fields=[
+                "name",
+                "is_active",
+            ]
+        )
+
+    return topic
+
+
 def classify_japanese_text(
     title,
     summary="",
@@ -176,7 +210,6 @@ def classify_japanese_text(
 
     scores = {}
 
-
     for slug, keywords in TOPIC_KEYWORDS.items():
 
         score = 0
@@ -188,7 +221,6 @@ def classify_japanese_text(
 
         if score > 0:
             scores[slug] = score
-
 
     ranked = sorted(
         scores,
@@ -202,6 +234,8 @@ def classify_japanese_text(
 def assign_japanese_topics(article):
     """
     日本語記事にTopicを設定する。
+
+    分類できなかった場合は「その他」にする。
     """
 
     slugs = classify_japanese_text(
@@ -212,15 +246,34 @@ def assign_japanese_topics(article):
     )
 
     if not slugs:
-        return []
 
+        other_topic = get_other_topic()
+
+        article.topics.set(
+            [other_topic]
+        )
+
+        return [other_topic]
 
     topics = list(
         Topic.objects.filter(
-            slug__in=slugs
+            slug__in=slugs,
+            is_active=True,
         )
     )
 
+    # キーワードに対応するTopicが
+    # DBに存在しない場合も「その他」にする。
+
+    if not topics:
+
+        other_topic = get_other_topic()
+
+        article.topics.set(
+            [other_topic]
+        )
+
+        return [other_topic]
 
     article.topics.set(
         topics
