@@ -1,10 +1,6 @@
 import { GAME_CONFIG } from "./config.js";
 import { BRICK_TYPES, LEVELS } from "./levels.js";
 
-document.body.classList.add(
-    "block-breaker-mode",
-);
-
 import {
     POWERUP_TYPES,
     POWERUP_CONFIG,
@@ -33,13 +29,15 @@ const gameShell = document.getElementById("game-shell");
 const fullscreenButton = document.getElementById("fullscreen-button");
 const exitFullscreenButton = document.getElementById("exit-fullscreen-button");
 
-const stageSelect = document.getElementById(
-    "stage-select",
-);
+const levelButtons = [...document.querySelectorAll(".block-level-button")];
+const selectedLevelDisplay = document.getElementById("block-selected-level");
+const rankingLevelDisplay = document.getElementById("block-ranking-level");
+const levelTitleDisplay = document.getElementById("block-level-name");
+const quitButton = document.getElementById("quit-button");
+const saveStatus = document.getElementById("block-save-status");
 
-const stageSelectButton = document.getElementById(
-    "stage-select-button",
-);
+let rankingRequestId = 0;
+let sessionId = 0;
 
 const scoreSaveUrl =
     gameShell.dataset.scoreUrl;
@@ -68,7 +66,6 @@ const state = {
     lives: GAME_CONFIG.lives,
     levelIndex: 0,
 
-    rankingEligible: true,
     scoreSubmitted: false,
 
     running: false,
@@ -129,15 +126,38 @@ function getCurrentLevel() {
 
 
 function updateStatus() {
-    scoreDisplay.textContent = state.score;
-    livesDisplay.textContent = state.lives;
-    stageDisplay.textContent = state.levelIndex + 1;
+    scoreDisplay.textContent = String(state.score);
+    livesDisplay.textContent = String(state.lives);
+    stageDisplay.textContent = String(state.levelIndex + 1);
+    selectedLevelDisplay.textContent = String(state.levelIndex + 1);
+    levelTitleDisplay.textContent = getCurrentLevel().name;
+}
 
-    if (stageSelect) {
-        stageSelect.value = String(
-            state.levelIndex
-        );
-    }
+
+function syncLevelButtons() {
+    const locked =
+        state.running
+        || state.paused
+        || startButton.dataset.action === "continue";
+
+    levelButtons.forEach(button => {
+        const selected =
+            Number(button.dataset.level) === state.levelIndex + 1;
+
+        button.classList.toggle("is-active", selected);
+        button.setAttribute("aria-pressed", String(selected));
+        button.disabled = locked;
+    });
+
+    pauseButton.disabled = !state.running && !state.paused;
+
+    quitButton.disabled =
+        !state.running
+        && !state.paused
+        && startButton.dataset.action !== "continue";
+
+    pauseButton.textContent =
+        state.paused ? "▶ 再開" : "⏸ 一時停止";
 }
 
 
@@ -1401,55 +1421,31 @@ function getRemainingBreakableBricks() {
 
 
 function checkStageClear() {
-    const remaining = getRemainingBreakableBricks();
-
-    if (remaining.length > 0) {
-        return false;
-    }
+    if (getRemainingBreakableBricks().length > 0) return false;
 
     state.running = false;
+    state.paused = false;
+
     cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
 
-    const currentLevel = getCurrentLevel();
+    startButton.dataset.action = "restart";
 
-    const nextLevelExists = (
-        state.levelIndex < LEVELS.length - 1
+    void submitScoreIfEligible();
+
+    showOverlay(
+        `LEVEL ${state.levelIndex + 1} クリア！`,
+        `${getCurrentLevel().name} ／ ${state.score}点。もう一度挑戦しよう！`,
+        "もう一度遊ぶ",
     );
 
-    if (nextLevelExists) {
-        showOverlay(
-            `ステージ${currentLevel.number}クリア！`,
-            `次は「${LEVELS[
-                state.levelIndex + 1
-            ].name}」。`,
-            "次のステージ",
-        );
-
-        startButton.dataset.action = "next-level";
-    } else {
-
-        void submitScoreIfEligible();
-
-        showOverlay(
-            "全ステージクリア！",
-            `最終スコアは${state.score}点。`,
-            "最初から",
-        );
-
-        startButton.dataset.action = "restart";
-    }
-
+    syncLevelButtons();
     return true;
 }
 
 
 function handleBallLoss() {
-    if (
-        state.ball.y - state.ball.radius
-        <= canvas.height
-    ) {
-        return;
-    }
+    if (state.ball.y - state.ball.radius <= canvas.height) return;
 
     state.lives -= 1;
     resetCombo();
@@ -1457,16 +1453,22 @@ function handleBallLoss() {
 
     if (state.lives <= 0) {
         state.running = false;
+        state.paused = false;
+
+        cancelAnimationFrame(state.animationFrameId);
+        state.animationFrameId = null;
+
         startButton.dataset.action = "restart";
 
         void submitScoreIfEligible();
 
         showOverlay(
             "ゲームオーバー",
-            `最終スコアは${state.score}点。`,
-            "最初から",
+            `LEVEL ${state.levelIndex + 1} ／ ${state.score}点。`,
+            "もう一度遊ぶ",
         );
 
+        syncLevelButtons();
         return;
     }
 
@@ -1484,6 +1486,8 @@ function handleBallLoss() {
         `残り${state.lives}回。`,
         "続ける",
     );
+
+    syncLevelButtons();
 }
 
 
@@ -1524,6 +1528,7 @@ function gameLoop() {
     }
 }
 
+
 async function lockLandscapeOrientation() {
     if (
         !screen.orientation
@@ -1553,6 +1558,7 @@ function unlockScreenOrientation() {
         screen.orientation.unlock();
     }
 }
+
 
 async function toggleFullscreen() {
     if (!gameShell) {
@@ -1602,6 +1608,7 @@ async function toggleFullscreen() {
     }
 }
 
+
 async function exitFullscreenMode() {
     try {
         if (document.fullscreenElement) {
@@ -1631,6 +1638,7 @@ async function exitFullscreenMode() {
     }
 }
 
+
 function updateFullscreenButton() {
     if (!fullscreenButton || !gameShell) {
         return;
@@ -1650,6 +1658,7 @@ function updateFullscreenButton() {
     );
 }
 
+
 function hideOverlay() {
     overlay.classList.add("is-hidden");
 }
@@ -1662,7 +1671,9 @@ function showOverlay(title, message, buttonText) {
     overlay.classList.remove("is-hidden");
 }
 
-function renderRanking(data) {
+
+function renderRanking(data, level = state.levelIndex + 1) {
+    rankingLevelDisplay.textContent = String(level);
 
     if (
         !rankingList
@@ -1677,7 +1688,6 @@ function renderRanking(data) {
         data.entries ?? [];
 
     if (entries.length === 0) {
-
         const emptyItem =
             document.createElement("li");
 
@@ -1690,11 +1700,8 @@ function renderRanking(data) {
         rankingList.appendChild(
             emptyItem
         );
-
     } else {
-
         entries.forEach((entry) => {
-
             const item =
                 document.createElement("li");
 
@@ -1704,11 +1711,8 @@ function renderRanking(data) {
                 );
             }
 
-
             const position =
-                document.createElement(
-                    "span"
-                );
+                document.createElement("span");
 
             position.className =
                 "block-ranking-position";
@@ -1716,27 +1720,20 @@ function renderRanking(data) {
             position.textContent =
                 String(entry.rank);
 
-
             const name =
-                document.createElement(
-                    "strong"
-                );
+                document.createElement("strong");
 
             name.textContent =
                 entry.name;
 
-
             const score =
-                document.createElement(
-                    "span"
-                );
+                document.createElement("span");
 
             score.className =
                 "block-ranking-score";
 
             score.textContent =
                 `${entry.score} 点`;
-
 
             item.append(
                 position,
@@ -1747,88 +1744,142 @@ function renderRanking(data) {
             rankingList.appendChild(
                 item
             );
-
         });
-
     }
-
 
     personalBestDisplay.textContent = (
         data.personal_best === null
         ? "--"
         : String(data.personal_best)
     );
-
 }
 
-async function submitScoreIfEligible() {
 
-    if (
-        !state.rankingEligible
-        || state.scoreSubmitted
-        || state.score < 0
-    ) {
-        return;
-    }
+async function submitScoreIfEligible() {
+    if (state.scoreSubmitted || state.score < 0) return;
 
     state.scoreSubmitted = true;
 
+    const level = state.levelIndex + 1;
+    const score = state.score;
+    const session = sessionId;
+
+    saveStatus.textContent = "スコアを保存中…";
+
     try {
+        const response = await fetch(scoreSaveUrl, {
+            method: "POST",
+            credentials: "same-origin",
 
-        const response =
-            await fetch(
-                scoreSaveUrl,
-                {
-                    method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-
-                        "X-CSRFToken":
-                            csrfToken,
-                    },
-
-                    credentials:
-                        "same-origin",
-
-                    body:
-                        JSON.stringify(
-                            {
-                                game:
-                                    "block_breaker",
-
-                                score:
-                                    state.score,
-                            }
-                        ),
-                }
-            );
-
+            body: JSON.stringify({
+                game: "block_breaker",
+                level,
+                score,
+            }),
+        });
 
         if (!response.ok) {
             throw new Error(
-                "Score save failed."
+                `Score save failed: ${response.status}`
             );
         }
 
+        const data = await response.json();
 
-        const data =
-            await response.json();
-
-        if (data.ok) {
-            renderRanking(data);
+        if (!data.ok) {
+            throw new Error(
+                data.error || "Score save failed"
+            );
         }
 
+        if (
+            state.levelIndex + 1 === level
+            && sessionId === session
+        ) {
+            rankingRequestId++;
+            renderRanking(data, level);
+
+            saveStatus.textContent =
+                data.is_new_best
+                ? "🎉 自己ベスト更新！"
+                : "スコアを保存したよ。";
+        }
     } catch (error) {
+        if (
+            state.levelIndex + 1 === level
+            && sessionId === session
+        ) {
+            saveStatus.textContent =
+                "保存できなかった。通信状態を確認してね。";
+        }
 
         console.warn(
             "ランキングを保存できませんでした。",
             error,
         );
-
     }
+}
 
+
+async function loadRanking(level) {
+    const id = ++rankingRequestId;
+
+    rankingLevelDisplay.textContent = String(level);
+    personalBestDisplay.textContent = "--";
+    rankingList.replaceChildren();
+
+    const loading = document.createElement("li");
+
+    loading.className =
+        "block-ranking-empty";
+
+    loading.textContent =
+        "ランキングを読み込み中…";
+
+    rankingList.appendChild(loading);
+
+    try {
+        const response = await fetch(
+            `${rankingUrl}?level=${level}`,
+            {
+                credentials: "same-origin",
+            },
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Ranking failed: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        if (
+            data.ok
+            && id === rankingRequestId
+            && state.levelIndex + 1 === level
+        ) {
+            renderRanking(data, level);
+        }
+    } catch (error) {
+        if (
+            id === rankingRequestId
+            && state.levelIndex + 1 === level
+        ) {
+            loading.textContent =
+                "ランキングを取得できなかった。再読み込みしてね。";
+        }
+
+        console.warn(
+            "ランキングを取得できませんでした。",
+            error,
+        );
+    }
 }
 
 
@@ -1915,68 +1966,57 @@ function savePausedEffectTimers() {
     });
 }
 
-function selectStage() {
-    if (!stageSelect) {
+
+function selectStage(level) {
+    const index = level - 1;
+
+    if (
+        !Number.isInteger(index)
+        || index < 0
+        || index >= LEVELS.length
+    ) {
         return;
     }
 
-    const selectedLevelIndex = Number(
-        stageSelect.value
-    );
-
-    const isValidLevel = (
-        Number.isInteger(selectedLevelIndex)
-        && selectedLevelIndex >= 0
-        && selectedLevelIndex < LEVELS.length
-    );
-
-    if (!isValidLevel) {
+    if (
+        state.running
+        || state.paused
+        || startButton.dataset.action === "continue"
+    ) {
         return;
     }
 
-    state.running = false;
-    state.paused = false;
-
-    cancelAnimationFrame(
-        state.animationFrameId
-    );
-
+    cancelAnimationFrame(state.animationFrameId);
     state.animationFrameId = null;
 
-    state.levelIndex = selectedLevelIndex;
-
-    // ステージ選択から開始したプレイは
-    // 練習扱いにしてランキングへ登録しない。
-    state.rankingEligible = false;
+    state.levelIndex = index;
+    state.score = 0;
+    state.lives = GAME_CONFIG.lives;
     state.scoreSubmitted = false;
 
-    // ステージ選択時もスコアを残したい場合は、selectStage()内のこの2行だけ削除
-    // state.score = 0;
-    // state.lives = GAME_CONFIG.lives;
+    sessionId++;
+
+    startButton.dataset.action = "start";
 
     initialiseLevel();
     draw();
 
-    pauseButton.textContent = "一時停止";
-
-    const selectedLevel = getCurrentLevel();
+    saveStatus.textContent = "";
 
     showOverlay(
-        `ステージ${selectedLevel.number}`,
-        `「${selectedLevel.name}」を開始する。`,
-        "スタート",
+        `LEVEL ${level}：${getCurrentLevel().name}`,
+        `${getCurrentLevel().difficulty} ／ マウスまたは指でバーを動かそう。`,
+        "ゲームスタート",
     );
 
-    startButton.dataset.action = "start";
+    syncLevelButtons();
+
+    void loadRanking(level);
 }
+
 
 function startOrContinueGame() {
     const action = startButton.dataset.action;
-
-    if (action === "next-level") {
-        state.levelIndex += 1;
-        initialiseLevel();
-    }
 
     if (
         action === "restart"
@@ -1984,10 +2024,9 @@ function startOrContinueGame() {
     ) {
         state.score = 0;
         state.lives = GAME_CONFIG.lives;
-        state.levelIndex = 0;
-
-        state.rankingEligible = true;
         state.scoreSubmitted = false;
+
+        sessionId++;
 
         initialiseLevel();
     }
@@ -1995,12 +2034,12 @@ function startOrContinueGame() {
     startButton.dataset.action = "";
 
     restorePausedEffectTimers();
-
     hideOverlay();
 
     state.paused = false;
     state.running = true;
-    pauseButton.textContent = "一時停止";
+
+    syncLevelButtons();
 
     cancelAnimationFrame(state.animationFrameId);
 
@@ -2015,34 +2054,60 @@ function togglePause() {
         return;
     }
 
-    state.paused = !state.paused;
+    if (!state.paused) {
+        state.paused = true;
 
-    if (state.paused) {
         savePausedEffectTimers();
 
-        pauseButton.textContent = "再開";
-
         showOverlay(
-            "一時停止",
+            "一時停止中",
             "準備ができたら再開しよう。",
-            "再開",
+            "▶ 再開",
         );
 
+        syncLevelButtons();
         return;
     }
 
-    restorePausedEffectTimers();
+    startOrContinueGame();
+}
 
-    hideOverlay();
-    pauseButton.textContent = "一時停止";
 
-    state.running = true;
+function quitGame() {
+    if (
+        !state.running
+        && !state.paused
+        && startButton.dataset.action !== "continue"
+    ) {
+        return;
+    }
 
     cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
 
-    state.animationFrameId = requestAnimationFrame(
-        gameLoop,
+    state.running = false;
+    state.paused = false;
+
+    state.score = 0;
+    state.lives = GAME_CONFIG.lives;
+    state.scoreSubmitted = false;
+
+    sessionId++;
+
+    startButton.dataset.action = "start";
+
+    initialiseLevel();
+    draw();
+
+    saveStatus.textContent = "";
+
+    showOverlay(
+        `LEVEL ${state.levelIndex + 1}：${getCurrentLevel().name}`,
+        "レベルを選んで、また挑戦しよう！",
+        "ゲームスタート",
     );
+
+    syncLevelButtons();
 }
 
 
@@ -2089,19 +2154,37 @@ function setPaddleFromPointer(clientX) {
     }
 }
 
-document.addEventListener("keydown", (event) => {
 
-    if (event.code === "Space") {
+document.addEventListener("keydown", (event) => {
+    if (
+        event.code === "Space"
+        && state.running
+        && !state.paused
+    ) {
         event.preventDefault();
         fireLaser();
     }
 
-    if (event.key === "Escape") {
+    if (
+        (
+            event.code === "KeyP"
+            || event.key === "Escape"
+        )
+        && (state.running || state.paused)
+    ) {
+        if (
+            event.key === "Escape"
+            && document.fullscreenElement
+        ) {
+            return;
+        }
+
         event.preventDefault();
         togglePause();
     }
 });
 
+
 canvas.addEventListener(
     "pointerdown",
     (event) => {
@@ -2131,32 +2214,9 @@ canvas.addEventListener(
     { passive: false },
 );
 
-document.addEventListener(
-    "pointermove",
-    (event) => {
-        if (isInteractiveElement(event.target)) {
-            return;
-        }
 
-        setPaddleFromPointer(event.clientX);
-
-        if (event.pointerType === "touch") {
-            event.preventDefault();
-        }
-    },
-    { passive: false },
-);
-
-document.addEventListener(
-    "pointerdown",
-    (event) => {
-        if (isInteractiveElement(event.target)) {
-            return;
-        }
-
-        setPaddleFromPointer(event.clientX);
-    },
-);
+// バーの移動はCanvas内の操作だけに限定する。
+// 外側のボタン操作時にバーが飛んだり、未定義関数でエラーになるのを防ぐ。
 
 
 startButton.addEventListener(
@@ -2164,10 +2224,12 @@ startButton.addEventListener(
     startOrContinueGame,
 );
 
+
 pauseButton.addEventListener(
     "click",
     togglePause,
 );
+
 
 if (fullscreenButton) {
     fullscreenButton.addEventListener(
@@ -2175,6 +2237,7 @@ if (fullscreenButton) {
         toggleFullscreen,
     );
 }
+
 
 if (exitFullscreenButton) {
     exitFullscreenButton.addEventListener(
@@ -2195,12 +2258,22 @@ document.addEventListener(
     },
 );
 
-if (stageSelectButton) {
-    stageSelectButton.addEventListener(
+
+levelButtons.forEach(button => {
+    button.addEventListener(
         "click",
-        selectStage,
+        () => selectStage(
+            Number(button.dataset.level)
+        ),
     );
-}
+});
+
+
+quitButton.addEventListener(
+    "click",
+    quitGame,
+);
+
 
 if (laserButton) {
     laserButton.disabled = true;
@@ -2211,7 +2284,7 @@ if (laserButton) {
     );
 }
 
+
 startButton.dataset.action = "start";
 
-initialiseLevel();
-draw();
+selectStage(1);

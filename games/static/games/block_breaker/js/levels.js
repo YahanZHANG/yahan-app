@@ -7,65 +7,33 @@ export const BRICK_TYPES = {
     BOMB: 5,
 };
 
+
 export const POWERUP_ACCESS = {
     BEGINNER: "beginner",
     ALL: "all",
 };
 
+
 export const LEVELS = [
+
+    // ========================================
+    // LEVEL 1
+    // 元ステージ3：鋼鉄の迷路
+    // ========================================
+
     {
         number: 1,
-        name: "はじめの壁",
-        ballSpeed: 4.2,
-        powerupAccess: POWERUP_ACCESS.BEGINNER,
-        comboEnabled: false,
-        movingBricks: false,
 
-        layout: [
-            [1, 1, 1, 4, 4, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 4, 1, 1, 4, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-        ],
-
-        powerups: {
-            "0-3": "fireball",
-            "0-4": "wide-paddle",
-            "2-2": "fireball",
-            "2-5": "wide-paddle",
-        },
-    },
-
-    {
-        number: 2,
-        name: "ダイヤモンド",
-        ballSpeed: 4.8,
-        powerupAccess: POWERUP_ACCESS.ALL,
-        comboEnabled: true,
-        movingBricks: false,
-
-        layout: [
-            [0, 0, 0, 1, 1, 0, 0, 0],
-            [0, 0, 1, 4, 4, 1, 0, 0],
-            [0, 1, 5, 2, 2, 5, 1, 0],
-            [1, 1, 1, 4, 1, 1, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 0, 0],
-        ],
-
-        powerups: {
-            "1-3": "fireball",
-            "1-4": "wide-paddle",
-            "3-3": "laser",
-        },
-    },
-
-    {
-        number: 3,
         name: "鋼鉄の迷路",
+
+        difficulty: "やさしい",
+
         ballSpeed: 5.4,
+
         powerupAccess: POWERUP_ACCESS.ALL,
+
         comboEnabled: true,
+
         movingBricks: false,
 
         layout: [
@@ -83,70 +51,29 @@ export const LEVELS = [
         },
     },
 
-    {
-        number: 4,
-        name: "高速要塞",
-        ballSpeed: 6.1,
-        powerupAccess: POWERUP_ACCESS.ALL,
-        comboEnabled: true,
-        movingBricks: false,
 
-        layout: [
-            [2, 1, 5, 1, 1, 5, 1, 2],
-            [1, 4, 1, 3, 3, 1, 4, 1],
-            [2, 1, 2, 5, 1, 2, 1, 2],
-            [1, 3, 1, 2, 2, 1, 3, 1],
-            [4, 1, 1, 1, 1, 1, 1, 4],
-            [1, 2, 1, 4, 2, 1, 2, 1],
-        ],
-
-        powerups: {
-            "1-1": "fireball",
-            "1-6": "wide-paddle",
-            "4-0": "wide-paddle",
-            "4-7": "fireball",
-            "5-3": "laser",
-        },
-    },
+    // ========================================
+    // LEVEL 2
+    // 元ステージ6：ツインタワー
+    // ========================================
 
     {
-        number: 5,
-        name: "カオス・ブレイカー",
-        ballSpeed: 7.2,
-        powerupAccess: POWERUP_ACCESS.ALL,
-        comboEnabled: true,
-        movingBricks: true,
-        brickMovementSpeed: 1.4,
-        brickMovementRange: 28,
+        number: 2,
 
-        layout: [
-            [2, 4, 5, 3, 3, 5, 4, 2],
-            [1, 2, 1, 2, 2, 1, 2, 1],
-            [3, 1, 4, 5, 1, 4, 1, 3],
-            [1, 2, 1, 3, 3, 1, 2, 1],
-            [2, 5, 2, 1, 1, 2, 5, 2],
-            [4, 3, 1, 4, 2, 1, 3, 4],
-        ],
-
-        powerups: {
-            "0-1": "fireball",
-            "0-6": "wide-paddle",
-            "2-2": "wide-paddle",
-            "2-5": "fireball",
-            "5-0": "fireball",
-            "5-3": "laser",
-            "5-7": "wide-paddle",
-        },
-    },
-        
-    {
-        number: 6,
         name: "ツインタワー",
+
+        difficulty: "ふつう",
+
         ballSpeed: 7.0,
+
         powerupAccess: POWERUP_ACCESS.ALL,
+
         comboEnabled: true,
+
         movingBricks: true,
+
         brickMovementSpeed: 1.2,
+
         brickMovementRange: 20,
 
         layout: [
@@ -166,44 +93,29 @@ export const LEVELS = [
         },
     },
 
-    {
-        number: 7,
-        name: "クロスファイア",
-        ballSpeed: 7.3,
-        powerupAccess: POWERUP_ACCESS.ALL,
-        comboEnabled: true,
-        movingBricks: true,
-        brickMovementSpeed: 1.35,
-        brickMovementRange: 24,
 
-        layout: [
-            [2, 0, 0, 5, 5, 0, 0, 2],
-            [0, 2, 4, 1, 1, 4, 2, 0],
-            [0, 4, 3, 2, 2, 3, 4, 0],
-            [5, 1, 2, 3, 3, 2, 1, 5],
-            [0, 4, 3, 2, 2, 3, 4, 0],
-            [0, 2, 4, 1, 1, 4, 2, 0],
-            [2, 0, 0, 5, 5, 0, 0, 2],
-        ],
-
-        powerups: {
-            "1-2": "laser",
-            "1-5": "fireball",
-            "4-1": "wide-paddle",
-            "4-6": "laser",
-            "5-2": "fireball",
-            "5-5": "wide-paddle",
-        },
-    },
+    // ========================================
+    // LEVEL 3
+    // 元ステージ8：スネークライン
+    // ========================================
 
     {
-        number: 8,
+        number: 3,
+
         name: "スネークライン",
+
+        difficulty: "むずかしい",
+
         ballSpeed: 7.4,
+
         powerupAccess: POWERUP_ACCESS.ALL,
+
         comboEnabled: true,
+
         movingBricks: true,
+
         brickMovementSpeed: 1.45,
+
         brickMovementRange: 18,
 
         layout: [
@@ -224,14 +136,29 @@ export const LEVELS = [
         },
     },
 
+
+    // ========================================
+    // LEVEL 4
+    // 元ステージ9：ブラックホール
+    // ========================================
+
     {
-        number: 9,
+        number: 4,
+
         name: "ブラックホール",
+
+        difficulty: "激ムズ",
+
         ballSpeed: 7.6,
+
         powerupAccess: POWERUP_ACCESS.ALL,
+
         comboEnabled: true,
+
         movingBricks: true,
+
         brickMovementSpeed: 1.5,
+
         brickMovementRange: 22,
 
         layout: [
@@ -253,14 +180,29 @@ export const LEVELS = [
         },
     },
 
+
+    // ========================================
+    // LEVEL 5
+    // 元ステージ10：ラスト・カオス
+    // ========================================
+
     {
-        number: 10,
+        number: 5,
+
         name: "ラスト・カオス",
+
+        difficulty: "鬼",
+
         ballSpeed: 7.9,
+
         powerupAccess: POWERUP_ACCESS.ALL,
+
         comboEnabled: true,
+
         movingBricks: true,
+
         brickMovementSpeed: 1.65,
+
         brickMovementRange: 26,
 
         layout: [
@@ -283,4 +225,5 @@ export const LEVELS = [
             "5-7": "wide-paddle",
         },
     },
+
 ];

@@ -23,10 +23,8 @@ def get_display_name(user):
 
 def normalise_level(game, raw_level):
 
-    if game == GameScore.Game.BLOCK_BREAKER:
-        return 0
-
     if game in (
+        GameScore.Game.BLOCK_BREAKER,
         GameScore.Game.TAP_STAR,
         GameScore.Game.MAZE_CHASE,
         GameScore.Game.MAAARIO,
@@ -92,7 +90,7 @@ def game_list(request):
 
 @login_required
 def block_breaker(request):
-    ranking = get_ranking_data(request.user, GameScore.Game.BLOCK_BREAKER, 0)
+    ranking = get_ranking_data(request.user, GameScore.Game.BLOCK_BREAKER, 1)
     context = {
         "ranking_entries": ranking["entries"],
         "personal_best": ranking["personal_best"],
