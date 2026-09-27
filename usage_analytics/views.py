@@ -1204,3 +1204,482 @@ def access_control(request):
         "usage_analytics/access_control.html",
         {"accounts": accounts},
     )
+
+@login_required
+def news_app_detail(request):
+    """
+    Swiss News全体のAnalytics。
+
+    匿名ユーザーとログインユーザーの
+    利用状況を統合して表示する。
+    """
+
+    if not can_view_analytics(
+        request.user
+    ):
+        raise PermissionDenied
+
+    # =====================================================
+    # Period
+    # =====================================================
+
+    days = request.GET.get(
+        "days",
+        "7",
+    )
+
+    if days not in {
+        "7",
+        "30",
+        "all",
+    }:
+        days = "7"
+
+    # =====================================================
+    # Querysets
+    # =====================================================
+
+    anonymous_events = (
+        PublicNewsEvent.objects.all()
+    )
+
+    authenticated_events = (
+        UserNewsEvent.objects.all()
+    )
+
+    anonymous_clicks = (
+        PublicNewsArticleClick.objects.all()
+    )
+
+    authenticated_clicks = (
+        UserNewsArticleClick.objects.all()
+    )
+
+    # =====================================================
+    # Period filter
+    # =====================================================
+
+    local_today = timezone.localdate()
+
+    if days != "all":
+
+        period_days = int(days)
+
+        start_local = (
+            timezone.localtime()
+            .replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            )
+            - timedelta(
+                days=period_days - 1
+            )
+        )
+
+        anonymous_events = (
+            anonymous_events.filter(
+                accessed_at__gte=start_local
+            )
+        )
+
+        authenticated_events = (
+            authenticated_events.filter(
+                accessed_at__gte=start_local
+            )
+        )
+
+        anonymous_clicks = (
+            anonymous_clicks.filter(
+                clicked_at__gte=start_local
+            )
+        )
+
+        authenticated_clicks = (
+            authenticated_clicks.filter(
+                clicked_at__gte=start_local
+            )
+        )
+
+    # =====================================================
+    # Anonymous summary
+    # =====================================================
+
+    anonymous_summary = {
+
+        "users": (
+            anonymous_events
+            .values(
+                "visitor_id"
+            )
+            .distinct()
+            .count()
+        ),
+
+        "visits": (
+            anonymous_events
+            .filter(
+                is_visit_start=True
+            )
+            .count()
+        ),
+
+        "page_views": (
+            anonymous_events.count()
+        ),
+
+        "article_clicks": (
+            anonymous_clicks.count()
+        ),
+
+    }
+
+    # =====================================================
+    # Authenticated summary
+    # =====================================================
+
+    authenticated_summary = {
+
+        "users": (
+            authenticated_events
+            .values(
+                "user_id"
+            )
+            .distinct()
+            .count()
+        ),
+
+        "visits": (
+            authenticated_events
+            .filter(
+                is_visit_start=True
+            )
+            .count()
+        ),
+
+        "page_views": (
+            authenticated_events.count()
+        ),
+
+        "article_clicks": (
+            authenticated_clicks.count()
+        ),
+
+    }
+
+    # =====================================================
+    # Total summary
+    # =====================================================
+
+    total_summary = {
+
+        "users": (
+            anonymous_summary["users"]
+            + authenticated_summary["users"]
+        ),
+
+        "visits": (
+            anonymous_summary["visits"]
+            + authenticated_summary["visits"]
+        ),
+
+        "page_views": (
+            anonymous_summary["page_views"]
+            + authenticated_summary["page_views"]
+        ),
+
+        "article_clicks": (
+            anonymous_summary["article_clicks"]
+            + authenticated_summary["article_clicks"]
+        ),
+
+    }
+
+    # =====================================================
+    # Chart date range
+    # =====================================================
+
+    if days != "all":
+
+        chart_dates = [
+
+            (
+                start_local.date()
+                + timedelta(
+                    days=index
+                )
+            )
+
+            for index in range(
+                int(days)
+            )
+
+        ]
+
+    else:
+
+        first_anonymous = (
+            anonymous_events
+            .order_by(
+                "accessed_at"
+            )
+            .values_list(
+                "accessed_at",
+                flat=True,
+            )
+            .first()
+        )
+
+        first_authenticated = (
+            authenticated_events
+            .order_by(
+                "accessed_at"
+            )
+            .values_list(
+                "accessed_at",
+                flat=True,
+            )
+            .first()
+        )
+
+        first_dates = []
+
+        if first_anonymous:
+
+            first_dates.append(
+                timezone.localtime(
+                    first_anonymous
+                ).date()
+            )
+
+        if first_authenticated:
+
+            first_dates.append(
+                timezone.localtime(
+                    first_authenticated
+                ).date()
+            )
+
+        if first_dates:
+
+            first_date = min(
+                first_dates
+            )
+
+        else:
+
+            first_date = local_today
+
+        total_days = (
+            (
+                local_today
+                - first_date
+            ).days
+            + 1
+        )
+
+        chart_dates = [
+
+            (
+                first_date
+                + timedelta(
+                    days=index
+                )
+            )
+
+            for index in range(
+                total_days
+            )
+
+        ]
+
+    # =====================================================
+    # Empty daily buckets
+    # =====================================================
+
+    daily_data = {
+
+        date: {
+
+            "anonymous_page_views": 0,
+            "authenticated_page_views": 0,
+
+            "anonymous_visits": 0,
+            "authenticated_visits": 0,
+
+        }
+
+        for date in chart_dates
+
+    }
+
+    # =====================================================
+    # Anonymous daily activity
+    # =====================================================
+
+    for event in anonymous_events:
+
+        event_date = (
+            timezone.localtime(
+                event.accessed_at
+            ).date()
+        )
+
+        if event_date not in daily_data:
+            continue
+
+        daily_data[
+            event_date
+        ][
+            "anonymous_page_views"
+        ] += 1
+
+        if event.is_visit_start:
+
+            daily_data[
+                event_date
+            ][
+                "anonymous_visits"
+            ] += 1
+
+    # =====================================================
+    # Authenticated daily activity
+    # =====================================================
+
+    for event in authenticated_events:
+
+        event_date = (
+            timezone.localtime(
+                event.accessed_at
+            ).date()
+        )
+
+        if event_date not in daily_data:
+            continue
+
+        daily_data[
+            event_date
+        ][
+            "authenticated_page_views"
+        ] += 1
+
+        if event.is_visit_start:
+
+            daily_data[
+                event_date
+            ][
+                "authenticated_visits"
+            ] += 1
+
+    # =====================================================
+    # Chart data
+    # =====================================================
+
+    chart_data = []
+
+    for date in chart_dates:
+
+        anonymous_page_views = (
+            daily_data[
+                date
+            ][
+                "anonymous_page_views"
+            ]
+        )
+
+        authenticated_page_views = (
+            daily_data[
+                date
+            ][
+                "authenticated_page_views"
+            ]
+        )
+
+        anonymous_visits = (
+            daily_data[
+                date
+            ][
+                "anonymous_visits"
+            ]
+        )
+
+        authenticated_visits = (
+            daily_data[
+                date
+            ][
+                "authenticated_visits"
+            ]
+        )
+
+        chart_data.append({
+
+            "date": (
+                f"{date.month}/{date.day}"
+                if days != "all"
+                else (
+                    f"{date.year}/"
+                    f"{date.month}/"
+                    f"{date.day}"
+                )
+            ),
+
+            # ---------------------------------------------
+            # Page views
+            # ---------------------------------------------
+
+            "total": (
+                anonymous_page_views
+                + authenticated_page_views
+            ),
+
+            "anonymous": (
+                anonymous_page_views
+            ),
+
+            "authenticated": (
+                authenticated_page_views
+            ),
+
+            # ---------------------------------------------
+            # Visits
+            # ---------------------------------------------
+
+            "total_visits": (
+                anonymous_visits
+                + authenticated_visits
+            ),
+
+            "anonymous_visits": (
+                anonymous_visits
+            ),
+
+            "authenticated_visits": (
+                authenticated_visits
+            ),
+
+        })
+
+    # =====================================================
+    # Context
+    # =====================================================
+
+    context = {
+
+        "days": days,
+
+        "total_summary": total_summary,
+
+        "anonymous_summary": anonymous_summary,
+
+        "authenticated_summary": authenticated_summary,
+
+        "chart_data": chart_data,
+
+    }
+
+    return render(
+        request,
+        "usage_analytics/news_app_detail.html",
+        context,
+    )

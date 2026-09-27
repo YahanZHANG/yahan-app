@@ -506,11 +506,27 @@
                             <tr>
 
                                 <td>
-
                                     <strong>
-                                        {{ app.name }}
-                                    </strong>
 
+                                        {% if app.key == "news" %}
+
+                                            <a
+                                                href="{% url 'usage_analytics:news_app_detail' %}?days={{ days }}"
+                                                class="analytics-app-link"
+                                            >
+                                                {{ app.name }}
+                                                <span>
+                                                    →
+                                                </span>
+                                            </a>
+
+                                        {% else %}
+
+                                            {{ app.name }}
+
+                                        {% endif %}
+
+                                    </strong>
                                 </td>
 
 

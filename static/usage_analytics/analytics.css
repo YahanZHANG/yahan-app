@@ -1297,3 +1297,77 @@
 .analytics-journey-original-link:hover {
     text-decoration: underline;
 }
+
+/* =========================================================
+   Analytics chart
+   ========================================================= */
+
+.analytics-chart-card {
+    position: relative;
+
+    width: 100%;
+    height: 360px;
+
+    margin-top: 24px;
+    padding: 24px;
+
+    border-radius: 24px;
+
+    background:
+        rgba(255, 255, 255, .92);
+
+    box-shadow:
+        0 12px 35px
+        rgba(67, 76, 89, .08);
+}
+
+
+@media (max-width: 720px) {
+
+    .analytics-chart-card {
+        height: 300px;
+
+        padding:
+            18px
+            12px;
+    }
+
+}
+
+/* =========================================================
+   App detail link
+   ========================================================= */
+
+.analytics-app-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: inherit;
+    text-decoration: none;
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+}
+
+
+.analytics-app-link span {
+    font-size: .9em;
+    opacity: .55;
+
+    transition:
+        transform .18s ease,
+        opacity .18s ease;
+}
+
+
+.analytics-app-link:hover {
+    opacity: .72;
+}
+
+
+.analytics-app-link:hover span {
+    transform: translateX(3px);
+    opacity: 1;
+}

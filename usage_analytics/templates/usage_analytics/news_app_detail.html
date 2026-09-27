@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    スイスニュース | 利用状況
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+
+<div class="analytics-page">
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            SWISS NEWS ANALYTICS
+        </p>
+
+        <h1>
+            スイスニュース
+        </h1>
+
+        <p>
+            匿名ユーザーとログインユーザーを合わせた利用状況
+        </p>
+
+
+        <div class="analytics-actions">
+
+            <a
+                href="{% url 'usage_analytics:dashboard' %}?days={{ days }}"
+            >
+                ← 利用状況に戻る
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+        <nav class="analytics-period">
+
+            <a
+                href="?days=7"
+                class="{% if days == '7' %}is-active{% endif %}"
+            >
+                7日間
+            </a>
+
+            <a
+                href="?days=30"
+                class="{% if days == '30' %}is-active{% endif %}"
+            >
+                30日間
+            </a>
+
+            <a
+                href="?days=all"
+                class="{% if days == 'all' %}is-active{% endif %}"
+            >
+                全期間
+            </a>
+
+        </nav>
+
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    OVERVIEW
+                </p>
+
+                <h2>
+                    全体の利用状況
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                区分
+                            </th>
+
+                            <th>
+                                利用者
+                            </th>
+
+                            <th>
+                                訪問
+                            </th>
+
+                            <th>
+                                ページ閲覧
+                            </th>
+
+                            <th>
+                                記事クリック
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    全体
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ total_summary.users }}
+                            </td>
+
+                            <td>
+                                {{ total_summary.visits }}
+                            </td>
+
+                            <td>
+                                {{ total_summary.page_views }}
+                            </td>
+
+                            <td>
+                                {{ total_summary.article_clicks }}
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                匿名
+                            </td>
+
+                            <td>
+                                {{ anonymous_summary.users }}
+                            </td>
+
+                            <td>
+                                {{ anonymous_summary.visits }}
+                            </td>
+
+                            <td>
+                                {{ anonymous_summary.page_views }}
+                            </td>
+
+                            <td>
+                                {{ anonymous_summary.article_clicks }}
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                ログイン済み
+                            </td>
+
+                            <td>
+                                {{ authenticated_summary.users }}
+                            </td>
+
+                            <td>
+                                {{ authenticated_summary.visits }}
+                            </td>
+
+                            <td>
+                                {{ authenticated_summary.page_views }}
+                            </td>
+
+                            <td>
+                                {{ authenticated_summary.article_clicks }}
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- =====================================================
+                Page view trend
+                ===================================================== -->
+
+            <section class="analytics-section">
+
+                <div class="analytics-section-heading">
+
+                    <p>
+                        PAGE VIEW TREND
+                    </p>
+
+                    <h2>
+                        ページ閲覧数の推移
+                    </h2>
+
+                </div>
+
+
+                <p class="analytics-description">
+                    Swiss Newsの1日ごとのページ閲覧数。
+                    匿名ユーザーとログインユーザーを分けて表示しています。
+                </p>
+
+
+                <div class="analytics-chart-card">
+
+                    <canvas
+                        id="news-page-view-chart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+            {{ chart_data|json_script:"news-chart-data" }}
+
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/chart.js"
+            ></script>
+
+
+            <script>
+
+            document.addEventListener(
+                "DOMContentLoaded",
+                function () {
+
+                    const dataElement =
+                        document.getElementById(
+                            "news-chart-data"
+                        );
+
+                    const canvas =
+                        document.getElementById(
+                            "news-page-view-chart"
+                        );
+
+                    if (!dataElement || !canvas) {
+                        return;
+                    }
+
+
+                    const chartData =
+                        JSON.parse(
+                            dataElement.textContent
+                        );
+
+
+                    new Chart(
+                        canvas,
+                        {
+
+                            type: "line",
+
+                            data: {
+
+                                labels: chartData.map(
+                                    item => item.date
+                                ),
+
+                                datasets: [
+
+                                    {
+                                        label: "全体",
+                                        data: chartData.map(
+                                            item => item.total
+                                        ),
+                                        borderWidth: 3,
+                                        tension: 0.3,
+                                    },
+
+                                    {
+                                        label: "匿名",
+                                        data: chartData.map(
+                                            item => item.anonymous
+                                        ),
+                                        borderWidth: 2,
+                                        tension: 0.3,
+                                    },
+
+                                    {
+                                        label: "ログイン済み",
+                                        data: chartData.map(
+                                            item => item.authenticated
+                                        ),
+                                        borderWidth: 2,
+                                        tension: 0.3,
+                                    },
+
+                                ],
+
+                            },
+
+                            options: {
+
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                interaction: {
+                                    mode: "index",
+                                    intersect: false,
+                                },
+
+                                plugins: {
+
+                                    legend: {
+                                        position: "bottom",
+                                    },
+
+                                },
+
+                                scales: {
+
+                                    y: {
+
+                                        beginAtZero: true,
+
+                                        ticks: {
+                                            precision: 0,
+                                        },
+
+                                    },
+
+                                },
+
+                            },
+
+                        }
+                    );
+
+                    const visitCanvas =
+                        document.getElementById(
+                            "news-visit-chart"
+                        );
+
+                    if (visitCanvas) {
+
+                        new Chart(
+                            visitCanvas,
+                            {
+
+                                type: "line",
+
+                                data: {
+
+                                    labels: chartData.map(
+                                        item => item.date
+                                    ),
+
+                                    datasets: [
+
+                                        {
+                                            label: "全体",
+                                            data: chartData.map(
+                                                item => item.total_visits
+                                            ),
+                                            borderWidth: 3,
+                                            tension: 0.3,
+                                        },
+
+                                        {
+                                            label: "匿名",
+                                            data: chartData.map(
+                                                item => item.anonymous_visits
+                                            ),
+                                            borderWidth: 2,
+                                            tension: 0.3,
+                                        },
+
+                                        {
+                                            label: "ログイン済み",
+                                            data: chartData.map(
+                                                item => item.authenticated_visits
+                                            ),
+                                            borderWidth: 2,
+                                            tension: 0.3,
+                                        },
+
+                                    ],
+
+                                },
+
+                                options: {
+
+                                    responsive: true,
+
+                                    maintainAspectRatio: false,
+
+                                    interaction: {
+                                        mode: "index",
+                                        intersect: false,
+                                    },
+
+                                    plugins: {
+
+                                        legend: {
+                                            position: "bottom",
+                                        },
+
+                                    },
+
+                                    scales: {
+
+                                        y: {
+
+                                            beginAtZero: true,
+
+                                            ticks: {
+                                                precision: 0,
+                                            },
+
+                                        },
+
+                                    },
+
+                                },
+
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+            </script>
+
+        </section>
+
+        <!-- =====================================================
+            Visit trend
+            ===================================================== -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    VISIT TREND
+                </p>
+
+                <h2>
+                    訪問回数の推移
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                Swiss Newsへの1日ごとの訪問回数。
+                匿名ユーザーとログインユーザーを分けて表示しています。
+            </p>
+
+
+            <div class="analytics-chart-card">
+
+                <canvas
+                    id="news-visit-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}
