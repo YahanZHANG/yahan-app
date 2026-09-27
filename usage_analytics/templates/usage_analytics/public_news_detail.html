@@ -155,6 +155,92 @@
 
         </section>
 
+        <!-- =====================================================
+            Article clicks
+            ===================================================== -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ARTICLE CLICKS
+                </p>
+
+                <h2>
+                    記事クリック
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                Swiss Newsから元ニュース記事を開いた回数。
+                匿名ユーザーとログインユーザーの両方を集計しています。
+            </p>
+
+
+            <section class="analytics-summary">
+
+                <!-- Total -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        合計
+                    </span>
+
+                    <strong>
+                        {{ click_summary.total }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+
+                <!-- Anonymous -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        匿名
+                    </span>
+
+                    <strong>
+                        {{ click_summary.anonymous }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+
+                <!-- Authenticated -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        ログイン済み
+                    </span>
+
+                    <strong>
+                        {{ click_summary.authenticated }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+            </section>
+
+        </section>
 
         <!-- =================================================
              Page statistics

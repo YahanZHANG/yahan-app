@@ -29,19 +29,21 @@ urlpatterns = [
         views.public_news_detail,
         name="public_news_detail",
     ),
-
     path(
         "public-news/visitors/<uuid:visitor_id>/",
         views.public_news_visitor_detail,
         name="public_news_visitor_detail",
     ),
-
     path(
         "public-news/articles/<int:article_id>/click/",
         views.public_news_article_click,
         name="public_news_article_click",
     ),
-
+    path(
+        "users/<int:user_id>/news/",
+        views.user_news_detail,
+        name="user_news_detail",
+    ),
     # =====================================================
     # Analytics filters
     # =====================================================

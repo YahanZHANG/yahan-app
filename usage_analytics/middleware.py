@@ -7,6 +7,7 @@ from django.utils import timezone
 from .models import (
     PublicNewsEvent,
     UsageEvent,
+    UserNewsEvent,
 )
 
 logger = logging.getLogger(__name__)
@@ -147,6 +148,17 @@ class UsageAnalyticsMiddleware:
 
         now_timestamp = now.timestamp()
 
+        # ---------------------------------------------
+        # Authenticated News detailed analytics
+        # ---------------------------------------------
+
+        if app_key == "news":
+
+            self._track_authenticated_news(
+                request=request,
+                now_timestamp=now_timestamp,
+            )
+
         last_seen_map = (
             request.session.get(
                 SESSION_KEY,
@@ -208,6 +220,7 @@ class UsageAnalyticsMiddleware:
 
         return response
 
+    
     def _track_public_news(
         self,
         request,
@@ -282,3 +295,62 @@ class UsageAnalyticsMiddleware:
         request.session[
             "public_news_last_seen"
         ] = now_timestamp
+
+    def _track_authenticated_news(
+            self,
+            request,
+            now_timestamp,
+        ):
+            """
+            ログインユーザーのSwiss News内での
+            詳細なページ閲覧を記録する。
+            """
+    
+            # ---------------------------------------------
+            # Visit detection
+            # ---------------------------------------------
+    
+            session_key = (
+                f"authenticated_news_last_seen:"
+                f"{request.user.pk}"
+            )
+    
+            last_timestamp = (
+                request.session.get(
+                    session_key
+                )
+            )
+    
+            is_visit_start = (
+                last_timestamp is None
+                or (
+                    now_timestamp
+                    - last_timestamp
+                ) > VISIT_TIMEOUT_SECONDS
+            )
+    
+            # ---------------------------------------------
+            # Save event
+            # ---------------------------------------------
+    
+            try:
+    
+                UserNewsEvent.objects.create(
+                    user=request.user,
+                    path=request.path_info,
+                    is_visit_start=is_visit_start,
+                )
+    
+            except DatabaseError:
+    
+                logger.exception(
+                    "Failed to save authenticated news event."
+                )
+    
+                return
+    
+            request.session[
+                session_key
+            ] = now_timestamp
+    
+    

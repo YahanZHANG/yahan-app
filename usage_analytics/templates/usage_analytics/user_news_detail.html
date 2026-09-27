@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ display_name }} | Swiss News詳細
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+
+<div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            SWISS NEWS USER
+        </p>
+
+
+        <h1>
+            {{ display_name }}
+        </h1>
+
+
+        <p>
+            ID: {{ target_user.username }}
+        </p>
+
+
+        <div class="analytics-actions">
+
+            <a
+                href="{% url 'usage_analytics:user_detail' target_user.id %}?days={{ days }}"
+            >
+                ← ユーザー詳細に戻る
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
+    <main class="analytics-main">
+
+
+        <!-- =================================================
+             Period selector
+             ================================================= -->
+
+        <form method="get">
+
+            <nav class="analytics-period">
+
+                <button
+                    type="submit"
+                    name="days"
+                    value="7"
+                    class="{% if days == '7' %}is-active{% endif %}"
+                >
+                    7日間
+                </button>
+
+
+                <button
+                    type="submit"
+                    name="days"
+                    value="30"
+                    class="{% if days == '30' %}is-active{% endif %}"
+                >
+                    30日間
+                </button>
+
+
+                <button
+                    type="submit"
+                    name="days"
+                    value="all"
+                    class="{% if days == 'all' %}is-active{% endif %}"
+                >
+                    全期間
+                </button>
+
+            </nav>
+
+        </form>
+
+
+        <!-- =================================================
+             Summary
+             ================================================= -->
+
+        <section class="analytics-summary">
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    訪問
+                </span>
+
+                <strong>
+                    {{ summary.visits }}
+                </strong>
+
+                <small>
+                    回
+                </small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    ページ閲覧
+                </span>
+
+                <strong>
+                    {{ summary.page_views }}
+                </strong>
+
+                <small>
+                    回
+                </small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    記事クリック
+                </span>
+
+                <strong>
+                    {{ summary.article_clicks }}
+                </strong>
+
+                <small>
+                    回
+                </small>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             First / Last activity
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ACTIVITY
+                </p>
+
+                <h2>
+                    Swiss News 利用期間
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-summary">
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        最初のアクセス
+                    </span>
+
+                    <strong class="analytics-date-value">
+
+                        {% if summary.first_seen %}
+
+                            {{ summary.first_seen|date:"Y/m/d H:i" }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        最終アクセス
+                    </span>
+
+                    <strong class="analytics-date-value">
+
+                        {% if summary.last_seen %}
+
+                            {{ summary.last_seen|date:"Y/m/d H:i" }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Journey
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    JOURNEY
+                </p>
+
+                <h2>
+                    Swiss News内のアクセス経路
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                ページ閲覧と元記事へのクリックを
+                時系列で表示しています。
+            </p>
+
+
+            <div class="analytics-journey">
+
+                {% for event in access_history %}
+
+                    <!-- =====================================
+                         Visit start
+                         ===================================== -->
+
+                    {% if event.is_visit_start %}
+
+                        <div class="analytics-journey-visit">
+
+                            <span>
+                                VISIT {{ event.visit_number }}
+                            </span>
+
+                            <strong>
+                                訪問開始
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =====================================
+                         Event
+                         ===================================== -->
+
+                    <div
+                        class="
+                            analytics-journey-event
+                            {% if event.type == 'click' %}
+                                is-click
+                            {% endif %}
+                        "
+                    >
+
+                        <!-- Time -->
+
+                        <div class="analytics-journey-time">
+
+                            <strong>
+                                {{ event.timestamp|date:"H:i:s" }}
+                            </strong>
+
+                            <span>
+                                {{ event.timestamp|date:"Y/m/d" }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- Timeline -->
+
+                        <div class="analytics-journey-line">
+
+                            {% if event.type == "click" %}
+
+                                <span class="analytics-journey-click-dot">
+                                    ↗
+                                </span>
+
+                            {% else %}
+
+                                <span class="analytics-journey-dot">
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Content -->
+
+                        <div class="analytics-journey-page">
+
+                            {% if event.type == "click" %}
+
+                                <span class="analytics-journey-click-label">
+                                    ARTICLE CLICK
+                                </span>
+
+
+                                <strong class="analytics-journey-article-title">
+                                    {{ event.article_title }}
+                                </strong>
+
+
+                                {% if event.source_name %}
+
+                                    <div class="analytics-journey-source">
+                                        {{ event.source_name }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                <a
+                                    href="{{ event.destination_url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="analytics-journey-original-link"
+                                >
+                                    元記事を開く ↗
+                                </a>
+
+                            {% else %}
+
+                                <strong>
+                                    {{ event.path }}
+                                </strong>
+
+
+                                {% if event.is_visit_start %}
+
+                                    <span class="analytics-journey-start">
+                                        訪問開始
+                                    </span>
+
+                                {% endif %}
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="analytics-description">
+                        この期間のSwiss News利用記録はありません。
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
+        <p class="analytics-note">
+
+            ※ Swiss News内のページ閲覧と、
+            元ニュース記事へのクリックを記録しています。
+            30分以上アクセスが空いた場合は、
+            新しい訪問として計算します。
+
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

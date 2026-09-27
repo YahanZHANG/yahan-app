@@ -319,3 +319,145 @@ class PublicNewsArticleClick(models.Model):
             f"{self.article_title} | "
             f"{self.clicked_at}"
         )
+
+# =========================================================
+# Authenticated News Page Analytics
+# =========================================================
+
+class UserNewsEvent(models.Model):
+    """
+    ログインユーザーのSwiss News内での
+    ページ閲覧履歴。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="news_page_events",
+        verbose_name="ユーザー",
+    )
+
+    path = models.CharField(
+        "閲覧ページ",
+        max_length=500,
+        blank=True,
+    )
+
+    accessed_at = models.DateTimeField(
+        "アクセス日時",
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    is_visit_start = models.BooleanField(
+        "新しい訪問",
+        default=False,
+    )
+
+    class Meta:
+
+        verbose_name = "ログインユーザー News利用履歴"
+        verbose_name_plural = "ログインユーザー News利用履歴"
+
+        ordering = [
+            "-accessed_at",
+        ]
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "user",
+                    "accessed_at",
+                ],
+            ),
+
+        ]
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username} | "
+            f"{self.path} | "
+            f"{self.accessed_at}"
+        )
+
+
+# =========================================================
+# Authenticated News Article Click Analytics
+# =========================================================
+
+class UserNewsArticleClick(models.Model):
+    """
+    ログインユーザーがSwiss Newsから
+    元記事をクリックした履歴。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="news_article_clicks",
+        verbose_name="ユーザー",
+    )
+
+    article_id = models.PositiveBigIntegerField(
+        "記事ID",
+        db_index=True,
+    )
+
+    article_title = models.CharField(
+        "記事タイトル",
+        max_length=500,
+    )
+
+    source_name = models.CharField(
+        "ニュースソース",
+        max_length=200,
+        blank=True,
+    )
+
+    destination_url = models.URLField(
+        "リンク先",
+        max_length=2000,
+    )
+
+    clicked_at = models.DateTimeField(
+        "クリック日時",
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    class Meta:
+
+        verbose_name = "ログインユーザー News記事クリック"
+        verbose_name_plural = "ログインユーザー News記事クリック"
+
+        ordering = [
+            "-clicked_at",
+        ]
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "user",
+                    "clicked_at",
+                ],
+            ),
+
+            models.Index(
+                fields=[
+                    "article_id",
+                    "clicked_at",
+                ],
+            ),
+
+        ]
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username} | "
+            f"{self.article_title} | "
+            f"{self.clicked_at}"
+        )
