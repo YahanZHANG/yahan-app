@@ -64,6 +64,12 @@ class Command(BaseCommand):
                 "⚽",
                 90,
             ),
+            (
+                "その他",
+                "other",
+                "📰",
+                999,
+            ),
         ]
 
         for (

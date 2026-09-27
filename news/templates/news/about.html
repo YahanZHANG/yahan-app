@@ -1,0 +1,230 @@
+{% extends "news/base.html" %}
+
+
+{% block title %}
+Swiss Newsについて | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<div class="news-about">
+
+    <header class="news-about-hero">
+
+        <div class="news-page-kicker">
+            ABOUT SWISS NEWS
+        </div>
+
+        <h2>
+            スイスの「いま」を、<br>
+            日本語でもっと身近に。
+        </h2>
+
+        <p class="news-about-lead">
+            Swiss Newsは、スイス在住の日本語話者がスイス国内のニュースを手軽にチェックできるように作ったニュースサービスです。
+        </p>
+
+    </header>
+
+
+    <div class="news-about-sections">
+
+        <section class="news-about-section">
+
+            <div class="news-about-section-number">
+                01
+            </div>
+
+            <div class="news-about-section-content">
+
+                <h3>
+                    どんなニュースを掲載していますか？
+                </h3>
+
+                <p>
+                    スイス国内の主要なニュースメディアや公的機関からニュースを収集し、日本語で読みやすくまとめています。
+                </p>
+
+                <div class="news-about-sources">
+
+                    <span>SRF</span>
+                    <span>RTS</span>
+                    <span>RSI</span>
+                    <span>SWI swissinfo.ch</span>
+                    <span>Swiss Federal Administration</span>
+                    <span>20 Minuten</span>
+                    <span>Blick</span>
+                    <span>Nau.ch</span>
+                    <span>Watson</span>
+
+                </div>
+
+                <p class="news-about-note">
+                    各記事の詳細については、記事内のリンクから元のニュースをご確認いただけます。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="news-about-section">
+
+            <div class="news-about-section-number">
+                02
+            </div>
+
+            <div class="news-about-section-content">
+
+                <h3>
+                    AIを使っていますか？
+                </h3>
+
+                <p>
+                    はい。ニュースの日本語への翻訳・要約やテーマ分類などにAIを利用しています。
+                </p>
+
+                <p>
+                    AIによる処理のため、翻訳や要約に誤り・不足・ニュアンスの違いなどが含まれる可能性があります。重要な情報については、必ず元の記事をご確認ください。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="news-about-section">
+
+            <div class="news-about-section-number">
+                03
+            </div>
+
+            <div class="news-about-section-content">
+
+                <h3>
+                    いつ更新されますか？
+                </h3>
+
+                <p>
+                    Swiss Newsは毎日4回、<strong>6時・11時・16時・21時</strong>（スイス時間）にニュースを更新しています。
+                </p>
+
+                <p>
+                    現在、最新の100件を掲載しています。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="news-about-section">
+
+            <div class="news-about-section-number">
+                04
+            </div>
+
+            <div class="news-about-section-content">
+
+                <h3>
+                    誰が運営していますか？
+                </h3>
+
+                <p>
+                    Swiss Newsは、スイス在住の個人が企画・開発・運営しています。
+                </p>
+
+                <p>
+                    スイス政府、各報道機関、その他の公的機関による公式サービスではありません。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="news-about-section">
+
+            <div class="news-about-section-number">
+                05
+            </div>
+
+            <div class="news-about-section-content">
+
+                <h3>
+                    ご意見・ご要望
+                </h3>
+
+                <p>
+                    「こんな機能がほしい」「このニュースソースも追加してほしい」「表示がおかしい」など、お気軽にお知らせください。
+                </p>
+
+                <form
+                    method="post"
+                    action="{% url 'news:about' %}"
+                    class="news-feedback-form"
+                >
+                    {% csrf_token %}
+
+                    <div class="news-feedback-field">
+
+                        {{ form.message }}
+
+                        {% if form.message.errors %}
+                            <div class="news-feedback-errors">
+
+                                {% for error in form.message.errors %}
+                                    <p>
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="news-feedback-footer">
+
+                        <p class="news-feedback-note">
+                            匿名で送信されます。個別の返信はできません。
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="news-feedback-submit"
+                        >
+                            コメントを送信
+
+                            <span aria-hidden="true">
+                                →
+                            </span>
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <section class="news-about-privacy">
+
+            <h3>
+                アクセス情報について
+            </h3>
+
+            <p>
+                サービス改善のため、ページの閲覧状況などの匿名の利用情報を記録しています。Swiss News独自の利用状況集計では、氏名やメールアドレスは記録していません。
+            </p>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

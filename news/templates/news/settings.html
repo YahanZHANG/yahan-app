@@ -9,35 +9,7 @@
 
 {% block news_content %}
 
-<main class="news-main news-settings-page">
-
-    <!-- =========================
-         ご利用について
-    ========================= -->
-
-    <section class="news-settings-guide">
-
-        <h3>
-            💡 ご利用について
-        </h3>
-
-        <p>
-            ニュースは最新の100件が表示されます。
-        </p>
-
-        <p>
-            ニュースは毎日4回、
-            6時・11時・16時・21時（スイス時間）に更新されます。
-        </p>
-
-        <p>
-            AIによる翻訳・要約のため、
-            内容に誤りや不足が含まれる場合があります。
-            原文リンクをご参考ください。
-        </p>
-
-    </section>
-
+<div class="news-settings-page">
 
     <!-- =========================
          既存のニュース設定
@@ -202,9 +174,38 @@
 
     </form>
 
+    <div class="news-settings-about">
+
+        <a
+            href="{% url 'news:about' %}"
+            class="news-settings-about-link"
+        >
+
+            <span class="news-settings-about-copy">
+
+                <strong>
+                    このサイトについて
+                </strong>
+
+                <small>
+                    Swiss Newsの仕組み、情報源、AIの利用について
+                </small>
+
+            </span>
+
+            <span
+                class="news-settings-about-arrow"
+                aria-hidden="true"
+            >
+                →
+            </span>
+
+        </a>
+
+    </div>
 
 
-</main>
+</div>
 
 
 {% endblock %}

@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings as django_settings
 from django.db.models import Exists, OuterRef, Q
@@ -11,7 +12,11 @@ from django.utils.http import (
     url_has_allowed_host_and_scheme,
 )
 
-from .forms import NewsSettingsForm
+from .forms import (
+    NewsFeedbackForm,
+    NewsSettingsForm,
+)
+
 from .models import (
     Article,
     Favorite,
@@ -708,5 +713,93 @@ def digest_list(request):
         "news/digest_list.html",
         {
             "digests": digests,
+        },
+    )
+
+def about(request):
+
+    preference = None
+    public_settings = None
+
+    if request.user.is_authenticated:
+        preference = _get_preference(
+            request.user
+        )
+    else:
+        public_settings = _get_public_settings(
+            request
+        )
+
+    if request.method == "POST":
+
+        last_feedback_at = request.session.get(
+            "news_feedback_last_sent_at"
+        )
+
+        if last_feedback_at:
+
+            try:
+                last_feedback_time = (
+                    timezone.datetime.fromisoformat(
+                        last_feedback_at
+                    )
+                )
+
+                seconds_since_last_feedback = (
+                    timezone.now()
+                    - last_feedback_time
+                ).total_seconds()
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                seconds_since_last_feedback = 60
+
+            if seconds_since_last_feedback < 60:
+
+                messages.error(
+                    request,
+                    "コメントは少し時間をあけてから再度送信してください。",
+                )
+
+                return redirect(
+                    "news:about"
+                )
+
+        form = NewsFeedbackForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            request.session[
+                "news_feedback_last_sent_at"
+            ] = timezone.now().isoformat()
+
+            request.session.modified = True
+
+            messages.success(
+                request,
+                "ありがとうございます。コメントを送信しました。",
+            )
+
+            return redirect(
+                "news:about"
+            )
+
+    else:
+
+        form = NewsFeedbackForm()
+
+    return render(
+        request,
+        "news/about.html",
+        {
+            "form": form,
+            "preference": preference,
+            "public_settings": public_settings,
         },
     )

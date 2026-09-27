@@ -39,6 +39,12 @@ urlpatterns = [
     ),
 
     path(
+        "about/",
+        views.about,
+        name="about",
+    ),
+
+    path(
         "favorite/<int:article_id>/toggle/",
         views.toggle_favorite,
         name="toggle_favorite",

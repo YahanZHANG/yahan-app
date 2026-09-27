@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     Article,
     Favorite,
+    NewsFeedback,
     NewsPreference,
     NewsSource,
     Topic,
@@ -70,3 +71,40 @@ class ArticleAdmin(admin.ModelAdmin):
 
 admin.site.register(Favorite)
 admin.site.register(NewsPreference)
+
+@admin.register(NewsFeedback)
+class NewsFeedbackAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "created_at",
+        "short_message",
+        "is_read",
+    )
+
+    list_filter = (
+        "is_read",
+        "created_at",
+    )
+
+    search_fields = (
+        "message",
+    )
+
+    readonly_fields = (
+        "message",
+        "created_at",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    @admin.display(
+        description="コメント",
+    )
+    def short_message(self, obj):
+
+        if len(obj.message) > 80:
+            return f"{obj.message[:80]}…"
+
+        return obj.message

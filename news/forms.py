@@ -1,7 +1,6 @@
 from django import forms
 
-from .models import NewsPreference, Topic
-
+from .models import NewsFeedback, NewsPreference, Topic
 
 class NewsSettingsForm(forms.ModelForm):
     enabled_topics = forms.ModelMultipleChoiceField(
@@ -76,3 +75,27 @@ class NewsSettingsForm(forms.ModelForm):
             )
 
         return preference
+
+class NewsFeedbackForm(forms.ModelForm):
+
+    class Meta:
+        model = NewsFeedback
+
+        fields = [
+            "message",
+        ]
+
+        widgets = {
+            "message": forms.Textarea(
+                attrs={
+                    "class": "news-feedback-textarea",
+                    "placeholder": "ご意見・ご要望を自由にお書きください",
+                    "rows": 5,
+                    "maxlength": 1000,
+                }
+            ),
+        }
+
+        labels = {
+            "message": "",
+        }

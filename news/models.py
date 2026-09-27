@@ -394,3 +394,31 @@ class NewsPushBatch(django_models.Model):
     def __str__(self):
 
         return self.batch_key
+
+
+class NewsFeedback(models.Model):
+
+    message = models.TextField(
+        "コメント",
+        max_length=1000,
+    )
+
+    created_at = models.DateTimeField(
+        "送信日時",
+        auto_now_add=True,
+    )
+
+    is_read = models.BooleanField(
+        "確認済み",
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = "Swiss News コメント"
+        verbose_name_plural = "Swiss News コメント"
+        ordering = [
+            "-created_at",
+        ]
+
+    def __str__(self):
+        return self.message[:50]
