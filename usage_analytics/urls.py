@@ -21,6 +21,28 @@ urlpatterns = [
     ),
 
     # =====================================================
+    # Public News detail
+    # =====================================================
+
+    path(
+        "public-news/",
+        views.public_news_detail,
+        name="public_news_detail",
+    ),
+
+    path(
+        "public-news/visitors/<uuid:visitor_id>/",
+        views.public_news_visitor_detail,
+        name="public_news_visitor_detail",
+    ),
+
+    path(
+        "public-news/articles/<int:article_id>/click/",
+        views.public_news_article_click,
+        name="public_news_article_click",
+    ),
+
+    # =====================================================
     # Analytics filters
     # =====================================================
 

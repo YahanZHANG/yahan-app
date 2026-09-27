@@ -1,20 +1,27 @@
-from datetime import timedelta
+import logging
 
+from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Max, Q
+from django.db.models import (
+    Count,
+    Max,
+    Min,
+    Q,
+)
 from django.db.models.functions import TruncDate
 from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-
+from news.models import Article
 from travel.models import UserProfile
 
 from .models import (
+    PublicNewsArticleClick,
     PublicNewsEvent,
     UsageEvent,
 )
@@ -23,6 +30,7 @@ from .permissions import VIEWER_GROUP_NAME, can_view_analytics
 
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # URLに除外設定がない場合だけ、デフォルトで除外するアカウント。
 DEFAULT_EXCLUDED_USERNAMES = (
@@ -187,6 +195,379 @@ def get_public_news_statistics(days):
         "page_views": page_views,
     }
 
+
+# =========================================================
+# Public News detail
+# =========================================================
+
+@login_required
+def public_news_detail(request):
+    """
+    ログインしていない公開Swiss News閲覧者の
+    匿名アクセス詳細を表示する。
+    """
+
+    if not can_view_analytics(request.user):
+        raise PermissionDenied
+
+    days = request.GET.get(
+        "days",
+        "7",
+    )
+
+    if days not in {
+        "7",
+        "30",
+        "all",
+    }:
+        days = "7"
+
+    events = PublicNewsEvent.objects.all()
+
+    if days != "all":
+
+        start = (
+            timezone.now()
+            - timedelta(
+                days=int(days)
+            )
+        )
+
+        events = events.filter(
+            accessed_at__gte=start
+        )
+
+    # =====================================================
+    # Summary
+    # =====================================================
+
+    summary = {
+        "visitors": (
+            events
+            .values("visitor_id")
+            .distinct()
+            .count()
+        ),
+        "visits": (
+            events
+            .filter(
+                is_visit_start=True
+            )
+            .count()
+        ),
+        "page_views": (
+            events.count()
+        ),
+    }
+
+    # =====================================================
+    # Page ranking
+    # =====================================================
+
+    pages = list(
+        events
+        .values("path")
+        .annotate(
+            page_views=Count("id"),
+            visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+            last_seen=Max(
+                "accessed_at"
+            ),
+        )
+        .order_by(
+            "-page_views",
+            "path",
+        )
+    )
+
+    # =====================================================
+    # Visitor statistics
+    # =====================================================
+
+    visitor_rows = list(
+        events
+        .values("visitor_id")
+        .annotate(
+            page_views=Count("id"),
+            visits=Count(
+                "id",
+                filter=Q(
+                    is_visit_start=True
+                ),
+            ),
+            first_seen=Min(
+                "accessed_at"
+            ),
+            last_seen=Max(
+                "accessed_at"
+            ),
+        )
+        .order_by(
+            "-last_seen"
+        )
+    )
+
+    # UUIDをそのまま全部見せず、
+    # 管理画面では先頭8文字だけ表示する。
+    for index, visitor in enumerate(
+        visitor_rows,
+        start=1,
+    ):
+        visitor["number"] = index
+        visitor["short_id"] = (
+            str(
+                visitor["visitor_id"]
+            )[:8]
+        )
+
+    # =====================================================
+    # Recent activity
+    # =====================================================
+
+    recent_events = (
+        events
+        .order_by(
+            "-accessed_at"
+        )[:100]
+    )
+
+    context = {
+        "days": days,
+        "summary": summary,
+        "pages": pages,
+        "visitors": visitor_rows,
+        "recent_events": recent_events,
+    }
+
+    return render(
+        request,
+        "usage_analytics/public_news_detail.html",
+        context,
+    )
+
+# =========================================================
+# Public News visitor detail
+# =========================================================
+
+@login_required
+def public_news_visitor_detail(
+    request,
+    visitor_id,
+):
+    """
+    公開Swiss Newsの匿名訪問者ごとの
+    アクセス経路を表示する。
+    """
+
+    if not can_view_analytics(request.user):
+        raise PermissionDenied
+
+    days = request.GET.get(
+        "days",
+        "7",
+    )
+
+    if days not in {
+        "7",
+        "30",
+        "all",
+    }:
+        days = "7"
+
+    events = PublicNewsEvent.objects.filter(
+        visitor_id=visitor_id
+    )
+
+    if days != "all":
+
+        start = (
+            timezone.now()
+            - timedelta(
+                days=int(days)
+            )
+        )
+
+        events = events.filter(
+            accessed_at__gte=start
+        )
+
+    if not events.exists():
+        raise Http404
+
+    # =====================================================
+    # Summary
+    # =====================================================
+
+    summary = events.aggregate(
+        page_views=Count("id"),
+        first_seen=Min("accessed_at"),
+        last_seen=Max("accessed_at"),
+    )
+
+    summary["visits"] = (
+        events
+        .filter(
+            is_visit_start=True
+        )
+        .count()
+    )
+
+    # =====================================================
+    # Access history
+    # =====================================================
+
+    page_events = list(
+        events.order_by(
+            "accessed_at"
+        )
+    )
+
+    click_events = (
+        PublicNewsArticleClick.objects
+        .filter(
+            visitor_id=visitor_id
+        )
+    )
+
+    if days != "all":
+
+        click_events = click_events.filter(
+            clicked_at__gte=start
+        )
+
+    click_events = list(
+        click_events.order_by(
+            "clicked_at"
+        )
+    )
+
+
+    # =====================================================
+    # Merge page views and article clicks
+    # =====================================================
+
+    access_history = []
+
+    for event in page_events:
+
+        access_history.append({
+            "type": "page",
+            "timestamp": event.accessed_at,
+            "path": event.path,
+            "is_visit_start": event.is_visit_start,
+        })
+
+
+    for click in click_events:
+
+        access_history.append({
+            "type": "click",
+            "timestamp": click.clicked_at,
+            "article_title": click.article_title,
+            "source_name": click.source_name,
+            "destination_url": click.destination_url,
+            "is_visit_start": False,
+        })
+
+
+    access_history.sort(
+        key=lambda item: item["timestamp"]
+    )
+
+
+    # =====================================================
+    # Visit number
+    # =====================================================
+
+    visit_number = 0
+
+    for event in access_history:
+
+        if event["is_visit_start"]:
+            visit_number += 1
+
+        if visit_number == 0:
+            visit_number = 1
+
+        event["visit_number"] = visit_number
+
+    # =====================================================
+    # Context
+    # =====================================================
+
+    context = {
+        "days": days,
+        "visitor_id": visitor_id,
+        "short_id": str(visitor_id)[:8],
+        "summary": summary,
+        "access_history": access_history,
+    }
+
+    return render(
+        request,
+        "usage_analytics/public_news_visitor_detail.html",
+        context,
+    )
+    
+# =========================================================
+# Public News article click
+# =========================================================
+
+def public_news_article_click(
+    request,
+    article_id,
+):
+    """
+    公開Swiss Newsの記事クリックを記録して、
+    元記事へリダイレクトする。
+    """
+
+    article = get_object_or_404(
+        Article.objects.select_related(
+            "source"
+        ),
+        pk=article_id,
+    )
+
+    destination_url = article.source_url
+
+    # ---------------------------------------------
+    # Anonymous public visitors only
+    # ---------------------------------------------
+
+    if not request.user.is_authenticated:
+
+        visitor_id = request.session.get(
+            "public_news_visitor_id"
+        )
+
+        if visitor_id:
+
+            try:
+
+                PublicNewsArticleClick.objects.create(
+                    visitor_id=visitor_id,
+                    article_id=article.pk,
+                    article_title=(
+                        article.title_ja
+                        or article.title_original
+                    ),
+                    source_name=article.source.name,
+                    destination_url=destination_url,
+                )
+
+            except DatabaseError:
+
+                logger.exception(
+                    "Failed to save public news article click."
+                )
+
+    return redirect(
+        destination_url
+    )
 
 # =========================================================
 # Dashboard

@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+    Visitor {{ short_id }} | 公開 Swiss News
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+
+<div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            PUBLIC NEWS VISITOR
+        </p>
+
+        <h1>
+            👤 Visitor {{ short_id }}…
+        </h1>
+
+        <p>
+            匿名訪問者のアクセス経路
+        </p>
+
+        <div class="analytics-actions">
+
+            <a
+                href="{% url 'usage_analytics:public_news_detail' %}?days={{ days }}"
+            >
+                ← 公開 Swiss News 詳細
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+        <!-- =================================================
+             Summary
+             ================================================= -->
+
+        <section class="analytics-summary">
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    訪問回数
+                </span>
+
+                <strong>
+                    {{ summary.visits }}
+                </strong>
+
+                <small>
+                    回
+                </small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    ページ閲覧数
+                </span>
+
+                <strong>
+                    {{ summary.page_views }}
+                </strong>
+
+                <small>
+                    回
+                </small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    初回アクセス
+                </span>
+
+                <strong class="analytics-visitor-date">
+                    {{ summary.first_seen|date:"m/d H:i" }}
+                </strong>
+
+                <small>
+                    {{ summary.first_seen|date:"Y年" }}
+                </small>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <span>
+                    最終アクセス
+                </span>
+
+                <strong class="analytics-visitor-date">
+                    {{ summary.last_seen|date:"m/d H:i" }}
+                </strong>
+
+                <small>
+                    {{ summary.last_seen|date:"Y年" }}
+                </small>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Access journey
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ACCESS JOURNEY
+                </p>
+
+                <h2>
+                    閲覧経路
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                古いアクセスから順番に表示しています。
+            </p>
+
+
+            <div class="analytics-journey">
+
+                {% for event in access_history %}
+
+                    {% if event.is_visit_start %}
+
+                        <div class="analytics-journey-visit">
+
+                            <span>
+                                VISIT {{ event.visit_number }}
+                            </span>
+
+                            <strong>
+                                訪問開始
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div
+                        class="
+                            analytics-journey-event
+                            {% if event.type == 'click' %}
+                                is-click
+                            {% endif %}
+                        "
+                    >
+
+                        <!-- Time -->
+
+                        <div class="analytics-journey-time">
+
+                            <strong>
+                                {{ event.timestamp|date:"H:i:s" }}
+                            </strong>
+
+                            <span>
+                                {{ event.timestamp|date:"Y/m/d" }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- Timeline -->
+
+                        <div class="analytics-journey-line">
+
+                            {% if event.type == "click" %}
+
+                                <span class="analytics-journey-click-dot">
+                                    ↗
+                                </span>
+
+                            {% else %}
+
+                                <span class="analytics-journey-dot"></span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Content -->
+
+                        <div class="analytics-journey-page">
+
+                            {% if event.type == "click" %}
+
+                                <span class="analytics-journey-click-label">
+                                    ARTICLE CLICK
+                                </span>
+
+                                <strong class="analytics-journey-article-title">
+                                    {{ event.article_title }}
+                                </strong>
+
+                                <div class="analytics-journey-source">
+                                    {{ event.source_name }}
+                                </div>
+
+                                <a
+                                    href="{{ event.destination_url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="analytics-journey-original-link"
+                                >
+                                    元記事を開く ↗
+                                </a>
+
+                            {% else %}
+
+                                <strong>
+                                    {{ event.path }}
+                                </strong>
+
+                                {% if event.is_visit_start %}
+
+                                    <span class="analytics-journey-start">
+                                        訪問開始
+                                    </span>
+
+                                {% endif %}
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="analytics-description">
+                        この期間のアクセス記録はありません。
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Visitor ID
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    VISITOR ID
+                </p>
+
+                <h2>
+                    匿名ID
+                </h2>
+
+            </div>
+
+            <div class="analytics-info-card">
+                {{ visitor_id }}
+            </div>
+
+        </section>
+
+
+        <p class="analytics-note">
+            ※ 同じブラウザに保存された匿名IDをもとにアクセスをまとめています。ログイン情報、氏名、メールアドレスなどとは紐付けていません。
+        </p>
+
+    </main>
+
+</div>
+
+{% endblock %}

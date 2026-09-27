@@ -64,7 +64,7 @@
     <div class="news-card-footer">
 
         <a
-            href="{{ article.source_url }}"
+            href="{% url 'usage_analytics:public_news_article_click' article.id %}"
             target="_blank"
             rel="noopener noreferrer"
             class="news-source-link"

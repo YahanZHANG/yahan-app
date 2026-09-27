@@ -238,3 +238,84 @@ class PublicNewsEvent(models.Model):
             f"{self.path} | "
             f"{self.accessed_at}"
         )
+
+
+# =========================================================
+# Public News Article Click Analytics
+# =========================================================
+
+class PublicNewsArticleClick(models.Model):
+    """
+    ログインしていない公開Swiss News閲覧者が
+    元記事へのリンクをクリックした履歴。
+
+    PublicNewsEventとは分離し、
+    ページ閲覧数には含めない。
+    """
+
+    visitor_id = models.UUIDField(
+        "匿名訪問者ID",
+        db_index=True,
+    )
+
+    article_id = models.PositiveBigIntegerField(
+        "記事ID",
+        db_index=True,
+    )
+
+    article_title = models.CharField(
+        "記事タイトル",
+        max_length=500,
+    )
+
+    source_name = models.CharField(
+        "ニュースソース",
+        max_length=200,
+        blank=True,
+    )
+
+    destination_url = models.URLField(
+        "リンク先",
+        max_length=2000,
+    )
+
+    clicked_at = models.DateTimeField(
+        "クリック日時",
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    class Meta:
+
+        verbose_name = "公開ニュース記事クリック"
+        verbose_name_plural = "公開ニュース記事クリック"
+
+        ordering = [
+            "-clicked_at",
+        ]
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "visitor_id",
+                    "clicked_at",
+                ],
+            ),
+
+            models.Index(
+                fields=[
+                    "article_id",
+                    "clicked_at",
+                ],
+            ),
+
+        ]
+
+    def __str__(self):
+
+        return (
+            f"{self.visitor_id} | "
+            f"{self.article_title} | "
+            f"{self.clicked_at}"
+        )
