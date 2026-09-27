@@ -175,3 +175,66 @@ class OnlinePresence(models.Model):
             f"{self.get_app_key_display()} | "
             f"{self.last_seen}"
         )
+
+# =========================================================
+# Public News Analytics
+# =========================================================
+
+class PublicNewsEvent(models.Model):
+    """
+    ログインしていない公開Yahan News閲覧者の
+    匿名アクセス履歴。
+
+    visitor_id はブラウザ単位のランダムIDで、
+    個人を特定する情報は保存しない。
+    """
+
+    visitor_id = models.UUIDField(
+        "匿名訪問者ID",
+        db_index=True,
+    )
+
+    path = models.CharField(
+        "閲覧ページ",
+        max_length=500,
+        blank=True,
+    )
+
+    accessed_at = models.DateTimeField(
+        "アクセス日時",
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    is_visit_start = models.BooleanField(
+        "新しい訪問",
+        default=False,
+    )
+
+    class Meta:
+
+        verbose_name = "公開ニュース利用履歴"
+        verbose_name_plural = "公開ニュース利用履歴"
+
+        ordering = [
+            "-accessed_at",
+        ]
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "visitor_id",
+                    "accessed_at",
+                ],
+            ),
+
+        ]
+
+    def __str__(self):
+
+        return (
+            f"{self.visitor_id} | "
+            f"{self.path} | "
+            f"{self.accessed_at}"
+        )

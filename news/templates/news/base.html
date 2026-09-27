@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
+
+{% block main_class %}
+page-content news-site-container
+{% endblock %}
+
+
 {% block content %}
 
 <link
@@ -10,29 +16,104 @@
 
 <div class="
     news-app
-    news-font-{{ preference.font_size|default:'medium' }}
+    {% if preference %}
+        news-font-{{ preference.font_size }}
+    {% elif public_settings %}
+        news-font-{{ public_settings.font_size|default:'medium' }}
+    {% else %}
+        news-font-medium
+    {% endif %}
 ">
 
     <header class="news-header">
 
-        <a
-            href="{% url 'portal:home' %}"
-            class="news-back-link"
-        >
-            ← Yahan App
-        </a>
+        {% if request.user.is_authenticated %}
 
-        <div class="news-header-copy">
+            <a
+                href="{% url 'portal:home' %}"
+                class="news-back-link"
+            >
+                ← Yahan App
+            </a>
 
-            <div class="news-eyebrow">
-                SWITZERLAND
+        {% endif %}
+
+            <div class="news-header-inner">
+
+                <div class="news-brand">
+
+                    <div class="news-eyebrow">
+                        SWITZERLAND
+                    </div>
+
+                    <h1>
+                        Swiss News
+                    </h1>
+
+                    <p class="news-site-description">
+                        スイス在住日本人のためのニュース
+                    </p>
+
+                </div>
+
+
+                <nav class="news-desktop-nav">
+
+                    <a
+                        href="{% url 'news:home' %}"
+                        class="
+                            news-desktop-nav-item
+                            {% if request.resolver_match.url_name == 'home' %}
+                                is-active
+                            {% endif %}
+                        "
+                    >
+                        HOME
+                    </a>
+
+                    <a
+                        href="{% url 'news:topic_list' %}"
+                        class="
+                            news-desktop-nav-item
+                            {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' %}
+                                is-active
+                            {% endif %}
+                        "
+                    >
+                        テーマ別
+                    </a>
+
+                    <a
+                        href="{% url 'news:digest_list' %}"
+                        class="
+                            news-desktop-nav-item
+                            {% if request.resolver_match.url_name == 'digest_list' %}
+                                is-active
+                            {% endif %}
+                        "
+                    >
+                        過去のまとめ
+                    </a>
+
+                    
+
+                        <a
+                            href="{% url 'news:settings' %}"
+                            class="
+                                news-desktop-nav-item
+                                {% if request.resolver_match.url_name == 'settings' %}
+                                    is-active
+                                {% endif %}
+                            "
+                        >
+                            設定
+                        </a>
+
+                    
+
+                </nav>
+
             </div>
-
-            <h1>
-                Swiss News
-            </h1>
-
-        </div>
 
     </header>
 
@@ -145,7 +226,7 @@
         <!-- =========================
              設定
         ========================= -->
-
+      
         <a
             href="{% url 'news:settings' %}"
             class="

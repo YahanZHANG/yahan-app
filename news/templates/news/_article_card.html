@@ -15,12 +15,13 @@
 
     <h2 class="news-card-title">
 
-        {% if preference.display_language == "original" %}
+        {% if preference and preference.display_language == "original" %}
+            {{ article.title_original }}
 
+        {% elif public_settings and public_settings.display_language == "original" %}
             {{ article.title_original }}
 
         {% else %}
-
             {{ article.title_ja|default:article.title_original }}
 
         {% endif %}
@@ -47,7 +48,7 @@
 
     <p class="news-card-summary">
 
-        {% if preference.display_language == "original" %}
+        {% if preference and preference.display_language == "original" %}
 
             {{ article.summary_original }}
 
@@ -72,6 +73,12 @@
             ↗
         </a>
 
+
+        {% comment %}
+
+        お気に入り機能は現在非表示。
+        将来再開する可能性があるため、
+        Favoriteモデル・View・URLは残している。
 
         <form
             method="post"
@@ -106,6 +113,8 @@
             </button>
 
         </form>
+
+        {% endcomment %}
 
     </div>
 

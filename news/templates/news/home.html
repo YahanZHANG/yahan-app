@@ -21,13 +21,14 @@ Swiss News
 
     </div>
 
-
+    {% comment %}
     <a
         href="{% url 'news:favorites' %}"
         class="news-favorite-count"
     >
         お気に入り記事 ★ {{ favorite_count }}/10
     </a>
+    {% endcomment %}
 
 </section>
 

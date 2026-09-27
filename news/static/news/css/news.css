@@ -1128,3 +1128,330 @@
     }
 
 }
+
+/* =========================================================
+   Public News Website Layout
+   ========================================================= */
+
+/*
+ * Newsページだけ、共通base.htmlのBootstrap containerによる
+ * 横幅制限を受けないようにする。
+ */
+.news-site-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+/*
+ * Mobileでは従来の下部ナビを使用するため、
+ * PC専用ナビは非表示。
+ */
+.news-desktop-nav {
+    display: none;
+}
+
+
+/*
+ * Mobileでは補足説明を表示しない。
+ */
+.news-site-description {
+    display: none;
+}
+
+
+/* =========================================================
+   Desktop News Website
+   ========================================================= */
+
+@media screen and (min-width: 900px) {
+
+    /* ---------------------------------------------------------
+       Overall
+       --------------------------------------------------------- */
+
+    .news-app {
+        padding-bottom: 0;
+    }
+
+
+    /* ---------------------------------------------------------
+       Header
+       --------------------------------------------------------- */
+
+    .news-header {
+        padding: 0 40px;
+
+        border-bottom:
+            1px solid
+            #e5e9e6;
+
+        background:
+            #ffffff;
+    }
+
+
+    .news-header-inner {
+        width: min(
+            calc(100% - 20px),
+            1180px
+        );
+
+        margin: 0 auto;
+    }
+
+
+    .news-brand {
+        padding:
+            32px
+            0
+            24px;
+    }
+
+
+    .news-header h1 {
+        margin: 0;
+
+        color: #263238;
+
+        font-size: 2.6rem;
+        font-weight: 800;
+
+        line-height: 1.05;
+
+        letter-spacing: -.045em;
+    }
+
+
+    .news-eyebrow {
+        margin-bottom: 8px;
+
+        color: #8b9a92;
+
+        font-size: .64rem;
+        font-weight: 800;
+
+        letter-spacing: .22em;
+    }
+
+
+    .news-site-description {
+        display: block;
+
+        margin:
+            10px
+            0
+            0;
+
+        color: #87918d;
+
+        font-size: .78rem;
+        font-weight: 500;
+    }
+
+
+    /*
+     * ログイン時の「← Yahan App」
+     */
+    .news-back-link {
+        display: block;
+
+        width: min(
+            calc(100% - 20px),
+            1180px
+        );
+
+        margin:
+            0
+            auto;
+
+        padding-top: 18px;
+    }
+
+
+    /* ---------------------------------------------------------
+       Desktop navigation
+       --------------------------------------------------------- */
+
+    .news-desktop-nav {
+        display: flex;
+
+        align-items: center;
+
+        gap: 34px;
+
+        min-height: 54px;
+
+        border-top:
+            1px solid
+            #f0f1ef;
+    }
+
+
+    .news-desktop-nav-item {
+        position: relative;
+
+        display: flex;
+
+        align-items: center;
+
+        height: 54px;
+
+        padding: 0;
+
+        color: #747e79;
+
+        font-size: .78rem;
+        font-weight: 700;
+
+        text-decoration: none;
+
+        transition:
+            color .18s ease;
+    }
+
+
+    .news-desktop-nav-item:hover {
+        color: #425f51;
+    }
+
+
+    .news-desktop-nav-item.is-active {
+        color: #425f51;
+    }
+
+
+    .news-desktop-nav-item.is-active::after {
+        position: absolute;
+
+        right: 0;
+        bottom: -1px;
+        left: 0;
+
+        height: 2px;
+
+        background: #718f80;
+
+        content: "";
+    }
+
+
+    /* ---------------------------------------------------------
+       Main content
+       --------------------------------------------------------- */
+
+    .news-main {
+        width: min(
+            calc(100% - 80px),
+            1180px
+        );
+
+        margin: 0 auto;
+
+        padding:
+            40px
+            0
+            72px;
+    }
+
+
+    /* ---------------------------------------------------------
+       Page heading
+       --------------------------------------------------------- */
+
+    .news-page-heading {
+        margin-bottom: 26px;
+    }
+
+
+    .news-page-heading h2 {
+        font-size: 1.7rem;
+    }
+
+
+    /* ---------------------------------------------------------
+       Digest
+       --------------------------------------------------------- */
+
+    .news-digest {
+        margin-bottom: 32px;
+
+        padding:
+            28px
+            30px;
+
+        border-radius: 20px;
+    }
+
+
+    /* ---------------------------------------------------------
+       Article list
+       --------------------------------------------------------- */
+
+    .news-list {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 20px;
+    }
+
+
+    .news-card {
+        padding: 24px;
+
+        border-radius: 18px;
+
+        box-shadow:
+            0 4px 18px
+            rgba(59, 70, 66, .04);
+    }
+
+
+    /* ---------------------------------------------------------
+       Topics
+       --------------------------------------------------------- */
+
+    .news-topic-grid {
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0, 1fr)
+            );
+
+        gap: 16px;
+    }
+
+
+    /* ---------------------------------------------------------
+       Messages
+       --------------------------------------------------------- */
+
+    .news-messages {
+        width: min(
+            calc(100% - 80px),
+            1180px
+        );
+
+        margin:
+            14px
+            auto
+            0;
+
+        padding: 0;
+    }
+
+
+    /* ---------------------------------------------------------
+       Hide mobile bottom navigation
+       --------------------------------------------------------- */
+
+    .news-bottom-nav {
+        display: none !important;
+    }
+
+}

@@ -14,7 +14,11 @@ from django.views.decorators.http import require_http_methods
 
 from travel.models import UserProfile
 
-from .models import UsageEvent
+from .models import (
+    PublicNewsEvent,
+    UsageEvent,
+)
+
 from .permissions import VIEWER_GROUP_NAME, can_view_analytics
 
 
@@ -138,6 +142,53 @@ def get_app_statistics(events):
 
 
 # =========================================================
+# Public News statistics
+# =========================================================
+
+def get_public_news_statistics(days):
+    """
+    ログインしていない公開Yahan News閲覧者の
+    匿名アクセスを集計する。
+    """
+
+    events = PublicNewsEvent.objects.all()
+
+    if days != "all":
+
+        start = (
+            timezone.now()
+            - timedelta(days=int(days))
+        )
+
+        events = events.filter(
+            accessed_at__gte=start
+        )
+
+    visitors = (
+        events
+        .values("visitor_id")
+        .distinct()
+        .count()
+    )
+
+    visits = (
+        events
+        .filter(
+            is_visit_start=True
+        )
+        .count()
+    )
+
+    page_views = events.count()
+
+    return {
+        "visitors": visitors,
+        "visits": visits,
+        "page_views": page_views,
+    }
+
+
+# =========================================================
 # Dashboard
 # =========================================================
 
@@ -160,6 +211,12 @@ def dashboard(request):
     total_visits = events.filter(is_visit_start=True).count()
 
     apps = get_app_statistics(events)
+
+    public_news = (
+        get_public_news_statistics(
+            days
+        )
+    )
 
     local_date = TruncDate(
         "accessed_at",
@@ -216,6 +273,7 @@ def dashboard(request):
         "total_visits": total_visits,
         "apps": apps,
         "users": users,
+        "public_news": public_news,
     }
 
     return render(

@@ -30,15 +30,83 @@ def _get_preference(user):
 
     return preference
 
+def _get_public_settings(request):
+    """
+    未ログインユーザーのニュース設定を
+    Django session から取得する。
+    """
 
-def _article_queryset(
-    user,
-    preference,
-):
-    hidden_topics = (
-        preference.hidden_topics.all()
+    settings = request.session.get(
+        "news_public_settings",
+        {}
     )
 
+    return {
+        "display_language": settings.get(
+            "display_language",
+            "ja",
+        ),
+        "font_size": settings.get(
+            "font_size",
+            "medium",
+        ),
+        "enabled_topic_ids": settings.get(
+            "enabled_topic_ids",
+            None,
+        ),
+    }
+
+def _apply_public_topic_settings(
+    queryset,
+    public_settings,
+):
+    """
+    未ログインユーザーがsessionで選択した
+    ニューステーマを記事一覧に反映する。
+    """
+
+    enabled_topic_ids = (
+        public_settings.get(
+            "enabled_topic_ids"
+        )
+    )
+
+    # まだ設定を保存したことがない場合は
+    # 全テーマを表示する。
+    if enabled_topic_ids is None:
+        return queryset
+
+    # 全テーマをOFFにした場合は、
+    # テーマ未設定の記事だけ表示する。
+    if not enabled_topic_ids:
+        return (
+            queryset
+            .filter(
+                topics__isnull=True
+            )
+            .distinct()
+        )
+
+    return (
+        queryset
+        .filter(
+            Q(
+                topics__id__in=(
+                    enabled_topic_ids
+                )
+            )
+            |
+            Q(
+                topics__isnull=True
+            )
+        )
+        .distinct()
+    )
+
+def _article_queryset(
+    user=None,
+    preference=None,
+):
     queryset = (
         Article.objects
         .select_related(
@@ -47,50 +115,63 @@ def _article_queryset(
         .prefetch_related(
             "topics"
         )
-        .annotate(
-            is_favorite=Exists(
-                Favorite.objects.filter(
-                    user=user,
-                    article=OuterRef("pk"),
-                )
-            )
-        )
     )
 
-    if hidden_topics.exists():
-
-        visible_topics = (
-            Topic.objects
-            .filter(
-                is_active=True
-            )
-            .exclude(
-                id__in=(
-                    hidden_topics
-                    .values_list(
-                        "id",
-                        flat=True,
+    if (
+        user is not None
+        and user.is_authenticated
+    ):
+        queryset = (
+            queryset
+            .annotate(
+                is_favorite=Exists(
+                    Favorite.objects.filter(
+                        user=user,
+                        article=OuterRef("pk"),
                     )
                 )
             )
         )
 
-        queryset = (
-            queryset
-            .filter(
-                Q(
-                    topics__in=visible_topics
-                )
-                |
-                Q(
-                    topics__isnull=True
-                )
-            )
-            .distinct()
+    if preference is not None:
+
+        hidden_topics = (
+            preference.hidden_topics.all()
         )
 
-    return queryset
+        if hidden_topics.exists():
 
+            visible_topics = (
+                Topic.objects
+                .filter(
+                    is_active=True
+                )
+                .exclude(
+                    id__in=(
+                        hidden_topics
+                        .values_list(
+                            "id",
+                            flat=True,
+                        )
+                    )
+                )
+            )
+
+            queryset = (
+                queryset
+                .filter(
+                    Q(
+                        topics__in=visible_topics
+                    )
+                    |
+                    Q(
+                        topics__isnull=True
+                    )
+                )
+                .distinct()
+            )
+
+    return queryset
 
 def _safe_redirect(
     request,
@@ -121,29 +202,61 @@ def _safe_redirect(
     )
 
 
-@login_required
 def home(request):
-    preference = _get_preference(
-        request.user
-    )
 
-    articles = (
-        _article_queryset(
-            request.user,
-            preference,
-        )
-        .order_by(
-            "-published_at"
-        )[:100]
-    )
+    preference = None
+    public_settings = None
+    favorite_count = 0
 
-    favorite_count = (
-        Favorite.objects
-        .filter(
-            user=request.user
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
         )
-        .count()
-    )
+
+        articles = (
+            _article_queryset(
+                request.user,
+                preference,
+            )
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
+
+        favorite_count = (
+            Favorite.objects
+            .filter(
+                user=request.user
+            )
+            .count()
+        )
+
+    else:
+
+        public_settings = (
+            _get_public_settings(
+                request
+            )
+        )
+
+        articles = (
+            _article_queryset()
+        )
+
+        articles = (
+            _apply_public_topic_settings(
+                articles,
+                public_settings,
+            )
+        )
+
+        articles = (
+            articles
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
 
     latest_digest = (
         NewsDigest.objects
@@ -159,35 +272,69 @@ def home(request):
         {
             "articles": articles,
             "preference": preference,
+            "public_settings": public_settings,
             "favorite_count": favorite_count,
             "latest_digest": latest_digest,
         },
     )
 
-@login_required
-def topic_list(request):
-    preference = _get_preference(
-        request.user
-    )
 
-    hidden_ids = (
-        preference
-        .hidden_topics
-        .values_list(
-            "id",
-            flat=True,
-        )
-    )
+def topic_list(request):
+
+    preference = None
+    public_settings = None
 
     topics = (
         Topic.objects
         .filter(
             is_active=True
         )
-        .exclude(
-            id__in=hidden_ids
-        )
     )
+
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
+        )
+
+        hidden_ids = (
+            preference
+            .hidden_topics
+            .values_list(
+                "id",
+                flat=True,
+            )
+        )
+
+        topics = (
+            topics
+            .exclude(
+                id__in=hidden_ids
+            )
+        )
+
+    else:
+
+        public_settings = (
+            _get_public_settings(
+                request
+            )
+        )
+
+        enabled_topic_ids = (
+            public_settings.get(
+                "enabled_topic_ids"
+            )
+        )
+
+        if enabled_topic_ids is not None:
+
+            topics = (
+                topics
+                .filter(
+                    id__in=enabled_topic_ids
+                )
+            )
 
     return render(
         request,
@@ -195,18 +342,17 @@ def topic_list(request):
         {
             "topics": topics,
             "preference": preference,
+            "public_settings": public_settings,
         },
     )
 
 
-@login_required
 def topic_detail(
     request,
     slug,
 ):
-    preference = _get_preference(
-        request.user
-    )
+    preference = None
+    public_settings = None
 
     topic = get_object_or_404(
         Topic,
@@ -214,15 +360,42 @@ def topic_detail(
         is_active=True,
     )
 
-    articles = (
-        _article_queryset(
-            request.user,
-            preference,
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
         )
-        .filter(
-            topics=topic
-        )[:50]
-    )
+
+        articles = (
+            _article_queryset(
+                request.user,
+                preference,
+            )
+            .filter(
+                topics=topic
+            )
+            .order_by(
+                "-published_at"
+            )[:50]
+        )
+
+    else:
+
+        public_settings = (
+            _get_public_settings(
+                request
+            )
+        )
+
+        articles = (
+            _article_queryset()
+            .filter(
+                topics=topic
+            )
+            .order_by(
+                "-published_at"
+            )[:50]
+        )
 
     return render(
         request,
@@ -231,6 +404,7 @@ def topic_detail(
             "topic": topic,
             "articles": articles,
             "preference": preference,
+            "public_settings": public_settings,
         },
     )
 
@@ -361,22 +535,111 @@ def toggle_favorite(
     )
 
 
-@login_required
 def settings_view(request):
-    preference = _get_preference(
-        request.user
+
+    # =====================================================
+    # Logged-in user
+    # =====================================================
+
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
+        )
+
+        if request.method == "POST":
+
+            form = NewsSettingsForm(
+                request.POST,
+                instance=preference,
+            )
+
+            if form.is_valid():
+
+                form.save()
+
+                messages.success(
+                    request,
+                    "設定を保存しました。"
+                )
+
+                return redirect(
+                    "news:settings"
+                )
+
+        else:
+
+            form = NewsSettingsForm(
+                instance=preference
+            )
+
+        return render(
+            request,
+            "news/settings.html",
+            {
+                "form": form,
+                "preference": preference,
+            },
+        )
+
+
+    # =====================================================
+    # Public / anonymous user
+    # =====================================================
+
+    preference = None
+
+    active_topics = (
+        Topic.objects
+        .filter(
+            is_active=True
+        )
     )
+
+    default_topic_ids = list(
+        active_topics.values_list(
+            "id",
+            flat=True,
+        )
+    )
+
 
     if request.method == "POST":
 
         form = NewsSettingsForm(
-            request.POST,
-            instance=preference,
+            request.POST
         )
 
         if form.is_valid():
 
-            form.save()
+            enabled_topics = (
+                form.cleaned_data[
+                    "enabled_topics"
+                ]
+            )
+
+            request.session[
+                "news_public_settings"
+            ] = {
+                "display_language": (
+                    form.cleaned_data[
+                        "display_language"
+                    ]
+                ),
+                "font_size": (
+                    form.cleaned_data[
+                        "font_size"
+                    ]
+                ),
+                "enabled_topic_ids": list(
+                    enabled_topics.values_list(
+                        "id",
+                        flat=True,
+                    )
+                ),
+            }
+
+            request.session.modified = True
 
             messages.success(
                 request,
@@ -389,9 +652,36 @@ def settings_view(request):
 
     else:
 
-        form = NewsSettingsForm(
-            instance=preference
+        public_settings = (
+            request.session.get(
+                "news_public_settings",
+                {}
+            )
         )
+
+        form = NewsSettingsForm(
+            initial={
+                "display_language": (
+                    public_settings.get(
+                        "display_language",
+                        "ja",
+                    )
+                ),
+                "font_size": (
+                    public_settings.get(
+                        "font_size",
+                        "medium",
+                    )
+                ),
+                "enabled_topics": (
+                    public_settings.get(
+                        "enabled_topic_ids",
+                        default_topic_ids,
+                    )
+                ),
+            }
+        )
+
 
     return render(
         request,
@@ -399,11 +689,10 @@ def settings_view(request):
         {
             "form": form,
             "preference": preference,
-            "vapid_public_key": django_settings.VAPID_PUBLIC_KEY,
         },
     )
 
-@login_required
+
 def digest_list(request):
 
     digests = (

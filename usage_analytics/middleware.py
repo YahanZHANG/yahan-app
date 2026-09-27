@@ -1,10 +1,13 @@
 import logging
+import uuid
 
 from django.db import DatabaseError
 from django.utils import timezone
 
-from .models import UsageEvent
-
+from .models import (
+    PublicNewsEvent,
+    UsageEvent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -80,13 +83,6 @@ class UsageAnalyticsMiddleware:
         )
 
         # ---------------------------------------------
-        # Only authenticated users
-        # ---------------------------------------------
-
-        if not request.user.is_authenticated:
-            return response
-
-        # ---------------------------------------------
         # Only GET requests
         # ---------------------------------------------
 
@@ -113,8 +109,32 @@ class UsageAnalyticsMiddleware:
             return response
 
         # ---------------------------------------------
-        # Identify app
+        # Public News analytics
         # ---------------------------------------------
+
+        if (
+            not request.user.is_authenticated
+            and (
+                request.path_info == "/news"
+                or request.path_info.startswith(
+                    "/news/"
+                )
+            )
+        ):
+
+            self._track_public_news(
+                request
+            )
+
+            return response
+
+        # ---------------------------------------------
+        # Existing analytics:
+        # authenticated users only
+        # ---------------------------------------------
+
+        if not request.user.is_authenticated:
+            return response
 
         app_key = get_app_key(
             request.path_info
@@ -122,10 +142,6 @@ class UsageAnalyticsMiddleware:
 
         if app_key is None:
             return response
-
-        # ---------------------------------------------
-        # Session tracking
-        # ---------------------------------------------
 
         now = timezone.now()
 
@@ -156,10 +172,6 @@ class UsageAnalyticsMiddleware:
             ) > VISIT_TIMEOUT_SECONDS
         )
 
-        # ---------------------------------------------
-        # Save usage event
-        # ---------------------------------------------
-
         try:
 
             UsageEvent.objects.create(
@@ -180,14 +192,7 @@ class UsageAnalyticsMiddleware:
                 "Failed to save usage event."
             )
 
-            # Analytics failure should not
-            # prevent normal app usage.
-
             return response
-
-        # ---------------------------------------------
-        # Update session
-        # ---------------------------------------------
 
         last_seen_map = dict(
             last_seen_map
@@ -202,3 +207,78 @@ class UsageAnalyticsMiddleware:
         ] = last_seen_map
 
         return response
+
+    def _track_public_news(
+        self,
+        request,
+    ):
+
+        now = timezone.now()
+
+        now_timestamp = now.timestamp()
+
+        # ---------------------------------------------
+        # Anonymous visitor ID
+        # ---------------------------------------------
+
+        visitor_id = request.session.get(
+            "public_news_visitor_id"
+        )
+
+        if visitor_id is None:
+
+            visitor_id = str(
+                uuid.uuid4()
+            )
+
+            request.session[
+                "public_news_visitor_id"
+            ] = visitor_id
+
+        # ---------------------------------------------
+        # Visit detection
+        # ---------------------------------------------
+
+        last_timestamp = (
+            request.session.get(
+                "public_news_last_seen"
+            )
+        )
+
+        is_visit_start = (
+            last_timestamp is None
+            or (
+                now_timestamp
+                - last_timestamp
+            ) > VISIT_TIMEOUT_SECONDS
+        )
+
+        # ---------------------------------------------
+        # Save event
+        # ---------------------------------------------
+
+        try:
+
+            PublicNewsEvent.objects.create(
+
+                visitor_id=visitor_id,
+
+                path=request.path_info,
+
+                is_visit_start=(
+                    is_visit_start
+                ),
+
+            )
+
+        except DatabaseError:
+
+            logger.exception(
+                "Failed to save public news event."
+            )
+
+            return
+
+        request.session[
+            "public_news_last_seen"
+        ] = now_timestamp

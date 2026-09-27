@@ -22,9 +22,7 @@
         </h3>
 
         <p>
-            ニュースは原則7日間表示されます。
-            お気に入りの記事は削除されず、
-            最大10件まで保存できます。
+            ニュースは最新の100件のみ表示されます。
         </p>
 
         <p>
@@ -40,74 +38,6 @@
 
     </section>
 
-
-    <!-- =========================
-        Push通知
-    ========================= -->
-
-    <section class="news-settings-card news-push-inline">
-
-        <div
-            id="news-push-settings"
-            data-public-key="{{ vapid_public_key }}"
-            data-csrf-token="{{ csrf_token }}"
-            data-subscribe-url="{% url 'news_push_subscribe' %}"
-            data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
-        >
-
-            <button
-                type="button"
-                id="news-push-toggle"
-                class="news-push-toggle-row"
-                aria-pressed="false"
-                aria-label="ニュース更新通知"
-                disabled
-            >
-
-                <span class="news-push-toggle-copy">
-
-                    <strong>
-                        通知
-                    </strong>
-
-                    <small>
-        毎日4回、ニュースの更新後に新着記事があれば通知します。
-    </small>
-
-</span>
-
-                <span
-                    class="news-switch"
-                    aria-hidden="true"
-                >
-                    <span class="news-slider"></span>
-                </span>
-
-                <!-- JavaScriptがON/OFF状態を更新するために残す -->
-                <span
-                    id="news-push-toggle-state"
-                    class="news-push-visually-hidden"
-                >
-                    …
-                </span>
-
-            </button>
-
-            <!-- エラー・処理状況の通知用に残す -->
-            <p
-                id="news-push-status"
-                class="news-push-status"
-                role="status"
-                aria-live="polite"
-            >
-                通知設定を確認中...
-            </p>
-
-        </div>
-
-    </section>
-
-    <p> </p>
 
     <!-- =========================
          既存のニュース設定
@@ -276,10 +206,5 @@
 
 </main>
 
-
-<script
-    src="{% static 'news/push_toggle.js' %}"
-    defer
-></script>
 
 {% endblock %}
