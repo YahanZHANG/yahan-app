@@ -75,6 +75,40 @@ class NewsSource(models.Model):
     def __str__(self):
         return self.name
 
+class Region(models.Model):
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+    )
+
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+    )
+
+    icon = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
+    display_order = models.PositiveIntegerField(
+        default=0,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    class Meta:
+        ordering = [
+            "display_order",
+            "name",
+        ]
+
+    def __str__(self):
+        return self.name
+
 
 class Article(models.Model):
     LANGUAGE_CHOICES = [    
@@ -117,6 +151,12 @@ class Article(models.Model):
 
     topics = models.ManyToManyField(
         Topic,
+        related_name="articles",
+        blank=True,
+    )
+
+    regions = models.ManyToManyField(
+        Region,
         related_name="articles",
         blank=True,
     )

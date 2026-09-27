@@ -61,11 +61,25 @@ Swiss News
     </div>
 
 
-    <div class="news-digest-lead">
+    <div
+        class="news-digest-lead is-collapsed"
+        id="news-digest-lead"
+    >
 
         {{ latest_digest.summary_ja|linebreaksbr }}
 
     </div>
+
+
+    <button
+        type="button"
+        class="news-digest-toggle"
+        id="news-digest-toggle"
+        aria-expanded="false"
+        aria-controls="news-digest-lead"
+    >
+        続きを読む
+    </button>
 
 
     <div class="news-digest-bottom">
@@ -120,5 +134,74 @@ Swiss News
     {% endfor %}
 
 </div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const digestLead =
+            document.getElementById(
+                "news-digest-lead"
+            );
+
+        const digestToggle =
+            document.getElementById(
+                "news-digest-toggle"
+            );
+
+        if (!digestLead || !digestToggle) {
+            return;
+        }
+
+        digestToggle.addEventListener(
+            "click",
+            function () {
+
+                const isCollapsed =
+                    digestLead.classList.contains(
+                        "is-collapsed"
+                    );
+
+                if (isCollapsed) {
+
+                    digestLead.classList.remove(
+                        "is-collapsed"
+                    );
+
+                    digestToggle.textContent =
+                        "閉じる";
+
+                    digestToggle.setAttribute(
+                        "aria-expanded",
+                        "true"
+                    );
+
+                } else {
+
+                    digestLead.classList.add(
+                        "is-collapsed"
+                    );
+
+                    digestToggle.textContent =
+                        "続きを読む";
+
+                    digestToggle.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
 
 {% endblock %}

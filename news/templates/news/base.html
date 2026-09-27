@@ -61,60 +61,54 @@ page-content news-site-container
 
                     <a
                         href="{% url 'news:home' %}"
-                        class="
-                            news-desktop-nav-item
-                            {% if request.resolver_match.url_name == 'home' %}
-                                is-active
-                            {% endif %}
-                        "
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'home' %}
+                            is-active
+                        {% endif %}"
                     >
                         HOME
                     </a>
 
+
                     <a
                         href="{% url 'news:topic_list' %}"
-                        class="
-                            news-desktop-nav-item
-                            {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' %}
-                                is-active
-                            {% endif %}
-                        "
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
+                            is-active
+                        {% endif %}"
                     >
-                        テーマ別
+                        探す
                     </a>
+
 
                     <a
                         href="{% url 'news:digest_list' %}"
-                        class="
-                            news-desktop-nav-item
-                            {% if request.resolver_match.url_name == 'digest_list' %}
-                                is-active
-                            {% endif %}
-                        "
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'digest_list' %}
+                            is-active
+                        {% endif %}"
                     >
                         過去のまとめ
                     </a>
 
+
                     <a
                         href="{% url 'news:settings' %}"
-                        class="
-                            news-desktop-nav-item
-                            {% if request.resolver_match.url_name == 'settings' %}
-                                is-active
-                            {% endif %}
-                        "
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'settings' %}
+                            is-active
+                        {% endif %}"
                     >
                         設定
                     </a>
 
+
                     <a
                         href="{% url 'news:about' %}"
-                        class="
-                            news-desktop-nav-item
-                            {% if request.resolver_match.url_name == 'about' %}
-                                is-active
-                            {% endif %}
-                        "
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'about' %}
+                            is-active
+                        {% endif %}"
                     >
                         このサイトについて
                     </a>

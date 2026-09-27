@@ -22,6 +22,8 @@ from .models import (
     Favorite,
     NewsDigest,
     NewsPreference,
+    NewsSource,
+    Region,
     Topic,
 )
 
@@ -289,12 +291,70 @@ def topic_list(request):
     preference = None
     public_settings = None
 
+    # =====================================================
+    # Active tab
+    # =====================================================
+
+    active_tab = request.GET.get(
+        "tab",
+        "topics",
+    )
+
+    if active_tab not in {
+        "topics",
+        "regions",
+        "sources",
+    }:
+        active_tab = "topics"
+
+    # =====================================================
+    # Topics
+    # =====================================================
+
     topics = (
         Topic.objects
         .filter(
             is_active=True
         )
+        .order_by(
+            "display_order",
+            "name",
+        )
     )
+
+    # =====================================================
+    # Sources
+    # =====================================================
+
+    sources = (
+        NewsSource.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
+
+    # =====================================================
+    # Regions
+    # =====================================================
+
+    regions = (
+        Region.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
+
+    # =====================================================
+    # Logged-in user
+    # =====================================================
 
     if request.user.is_authenticated:
 
@@ -317,6 +377,10 @@ def topic_list(request):
                 id__in=hidden_ids
             )
         )
+
+    # =====================================================
+    # Public / anonymous
+    # =====================================================
 
     else:
 
@@ -341,11 +405,18 @@ def topic_list(request):
                 )
             )
 
+    # =====================================================
+    # Render
+    # =====================================================
+
     return render(
         request,
         "news/topic_list.html",
         {
             "topics": topics,
+            "regions": regions,
+            "sources": sources,
+            "active_tab": active_tab,
             "preference": preference,
             "public_settings": public_settings,
         },
@@ -413,6 +484,167 @@ def topic_detail(
         },
     )
 
+def source_detail(
+    request,
+    source_id,
+):
+
+    preference = None
+    public_settings = None
+
+    # =====================================================
+    # Source
+    # =====================================================
+
+    source = get_object_or_404(
+        NewsSource,
+        id=source_id,
+        is_active=True,
+    )
+
+    # =====================================================
+    # Logged-in user
+    # =====================================================
+
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
+        )
+
+        articles = (
+            _article_queryset(
+                request.user,
+                preference,
+            )
+            .filter(
+                source=source
+            )
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
+
+    # =====================================================
+    # Public / anonymous
+    # =====================================================
+
+    else:
+
+        public_settings = (
+            _get_public_settings(
+                request
+            )
+        )
+
+        articles = (
+            _article_queryset()
+            .filter(
+                source=source
+            )
+        )
+
+        articles = (
+            _apply_public_topic_settings(
+                articles,
+                public_settings,
+            )
+        )
+
+        articles = (
+            articles
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
+
+    # =====================================================
+    # Render
+    # =====================================================
+
+    return render(
+        request,
+        "news/source_detail.html",
+        {
+            "source": source,
+            "articles": articles,
+            "preference": preference,
+            "public_settings": public_settings,
+        },
+    )
+
+def region_detail(
+    request,
+    slug,
+):
+
+    preference = None
+    public_settings = None
+
+    region = get_object_or_404(
+        Region,
+        slug=slug,
+        is_active=True,
+    )
+
+    if request.user.is_authenticated:
+
+        preference = _get_preference(
+            request.user
+        )
+
+        articles = (
+            _article_queryset(
+                request.user,
+                preference,
+            )
+            .filter(
+                regions=region
+            )
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
+
+    else:
+
+        public_settings = (
+            _get_public_settings(
+                request
+            )
+        )
+
+        articles = (
+            _article_queryset()
+            .filter(
+                regions=region
+            )
+        )
+
+        articles = (
+            _apply_public_topic_settings(
+                articles,
+                public_settings,
+            )
+        )
+
+        articles = (
+            articles
+            .order_by(
+                "-published_at"
+            )[:100]
+        )
+
+    return render(
+        request,
+        "news/region_detail.html",
+        {
+            "region": region,
+            "articles": articles,
+            "preference": preference,
+            "public_settings": public_settings,
+        },
+    )
 
 @login_required
 def favorites(request):

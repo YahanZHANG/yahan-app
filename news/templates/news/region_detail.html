@@ -1,0 +1,69 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+{{ region.name }} | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            REGION
+        </div>
+
+        <h2>
+            {{ region.icon }}
+            {{ region.name }}
+        </h2>
+
+        <p class="news-source-detail-meta">
+            {{ articles|length }}件
+        </p>
+
+    </div>
+
+
+    <a
+        href="{% url 'news:topic_list' %}?tab=regions"
+        class="news-page-back-link"
+    >
+        ← 地域一覧
+    </a>
+
+</section>
+
+
+<div class="news-list">
+
+    {% for article in articles %}
+
+        {% include "news/_article_card.html" %}
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <div class="news-empty-icon">
+                📍
+            </div>
+
+            <h3>
+                まだ記事がありません
+            </h3>
+
+            <p>
+                この地域に分類されたニュースは
+                まだありません。
+            </p>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

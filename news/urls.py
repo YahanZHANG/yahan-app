@@ -61,4 +61,16 @@ urlpatterns = [
         views.digest_list,
         name="digest_list",
     ),
+
+    path(
+        "sources/<int:source_id>/",
+        views.source_detail,
+        name="source_detail",
+    ),
+
+    path(
+        "regions/<slug:slug>/",
+        views.region_detail,
+        name="region_detail",
+    ),
 ]

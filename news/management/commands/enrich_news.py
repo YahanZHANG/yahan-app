@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from news.models import Article
+
 from news.services.ai_enricher import (
     enrich_article,
 )
@@ -58,11 +59,18 @@ class Command(BaseCommand):
         )
 
 
-        # 日本語記事は翻訳不要
+        # =====================================================
+        # Japanese articles do not need translation
+        # =====================================================
+
         queryset = queryset.exclude(
             original_language="ja"
         )
 
+
+        # =====================================================
+        # Only unprocessed articles by default
+        # =====================================================
 
         if not force:
 
@@ -90,6 +98,10 @@ class Command(BaseCommand):
         success_count = 0
         error_count = 0
 
+
+        # =====================================================
+        # AI enrichment
+        # =====================================================
 
         for index, article in enumerate(
             articles,
@@ -174,6 +186,10 @@ class Command(BaseCommand):
                     )
                 )
 
+
+        # =====================================================
+        # Result
+        # =====================================================
 
         self.stdout.write(
             ""

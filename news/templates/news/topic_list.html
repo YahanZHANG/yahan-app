@@ -1,7 +1,7 @@
 {% extends "news/base.html" %}
 
 {% block title %}
-テーマ別 | Swiss News
+ニュースを探す | Swiss News
 {% endblock %}
 
 
@@ -12,45 +12,299 @@
     <div>
 
         <div class="news-page-kicker">
-            TOPICS
+            DISCOVER
         </div>
 
         <h2>
-            テーマから読む
+            ニュースを探す
         </h2>
+
+        <p class="news-search-intro">
+            テーマ・地域・ニュースソースから
+            気になるニュースを探せます。
+        </p>
 
     </div>
 
 </section>
 
 
-<div class="news-topic-grid">
+<!-- =====================================================
+     Search tabs
+     ===================================================== -->
 
-    {% for topic in topics %}
+<nav class="news-search-tabs">
 
-        <a
-            href="{% url 'news:topic_detail' topic.slug %}"
-            class="news-topic-card"
-        >
+    <a
+        href="{% url 'news:topic_list' %}?tab=topics"
+        class="news-search-tab {% if active_tab == 'topics' %}is-active{% endif %}"
+    >
 
-            <div class="news-topic-card-icon">
-                {{ topic.icon }}
+        <span class="news-search-tab-icon">
+            #
+        </span>
+
+        <span>
+            テーマ別
+        </span>
+
+    </a>
+
+
+    <a
+        href="{% url 'news:topic_list' %}?tab=regions"
+        class="news-search-tab {% if active_tab == 'regions' %}is-active{% endif %}"
+    >
+
+        <span class="news-search-tab-icon">
+            ⌖
+        </span>
+
+        <span>
+            地域別
+        </span>
+
+    </a>
+
+
+    <a
+        href="{% url 'news:topic_list' %}?tab=sources"
+        class="news-search-tab {% if active_tab == 'sources' %}is-active{% endif %}"
+    >
+
+        <span class="news-search-tab-icon">
+            ◫
+        </span>
+
+        <span>
+            ソース別
+        </span>
+
+    </a>
+
+</nav>
+
+
+<!-- =====================================================
+     Topics
+     ===================================================== -->
+
+{% if active_tab == "topics" %}
+
+<section class="news-search-section">
+
+    <div class="news-search-section-heading">
+
+        <div>
+
+            <div class="news-search-section-kicker">
+                TOPICS
             </div>
 
-            <strong>
-                {{ topic.name }}
-            </strong>
+            <h3>
+                テーマから探す
+            </h3>
 
-        </a>
+        </div>
 
-    {% empty %}
+    </div>
 
-        <p>
-            表示するテーマがありません。
-        </p>
 
-    {% endfor %}
+    <div class="news-discovery-grid">
 
-</div>
+        {% for topic in topics %}
+
+            <a
+                href="{% url 'news:topic_detail' topic.slug %}"
+                class="news-discovery-card"
+            >
+
+                <span class="news-discovery-icon">
+
+                    {% if topic.icon %}
+
+                        {{ topic.icon }}
+
+                    {% else %}
+
+                        📰
+
+                    {% endif %}
+
+                </span>
+
+
+                <span class="news-discovery-content">
+
+                    <strong>
+                        {{ topic.name }}
+                    </strong>
+
+                    <small>
+                        ニュースを見る →
+                    </small>
+
+                </span>
+
+            </a>
+
+        {% empty %}
+
+            <div class="news-search-empty">
+
+                表示できるテーマがありません。
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     Regions
+     ===================================================== -->
+
+{% elif active_tab == "regions" %}
+
+<section class="news-search-section">
+
+    <div class="news-search-section-heading">
+
+        <div>
+
+            <div class="news-search-section-kicker">
+                REGIONS
+            </div>
+
+            <h3>
+                地域から探す
+            </h3>
+
+        </div>
+
+    </div>
+
+
+    <div class="news-discovery-grid">
+
+        {% for region in regions %}
+
+            <a
+                href="{% url 'news:region_detail' region.slug %}"
+                class="news-discovery-card"
+            >
+
+                <span class="news-discovery-icon">
+
+                    {% if region.icon %}
+
+                        {{ region.icon }}
+
+                    {% else %}
+
+                        📍
+
+                    {% endif %}
+
+                </span>
+
+
+                <span class="news-discovery-content">
+
+                    <strong>
+                        {{ region.name }}
+                    </strong>
+
+                    <small>
+                        ニュースを見る →
+                    </small>
+
+                </span>
+
+            </a>
+
+        {% empty %}
+
+            <div class="news-search-empty">
+                表示できる地域がありません。
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<!-- =====================================================
+     Sources
+     ===================================================== -->
+
+{% elif active_tab == "sources" %}
+
+<section class="news-search-section">
+
+    <div class="news-search-section-heading">
+
+        <div>
+
+            <div class="news-search-section-kicker">
+                SOURCES
+            </div>
+
+            <h3>
+                ニュースソースから探す
+            </h3>
+
+        </div>
+
+    </div>
+
+
+    <div class="news-source-grid">
+
+        {% for source in sources %}
+
+            <a
+                href="{% url 'news:source_detail' source.id %}"
+                class="news-source-card"
+            >
+
+                <div class="news-source-card-main">
+
+                    <strong>
+                        {{ source.name }}
+                    </strong>
+
+                    <span>
+                        {{ source.get_language_display }}
+                    </span>
+
+                </div>
+
+
+                <div class="news-source-card-arrow">
+                    →
+                </div>
+
+            </a>
+
+        {% empty %}
+
+            <div class="news-search-empty">
+
+                表示できるニュースソースがありません。
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
 
 {% endblock %}

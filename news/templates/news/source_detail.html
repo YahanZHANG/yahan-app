@@ -1,0 +1,74 @@
+{% extends "news/base.html" %}
+
+{% block title %}
+{{ source.name }} | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            NEWS SOURCE
+        </div>
+
+        <h2>
+            {{ source.name }}
+        </h2>
+
+        <p class="news-source-detail-meta">
+
+            {{ source.get_language_display }}
+
+            ·
+
+            {{ articles|length }}件
+
+        </p>
+
+    </div>
+
+
+    <a
+        href="{% url 'news:topic_list' %}?tab=sources"
+        class="news-page-back-link"
+    >
+        ← ソース一覧
+    </a>
+
+</section>
+
+
+<div class="news-list">
+
+    {% for article in articles %}
+
+        {% include "news/_article_card.html" %}
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <div class="news-empty-icon">
+                📰
+            </div>
+
+            <h3>
+                記事がありません
+            </h3>
+
+            <p>
+                このニュースソースの記事は
+                まだ取得されていません。
+            </p>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
