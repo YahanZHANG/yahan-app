@@ -22,6 +22,14 @@
 
     </div>
 
+
+    <a
+        href="{% url 'news:topic_list' %}?tab=topics"
+        class="news-page-back-link"
+    >
+        ← テーマ一覧
+    </a>
+
 </section>
 
 
@@ -35,8 +43,17 @@
 
         <div class="news-empty">
 
+            <div class="news-empty-icon">
+                📰
+            </div>
+
+            <h3>
+                記事がありません
+            </h3>
+
             <p>
-                このテーマの記事はまだありません。
+                このテーマの記事は
+                まだ取得されていません。
             </p>
 
         </div>

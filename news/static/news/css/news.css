@@ -503,11 +503,57 @@
     font-weight: 800;
 }
 
+/* =========================================================
+   News digest lead
+   ========================================================= */
+
 .news-digest-lead {
-    margin-top: 18px;
-    color: #48544f;
-    font-size: .94em;
-    line-height: 1.9;
+    margin-top:
+        18px;
+
+    color:
+        #48544f;
+
+    font-size:
+        .94em;
+
+    line-height:
+        1.9;
+}
+
+
+/*
+ * スマホ・タブレット：
+ * 閉じているときは最初の4行だけ表示
+ */
+
+.news-digest-lead.is-collapsed {
+    display:
+        -webkit-box;
+
+    -webkit-box-orient:
+        vertical;
+
+    -webkit-line-clamp:
+        4;
+
+    overflow:
+        hidden;
+}
+
+
+/*
+ * PC：
+ * 閉じているときは最初の2行だけ表示
+ */
+
+@media screen and (min-width: 900px) {
+
+    .news-digest-lead.is-collapsed {
+        -webkit-line-clamp:
+            2;
+    }
+
 }
 
 .news-digest-footer {
