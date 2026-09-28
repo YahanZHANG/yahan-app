@@ -3022,9 +3022,8 @@
     font-size: 17px;
 }
 
-
 /* =========================================================
-   Map card
+   Region map card
    ========================================================= */
 
 .news-region-map-card {
@@ -3037,7 +3036,8 @@
         1px solid
         rgba(80, 92, 108, .08);
 
-    border-radius: 24px;
+    border-radius:
+        24px;
 
     background:
         rgba(255, 255, 255, .88);
@@ -3049,7 +3049,8 @@
 
 
 .news-region-map-header {
-    margin-bottom: 10px;
+    margin-bottom:
+        10px;
 }
 
 
@@ -3063,105 +3064,75 @@
     color:
         #4b5963;
 
-    font-size: 14px;
+    font-size:
+        16px;
 }
 
 
 .news-region-map-header small {
-    margin-top: 3px;
+    margin-top:
+        3px;
 
     color:
         #98a2aa;
 
-    font-size: 10px;
+    font-size:
+        12px;
 }
 
 
 /* =========================================================
-   Map
+   Switzerland map image
    ========================================================= */
 
 .news-region-map {
     position: relative;
 
-    width: 100%;
-    max-width: 780px;
+    width:
+        100%;
 
-    aspect-ratio:
-        1.75 / 1;
+    max-width:
+        780px;
 
     margin:
-        0
-        auto;
+        8px
+        auto
+        0;
 
-    overflow: visible;
+    aspect-ratio:
+        936 / 634;
 }
 
 
-/*
- * 軽量なスイス地図シルエット。
- * 地図APIや外部画像を使わずCSSだけで表示。
- */
-
-.news-region-map-shape {
+.news-region-map-image {
     position: absolute;
 
-    top: 8%;
-    right: 4%;
-    bottom: 7%;
-    left: 3%;
+    inset:
+        0;
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(227, 236, 231, .96),
-            rgba(240, 243, 240, .96)
-        );
+    z-index:
+        1;
 
-    clip-path:
-        polygon(
-            4% 58%,
-            8% 45%,
-            14% 43%,
-            16% 27%,
-            24% 20%,
-            30% 11%,
-            41% 13%,
-            46% 7%,
-            55% 12%,
-            64% 8%,
-            69% 15%,
-            78% 15%,
-            84% 22%,
-            94% 24%,
-            97% 35%,
-            92% 45%,
-            93% 56%,
-            85% 60%,
-            83% 72%,
-            75% 76%,
-            71% 91%,
-            62% 94%,
-            57% 84%,
-            47% 85%,
-            41% 78%,
-            31% 83%,
-            25% 76%,
-            17% 78%,
-            12% 70%,
-            5% 68%
-        );
+    display:
+        block;
 
-    border-radius:
-        22px;
+    width:
+        100%;
 
-    box-shadow:
-        inset
-        0
-        0
-        0
-        1px
-        rgba(90, 108, 98, .07);
+    height:
+        100%;
+
+    object-fit:
+        contain;
+
+    opacity:
+        .72;
+
+    pointer-events:
+        none;
+
+    user-select:
+        none;
 }
 
 
@@ -3172,7 +3143,8 @@
 .news-region-map-point {
     position: absolute;
 
-    z-index: 2;
+    z-index:
+        2;
 
     top:
         var(--map-y);
@@ -3180,10 +3152,14 @@
     left:
         var(--map-x);
 
-    display: flex;
-    align-items: center;
+    display:
+        flex;
 
-    gap: 4px;
+    align-items:
+        center;
+
+    gap:
+        4px;
 
     padding:
         4px
@@ -3193,13 +3169,13 @@
         999px;
 
     background:
-        rgba(255, 255, 255, .82);
+        rgba(255, 255, 255, .90);
 
     color:
         #617068;
 
     font-size:
-        10px;
+        14px;
 
     font-weight:
         800;
@@ -3215,7 +3191,7 @@
 
     box-shadow:
         0 3px 10px
-        rgba(56, 72, 64, .08);
+        rgba(56, 72, 64, .10);
 
     transform:
         translate(-50%, -50%);
@@ -3236,7 +3212,9 @@
         7px;
 
     flex:
-        0 0 auto;
+        0
+        0
+        auto;
 
     border-radius:
         50%;
@@ -3254,7 +3232,8 @@
 
 
 .news-region-map-point:hover {
-    z-index: 5;
+    z-index:
+        5;
 
     background:
         #ffffff;
@@ -3264,11 +3243,11 @@
 
     transform:
         translate(-50%, -50%)
-        scale(1.06);
+        scale(1.07);
 
     box-shadow:
-        0 6px 16px
-        rgba(56, 72, 64, .13);
+        0 7px 18px
+        rgba(56, 72, 64, .15);
 }
 
 
@@ -3277,7 +3256,7 @@
         #485e53;
 
     font-size:
-        11px;
+        17px;
 }
 
 
@@ -3295,17 +3274,20 @@
 
 .news-region-map-point-small {
     font-size:
-        9px;
+        14px;
 }
 
 
 /* =========================================================
-   Region list
+   Region list heading
    ========================================================= */
 
 .news-region-list-heading {
-    display: flex;
-    flex-direction: column;
+    display:
+        flex;
+
+    flex-direction:
+        column;
 
     margin-bottom:
         10px;
@@ -3333,11 +3315,19 @@
 }
 
 
+/* =========================================================
+   Region list
+   ========================================================= */
+
 .news-region-list {
-    display: grid;
+    display:
+        grid;
 
     grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
 
     gap:
         8px;
@@ -3345,9 +3335,14 @@
 
 
 .news-region-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
 
     gap:
         8px;
@@ -3373,7 +3368,7 @@
         #59666f;
 
     font-size:
-        11px;
+        14px;
 
     font-weight:
         800;
@@ -3389,7 +3384,7 @@
 
 .news-region-list-item:hover {
     background:
-        #fff;
+        #ffffff;
 
     transform:
         translateY(-1px);
@@ -3408,7 +3403,7 @@
 
 
 /* =========================================================
-   Region map - mobile
+   Tablet / mobile
    ========================================================= */
 
 @media (max-width: 720px) {
@@ -3425,8 +3420,11 @@
 
 
     .news-region-map {
+        width:
+            100%;
+
         aspect-ratio:
-            1.35 / 1;
+            936 / 634;
 
         margin-top:
             5px;
@@ -3446,7 +3444,7 @@
 
         box-shadow:
             0 2px 7px
-            rgba(56, 72, 64, .07);
+            rgba(56, 72, 64, .08);
     }
 
 
@@ -3489,19 +3487,20 @@
 
     .news-region-list {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
     }
 
 }
 
 
-@media (max-width: 420px) {
+/* =========================================================
+   Small mobile
+   ========================================================= */
 
-    /*
-     * 小さいスマホでは、
-     * 地図が混雑しすぎないよう
-     * 補助的な都市名を非表示にする。
-     */
+@media (max-width: 420px) {
 
     .news-region-map-point-small {
         display:
