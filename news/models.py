@@ -280,6 +280,18 @@ class NewsPreference(models.Model):
         related_name="hidden_by_users",
     )
 
+    hidden_regions = models.ManyToManyField(
+        Region,
+        blank=True,
+        related_name="hidden_by_users",
+    )
+
+    hidden_sources = models.ManyToManyField(
+        NewsSource,
+        blank=True,
+        related_name="hidden_by_users",
+    )
+
     def __str__(self):
         return f"{self.user} news settings"
 

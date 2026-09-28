@@ -11,10 +11,6 @@
 
 <div class="news-settings-page">
 
-    <!-- =========================
-         既存のニュース設定
-    ========================= -->
-
     <form
         method="post"
         action="{% url 'news:settings' %}"
@@ -24,7 +20,9 @@
         {% csrf_token %}
 
 
-        <!-- 表示言語 -->
+        <!-- =================================================
+             表示言語
+        ================================================== -->
 
         <section class="news-settings-card">
 
@@ -61,7 +59,9 @@
         </section>
 
 
-        <!-- 文字サイズ -->
+        <!-- =================================================
+             文字サイズ
+        ================================================== -->
 
         <section class="news-settings-card">
 
@@ -98,61 +98,306 @@
         </section>
 
 
-        <!-- 表示するニューステーマ -->
+        <!-- =================================================
+             表示するニューステーマ
+        ================================================== -->
 
         <section class="news-settings-card">
 
-            <div class="news-setting-heading">
+            <details class="news-settings-disclosure">
 
-                <h3>
-                    表示するニューステーマ
-                </h3>
+                <summary class="news-settings-disclosure-summary">
 
-                <p>
-                    興味のあるテーマを選んでね。
-                </p>
+                    <span class="news-settings-disclosure-copy">
 
-            </div>
+                        <strong>
+                            表示するニューステーマ
+                        </strong>
 
-            <div class="news-toggle-list">
+                    </span>
 
-                {% for checkbox in form.enabled_topics %}
+                    <span
+                        class="news-settings-disclosure-arrow"
+                        aria-hidden="true"
+                    >
+                        ⌄
+                    </span>
 
-                    <label class="news-toggle-row">
+                </summary>
 
-                        <span>
-                            {{ checkbox.choice_label }}
-                        </span>
 
-                        <span class="news-switch">
+                <div class="news-settings-disclosure-body">
 
-                            {{ checkbox.tag }}
+                    <div class="news-settings-bulk-actions">
 
-                            <span
-                                class="news-slider"
-                                aria-hidden="true"
-                            ></span>
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="select"
+                            data-checkbox-target="topics"
+                        >
+                            すべて選択
+                        </button>
 
-                        </span>
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="clear"
+                            data-checkbox-target="topics"
+                        >
+                            すべて外す
+                        </button>
 
-                    </label>
+                    </div>
 
-                {% endfor %}
 
-            </div>
+                    <div
+                        class="news-toggle-list"
+                        data-checkbox-group="topics"
+                    >
 
-            {% for error in form.enabled_topics.errors %}
+                        {% for checkbox in form.enabled_topics %}
 
-                <p class="news-message news-message-error">
-                    {{ error }}
-                </p>
+                            <label class="news-toggle-row">
 
-            {% endfor %}
+                                <span>
+                                    {{ checkbox.choice_label }}
+                                </span>
+
+                                <span class="news-switch">
+
+                                    {{ checkbox.tag }}
+
+                                    <span
+                                        class="news-slider"
+                                        aria-hidden="true"
+                                    ></span>
+
+                                </span>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    {% for error in form.enabled_topics.errors %}
+
+                        <p class="news-message news-message-error">
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </details>
 
         </section>
 
 
-        <!-- フォームのエラー -->
+        <!-- =================================================
+             表示する地域
+        ================================================== -->
+
+        <section class="news-settings-card">
+
+            <details class="news-settings-disclosure">
+
+                <summary class="news-settings-disclosure-summary">
+
+                    <span class="news-settings-disclosure-copy">
+
+                        <strong>
+                            表示する地域
+                        </strong>
+
+                    </span>
+
+                    <span
+                        class="news-settings-disclosure-arrow"
+                        aria-hidden="true"
+                    >
+                        ⌄
+                    </span>
+
+                </summary>
+
+
+                <div class="news-settings-disclosure-body">
+
+                    <div class="news-settings-bulk-actions">
+
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="select"
+                            data-checkbox-target="regions"
+                        >
+                            すべて選択
+                        </button>
+
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="clear"
+                            data-checkbox-target="regions"
+                        >
+                            すべて外す
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        class="news-toggle-list"
+                        data-checkbox-group="regions"
+                    >
+
+                        {% for checkbox in form.enabled_regions %}
+
+                            <label class="news-toggle-row">
+
+                                <span>
+                                    {{ checkbox.choice_label }}
+                                </span>
+
+                                <span class="news-switch">
+
+                                    {{ checkbox.tag }}
+
+                                    <span
+                                        class="news-slider"
+                                        aria-hidden="true"
+                                    ></span>
+
+                                </span>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    {% for error in form.enabled_regions.errors %}
+
+                        <p class="news-message news-message-error">
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </details>
+
+        </section>
+
+
+        <!-- =================================================
+             表示するニュースソース
+        ================================================== -->
+
+        <section class="news-settings-card">
+
+            <details class="news-settings-disclosure">
+
+                <summary class="news-settings-disclosure-summary">
+
+                    <span class="news-settings-disclosure-copy">
+
+                        <strong>
+                            表示するニュースソース
+                        </strong>
+
+                    </span>
+
+                    <span
+                        class="news-settings-disclosure-arrow"
+                        aria-hidden="true"
+                    >
+                        ⌄
+                    </span>
+
+                </summary>
+
+
+                <div class="news-settings-disclosure-body">
+
+                    <div class="news-settings-bulk-actions">
+
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="select"
+                            data-checkbox-target="sources"
+                        >
+                            すべて選択
+                        </button>
+
+                        <button
+                            type="button"
+                            class="news-settings-bulk-button"
+                            data-checkbox-action="clear"
+                            data-checkbox-target="sources"
+                        >
+                            すべて外す
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        class="news-toggle-list"
+                        data-checkbox-group="sources"
+                    >
+
+                        {% for checkbox in form.enabled_sources %}
+
+                            <label class="news-toggle-row">
+
+                                <span>
+                                    {{ checkbox.choice_label }}
+                                </span>
+
+                                <span class="news-switch">
+
+                                    {{ checkbox.tag }}
+
+                                    <span
+                                        class="news-slider"
+                                        aria-hidden="true"
+                                    ></span>
+
+                                </span>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    {% for error in form.enabled_sources.errors %}
+
+                        <p class="news-message news-message-error">
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </details>
+
+        </section>
+
+
+        <!-- =================================================
+             フォーム全体のエラー
+        ================================================== -->
 
         {% if form.non_field_errors %}
 
@@ -165,6 +410,10 @@
         {% endif %}
 
 
+        <!-- =================================================
+             保存
+        ================================================== -->
+
         <button
             type="submit"
             class="news-save-button"
@@ -173,6 +422,11 @@
         </button>
 
     </form>
+
+
+    <!-- =====================================================
+         このサイトについて
+    ====================================================== -->
 
     <div class="news-settings-about">
 
@@ -206,6 +460,70 @@
 
 
 </div>
+
+
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const bulkButtons =
+            document.querySelectorAll(
+                "[data-checkbox-action]"
+            );
+
+
+        bulkButtons.forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const action =
+                            button.dataset.checkboxAction;
+
+                        const target =
+                            button.dataset.checkboxTarget;
+
+
+                        const group =
+                            document.querySelector(
+                                '[data-checkbox-group="' +
+                                target +
+                                '"]'
+                            );
+
+
+                        if (!group) {
+                            return;
+                        }
+
+
+                        const checkboxes =
+                            group.querySelectorAll(
+                                'input[type="checkbox"]'
+                            );
+
+
+                        checkboxes.forEach(
+                            function (checkbox) {
+
+                                checkbox.checked =
+                                    action === "select";
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+</script>
 
 
 {% endblock %}

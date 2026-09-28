@@ -86,30 +86,14 @@
 
 .news-favorite-count {
     flex-shrink: 0;
-
-    padding:
-        8px 12px;
-
-    border-radius:
-        999px;
-
-    background:
-        #fff5d8;
-
-    color:
-        #94741f;
-
-    font-size:
-        .74rem;
-
-    font-weight:
-        800;
-
-    text-decoration:
-        none;
-
-    white-space:
-        nowrap;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff5d8;
+    color: #94741f;
+    font-size: .74rem;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 /* Articles */
@@ -436,7 +420,6 @@
 /* Desktop */
 
 @media (min-width: 700px) {
-
     .news-main {
         padding-top: 32px;
     }
@@ -503,57 +486,40 @@
     font-weight: 800;
 }
 
-/* =========================================================
-   News digest lead
-   ========================================================= */
+/*
+ * =========================================================
+ * News digest lead
+ * =========================================================
+ */
 
 .news-digest-lead {
-    margin-top:
-        18px;
-
-    color:
-        #48544f;
-
-    font-size:
-        .94em;
-
-    line-height:
-        1.9;
+    margin-top: 18px;
+    color: #48544f;
+    font-size: .94em;
+    line-height: 1.9;
 }
 
-
 /*
- * スマホ・タブレット：
- * 閉じているときは最初の4行だけ表示
+ * \* スマホ・タブレット：
+ * \* 閉じているときは最初の4行だけ表示
  */
 
 .news-digest-lead.is-collapsed {
-    display:
-        -webkit-box;
-
-    -webkit-box-orient:
-        vertical;
-
-    -webkit-line-clamp:
-        4;
-
-    overflow:
-        hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
 }
 
-
 /*
- * PC：
- * 閉じているときは最初の2行だけ表示
+ * \* PC：
+ * \* 閉じているときは最初の2行だけ表示
  */
 
 @media screen and (min-width: 900px) {
-
     .news-digest-lead.is-collapsed {
-        -webkit-line-clamp:
-            2;
+        -webkit-line-clamp: 2;
     }
-
 }
 
 .news-digest-footer {
@@ -704,9 +670,11 @@
     margin-top: 9px;
 }
 
-/* ==========================================
-   Push settings link (News settings page)
-========================================== */
+/*
+ * ==========================================
+ * Push settings link (News settings page)
+ * \==========================================
+ */
 
 .news-push-settings-link {
     display: flex;
@@ -729,8 +697,7 @@
     transform: translateY(-1px);
 }
 
-.news-push-settings-link:focus-visible,
-.news-push-button:focus-visible {
+.news-push-settings-link:focus-visible, .news-push-button:focus-visible {
     outline: 2px solid #6f897c;
     outline-offset: 3px;
 }
@@ -776,10 +743,11 @@
     transform: translateX(3px);
 }
 
-
-/* ==========================================
-   Push notifications page
-========================================== */
+/*
+ * ==========================================
+ * Push notifications page
+ * \==========================================
+ */
 
 .news-push-page .news-main {
     max-width: 640px;
@@ -861,6 +829,7 @@
 }
 
 /* A class display rule would otherwise override the HTML hidden attribute. */
+
 .news-push-button[hidden] {
     display: none !important;
 }
@@ -890,9 +859,11 @@
     }
 }
 
-/* =========================
-   Inline Push settings
-========================= */
+/*
+ * =========================
+ * Inline Push settings
+ * \=========================
+ */
 
 .news-push-inline {
     margin-top: 14px;
@@ -907,31 +878,24 @@
     display: flex;
     align-items: center;
     gap: 12px;
-
     width: 100%;
     min-height: 76px;
     padding: 14px;
-
     border: 1px solid #e9eeea;
     border-radius: 17px;
-
     background: #f5f6f3;
     color: #46534d;
-
     font: inherit;
     text-align: left;
     cursor: pointer;
-
-    transition:
-        background .2s ease,
-        border-color .2s ease;
+    transition: background .2s ease, border-color .2s ease;
 }
 
 .news-push-toggle-row:hover:not(:disabled) {
     background: #edf3ef;
 }
 
-.news-push-toggle-row.is-on {
+.news-push-toggle-row\.is-on {
     border-color: #d9e7dc;
     background: #f1f7f2;
 }
@@ -950,13 +914,10 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
-
     width: 40px;
     height: 40px;
-
     border-radius: 13px;
     background: #fff;
-
     font-size: 1.2rem;
 }
 
@@ -981,39 +942,38 @@
 
 .news-push-toggle-state {
     flex-shrink: 0;
-
     min-width: 45px;
     padding: 6px 10px;
-
     border-radius: 999px;
     background: #e5e8e4;
     color: #7a847d;
-
     font-size: .7rem;
     font-weight: 800;
     text-align: center;
 }
 
-.news-push-toggle-row.is-on
-.news-push-toggle-state {
+.news-push-toggle-row\.is-on .news-push-toggle-state {
     background: #dbeade;
     color: #47745b;
 }
 
 .news-push-inline-status {
     margin: 10px 2px 0;
-
     color: #8a9490;
     font-size: .72rem;
     line-height: 1.6;
 }
 
-/* =========================
-   Settings page spacing
-========================= */
+/*
+ * =========================
+ * Settings page spacing
+ * \=========================
+ */
 
-/* 共通のnews-mainは変更せず、
-   設定ページだけ上の余白をなくす */
+/*
+ * 共通のnews-mainは変更せず、
+ * 設定ページだけ上の余白をなくす
+ */
 
 .news-settings-page {
     padding-top: 0;
@@ -1023,10 +983,11 @@
     margin: 0 0 14px;
 }
 
-
-/* =========================
-   Push notification
-========================= */
+/*
+ * =========================
+ * Push notification
+ * \=========================
+ */
 
 .news-push-inline {
     margin-top: 14px;
@@ -1038,24 +999,19 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-
     width: 100%;
     min-height: 26px;
     padding: 0;
-
     border: 0;
     background: transparent;
-
     color: #263238;
     font: inherit;
     text-align: left;
-
     cursor: pointer;
 }
 
 .news-push-toggle-label {
     flex: 1;
-
     font-size: 1rem;
     font-weight: 700;
 }
@@ -1066,11 +1022,11 @@
 
 /* 既存のニューステーマ用スイッチと同じ動き */
 
-.news-push-toggle-row.is-on .news-slider {
+.news-push-toggle-row\.is-on .news-slider {
     background: #8ba99a;
 }
 
-.news-push-toggle-row.is-on .news-slider::before {
+.news-push-toggle-row\.is-on .news-slider::before {
     transform: translateX(20px);
 }
 
@@ -1089,12 +1045,10 @@
 
 .news-push-visually-hidden {
     position: absolute;
-
     width: 1px;
     height: 1px;
     padding: 0;
     margin: -1px;
-
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
@@ -1105,7 +1059,6 @@
 
 .news-push-status {
     margin: 10px 0 0;
-
     color: #8a9490;
     font-size: .72rem;
     line-height: 1.6;
@@ -1132,7 +1085,6 @@
 }
 
 @media (max-width: 420px) {
-
     .news-page-heading {
         gap: 8px;
     }
@@ -1143,46 +1095,42 @@
 
     .news-favorite-count {
         padding: 7px 9px;
-
         font-size: .67rem;
     }
-
 }
 
-/* =========================
-   HOME heading - Mobile
-========================= */
+/*
+ * =========================
+ * HOME heading - Mobile
+ * \=========================
+ */
 
 @media (max-width: 420px) {
-
     .news-page-heading {
-        gap:
-            8px;
+        gap: 8px;
     }
 
     .news-page-heading h2 {
-        font-size:
-            1.25rem;
+        font-size: 1.25rem;
     }
 
     .news-favorite-count {
-        padding:
-            7px 9px;
-
-        font-size:
-            .67rem;
+        padding: 7px 9px;
+        font-size: .67rem;
     }
-
 }
 
-/* =========================================================
-   Public News Website Layout
-   ========================================================= */
+/*
+ * =========================================================
+ * Public News Website Layout
+ * =========================================================
+ */
 
 /*
- * Newsページだけ、共通base.htmlのBootstrap containerによる
- * 横幅制限を受けないようにする。
+ * \* Newsページだけ、共通base.htmlのBootstrap containerによる
+ * \* 横幅制限を受けないようにする。
  */
+
 .news-site-container {
     width: 100%;
     max-width: none;
@@ -1190,355 +1138,253 @@
     padding: 0;
 }
 
-
 /*
- * Mobileでは従来の下部ナビを使用するため、
- * PC専用ナビは非表示。
+ * \* Mobileでは従来の下部ナビを使用するため、
+ * \* PC専用ナビは非表示。
  */
+
 .news-desktop-nav {
     display: none;
 }
 
+/* \* Mobileでは補足説明を表示しない。 */
 
-/*
- * Mobileでは補足説明を表示しない。
- */
 .news-site-description {
     display: none;
 }
 
-
-/* =========================================================
-   Desktop News Website
-   ========================================================= */
+/*
+ * =========================================================
+ * Desktop News Website
+ * =========================================================
+ */
 
 @media screen and (min-width: 900px) {
-
-    /* ---------------------------------------------------------
-       Overall
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Overall
+     * ---------------------------------------------------------
+     */
 
     .news-app {
         padding-bottom: 0;
     }
 
-
-    /* ---------------------------------------------------------
-       Header
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Header
+     * ---------------------------------------------------------
+     */
 
     .news-header {
         padding: 0 40px;
-
-        border-bottom:
-            1px solid
-            #e5e9e6;
-
-        background:
-            #ffffff;
+        border-bottom: 1px solid #e5e9e6;
+        background: #ffffff;
     }
 
-
     .news-header-inner {
-        width: min(
-            calc(100% - 20px),
-            1180px
-        );
-
+        width: min( calc(100% - 20px), 1180px );
         margin: 0 auto;
     }
 
-
     .news-brand {
-        padding:
-            32px
-            0
-            24px;
+        padding: 32px 0 24px;
     }
-
 
     .news-header h1 {
         margin: 0;
-
         color: #263238;
-
         font-size: 2.6rem;
         font-weight: 800;
-
         line-height: 1.05;
-
         letter-spacing: -.045em;
     }
 
-
     .news-eyebrow {
         margin-bottom: 8px;
-
         color: #8b9a92;
-
         font-size: .64rem;
         font-weight: 800;
-
         letter-spacing: .22em;
     }
 
-
     .news-site-description {
         display: block;
-
-        margin:
-            10px
-            0
-            0;
-
+        margin: 10px 0 0;
         color: #87918d;
-
         font-size: .78rem;
         font-weight: 500;
     }
 
+    /* \* ログイン時の「← Yahan App」 */
 
-    /*
-     * ログイン時の「← Yahan App」
-     */
     .news-back-link {
         display: block;
-
-        width: min(
-            calc(100% - 20px),
-            1180px
-        );
-
-        margin:
-            0
-            auto;
-
+        width: min( calc(100% - 20px), 1180px );
+        margin: 0 auto;
         padding-top: 18px;
     }
 
-
-    /* ---------------------------------------------------------
-       Desktop navigation
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Desktop navigation
+     * ---------------------------------------------------------
+     */
 
     .news-desktop-nav {
         display: flex;
-
         align-items: center;
-
         gap: 34px;
-
         min-height: 54px;
-
-        border-top:
-            1px solid
-            #f0f1ef;
+        border-top: 1px solid #f0f1ef;
     }
-
 
     .news-desktop-nav-item {
         position: relative;
-
         display: flex;
-
         align-items: center;
-
         height: 54px;
-
         padding: 0;
-
         color: #747e79;
-
         font-size: .78rem;
         font-weight: 700;
-
         text-decoration: none;
-
-        transition:
-            color .18s ease;
+        transition: color .18s ease;
     }
-
 
     .news-desktop-nav-item:hover {
         color: #425f51;
     }
 
-
     .news-desktop-nav-item.is-active {
         color: #425f51;
     }
 
-
     .news-desktop-nav-item.is-active::after {
         position: absolute;
-
         right: 0;
         bottom: -1px;
         left: 0;
-
         height: 2px;
-
         background: #718f80;
-
         content: "";
     }
 
-
-    /* ---------------------------------------------------------
-       Main content
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Main content
+     * ---------------------------------------------------------
+     */
 
     .news-main {
-        width: min(
-            calc(100% - 80px),
-            1180px
-        );
-
+        width: min( calc(100% - 80px), 1180px );
         margin: 0 auto;
-
-        padding:
-            40px
-            0
-            72px;
+        padding: 40px 0 72px;
     }
 
-
-    /* ---------------------------------------------------------
-       Page heading
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Page heading
+     * ---------------------------------------------------------
+     */
 
     .news-page-heading {
         margin-bottom: 26px;
     }
 
-
     .news-page-heading h2 {
         font-size: 1.7rem;
     }
 
-
-    /* ---------------------------------------------------------
-       Digest
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Digest
+     * ---------------------------------------------------------
+     */
 
     .news-digest {
         margin-bottom: 32px;
-
-        padding:
-            28px
-            30px;
-
+        padding: 28px 30px;
         border-radius: 20px;
     }
 
-
-    /* ---------------------------------------------------------
-       Article list
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Article list
+     * ---------------------------------------------------------
+     */
 
     .news-list {
-        grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
-
+        grid-template-columns: repeat( 2, minmax(0, 1fr) );
         gap: 20px;
     }
 
-
     .news-card {
         padding: 24px;
-
         border-radius: 18px;
-
-        box-shadow:
-            0 4px 18px
-            rgba(59, 70, 66, .04);
+        box-shadow: 0 4px 18px rgba(59, 70, 66, .04);
     }
 
-
-    /* ---------------------------------------------------------
-       Topics
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Topics
+     * ---------------------------------------------------------
+     */
 
     .news-topic-grid {
-        grid-template-columns:
-            repeat(
-                4,
-                minmax(0, 1fr)
-            );
-
+        grid-template-columns: repeat( 4, minmax(0, 1fr) );
         gap: 16px;
     }
 
-
-    /* ---------------------------------------------------------
-       Messages
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Messages
+     * ---------------------------------------------------------
+     */
 
     .news-messages {
-        width: min(
-            calc(100% - 80px),
-            1180px
-        );
-
-        margin:
-            14px
-            auto
-            0;
-
+        width: min( calc(100% - 80px), 1180px );
+        margin: 14px auto 0;
         padding: 0;
     }
 
-
-    /* ---------------------------------------------------------
-       Hide mobile bottom navigation
-       --------------------------------------------------------- */
+    /*
+     * ---------------------------------------------------------
+     * Hide mobile bottom navigation
+     * ---------------------------------------------------------
+     */
 
     .news-bottom-nav {
         display: none !important;
     }
-
 }
 
-/* =========================================================
-   About Swiss News
-   ========================================================= */
+/*
+ * =========================================================
+ * About Swiss News
+ * =========================================================
+ */
 
 .news-about {
     max-width: 820px;
     margin: 0 auto;
 }
 
-
-/* ---------------------------------------------------------
-   Hero
-   --------------------------------------------------------- */
+/*
+ * ---------------------------------------------------------
+ * Hero
+ * ---------------------------------------------------------
+ */
 
 .news-about-hero {
-    padding:
-        12px
-        0
-        42px;
+    padding: 12px 0 42px;
 }
 
 .news-about-hero h2 {
     max-width: 680px;
-    margin:
-        8px
-        0
-        20px;
-
+    margin: 8px 0 20px;
     color: #263238;
-
-    font-size:
-        clamp(
-            2rem,
-            6vw,
-            3.4rem
-        );
-
+    font-size: clamp( 2rem, 6vw, 3.4rem );
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -.045em;
@@ -1547,46 +1393,32 @@
 .news-about-lead {
     max-width: 620px;
     margin: 0;
-
     color: #65716d;
-
     font-size: .95rem;
     line-height: 1.95;
 }
 
-
-/* ---------------------------------------------------------
-   Sections
-   --------------------------------------------------------- */
+/*
+ * ---------------------------------------------------------
+ * Sections
+ * ---------------------------------------------------------
+ */
 
 .news-about-sections {
-    border-top:
-        1px solid
-        #dde3df;
+    border-top: 1px solid #dde3df;
 }
 
 .news-about-section {
     display: grid;
-    grid-template-columns:
-        42px
-        minmax(0, 1fr);
-
+    grid-template-columns: 42px minmax(0, 1fr);
     gap: 18px;
-
-    padding:
-        32px
-        0;
-
-    border-bottom:
-        1px solid
-        #e4e8e5;
+    padding: 32px 0;
+    border-bottom: 1px solid #e4e8e5;
 }
 
 .news-about-section-number {
     padding-top: 4px;
-
     color: #9baa9f;
-
     font-size: .85rem;
     font-weight: 800;
     letter-spacing: .12em;
@@ -1597,13 +1429,8 @@
 }
 
 .news-about-section-content h3 {
-    margin:
-        0
-        0
-        14px;
-
+    margin: 0 0 14px;
     color: #34423c;
-
     font-size: 1.05rem;
     font-weight: 800;
     letter-spacing: -.015em;
@@ -1611,14 +1438,8 @@
 
 .news-about-section-content p {
     max-width: 650px;
-
-    margin:
-        0
-        0
-        12px;
-
+    margin: 0 0 12px;
     color: #66716c;
-
     font-size: .86rem;
     line-height: 1.9;
 }
@@ -1627,182 +1448,111 @@
     margin-bottom: 0;
 }
 
-
-/* ---------------------------------------------------------
-   News sources
-   --------------------------------------------------------- */
+/*
+ * ---------------------------------------------------------
+ * News sources
+ * ---------------------------------------------------------
+ */
 
 .news-about-sources {
     display: flex;
     flex-wrap: wrap;
-
     gap: 7px;
-
-    margin:
-        18px
-        0;
+    margin: 18px 0;
 }
 
 .news-about-sources span {
     display: inline-flex;
     align-items: center;
-
     min-height: 30px;
-
-    padding:
-        6px
-        10px;
-
-    border:
-        1px solid
-        #e1e6e2;
-
-    border-radius:
-        999px;
-
-    background:
-        #ffffff;
-
-    color:
-        #607068;
-
-    font-size:
-        .68rem;
-
-    font-weight:
-        700;
+    padding: 6px 10px;
+    border: 1px solid #e1e6e2;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #607068;
+    font-size: .68rem;
+    font-weight: 700;
 }
 
 .news-about-note {
-    color:
-        #8a9490 !important;
-
-    font-size:
-        .75rem !important;
+    color: #8a9490 !important;
+    font-size: .75rem !important;
 }
 
-
-/* ---------------------------------------------------------
-   Contact
-   --------------------------------------------------------- */
+/*
+ * ---------------------------------------------------------
+ * Contact
+ * ---------------------------------------------------------
+ */
 
 .news-about-contact {
     display: flex;
     flex-direction: column;
-
     gap: 6px;
-
     margin-top: 20px;
-
-    padding:
-        18px
-        20px;
-
-    border:
-        1px solid
-        #dfe7e2;
-
-    border-radius:
-        16px;
-
-    background:
-        #f3f7f4;
+    padding: 18px 20px;
+    border: 1px solid #dfe7e2;
+    border-radius: 16px;
+    background: #f3f7f4;
 }
 
 .news-about-contact span {
-    color:
-        #8b9a92;
-
-    font-size:
-        .6rem;
-
-    font-weight:
-        900;
-
-    letter-spacing:
-        .15em;
+    color: #8b9a92;
+    font-size: .6rem;
+    font-weight: 900;
+    letter-spacing: .15em;
 }
 
 .news-about-contact strong {
-    color:
-        #52635a;
-
-    font-size:
-        .85rem;
-
-    font-weight:
-        700;
+    color: #52635a;
+    font-size: .85rem;
+    font-weight: 700;
 }
 
-
-/* ---------------------------------------------------------
-   Privacy
-   --------------------------------------------------------- */
+/*
+ * ---------------------------------------------------------
+ * Privacy
+ * ---------------------------------------------------------
+ */
 
 .news-about-privacy {
     margin-top: 34px;
-
-    padding:
-        20px
-        22px;
-
-    border-radius:
-        16px;
-
-    background:
-        #f0f2f0;
+    padding: 20px 22px;
+    border-radius: 16px;
+    background: #f0f2f0;
 }
 
 .news-about-privacy h3 {
-    margin:
-        0
-        0
-        8px;
-
-    color:
-        #59655f;
-
-    font-size:
-        .8rem;
-
-    font-weight:
-        800;
+    margin: 0 0 8px;
+    color: #59655f;
+    font-size: .8rem;
+    font-weight: 800;
 }
 
 .news-about-privacy p {
     margin: 0;
-
-    color:
-        #7d8782;
-
-    font-size:
-        .72rem;
-
-    line-height:
-        1.8;
+    color: #7d8782;
+    font-size: .72rem;
+    line-height: 1.8;
 }
 
-
-/* =========================================================
-   About - Desktop
-   ========================================================= */
+/*
+ * =========================================================
+ * About - Desktop
+ * =========================================================
+ */
 
 @media screen and (min-width: 900px) {
-
     .news-about {
         max-width: 920px;
     }
 
     .news-about-hero {
-        padding:
-            22px
-            0
-            64px;
+        padding: 22px 0 64px;
     }
 
     .news-about-hero h2 {
         margin-top: 10px;
-
         font-size: 3.35rem;
     }
 
@@ -1811,15 +1561,9 @@
     }
 
     .news-about-section {
-        grid-template-columns:
-            70px
-            minmax(0, 1fr);
-
+        grid-template-columns: 70px minmax(0, 1fr);
         gap: 28px;
-
-        padding:
-            42px
-            0;
+        padding: 42px 0;
     }
 
     .news-about-section-content h3 {
@@ -1833,16 +1577,15 @@
     .news-about-privacy {
         margin-top: 42px;
     }
-
 }
 
-
-/* =========================================================
-   About - Small Mobile
-   ========================================================= */
+/*
+ * =========================================================
+ * About - Small Mobile
+ * =========================================================
+ */
 
 @media screen and (max-width: 420px) {
-
     .news-about-hero {
         padding-top: 4px;
     }
@@ -1852,50 +1595,31 @@
     }
 
     .news-about-section {
-        grid-template-columns:
-            32px
-            minmax(0, 1fr);
-
+        grid-template-columns: 32px minmax(0, 1fr);
         gap: 12px;
-
-        padding:
-            28px
-            0;
+        padding: 28px 0;
     }
 
     .news-about-contact {
-        padding:
-            16px;
+        padding: 16px;
     }
-
 }
 
-/* =========================================================
-   About - Refined spacing
-   ========================================================= */
+/*
+ * =========================================================
+ * About - Refined spacing
+ * =========================================================
+ */
 
 /* Heroを少し控えめに */
 
 .news-about-hero {
-    padding:
-        8px
-        0
-        32px;
+    padding: 8px 0 32px;
 }
 
 .news-about-hero h2 {
-    margin:
-        7px
-        0
-        16px;
-
-    font-size:
-        clamp(
-            1.65rem,
-            4vw,
-            2.5rem
-        );
-
+    margin: 7px 0 16px;
+    font-size: clamp( 1.65rem, 4vw, 2.5rem );
     line-height: 1.25;
 }
 
@@ -1903,53 +1627,36 @@
     line-height: 1.7;
 }
 
-
 /* 01 / 02 / 03... を見やすく */
 
 .news-about-section-number {
     padding-top: 1px;
-
     color: #82968b;
-
     font-size: .95rem;
     font-weight: 850;
     letter-spacing: .08em;
 }
 
-
 /* セクション間の余白を縮める */
 
 .news-about-section {
-    padding:
-        25px
-        0;
+    padding: 25px 0;
 }
 
 .news-about-section-content h3 {
-    margin:
-        0
-        0
-        10px;
+    margin: 0 0 10px;
 }
 
 .news-about-section-content p {
-    margin:
-        0
-        0
-        8px;
-
+    margin: 0 0 8px;
     line-height: 1.65;
 }
-
 
 /* 情報源まわりも少しコンパクトに */
 
 .news-about-sources {
-    margin:
-        14px
-        0;
+    margin: 14px 0;
 }
-
 
 /* Privacyまでの空白も縮める */
 
@@ -1957,18 +1664,15 @@
     margin-top: 26px;
 }
 
-
-/* =========================================================
-   About - Desktop refinement
-   ========================================================= */
+/*
+ * =========================================================
+ * About - Desktop refinement
+ * =========================================================
+ */
 
 @media screen and (min-width: 900px) {
-
     .news-about-hero {
-        padding:
-            10px
-            0
-            42px;
+        padding: 10px 0 42px;
     }
 
     .news-about-hero h2 {
@@ -1976,15 +1680,9 @@
     }
 
     .news-about-section {
-        grid-template-columns:
-            58px
-            minmax(0, 1fr);
-
+        grid-template-columns: 58px minmax(0, 1fr);
         gap: 24px;
-
-        padding:
-            30px
-            0;
+        padding: 30px 0;
     }
 
     .news-about-section-number {
@@ -1994,41 +1692,35 @@
     .news-about-section-content h3 {
         font-size: 1.08rem;
     }
-
 }
 
-
-/* =========================================================
-   About - Small Mobile refinement
-   ========================================================= */
+/*
+ * =========================================================
+ * About - Small Mobile refinement
+ * =========================================================
+ */
 
 @media screen and (max-width: 420px) {
-
     .news-about-hero h2 {
         font-size: 1.4rem;
     }
 
     .news-about-section {
-        grid-template-columns:
-            38px
-            minmax(0, 1fr);
-
+        grid-template-columns: 38px minmax(0, 1fr);
         gap: 10px;
-
-        padding:
-            23px
-            0;
+        padding: 23px 0;
     }
 
     .news-about-section-number {
         font-size: .95rem;
     }
-
 }
 
-/* =========================================================
-   Settings - About link
-   ========================================================= */
+/*
+ * =========================================================
+ * Settings - About link
+ * =========================================================
+ */
 
 .news-settings-about {
     margin-top: 22px;
@@ -2038,35 +1730,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 18px;
-
-    padding:
-        18px
-        4px;
-
-    border-top:
-        1px solid
-        #dfe4e1;
-
-    color:
-        #53615a;
-
+    padding: 18px 4px;
+    border-top: 1px solid #dfe4e1;
+    color: #53615a;
     text-decoration: none;
-
-    transition:
-        color .18s ease;
+    transition: color .18s ease;
 }
 
 .news-settings-about-link:hover {
-    color:
-        #3f6252;
+    color: #3f6252;
 }
 
 .news-settings-about-copy {
     display: flex;
     flex-direction: column;
-
     gap: 4px;
 }
 
@@ -2076,51 +1754,35 @@
 }
 
 .news-settings-about-copy small {
-    color:
-        #929b97;
-
-    font-size:
-        .68rem;
-
+    color: #929b97;
+    font-size: .68rem;
     line-height: 1.5;
 }
 
 .news-settings-about-arrow {
     flex-shrink: 0;
-
-    color:
-        #93a098;
-
-    font-size:
-        1.1rem;
-
-    transition:
-        transform .18s ease;
+    color: #93a098;
+    font-size: 1.1rem;
+    transition: transform .18s ease;
 }
 
-.news-settings-about-link:hover
-.news-settings-about-arrow {
-    transform:
-        translateX(3px);
+.news-settings-about-link:hover .news-settings-about-arrow {
+    transform: translateX(3px);
 }
-
 
 /* Aboutページ全体を他ページと同じ左端に揃える */
 
 .news-about {
     width: 100%;
     max-width: 920px;
-
-    margin:
-        0
-        auto
-        0
-        0;
+    margin: 0 auto 0 0;
 }
 
-/* =========================================================
-   News Feedback
-   ========================================================= */
+/*
+ * =========================================================
+ * News Feedback
+ * =========================================================
+ */
 
 .news-feedback-form {
     margin-top: 20px;
@@ -2132,87 +1794,48 @@
 
 .news-feedback-textarea {
     display: block;
-
     width: 100%;
     min-height: 130px;
-
-    padding:
-        15px
-        16px;
-
-    border:
-        1px solid
-        #dce3df;
-
-    border-radius:
-        14px;
-
+    padding: 15px 16px;
+    border: 1px solid #dce3df;
+    border-radius: 14px;
     outline: none;
-
-    background:
-        #fafcfb;
-
-    color:
-        #45534c;
-
+    background: #fafcfb;
+    color: #45534c;
     font: inherit;
     font-size: .82rem;
     line-height: 1.65;
-
     resize: vertical;
-
     box-sizing: border-box;
-
-    transition:
-        border-color .18s ease,
-        background .18s ease,
-        box-shadow .18s ease;
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
 }
 
 .news-feedback-textarea::placeholder {
-    color:
-        #a1aaa5;
+    color: #a1aaa5;
 }
 
 .news-feedback-textarea:focus {
-    border-color:
-        #9eb5a8;
-
-    background:
-        #ffffff;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(126, 158, 141, .10);
+    border-color: #9eb5a8;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(126, 158, 141, .10);
 }
-
 
 /* Footer */
 
 .news-feedback-footer {
     display: flex;
     flex-direction: column;
-
     align-items: flex-start;
-
     gap: 12px;
-
     margin-top: 12px;
 }
 
 .news-feedback-note {
     margin: 0 !important;
-
-    color:
-        #929c97 !important;
-
-    font-size:
-        .68rem !important;
-
-    line-height:
-        1.5 !important;
+    color: #929c97 !important;
+    font-size: .68rem !important;
+    line-height: 1.5 !important;
 }
-
 
 /* Submit button */
 
@@ -2220,47 +1843,28 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     gap: 9px;
-
     min-height: 42px;
-
-    padding:
-        10px
-        17px;
-
+    padding: 10px 17px;
     border: 0;
     border-radius: 999px;
-
-    background:
-        #536b5f;
-
-    color:
-        #ffffff;
-
+    background: #536b5f;
+    color: #ffffff;
     font: inherit;
     font-size: .75rem;
     font-weight: 800;
-
     cursor: pointer;
-
-    transition:
-        transform .18s ease,
-        opacity .18s ease;
+    transition: transform .18s ease, opacity .18s ease;
 }
 
 .news-feedback-submit:hover {
-    transform:
-        translateY(-1px);
-
+    transform: translateY(-1px);
     opacity: .9;
 }
 
 .news-feedback-submit:active {
-    transform:
-        translateY(0);
+    transform: translateY(0);
 }
-
 
 /* Errors */
 
@@ -2270,703 +1874,430 @@
 
 .news-feedback-errors p {
     margin: 0 !important;
-
-    color:
-        #a95656 !important;
-
-    font-size:
-        .72rem !important;
+    color: #a95656 !important;
+    font-size: .72rem !important;
 }
-
 
 /* Desktop */
 
 @media screen and (min-width: 700px) {
-
     .news-feedback-footer {
         flex-direction: row;
-
         align-items: center;
         justify-content: space-between;
     }
-
 }
 
-/* =========================================================
-   News digest toggle
-   ========================================================= */
+/*
+ * =========================================================
+ * News digest toggle
+ * =========================================================
+ */
 
 .news-digest-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     min-width: 110px;
-
     margin-top: 14px;
     padding: 8px 14px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .12);
-
+    border: 1px solid rgba(80, 92, 108, .12);
     border-radius: 999px;
-
-    background:
-        rgba(255, 255, 255, .72);
-
-    color:
-        #66727d;
-
+    background: rgba(255, 255, 255, .72);
+    color: #66727d;
     font: inherit;
     font-size: 12px;
     font-weight: 800;
     letter-spacing: .02em;
-
     cursor: pointer;
-
-    box-shadow:
-        0 5px 16px
-        rgba(58, 69, 82, .06);
-
-    transition:
-        transform .18s ease,
-        background .18s ease,
-        color .18s ease,
-        box-shadow .18s ease;
+    box-shadow: 0 5px 16px rgba(58, 69, 82, .06);
+    transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
 }
-
 
 .news-digest-toggle::after {
     content: "⌄";
-
     margin-left: 7px;
-
     font-size: 13px;
     line-height: 1;
-
-    transition:
-        transform .18s ease;
+    transition: transform .18s ease;
 }
-
 
 .news-digest-toggle[aria-expanded="true"]::after {
-    transform:
-        rotate(180deg);
+    transform: rotate(180deg);
 }
-
 
 .news-digest-toggle:hover {
-    background:
-        rgba(255, 255, 255, .95);
-
-    color:
-        #47535f;
-
-    box-shadow:
-        0 7px 20px
-        rgba(58, 69, 82, .09);
-
-    transform:
-        translateY(-1px);
+    background: rgba(255, 255, 255, .95);
+    color: #47535f;
+    box-shadow: 0 7px 20px rgba(58, 69, 82, .09);
+    transform: translateY(-1px);
 }
-
 
 .news-digest-toggle:active {
-    transform:
-        translateY(0);
+    transform: translateY(0);
 }
-
 
 @media (max-width: 720px) {
-
     .news-digest-toggle {
         min-width: 104px;
-
-        padding:
-            7px
-            13px;
-
+        padding: 7px 13px;
         font-size: 11px;
     }
-
 }
 
-/* =========================================================
-   News search / discover
-   ========================================================= */
+/*
+ * =========================================================
+ * News search / discover
+ * =========================================================
+ */
 
 .news-search-intro {
-    margin:
-        8px
-        0
-        0;
-
-    color:
-        rgba(66, 77, 88, .66);
-
+    margin: 8px 0 0;
+    color: rgba(66, 77, 88, .66);
     font-size: 13px;
     line-height: 1.7;
 }
 
-
-/* =========================================================
-   Search tabs
-   ========================================================= */
+/*
+ * =========================================================
+ * Search tabs
+ * =========================================================
+ */
 
 .news-search-tabs {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
-
-    margin:
-        4px
-        0
-        28px;
-
+    margin: 4px 0 28px;
     padding: 5px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
+    border: 1px solid rgba(80, 92, 108, .08);
     border-radius: 18px;
-
-    background:
-        rgba(244, 247, 249, .8);
+    background: rgba(244, 247, 249, .8);
 }
-
 
 .news-search-tab {
     display: flex;
     align-items: center;
     justify-content: center;
-
     gap: 7px;
-
     min-height: 46px;
-
-    padding:
-        9px
-        12px;
-
+    padding: 9px 12px;
     border-radius: 14px;
-
-    color:
-        #78838d;
-
+    color: #78838d;
     text-decoration: none;
-
     font-size: 13px;
     font-weight: 800;
-
-    transition:
-        background .18s ease,
-        color .18s ease,
-        box-shadow .18s ease,
-        transform .18s ease;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
-
 
 .news-search-tab:hover {
-    color:
-        #56636d;
-
-    background:
-        rgba(255, 255, 255, .65);
+    color: #56636d;
+    background: rgba(255, 255, 255, .65);
 }
-
 
 .news-search-tab.is-active {
-    background:
-        #fff;
-
-    color:
-        #4f5e69;
-
-    box-shadow:
-        0 5px 18px
-        rgba(61, 74, 88, .08);
+    background: #fff;
+    color: #4f5e69;
+    box-shadow: 0 5px 18px rgba(61, 74, 88, .08);
 }
-
 
 .news-search-tab-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     width: 20px;
     height: 20px;
-
     font-size: 14px;
 }
 
-
-/* =========================================================
-   Search section
-   ========================================================= */
+/*
+ * =========================================================
+ * Search section
+ * =========================================================
+ */
 
 .news-search-section {
     margin-bottom: 30px;
 }
 
-
 .news-search-section-heading {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-
     gap: 16px;
-
     margin-bottom: 16px;
 }
 
-
 .news-search-section-kicker {
     margin-bottom: 4px;
-
-    color:
-        #9aa4ac;
-
+    color: #9aa4ac;
     font-size: 10px;
     font-weight: 900;
     letter-spacing: .13em;
 }
 
-
 .news-search-section-heading h3 {
     margin: 0;
-
-    color:
-        #46545f;
-
+    color: #46545f;
     font-size: 20px;
 }
 
-
-/* =========================================================
-   Topic cards
-   ========================================================= */
+/*
+ * =========================================================
+ * Topic cards
+ * =========================================================
+ */
 
 .news-discovery-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
-
 
 .news-discovery-card {
     display: flex;
     align-items: center;
-
     gap: 14px;
-
     min-height: 86px;
-
-    padding:
-        17px
-        18px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
+    padding: 17px 18px;
+    border: 1px solid rgba(80, 92, 108, .08);
     border-radius: 20px;
-
-    background:
-        rgba(255, 255, 255, .9);
-
-    color:
-        inherit;
-
+    background: rgba(255, 255, 255, .9);
+    color: inherit;
     text-decoration: none;
-
-    box-shadow:
-        0 8px 24px
-        rgba(65, 76, 88, .045);
-
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        border-color .18s ease;
+    box-shadow: 0 8px 24px rgba(65, 76, 88, .045);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-
 
 .news-discovery-card:hover {
-    transform:
-        translateY(-2px);
-
-    border-color:
-        rgba(80, 92, 108, .14);
-
-    box-shadow:
-        0 12px 30px
-        rgba(65, 76, 88, .075);
+    transform: translateY(-2px);
+    border-color: rgba(80, 92, 108, .14);
+    box-shadow: 0 12px 30px rgba(65, 76, 88, .075);
 }
-
 
 .news-discovery-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-
     flex: 0 0 auto;
-
     width: 44px;
     height: 44px;
-
     border-radius: 14px;
-
-    background:
-        rgba(242, 245, 247, .95);
-
+    background: rgba(242, 245, 247, .95);
     font-size: 21px;
 }
-
 
 .news-discovery-content {
     display: flex;
     flex-direction: column;
-
     min-width: 0;
 }
 
-
 .news-discovery-content strong {
-    color:
-        #4c5963;
-
+    color: #4c5963;
     font-size: 14px;
 }
 
-
 .news-discovery-content small {
     margin-top: 4px;
-
-    color:
-        #9aa3aa;
-
+    color: #9aa3aa;
     font-size: 11px;
     font-weight: 700;
 }
 
-
-/* =========================================================
-   Source cards
-   ========================================================= */
+/*
+ * =========================================================
+ * Source cards
+ * =========================================================
+ */
 
 .news-source-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
-
 
 .news-source-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 16px;
-
     min-height: 76px;
-
-    padding:
-        15px
-        17px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
+    padding: 15px 17px;
+    border: 1px solid rgba(80, 92, 108, .08);
     border-radius: 18px;
-
-    background:
-        rgba(255, 255, 255, .9);
-
-    color:
-        inherit;
-
+    background: rgba(255, 255, 255, .9);
+    color: inherit;
     text-decoration: none;
-
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        border-color .18s ease;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-
 
 .news-source-card:hover {
-    transform:
-        translateY(-2px);
-
-    border-color:
-        rgba(80, 92, 108, .14);
-
-    box-shadow:
-        0 10px 26px
-        rgba(65, 76, 88, .07);
+    transform: translateY(-2px);
+    border-color: rgba(80, 92, 108, .14);
+    box-shadow: 0 10px 26px rgba(65, 76, 88, .07);
 }
-
 
 .news-source-card-main {
     display: flex;
     flex-direction: column;
-
     min-width: 0;
 }
 
-
 .news-source-card-main strong {
-    color:
-        #4c5963;
-
+    color: #4c5963;
     font-size: 14px;
 }
 
-
 .news-source-card-main span {
     margin-top: 4px;
-
-    color:
-        #98a2aa;
-
+    color: #98a2aa;
     font-size: 11px;
     font-weight: 700;
 }
 
-
 .news-source-card-arrow {
     flex: 0 0 auto;
-
-    color:
-        #a4adb4;
-
+    color: #a4adb4;
     font-size: 17px;
-
-    transition:
-        transform .18s ease;
+    transition: transform .18s ease;
 }
 
-
-.news-source-card:hover
-.news-source-card-arrow {
-    transform:
-        translateX(3px);
+.news-source-card:hover .news-source-card-arrow {
+    transform: translateX(3px);
 }
 
-
-/* =========================================================
-   Region placeholder
-   ========================================================= */
+/*
+ * =========================================================
+ * Region placeholder
+ * =========================================================
+ */
 
 .news-search-coming-soon {
-    padding:
-        30px
-        24px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
+    padding: 30px 24px;
+    border: 1px solid rgba(80, 92, 108, .08);
     border-radius: 22px;
-
-    background:
-        rgba(255, 255, 255, .78);
-
+    background: rgba(255, 255, 255, .78);
     text-align: center;
 }
 
-
 .news-search-coming-icon {
     margin-bottom: 12px;
-
     font-size: 28px;
 }
 
-
 .news-search-coming-soon strong {
     display: block;
-
-    color:
-        #53616b;
-
+    color: #53616b;
     font-size: 16px;
 }
 
-
 .news-search-coming-soon p {
     max-width: 480px;
-
-    margin:
-        8px
-        auto
-        0;
-
-    color:
-        #8b969e;
-
+    margin: 8px auto 0;
+    color: #8b969e;
     font-size: 12px;
     line-height: 1.8;
 }
 
-
-/* =========================================================
-   Source detail
-   ========================================================= */
+/*
+ * =========================================================
+ * Source detail
+ * =========================================================
+ */
 
 .news-source-detail-meta {
-    margin:
-        7px
-        0
-        0;
-
-    color:
-        #939da5;
-
+    margin: 7px 0 0;
+    color: #939da5;
     font-size: 12px;
     font-weight: 700;
 }
 
-
 .news-page-back-link {
-    color:
-        #7e8992;
-
+    color: #7e8992;
     text-decoration: none;
-
     font-size: 12px;
     font-weight: 800;
 }
 
-
 .news-page-back-link:hover {
-    color:
-        #53616c;
+    color: #53616c;
 }
 
-
-/* =========================================================
-   Mobile
-   ========================================================= */
+/*
+ * =========================================================
+ * Mobile
+ * =========================================================
+ */
 
 @media (max-width: 720px) {
-
     .news-search-intro {
         font-size: 12px;
     }
 
-
     .news-search-tabs {
         gap: 4px;
-
         margin-bottom: 22px;
-
         padding: 4px;
-
         border-radius: 16px;
     }
 
-
     .news-search-tab {
         gap: 5px;
-
         min-height: 44px;
-
-        padding:
-            8px
-            5px;
-
+        padding: 8px 5px;
         border-radius: 12px;
-
         font-size: 11px;
     }
 
-
     .news-search-tab-icon {
         width: auto;
-
         font-size: 13px;
     }
 
-
     .news-discovery-grid {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
-
 
     .news-discovery-card {
         flex-direction: column;
         align-items: flex-start;
-
         gap: 9px;
-
         min-height: 112px;
-
-        padding:
-            14px;
-
+        padding: 14px;
         border-radius: 17px;
     }
-
 
     .news-discovery-icon {
         width: 38px;
         height: 38px;
-
         border-radius: 12px;
-
         font-size: 19px;
     }
-
 
     .news-discovery-content strong {
         font-size: 13px;
     }
 
-
     .news-discovery-content small {
         font-size: 10px;
     }
 
-
     .news-source-grid {
-        grid-template-columns:
-            1fr;
-
+        grid-template-columns: 1fr;
         gap: 8px;
     }
 
-
     .news-source-card {
         min-height: 68px;
-
-        padding:
-            13px
-            15px;
-
+        padding: 13px 15px;
         border-radius: 16px;
     }
 
-
     .news-search-coming-soon {
-        padding:
-            26px
-            18px;
+        padding: 26px 18px;
     }
-
 }
 
 .news-region-card {
@@ -2981,60 +2312,35 @@
     padding-left: 20px;
 }
 
-/* =========================================================
-   Switzerland region map
-   ========================================================= */
+/*
+ * =========================================================
+ * Switzerland region map
+ * =========================================================
+ */
 
 .news-switzerland-wide-link {
     display: flex;
     align-items: center;
-
     gap: 13px;
-
     margin-bottom: 14px;
-
-    padding:
-        15px
-        17px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
+    padding: 15px 17px;
+    border: 1px solid rgba(80, 92, 108, .08);
     border-radius: 18px;
-
-    background:
-        rgba(255, 255, 255, .92);
-
-    color:
-        inherit;
-
+    background: rgba(255, 255, 255, .92);
+    color: inherit;
     text-decoration: none;
-
-    box-shadow:
-        0 7px 22px
-        rgba(65, 76, 88, .045);
-
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease;
+    box-shadow: 0 7px 22px rgba(65, 76, 88, .045);
+    transition: transform .18s ease, box-shadow .18s ease;
 }
-
 
 .news-switzerland-wide-link:hover {
-    transform:
-        translateY(-1px);
-
-    box-shadow:
-        0 10px 28px
-        rgba(65, 76, 88, .075);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(65, 76, 88, .075);
 }
-
 
 .news-switzerland-wide-flag {
     font-size: 25px;
 }
-
 
 .news-switzerland-wide-link > span:nth-child(2) {
     display: flex;
@@ -3042,521 +2348,356 @@
     flex-direction: column;
 }
 
-
 .news-switzerland-wide-link strong {
-    color:
-        #4b5963;
-
+    color: #4b5963;
     font-size: 14px;
 }
 
-
 .news-switzerland-wide-link small {
     margin-top: 2px;
-
-    color:
-        #98a2aa;
-
+    color: #98a2aa;
     font-size: 10px;
 }
 
-
 .news-switzerland-wide-arrow {
-    color:
-        #a1abb2;
-
+    color: #a1abb2;
     font-size: 17px;
 }
 
-/* =========================================================
-   Region map card
-   ========================================================= */
+/*
+ * =========================================================
+ * Region map card
+ * =========================================================
+ */
 
 .news-region-map-card {
     margin-bottom: 26px;
-
-    padding:
-        20px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
-    border-radius:
-        24px;
-
-    background:
-        rgba(255, 255, 255, .88);
-
-    box-shadow:
-        0 10px 30px
-        rgba(65, 76, 88, .045);
+    padding: 20px;
+    border: 1px solid rgba(80, 92, 108, .08);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .88);
+    box-shadow: 0 10px 30px rgba(65, 76, 88, .045);
 }
-
 
 .news-region-map-header {
-    margin-bottom:
-        10px;
+    margin-bottom: 10px;
 }
-
 
 .news-region-map-header > div {
     display: flex;
     flex-direction: column;
 }
 
-
 .news-region-map-header strong {
-    color:
-        #4b5963;
-
-    font-size:
-        16px;
+    color: #4b5963;
+    font-size: 16px;
 }
-
 
 .news-region-map-header small {
-    margin-top:
-        3px;
-
-    color:
-        #98a2aa;
-
-    font-size:
-        12px;
+    margin-top: 3px;
+    color: #98a2aa;
+    font-size: 12px;
 }
 
-
-/* =========================================================
-   Switzerland map image
-   ========================================================= */
+/*
+ * =========================================================
+ * Switzerland map image
+ * =========================================================
+ */
 
 .news-region-map {
     position: relative;
-
-    width:
-        100%;
-
-    max-width:
-        780px;
-
-    margin:
-        8px
-        auto
-        0;
-
-    aspect-ratio:
-        936 / 634;
+    width: 100%;
+    max-width: 780px;
+    margin: 8px auto 0;
+    aspect-ratio: 936 / 634;
 }
-
 
 .news-region-map-image {
     position: absolute;
-
-    inset:
-        0;
-
-    z-index:
-        1;
-
-    display:
-        block;
-
-    width:
-        100%;
-
-    height:
-        100%;
-
-    object-fit:
-        contain;
-
-    opacity:
-        .72;
-
-    pointer-events:
-        none;
-
-    user-select:
-        none;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: .72;
+    pointer-events: none;
+    user-select: none;
 }
 
-
-/* =========================================================
-   Map city points
-   ========================================================= */
+/*
+ * =========================================================
+ * Map city points
+ * =========================================================
+ */
 
 .news-region-map-point {
     position: absolute;
-
-    z-index:
-        2;
-
-    top:
-        var(--map-y);
-
-    left:
-        var(--map-x);
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        4px;
-
-    padding:
-        4px
-        6px;
-
-    border-radius:
-        999px;
-
-    background:
-        rgba(255, 255, 255, .90);
-
-    color:
-        #617068;
-
-    font-size:
-        14px;
-
-    font-weight:
-        800;
-
-    line-height:
-        1;
-
-    text-decoration:
-        none;
-
-    white-space:
-        nowrap;
-
-    box-shadow:
-        0 3px 10px
-        rgba(56, 72, 64, .10);
-
-    transform:
-        translate(-50%, -50%);
-
-    transition:
-        background .16s ease,
-        color .16s ease,
-        transform .16s ease,
-        box-shadow .16s ease;
+    z-index: 2;
+    top: var(--map-y);
+    left: var(--map-x);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .90);
+    color: #617068;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(56, 72, 64, .10);
+    transform: translate(-50%, -50%);
+    transition: background .16s ease, color .16s ease, transform .16s ease, box-shadow .16s ease;
 }
-
 
 .news-region-map-point span {
-    width:
-        7px;
-
-    height:
-        7px;
-
-    flex:
-        0
-        0
-        auto;
-
-    border-radius:
-        50%;
-
-    background:
-        #789487;
-
-    box-shadow:
-        0
-        0
-        0
-        3px
-        rgba(120, 148, 135, .13);
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #789487;
+    box-shadow: 0 0 0 3px rgba(120, 148, 135, .13);
 }
-
 
 .news-region-map-point:hover {
-    z-index:
-        5;
-
-    background:
-        #ffffff;
-
-    color:
-        #40574c;
-
-    transform:
-        translate(-50%, -50%)
-        scale(1.07);
-
-    box-shadow:
-        0 7px 18px
-        rgba(56, 72, 64, .15);
+    z-index: 5;
+    background: #ffffff;
+    color: #40574c;
+    transform: translate(-50%, -50%) scale(1.07);
+    box-shadow: 0 7px 18px rgba(56, 72, 64, .15);
 }
-
 
 .news-region-map-point-primary {
-    color:
-        #485e53;
-
-    font-size:
-        17px;
+    color: #485e53;
+    font-size: 17px;
 }
-
 
 .news-region-map-point-primary span {
-    width:
-        9px;
-
-    height:
-        9px;
-
-    background:
-        #617f70;
+    width: 9px;
+    height: 9px;
+    background: #617f70;
 }
-
 
 .news-region-map-point-small {
-    font-size:
-        14px;
+    font-size: 14px;
 }
 
-
-/* =========================================================
-   Region list heading
-   ========================================================= */
+/*
+ * =========================================================
+ * Region list heading
+ * =========================================================
+ */
 
 .news-region-list-heading {
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    margin-bottom:
-        10px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
 }
-
 
 .news-region-list-heading strong {
-    color:
-        #4d5a64;
-
-    font-size:
-        14px;
+    color: #4d5a64;
+    font-size: 14px;
 }
-
 
 .news-region-list-heading small {
-    margin-top:
-        2px;
-
-    color:
-        #98a2aa;
-
-    font-size:
-        10px;
+    margin-top: 2px;
+    color: #98a2aa;
+    font-size: 10px;
 }
 
-
-/* =========================================================
-   Region list
-   ========================================================= */
+/*
+ * =========================================================
+ * Region list
+ * =========================================================
+ */
 
 .news-region-list {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            3,
-            minmax(0, 1fr)
-        );
-
-    gap:
-        8px;
+    display: grid;
+    grid-template-columns: repeat( 3, minmax(0, 1fr) );
+    gap: 8px;
 }
-
 
 .news-region-list-item {
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
-
-    gap:
-        8px;
-
-    min-height:
-        48px;
-
-    padding:
-        11px
-        13px;
-
-    border:
-        1px solid
-        rgba(80, 92, 108, .08);
-
-    border-radius:
-        14px;
-
-    background:
-        rgba(255, 255, 255, .82);
-
-    color:
-        #59666f;
-
-    font-size:
-        14px;
-
-    font-weight:
-        800;
-
-    text-decoration:
-        none;
-
-    transition:
-        background .16s ease,
-        transform .16s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 48px;
+    padding: 11px 13px;
+    border: 1px solid rgba(80, 92, 108, .08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .82);
+    color: #59666f;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background .16s ease, transform .16s ease;
 }
-
 
 .news-region-list-item:hover {
-    background:
-        #ffffff;
-
-    transform:
-        translateY(-1px);
+    background: #ffffff;
+    transform: translateY(-1px);
 }
-
 
 .news-region-list-arrow {
-    flex:
-        0
-        0
-        auto;
-
-    color:
-        #a1abb2;
+    flex: 0 0 auto;
+    color: #a1abb2;
 }
 
-
-/* =========================================================
-   Tablet / mobile
-   ========================================================= */
+/*
+ * =========================================================
+ * Tablet / mobile
+ * =========================================================
+ */
 
 @media (max-width: 720px) {
-
     .news-region-map-card {
-        padding:
-            15px
-            10px
-            12px;
-
-        border-radius:
-            20px;
+        padding: 15px 10px 12px;
+        border-radius: 20px;
     }
-
 
     .news-region-map {
-        width:
-            100%;
-
-        aspect-ratio:
-            936 / 634;
-
-        margin-top:
-            5px;
+        width: 100%;
+        aspect-ratio: 936 / 634;
+        margin-top: 5px;
     }
-
 
     .news-region-map-point {
-        gap:
-            3px;
-
-        padding:
-            3px
-            4px;
-
-        font-size:
-            8px;
-
-        box-shadow:
-            0 2px 7px
-            rgba(56, 72, 64, .08);
+        gap: 3px;
+        padding: 3px 4px;
+        font-size: 8px;
+        box-shadow: 0 2px 7px rgba(56, 72, 64, .08);
     }
-
 
     .news-region-map-point-small {
-        font-size:
-            7px;
+        font-size: 7px;
     }
-
 
     .news-region-map-point-primary {
-        font-size:
-            9px;
+        font-size: 9px;
     }
-
 
     .news-region-map-point span {
-        width:
-            6px;
-
-        height:
-            6px;
-
-        box-shadow:
-            0
-            0
-            0
-            2px
-            rgba(120, 148, 135, .13);
+        width: 6px;
+        height: 6px;
+        box-shadow: 0 0 0 2px rgba(120, 148, 135, .13);
     }
-
 
     .news-region-map-point-primary span {
-        width:
-            7px;
-
-        height:
-            7px;
+        width: 7px;
+        height: 7px;
     }
-
 
     .news-region-list {
-        grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
+        grid-template-columns: repeat( 2, minmax(0, 1fr) );
     }
-
 }
 
-
-/* =========================================================
-   Small mobile
-   ========================================================= */
+/*
+ * =========================================================
+ * Small mobile
+ * =========================================================
+ */
 
 @media (max-width: 420px) {
-
     .news-region-map-point-small {
-        display:
-            none;
+        display: none;
     }
-
 
     .news-region-list {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
+}
 
+/*
+ * =========================================================
+ * Settings disclosure
+ * =========================================================
+ */
+
+.news-settings-disclosure {
+    width: 100%;
+}
+
+.news-settings-disclosure-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.news-settings-disclosure-summary::-webkit-details-marker {
+    display: none;
+}
+
+.news-settings-disclosure-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.news-settings-disclosure-copy strong {
+    color: #46534d;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.news-settings-disclosure-copy small {
+    color: #8a9490;
+    font-size: .73rem;
+    line-height: 1.5;
+}
+
+.news-settings-disclosure-arrow {
+    flex-shrink: 0;
+    color: #99a49e;
+    font-size: 18px;
+    transition: transform .2s ease;
+}
+
+.news-settings-disclosure[open] .news-settings-disclosure-arrow {
+    transform: rotate(180deg);
+}
+
+.news-settings-disclosure-body {
+    margin-top: 18px;
+    padding-top: 4px;
+    border-top: 1px solid #f0f1ef;
+}
+
+/*
+ * =========================================================
+ * Settings bulk actions
+ * =========================================================
+ */
+
+.news-settings-bulk-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.news-settings-bulk-button {
+    padding: 6px 10px;
+    border: 1px solid #dfe5e1;
+    border-radius: 999px;
+    background: #fff;
+    color: #738078;
+    font: inherit;
+    font-size: .7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.news-settings-bulk-button:hover {
+    background: #f5f8f6;
+    border-color: #ccd6d0;
 }

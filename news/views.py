@@ -38,6 +38,7 @@ def _get_preference(user):
     return preference
 
 def _get_public_settings(request):
+
     """
     未ログインユーザーのニュース設定を
     Django session から取得する。
@@ -45,7 +46,7 @@ def _get_public_settings(request):
 
     settings = request.session.get(
         "news_public_settings",
-        {}
+        {},
     )
 
     return {
@@ -53,81 +54,166 @@ def _get_public_settings(request):
             "display_language",
             "ja",
         ),
+
         "font_size": settings.get(
             "font_size",
             "medium",
         ),
+
         "enabled_topic_ids": settings.get(
             "enabled_topic_ids",
             None,
         ),
+
+        "enabled_region_ids": settings.get(
+            "enabled_region_ids",
+            None,
+        ),
+
+        "enabled_source_ids": settings.get(
+            "enabled_source_ids",
+            None,
+        ),
     }
 
-def _apply_public_topic_settings(
+def _apply_public_news_settings(
     queryset,
     public_settings,
 ):
+
     """
     未ログインユーザーがsessionで選択した
-    ニューステーマを記事一覧に反映する。
+    テーマ・地域・ニュースソースを
+    記事一覧に反映する。
     """
 
-    enabled_topic_ids = (
-        public_settings.get(
-            "enabled_topic_ids"
-        )
+    enabled_topic_ids = public_settings.get(
+        "enabled_topic_ids"
     )
 
-    # まだ設定を保存したことがない場合は
-    # 全テーマを表示する。
-    if enabled_topic_ids is None:
-        return queryset
+    enabled_region_ids = public_settings.get(
+        "enabled_region_ids"
+    )
 
-    # 全テーマをOFFにした場合は、
-    # テーマ未設定の記事だけ表示する。
-    if not enabled_topic_ids:
-        return (
-            queryset
-            .filter(
-                topics__isnull=True
+    enabled_source_ids = public_settings.get(
+        "enabled_source_ids"
+    )
+
+
+    # =====================================================
+    # Topics
+    # =====================================================
+
+    if enabled_topic_ids is not None:
+
+        if enabled_topic_ids:
+
+            queryset = (
+                queryset
+                .filter(
+                    Q(
+                        topics__id__in=enabled_topic_ids
+                    )
+                    |
+                    Q(
+                        topics__isnull=True
+                    )
+                )
+                .distinct()
             )
-            .distinct()
-        )
 
-    return (
-        queryset
-        .filter(
-            Q(
-                topics__id__in=(
-                    enabled_topic_ids
+        else:
+
+            queryset = (
+                queryset
+                .filter(
+                    topics__isnull=True
+                )
+                .distinct()
+            )
+
+
+    # =====================================================
+    # Regions
+    # =====================================================
+
+    if enabled_region_ids is not None:
+
+        if enabled_region_ids:
+
+            queryset = (
+                queryset
+                .filter(
+                    Q(
+                        regions__id__in=enabled_region_ids
+                    )
+                    |
+                    Q(
+                        regions__isnull=True
+                    )
+                )
+                .distinct()
+            )
+
+        else:
+
+            queryset = (
+                queryset
+                .filter(
+                    regions__isnull=True
+                )
+                .distinct()
+            )
+
+
+    # =====================================================
+    # Sources
+    # =====================================================
+
+    if enabled_source_ids is not None:
+
+        if enabled_source_ids:
+
+            queryset = (
+                queryset
+                .filter(
+                    source__id__in=enabled_source_ids
                 )
             )
-            |
-            Q(
-                topics__isnull=True
-            )
-        )
-        .distinct()
-    )
+
+        else:
+
+            queryset = queryset.none()
+
+
+    return queryset
 
 def _article_queryset(
     user=None,
     preference=None,
 ):
+
     queryset = (
         Article.objects
         .select_related(
             "source"
         )
         .prefetch_related(
-            "topics"
+            "topics",
+            "regions",
         )
     )
+
+
+    # =====================================================
+    # Favorite status
+    # =====================================================
 
     if (
         user is not None
         and user.is_authenticated
     ):
+
         queryset = (
             queryset
             .annotate(
@@ -140,10 +226,22 @@ def _article_queryset(
             )
         )
 
+
+    # =====================================================
+    # User preferences
+    # =====================================================
+
     if preference is not None:
 
+
+        # =================================================
+        # Topics
+        # =================================================
+
         hidden_topics = (
-            preference.hidden_topics.all()
+            preference
+            .hidden_topics
+            .all()
         )
 
         if hidden_topics.exists():
@@ -154,12 +252,9 @@ def _article_queryset(
                     is_active=True
                 )
                 .exclude(
-                    id__in=(
-                        hidden_topics
-                        .values_list(
-                            "id",
-                            flat=True,
-                        )
+                    id__in=hidden_topics.values_list(
+                        "id",
+                        flat=True,
                     )
                 )
             )
@@ -177,6 +272,80 @@ def _article_queryset(
                 )
                 .distinct()
             )
+
+
+        # =================================================
+        # Regions
+        # =================================================
+
+        hidden_regions = (
+            preference
+            .hidden_regions
+            .all()
+        )
+
+        if hidden_regions.exists():
+
+            visible_regions = (
+                Region.objects
+                .filter(
+                    is_active=True
+                )
+                .exclude(
+                    id__in=hidden_regions.values_list(
+                        "id",
+                        flat=True,
+                    )
+                )
+            )
+
+            queryset = (
+                queryset
+                .filter(
+                    Q(
+                        regions__in=visible_regions
+                    )
+                    |
+                    Q(
+                        regions__isnull=True
+                    )
+                )
+                .distinct()
+            )
+
+
+        # =================================================
+        # Sources
+        # =================================================
+
+        hidden_sources = (
+            preference
+            .hidden_sources
+            .all()
+        )
+
+        if hidden_sources.exists():
+
+            visible_sources = (
+                NewsSource.objects
+                .filter(
+                    is_active=True
+                )
+                .exclude(
+                    id__in=hidden_sources.values_list(
+                        "id",
+                        flat=True,
+                    )
+                )
+            )
+
+            queryset = (
+                queryset
+                .filter(
+                    source__in=visible_sources
+                )
+            )
+
 
     return queryset
 
@@ -207,7 +376,6 @@ def _safe_redirect(
     return redirect(
         default
     )
-
 
 def home(request):
 
@@ -252,7 +420,7 @@ def home(request):
         )
 
         articles = (
-            _apply_public_topic_settings(
+            _apply_public_news_settings(
                 articles,
                 public_settings,
             )
@@ -284,7 +452,6 @@ def home(request):
             "latest_digest": latest_digest,
         },
     )
-
 
 def topic_list(request):
 
@@ -422,7 +589,6 @@ def topic_list(request):
         },
     )
 
-
 def topic_detail(
     request,
     slug,
@@ -468,6 +634,17 @@ def topic_detail(
             .filter(
                 topics=topic
             )
+        )
+
+        articles = (
+            _apply_public_news_settings(
+                articles,
+                public_settings,
+            )
+        )
+
+        articles = (
+            articles
             .order_by(
                 "-published_at"
             )[:50]
@@ -545,7 +722,7 @@ def source_detail(
         )
 
         articles = (
-            _apply_public_topic_settings(
+            _apply_public_news_settings(
                 articles,
                 public_settings,
             )
@@ -622,7 +799,7 @@ def region_detail(
         )
 
         articles = (
-            _apply_public_topic_settings(
+            _apply_public_news_settings(
                 articles,
                 public_settings,
             )
@@ -700,7 +877,6 @@ def favorites(request):
         },
     )
 
-
 @login_required
 def toggle_favorite(
     request,
@@ -771,7 +947,6 @@ def toggle_favorite(
         request
     )
 
-
 def settings_view(request):
 
     # =====================================================
@@ -826,12 +1001,48 @@ def settings_view(request):
 
     preference = None
 
+
+    # =====================================================
+    # Active choices
+    # =====================================================
+
     active_topics = (
         Topic.objects
         .filter(
             is_active=True
         )
+        .order_by(
+            "display_order",
+            "name",
+        )
     )
+
+    active_regions = (
+        Region.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
+
+    active_sources = (
+        NewsSource.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "display_order",
+            "name",
+        )
+    )
+
+
+    # =====================================================
+    # Defaults
+    # =====================================================
 
     default_topic_ids = list(
         active_topics.values_list(
@@ -840,6 +1051,24 @@ def settings_view(request):
         )
     )
 
+    default_region_ids = list(
+        active_regions.values_list(
+            "id",
+            flat=True,
+        )
+    )
+
+    default_source_ids = list(
+        active_sources.values_list(
+            "id",
+            flat=True,
+        )
+    )
+
+
+    # =====================================================
+    # POST
+    # =====================================================
 
     if request.method == "POST":
 
@@ -855,65 +1084,121 @@ def settings_view(request):
                 ]
             )
 
+            enabled_regions = (
+                form.cleaned_data[
+                    "enabled_regions"
+                ]
+            )
+
+            enabled_sources = (
+                form.cleaned_data[
+                    "enabled_sources"
+                ]
+            )
+
+
             request.session[
                 "news_public_settings"
             ] = {
+
                 "display_language": (
                     form.cleaned_data[
                         "display_language"
                     ]
                 ),
+
                 "font_size": (
                     form.cleaned_data[
                         "font_size"
                     ]
                 ),
+
                 "enabled_topic_ids": list(
                     enabled_topics.values_list(
                         "id",
                         flat=True,
                     )
                 ),
+
+                "enabled_region_ids": list(
+                    enabled_regions.values_list(
+                        "id",
+                        flat=True,
+                    )
+                ),
+
+                "enabled_source_ids": list(
+                    enabled_sources.values_list(
+                        "id",
+                        flat=True,
+                    )
+                ),
             }
 
+
             request.session.modified = True
+
 
             messages.success(
                 request,
                 "設定を保存しました。"
             )
 
+
             return redirect(
                 "news:settings"
             )
+
+
+    # =====================================================
+    # GET
+    # =====================================================
 
     else:
 
         public_settings = (
             request.session.get(
                 "news_public_settings",
-                {}
+                {},
             )
         )
 
+
         form = NewsSettingsForm(
             initial={
+
                 "display_language": (
                     public_settings.get(
                         "display_language",
                         "ja",
                     )
                 ),
+
                 "font_size": (
                     public_settings.get(
                         "font_size",
                         "medium",
                     )
                 ),
+
                 "enabled_topics": (
                     public_settings.get(
                         "enabled_topic_ids",
                         default_topic_ids,
+                    )
+                ),
+
+                "enabled_regions": (
+                    public_settings.get(
+                        "enabled_region_ids",
+                        default_region_ids,
+                    )
+                ),
+
+                "enabled_sources": (
+                    public_settings.get(
+                        "enabled_source_ids",
+                        default_source_ids,
                     )
                 ),
             }
@@ -928,7 +1213,6 @@ def settings_view(request):
             "preference": preference,
         },
     )
-
 
 def digest_list(request):
 
