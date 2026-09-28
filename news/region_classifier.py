@@ -529,6 +529,34 @@ def contains_alias(
         alias
     )
 
+    # =====================================================
+    # Japanese text
+    #
+    # Python regex treats Japanese characters as \w.
+    # Therefore word-boundary logic such as (?!\w)
+    # incorrectly prevents matches like:
+    #
+    # "スイスで"
+    # "チューリヒ州では"
+    # "フリブール州サンタバン"
+    #
+    # For aliases containing Japanese characters,
+    # use simple substring matching instead.
+    # =====================================================
+
+    if re.search(
+        r"[\u3040-\u30ff\u3400-\u9fff]",
+        alias,
+    ):
+        return alias in text
+
+    # =====================================================
+    # Latin alphabet aliases
+    #
+    # Keep boundary matching so short names such as
+    # "zug" or "bern" do not match inside unrelated words.
+    # =====================================================
+
     pattern = (
         r"(?<!\w)"
         + re.escape(alias)
@@ -542,7 +570,6 @@ def contains_alias(
             flags=re.IGNORECASE,
         )
     )
-
 
 def matching_region_slugs(
     text,
