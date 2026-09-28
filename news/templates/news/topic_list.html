@@ -188,43 +188,375 @@
     </div>
 
 
-    <div class="news-discovery-grid">
+    <!-- =====================================================
+         Switzerland-wide
+         ===================================================== -->
+
+    <a
+        href="{% url 'news:region_detail' 'switzerland' %}"
+        class="news-switzerland-wide-link"
+    >
+
+        <span class="news-switzerland-wide-flag">
+            🇨🇭
+        </span>
+
+        <span>
+
+            <strong>
+                全スイス
+            </strong>
+
+            <small>
+                全国ニュースを見る
+            </small>
+
+        </span>
+
+        <span class="news-switzerland-wide-arrow">
+            →
+        </span>
+
+    </a>
+
+
+    <!-- =====================================================
+         Interactive Switzerland map
+         ===================================================== -->
+
+    <div class="news-region-map-card">
+
+        <div class="news-region-map-header">
+
+            <div>
+
+                <strong>
+                    地図から選ぶ
+                </strong>
+
+                <small>
+                    都市名をタップしてください
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="news-region-map">
+
+            <div class="news-region-map-shape"></div>
+
+
+            <!-- Basel -->
+
+            <a
+                href="{% url 'news:region_detail' 'basel' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 26%;
+                    --map-y: 14%;
+                "
+            >
+                <span></span>
+                Basel
+            </a>
+
+
+            <!-- Schaffhausen -->
+
+            <a
+                href="{% url 'news:region_detail' 'schaffhausen' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 62%;
+                    --map-y: 8%;
+                "
+            >
+                <span></span>
+                Schaffhausen
+            </a>
+
+
+            <!-- Zürich -->
+
+            <a
+                href="{% url 'news:region_detail' 'zurich' %}"
+                class="news-region-map-point news-region-map-point-primary"
+                style="
+                    --map-x: 61%;
+                    --map-y: 23%;
+                "
+            >
+                <span></span>
+                Zürich
+            </a>
+
+
+            <!-- Winterthur -->
+
+            <a
+                href="{% url 'news:region_detail' 'winterthur' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 71%;
+                    --map-y: 17%;
+                "
+            >
+                <span></span>
+                Winterthur
+            </a>
+
+
+            <!-- St. Gallen -->
+
+            <a
+                href="{% url 'news:region_detail' 'st-gallen' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 84%;
+                    --map-y: 27%;
+                "
+            >
+                <span></span>
+                St. Gallen
+            </a>
+
+
+            <!-- Aarau -->
+
+            <a
+                href="{% url 'news:region_detail' 'aarau-aargau' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 47%;
+                    --map-y: 25%;
+                "
+            >
+                <span></span>
+                Aarau
+            </a>
+
+
+            <!-- Zug -->
+
+            <a
+                href="{% url 'news:region_detail' 'zug' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 61%;
+                    --map-y: 34%;
+                "
+            >
+                <span></span>
+                Zug
+            </a>
+
+
+            <!-- Lucerne -->
+
+            <a
+                href="{% url 'news:region_detail' 'lucerne' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 53%;
+                    --map-y: 40%;
+                "
+            >
+                <span></span>
+                Lucerne
+            </a>
+
+
+            <!-- Bern -->
+
+            <a
+                href="{% url 'news:region_detail' 'bern' %}"
+                class="news-region-map-point news-region-map-point-primary"
+                style="
+                    --map-x: 36%;
+                    --map-y: 42%;
+                "
+            >
+                <span></span>
+                Bern
+            </a>
+
+
+            <!-- Biel / Bienne -->
+
+            <a
+                href="{% url 'news:region_detail' 'biel-bienne' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 29%;
+                    --map-y: 32%;
+                "
+            >
+                <span></span>
+                Biel
+            </a>
+
+
+            <!-- Neuchâtel -->
+
+            <a
+                href="{% url 'news:region_detail' 'neuchatel' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 21%;
+                    --map-y: 42%;
+                "
+            >
+                <span></span>
+                Neuchâtel
+            </a>
+
+
+            <!-- Fribourg -->
+
+            <a
+                href="{% url 'news:region_detail' 'fribourg' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 27%;
+                    --map-y: 51%;
+                "
+            >
+                <span></span>
+                Fribourg
+            </a>
+
+
+            <!-- Lausanne -->
+
+            <a
+                href="{% url 'news:region_detail' 'lausanne-vaud' %}"
+                class="news-region-map-point news-region-map-point-primary"
+                style="
+                    --map-x: 17%;
+                    --map-y: 66%;
+                "
+            >
+                <span></span>
+                Lausanne
+            </a>
+
+
+            <!-- Geneva -->
+
+            <a
+                href="{% url 'news:region_detail' 'geneva' %}"
+                class="news-region-map-point news-region-map-point-primary"
+                style="
+                    --map-x: 7%;
+                    --map-y: 79%;
+                "
+            >
+                <span></span>
+                Geneva
+            </a>
+
+
+            <!-- Thun -->
+
+            <a
+                href="{% url 'news:region_detail' 'thun' %}"
+                class="news-region-map-point news-region-map-point-small"
+                style="
+                    --map-x: 40%;
+                    --map-y: 52%;
+                "
+            >
+                <span></span>
+                Thun
+            </a>
+
+
+            <!-- Sion -->
+
+            <a
+                href="{% url 'news:region_detail' 'sion-valais' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 37%;
+                    --map-y: 72%;
+                "
+            >
+                <span></span>
+                Sion
+            </a>
+
+
+            <!-- Chur -->
+
+            <a
+                href="{% url 'news:region_detail' 'chur-graubuenden' %}"
+                class="news-region-map-point"
+                style="
+                    --map-x: 76%;
+                    --map-y: 53%;
+                "
+            >
+                <span></span>
+                Chur
+            </a>
+
+
+            <!-- Lugano -->
+
+            <a
+                href="{% url 'news:region_detail' 'lugano-ticino' %}"
+                class="news-region-map-point news-region-map-point-primary"
+                style="
+                    --map-x: 66%;
+                    --map-y: 84%;
+                "
+            >
+                <span></span>
+                Lugano
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         Region list
+         ===================================================== -->
+
+    <div class="news-region-list-heading">
+
+        <strong>
+            地域一覧
+        </strong>
+
+    </div>
+
+
+    <div class="news-region-list">
 
         {% for region in regions %}
 
-            <a
-                href="{% url 'news:region_detail' region.slug %}"
-                class="news-discovery-card"
-            >
+            {% if region.slug != "switzerland" %}
 
-                <span class="news-discovery-icon">
+                <a
+                    href="{% url 'news:region_detail' region.slug %}"
+                    class="news-region-list-item"
+                >
 
-                    {% if region.icon %}
-
-                        {{ region.icon }}
-
-                    {% else %}
-
-                        📍
-
-                    {% endif %}
-
-                </span>
-
-
-                <span class="news-discovery-content">
-
-                    <strong>
+                    <span>
                         {{ region.name }}
-                    </strong>
+                    </span>
 
-                    <small>
-                        ニュースを見る →
-                    </small>
+                    <span class="news-region-list-arrow">
+                        →
+                    </span>
 
-                </span>
+                </a>
 
-            </a>
+            {% endif %}
 
         {% empty %}
 
