@@ -1,7 +1,5 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.utils import timezone
-
 
 class Command(BaseCommand):
     help = (
@@ -93,10 +91,6 @@ class Command(BaseCommand):
         # Region classification will only process articles
         # fetched after this timestamp.
         # =====================================================
-
-        refresh_started_at = (
-            timezone.now()
-        )
 
 
         self.stdout.write(
@@ -219,10 +213,6 @@ class Command(BaseCommand):
         self._run_step(
             "8/9 Classify news regions",
             "assign_news_regions",
-            since=(
-                refresh_started_at
-                .isoformat()
-            ),
         )
 
 
