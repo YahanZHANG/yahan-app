@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block content %}
 
-{% block html_class %}
-    recipe-font-{{ recipe_font_size }}
-{% endblock %}
+{% block html_class %}recipe-font-{{ recipe_font_size }}{% endblock %}
+
+
+{% block content %}
 
 <link
     rel="stylesheet"
@@ -29,7 +29,6 @@
                 is-active
             {% endif %}"
         >
-
             <span>
                 ホーム
             </span>
@@ -56,11 +55,11 @@
                 is-active
             {% endif %}"
         >
-
             <span>
                 シェフドラム
             </span>
         </a>
+
 
         <a
             href="{% url 'recipes:my_recipes' %}"
@@ -69,7 +68,6 @@
                 is-active
             {% endif %}"
         >
-
             <span>
                 マイレシピ
             </span>
