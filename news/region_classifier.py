@@ -487,10 +487,77 @@ NATIONAL_SUMMARY_ALIASES = [
     "スイス国立銀行",
 ]
 
+# =========================================================
+# Switzerland-wide fallback signals
+#
+# 地域名が見つからず、明確な全国シグナルにも
+# 引っかからなかった記事を補完する。
+#
+# 海外ニュースを誤って全国扱いしないため、
+# 比較的「スイス全国制度」に寄った語だけを使う。
+# =========================================================
+
+NATIONAL_FALLBACK_ALIASES = [
+
+    # Japanese
+    "イニシアチブ",
+    "国民発議",
+    "連邦法",
+    "連邦税",
+    "健康保険料",
+    "健康保険",
+    "基礎保険",
+    "ahv",
+    "iv",
+    "bvg",
+    "年金制度",
+    "兵役",
+    "民間防衛",
+    "連邦予算",
+    "全国調査",
+    "全国世論調査",
+    "スイス全土",
+    "スイス全国",
+    "国内全体",
+
+    # German
+    "volksinitiative",
+    "eidgenössisch",
+    "eidgenoessisch",
+    "krankenkassenprämien",
+    "krankenkassenpraemien",
+    "altersvorsorge",
+
+    # French
+    "initiative populaire",
+    "assurance maladie",
+    "primes maladie",
+
+    # Italian
+    "iniziativa popolare",
+    "assicurazione malattia",
+
+    # English
+    "popular initiative",
+    "health insurance premiums",
+    "nationwide survey",
+]
 
 # =========================================================
 # Helpers
 # =========================================================
+
+def contains_national_fallback_signal(
+    text,
+):
+
+    return any(
+        contains_alias(
+            text,
+            alias,
+        )
+        for alias in NATIONAL_FALLBACK_ALIASES
+    )
 
 def normalize_text(text):
 
@@ -652,8 +719,10 @@ def classify_region_slugs(article):
     2. Explicit other Swiss region in title
     3. National-level signal in title
     4. Strong regional evidence in summary
-    5. Strong national evidence in summary
-    6. Unknown
+    5. Other Swiss region in summary
+    6. Strong national evidence in summary
+    7. Switzerland-wide fallback signal
+    8. Unknown
 
     Important:
     Summary text is deliberately treated as weaker evidence
@@ -771,8 +840,29 @@ def classify_region_slugs(article):
             "switzerland"
         ]
 
+
     # =====================================================
-    # 7. Unknown
+    # 7. Switzerland-wide fallback
+    #
+    # 明確な地域名はないが、
+    # スイス全国制度・全国調査に強く関連する場合。
+    # =====================================================
+
+    combined_text = normalize_text(
+        f"{title_text} {summary_text}"
+    )
+
+    if contains_national_fallback_signal(
+        combined_text
+    ):
+
+        return [
+            "switzerland"
+        ]
+
+
+    # =====================================================
+    # 8. Unknown
     # =====================================================
 
     return [
