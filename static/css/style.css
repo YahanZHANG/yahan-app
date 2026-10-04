@@ -4599,3 +4599,110 @@ button {
     opacity:
         1;
 }
+
+
+/* =========================================================
+   Portal board - Compact
+   ========================================================= */
+
+.portal-board-item-compact {
+    display:
+        block;
+
+    padding:
+        14px
+        16px;
+}
+
+
+.portal-board-item-compact
+.portal-board-title {
+    margin:
+        0;
+
+    font-size:
+        14px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.5;
+}
+
+/* =========================================================
+   Portal board - Compact
+   ========================================================= */
+
+.portal-board-item-compact {
+    display:
+        block;
+
+    padding:
+        13px 15px;
+}
+
+
+.portal-board-item-compact
+.portal-board-title {
+    overflow:
+        hidden;
+
+    margin:
+        0 0 6px;
+
+    font-size:
+        14px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.45;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+.portal-board-meta-compact {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    flex-wrap:
+        nowrap;
+
+    gap:
+        6px;
+
+    overflow:
+        hidden;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        10px;
+
+    white-space:
+        nowrap;
+}
+
+
+.portal-board-meta-compact span {
+    flex:
+        0 0 auto;
+}
+
+
+.portal-board-meta-compact
+.portal-board-dot {
+    opacity:
+        .55;
+}

@@ -179,67 +179,23 @@
 
                     <a
                         href="{% url 'board:post_detail' post.pk %}"
-                        class="portal-board-item"
+                        class="portal-board-item portal-board-item-compact"
                     >
-
-                        <!-- =================================
-                             Top
-                             ================================= -->
-
-                        <div class="portal-board-item-top">
-
-                            <div class="portal-board-tags">
-
-                                {% if post.is_pinned %}
-
-                                    <span class="portal-board-pin">
-                                        📌 固定
-                                    </span>
-
-                                {% endif %}
-
-
-                                {% if post.is_new %}
-
-                                    <span class="portal-board-new">
-                                        NEW
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <time class="portal-board-date">
-                                {{ post.created_at|date:"n.j" }}
-                            </time>
-
-                        </div>
-
-
-                        <!-- =================================
-                             Title
-                             ================================= -->
 
                         <h3 class="portal-board-title">
                             {{ post.title }}
                         </h3>
 
 
-                        <!-- =================================
-                             Body
-                             ================================= -->
+                        <div class="portal-board-meta portal-board-meta-compact">
 
-                        <p class="portal-board-excerpt">
-                            {{ post.body|truncatechars:100 }}
-                        </p>
+                            <span>
+                                {{ post.created_at|date:"n月j日" }}
+                            </span>
 
-
-                        <!-- =================================
-                             Meta
-                             ================================= -->
-
-                        <div class="portal-board-meta">
+                            <span class="portal-board-dot">
+                                ·
+                            </span>
 
                             <span>
                                 {{ post.author|board_name }}
@@ -259,14 +215,10 @@
 
                 {% empty %}
 
-                    <!-- =====================================
-                         Empty state
-                         ===================================== -->
-
                     <div class="portal-board-empty">
 
                         <p>
-                            まだお知らせはありません。
+                            最近のお知らせはありません。
                         </p>
 
                     </div>

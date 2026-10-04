@@ -705,7 +705,7 @@
                                     type="number"
                                     name="duration_option_minutes"
                                     value="{{ minutes }}"
-                                    min="1"
+                                    min="15"
                                     step="15"
                                 >
 
@@ -732,7 +732,7 @@
                                 type="number"
                                 name="duration_option_minutes"
                                 value="60"
-                                min="1"
+                                min="15"
                                 step="15"
                             >
 
@@ -755,7 +755,7 @@
                                 type="number"
                                 name="duration_option_minutes"
                                 value="90"
-                                min="1"
+                                min="15"
                                 step="15"
                             >
 
@@ -779,7 +779,7 @@
                                 type="number"
                                 name="duration_option_minutes"
                                 value="120"
-                                min="1"
+                                min="15"
                                 step="15"
                             >
 
@@ -1768,9 +1768,9 @@ document.addEventListener(
                     <input
                         type="number"
                         name="duration_option_minutes"
-                        min="1"
+                        min="15"
                         step="15"
-                        placeholder="例：180"
+                        placeholder="例：90"
                     >
 
                     <span>
@@ -1807,28 +1807,18 @@ document.addEventListener(
                 }
 
 
-                const rows =
-                    durationOptionList.querySelectorAll(
+                const row =
+                    event.target.closest(
                         ".duration-option-row"
                     );
 
 
-                if (rows.length <= 2) {
-
-                    return;
-
+                if (row) {
+                    row.remove();
                 }
-
-
-                event.target
-                    .closest(
-                        ".duration-option-row"
-                    )
-                    .remove();
 
             }
         );
-
 
         // =====================================================
         // Initial state

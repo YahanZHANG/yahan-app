@@ -1,6 +1,8 @@
 from django.db.models import Count
 from board.models import BoardPost
 from board.permissions import can_post_board
+from datetime import timedelta
+from django.utils import timezone
 
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
@@ -858,16 +860,30 @@ def home(request):
     # Board - Latest posts
     # =====================================================
 
+    two_weeks_ago = (
+        timezone.now()
+        - timedelta(
+            days=14
+        )
+    )
+
+
     board_posts = (
         BoardPost.objects
-        .select_related("author")
+        .filter(
+            created_at__gte=two_weeks_ago,
+        )
+        .select_related(
+            "author"
+        )
         .annotate(
-            comment_count=Count("comments")
+            comment_count=Count(
+                "comments"
+            )
         )
         .order_by(
-            "-is_pinned",
             "-created_at",
-        )[:3]
+        )[:2]
     )
 
     # =====================================================
