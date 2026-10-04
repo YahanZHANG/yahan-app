@@ -1,0 +1,1138 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-response-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-response-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+
+        <p class="event-eyebrow">
+            YOUR RESPONSE
+        </p>
+
+
+        <h1>
+            {{ event.title }}
+        </h1>
+
+
+        <p>
+            参加できる候補を選んでください。
+            回答はあとから変更できます。
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         Errors
+         ===================================================== -->
+
+    {% if errors %}
+
+        <div class="event-form-errors">
+
+            {% for error in errors %}
+
+                <p>
+                    {{ error }}
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+
+        <!-- =================================================
+             Duration voting
+             ================================================= -->
+
+        {% if event.duration_mode == "vote" %}
+
+            <section class="event-response-section event-duration-vote-section">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        DURATION
+                    </p>
+
+                    <h2>
+                        ⏱ 希望する長さ
+                    </h2>
+
+                    <p>
+                        参加できる長さをすべて選んでください。
+                        複数選択できます。
+                    </p>
+
+                </div>
+
+
+                <div class="duration-vote-grid">
+
+                    {% for option in duration_options %}
+
+                        <label class="duration-vote-card">
+
+                            <input
+                                type="checkbox"
+                                name="duration_option"
+                                value="{{ option.id }}"
+                                {% if option.id in selected_duration_option_ids %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <span>
+
+                                <span class="duration-vote-icon">
+                                    ⏱
+                                </span>
+
+                                <strong>
+                                    {{ option.display_label }}
+                                </strong>
+
+                                <small>
+                                    選択
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% elif event.duration_mode == "fixed" %}
+
+            <section class="event-response-summary-card">
+
+                <span class="event-response-summary-icon">
+                    ⏱
+                </span>
+
+                <div>
+
+                    <small>
+                        イベントの長さ
+                    </small>
+
+                    <strong>
+                        {{ event.duration_minutes }}分
+                    </strong>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+
+        
+        <!-- =================================================
+             Legend
+             ================================================= -->
+
+        {% if event.scheduling_mode != "free_input" %}
+
+            <div class="event-response-legend">
+
+                <span class="yes">
+                    ○ 参加できる
+                </span>
+
+                <span class="maybe">
+                    △ 未定
+                </span>
+
+                <span class="no">
+                    × 参加できない
+                </span>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             Date only
+             ================================================= -->
+
+        {% if event.scheduling_mode == "date_only" %}
+
+            <section class="event-response-section">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        DATES
+                    </p>
+
+                    <h2>
+                        📅 参加できる日
+                    </h2>
+
+                    <p>
+                        候補日ごとに回答してください。
+                    </p>
+
+                </div>
+
+
+                <div class="response-date-list">
+
+                    {% for row in date_rows %}
+
+                        <article class="response-date-card">
+
+                            <div class="response-date-heading">
+
+                                <div class="response-date-icon">
+                                    📅
+                                </div>
+
+                                <div>
+
+                                    <h3>
+                                        {{ row.candidate.date|date:"n月j日" }}
+                                    </h3>
+
+                                    <span>
+                                        {{ row.candidate.date|date:"D" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="availability-choice large">
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="date_status_{{ row.candidate.id }}"
+                                        value="yes"
+                                        {% if row.status == "yes" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>○</strong>
+                                        参加できる
+                                    </span>
+
+                                </label>
+
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="date_status_{{ row.candidate.id }}"
+                                        value="maybe"
+                                        {% if row.status == "maybe" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>△</strong>
+                                        未定
+                                    </span>
+
+                                </label>
+
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="date_status_{{ row.candidate.id }}"
+                                        value="no"
+                                        {% if row.status == "no" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>×</strong>
+                                        参加できない
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             Time options
+             ================================================= -->
+
+        {% if event.scheduling_mode == "time_options" %}
+
+            <section class="event-response-section">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        TIME OPTIONS
+                    </p>
+
+                    <h2>
+                        🕐 時間帯を選ぶ
+                    </h2>
+
+                    <p>
+                        日付ごとに、それぞれの時間帯へ回答してください。
+                    </p>
+
+                </div>
+
+
+                <div class="response-date-list">
+
+                    {% for row in date_rows %}
+
+                        <article class="response-date-card">
+
+                            <div class="response-date-heading">
+
+                                <div class="response-date-icon">
+                                    📅
+                                </div>
+
+                                <div>
+
+                                    <h3>
+                                        {{ row.candidate.date|date:"n月j日" }}
+                                    </h3>
+
+                                    <span>
+                                        {{ row.candidate.date|date:"D" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="response-options-list">
+
+                                {% for item in row.options %}
+
+                                    <div class="response-option-row">
+
+                                        <div class="response-option-title">
+
+                                            <strong>
+                                                {{ item.option.label }}
+                                            </strong>
+
+
+                                            {% if item.option.start_time and item.option.end_time %}
+
+                                                <span>
+                                                    {{ item.option.start_time|time:"H:i" }}
+                                                    〜
+                                                    {{ item.option.end_time|time:"H:i" }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span>
+                                                    時刻指定なし
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="availability-choice compact">
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                                    value="yes"
+                                                    {% if item.status == "yes" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    ○
+                                                </span>
+
+                                            </label>
+
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                                    value="maybe"
+                                                    {% if item.status == "maybe" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    △
+                                                </span>
+
+                                            </label>
+
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                                    value="no"
+                                                    {% if item.status == "no" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    ×
+                                                </span>
+
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             Start times
+             ================================================= -->
+
+        {% if event.scheduling_mode == "start_times" %}
+
+            <section class="event-response-section">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        START TIMES
+                    </p>
+
+                    <h2>
+                        ⏰ 開始時刻を選ぶ
+                    </h2>
+
+                </div>
+
+
+                <div class="response-date-list">
+
+                    {% for row in date_rows %}
+
+                        <article class="response-date-card">
+
+                            <div class="response-date-heading">
+
+                                <div class="response-date-icon">
+                                    📅
+                                </div>
+
+                                <div>
+
+                                    <h3>
+                                        {{ row.candidate.date|date:"n月j日" }}
+                                    </h3>
+
+                                    <span>
+                                        {{ row.candidate.date|date:"D" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="response-options-list">
+
+                                {% for item in row.options %}
+
+                                    <div class="response-option-row">
+
+                                        <div class="response-option-title">
+
+                                            <strong class="response-start-time">
+                                                {{ item.option.start_time|time:"H:i" }}
+                                            </strong>
+
+                                            {% if event.duration_mode == "fixed" %}
+
+                                                <span>
+                                                    {{ event.duration_minutes }}分
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="availability-choice compact">
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="start_status_{{ item.option.id }}"
+                                                    value="yes"
+                                                    {% if item.status == "yes" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    ○
+                                                </span>
+
+                                            </label>
+
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="start_status_{{ item.option.id }}"
+                                                    value="maybe"
+                                                    {% if item.status == "maybe" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    △
+                                                </span>
+
+                                            </label>
+
+
+                                            <label>
+
+                                                <input
+                                                    type="radio"
+                                                    name="start_status_{{ item.option.id }}"
+                                                    value="no"
+                                                    {% if item.status == "no" %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <span>
+                                                    ×
+                                                </span>
+
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             Free input
+             ================================================= -->
+
+        {% if event.scheduling_mode == "free_input" %}
+
+            <section class="event-response-section">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        AVAILABILITY
+                    </p>
+
+                    <h2>
+                        ✏️ 空いている時間
+                    </h2>
+
+                    <p>
+                        日ごとに、終日OK・時間指定・参加不可を選んでください。
+                    </p>
+
+                </div>
+
+
+                <div class="response-date-list">
+
+                    {% for row in date_rows %}
+
+                        <article
+                            class="response-date-card free-input-date-card"
+                            data-date-id="{{ row.candidate.id }}"
+                        >
+
+                            <div class="response-date-heading">
+
+                                <div class="response-date-icon">
+                                    📅
+                                </div>
+
+                                <div>
+
+                                    <h3>
+                                        {{ row.candidate.date|date:"n月j日" }}
+                                    </h3>
+
+                                    <span>
+                                        {{ row.candidate.date|date:"D" }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="availability-choice free-input-choice">
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="response_type_{{ row.candidate.id }}"
+                                        value="all_day"
+                                        {% if row.response_type == "all_day" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>○</strong>
+                                        終日OK
+                                    </span>
+
+                                </label>
+
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="response_type_{{ row.candidate.id }}"
+                                        value="partial"
+                                        {% if row.response_type == "partial" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>🕐</strong>
+                                        時間を指定
+                                    </span>
+
+                                </label>
+
+
+                                <label>
+
+                                    <input
+                                        type="radio"
+                                        name="response_type_{{ row.candidate.id }}"
+                                        value="unavailable"
+                                        {% if row.response_type == "unavailable" %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>
+                                        <strong>×</strong>
+                                        参加できない
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+
+                            <div class="free-time-section">
+
+                                <div class="free-time-section-header">
+
+                                    <strong>
+                                        空いている時間
+                                    </strong>
+
+                                    <span>
+                                        複数追加できます
+                                    </span>
+
+                                </div>
+
+
+                                <div class="free-time-list">
+
+                                    {% if row.posted_windows %}
+
+                                        {% for window in row.posted_windows %}
+
+                                            <div class="free-time-row">
+
+                                                <input
+                                                    type="text"
+                                                    name="free_start_{{ row.candidate.id }}"
+                                                    value="{{ window.start }}"
+                                                    placeholder="09:00"
+                                                    inputmode="numeric"
+                                                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                    maxlength="5"
+                                                >
+
+                                                <span>
+                                                    〜
+                                                </span>
+
+                                                <input
+                                                    type="text"
+                                                    name="free_end_{{ row.candidate.id }}"
+                                                    value="{{ window.end }}"
+                                                    placeholder="17:00"
+                                                    inputmode="numeric"
+                                                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                    maxlength="5"
+                                                >
+
+                                                <button
+                                                    type="button"
+                                                    class="remove-free-time"
+                                                >
+                                                    ×
+                                                </button>
+
+                                            </div>
+
+                                        {% endfor %}
+
+
+                                    {% elif row.windows %}
+
+                                        {% for window in row.windows.all %}
+
+                                            <div class="free-time-row">
+
+                                                <input
+                                                    type="text"
+                                                    name="free_start_{{ row.candidate.id }}"
+                                                    value="{{ window.start_time|time:'H:i' }}"
+                                                    placeholder="09:00"
+                                                    inputmode="numeric"
+                                                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                    maxlength="5"
+                                                >
+
+                                                <span>
+                                                    〜
+                                                </span>
+
+                                                <input
+                                                    type="text"
+                                                    name="free_end_{{ row.candidate.id }}"
+                                                    value="{{ window.end_time|time:'H:i' }}"
+                                                    placeholder="17:00"
+                                                    inputmode="numeric"
+                                                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                    maxlength="5"
+                                                >
+
+                                                <button
+                                                    type="button"
+                                                    class="remove-free-time"
+                                                >
+                                                    ×
+                                                </button>
+
+                                            </div>
+
+                                        {% endfor %}
+
+
+                                    {% else %}
+
+                                        <div class="free-time-row">
+
+                                            <input
+                                                type="text"
+                                                name="free_start_{{ row.candidate.id }}"
+                                                placeholder="09:00"
+                                                inputmode="numeric"
+                                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                maxlength="5"
+                                            >
+
+                                            <span>
+                                                〜
+                                            </span>
+
+                                            <input
+                                                type="text"
+                                                name="free_end_{{ row.candidate.id }}"
+                                                placeholder="17:00"
+                                                inputmode="numeric"
+                                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                                maxlength="5"
+                                            >
+
+                                            <button
+                                                type="button"
+                                                class="remove-free-time"
+                                            >
+                                                ×
+                                            </button>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="event-secondary-button add-free-time"
+                                >
+                                    ＋ 時間を追加
+                                </button>
+
+                            </div>
+
+
+                            <div class="event-field free-input-note">
+
+                                <label>
+                                    メモ
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="note_{{ row.candidate.id }}"
+                                    value="{{ row.note }}"
+                                    placeholder="例：できれば午後がいい"
+                                >
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+
+
+        <!-- =================================================
+             Submit
+             ================================================= -->
+
+        <div class="event-response-submit">
+
+            <a
+                href="{% url 'event_scheduler:event_detail' event.id %}"
+                class="event-cancel-link"
+            >
+                キャンセル
+            </a>
+
+
+            <button
+                type="submit"
+                class="event-primary-button event-save-response-button"
+            >
+                ✓ 回答を保存
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- =========================================================
+     JavaScript
+     ========================================================= -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        // =====================================================
+        // Free input visibility
+        // =====================================================
+
+        document
+            .querySelectorAll(
+                ".free-input-date-card"
+            )
+            .forEach(
+                function (card) {
+
+                    const radios =
+                        card.querySelectorAll(
+                            'input[type="radio"]'
+                        );
+
+                    const freeTimeSection =
+                        card.querySelector(
+                            ".free-time-section"
+                        );
+
+
+                    function updateVisibility() {
+
+                        const selected =
+                            card.querySelector(
+                                'input[type="radio"]:checked'
+                            );
+
+
+                        freeTimeSection.style.display =
+                            (
+                                selected
+                                &&
+                                selected.value === "partial"
+                            )
+                                ? "block"
+                                : "none";
+
+                    }
+
+
+                    radios.forEach(
+                        function (radio) {
+
+                            radio.addEventListener(
+                                "change",
+                                updateVisibility
+                            );
+
+                        }
+                    );
+
+
+                    updateVisibility();
+
+                }
+            );
+
+
+        // =====================================================
+        // Add free time
+        // =====================================================
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target.classList.contains(
+                        "add-free-time"
+                    )
+                ) {
+
+                    const card =
+                        event.target.closest(
+                            ".free-input-date-card"
+                        );
+
+                    const dateId =
+                        card.dataset.dateId;
+
+                    const list =
+                        card.querySelector(
+                            ".free-time-list"
+                        );
+
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+                    row.className =
+                        "free-time-row";
+
+
+                    row.innerHTML = `
+                        <input
+                            type="text"
+                            name="free_start_${dateId}"
+                            placeholder="09:00"
+                            inputmode="numeric"
+                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                            maxlength="5"
+                        >
+
+                        <span>
+                            〜
+                        </span>
+
+                        <input
+                            type="text"
+                            name="free_end_${dateId}"
+                            placeholder="17:00"
+                            inputmode="numeric"
+                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                            maxlength="5"
+                        >
+
+                        <button
+                            type="button"
+                            class="remove-free-time"
+                        >
+                            ×
+                        </button>
+                    `;
+
+
+                    list.appendChild(
+                        row
+                    );
+
+                }
+
+
+                if (
+                    event.target.classList.contains(
+                        "remove-free-time"
+                    )
+                ) {
+
+                    const list =
+                        event.target.closest(
+                            ".free-time-list"
+                        );
+
+                    const rows =
+                        list.querySelectorAll(
+                            ".free-time-row"
+                        );
+
+
+                    if (rows.length <= 1) {
+
+                        rows[0]
+                            .querySelectorAll(
+                                "input"
+                            )
+                            .forEach(
+                                function (input) {
+
+                                    input.value =
+                                        "";
+
+                                }
+                            );
+
+                        return;
+
+                    }
+
+
+                    event.target
+                        .closest(
+                            ".free-time-row"
+                        )
+                        .remove();
+
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}

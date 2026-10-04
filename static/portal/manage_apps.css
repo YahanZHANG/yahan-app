@@ -1656,3 +1656,21 @@
     }
 
 }
+
+
+.manage-app-icon-events {
+    background:
+        #f1efff;
+
+    color:
+        #7465d5;
+}
+
+
+.manage-app-icon-chat {
+    background:
+        #edf7ff;
+
+    color:
+        #478fbe;
+}

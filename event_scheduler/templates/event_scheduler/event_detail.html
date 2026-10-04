@@ -1,0 +1,883 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-header">
+
+        <p class="event-eyebrow">
+            EVENT
+        </p>
+
+
+        <h1>
+            {{ event.title }}
+        </h1>
+
+
+        {% if event.description %}
+
+            <p class="event-description">
+                {{ event.description|linebreaksbr }}
+            </p>
+
+        {% endif %}
+
+
+        <div class="event-meta">
+
+            {% if event.location %}
+
+                <div>
+                    📍 {{ event.location }}
+                </div>
+
+            {% endif %}
+
+
+            <div>
+                📅 {{ event.get_scheduling_mode_display }}
+            </div>
+
+
+            <div>
+
+                {% if event.duration_mode == "none" %}
+
+                    ⏱ 長さ指定なし
+
+                {% elif event.duration_mode == "fixed" %}
+
+                    ⏱ {{ event.duration_minutes }}分
+
+                {% elif event.duration_mode == "vote" %}
+
+                    🗳 長さもみんなで決定
+
+                {% endif %}
+
+            </div>
+
+
+            <div>
+
+                {% if event.is_public %}
+
+                    🌍 公開イベント
+
+                {% else %}
+
+                    🔒 招待制
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+        Admin invitation
+        ===================================================== -->
+
+    {% if my_admin_invitation %}
+
+        <section class="event-admin-invitation-card">
+
+            <div>
+
+                <p class="event-section-eyebrow">
+                    ADMIN INVITATION
+                </p>
+
+                <h2>
+                    👥 共同管理者に招待されています
+                </h2>
+
+                <p>
+                    このイベントの管理・日程調整を
+                    他の管理者と一緒に行えます。
+                </p>
+
+            </div>
+
+
+            <div class="event-admin-invitation-actions">
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:event_admin_invitation_accept' my_admin_invitation.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-primary-button"
+                    >
+                        承認する
+                    </button>
+
+                </form>
+
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:event_admin_invitation_decline' my_admin_invitation.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-secondary-button"
+                    >
+                        辞退する
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+    <!-- =====================================================
+         Bottom
+         ===================================================== -->
+
+    <div class="event-bottom-actions">
+
+        <a href="{% url 'event_scheduler:event_list' %}">
+            ← イベント一覧に戻る
+        </a>
+
+        <p> 
+
+        </p>
+
+    </div>
+    
+    <!-- =====================================================
+         Join
+         ===================================================== -->
+
+    {% if event.is_public %}
+
+        {% if not participant %}
+
+            <section class="event-answer-action">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        JOIN
+                    </p>
+
+                    <h2>
+                        このイベントに参加
+                    </h2>
+
+                    <p>
+                        参加すると、候補日への回答ができます。
+                    </p>
+
+                </div>
+
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:join_event' event.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-primary-button"
+                    >
+                        ＋ 参加する
+                    </button>
+
+                </form>
+
+            </section>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Answer
+         ===================================================== -->
+
+    {% if participant %}
+
+        {% if participant.status == "joined" %}
+
+            <section class="event-answer-action">
+
+                <div class="event-section-header">
+
+                    <p class="event-section-eyebrow">
+                        YOUR RESPONSE
+                    </p>
+
+                    <h2>
+                        あなたの回答
+                    </h2>
+
+                    <p>
+                        回答はあとから変更できます。
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{% url 'event_scheduler:event_respond' event.id %}"
+                    class="event-primary-button"
+                >
+                    ✓ 回答する
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Recommendations
+         ===================================================== -->
+
+    {% if recommendations %}
+
+        <section class="event-recommendations">
+
+            <div class="event-section-header">
+
+                <p class="event-section-eyebrow">
+                    RECOMMENDED
+                </p>
+
+                <h2>
+                    ✨ おすすめ
+                </h2>
+
+                <p>
+                    みんなの回答から参加しやすい候補を表示しています。
+                </p>
+
+            </div>
+
+
+            {% with best=recommendations.0 %}
+
+                <div class="event-best-slot">
+
+                    <span class="event-best-badge">
+                        BEST
+                    </span>
+
+
+                    {% if best.date %}
+
+                        <div class="event-best-date">
+                            {{ best.date|date:"n月j日" }}
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if best.label %}
+
+                        <div class="event-best-time">
+                            {{ best.label }}
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if best.start_time %}
+
+                        <div class="event-best-time">
+
+                            {{ best.start_time|time:"H:i" }}
+
+                            {% if best.end_time %}
+
+                                〜
+                                {{ best.end_time|time:"H:i" }}
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if best.yes_count != None %}
+
+                        <div class="event-best-count">
+
+                            {{ best.yes_count }}
+                            /
+                            {{ best.participant_count }}
+                            人参加可能
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if best.unanswered_count %}
+
+                        <div class="event-best-unanswered">
+
+                            未回答
+                            {{ best.unanswered_count }}
+                            人
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endwith %}
+
+
+            {% if recommendations|length > 1 %}
+
+                <div class="event-other-slots">
+
+                    <h3>
+                        その他の候補
+                    </h3>
+
+
+                    {% for recommendation in recommendations|slice:"1:5" %}
+
+                        <div class="event-other-slot">
+
+                            <span>
+
+                                {% if recommendation.date %}
+
+                                    {{ recommendation.date|date:"n月j日" }}
+
+                                {% endif %}
+
+                                {% if recommendation.label %}
+
+                                    ・{{ recommendation.label }}
+
+                                {% endif %}
+
+                                {% if recommendation.start_time %}
+
+                                    ・
+                                    {{ recommendation.start_time|time:"H:i" }}
+
+                                {% endif %}
+
+                            </span>
+
+
+                            {% if recommendation.yes_count != None %}
+
+                                <strong>
+
+                                    {{ recommendation.yes_count }}
+                                    /
+                                    {{ recommendation.participant_count }}
+                                    人
+
+                                </strong>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Candidate dates
+         ===================================================== -->
+
+    <section class="event-candidates">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                DATES
+            </p>
+
+            <h2>
+                候補日
+            </h2>
+
+
+            {% if event.scheduling_mode == "date_only" %}
+
+                <p>
+                    日付ごとに参加できるか回答します。
+                </p>
+
+            {% elif event.scheduling_mode == "time_options" %}
+
+                <p>
+                    候補日ごとに時間帯を選んで回答します。
+                </p>
+
+            {% elif event.scheduling_mode == "start_times" %}
+
+
+            {% elif event.scheduling_mode == "free_input" %}
+
+                <p>
+                    候補日ごとに空いている時間を入力します。
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="event-candidate-list">
+
+            {% for candidate in event.candidate_dates.all %}
+
+                <div class="event-candidate-date">
+
+                    <div>
+
+                        <div class="event-candidate-date-main">
+
+                            <span>
+                                📅
+                            </span>
+
+                            <span class="event-candidate-date-label">
+                                {{ candidate.date|date:"n月j日" }}
+                            </span>
+
+                            <span class="event-candidate-date-weekday">
+                                {{ candidate.date|date:"D" }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- =====================================
+                             Start time options
+                             ===================================== -->
+
+                        {% if event.scheduling_mode == "start_times" %}
+
+                            <div class="event-detail-option-list">
+
+                                {% for option in candidate.start_time_options.all %}
+
+                                    <span class="event-detail-option-pill">
+                                        {{ option.start_time|time:"H:i" }}
+                                    </span>
+
+                                {% empty %}
+
+                                    <span class="event-detail-option-empty">
+                                        開始時刻なし
+                                    </span>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="event-empty-card compact">
+
+                    <div class="event-empty-icon">
+                        🗓️
+                    </div>
+
+                    <p>
+                        まだ候補日がありません。
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% if can_manage or event.allow_participant_date_addition %}
+
+            {% if participant or can_manage %}
+
+                <a
+                    href="{% url 'event_scheduler:event_date_add' event.id %}"
+                    class="event-add-date-button"
+                >
+                    ＋ 候補日を追加
+                </a>
+
+            {% endif %}
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         Time options
+         ===================================================== -->
+
+    {% if event.scheduling_mode == "time_options" %}
+
+        <section class="event-info">
+
+            <div class="event-section-header">
+
+                <p class="event-section-eyebrow">
+                    TIME OPTIONS
+                </p>
+
+                <h2>
+                    時間帯
+                </h2>
+
+            </div>
+
+
+            <div class="event-detail-option-list large">
+
+                {% for option in event.time_options.all %}
+
+                    <div class="event-detail-time-card">
+
+                        <strong>
+                            {{ option.label }}
+                        </strong>
+
+
+                        {% if option.start_time and option.end_time %}
+
+                            <span>
+
+                                {{ option.start_time|time:"H:i" }}
+                                〜
+                                {{ option.end_time|time:"H:i" }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span>
+                                時刻指定なし
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="event-detail-option-empty">
+                        時間帯が設定されていません。
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Duration
+         ===================================================== -->
+
+    <section class="event-info">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                DURATION
+            </p>
+
+            <h2>
+                イベントの長さ
+            </h2>
+
+        </div>
+
+
+        {% if event.duration_mode == "none" %}
+
+            <div class="event-duration-summary">
+
+                <div class="event-duration-summary-icon">
+                    ➖
+                </div>
+
+                <div>
+
+                    <strong>
+                        指定なし
+                    </strong>
+
+                    <p>
+                        このイベントでは長さを決めません。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        {% elif event.duration_mode == "fixed" %}
+
+            <div class="event-duration-summary">
+
+                <div class="event-duration-summary-icon">
+                    ⏱
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ event.duration_minutes }}分
+                    </strong>
+
+                    <p>
+                        イベント作成者が決めた長さです。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        {% elif event.duration_mode == "vote" %}
+
+            <div class="event-duration-summary">
+
+                <div class="event-duration-summary-icon">
+                    🗳
+                </div>
+
+                <div>
+
+                    <strong>
+                        みんなで決める
+                    </strong>
+
+                    <p>
+                        参加できる長さを複数選択できます。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="event-detail-option-list duration">
+
+                {% for option in event.duration_options.all %}
+
+                    <span class="event-detail-option-pill duration">
+                        ⏱ {{ option.display_label }}
+                    </span>
+
+                {% empty %}
+
+                    <span class="event-detail-option-empty">
+                        長さの候補がありません。
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- =====================================================
+        Admin
+        ===================================================== -->
+
+    {% if can_manage %}
+
+        <section class="event-info">
+
+            <div class="event-section-header">
+
+                <p class="event-section-eyebrow">
+                    ADMIN
+                </p>
+
+                <h2>
+                    管理
+                </h2>
+
+                <p>
+                    このイベントには
+                    {{ admin_count }}人の管理者がいます。
+                </p>
+
+            </div>
+
+
+            <div class="event-admin-actions">
+
+                <a
+                    href="{% url 'event_scheduler:event_admins' event.id %}"
+                    class="event-primary-button"
+                >
+                    👥 管理者を管理
+                </a>
+
+
+                <a
+                    href="{% url 'event_scheduler:event_date_add' event.id %}"
+                    class="event-secondary-button"
+                >
+                    ＋ 候補日を追加
+                </a>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    {% if can_manage %}
+
+        <section class="event-info event-danger-section">
+
+            <div class="event-section-header">
+
+                <p class="event-section-eyebrow">
+                    EVENT MANAGEMENT
+                </p>
+
+                <h2>
+                    イベントの管理
+                </h2>
+
+            </div>
+
+
+            {% if event.is_archived %}
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:event_restore' event.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-secondary-button"
+                    >
+                        ↩ アーカイブから戻す
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:event_archive' event.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-archive-button"
+                    >
+                        📦 イベントをアーカイブ
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+
+            {% if request.user == event.creator %}
+
+                <div class="event-delete-area">
+
+                    <a
+                        href="{% url 'event_scheduler:event_delete' event.id %}"
+                        class="event-delete-link"
+                    >
+                        イベントを完全に削除
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% endif %}
+
+    <!-- =====================================================
+         Bottom
+         ===================================================== -->
+
+    <div class="event-bottom-actions">
+
+        <a href="{% url 'event_scheduler:event_list' %}">
+            ← イベント一覧に戻る
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-list-header">
+
+        <div>
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="event-response-back"
+            >
+                ← Portalに戻る
+            </a>
+
+            <p class="event-eyebrow">
+                EVENTS
+            </p>
+
+            <h1>
+                イベント
+            </h1>
+
+            <p class="event-list-subtitle">
+                予定を作ったり、
+                みんなの日程を合わせたりできます。
+            </p>
+
+        </div>
+
+
+        <div class="event-list-header-actions">
+
+            <a
+                href="{% url 'event_scheduler:archived_event_list' %}"
+                class="event-archive-link"
+            >
+                📦 アーカイブ
+            </a>
+
+
+            <a
+                href="{% url 'event_scheduler:event_create' %}"
+                class="event-primary-button"
+            >
+                ＋ イベントを作成
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         My events
+         ===================================================== -->
+
+    <section class="event-list-section">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                MY EVENTS
+            </p>
+
+            <h2>
+                あなたのイベント
+            </h2>
+
+            <p>
+                参加中・管理中のイベントです。
+            </p>
+
+        </div>
+
+
+        <div class="event-card-list">
+
+            {% for event in events %}
+
+                <a
+                    href="{% url 'event_scheduler:event_detail' event.id %}"
+                    class="event-list-card"
+                >
+
+                    <!-- =====================================
+                         Main
+                         ===================================== -->
+
+                    <div class="event-list-card-main">
+
+                        <div class="event-list-card-icon">
+
+                            {% if event.scheduling_mode == "date_only" %}
+
+                                📅
+
+                            {% elif event.scheduling_mode == "time_options" %}
+
+                                🕐
+
+                            {% elif event.scheduling_mode == "start_times" %}
+
+                                ⏰
+
+                            {% elif event.scheduling_mode == "free_input" %}
+
+                                ✏️
+
+                            {% else %}
+
+                                📆
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="event-list-card-content">
+
+                            <h3>
+                                {{ event.title }}
+                            </h3>
+
+
+                            <!-- =============================
+                                 Meta
+                                 ============================= -->
+
+                            <div class="event-list-card-meta">
+
+                                {% if event.location %}
+
+                                    <span>
+                                        📍 {{ event.location }}
+                                    </span>
+
+                                {% endif %}
+
+
+                                <span>
+                                    📅
+                                    {{ event.get_scheduling_mode_display }}
+                                </span>
+
+
+                                {% if event.duration_mode == "none" %}
+
+                                    <span>
+                                        ⏱ 長さ指定なし
+                                    </span>
+
+                                {% elif event.duration_mode == "fixed" %}
+
+                                    <span>
+                                        ⏱ {{ event.duration_minutes }}分
+                                    </span>
+
+                                {% elif event.duration_mode == "vote" %}
+
+                                    <span>
+                                        🗳 長さもみんなで決定
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- =============================
+                                 Deadline
+                                 ============================= -->
+
+                            {% if event.response_deadline %}
+
+                                <div class="event-list-deadline">
+
+                                    回答締切：
+                                    {{ event.response_deadline|date:"n月j日" }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- =============================
+                                 Description
+                                 ============================= -->
+
+                            {% if event.description %}
+
+                                <p class="event-list-description">
+
+                                    {{ event.description|truncatechars:90 }}
+
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         Right side
+                         ===================================== -->
+
+                    <div class="event-list-card-side">
+
+                        {% if event.is_public %}
+
+                            <span class="event-status-pill public">
+                                公開
+                            </span>
+
+                        {% else %}
+
+                            <span class="event-status-pill private">
+                                招待制
+                            </span>
+
+                        {% endif %}
+
+
+                        <span class="event-card-arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+                </a>
+
+            {% empty %}
+
+                <div class="event-empty-card">
+
+                    <div class="event-empty-icon">
+                        🗓️
+                    </div>
+
+                    <h3>
+                        まだイベントがありません
+                    </h3>
+
+                    <a
+                        href="{% url 'event_scheduler:event_create' %}"
+                        class="event-secondary-button"
+                    >
+                        ＋ イベントを作成
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Public events
+         ===================================================== -->
+
+    <section class="event-list-section">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                DISCOVER
+            </p>
+
+            <h2>
+                公開イベント
+            </h2>
+
+            <p>
+                まだ参加していない公開イベントです。
+            </p>
+
+        </div>
+
+
+        <div class="event-card-list">
+
+            {% for event in public_events %}
+
+                <div class="event-list-card public-event-card">
+
+                    <!-- =====================================
+                         Event link
+                         ===================================== -->
+
+                    <a
+                        href="{% url 'event_scheduler:event_detail' event.id %}"
+                        class="event-list-card-main"
+                    >
+
+                        <div class="event-list-card-icon public">
+
+                            🌍
+
+                        </div>
+
+
+                        <div class="event-list-card-content">
+
+                            <h3>
+                                {{ event.title }}
+                            </h3>
+
+
+                            <div class="event-list-card-meta">
+
+                                {% if event.location %}
+
+                                    <span>
+                                        📍 {{ event.location }}
+                                    </span>
+
+                                {% endif %}
+
+
+                                <span>
+                                    📅
+                                    {{ event.get_scheduling_mode_display }}
+                                </span>
+
+
+                                {% if event.duration_mode == "none" %}
+
+                                    <span>
+                                        ⏱ 長さ指定なし
+                                    </span>
+
+                                {% elif event.duration_mode == "fixed" %}
+
+                                    <span>
+                                        ⏱ {{ event.duration_minutes }}分
+                                    </span>
+
+                                {% elif event.duration_mode == "vote" %}
+
+                                    <span>
+                                        🗳 長さもみんなで決定
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if event.response_deadline %}
+
+                                <div class="event-list-deadline">
+
+                                    回答締切：
+                                    {{ event.response_deadline|date:"n月j日" }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if event.description %}
+
+                                <p class="event-list-description">
+
+                                    {{ event.description|truncatechars:90 }}
+
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- =====================================
+                         Join
+                         ===================================== -->
+
+                    <form
+                        method="post"
+                        action="{% url 'event_scheduler:join_event' event.id %}"
+                        class="event-list-join-form"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="event-join-button"
+                        >
+                            参加する
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% empty %}
+
+                <div class="event-empty-card compact">
+
+                    <div class="event-empty-icon">
+                        🌱
+                    </div>
+
+                    <h3>
+                        公開イベントはありません
+                    </h3>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Archive shortcut
+         ===================================================== -->
+
+    <section class="event-list-archive-shortcut">
+
+        <div>
+
+            <span class="event-list-archive-shortcut-icon">
+                📦
+            </span>
+
+
+            <div>
+
+                <strong>
+                    過去のイベント
+                </strong>
+
+                <p>
+                    アーカイブしたイベントや過去の回答を確認できます。
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{% url 'event_scheduler:archived_event_list' %}"
+            class="event-secondary-button"
+        >
+            アーカイブを見る
+        </a>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     "board.apps.BoardConfig",
     # チャット
     "chat.apps.ChatConfig",
+    # イベント・日程調整
+    "event_scheduler.apps.EventSchedulerConfig",
 
     "usage_analytics.apps.UsageAnalyticsConfig",
 ]

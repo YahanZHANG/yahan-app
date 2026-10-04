@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-list-header">
+
+        <div>
+
+            <a
+                href="{% url 'event_scheduler:event_list' %}"
+                class="event-response-back"
+            >
+                ← イベント一覧に戻る
+            </a>
+
+
+            <p class="event-eyebrow">
+                ARCHIVED EVENTS
+            </p>
+
+
+            <h1>
+                アーカイブ
+            </h1>
+
+
+            <p class="event-list-subtitle">
+                終了したイベントや、
+                一覧から非表示にしたイベントです。
+            </p>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Archived events
+         ===================================================== -->
+
+    <section class="event-list-section">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                ARCHIVE
+            </p>
+
+            <h2>
+                アーカイブ済みイベント
+            </h2>
+
+            <p>
+                過去の回答や候補日はそのまま保存されています。
+            </p>
+
+        </div>
+
+
+        <div class="event-card-list">
+
+            {% for row in event_rows %}
+
+                <div class="event-list-card archived-event-card">
+
+                    <a
+                        href="{% url 'event_scheduler:event_detail' row.event.id %}"
+                        class="event-list-card-main"
+                    >
+
+                        <div class="event-list-card-icon archived">
+
+                            📦
+
+                        </div>
+
+
+                        <div class="event-list-card-content">
+
+                            <div class="archived-event-title-row">
+
+                                <h3>
+                                    {{ row.event.title }}
+                                </h3>
+
+
+                                <span class="event-status-pill archived">
+                                    アーカイブ
+                                </span>
+
+                            </div>
+
+
+                            <div class="event-list-card-meta">
+
+                                {% if row.event.location %}
+
+                                    <span>
+                                        📍 {{ row.event.location }}
+                                    </span>
+
+                                {% endif %}
+
+
+                                <span>
+                                    📅
+                                    {{ row.event.get_scheduling_mode_display }}
+                                </span>
+
+
+                                {% if row.event.archived_at %}
+
+                                    <span>
+                                        📦
+                                        {{ row.event.archived_at|date:"Y年n月j日" }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if row.event.description %}
+
+                                <p class="event-list-description">
+
+                                    {{ row.event.description|truncatechars:90 }}
+
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </a>
+
+
+                    <div class="archived-event-actions">
+
+                        {% if row.can_manage %}
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_restore' row.event.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-restore-button"
+                                >
+                                    ↩ 復元
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+
+                        <a
+                            href="{% url 'event_scheduler:event_detail' row.event.id %}"
+                            class="event-secondary-button"
+                        >
+                            詳細を見る
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="event-empty-card">
+
+                    <div class="event-empty-icon">
+                        📭
+                    </div>
+
+                    <h3>
+                        アーカイブは空です
+                    </h3>
+
+                    <p>
+                        アーカイブしたイベントがここに表示されます。
+                    </p>
+
+
+                    <a
+                        href="{% url 'event_scheduler:event_list' %}"
+                        class="event-secondary-button"
+                    >
+                        イベント一覧に戻る
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -4516,3 +4516,86 @@ button {
     }
 
 }
+
+/* =========================================================
+   Events card
+   ========================================================= */
+
+.portal-events-card {
+    border-color:
+        #dfe2ee;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f7f6fc,
+            #ffffff
+        );
+}
+
+
+.portal-events-card::before {
+    background:
+        #e5e1f4;
+}
+
+
+.portal-events-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #f0edf8,
+            #e6e1f3
+        );
+}
+
+
+.portal-events-card .portal-card-label {
+    color:
+        #746b8d;
+
+    opacity:
+        1;
+}
+
+
+/* =========================================================
+   Chat card
+   ========================================================= */
+
+.portal-chat-app-card {
+    border-color:
+        #dce8ed;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f4f9fb,
+            #ffffff
+        );
+}
+
+
+.portal-chat-app-card::before {
+    background:
+        #dcecf2;
+}
+
+
+.portal-chat-app-icon {
+    background:
+        linear-gradient(
+            145deg,
+            #e8f3f7,
+            #dcecf2
+        );
+}
+
+
+.portal-chat-app-card .portal-card-label {
+    color:
+        #607f8e;
+
+    opacity:
+        1;
+}

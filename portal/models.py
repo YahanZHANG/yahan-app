@@ -9,12 +9,46 @@ class PortalAppPreference(models.Model):
     """
 
     class AppKey(models.TextChoices):
-        NEWS = "news", "スイスニュース"
-        FEEDING = "feeding", "子育て（離乳食記録）"
-        VACCINATION = "vaccination", "子育て（ワクチン記録）"
-        RECIPES = "recipes", "料理・レシピ"
-        GAMES = "games", "ミニゲーム"
-        COLORCHECK = "colorcheck", "色判定"
+
+        NEWS = (
+            "news",
+            "スイスニュース",
+        )
+
+        FEEDING = (
+            "feeding",
+            "子育て（離乳食記録）",
+        )
+
+        VACCINATION = (
+            "vaccination",
+            "子育て（ワクチン記録）",
+        )
+
+        RECIPES = (
+            "recipes",
+            "料理・レシピ",
+        )
+
+        GAMES = (
+            "games",
+            "ミニゲーム",
+        )
+
+        COLORCHECK = (
+            "colorcheck",
+            "色判定",
+        )
+
+        EVENTS = (
+            "events",
+            "イベント・日程調整",
+        )
+
+        CHAT = (
+            "chat",
+            "チャット",
+        )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

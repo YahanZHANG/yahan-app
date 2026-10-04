@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-create-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-create-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+
+        <p class="event-eyebrow">
+            ADD DATE
+        </p>
+
+
+        <h1>
+            候補日を追加
+        </h1>
+
+    </header>
+
+
+    <!-- =====================================================
+         Current dates
+         ===================================================== -->
+
+    {% if event.candidate_dates.all %}
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <div>
+
+                    <p class="event-section-eyebrow">
+                        CURRENT DATES
+                    </p>
+
+                    <h2>
+                        現在の候補日
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="event-date-preview-list">
+
+                {% for candidate in event.candidate_dates.all %}
+
+                    <div class="event-date-preview-pill">
+
+                        <span>
+                            📅
+                        </span>
+
+                        <strong>
+                            {{ candidate.date|date:"n月j日" }}
+                        </strong>
+
+                        <small>
+                            {{ candidate.date|date:"D" }}
+                        </small>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Add date
+         ===================================================== -->
+
+    <section class="event-create-section event-add-date-card">
+
+        <div class="event-create-section-header">
+
+            <div class="event-add-date-icon">
+                ＋
+            </div>
+
+
+            <div>
+
+                <h2>
+                    新しい候補日
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+
+            {% if form.non_field_errors %}
+
+                <div class="event-form-errors">
+
+                    {% for error in form.non_field_errors %}
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.date.id_for_label }}"
+                >
+                    候補日
+                </label>
+
+
+                {{ form.date }}
+
+
+                {% if form.date.errors %}
+
+                    <div class="event-field-errors">
+
+                        {{ form.date.errors }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="event-create-actions">
+
+                <a
+                    href="{% url 'event_scheduler:event_detail' event.id %}"
+                    class="event-cancel-link"
+                >
+                    キャンセル
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="event-primary-button"
+                >
+                    ＋ 候補日を追加
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

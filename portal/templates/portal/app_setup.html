@@ -246,6 +246,12 @@
                             {% elif checkbox.data.value == "colorcheck" %}
                                 🎨
 
+                            {% elif checkbox.data.value == "events" %}
+                                📅
+
+                            {% elif checkbox.data.value == "chat" %}
+                                💬
+
                             {% endif %}
 
                         </div>
@@ -292,6 +298,15 @@
                                             色の認識に悩む方のために。
                                             気になる色の情報を3段階の細かさで簡単に確認。
 
+                                        {% elif checkbox.data.value == "events" %}
+
+                                            イベントを作成して、みんなの予定を簡単に調整。
+                                            候補日や時間、イベントの長さもまとめて決められる。
+
+                                        {% elif checkbox.data.value == "chat" %}
+
+                                            ユーザー同士でメッセージできる。
+                                         
                                         {% endif %}
 
                                     </p>
@@ -331,6 +346,14 @@
 
                                 {% elif checkbox.data.value == "colorcheck" %}
                                     COLOR CHECKER
+                                
+                                {% elif checkbox.data.value == "events" %}
+
+                                    EVENT SCHEDULER
+
+                                {% elif checkbox.data.value == "chat" %}
+
+                                    CHAT
 
                                 {% endif %}
 

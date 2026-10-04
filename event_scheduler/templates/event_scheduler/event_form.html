@@ -1,0 +1,1845 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+<div class="event-create-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-create-header">
+
+        <p class="event-eyebrow">
+            NEW EVENT
+        </p>
+
+        <h1>
+            イベントを作成
+        </h1>
+
+        <p>
+            みんなの予定を合わせて、
+            一番参加しやすい日程を決めよう。
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         Form
+         ===================================================== -->
+
+    <form
+        method="post"
+        id="event-create-form"
+    >
+
+        {% csrf_token %}
+
+
+        <!-- =================================================
+             Errors
+             ================================================= -->
+
+        {% if form.non_field_errors %}
+
+            <div class="event-form-errors">
+
+                {% for error in form.non_field_errors %}
+
+                    <p>
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             1. Basic information
+             ================================================= -->
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <span class="event-step-number">
+                    1
+                </span>
+
+                <div>
+
+                    <h2>
+                        基本情報
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.title.id_for_label }}"
+                >
+                    イベント名
+                </label>
+
+                {{ form.title }}
+
+                {% if form.title.errors %}
+
+                    <div class="event-field-errors">
+                        {{ form.title.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.description.id_for_label }}"
+                >
+                    説明
+                </label>
+
+                {{ form.description }}
+
+                {% if form.description.errors %}
+
+                    <div class="event-field-errors">
+                        {{ form.description.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.location.id_for_label }}"
+                >
+                    場所
+                </label>
+
+                {{ form.location }}
+
+                {% if form.location.errors %}
+
+                    <div class="event-field-errors">
+                        {{ form.location.errors }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             2. Candidate dates
+             ================================================= -->
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <span class="event-step-number">
+                    2
+                </span>
+
+                <div>
+
+                    <h2>
+                        候補日
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="candidate-date-list"
+                class="event-candidate-date-list"
+            >
+
+                {% if posted_candidate_dates %}
+
+                    {% for candidate_date in posted_candidate_dates %}
+
+                        <div
+                            class="candidate-date-row"
+                        >
+
+                            <input
+                                type="date"
+                                name="candidate_date"
+                                class="candidate-date-input"
+                                value="{{ candidate_date }}"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="remove-candidate-date"
+                                aria-label="候補日を削除"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div
+                        class="candidate-date-row"
+                    >
+
+                        <input
+                            type="date"
+                            name="candidate_date"
+                            class="candidate-date-input"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="remove-candidate-date"
+                            aria-label="候補日を削除"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <button
+                type="button"
+                id="add-candidate-date"
+                class="event-secondary-button"
+            >
+                ＋ 候補日を追加
+            </button>
+
+        </section>
+
+
+        <!-- =================================================
+             3. Scheduling method
+             ================================================= -->
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <span class="event-step-number">
+                    3
+                </span>
+
+                <div>
+
+                    <h2>
+                        日程の決め方
+                    </h2>
+
+                    <p>
+                        このイベントに合う方法を選んでください。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if form.scheduling_mode.errors %}
+
+                <div class="event-field-errors">
+                    {{ form.scheduling_mode.errors }}
+                </div>
+
+            {% endif %}
+
+
+            <div class="scheduling-mode-list">
+
+                {% for radio in form.scheduling_mode %}
+
+                    <label class="scheduling-mode-card">
+
+                        {{ radio.tag }}
+
+                        <span class="scheduling-mode-content">
+
+                            <strong>
+
+                                {% if radio.data.value == "date_only" %}
+
+                                    📅 日付だけで決める
+
+                                {% elif radio.data.value == "time_options" %}
+
+                                    🕐 時間帯から選ぶ
+
+                                {% elif radio.data.value == "start_times" %}
+
+                                    ⏰ 開始時刻から選ぶ
+
+                                {% elif radio.data.value == "free_input" %}
+
+                                    ✏️ 空き時間を入力してもらう
+
+                                {% endif %}
+
+                            </strong>
+
+
+                            <span>
+
+                                {% if radio.data.value == "date_only" %}
+
+                                    日帰り旅行など、
+                                    時間帯を気にしない予定におすすめ。
+
+                                {% elif radio.data.value == "time_options" %}
+
+                                    午前・午後・夕方など、
+                                    大まかな時間帯で調整します。
+
+                                {% elif radio.data.value == "start_times" %}
+
+                                    飲み会など、
+                                    候補となる開始時刻を指定します。
+
+                                {% elif radio.data.value == "free_input" %}
+
+                                    参加者自身に、
+                                    空いている時間を入力してもらいます。
+
+                                {% endif %}
+
+                            </span>
+
+                        </span>
+
+                    </label>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Mode 2:
+             Time options
+             ================================================= -->
+
+        <section
+            class="event-create-section event-mode-section"
+            id="time-options-section"
+        >
+
+            <div class="event-create-section-header">
+
+                <div>
+
+                    <h2>
+                        時間帯の選択肢
+                    </h2>
+
+                    <p>
+                        「午前」「午後」などの選択肢を作れます。
+                        時刻の設定は任意です。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="time-option-list"
+                class="time-option-list"
+            >
+
+                {% if posted_time_options %}
+
+                    {% for option in posted_time_options %}
+
+                        <div class="time-option-row">
+
+                            <input
+                                type="text"
+                                name="time_option_label"
+                                value="{{ option.label }}"
+                                placeholder="例：午前"
+                            >
+
+
+                            <input
+                                type="text"
+                                name="time_option_start"
+                                value="{{ option.start }}"
+                                placeholder="00:00"
+                                inputmode="numeric"
+                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                title="24時間制で入力してください。例：09:30"
+                                maxlength="5"
+                            >
+
+                            <span>
+                                〜
+                            </span>
+
+                            <input
+                                type="text"
+                                name="time_option_end"
+                                value="{{ option.end }}"
+                                placeholder="00:00"
+                                inputmode="numeric"
+                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                title="24時間制で入力してください。例：16:00"
+                                maxlength="5"
+                            >
+
+
+                            <button
+                                type="button"
+                                class="remove-time-option"
+                                aria-label="選択肢を削除"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="time-option-row">
+
+                        <input
+                            type="text"
+                            name="time_option_label"
+                            placeholder="例：午前"
+                        >
+
+
+                        <input
+                            type="text"
+                            name="time_option_start"
+                            placeholder="00:00"
+                            inputmode="numeric"
+                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                            title="24時間制で入力してください。例：09:00"
+                            maxlength="5"
+                        >
+
+                        <span>
+                            〜
+                        </span>
+
+                        <input
+                            type="text"
+                            name="time_option_end"
+                            placeholder="00:00"
+                            inputmode="numeric"
+                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                            title="24時間制で入力してください。例：12:00"
+                            maxlength="5"
+                        >
+
+
+                        <button
+                            type="button"
+                            class="remove-time-option"
+                            aria-label="選択肢を削除"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <button
+                type="button"
+                id="add-time-option"
+                class="event-secondary-button"
+            >
+                ＋ 選択肢を追加
+            </button>
+
+        </section>
+
+
+        <!-- =================================================
+             Mode 3:
+             Start times
+             ================================================= -->
+
+        <section
+            class="event-create-section event-mode-section"
+            id="start-times-section"
+        >
+
+            <div class="event-create-section-header">
+
+                <div>
+
+                    <h2>
+                        開始時刻
+                    </h2>
+
+                    <p>
+                        候補日ごとに開始時刻を設定してください。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="start-time-date-list"
+                class="start-time-date-list"
+            >
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+            Duration
+            ================================================= -->
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <span class="event-step-number">
+                    4
+                </span>
+
+                <div>
+
+                    <h2>
+                        イベントの長さ
+                    </h2>
+
+                    <p>
+                        長さを固定することも、
+                        参加者みんなで決めることもできます。
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if form.duration_mode.errors %}
+
+                <div class="event-field-errors">
+                    {{ form.duration_mode.errors }}
+                </div>
+
+            {% endif %}
+
+
+            <div class="scheduling-mode-list">
+
+                {% for radio in form.duration_mode %}
+
+                    <label class="scheduling-mode-card">
+
+                        {{ radio.tag }}
+
+                        <span class="scheduling-mode-content">
+
+                            <strong>
+
+                                {% if radio.data.value == "none" %}
+
+                                    ➖ 指定しない
+
+                                {% elif radio.data.value == "fixed" %}
+
+                                    ⏱ 作成者が決める
+
+                                {% elif radio.data.value == "vote" %}
+
+                                    🗳 みんなで決める
+
+                                {% endif %}
+
+                            </strong>
+
+
+                            <span>
+
+                                {% if radio.data.value == "none" %}
+
+                                    日帰り旅行など、
+                                    イベントの長さを決める必要がない場合。
+
+                                {% elif radio.data.value == "fixed" %}
+
+                                    1時間、2時間など、
+                                    イベント作成者が長さを決めます。
+
+                                {% elif radio.data.value == "vote" %}
+
+                                    1時間・2時間などから、
+                                    参加者が複数選択できます。
+
+                                {% endif %}
+
+                            </span>
+
+                        </span>
+
+                    </label>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Fixed duration -->
+
+            <div
+                id="fixed-duration-section"
+                class="event-duration-detail"
+            >
+
+                <div class="event-field">
+
+                    <label>
+                        イベント時間
+                    </label>
+
+                    <div class="event-duration-row">
+
+                        {{ form.duration_minutes }}
+
+                        <span>
+                            分
+                        </span>
+
+                    </div>
+
+
+                    {% if form.duration_minutes.errors %}
+
+                        <div class="event-field-errors">
+                            {{ form.duration_minutes.errors }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <p class="event-field-help">
+                        例：1時間なら60分、
+                        2時間なら120分
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Duration voting -->
+
+            <div
+                id="duration-vote-section"
+                class="event-duration-detail"
+            >
+
+                <p class="event-field-help">
+                    参加者は複数選択できます。
+                </p>
+
+
+                <div
+                    id="duration-option-list"
+                    class="duration-option-list"
+                >
+
+                    {% if posted_duration_options %}
+
+                        {% for minutes in posted_duration_options %}
+
+                            <div class="duration-option-row">
+
+                                <input
+                                    type="number"
+                                    name="duration_option_minutes"
+                                    value="{{ minutes }}"
+                                    min="1"
+                                    step="15"
+                                >
+
+                                <span>
+                                    分
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="remove-duration-option"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="duration-option-row">
+
+                            <input
+                                type="number"
+                                name="duration_option_minutes"
+                                value="60"
+                                min="1"
+                                step="15"
+                            >
+
+                            <span>
+                                分
+                            </span>
+
+                            <button
+                                type="button"
+                                class="remove-duration-option"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                        <div class="duration-option-row">
+
+                            <input
+                                type="number"
+                                name="duration_option_minutes"
+                                value="90"
+                                min="1"
+                                step="15"
+                            >
+
+                            <span>
+                                分
+                            </span>
+
+                            <button
+                                type="button"
+                                class="remove-duration-option"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        <div class="duration-option-row">
+
+                            <input
+                                type="number"
+                                name="duration_option_minutes"
+                                value="120"
+                                min="1"
+                                step="15"
+                            >
+
+                            <span>
+                                分
+                            </span>
+
+                            <button
+                                type="button"
+                                class="remove-duration-option"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="add-duration-option"
+                    class="event-secondary-button"
+                >
+                    ＋ 長さを追加
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- =================================================
+             4. Other settings
+             ================================================= -->
+
+        <section class="event-create-section">
+
+            <div class="event-create-section-header">
+
+                <span class="event-step-number">
+                    5
+                </span>
+
+                <div>
+
+                    <h2>
+                        その他の設定
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <label class="event-checkbox-row">
+
+                {{ form.is_public }}
+
+                <span>
+
+                    <strong>
+                        公開イベントにする
+                    </strong>
+
+                    <small>
+                        ログインしてい人は誰でもこのイベントを見ることができ、
+                        参加することができます。
+                    </small>
+
+                </span>
+
+            </label>
+
+
+            <label class="event-checkbox-row">
+
+                {{ form.allow_participant_date_addition }}
+
+                <span>
+
+                    <strong>
+                        参加者による候補日の追加を許可する
+                    </strong>
+
+                    <small>
+                        参加者自身が、新しい候補日を追加できるようになります。
+                    </small>
+
+                </span>
+
+            </label>
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.response_deadline.id_for_label }}"
+                >
+                    回答締切
+                </label>
+
+                {{ form.response_deadline }}
+
+
+                {% if form.response_deadline.errors %}
+
+                    <div class="event-field-errors">
+                        {{ form.response_deadline.errors }}
+                    </div>
+
+                {% endif %}
+
+
+                <p class="event-field-help">
+                    未設定でもOK。
+                    指定した日の終了時点まで回答できます。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Submit
+             ================================================= -->
+
+        <div class="event-create-actions">
+
+            <a
+                href="{% url 'event_scheduler:event_list' %}"
+                class="event-cancel-link"
+            >
+                キャンセル
+            </a>
+
+
+            <button
+                type="submit"
+                class="event-primary-button"
+            >
+                イベントを作成
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- =========================================================
+     JavaScript
+     ========================================================= -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const candidateDateList =
+            document.getElementById(
+                "candidate-date-list"
+            );
+
+        const addCandidateDateButton =
+            document.getElementById(
+                "add-candidate-date"
+            );
+
+        const timeOptionsSection =
+            document.getElementById(
+                "time-options-section"
+            );
+
+        const startTimesSection =
+            document.getElementById(
+                "start-times-section"
+            );
+
+        const startTimeDateList =
+            document.getElementById(
+                "start-time-date-list"
+            );
+
+
+        /*
+         * POSTでエラーになった場合、
+         * 入力済みの開始時刻をここから復元する。
+         */
+        const postedStartTimes = [
+
+            {% for item in posted_start_times %}
+
+                {
+                    date:
+                        "{{ item.date|escapejs }}",
+
+                    time:
+                        "{{ item.time|escapejs }}"
+                },
+
+            {% endfor %}
+
+        ];
+
+
+        let postedStartTimesApplied = false;
+
+
+        // =====================================================
+        // Candidate dates
+        // =====================================================
+
+        addCandidateDateButton.addEventListener(
+            "click",
+            function () {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "candidate-date-row";
+
+
+                row.innerHTML = `
+                    <input
+                        type="date"
+                        name="candidate_date"
+                        class="candidate-date-input"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-candidate-date"
+                        aria-label="候補日を削除"
+                    >
+                        ×
+                    </button>
+                `;
+
+
+                candidateDateList.appendChild(
+                    row
+                );
+
+
+                rebuildStartTimeDates();
+
+            }
+        );
+
+
+        candidateDateList.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !event.target.classList.contains(
+                        "remove-candidate-date"
+                    )
+                ) {
+                    return;
+                }
+
+
+                const rows =
+                    candidateDateList.querySelectorAll(
+                        ".candidate-date-row"
+                    );
+
+
+                /*
+                 * 候補日は最低1行残す。
+                 */
+                if (rows.length <= 1) {
+
+                    const input =
+                        rows[0].querySelector(
+                            ".candidate-date-input"
+                        );
+
+                    input.value = "";
+
+                    rebuildStartTimeDates();
+
+                    return;
+                }
+
+
+                event.target
+                    .closest(
+                        ".candidate-date-row"
+                    )
+                    .remove();
+
+
+                rebuildStartTimeDates();
+
+            }
+        );
+
+
+        candidateDateList.addEventListener(
+            "change",
+            function (event) {
+
+                if (
+                    event.target.classList.contains(
+                        "candidate-date-input"
+                    )
+                ) {
+
+                    rebuildStartTimeDates();
+
+                }
+
+            }
+        );
+
+
+        // =====================================================
+        // Scheduling mode
+        // =====================================================
+
+        const modeInputs =
+            document.querySelectorAll(
+                'input[name="scheduling_mode"]'
+            );
+
+
+        function updateModeSections() {
+
+            const selected =
+                document.querySelector(
+                    'input[name="scheduling_mode"]:checked'
+                );
+
+
+            const mode =
+                selected
+                    ? selected.value
+                    : "date_only";
+
+
+            // ---------------------------------------------
+            // Time options
+            // ---------------------------------------------
+
+            timeOptionsSection.style.display =
+                (
+                    mode === "time_options"
+                )
+                    ? "block"
+                    : "none";
+
+
+            // ---------------------------------------------
+            // Start times
+            // ---------------------------------------------
+
+            startTimesSection.style.display =
+                (
+                    mode === "start_times"
+                )
+                    ? "block"
+                    : "none";
+
+
+            // ---------------------------------------------
+            // Duration
+            // ---------------------------------------------
+
+
+            if (
+                mode === "start_times"
+            ) {
+
+                rebuildStartTimeDates();
+
+            }
+
+        }
+
+
+        modeInputs.forEach(
+            function (input) {
+
+                input.addEventListener(
+                    "change",
+                    updateModeSections
+                );
+
+            }
+        );
+
+
+        // =====================================================
+        // Time options
+        // =====================================================
+
+        const timeOptionList =
+            document.getElementById(
+                "time-option-list"
+            );
+
+        const addTimeOptionButton =
+            document.getElementById(
+                "add-time-option"
+            );
+
+
+        addTimeOptionButton.addEventListener(
+            "click",
+            function () {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "time-option-row";
+
+
+                row.innerHTML = `
+                    <input
+                        type="text"
+                        name="time_option_label"
+                        placeholder="例：午後"
+                    >
+
+                    <input
+                        type="text"
+                        name="time_option_start"
+                        placeholder="00:00"
+                        inputmode="numeric"
+                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                        title="24時間制で入力してください。例：12:00"
+                        maxlength="5"
+                    >
+
+                    <span>
+                        〜
+                    </span>
+
+                    <input
+                        type="text"
+                        name="time_option_end"
+                        placeholder="00:00"
+                        inputmode="numeric"
+                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                        title="24時間制で入力してください。例：16:00"
+                        maxlength="5"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-time-option"
+                        aria-label="選択肢を削除"
+                    >
+                        ×
+                    </button>
+                `;
+
+
+                timeOptionList.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+        timeOptionList.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !event.target.classList.contains(
+                        "remove-time-option"
+                    )
+                ) {
+                    return;
+                }
+
+
+                const rows =
+                    timeOptionList.querySelectorAll(
+                        ".time-option-row"
+                    );
+
+
+                /*
+                 * 最低1行残す。
+                 */
+                if (rows.length <= 1) {
+
+                    rows[0]
+                        .querySelectorAll(
+                            "input"
+                        )
+                        .forEach(
+                            function (input) {
+
+                                input.value = "";
+
+                            }
+                        );
+
+                    return;
+                }
+
+
+                event.target
+                    .closest(
+                        ".time-option-row"
+                    )
+                    .remove();
+
+            }
+        );
+
+
+        // =====================================================
+        // Start times per candidate date
+        // =====================================================
+
+        function rebuildStartTimeDates() {
+
+            /*
+             * 現在画面に存在する値を先に保存する。
+             * 候補日を追加・変更しても、
+             * 既存の開始時刻を消さないため。
+             */
+            const existingValues = {};
+
+
+            startTimeDateList
+                .querySelectorAll(
+                    ".start-time-date-card"
+                )
+                .forEach(
+                    function (card) {
+
+                        const date =
+                            card.dataset.date;
+
+
+                        if (!date) {
+                            return;
+                        }
+
+
+                        existingValues[date] =
+                            Array.from(
+                                card.querySelectorAll(
+                                    'input[name="start_time_value"]'
+                                )
+                            )
+                            .map(
+                                function (input) {
+
+                                    return input.value;
+
+                                }
+                            );
+
+                    }
+                );
+
+
+            /*
+             * POSTエラーから戻った直後は
+             * Djangoから受け取った値も入れる。
+             */
+            if (!postedStartTimesApplied) {
+
+                postedStartTimes.forEach(
+                    function (item) {
+
+                        if (
+                            !existingValues[
+                                item.date
+                            ]
+                        ) {
+
+                            existingValues[
+                                item.date
+                            ] = [];
+
+                        }
+
+
+                        existingValues[
+                            item.date
+                        ].push(
+                            item.time
+                        );
+
+                    }
+                );
+
+
+                postedStartTimesApplied =
+                    true;
+
+            }
+
+
+            startTimeDateList.innerHTML =
+                "";
+
+
+            const dateInputs =
+                candidateDateList
+                    .querySelectorAll(
+                        ".candidate-date-input"
+                    );
+
+
+            dateInputs.forEach(
+                function (dateInput) {
+
+                    const date =
+                        dateInput.value;
+
+
+                    if (!date) {
+                        return;
+                    }
+
+
+                    // -----------------------------------------
+                    // Card
+                    // -----------------------------------------
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "start-time-date-card";
+
+                    card.dataset.date =
+                        date;
+
+
+                    // -----------------------------------------
+                    // Date title
+                    // -----------------------------------------
+
+                    const title =
+                        document.createElement(
+                            "h3"
+                        );
+
+                    title.textContent =
+                        formatDateForDisplay(
+                            date
+                        );
+
+
+                    card.appendChild(
+                        title
+                    );
+
+
+                    // -----------------------------------------
+                    // Time list
+                    // -----------------------------------------
+
+                    const list =
+                        document.createElement(
+                            "div"
+                        );
+
+                    list.className =
+                        "start-time-list";
+
+
+                    let times =
+                        existingValues[
+                            date
+                        ];
+
+
+                    if (
+                        !times
+                        ||
+                        times.length === 0
+                    ) {
+
+                        /*
+                         * 新しく候補日を追加した場合は
+                         * 00:00 から開始。
+                         */
+                        times = [
+                            "00:00"
+                        ];
+
+                    }
+
+
+                    times.forEach(
+                        function (value) {
+
+                            addStartTimeRow(
+                                list,
+                                date,
+                                value
+                            );
+
+                        }
+                    );
+
+
+                    card.appendChild(
+                        list
+                    );
+
+
+                    // -----------------------------------------
+                    // Add button
+                    // -----------------------------------------
+
+                    const addButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    addButton.type =
+                        "button";
+
+                    addButton.className =
+                        "event-secondary-button";
+
+                    addButton.textContent =
+                        "＋ 開始時刻を追加";
+
+
+                    addButton.addEventListener(
+                        "click",
+                        function () {
+
+                            addStartTimeRow(
+                                list,
+                                date,
+                                "00:00"
+                            );
+
+                        }
+                    );
+
+
+                    card.appendChild(
+                        addButton
+                    );
+
+
+                    startTimeDateList.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+
+
+        function addStartTimeRow(
+            list,
+            date,
+            value
+        ) {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "start-time-row";
+
+
+            row.innerHTML = `
+                <input
+                    type="hidden"
+                    name="start_time_date"
+                    value="${date}"
+                >
+
+                <input
+                    type="text"
+                    name="start_time_value"
+                    value="${value || "00:00"}"
+                    placeholder="00:00"
+                    inputmode="numeric"
+                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                    title="24時間制で入力してください。例：18:30"
+                    maxlength="5"
+                >
+
+                <button
+                    type="button"
+                    class="remove-start-time"
+                    aria-label="開始時刻を削除"
+                >
+                    ×
+                </button>
+            `;
+
+
+            row.querySelector(
+                ".remove-start-time"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+                    const rows =
+                        list.querySelectorAll(
+                            ".start-time-row"
+                        );
+
+
+                    /*
+                     * 日付ごとに最低1行残す。
+                     */
+                    if (rows.length <= 1) {
+
+                        row.querySelector(
+                            'input[name="start_time_value"]'
+                        ).value =
+                            "00:00";
+
+                        return;
+                    }
+
+
+                    row.remove();
+
+                }
+            );
+
+
+            list.appendChild(
+                row
+            );
+
+        }
+
+
+        // =====================================================
+        // Date display
+        // =====================================================
+
+        function formatDateForDisplay(
+            dateString
+        ) {
+
+            const parts =
+                dateString.split(
+                    "-"
+                );
+
+
+            if (parts.length !== 3) {
+                return dateString;
+            }
+
+
+            return (
+                Number(parts[1])
+                +
+                "月"
+                +
+                Number(parts[2])
+                +
+                "日"
+            );
+
+        }
+
+
+        // =====================================================
+        // Duration mode
+        // =====================================================
+
+        const durationModeInputs =
+            document.querySelectorAll(
+                'input[name="duration_mode"]'
+            );
+
+        const fixedDurationSection =
+            document.getElementById(
+                "fixed-duration-section"
+            );
+
+        const durationVoteSection =
+            document.getElementById(
+                "duration-vote-section"
+            );
+
+
+        function updateDurationModeSections() {
+
+            const selected =
+                document.querySelector(
+                    'input[name="duration_mode"]:checked'
+                );
+
+
+            const mode =
+                selected
+                    ? selected.value
+                    : "fixed";
+
+
+            fixedDurationSection.style.display =
+                (
+                    mode === "fixed"
+                )
+                    ? "block"
+                    : "none";
+
+
+            durationVoteSection.style.display =
+                (
+                    mode === "vote"
+                )
+                    ? "block"
+                    : "none";
+
+        }
+
+
+        durationModeInputs.forEach(
+            function (input) {
+
+                input.addEventListener(
+                    "change",
+                    updateDurationModeSections
+                );
+
+            }
+        );
+
+
+        // =====================================================
+        // Duration options
+        // =====================================================
+
+        const durationOptionList =
+            document.getElementById(
+                "duration-option-list"
+            );
+
+        const addDurationOptionButton =
+            document.getElementById(
+                "add-duration-option"
+            );
+
+
+        addDurationOptionButton.addEventListener(
+            "click",
+            function () {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "duration-option-row";
+
+
+                row.innerHTML = `
+                    <input
+                        type="number"
+                        name="duration_option_minutes"
+                        min="1"
+                        step="15"
+                        placeholder="例：180"
+                    >
+
+                    <span>
+                        分
+                    </span>
+
+                    <button
+                        type="button"
+                        class="remove-duration-option"
+                    >
+                        ×
+                    </button>
+                `;
+
+
+                durationOptionList.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+        durationOptionList.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !event.target.classList.contains(
+                        "remove-duration-option"
+                    )
+                ) {
+                    return;
+                }
+
+
+                const rows =
+                    durationOptionList.querySelectorAll(
+                        ".duration-option-row"
+                    );
+
+
+                if (rows.length <= 2) {
+
+                    return;
+
+                }
+
+
+                event.target
+                    .closest(
+                        ".duration-option-row"
+                    )
+                    .remove();
+
+            }
+        );
+
+
+        // =====================================================
+        // Initial state
+        // =====================================================
+
+        updateModeSections();
+        updateDurationModeSections();
+
+    }
+);
+
+</script>
+
+{% endblock %}

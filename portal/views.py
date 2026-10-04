@@ -102,6 +102,58 @@ APP_CONFIG = {
             "色の認識に悩む方のために。"
             "気になる色の情報を3段階の細かさで簡単に確認。"
         ),
+    },    
+    "events": {
+
+        "name":
+            "イベント",
+
+        "label":
+            "EVENT SCHEDULER",
+
+        "icon":
+            "📅",
+
+        "url_name":
+            "event_scheduler:event_list",
+
+        "card_class":
+            "portal-events-card",
+
+        "icon_class":
+            "portal-events-icon",
+
+        "description": (
+            "イベントを作成して、みんなの予定を簡単に調整。"
+            "候補日や時間、イベントの長さもまとめて決められる。"
+        ),
+    },
+
+    "chat": {
+
+        "name":
+            "チャット",
+
+        "label":
+            "YAHAN CHAT",
+
+        "icon":
+            "💬",
+
+        "url_name":
+            "chat:list",
+
+        "card_class":
+            "portal-chat-app-card",
+
+        "icon_class":
+            "portal-chat-app-icon",
+
+        "description": (
+            "Yahan-appのユーザー同士でメッセージ。"
+            "友だちと気軽にやりとりできる。"
+        ),
+
     },
 }
 
@@ -112,7 +164,7 @@ APP_CONFIG = {
 
 def ensure_app_preferences(user):
     """
-    ユーザーに6アプリ分の設定が存在しなければ作成する。
+    ユーザーにすべてのアプリ分の設定が存在しなければ作成する。
     """
 
     for index, (app_key, label) in enumerate(

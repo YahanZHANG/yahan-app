@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+
+        <p class="event-eyebrow">
+            DELETE EVENT
+        </p>
+
+
+        <h1>
+            イベントを削除
+        </h1>
+
+    </header>
+
+
+    <!-- =====================================================
+         Delete confirmation
+         ===================================================== -->
+
+    <section class="event-delete-confirm-card">
+
+        <div class="event-delete-confirm-icon">
+            🗑️
+        </div>
+
+
+        <div class="event-delete-confirm-content">
+
+            <h2>
+                「{{ event.title }}」を削除しますか？
+            </h2>
+
+
+            <p>
+                このイベントを完全に削除します。
+            </p>
+
+
+            <p class="event-delete-confirm-warning">
+                候補日・参加者の回答・管理者情報なども削除されます。
+                この操作は取り消せません。
+            </p>
+
+        </div>
+
+
+        <div class="event-delete-confirm-actions">
+
+            <a
+                href="{% url 'event_scheduler:event_detail' event.id %}"
+                class="event-secondary-button"
+            >
+                キャンセル
+            </a>
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="event-delete-confirm-button"
+                >
+                    🗑️ 完全に削除する
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

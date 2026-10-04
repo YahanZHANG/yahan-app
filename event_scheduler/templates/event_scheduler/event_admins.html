@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+
+        <p class="event-eyebrow">
+            EVENT ADMINS
+        </p>
+
+
+        <h1>
+            管理者
+        </h1>
+
+
+        <p class="event-description">
+            {{ event.title }}
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         Invite
+         ===================================================== -->
+
+    <section class="event-info">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                INVITE
+            </p>
+
+            <h2>
+                👥 共同管理者を招待
+            </h2>
+
+            <p>
+                招待するユーザーのログインIDを入力してください。
+            </p>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="{% url 'event_scheduler:event_admin_invite' event.id %}"
+            class="event-admin-invite-form"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="event-field">
+
+                {{ form.username }}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="event-primary-button"
+            >
+                招待する
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         Current admins
+         ===================================================== -->
+
+    <section class="event-info">
+
+        <div class="event-section-header">
+
+            <p class="event-section-eyebrow">
+                ADMINS
+            </p>
+
+            <h2>
+                現在の管理者
+            </h2>
+
+            <p>
+                {{ admin_count }}人
+            </p>
+
+        </div>
+
+
+        <div class="event-admin-list">
+
+            {% for admin in admins %}
+
+                <div class="event-admin-card">
+
+                    <div class="event-admin-user">
+
+                        <div class="event-admin-avatar">
+                            👤
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                {{ admin.user.get_username }}
+                            </strong>
+
+
+                            {% if admin.user == event.creator %}
+
+                                <span class="event-admin-badge">
+                                    作成者
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if admin.user == request.user %}
+
+                                <span class="event-admin-badge current">
+                                    あなた
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    {% if admin.user != request.user %}
+
+                        {% if admin_count > 1 %}
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_admin_remove' event.id admin.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-admin-remove-button"
+                                >
+                                    削除
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Pending invitations
+         ===================================================== -->
+
+    {% if pending_invitations %}
+
+        <section class="event-info">
+
+            <div class="event-section-header">
+
+                <p class="event-section-eyebrow">
+                    PENDING
+                </p>
+
+                <h2>
+                    招待中
+                </h2>
+
+            </div>
+
+
+            <div class="event-admin-list">
+
+                {% for invitation in pending_invitations %}
+
+                    <div class="event-admin-card">
+
+                        <div class="event-admin-user">
+
+                            <div class="event-admin-avatar pending">
+                                ✉️
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    {{ invitation.invited_user.get_username }}
+                                </strong>
+
+                                <span class="event-admin-pending-label">
+                                    承認待ち
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'event_scheduler:event_admin_invitation_cancel' event.id invitation.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="event-admin-remove-button"
+                            >
+                                招待を取り消す
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Leave
+         ===================================================== -->
+
+    <section class="event-info event-admin-leave-section">
+
+        <div>
+
+            <h2>
+                管理者から退出
+            </h2>
+
+
+            {% if admin_count > 1 %}
+
+                <p>
+                    イベントには参加したまま、
+                    管理者権限だけを外します。
+                </p>
+
+
+                <form
+                    method="post"
+                    action="{% url 'event_scheduler:event_admin_leave' event.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="event-admin-leave-button"
+                    >
+                        管理者から退出する
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <p>
+                    あなたが最後の管理者です。
+                    他の管理者を追加するまで退出できません。
+                </p>
+
+
+                <button
+                    type="button"
+                    class="event-admin-leave-button"
+                    disabled
+                >
+                    管理者から退出できません
+                </button>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <div class="event-bottom-actions">
+
+        <a href="{% url 'event_scheduler:event_detail' event.id %}">
+            ← イベントに戻る
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

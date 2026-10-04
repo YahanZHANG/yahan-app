@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<div class="event-response-page">
+
+    <a
+        href="{% url 'event_scheduler:event_detail' event.id %}"
+    >
+        ← イベントに戻る
+    </a>
+
+
+    <header>
+
+        <p>
+            AVAILABILITY
+        </p>
+
+        <h1>
+            {{ event_date.date|date:"n月j日" }}
+        </h1>
+
+        <p>
+            {{ event.title }}
+        </p>
+
+    </header>
+
+
+    <form
+        method="post"
+        id="availability-form"
+    >
+
+        {% csrf_token %}
+
+
+        {% if form.non_field_errors %}
+
+            <div>
+
+                {{ form.non_field_errors }}
+
+            </div>
+
+        {% endif %}
+
+
+        <section>
+
+            <h2>
+                この日の予定
+            </h2>
+
+            {{ form.response_type }}
+
+        </section>
+
+
+        <section
+            id="partial-time-section"
+        >
+
+            <h2>
+                空いている時間
+            </h2>
+
+            <p>
+                複数の時間帯を登録できます。
+            </p>
+
+
+            <div
+                id="time-window-list"
+            >
+
+                {% if existing_windows %}
+
+                    {% for window in existing_windows %}
+
+                        <div
+                            class="time-window-row"
+                        >
+
+                            <input
+                                type="time"
+                                name="start_time"
+                                value="{{ window.start_time|time:'H:i' }}"
+                            >
+
+                            <span>
+                                〜
+                            </span>
+
+                            <input
+                                type="time"
+                                name="end_time"
+                                value="{{ window.end_time|time:'H:i' }}"
+                            >
+
+                            <button
+                                type="button"
+                                class="remove-time-window"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div
+                        class="time-window-row"
+                    >
+
+                        <input
+                            type="time"
+                            name="start_time"
+                        >
+
+                        <span>
+                            〜
+                        </span>
+
+                        <input
+                            type="time"
+                            name="end_time"
+                        >
+
+                        <button
+                            type="button"
+                            class="remove-time-window"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <button
+                type="button"
+                id="add-time-window"
+            >
+                ＋ 時間帯を追加
+            </button>
+
+        </section>
+
+
+        <section>
+
+            <h2>
+                メモ
+            </h2>
+
+            {{ form.note }}
+
+        </section>
+
+
+        <button
+            type="submit"
+        >
+            回答を保存
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const partialSection =
+            document.getElementById(
+                "partial-time-section"
+            );
+
+        const responseInputs =
+            document.querySelectorAll(
+                'input[name="response_type"]'
+            );
+
+        const windowList =
+            document.getElementById(
+                "time-window-list"
+            );
+
+        const addButton =
+            document.getElementById(
+                "add-time-window"
+            );
+
+
+        function updatePartialSection() {
+
+            const selected =
+                document.querySelector(
+                    'input[name="response_type"]:checked'
+                );
+
+            if (
+                selected
+                &&
+                selected.value === "partial"
+            ) {
+
+                partialSection.style.display =
+                    "block";
+
+            } else {
+
+                partialSection.style.display =
+                    "none";
+
+            }
+
+        }
+
+
+        responseInputs.forEach(
+            function (input) {
+
+                input.addEventListener(
+                    "change",
+                    updatePartialSection
+                );
+
+            }
+        );
+
+
+        addButton.addEventListener(
+            "click",
+            function () {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "time-window-row";
+
+                row.innerHTML = `
+                    <input
+                        type="time"
+                        name="start_time"
+                    >
+
+                    <span>
+                        〜
+                    </span>
+
+                    <input
+                        type="time"
+                        name="end_time"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-time-window"
+                    >
+                        ×
+                    </button>
+                `;
+
+                windowList.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+        windowList.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target.classList.contains(
+                        "remove-time-window"
+                    )
+                ) {
+
+                    const rows =
+                        windowList.querySelectorAll(
+                            ".time-window-row"
+                        );
+
+                    if (rows.length > 1) {
+
+                        event.target
+                            .closest(
+                                ".time-window-row"
+                            )
+                            .remove();
+
+                    } else {
+
+                        const row =
+                            event.target.closest(
+                                ".time-window-row"
+                            );
+
+                        row.querySelectorAll(
+                            "input"
+                        ).forEach(
+                            function (input) {
+
+                                input.value = "";
+
+                            }
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        updatePartialSection();
+
+    }
+);
+
+</script>
+
+{% endblock %}

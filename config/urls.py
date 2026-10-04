@@ -165,4 +165,15 @@ urlpatterns = [
         "",
         include("portal.urls"),
     ),
+
+    # =====================================================
+    # Scheduler
+    # =====================================================
+    
+    path(
+    "events/",
+    include(
+        "event_scheduler.urls"
+    ),
+),
 ]
