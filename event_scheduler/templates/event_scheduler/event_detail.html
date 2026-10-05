@@ -64,32 +64,45 @@
 
     <section class="event-simple-action">
 
-        {% if participant and participant.status == "joined" %}
+        {% if participant %}
 
-            <a
-                href="{% url 'event_scheduler:event_respond' event.id %}"
-                class="event-primary-button event-large-action"
-            >
-                ✓ 回答する
-            </a>
+            {% if participant.status == "joined" %}
 
-        {% elif event.is_public %}
-
-            <form
-                method="post"
-                action="{% url 'event_scheduler:join_event' event.id %}"
-            >
-
-                {% csrf_token %}
-
-                <button
-                    type="submit"
+                <a
+                    href="{% url 'event_scheduler:event_respond' event.id %}"
                     class="event-primary-button event-large-action"
                 >
-                    ＋ 参加して回答する
-                </button>
+                    ✓ 回答する
+                </a>
 
-            </form>
+
+                {% if not can_manage %}
+
+                    <form
+                        method="post"
+                        action="{% url 'event_scheduler:leave_event' event.id %}"
+                        class="event-leave-form"
+                        onsubmit="
+                            return confirm(
+                                'このイベントから退出しますか？\nあなたの回答も削除されます。'
+                            );
+                        "
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="event-leave-button"
+                        >
+                            イベントから退出
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            {% endif %}
 
         {% endif %}
 

@@ -6322,3 +6322,52 @@ small {
 .event-response-date-card {
     padding: 14px;
 }
+
+/* =========================================================
+   Leave event
+   ========================================================= */
+
+.event-leave-form {
+    margin-top:
+        10px;
+
+    text-align:
+        center;
+}
+
+
+.event-leave-button {
+    padding:
+        6px
+        10px;
+
+    border:
+        0;
+
+    background:
+        transparent;
+
+    color:
+        #a06b6b;
+
+    cursor:
+        pointer;
+
+    font:
+        inherit;
+
+    font-size:
+        11px;
+
+    font-weight:
+        700;
+}
+
+
+.event-leave-button:hover {
+    color:
+        #874e4e;
+
+    text-decoration:
+        underline;
+}

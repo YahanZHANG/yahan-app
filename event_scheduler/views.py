@@ -1525,6 +1525,119 @@ def join_event(
 
 
 # =========================================================
+# Leave public event
+# =========================================================
+
+@login_required
+def leave_event(
+    request,
+    event_id,
+):
+
+    event = get_object_or_404(
+        Event,
+        id=event_id,
+    )
+
+
+    participant = get_object_or_404(
+        EventParticipant,
+        event=event,
+        user=request.user,
+        status=EventParticipant.Status.JOINED,
+    )
+
+
+    # =========================================================
+    # Admin cannot leave here
+    # =========================================================
+
+    if event.can_manage(
+        request.user
+    ):
+
+        return redirect(
+            "event_scheduler:event_detail",
+            event_id=event.id,
+        )
+
+
+    # =========================================================
+    # Leave
+    # =========================================================
+
+    if request.method == "POST":
+
+        with transaction.atomic():
+
+            # -------------------------------------------------
+            # Date-only votes
+            # -------------------------------------------------
+
+            EventDateVote.objects.filter(
+                event_date__event=event,
+                user=request.user,
+            ).delete()
+
+
+            # -------------------------------------------------
+            # Time-option votes
+            # -------------------------------------------------
+
+            EventTimeOptionVote.objects.filter(
+                event_date__event=event,
+                user=request.user,
+            ).delete()
+
+
+            # -------------------------------------------------
+            # Start-time votes
+            # -------------------------------------------------
+
+            EventStartTimeVote.objects.filter(
+                start_time_option__event_date__event=event,
+                user=request.user,
+            ).delete()
+
+
+            # -------------------------------------------------
+            # Free-input responses
+            # -------------------------------------------------
+
+            EventDateResponse.objects.filter(
+                event_date__event=event,
+                user=request.user,
+            ).delete()
+
+
+            # -------------------------------------------------
+            # Duration votes
+            # -------------------------------------------------
+
+            EventDurationVote.objects.filter(
+                duration_option__event=event,
+                user=request.user,
+            ).delete()
+
+
+            # -------------------------------------------------
+            # Participant
+            # -------------------------------------------------
+
+            participant.delete()
+
+
+        return redirect(
+            "event_scheduler:event_list"
+        )
+
+
+    return redirect(
+        "event_scheduler:event_detail",
+        event_id=event.id,
+    )
+
+# =========================================================
 # Respond to event
 # =========================================================
 

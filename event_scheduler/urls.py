@@ -38,6 +38,12 @@ urlpatterns = [
         name="join_event",
     ),
 
+    path(
+        "<int:event_id>/leave/",
+        views.leave_event,
+        name="leave_event",
+    ),
+
 
     path(
         "<int:event_id>/respond/",
