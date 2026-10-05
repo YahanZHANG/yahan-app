@@ -406,10 +406,10 @@
                                 type="text"
                                 name="time_option_start"
                                 value="{{ option.start }}"
-                                placeholder="00:00"
+                                placeholder="0930"
                                 inputmode="numeric"
-                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                                title="24時間制で入力してください。例：09:30"
+                                pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                                title="例：0930"
                                 maxlength="5"
                             >
 
@@ -421,10 +421,10 @@
                                 type="text"
                                 name="time_option_end"
                                 value="{{ option.end }}"
-                                placeholder="00:00"
+                                placeholder="0930"
                                 inputmode="numeric"
-                                pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                                title="24時間制で入力してください。例：16:00"
+                                pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                                title="例：0930"
                                 maxlength="5"
                             >
 
@@ -455,10 +455,10 @@
                         <input
                             type="text"
                             name="time_option_start"
-                            placeholder="00:00"
+                            placeholder="0930"
                             inputmode="numeric"
-                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                            title="24時間制で入力してください。例：09:00"
+                            pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                            title="例：0930"
                             maxlength="5"
                         >
 
@@ -469,10 +469,10 @@
                         <input
                             type="text"
                             name="time_option_end"
-                            placeholder="00:00"
+                            placeholder="0930"
                             inputmode="numeric"
-                            pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                            title="24時間制で入力してください。例：12:00"
+                            pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                            title="例：0930"
                             maxlength="5"
                         >
 
@@ -808,7 +808,6 @@
                 >
                     ＋ 長さを追加
                 </button>
-
             </div>
 
         </section>
@@ -874,6 +873,23 @@
 
             </label>
 
+            <label class="event-checkbox-row">
+
+                {{ form.allow_participant_duration_addition }}
+
+                <span>
+
+                    <strong>
+                        参加者による長さ候補の追加を許可する
+                    </strong>
+
+                    <small>
+                        参加者自身が、新しい長さ候補を追加できるようになります。
+                    </small>
+
+                </span>
+
+            </label>
 
             <div class="event-field">
 
@@ -1221,10 +1237,10 @@ document.addEventListener(
                     <input
                         type="text"
                         name="time_option_start"
-                        placeholder="00:00"
+                        placeholder="0930"
                         inputmode="numeric"
-                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                        title="24時間制で入力してください。例：12:00"
+                        pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                        title="例：0930"
                         maxlength="5"
                     >
 
@@ -1235,10 +1251,10 @@ document.addEventListener(
                     <input
                         type="text"
                         name="time_option_end"
-                        placeholder="00:00"
+                        placeholder="0930"
                         inputmode="numeric"
-                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                        title="24時間制で入力してください。例：16:00"
+                        pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                        title="例：0930"
                         maxlength="5"
                     >
 
@@ -1583,10 +1599,10 @@ document.addEventListener(
                     type="text"
                     name="start_time_value"
                     value="${value || "00:00"}"
-                    placeholder="00:00"
+                    placeholder="0930"
                     inputmode="numeric"
-                    pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-                    title="24時間制で入力してください。例：18:30"
+                    pattern="(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]|(?:[01][0-9]|2[0-3])[0-5][0-9])"
+                    title="例：0930"
                     maxlength="5"
                 >
 
@@ -1829,6 +1845,192 @@ document.addEventListener(
 
     }
 );
+
+// =====================================================
+// Time input normalization
+// 0930 -> 09:30
+// 1200 -> 12:00
+// =====================================================
+
+function normalizeTimeValue(value) {
+
+    const trimmed =
+        value.trim();
+
+
+    if (!trimmed) {
+        return "";
+    }
+
+
+    // すでに HH:MM の場合
+    const colonMatch =
+        trimmed.match(
+            /^([01]\d|2[0-3]):([0-5]\d)$/
+        );
+
+
+    if (colonMatch) {
+
+        return (
+            colonMatch[1]
+            +
+            ":"
+            +
+            colonMatch[2]
+        );
+
+    }
+
+
+    // 数字だけ取り出す
+    const digits =
+        trimmed.replace(
+            /\D/g,
+            ""
+        );
+
+
+    // 4桁でなければそのまま
+    if (digits.length !== 4) {
+        return trimmed;
+    }
+
+
+    const hour =
+        Number(
+            digits.slice(
+                0,
+                2
+            )
+        );
+
+
+    const minute =
+        Number(
+            digits.slice(
+                2,
+                4
+            )
+        );
+
+
+    // 不正な時刻はそのまま
+    if (
+        hour > 23
+        ||
+        minute > 59
+    ) {
+        return trimmed;
+    }
+
+
+    return (
+        digits.slice(
+            0,
+            2
+        )
+        +
+        ":"
+        +
+        digits.slice(
+            2,
+            4
+        )
+    );
+
+}
+
+
+// =====================================================
+// Check whether input is a time field
+// =====================================================
+
+function isEventTimeInput(input) {
+
+    return (
+        input.matches(
+            'input[name="time_option_start"]'
+        )
+        ||
+        input.matches(
+            'input[name="time_option_end"]'
+        )
+        ||
+        input.matches(
+            'input[name="start_time_value"]'
+        )
+    );
+
+}
+
+
+// =====================================================
+// Normalize when leaving the input
+// =====================================================
+
+document.addEventListener(
+    "blur",
+    function (event) {
+
+        const input =
+            event.target;
+
+
+        if (!isEventTimeInput(input)) {
+            return;
+        }
+
+
+        input.value =
+            normalizeTimeValue(
+                input.value
+            );
+
+    },
+    true
+);
+
+
+// =====================================================
+// Normalize again before submit
+// =====================================================
+
+const eventCreateForm =
+    document.getElementById(
+        "event-create-form"
+    );
+
+
+if (eventCreateForm) {
+
+    eventCreateForm.addEventListener(
+        "submit",
+        function () {
+
+            eventCreateForm
+                .querySelectorAll(
+                    `
+                    input[name="time_option_start"],
+                    input[name="time_option_end"],
+                    input[name="start_time_value"]
+                    `
+                )
+                .forEach(
+                    function (input) {
+
+                        input.value =
+                            normalizeTimeValue(
+                                input.value
+                            );
+
+                    }
+                );
+
+        }
+    );
+
+}
 
 </script>
 

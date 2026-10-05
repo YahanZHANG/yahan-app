@@ -21,6 +21,7 @@ class EventForm(forms.ModelForm):
             "scheduling_mode",
             "duration_mode",
             "duration_minutes",
+            "allow_participant_duration_addition",
             "response_deadline",
         ]
 

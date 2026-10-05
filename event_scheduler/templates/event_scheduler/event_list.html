@@ -35,11 +35,6 @@
                 イベント
             </h1>
 
-            <p class="event-list-subtitle">
-                予定を作ったり、
-                みんなの日程を合わせたりできます。
-            </p>
-
         </div>
 
 
@@ -64,6 +59,107 @@
 
     </header>
 
+    
+<!-- =====================================================
+     Admin invitations
+     ===================================================== -->
+
+{% if pending_admin_invitations %}
+
+    <section class="event-list-section">
+
+        <div class="event-list-section-header">
+
+            <div>
+
+                <p class="event-section-eyebrow">
+                    ADMIN INVITATIONS
+                </p>
+
+                <h2>
+                    管理者への招待
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="event-admin-invitation-list">
+
+            {% for invitation in pending_admin_invitations %}
+
+                <div class="event-admin-invitation-card">
+
+                    <div class="event-admin-invitation-icon">
+                        👥
+                    </div>
+
+
+                    <div class="event-admin-invitation-content">
+
+                        <span class="event-admin-invitation-label">
+                            共同管理者として招待されています
+                        </span>
+
+                        <h3>
+                            {{ invitation.event.title }}
+                        </h3>
+
+                        <p>
+                            {{ invitation.invited_by.username }}
+                            さんからの招待
+                        </p>
+
+                    </div>
+
+
+                    <div class="event-admin-invitation-actions">
+
+                        <form
+                            method="post"
+                            action="{% url 'event_scheduler:event_admin_invitation_accept' invitation.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="event-admin-invitation-accept"
+                            >
+                                ✓ 承認
+                            </button>
+
+                        </form>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'event_scheduler:event_admin_invitation_decline' invitation.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="event-admin-invitation-decline"
+                            >
+                                辞退
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+{% endif %}
 
     <!-- =====================================================
          My events
@@ -78,12 +174,8 @@
             </p>
 
             <h2>
-                あなたのイベント
+                参加中のイベント
             </h2>
-
-            <p>
-                参加中・管理中のイベントです。
-            </p>
 
         </div>
 
