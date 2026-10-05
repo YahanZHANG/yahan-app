@@ -59,107 +59,108 @@
 
     </header>
 
-    
-<!-- =====================================================
-     Admin invitations
-     ===================================================== -->
 
-{% if pending_admin_invitations %}
+    <!-- =====================================================
+         Admin invitations
+         ===================================================== -->
 
-    <section class="event-list-section">
+    {% if pending_admin_invitations %}
 
-        <div class="event-list-section-header">
+        <section class="event-list-section">
 
-            <div>
+            <div class="event-list-section-header">
 
-                <p class="event-section-eyebrow">
-                    ADMIN INVITATIONS
-                </p>
+                <div>
 
-                <h2>
-                    管理者への招待
-                </h2>
+                    <p class="event-section-eyebrow">
+                        ADMIN INVITATIONS
+                    </p>
 
-            </div>
-
-        </div>
-
-
-        <div class="event-admin-invitation-list">
-
-            {% for invitation in pending_admin_invitations %}
-
-                <div class="event-admin-invitation-card">
-
-                    <div class="event-admin-invitation-icon">
-                        👥
-                    </div>
-
-
-                    <div class="event-admin-invitation-content">
-
-                        <span class="event-admin-invitation-label">
-                            共同管理者として招待されています
-                        </span>
-
-                        <h3>
-                            {{ invitation.event.title }}
-                        </h3>
-
-                        <p>
-                            {{ invitation.invited_by.username }}
-                            さんからの招待
-                        </p>
-
-                    </div>
-
-
-                    <div class="event-admin-invitation-actions">
-
-                        <form
-                            method="post"
-                            action="{% url 'event_scheduler:event_admin_invitation_accept' invitation.id %}"
-                        >
-
-                            {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="event-admin-invitation-accept"
-                            >
-                                ✓ 承認
-                            </button>
-
-                        </form>
-
-
-                        <form
-                            method="post"
-                            action="{% url 'event_scheduler:event_admin_invitation_decline' invitation.id %}"
-                        >
-
-                            {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="event-admin-invitation-decline"
-                            >
-                                辞退
-                            </button>
-
-                        </form>
-
-                    </div>
+                    <h2>
+                        管理者への招待
+                    </h2>
 
                 </div>
 
-            {% endfor %}
+            </div>
 
-        </div>
 
-    </section>
+            <div class="event-admin-invitation-list">
 
-{% endif %}
+                {% for invitation in pending_admin_invitations %}
+
+                    <div class="event-admin-invitation-card">
+
+                        <div class="event-admin-invitation-icon">
+                            👥
+                        </div>
+
+
+                        <div class="event-admin-invitation-content">
+
+                            <span class="event-admin-invitation-label">
+                                共同管理者として招待されています
+                            </span>
+
+                            <h3>
+                                {{ invitation.event.title }}
+                            </h3>
+
+                            <p>
+                                {{ invitation.invited_by.username }}
+                                さんからの招待
+                            </p>
+
+                        </div>
+
+
+                        <div class="event-admin-invitation-actions">
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_admin_invitation_accept' invitation.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-admin-invitation-accept"
+                                >
+                                    ✓ 承認
+                                </button>
+
+                            </form>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_admin_invitation_decline' invitation.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-admin-invitation-decline"
+                                >
+                                    辞退
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
 
     <!-- =====================================================
          My events
@@ -196,29 +197,7 @@
                     <div class="event-list-card-main">
 
                         <div class="event-list-card-icon">
-
-                            {% if event.scheduling_mode == "date_only" %}
-
-                                📅
-
-                            {% elif event.scheduling_mode == "time_options" %}
-
-                                🕐
-
-                            {% elif event.scheduling_mode == "start_times" %}
-
-                                ⏰
-
-                            {% elif event.scheduling_mode == "free_input" %}
-
-                                ✏️
-
-                            {% else %}
-
-                                📆
-
-                            {% endif %}
-
+                            {{ event.auto_icon }}
                         </div>
 
 
@@ -296,9 +275,7 @@
                             {% if event.description %}
 
                                 <p class="event-list-description">
-
                                     {{ event.description|truncatechars:90 }}
-
                                 </p>
 
                             {% endif %}
@@ -404,9 +381,7 @@
                     >
 
                         <div class="event-list-card-icon public">
-
-                            🌍
-
+                            {{ event.auto_icon }}
                         </div>
 
 
@@ -472,9 +447,7 @@
                             {% if event.description %}
 
                                 <p class="event-list-description">
-
                                     {{ event.description|truncatechars:90 }}
-
                                 </p>
 
                             {% endif %}
