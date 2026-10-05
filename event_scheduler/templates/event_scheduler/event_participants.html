@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+
+<div class="event-page">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="event-response-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+
+        <p class="event-eyebrow">
+            PARTICIPANTS
+        </p>
+
+
+        <h1>
+            参加者
+        </h1>
+
+
+        <p>
+            {{ event.title }}
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         Invite
+         ===================================================== -->
+
+    <section class="event-simple-section">
+
+        <div class="event-simple-heading">
+
+            <p class="event-section-eyebrow">
+                INVITE
+            </p>
+
+            <h2>
+                参加者を招待
+            </h2>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="{% url 'event_scheduler:event_participant_invite' event.id %}"
+            class="event-admin-invite-form"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="event-field">
+
+                <label
+                    for="{{ form.username.id_for_label }}"
+                >
+                    ログインID
+                </label>
+
+                {{ form.username }}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="event-primary-button"
+            >
+                招待する
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         Pending invitations
+         ===================================================== -->
+
+    {% if pending_invitations %}
+
+        <section class="event-simple-section">
+
+            <div class="event-simple-heading">
+
+                <p class="event-section-eyebrow">
+                    PENDING
+                </p>
+
+                <h2>
+                    招待中
+                </h2>
+
+            </div>
+
+
+            <div class="event-admin-list">
+
+                {% for participant in pending_invitations %}
+
+                    <div class="event-admin-card">
+
+                        <div class="event-admin-user">
+
+                            <div class="event-admin-avatar pending">
+                                ✉️
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    {{ participant.user.username }}
+                                </strong>
+
+                                <span class="event-admin-pending-label">
+                                    招待中
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'event_scheduler:event_participant_invitation_cancel' event.id participant.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="event-admin-remove-button"
+                            >
+                                招待を取消
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         Joined participants
+         ===================================================== -->
+
+    <section class="event-simple-section">
+
+        <div class="event-simple-heading">
+
+            <p class="event-section-eyebrow">
+                JOINED
+            </p>
+
+            <h2>
+                参加者
+            </h2>
+
+        </div>
+
+
+        <div class="event-admin-list">
+
+            {% for participant in joined_participants %}
+
+                <div class="event-admin-card">
+
+                    <div class="event-admin-user">
+
+                        <div class="event-admin-avatar">
+                            👤
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                {{ participant.user.username }}
+                            </strong>
+
+
+                            {% if participant.user == event.creator %}
+
+                                <span class="event-admin-badge">
+                                    作成者
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <p class="event-empty-message">
+                    参加者はいません。
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

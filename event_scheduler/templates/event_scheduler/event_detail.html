@@ -283,6 +283,30 @@
 
         <div class="event-management-grid">
 
+            <section class="event-simple-section event-management-card">
+
+                <div class="event-simple-heading">
+
+                    <p class="event-section-eyebrow">
+                        PARTICIPANTS
+                    </p>
+
+                    <h2>
+                        参加者
+                    </h2>
+
+                </div>
+
+
+                <a
+                    href="{% url 'event_scheduler:event_participants' event.id %}"
+                    class="event-secondary-button event-management-button"
+                >
+                    👤 参加者を管理
+                </a>
+
+            </section>
+
             <!-- =================================================
                 Admin
                 ================================================= -->

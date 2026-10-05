@@ -216,3 +216,24 @@ class EventAdminInviteForm(forms.Form):
             }
         ),
     )
+
+
+# =========================================================
+# Event participant invitation
+# =========================================================
+
+class EventParticipantInviteForm(forms.Form):
+
+    username = forms.CharField(
+        max_length=150,
+        label="ログインID",
+        widget=forms.TextInput(
+            attrs={
+                "placeholder":
+                    "招待する参加者のログインID",
+
+                "autocomplete":
+                    "off",
+            }
+        ),
+    )

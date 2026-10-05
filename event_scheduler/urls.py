@@ -117,4 +117,34 @@ urlpatterns = [
         name="event_delete",
     ),
 
+    path(
+        "<int:event_id>/participants/",
+        views.event_participants,
+        name="event_participants",
+    ),
+
+    path(
+        "<int:event_id>/participants/invite/",
+        views.event_participant_invite,
+        name="event_participant_invite",
+    ),
+
+    path(
+        "participant-invitations/<int:participant_id>/accept/",
+        views.event_participant_invitation_accept,
+        name="event_participant_invitation_accept",
+    ),
+
+    path(
+        "participant-invitations/<int:participant_id>/decline/",
+        views.event_participant_invitation_decline,
+        name="event_participant_invitation_decline",
+    ),
+
+    path(
+        "<int:event_id>/participant-invitations/<int:participant_id>/cancel/",
+        views.event_participant_invitation_cancel,
+        name="event_participant_invitation_cancel",
+    ),
+
 ]

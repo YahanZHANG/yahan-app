@@ -19,6 +19,7 @@ from .forms import (
     EventAdminInviteForm,
     EventDateForm,
     EventForm,
+    EventParticipantInviteForm,
 )
 
 from .models import (
@@ -45,16 +46,66 @@ from .models import (
 # =========================================================
 
 @login_required
-def event_list(request):
+def event_list(
+    request,
+):
+
+    # =========================================================
+    # My joined events
+    # =========================================================
 
     events = (
         Event.objects
         .filter(
             participants__user=request.user,
+            participants__status=EventParticipant.Status.JOINED,
             is_archived=False,
         )
         .distinct()
     )
+
+
+    # =========================================================
+    # Participant invitations
+    # =========================================================
+
+    pending_participant_invitations = (
+        EventParticipant.objects
+        .filter(
+            user=request.user,
+            status=EventParticipant.Status.INVITED,
+            event__is_archived=False,
+        )
+        .select_related(
+            "event",
+        )
+        .order_by(
+            "-updated_at",
+        )
+    )
+
+
+    # =========================================================
+    # Public events
+    #
+    # JOINED / INVITED のイベントはDISCOVERに重複表示しない
+    # =========================================================
+
+    hidden_public_event_ids = (
+        EventParticipant.objects
+        .filter(
+            user=request.user,
+            status__in=[
+                EventParticipant.Status.JOINED,
+                EventParticipant.Status.INVITED,
+            ],
+        )
+        .values_list(
+            "event_id",
+            flat=True,
+        )
+    )
+
 
     public_events = (
         Event.objects
@@ -63,10 +114,15 @@ def event_list(request):
             is_archived=False,
         )
         .exclude(
-            participants__user=request.user,
+            id__in=hidden_public_event_ids,
         )
         .distinct()
     )
+
+
+    # =========================================================
+    # Admin invitations
+    # =========================================================
 
     pending_admin_invitations = (
         EventAdminInvitation.objects
@@ -83,13 +139,26 @@ def event_list(request):
         )
     )
 
+
+    # =========================================================
+    # Render
+    # =========================================================
+
     return render(
         request,
         "event_scheduler/event_list.html",
         {
-            "events": events,
-            "public_events": public_events,
-            "pending_admin_invitations":pending_admin_invitations,
+            "events":
+                events,
+
+            "public_events":
+                public_events,
+
+            "pending_admin_invitations":
+                pending_admin_invitations,
+
+            "pending_participant_invitations":
+                pending_participant_invitations,
         },
     )
 
@@ -3730,7 +3799,6 @@ def event_admin_invitation_cancel(
     )
 
 
-
 @login_required
 def event_admin_remove(
     request,
@@ -3978,4 +4046,365 @@ def event_delete(
         {
             "event": event,
         },
+    )
+
+
+# =========================================================
+# Event participants
+# =========================================================
+
+@login_required
+def event_participants(
+    request,
+    event_id,
+):
+
+    event = get_object_or_404(
+        Event,
+        id=event_id,
+    )
+
+
+    if not event.can_manage(
+        request.user
+    ):
+
+        return redirect(
+            "event_scheduler:event_detail",
+            event_id=event.id,
+        )
+
+
+    joined_participants = (
+        event.participants
+        .filter(
+            status=EventParticipant.Status.JOINED,
+        )
+        .select_related(
+            "user",
+        )
+        .order_by(
+            "user__username",
+        )
+    )
+
+
+    pending_invitations = (
+        event.participants
+        .filter(
+            status=EventParticipant.Status.INVITED,
+        )
+        .select_related(
+            "user",
+        )
+        .order_by(
+            "-updated_at",
+        )
+    )
+
+
+    form = EventParticipantInviteForm()
+
+
+    return render(
+        request,
+        "event_scheduler/event_participants.html",
+        {
+            "event":
+                event,
+
+            "joined_participants":
+                joined_participants,
+
+            "participant_count":
+                joined_participants.count(),
+
+            "pending_invitations":
+                pending_invitations,
+
+            "form":
+                form,
+        },
+    )
+
+
+# =========================================================
+# Invite participant
+# =========================================================
+
+@login_required
+def event_participant_invite(
+    request,
+    event_id,
+):
+
+    event = get_object_or_404(
+        Event,
+        id=event_id,
+    )
+
+
+    if not event.can_manage(
+        request.user
+    ):
+
+        return redirect(
+            "event_scheduler:event_detail",
+            event_id=event.id,
+        )
+
+
+    if request.method != "POST":
+
+        return redirect(
+            "event_scheduler:event_participants",
+            event_id=event.id,
+        )
+
+
+    form = EventParticipantInviteForm(
+        request.POST,
+    )
+
+
+    if form.is_valid():
+
+        username = (
+            form.cleaned_data[
+                "username"
+            ]
+            .strip()
+        )
+
+
+        UserModel = get_user_model()
+
+        username_field = (
+            UserModel.USERNAME_FIELD
+        )
+
+
+        invited_user = (
+            UserModel.objects
+            .filter(
+                **{
+                    username_field:
+                        username,
+                }
+            )
+            .first()
+        )
+
+
+        # -----------------------------------------------------
+        # User not found
+        # -----------------------------------------------------
+
+        if invited_user is None:
+
+            messages.error(
+                request,
+                "そのログインIDのユーザーは見つかりません。",
+            )
+
+
+        # -----------------------------------------------------
+        # Already joined
+        # -----------------------------------------------------
+
+        elif (
+            EventParticipant.objects
+            .filter(
+                event=event,
+                user=invited_user,
+                status=EventParticipant.Status.JOINED,
+            )
+            .exists()
+        ):
+
+            messages.error(
+                request,
+                "このユーザーはすでに参加しています。",
+            )
+
+
+        # -----------------------------------------------------
+        # Already invited
+        # -----------------------------------------------------
+
+        elif (
+            EventParticipant.objects
+            .filter(
+                event=event,
+                user=invited_user,
+                status=EventParticipant.Status.INVITED,
+            )
+            .exists()
+        ):
+
+            messages.error(
+                request,
+                "このユーザーはすでに招待されています。",
+            )
+
+
+        # -----------------------------------------------------
+        # Invite
+        # -----------------------------------------------------
+
+        else:
+
+            participant, created = (
+                EventParticipant.objects
+                .get_or_create(
+                    event=event,
+                    user=invited_user,
+                )
+            )
+
+
+            participant.status = (
+                EventParticipant.Status.INVITED
+            )
+
+            participant.save(
+                update_fields=[
+                    "status",
+                    "updated_at",
+                ]
+            )
+
+
+            messages.success(
+                request,
+                "参加者として招待しました。",
+            )
+
+
+    return redirect(
+        "event_scheduler:event_participants",
+        event_id=event.id,
+    )
+
+
+# =========================================================
+# Accept participant invitation
+# =========================================================
+
+@login_required
+def event_participant_invitation_accept(
+    request,
+    participant_id,
+):
+
+    participant = get_object_or_404(
+        EventParticipant,
+        id=participant_id,
+        user=request.user,
+        status=EventParticipant.Status.INVITED,
+    )
+
+
+    if request.method == "POST":
+
+        participant.status = (
+            EventParticipant.Status.JOINED
+        )
+
+        participant.save(
+            update_fields=[
+                "status",
+                "updated_at",
+            ]
+        )
+
+
+        messages.success(
+            request,
+            "イベントに参加しました。",
+        )
+
+
+    return redirect(
+        "event_scheduler:event_detail",
+        event_id=participant.event.id,
+    )
+
+
+# =========================================================
+# Decline participant invitation
+# =========================================================
+
+@login_required
+def event_participant_invitation_decline(
+    request,
+    participant_id,
+):
+
+    participant = get_object_or_404(
+        EventParticipant,
+        id=participant_id,
+        user=request.user,
+        status=EventParticipant.Status.INVITED,
+    )
+
+
+    if request.method == "POST":
+
+        participant.delete()
+
+
+    return redirect(
+        "event_scheduler:event_list"
+    )
+
+
+# =========================================================
+# Cancel participant invitation
+# =========================================================
+
+@login_required
+def event_participant_invitation_cancel(
+    request,
+    event_id,
+    participant_id,
+):
+
+    event = get_object_or_404(
+        Event,
+        id=event_id,
+    )
+
+
+    if not event.can_manage(
+        request.user
+    ):
+
+        return redirect(
+            "event_scheduler:event_detail",
+            event_id=event.id,
+        )
+
+
+    participant = get_object_or_404(
+        EventParticipant,
+        id=participant_id,
+        event=event,
+        status=EventParticipant.Status.INVITED,
+    )
+
+
+    if request.method == "POST":
+
+        participant.delete()
+
+        messages.success(
+            request,
+            "参加者への招待を取り消しました。",
+        )
+
+
+    return redirect(
+        "event_scheduler:event_participants",
+        event_id=event.id,
     )

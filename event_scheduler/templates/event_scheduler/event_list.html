@@ -163,6 +163,111 @@
 
 
     <!-- =====================================================
+        Participant invitations
+        ===================================================== -->
+
+    {% if pending_participant_invitations %}
+
+        <section class="event-list-section">
+
+            <div class="event-list-section-header">
+
+                <div>
+
+                    <p class="event-section-eyebrow">
+                        EVENT INVITATIONS
+                    </p>
+
+                    <h2>
+                        イベントへの招待
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="event-admin-invitation-list">
+
+                {% for invitation in pending_participant_invitations %}
+
+                    <div class="event-admin-invitation-card">
+
+                        <div class="event-admin-invitation-icon">
+                            {{ invitation.event.auto_icon }}
+                        </div>
+
+
+                        <div class="event-admin-invitation-content">
+
+                            <span class="event-admin-invitation-label">
+                                イベントに招待されています
+                            </span>
+
+                            <h3>
+                                {{ invitation.event.title }}
+                            </h3>
+
+
+                            {% if invitation.event.location %}
+
+                                <p>
+                                    📍 {{ invitation.event.location }}
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="event-admin-invitation-actions">
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_participant_invitation_accept' invitation.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-admin-invitation-accept"
+                                >
+                                    ✓ 参加する
+                                </button>
+
+                            </form>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'event_scheduler:event_participant_invitation_decline' invitation.id %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="event-admin-invitation-decline"
+                                >
+                                    辞退
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+    <!-- =====================================================
          My events
          ===================================================== -->
 
