@@ -9,6 +9,7 @@
     href="{% static 'event_scheduler/event_scheduler.css' %}"
 >
 
+
 <div class="event-create-page">
 
     <!-- =====================================================
@@ -186,9 +187,7 @@
 
                     {% for candidate_date in posted_candidate_dates %}
 
-                        <div
-                            class="candidate-date-row"
-                        >
+                        <div class="candidate-date-row">
 
                             <input
                                 type="date"
@@ -212,9 +211,7 @@
 
                 {% else %}
 
-                    <div
-                        class="candidate-date-row"
-                    >
+                    <div class="candidate-date-row">
 
                         <input
                             type="date"
@@ -356,8 +353,7 @@
 
 
         <!-- =================================================
-             Mode 2:
-             Time options
+             Mode 2: Time options
              ================================================= -->
 
         <section
@@ -401,7 +397,6 @@
                                 placeholder="例：午前"
                             >
 
-
                             <input
                                 type="text"
                                 name="time_option_start"
@@ -428,7 +423,6 @@
                                 maxlength="5"
                             >
 
-
                             <button
                                 type="button"
                                 class="remove-time-option"
@@ -450,7 +444,6 @@
                             name="time_option_label"
                             placeholder="例：午前"
                         >
-
 
                         <input
                             type="text"
@@ -475,7 +468,6 @@
                             title="例：0930"
                             maxlength="5"
                         >
-
 
                         <button
                             type="button"
@@ -504,8 +496,7 @@
 
 
         <!-- =================================================
-             Mode 3:
-             Start times
+             Mode 3: Start times
              ================================================= -->
 
         <section
@@ -540,8 +531,8 @@
 
 
         <!-- =================================================
-            Duration
-            ================================================= -->
+             4. Duration
+             ================================================= -->
 
         <section class="event-create-section">
 
@@ -749,6 +740,7 @@
 
                         </div>
 
+
                         <div class="duration-option-row">
 
                             <input
@@ -808,12 +800,14 @@
                 >
                     ＋ 長さを追加
                 </button>
+
             </div>
 
         </section>
 
+
         <!-- =================================================
-             4. Other settings
+             5. Other settings
              ================================================= -->
 
         <section class="event-create-section">
@@ -835,6 +829,8 @@
             </div>
 
 
+            <!-- Public -->
+
             <label class="event-checkbox-row">
 
                 {{ form.is_public }}
@@ -846,7 +842,7 @@
                     </strong>
 
                     <small>
-                        ログインしてい人は誰でもこのイベントを見ることができ、
+                        ログインしている人は誰でもこのイベントを見ることができ、
                         参加することができます。
                     </small>
 
@@ -855,17 +851,26 @@
             </label>
 
 
-            <label class="event-checkbox-row">
+            <!-- Candidate date / date-time addition -->
+
+            <label
+                class="event-checkbox-row"
+                id="participant-date-addition-row"
+            >
 
                 {{ form.allow_participant_date_addition }}
 
                 <span>
 
-                    <strong>
+                    <strong
+                        id="participant-date-addition-title"
+                    >
                         参加者による候補日の追加を許可する
                     </strong>
 
-                    <small>
+                    <small
+                        id="participant-date-addition-help"
+                    >
                         参加者自身が、新しい候補日を追加できるようになります。
                     </small>
 
@@ -873,7 +878,37 @@
 
             </label>
 
-            <label class="event-checkbox-row">
+
+            <!-- Time option addition -->
+
+            <label
+                class="event-checkbox-row"
+                id="participant-time-option-addition-row"
+            >
+
+                {{ form.allow_participant_time_option_addition }}
+
+                <span>
+
+                    <strong>
+                        参加者による時間帯の追加を許可する
+                    </strong>
+
+                    <small>
+                        「夕方」など、新しい時間帯の選択肢を追加できるようになります。
+                    </small>
+
+                </span>
+
+            </label>
+
+
+            <!-- Duration option addition -->
+
+            <label
+                class="event-checkbox-row"
+                id="participant-duration-addition-row"
+            >
 
                 {{ form.allow_participant_duration_addition }}
 
@@ -890,6 +925,9 @@
                 </span>
 
             </label>
+
+
+            <!-- Deadline -->
 
             <div class="event-field">
 
@@ -959,6 +997,10 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
+        // =====================================================
+        // Elements
+        // =====================================================
+
         const candidateDateList =
             document.getElementById(
                 "candidate-date-list"
@@ -969,10 +1011,22 @@ document.addEventListener(
                 "add-candidate-date"
             );
 
+
         const timeOptionsSection =
             document.getElementById(
                 "time-options-section"
             );
+
+        const timeOptionList =
+            document.getElementById(
+                "time-option-list"
+            );
+
+        const addTimeOptionButton =
+            document.getElementById(
+                "add-time-option"
+            );
+
 
         const startTimesSection =
             document.getElementById(
@@ -985,10 +1039,78 @@ document.addEventListener(
             );
 
 
-        /*
-         * POSTでエラーになった場合、
-         * 入力済みの開始時刻をここから復元する。
-         */
+        const fixedDurationSection =
+            document.getElementById(
+                "fixed-duration-section"
+            );
+
+        const durationVoteSection =
+            document.getElementById(
+                "duration-vote-section"
+            );
+
+        const durationOptionList =
+            document.getElementById(
+                "duration-option-list"
+            );
+
+        const addDurationOptionButton =
+            document.getElementById(
+                "add-duration-option"
+            );
+
+
+        // =====================================================
+        // Participant addition settings
+        // =====================================================
+
+        const participantDateAdditionRow =
+            document.getElementById(
+                "participant-date-addition-row"
+            );
+
+        const participantDateAdditionInput =
+            document.getElementById(
+                "id_allow_participant_date_addition"
+            );
+
+        const participantDateAdditionTitle =
+            document.getElementById(
+                "participant-date-addition-title"
+            );
+
+        const participantDateAdditionHelp =
+            document.getElementById(
+                "participant-date-addition-help"
+            );
+
+
+        const participantTimeOptionAdditionRow =
+            document.getElementById(
+                "participant-time-option-addition-row"
+            );
+
+        const participantTimeOptionAdditionInput =
+            document.getElementById(
+                "id_allow_participant_time_option_addition"
+            );
+
+
+        const participantDurationAdditionRow =
+            document.getElementById(
+                "participant-duration-addition-row"
+            );
+
+        const participantDurationAdditionInput =
+            document.getElementById(
+                "id_allow_participant_duration_addition"
+            );
+
+
+        // =====================================================
+        // POSTでエラーになった場合の開始時刻
+        // =====================================================
+
         const postedStartTimes = [
 
             {% for item in posted_start_times %}
@@ -1006,7 +1128,8 @@ document.addEventListener(
         ];
 
 
-        let postedStartTimesApplied = false;
+        let postedStartTimesApplied =
+            false;
 
 
         // =====================================================
@@ -1021,6 +1144,7 @@ document.addEventListener(
                     document.createElement(
                         "div"
                     );
+
 
                 row.className =
                     "candidate-date-row";
@@ -1064,7 +1188,9 @@ document.addEventListener(
                         "remove-candidate-date"
                     )
                 ) {
+
                     return;
+
                 }
 
 
@@ -1074,21 +1200,26 @@ document.addEventListener(
                     );
 
 
-                /*
-                 * 候補日は最低1行残す。
-                 */
-                if (rows.length <= 1) {
+                // 最低1行残す
+
+                if (
+                    rows.length <= 1
+                ) {
 
                     const input =
                         rows[0].querySelector(
                             ".candidate-date-input"
                         );
 
-                    input.value = "";
+
+                    input.value =
+                        "";
+
 
                     rebuildStartTimeDates();
 
                     return;
+
                 }
 
 
@@ -1133,7 +1264,7 @@ document.addEventListener(
             );
 
 
-        function updateModeSections() {
+        function getSchedulingMode() {
 
             const selected =
                 document.querySelector(
@@ -1141,15 +1272,24 @@ document.addEventListener(
                 );
 
 
-            const mode =
+            return (
                 selected
                     ? selected.value
-                    : "date_only";
+                    : "date_only"
+            );
+
+        }
 
 
-            // ---------------------------------------------
+        function updateModeSections() {
+
+            const mode =
+                getSchedulingMode();
+
+
+            // -------------------------------------------------
             // Time options
-            // ---------------------------------------------
+            // -------------------------------------------------
 
             timeOptionsSection.style.display =
                 (
@@ -1159,9 +1299,9 @@ document.addEventListener(
                     : "none";
 
 
-            // ---------------------------------------------
+            // -------------------------------------------------
             // Start times
-            // ---------------------------------------------
+            // -------------------------------------------------
 
             startTimesSection.style.display =
                 (
@@ -1171,11 +1311,6 @@ document.addEventListener(
                     : "none";
 
 
-            // ---------------------------------------------
-            // Duration
-            // ---------------------------------------------
-
-
             if (
                 mode === "start_times"
             ) {
@@ -1183,6 +1318,9 @@ document.addEventListener(
                 rebuildStartTimeDates();
 
             }
+
+
+            updateParticipantAdditionSettings();
 
         }
 
@@ -1203,17 +1341,6 @@ document.addEventListener(
         // Time options
         // =====================================================
 
-        const timeOptionList =
-            document.getElementById(
-                "time-option-list"
-            );
-
-        const addTimeOptionButton =
-            document.getElementById(
-                "add-time-option"
-            );
-
-
         addTimeOptionButton.addEventListener(
             "click",
             function () {
@@ -1222,6 +1349,7 @@ document.addEventListener(
                     document.createElement(
                         "div"
                     );
+
 
                 row.className =
                     "time-option-row";
@@ -1285,7 +1413,9 @@ document.addEventListener(
                         "remove-time-option"
                     )
                 ) {
+
                     return;
+
                 }
 
 
@@ -1295,10 +1425,11 @@ document.addEventListener(
                     );
 
 
-                /*
-                 * 最低1行残す。
-                 */
-                if (rows.length <= 1) {
+                // 最低1行残す
+
+                if (
+                    rows.length <= 1
+                ) {
 
                     rows[0]
                         .querySelectorAll(
@@ -1307,12 +1438,15 @@ document.addEventListener(
                         .forEach(
                             function (input) {
 
-                                input.value = "";
+                                input.value =
+                                    "";
 
                             }
                         );
 
+
                     return;
+
                 }
 
 
@@ -1333,11 +1467,12 @@ document.addEventListener(
         function rebuildStartTimeDates() {
 
             /*
-             * 現在画面に存在する値を先に保存する。
-             * 候補日を追加・変更しても、
-             * 既存の開始時刻を消さないため。
+             * 現在画面にある開始時刻を保存してから再構築する。
+             * 候補日を変更しても既存入力を失わないため。
              */
-            const existingValues = {};
+
+            const existingValues =
+                {};
 
 
             startTimeDateList
@@ -1352,7 +1487,9 @@ document.addEventListener(
 
 
                         if (!date) {
+
                             return;
+
                         }
 
 
@@ -1375,10 +1512,13 @@ document.addEventListener(
 
 
             /*
-             * POSTエラーから戻った直後は
-             * Djangoから受け取った値も入れる。
+             * POST validation error 後は
+             * Djangoから戻された値も復元する。
              */
-            if (!postedStartTimesApplied) {
+
+            if (
+                !postedStartTimesApplied
+            ) {
 
                 postedStartTimes.forEach(
                     function (item) {
@@ -1431,7 +1571,9 @@ document.addEventListener(
 
 
                     if (!date) {
+
                         return;
+
                     }
 
 
@@ -1443,6 +1585,7 @@ document.addEventListener(
                         document.createElement(
                             "div"
                         );
+
 
                     card.className =
                         "start-time-date-card";
@@ -1459,6 +1602,7 @@ document.addEventListener(
                         document.createElement(
                             "h3"
                         );
+
 
                     title.textContent =
                         formatDateForDisplay(
@@ -1480,6 +1624,7 @@ document.addEventListener(
                             "div"
                         );
 
+
                     list.className =
                         "start-time-list";
 
@@ -1496,10 +1641,6 @@ document.addEventListener(
                         times.length === 0
                     ) {
 
-                        /*
-                         * 新しく候補日を追加した場合は
-                         * 00:00 から開始。
-                         */
                         times = [
                             "00:00"
                         ];
@@ -1533,6 +1674,7 @@ document.addEventListener(
                         document.createElement(
                             "button"
                         );
+
 
                     addButton.type =
                         "button";
@@ -1584,6 +1726,7 @@ document.addEventListener(
                     "div"
                 );
 
+
             row.className =
                 "start-time-row";
 
@@ -1629,17 +1772,20 @@ document.addEventListener(
                         );
 
 
-                    /*
-                     * 日付ごとに最低1行残す。
-                     */
-                    if (rows.length <= 1) {
+                    // 日付ごとに最低1行残す
+
+                    if (
+                        rows.length <= 1
+                    ) {
 
                         row.querySelector(
                             'input[name="start_time_value"]'
                         ).value =
                             "00:00";
 
+
                         return;
+
                     }
 
 
@@ -1670,8 +1816,12 @@ document.addEventListener(
                 );
 
 
-            if (parts.length !== 3) {
+            if (
+                parts.length !== 3
+            ) {
+
                 return dateString;
+
             }
 
 
@@ -1697,18 +1847,8 @@ document.addEventListener(
                 'input[name="duration_mode"]'
             );
 
-        const fixedDurationSection =
-            document.getElementById(
-                "fixed-duration-section"
-            );
 
-        const durationVoteSection =
-            document.getElementById(
-                "duration-vote-section"
-            );
-
-
-        function updateDurationModeSections() {
+        function getDurationMode() {
 
             const selected =
                 document.querySelector(
@@ -1716,10 +1856,19 @@ document.addEventListener(
                 );
 
 
-            const mode =
+            return (
                 selected
                     ? selected.value
-                    : "fixed";
+                    : "fixed"
+            );
+
+        }
+
+
+        function updateDurationModeSections() {
+
+            const mode =
+                getDurationMode();
 
 
             fixedDurationSection.style.display =
@@ -1736,6 +1885,9 @@ document.addEventListener(
                 )
                     ? "block"
                     : "none";
+
+
+            updateParticipantAdditionSettings();
 
         }
 
@@ -1756,17 +1908,6 @@ document.addEventListener(
         // Duration options
         // =====================================================
 
-        const durationOptionList =
-            document.getElementById(
-                "duration-option-list"
-            );
-
-        const addDurationOptionButton =
-            document.getElementById(
-                "add-duration-option"
-            );
-
-
         addDurationOptionButton.addEventListener(
             "click",
             function () {
@@ -1775,6 +1916,7 @@ document.addEventListener(
                     document.createElement(
                         "div"
                     );
+
 
                 row.className =
                     "duration-option-row";
@@ -1819,7 +1961,9 @@ document.addEventListener(
                         "remove-duration-option"
                     )
                 ) {
+
                     return;
+
                 }
 
 
@@ -1830,27 +1974,236 @@ document.addEventListener(
 
 
                 if (row) {
+
                     row.remove();
+
                 }
 
             }
         );
+
+
+        // =====================================================
+        // Participant addition settings
+        // =====================================================
+
+        function updateParticipantAdditionSettings() {
+
+            const schedulingMode =
+                getSchedulingMode();
+
+            const durationMode =
+                getDurationMode();
+
+
+            // -------------------------------------------------
+            // Candidate date / candidate date-time
+            // -------------------------------------------------
+
+            participantDateAdditionRow.style.display =
+                "flex";
+
+
+            if (
+                schedulingMode === "start_times"
+            ) {
+
+                participantDateAdditionTitle.textContent =
+                    "参加者による候補日時の追加を許可する";
+
+                participantDateAdditionHelp.textContent =
+                    (
+                        "参加者自身が、新しい候補日と"
+                        +
+                        "開始時刻を追加できるようになります。"
+                    );
+
+
+                if (
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput
+                    === "1"
+                ) {
+
+                    participantDateAdditionInput.checked =
+                        (
+                            participantDateAdditionInput.dataset
+                                .previousChecked
+                            === "1"
+                        );
+
+
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput =
+                            "0";
+
+                }
+
+
+                participantDateAdditionInput.disabled =
+                    false;
+
+            }
+
+            else if (
+                schedulingMode === "free_input"
+            ) {
+
+                participantDateAdditionTitle.textContent =
+                    "参加者による候補日の追加";
+
+                participantDateAdditionHelp.textContent =
+                    (
+                        "空き時間を入力する方式では、"
+                        +
+                        "この設定は常に有効です。"
+                    );
+
+
+                if (
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput
+                    !== "1"
+                ) {
+
+                    participantDateAdditionInput.dataset
+                        .previousChecked =
+                            participantDateAdditionInput.checked
+                                ? "1"
+                                : "0";
+
+
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput =
+                            "1";
+
+                }
+
+
+                participantDateAdditionInput.checked =
+                    true;
+
+                participantDateAdditionInput.disabled =
+                    true;
+
+            }
+
+            else {
+
+                participantDateAdditionTitle.textContent =
+                    "参加者による候補日の追加を許可する";
+
+                participantDateAdditionHelp.textContent =
+                    (
+                        "参加者自身が、新しい候補日を"
+                        +
+                        "追加できるようになります。"
+                    );
+
+
+                if (
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput
+                    === "1"
+                ) {
+
+                    participantDateAdditionInput.checked =
+                        (
+                            participantDateAdditionInput.dataset
+                                .previousChecked
+                            === "1"
+                        );
+
+
+                    participantDateAdditionInput.dataset
+                        .forcedByFreeInput =
+                            "0";
+
+                }
+
+
+                participantDateAdditionInput.disabled =
+                    false;
+
+            }
+
+
+            // -------------------------------------------------
+            // Time option addition
+            //
+            // TIME_OPTIONS のときだけ表示
+            // -------------------------------------------------
+
+            if (
+                schedulingMode === "time_options"
+            ) {
+
+                participantTimeOptionAdditionRow.style.display =
+                    "flex";
+
+                participantTimeOptionAdditionInput.disabled =
+                    false;
+
+            }
+
+            else {
+
+                participantTimeOptionAdditionRow.style.display =
+                    "none";
+
+                participantTimeOptionAdditionInput.disabled =
+                    true;
+
+            }
+
+
+            // -------------------------------------------------
+            // Duration option addition
+            //
+            // duration = VOTE のときだけ表示
+            // -------------------------------------------------
+
+            if (
+                durationMode === "vote"
+            ) {
+
+                participantDurationAdditionRow.style.display =
+                    "flex";
+
+                participantDurationAdditionInput.disabled =
+                    false;
+
+            }
+
+            else {
+
+                participantDurationAdditionRow.style.display =
+                    "none";
+
+                participantDurationAdditionInput.disabled =
+                    true;
+
+            }
+
+        }
+
 
         // =====================================================
         // Initial state
         // =====================================================
 
         updateModeSections();
+
         updateDurationModeSections();
 
     }
 );
 
-// =====================================================
+
+// =========================================================
 // Time input normalization
 // 0930 -> 09:30
-// 1200 -> 12:00
-// =====================================================
+// =========================================================
 
 function normalizeTimeValue(value) {
 
@@ -1859,11 +2212,14 @@ function normalizeTimeValue(value) {
 
 
     if (!trimmed) {
+
         return "";
+
     }
 
 
-    // すでに HH:MM の場合
+    // Already HH:MM
+
     const colonMatch =
         trimmed.match(
             /^([01]\d|2[0-3]):([0-5]\d)$/
@@ -1883,7 +2239,8 @@ function normalizeTimeValue(value) {
     }
 
 
-    // 数字だけ取り出す
+    // Keep digits only
+
     const digits =
         trimmed.replace(
             /\D/g,
@@ -1891,9 +2248,12 @@ function normalizeTimeValue(value) {
         );
 
 
-    // 4桁でなければそのまま
-    if (digits.length !== 4) {
+    if (
+        digits.length !== 4
+    ) {
+
         return trimmed;
+
     }
 
 
@@ -1915,13 +2275,14 @@ function normalizeTimeValue(value) {
         );
 
 
-    // 不正な時刻はそのまま
     if (
         hour > 23
         ||
         minute > 59
     ) {
+
         return trimmed;
+
     }
 
 
@@ -1942,9 +2303,9 @@ function normalizeTimeValue(value) {
 }
 
 
-// =====================================================
+// =========================================================
 // Check whether input is a time field
-// =====================================================
+// =========================================================
 
 function isEventTimeInput(input) {
 
@@ -1965,9 +2326,9 @@ function isEventTimeInput(input) {
 }
 
 
-// =====================================================
+// =========================================================
 // Normalize when leaving the input
-// =====================================================
+// =========================================================
 
 document.addEventListener(
     "blur",
@@ -1977,8 +2338,14 @@ document.addEventListener(
             event.target;
 
 
-        if (!isEventTimeInput(input)) {
+        if (
+            !isEventTimeInput(
+                input
+            )
+        ) {
+
             return;
+
         }
 
 
@@ -1992,9 +2359,9 @@ document.addEventListener(
 );
 
 
-// =====================================================
+// =========================================================
 // Normalize again before submit
-// =====================================================
+// =========================================================
 
 const eventCreateForm =
     document.getElementById(

@@ -108,101 +108,56 @@
 
     </section>
 
-
     <!-- =====================================================
-         2. Current result
-         ===================================================== -->
+        Results
+        ===================================================== -->
 
     {% if has_answered %}
 
-        <section class="event-simple-section">
+        <section class="event-result-section">
 
             <div class="event-simple-heading">
 
                 <p class="event-section-eyebrow">
-                    CURRENT RESULT
+                    RESULTS
                 </p>
 
                 <h2>
-                    ✨ 現在のおすすめ
+                    回答結果
                 </h2>
 
             </div>
 
 
-            {% if best_result %}
+            <!-- =============================================
+                Schedule results
+                ============================================= -->
 
-                <div class="event-best-slot event-best-slot-simple">
-
-                    <div class="event-best-highlight">
-
-                        <span class="event-best-highlight-date">
-                            {{ best_result.date|date:"n月j日（D）" }}
-                        </span>
-
-                        {% if best_result.label %}
-                            <span class="event-best-highlight-time">
-                                {{ best_result.label }}
-                            </span>
-                        {% endif %}
-
-                        {% if best_result.start_time %}
-                            <span class="event-best-highlight-time">
-
-                                {{ best_result.start_time|time:"H:i" }}
-
-                                {% if best_result.end_time %}
-                                    〜{{ best_result.end_time|time:"H:i" }}
-                                {% endif %}
-
-                            </span>
-                        {% endif %}
-
-                    </div>
-
-
-                    <div class="event-result-score">
-
-                        <span class="yes">
-                            ○ {{ best_result.yes_count }}
-                        </span>
-
-                        <span class="maybe">
-                            △ {{ best_result.maybe_count }}
-                        </span>
-
-                        <span class="no">
-                            × {{ best_result.no_count }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-            {% endif %}
-
-
-            <div class="event-current-result-list">
+            <div class="event-result-list">
 
                 {% for row in result_rows %}
 
-                    <div class="event-current-result-row">
+                    <div class="event-result-row">
 
-                        <div class="event-current-result-main">
+                        <div class="event-result-datetime">
 
                             <strong>
-                                {{ row.date|date:"n月j日" }}
+                                {{ row.date|date:"n月j日（D）" }}
                             </strong>
 
+
                             {% if row.label %}
+
                                 <span>
                                     {{ row.label }}
                                 </span>
+
                             {% endif %}
+
 
                             {% if row.start_time %}
 
-                                <span>
+                                <span class="event-result-time">
 
                                     {{ row.start_time|time:"H:i" }}
 
@@ -217,7 +172,7 @@
                         </div>
 
 
-                        <div class="event-current-result-numbers">
+                        <div class="event-result-counts">
 
                             <span class="yes">
                                 ○ {{ row.yes_count }}
@@ -235,26 +190,85 @@
 
                     </div>
 
+                {% empty %}
+
+                    <p class="event-empty-message">
+                        まだ回答結果がありません。
+                    </p>
+
                 {% endfor %}
 
             </div>
 
 
-            {% if best_duration %}
+            <!-- =============================================
+                Duration results
+                ============================================= -->
 
-                <div class="event-best-duration-simple">
+            {% if event.duration_mode == "vote" %}
 
-                    <span>
-                        ⏱ 長さ
-                    </span>
+                <div class="event-duration-result-section">
 
-                    <strong>
-                        {{ best_duration.option.display_label }}
-                    </strong>
+                    <div class="event-result-subheading">
 
-                    <small>
-                        {{ best_duration.vote_count }}票
-                    </small>
+                        <span>
+                            ⏱
+                        </span>
+
+                        <strong>
+                            長さ
+                        </strong>
+
+                    </div>
+
+
+                    <div class="event-duration-result-list">
+
+                        {% for row in duration_result_rows %}
+
+                            <div class="event-duration-result-row">
+
+                                <div class="event-duration-result-header">
+
+                                    <strong>
+                                        {{ row.option.display_label }}
+                                    </strong>
+
+                                    <span>
+                                        {{ row.vote_count }}票
+                                    </span>
+
+                                </div>
+
+
+                                <div class="event-duration-result-track">
+
+                                    <div
+                                        class="event-duration-result-bar"
+                                        style="width: {{ row.vote_percent }}%;"
+                                    >
+                                    </div>
+
+                                </div>
+
+
+                                <div class="event-duration-result-percent">
+
+                                    {{ row.vote_percent }}%
+
+                                </div>
+
+                            </div>
+
+                        {% empty %}
+
+                            <p class="event-empty-message">
+                                長さの候補がありません。
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
 
                 </div>
 

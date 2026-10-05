@@ -6371,3 +6371,359 @@ small {
     text-decoration:
         underline;
 }
+
+/* =========================================================
+   Event results
+   ========================================================= */
+
+.event-result-section {
+    margin-bottom:
+        16px;
+
+    padding:
+        18px;
+
+    border:
+        1px solid
+        var(--event-border);
+
+    border-radius:
+        18px;
+
+    background:
+        #fff;
+}
+
+
+/* =========================================================
+   Schedule result list
+   ========================================================= */
+
+.event-result-list {
+    display:
+        grid;
+
+    gap:
+        9px;
+
+    margin-top:
+        14px;
+}
+
+
+.event-result-row {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        14px;
+
+    padding:
+        12px
+        13px;
+
+    border:
+        1px solid
+        var(--event-border);
+
+    border-radius:
+        14px;
+
+    background:
+        #fafbfc;
+}
+
+
+.event-result-datetime {
+    display:
+        flex;
+
+    align-items:
+        baseline;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        7px;
+
+    min-width:
+        0;
+}
+
+
+.event-result-datetime strong {
+    font-size:
+        14px;
+}
+
+
+.event-result-datetime span {
+    color:
+        #59636a;
+
+    font-size:
+        13px;
+
+    font-weight:
+        750;
+}
+
+
+.event-result-time {
+    font-size:
+        15px !important;
+
+    font-weight:
+        850 !important;
+}
+
+
+/* =========================================================
+   Vote counts
+   ========================================================= */
+
+.event-result-counts {
+    display:
+        flex;
+
+    flex-shrink:
+        0;
+
+    gap:
+        6px;
+}
+
+
+.event-result-counts span {
+    min-width:
+        42px;
+
+    padding:
+        6px
+        8px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        12px;
+
+    font-weight:
+        850;
+
+    text-align:
+        center;
+}
+
+
+.event-result-counts .yes {
+    background:
+        #edf8f3;
+
+    color:
+        #37765f;
+}
+
+
+.event-result-counts .maybe {
+    background:
+        #fff7e6;
+
+    color:
+        #8d6d31;
+}
+
+
+.event-result-counts .no {
+    background:
+        #fff0f0;
+
+    color:
+        #925555;
+}
+
+
+/* =========================================================
+   Duration results
+   ========================================================= */
+
+.event-duration-result-section {
+    margin-top:
+        22px;
+
+    padding-top:
+        18px;
+
+    border-top:
+        1px solid
+        var(--event-border);
+}
+
+
+.event-result-subheading {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    margin-bottom:
+        13px;
+
+    font-size:
+        15px;
+}
+
+
+.event-duration-result-list {
+    display:
+        grid;
+
+    gap:
+        14px;
+}
+
+
+.event-duration-result-row {
+    padding:
+        11px
+        12px;
+
+    border:
+        1px solid
+        var(--event-border);
+
+    border-radius:
+        13px;
+
+    background:
+        #fafbfc;
+}
+
+
+.event-duration-result-header {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        12px;
+
+    margin-bottom:
+        8px;
+}
+
+
+.event-duration-result-header strong {
+    font-size:
+        14px;
+}
+
+
+.event-duration-result-header span {
+    font-size:
+        13px;
+
+    font-weight:
+        850;
+}
+
+
+.event-duration-result-track {
+    width:
+        100%;
+
+    height:
+        8px;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        999px;
+
+    background:
+        #e8ebed;
+}
+
+
+.event-duration-result-bar {
+    min-width:
+        0;
+
+    height:
+        100%;
+
+    border-radius:
+        inherit;
+
+    background:
+        #8177c9;
+}
+
+
+.event-duration-result-percent {
+    margin-top:
+        5px;
+
+    color:
+        #899197;
+
+    font-size:
+        10px;
+
+    font-weight:
+        700;
+
+    text-align:
+        right;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (
+    max-width: 600px
+) {
+
+    .event-result-row {
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        gap:
+            9px;
+    }
+
+
+    .event-result-counts {
+        width:
+            100%;
+    }
+
+
+    .event-result-counts span {
+        flex:
+            1;
+    }
+
+}

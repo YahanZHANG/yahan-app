@@ -908,6 +908,10 @@ def event_detail(
         )
 
 
+    # =========================================================
+    # Candidate dates
+    # =========================================================
+
     candidate_dates = list(
         event.candidate_dates
         .all()
@@ -986,16 +990,28 @@ def event_detail(
 
 
     # =========================================================
+    # Joined participants
+    # =========================================================
+
+    joined_participant_count = (
+        EventParticipant.objects
+        .filter(
+            event=event,
+            status=EventParticipant.Status.JOINED,
+        )
+        .count()
+    )
+
+
+    # =========================================================
     # Result data
+    #
+    # 回答済みのユーザーだけに作成する
     # =========================================================
 
     result_rows = []
 
-    best_result = None
-
     duration_result_rows = []
-
-    best_duration = None
 
 
     def get_vote_counts(
@@ -1003,32 +1019,33 @@ def event_detail(
     ):
 
         return {
+
             "yes":
                 queryset.filter(
-                    status="yes",
-                ).count(),
+                    status=AvailabilityStatus.YES,
+                )
+                .count(),
 
             "maybe":
                 queryset.filter(
-                    status="maybe",
-                ).count(),
+                    status=AvailabilityStatus.MAYBE,
+                )
+                .count(),
 
             "no":
                 queryset.filter(
-                    status="no",
-                ).count(),
+                    status=AvailabilityStatus.NO,
+                )
+                .count(),
         }
 
 
-    # =========================================================
-    # Show results only after this user has answered
-    # =========================================================
-
     if has_answered:
 
-        # -----------------------------------------------------
+        # =====================================================
+        # Mode 1:
         # Date only
-        # -----------------------------------------------------
+        # =====================================================
 
         if (
             event.scheduling_mode
@@ -1070,17 +1087,23 @@ def event_detail(
                 )
 
 
-        # -----------------------------------------------------
+        # =====================================================
+        # Mode 2:
         # Time options
-        # -----------------------------------------------------
+        # =====================================================
 
         elif (
             event.scheduling_mode
             == Event.SchedulingMode.TIME_OPTIONS
         ):
 
-            time_options = list(
-                event.time_options.all()
+            time_options = (
+                event.time_options
+                .all()
+                .order_by(
+                    "order",
+                    "id",
+                )
             )
 
 
@@ -1122,9 +1145,10 @@ def event_detail(
                     )
 
 
-        # -----------------------------------------------------
+        # =====================================================
+        # Mode 3:
         # Start times
-        # -----------------------------------------------------
+        # =====================================================
 
         elif (
             event.scheduling_mode
@@ -1141,7 +1165,7 @@ def event_detail(
                 )
                 .order_by(
                     "event_date__date",
-                    "order",
+                    "start_time",
                     "id",
                 )
             )
@@ -1182,9 +1206,10 @@ def event_detail(
                 )
 
 
-        # -----------------------------------------------------
+        # =====================================================
+        # Mode 4:
         # Free input
-        # -----------------------------------------------------
+        # =====================================================
 
         elif (
             event.scheduling_mode
@@ -1217,49 +1242,35 @@ def event_detail(
 
                         "yes_count":
                             responses.filter(
-                                response_type="all_day",
-                            ).count(),
+                                response_type=(
+                                    EventDateResponse
+                                    .ResponseType
+                                    .ALL_DAY
+                                ),
+                            )
+                            .count(),
 
                         "maybe_count":
                             responses.filter(
-                                response_type="partial",
-                            ).count(),
+                                response_type=(
+                                    EventDateResponse
+                                    .ResponseType
+                                    .PARTIAL
+                                ),
+                            )
+                            .count(),
 
                         "no_count":
                             responses.filter(
-                                response_type="unavailable",
-                            ).count(),
+                                response_type=(
+                                    EventDateResponse
+                                    .ResponseType
+                                    .UNAVAILABLE
+                                ),
+                            )
+                            .count(),
                     }
                 )
-
-
-        # =====================================================
-        # Best candidate
-        # =====================================================
-
-        answered_result_rows = [
-            row
-            for row in result_rows
-            if (
-                row["yes_count"]
-                +
-                row["maybe_count"]
-                +
-                row["no_count"]
-            ) > 0
-        ]
-
-
-        if answered_result_rows:
-
-            best_result = max(
-                answered_result_rows,
-                key=lambda row: (
-                    row["yes_count"],
-                    row["maybe_count"],
-                    -row["no_count"],
-                ),
-            )
 
 
         # =====================================================
@@ -1275,7 +1286,7 @@ def event_detail(
                 event.duration_options
                 .all()
                 .order_by(
-                    "order",
+                    "minutes",
                     "id",
                 )
             ):
@@ -1289,6 +1300,22 @@ def event_detail(
                 )
 
 
+                if joined_participant_count:
+
+                    vote_percent = round(
+                        (
+                            vote_count
+                            /
+                            joined_participant_count
+                        )
+                        * 100
+                    )
+
+                else:
+
+                    vote_percent = 0
+
+
                 duration_result_rows.append(
                     {
                         "option":
@@ -1296,29 +1323,11 @@ def event_detail(
 
                         "vote_count":
                             vote_count,
+
+                        "vote_percent":
+                            vote_percent,
                     }
                 )
-
-
-            if duration_result_rows:
-
-                possible_best_duration = max(
-                    duration_result_rows,
-                    key=lambda row:
-                        row["vote_count"],
-                )
-
-
-                if (
-                    possible_best_duration[
-                        "vote_count"
-                    ]
-                    > 0
-                ):
-
-                    best_duration = (
-                        possible_best_duration
-                    )
 
 
     # =========================================================
@@ -1357,17 +1366,14 @@ def event_detail(
             "has_answered":
                 has_answered,
 
+            "joined_participant_count":
+                joined_participant_count,
+
             "result_rows":
                 result_rows,
 
-            "best_result":
-                best_result,
-
             "duration_result_rows":
                 duration_result_rows,
-
-            "best_duration":
-                best_duration,
         },
     )
 
@@ -1672,15 +1678,37 @@ def event_respond(
         )
 
 
+    # =========================================================
+    # Permissions
+    # =========================================================
+
     can_manage = event.can_manage(
         request.user
     )
 
 
+    # FREE_INPUT では候補日追加を常に許可
     can_add_date = (
         can_manage
         or
         event.allow_participant_date_addition
+        or
+        (
+            event.scheduling_mode
+            == Event.SchedulingMode.FREE_INPUT
+        )
+    )
+
+
+    can_add_time_option = (
+        event.scheduling_mode
+        == Event.SchedulingMode.TIME_OPTIONS
+        and
+        (
+            can_manage
+            or
+            event.allow_participant_time_option_addition
+        )
     )
 
 
@@ -1696,12 +1724,24 @@ def event_respond(
     )
 
 
+    # =========================================================
+    # General values
+    # =========================================================
+
     errors = []
 
 
     new_candidate_date_value = ""
 
     new_candidate_start_time_value = ""
+
+
+    new_time_option_label_value = ""
+
+    new_time_option_start_value = ""
+
+    new_time_option_end_value = ""
+
 
     new_duration_minutes_value = ""
 
@@ -1721,6 +1761,14 @@ def event_respond(
         ):
 
             action = "add_candidate_date"
+
+
+        elif (
+            "add_time_option"
+            in request.POST
+        ):
+
+            action = "add_time_option"
 
 
         elif (
@@ -1852,7 +1900,19 @@ def event_respond(
 
 
     # =========================================================
-    # Add candidate date
+    # Add candidate
+    #
+    # DATE_ONLY:
+    #   date
+    #
+    # TIME_OPTIONS:
+    #   date
+    #
+    # START_TIMES:
+    #   date + start time
+    #
+    # FREE_INPUT:
+    #   date
     # =========================================================
 
     if (
@@ -1879,12 +1939,20 @@ def event_respond(
         )
 
 
+        # -----------------------------------------------------
+        # Permission
+        # -----------------------------------------------------
+
         if not can_add_date:
 
             errors.append(
-                "このイベントでは候補日を追加できません。"
+                "このイベントでは候補を追加できません。"
             )
 
+
+        # -----------------------------------------------------
+        # Date
+        # -----------------------------------------------------
 
         new_date = parse_date(
             new_candidate_date_value
@@ -1898,18 +1966,11 @@ def event_respond(
             )
 
 
-        elif (
-            event.candidate_dates
-            .filter(
-                date=new_date,
-            )
-            .exists()
-        ):
-
-            errors.append(
-                "その日はすでに候補にあります。"
-            )
-
+        # -----------------------------------------------------
+        # START TIMES
+        #
+        # 日付 + 開始時刻で1つの候補
+        # -----------------------------------------------------
 
         new_start_time = None
 
@@ -1938,28 +1999,130 @@ def event_respond(
                 )
 
 
+            # 同じ日付自体はOK。
+            # 同じ「日付 + 開始時刻」は重複不可。
+
+            if (
+                new_date is not None
+                and
+                new_start_time is not None
+            ):
+
+                existing_date = (
+                    event.candidate_dates
+                    .filter(
+                        date=new_date,
+                    )
+                    .first()
+                )
+
+
+                if (
+                    existing_date
+                    and
+                    existing_date
+                    .start_time_options
+                    .filter(
+                        start_time=new_start_time,
+                    )
+                    .exists()
+                ):
+
+                    errors.append(
+                        "その候補日時はすでにあります。"
+                    )
+
+
+        # -----------------------------------------------------
+        # Other modes
+        #
+        # DATE_ONLY / TIME_OPTIONS / FREE_INPUT
+        # では同じ候補日の重複は不可
+        # -----------------------------------------------------
+
+        elif (
+            new_date is not None
+            and
+            event.candidate_dates
+            .filter(
+                date=new_date,
+            )
+            .exists()
+        ):
+
+            errors.append(
+                "その日はすでに候補にあります。"
+            )
+
+
+        # -----------------------------------------------------
+        # Save
+        # -----------------------------------------------------
+
         if not errors:
 
             with transaction.atomic():
 
-                event_date = (
-                    EventDate.objects.create(
-                        event=event,
-                        date=new_date,
-                        created_by=request.user,
-                    )
-                )
-
+                # ---------------------------------------------
+                # START TIMES
+                # ---------------------------------------------
 
                 if (
                     event.scheduling_mode
                     == Event.SchedulingMode.START_TIMES
                 ):
 
+                    event_date, created = (
+                        EventDate.objects
+                        .get_or_create(
+                            event=event,
+                            date=new_date,
+                            defaults={
+                                "created_by":
+                                    request.user,
+                            },
+                        )
+                    )
+
+
+                    last_order = (
+                        event_date
+                        .start_time_options
+                        .aggregate(
+                            max_order=Max(
+                                "order"
+                            )
+                        )
+                        .get(
+                            "max_order"
+                        )
+                    )
+
+
+                    next_order = (
+                        0
+                        if last_order is None
+                        else last_order + 1
+                    )
+
+
                     EventStartTimeOption.objects.create(
                         event_date=event_date,
                         start_time=new_start_time,
-                        order=0,
+                        order=next_order,
+                    )
+
+
+                # ---------------------------------------------
+                # Other modes
+                # ---------------------------------------------
+
+                else:
+
+                    EventDate.objects.create(
+                        event=event,
+                        date=new_date,
+                        created_by=request.user,
                     )
 
 
@@ -1979,7 +2142,223 @@ def event_respond(
 
 
     # =========================================================
-    # Add duration
+    # Add time option
+    #
+    # TIME_OPTIONS only
+    #
+    # 例:
+    #   夕方
+    #   17:00 - 20:00
+    #
+    # 時刻なしで「夕方」だけでもOK
+    # =========================================================
+
+    if (
+        request.method == "POST"
+        and
+        action == "add_time_option"
+    ):
+
+        new_time_option_label_value = (
+            request.POST.get(
+                "new_time_option_label",
+                "",
+            )
+            .strip()
+        )
+
+
+        new_time_option_start_value = (
+            request.POST.get(
+                "new_time_option_start",
+                "",
+            )
+            .strip()
+        )
+
+
+        new_time_option_end_value = (
+            request.POST.get(
+                "new_time_option_end",
+                "",
+            )
+            .strip()
+        )
+
+
+        # -----------------------------------------------------
+        # Permission
+        # -----------------------------------------------------
+
+        if not can_add_time_option:
+
+            errors.append(
+                "このイベントでは時間帯を追加できません。"
+            )
+
+
+        # -----------------------------------------------------
+        # Label
+        # -----------------------------------------------------
+
+        if not new_time_option_label_value:
+
+            errors.append(
+                "時間帯の名前を入力してください。"
+            )
+
+
+        # -----------------------------------------------------
+        # Times
+        # -----------------------------------------------------
+
+        normalized_start = (
+            normalize_time_input(
+                new_time_option_start_value
+            )
+        )
+
+
+        normalized_end = (
+            normalize_time_input(
+                new_time_option_end_value
+            )
+        )
+
+
+        parsed_start = (
+            parse_time(
+                normalized_start
+            )
+            if normalized_start
+            else None
+        )
+
+
+        parsed_end = (
+            parse_time(
+                normalized_end
+            )
+            if normalized_end
+            else None
+        )
+
+
+        if (
+            normalized_start
+            and
+            parsed_start is None
+        ):
+
+            errors.append(
+                "開始時刻を正しく入力してください。"
+            )
+
+
+        if (
+            normalized_end
+            and
+            parsed_end is None
+        ):
+
+            errors.append(
+                "終了時刻を正しく入力してください。"
+            )
+
+
+        if (
+            bool(parsed_start)
+            !=
+            bool(parsed_end)
+        ):
+
+            errors.append(
+                (
+                    "開始時刻と終了時刻は"
+                    "両方入力するか、"
+                    "両方空欄にしてください。"
+                )
+            )
+
+
+        if (
+            parsed_start
+            and
+            parsed_end
+            and
+            parsed_end <= parsed_start
+        ):
+
+            errors.append(
+                "終了時刻は開始時刻より後にしてください。"
+            )
+
+
+        # -----------------------------------------------------
+        # Duplicate
+        # -----------------------------------------------------
+
+        if (
+            not errors
+            and
+            event.time_options
+            .filter(
+                label=new_time_option_label_value,
+                start_time=parsed_start,
+                end_time=parsed_end,
+            )
+            .exists()
+        ):
+
+            errors.append(
+                "その時間帯はすでにあります。"
+            )
+
+
+        # -----------------------------------------------------
+        # Save
+        # -----------------------------------------------------
+
+        if not errors:
+
+            last_order = (
+                event.time_options
+                .aggregate(
+                    max_order=Max(
+                        "order"
+                    )
+                )
+                .get(
+                    "max_order"
+                )
+            )
+
+
+            next_order = (
+                0
+                if last_order is None
+                else last_order + 1
+            )
+
+
+            EventTimeOption.objects.create(
+                event=event,
+                label=new_time_option_label_value,
+                start_time=parsed_start,
+                end_time=parsed_end,
+                order=next_order,
+            )
+
+
+            new_time_option_label_value = ""
+
+            new_time_option_start_value = ""
+
+            new_time_option_end_value = ""
+
+
+    # =========================================================
+    # Add duration option
     # =========================================================
 
     if (
@@ -1997,12 +2376,20 @@ def event_respond(
         )
 
 
+        # -----------------------------------------------------
+        # Permission
+        # -----------------------------------------------------
+
         if not can_add_duration:
 
             errors.append(
                 "このイベントでは長さ候補を追加できません。"
             )
 
+
+        # -----------------------------------------------------
+        # Validate
+        # -----------------------------------------------------
 
         try:
 
@@ -2022,7 +2409,10 @@ def event_respond(
             )
 
 
-        if new_duration_minutes is not None:
+        if (
+            new_duration_minutes
+            is not None
+        ):
 
             if (
                 new_duration_minutes
@@ -2045,6 +2435,10 @@ def event_respond(
                 )
 
 
+        # -----------------------------------------------------
+        # Save
+        # -----------------------------------------------------
+
         if not errors:
 
             duration_option = (
@@ -2060,15 +2454,14 @@ def event_respond(
 
                 last_order = (
                     event.duration_options
-                    .order_by(
-                        "-order",
-                        "-id",
+                    .aggregate(
+                        max_order=Max(
+                            "order"
+                        )
                     )
-                    .values_list(
-                        "order",
-                        flat=True,
+                    .get(
+                        "max_order"
                     )
-                    .first()
                 )
 
 
@@ -2089,6 +2482,9 @@ def event_respond(
                 )
 
 
+            # 追加した本人については
+            # その候補を選択済みにする
+
             EventDurationVote.objects.get_or_create(
                 duration_option=duration_option,
                 user=request.user,
@@ -2097,7 +2493,8 @@ def event_respond(
 
             if (
                 duration_option.id
-                not in selected_duration_option_ids
+                not in
+                selected_duration_option_ids
             ):
 
                 selected_duration_option_ids.append(
@@ -2108,11 +2505,13 @@ def event_respond(
             new_duration_minutes_value = ""
 
 
+            # 短い順で再取得
+
             duration_options = list(
                 event.duration_options
                 .all()
                 .order_by(
-                    "order",
+                    "minutes",
                     "id",
                 )
             )
@@ -2179,6 +2578,7 @@ def event_respond(
     ):
 
         # -----------------------------------------------------
+        # Mode 1:
         # Date only
         # -----------------------------------------------------
 
@@ -2229,6 +2629,7 @@ def event_respond(
 
 
         # -----------------------------------------------------
+        # Mode 2:
         # Time options
         # -----------------------------------------------------
 
@@ -2238,7 +2639,12 @@ def event_respond(
         ):
 
             time_options = list(
-                event.time_options.all()
+                event.time_options
+                .all()
+                .order_by(
+                    "order",
+                    "id",
+                )
             )
 
 
@@ -2299,6 +2705,7 @@ def event_respond(
 
 
         # -----------------------------------------------------
+        # Mode 3:
         # Start times
         # -----------------------------------------------------
 
@@ -2311,6 +2718,11 @@ def event_respond(
                 EventStartTimeOption.objects
                 .filter(
                     event_date__event=event,
+                )
+                .order_by(
+                    "event_date__date",
+                    "start_time",
+                    "id",
                 )
             )
 
@@ -2357,6 +2769,7 @@ def event_respond(
 
 
         # -----------------------------------------------------
+        # Mode 4:
         # Free input
         # -----------------------------------------------------
 
@@ -2382,6 +2795,10 @@ def event_respond(
                 ).strip()
 
 
+                # ---------------------------------------------
+                # No response
+                # ---------------------------------------------
+
                 if not response_type:
 
                     responses_to_save.append(
@@ -2397,9 +2814,14 @@ def event_respond(
                     continue
 
 
+                # ---------------------------------------------
+                # Invalid response
+                # ---------------------------------------------
+
                 if (
                     response_type
-                    not in EventDateResponse.ResponseType.values
+                    not in
+                    EventDateResponse.ResponseType.values
                 ):
 
                     errors.append(
@@ -2414,6 +2836,10 @@ def event_respond(
 
                 windows = []
 
+
+                # ---------------------------------------------
+                # Partial
+                # ---------------------------------------------
 
                 if (
                     response_type
@@ -2440,7 +2866,6 @@ def event_respond(
                             start
                         )
 
-
                         end = normalize_time_input(
                             end
                         )
@@ -2458,7 +2883,6 @@ def event_respond(
                         parsed_start = parse_time(
                             start
                         )
-
 
                         parsed_end = parse_time(
                             end
@@ -2607,7 +3031,7 @@ def event_respond(
 
 
     # =========================================================
-    # Keep current form values on POST
+    # Preserve current input on POST
     # =========================================================
 
     preserve_posted_response = (
@@ -2631,6 +3055,7 @@ def event_respond(
 
 
         # -----------------------------------------------------
+        # Mode 1:
         # Date only
         # -----------------------------------------------------
 
@@ -2668,6 +3093,7 @@ def event_respond(
 
 
         # -----------------------------------------------------
+        # Mode 2:
         # Time options
         # -----------------------------------------------------
 
@@ -2679,7 +3105,14 @@ def event_respond(
             options = []
 
 
-            for option in event.time_options.all():
+            for option in (
+                event.time_options
+                .all()
+                .order_by(
+                    "order",
+                    "id",
+                )
+            ):
 
                 if preserve_posted_response:
 
@@ -2723,10 +3156,13 @@ def event_respond(
                 )
 
 
-            row["options"] = options
+            row["options"] = (
+                options
+            )
 
 
         # -----------------------------------------------------
+        # Mode 3:
         # Start times
         # -----------------------------------------------------
 
@@ -2742,6 +3178,10 @@ def event_respond(
                 candidate
                 .start_time_options
                 .all()
+                .order_by(
+                    "start_time",
+                    "id",
+                )
             ):
 
                 if preserve_posted_response:
@@ -2781,10 +3221,13 @@ def event_respond(
                 )
 
 
-            row["options"] = options
+            row["options"] = (
+                options
+            )
 
 
         # -----------------------------------------------------
+        # Mode 4:
         # Free input
         # -----------------------------------------------------
 
@@ -2832,7 +3275,6 @@ def event_respond(
                     start = normalize_time_input(
                         start
                     )
-
 
                     end = normalize_time_input(
                         end
@@ -2913,6 +3355,10 @@ def event_respond(
         )
 
 
+    # =========================================================
+    # Render
+    # =========================================================
+
     return render(
         request,
         "event_scheduler/event_respond.html",
@@ -2929,6 +3375,9 @@ def event_respond(
             "can_add_date":
                 can_add_date,
 
+            "can_add_time_option":
+                can_add_time_option,
+
             "can_add_duration":
                 can_add_duration,
 
@@ -2943,6 +3392,15 @@ def event_respond(
 
             "new_candidate_start_time_value":
                 new_candidate_start_time_value,
+
+            "new_time_option_label_value":
+                new_time_option_label_value,
+
+            "new_time_option_start_value":
+                new_time_option_start_value,
+
+            "new_time_option_end_value":
+                new_time_option_end_value,
 
             "new_duration_minutes_value":
                 new_duration_minutes_value,

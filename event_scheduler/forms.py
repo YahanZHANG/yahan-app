@@ -6,6 +6,10 @@ from .models import (
 )
 
 
+# =========================================================
+# Event
+# =========================================================
+
 class EventForm(forms.ModelForm):
 
     class Meta:
@@ -18,6 +22,7 @@ class EventForm(forms.ModelForm):
             "location",
             "is_public",
             "allow_participant_date_addition",
+            "allow_participant_time_option_addition",
             "scheduling_mode",
             "duration_mode",
             "duration_minutes",
@@ -27,27 +32,32 @@ class EventForm(forms.ModelForm):
 
         widgets = {
 
-            "title": forms.TextInput(
-                attrs={
-                    "placeholder":
-                        "例：10月の飲み会",
-                }
-            ),
+            "title":
+                forms.TextInput(
+                    attrs={
+                        "placeholder":
+                            "例：10月の飲み会",
+                    }
+                ),
 
-            "description": forms.Textarea(
-                attrs={
-                    "rows": 4,
-                    "placeholder":
-                        "イベントについての説明",
-                }
-            ),
+            "description":
+                forms.Textarea(
+                    attrs={
+                        "rows":
+                            4,
 
-            "location": forms.TextInput(
-                attrs={
-                    "placeholder":
-                        "例：Zürich HB周辺",
-                }
-            ),
+                        "placeholder":
+                            "イベントについての説明",
+                    }
+                ),
+
+            "location":
+                forms.TextInput(
+                    attrs={
+                        "placeholder":
+                            "例：Zürich HB周辺",
+                    }
+                ),
 
             "scheduling_mode":
                 forms.RadioSelect(),
@@ -58,8 +68,12 @@ class EventForm(forms.ModelForm):
             "duration_minutes":
                 forms.NumberInput(
                     attrs={
-                        "min": 15,
-                        "step": 15,
+                        "min":
+                            15,
+
+                        "step":
+                            15,
+
                         "placeholder":
                             "例：120",
                     }
@@ -68,7 +82,8 @@ class EventForm(forms.ModelForm):
             "response_deadline":
                 forms.DateInput(
                     attrs={
-                        "type": "date",
+                        "type":
+                            "date",
                     }
                 ),
         }
@@ -90,20 +105,29 @@ class EventForm(forms.ModelForm):
             "allow_participant_date_addition":
                 "参加者による候補日の追加を許可する",
 
+            "allow_participant_time_option_addition":
+                "参加者による時間帯の追加を許可する",
+
             "scheduling_mode":
                 "日程の決め方",
 
             "duration_mode":
                 "イベントの長さの決め方",
-                
+
             "duration_minutes":
                 "イベント時間（分）",
 
+            "allow_participant_duration_addition":
+                "参加者による長さ候補の追加を許可する",
+
             "response_deadline":
                 "回答締切",
-
         }
 
+
+# =========================================================
+# Event date
+# =========================================================
 
 class EventDateForm(forms.ModelForm):
 
@@ -117,21 +141,25 @@ class EventDateForm(forms.ModelForm):
 
         widgets = {
 
-            "date": forms.DateInput(
-                attrs={
-                    "type": "date",
-                }
-            ),
-
+            "date":
+                forms.DateInput(
+                    attrs={
+                        "type":
+                            "date",
+                    }
+                ),
         }
 
         labels = {
 
             "date":
                 "候補日",
-
         }
 
+
+# =========================================================
+# Event date response
+# =========================================================
 
 class EventDateResponseForm(forms.Form):
 
@@ -182,6 +210,7 @@ class EventAdminInviteForm(forms.Form):
             attrs={
                 "placeholder":
                     "共同管理者のログインID",
+
                 "autocomplete":
                     "off",
             }
