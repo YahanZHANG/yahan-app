@@ -4,6 +4,7 @@ from news import push_views
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from django.views.generic import RedirectView
 from portal.views import PortalPasswordChangeView
 
 
@@ -171,9 +172,28 @@ urlpatterns = [
     # =====================================================
     
     path(
-    "events/",
-    include(
-        "event_scheduler.urls"
+        "events/",
+        include(
+            "event_scheduler.urls"
+        ),
     ),
-),
+
+
+    # =====================================================
+    # JCZ (swissnewsの宣伝)
+    # =====================================================
+    
+    path(
+        "jcz",
+        RedirectView.as_view(
+            url=(
+                "/news/"
+                "?utm_source=jcz"
+                "&utm_medium=print"
+                "&utm_campaign=launch_2026_11"
+            ),
+            permanent=False,
+        ),
+        name="jcz",
+    ),
 ]

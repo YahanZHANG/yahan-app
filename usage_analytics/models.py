@@ -180,19 +180,55 @@ class OnlinePresence(models.Model):
 # Public News Analytics
 # =========================================================
 
+
 class PublicNewsEvent(models.Model):
     """
-    ログインしていない公開Yahan News閲覧者の
+    ログインしていない公開Swiss News閲覧者の
     匿名アクセス履歴。
 
-    visitor_id はブラウザ単位のランダムIDで、
-    個人を特定する情報は保存しない。
+    visitor_id:
+        ブラウザ単位の長期匿名ID
+
+    visit_id:
+        30分無操作で区切る1回の訪問ID
     """
+
+    class DeviceType(models.TextChoices):
+
+        DESKTOP = (
+            "desktop",
+            "Desktop",
+        )
+
+        MOBILE = (
+            "mobile",
+            "Mobile",
+        )
+
+        TABLET = (
+            "tablet",
+            "Tablet",
+        )
+
+        OTHER = (
+            "other",
+            "Other",
+        )
+
 
     visitor_id = models.UUIDField(
         "匿名訪問者ID",
         db_index=True,
     )
+
+
+    visit_id = models.UUIDField(
+        "訪問ID",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
 
     path = models.CharField(
         "閲覧ページ",
@@ -200,16 +236,66 @@ class PublicNewsEvent(models.Model):
         blank=True,
     )
 
+
     accessed_at = models.DateTimeField(
         "アクセス日時",
         auto_now_add=True,
         db_index=True,
     )
 
+
     is_visit_start = models.BooleanField(
         "新しい訪問",
         default=False,
     )
+
+
+    is_new_visitor = models.BooleanField(
+        "初回訪問者",
+        default=False,
+        db_index=True,
+    )
+
+
+    referrer_host = models.CharField(
+        "流入元ホスト",
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+
+    utm_source = models.CharField(
+        "UTM source",
+        max_length=100,
+        blank=True,
+        default="",
+    )
+
+
+    utm_medium = models.CharField(
+        "UTM medium",
+        max_length=100,
+        blank=True,
+        default="",
+    )
+
+
+    utm_campaign = models.CharField(
+        "UTM campaign",
+        max_length=150,
+        blank=True,
+        default="",
+    )
+
+
+    device_type = models.CharField(
+        "デバイス",
+        max_length=20,
+        choices=DeviceType.choices,
+        default=DeviceType.OTHER,
+    )
+
 
     class Meta:
 
@@ -229,7 +315,22 @@ class PublicNewsEvent(models.Model):
                 ],
             ),
 
+            models.Index(
+                fields=[
+                    "visit_id",
+                    "accessed_at",
+                ],
+            ),
+
+            models.Index(
+                fields=[
+                    "accessed_at",
+                    "is_new_visitor",
+                ],
+            ),
+
         ]
+
 
     def __str__(self):
 
@@ -244,13 +345,10 @@ class PublicNewsEvent(models.Model):
 # Public News Article Click Analytics
 # =========================================================
 
+
 class PublicNewsArticleClick(models.Model):
     """
-    ログインしていない公開Swiss News閲覧者が
-    元記事へのリンクをクリックした履歴。
-
-    PublicNewsEventとは分離し、
-    ページ閲覧数には含めない。
+    公開Swiss Newsから元記事へのクリック。
     """
 
     visitor_id = models.UUIDField(
@@ -258,15 +356,26 @@ class PublicNewsArticleClick(models.Model):
         db_index=True,
     )
 
+
+    visit_id = models.UUIDField(
+        "訪問ID",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+
     article_id = models.PositiveBigIntegerField(
         "記事ID",
         db_index=True,
     )
 
+
     article_title = models.CharField(
         "記事タイトル",
         max_length=500,
     )
+
 
     source_name = models.CharField(
         "ニュースソース",
@@ -274,16 +383,27 @@ class PublicNewsArticleClick(models.Model):
         blank=True,
     )
 
+
     destination_url = models.URLField(
         "リンク先",
         max_length=2000,
     )
+
+
+    origin_path = models.CharField(
+        "クリック元ページ",
+        max_length=500,
+        blank=True,
+        default="",
+    )
+
 
     clicked_at = models.DateTimeField(
         "クリック日時",
         auto_now_add=True,
         db_index=True,
     )
+
 
     class Meta:
 
@@ -305,12 +425,20 @@ class PublicNewsArticleClick(models.Model):
 
             models.Index(
                 fields=[
+                    "visit_id",
+                    "clicked_at",
+                ],
+            ),
+
+            models.Index(
+                fields=[
                     "article_id",
                     "clicked_at",
                 ],
             ),
 
         ]
+
 
     def __str__(self):
 
