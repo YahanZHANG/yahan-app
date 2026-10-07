@@ -137,58 +137,169 @@
 
                 {% for row in result_rows %}
 
-                    <div class="event-result-row">
+                    <details class="event-result-detail">
 
-                        <div class="event-result-datetime">
+                        <summary class="event-result-row">
 
-                            <strong>
-                                {{ row.date|date:"n月j日（D）" }}
-                            </strong>
+                            <div class="event-result-datetime">
+
+                                <strong>
+                                    {{ row.date|date:"n月j日（D）" }}
+                                </strong>
 
 
-                            {% if row.label %}
+                                {% if row.label %}
 
-                                <span>
-                                    {{ row.label }}
+                                    <span>
+                                        {{ row.label }}
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if row.start_time %}
+
+                                    <span class="event-result-time">
+
+                                        {{ row.start_time|time:"H:i" }}
+
+                                        {% if row.end_time %}
+                                            〜{{ row.end_time|time:"H:i" }}
+                                        {% endif %}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="event-result-summary-right">
+
+                                <div class="event-result-counts">
+
+                                    <span class="yes">
+                                        ○ {{ row.yes_count }}
+                                    </span>
+
+                                    <span class="maybe">
+                                        △ {{ row.maybe_count }}
+                                    </span>
+
+                                    <span class="no">
+                                        × {{ row.no_count }}
+                                    </span>
+
+                                </div>
+
+
+                                <span class="event-result-chevron">
+                                    ›
                                 </span>
 
-                            {% endif %}
+                            </div>
+
+                        </summary>
 
 
-                            {% if row.start_time %}
+                        <!-- =============================================
+                            Vote details
+                            ============================================= -->
 
-                                <span class="event-result-time">
+                        <div class="event-vote-breakdown">
 
-                                    {{ row.start_time|time:"H:i" }}
+                            <!-- YES -->
 
-                                    {% if row.end_time %}
-                                        〜{{ row.end_time|time:"H:i" }}
-                                    {% endif %}
+                            <div class="event-vote-breakdown-group">
 
-                                </span>
+                                <strong class="yes">
+                                    ○ 参加できる
+                                </strong>
 
-                            {% endif %}
+
+                                <div class="event-voter-list">
+
+                                    {% for username in row.yes_users %}
+
+                                        <span class="event-voter-chip">
+                                            {{ username }}
+                                        </span>
+
+                                    {% empty %}
+
+                                        <span class="event-voter-empty">
+                                            なし
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- MAYBE -->
+
+                            <div class="event-vote-breakdown-group">
+
+                                <strong class="maybe">
+                                    △ 未定
+                                </strong>
+
+
+                                <div class="event-voter-list">
+
+                                    {% for username in row.maybe_users %}
+
+                                        <span class="event-voter-chip">
+                                            {{ username }}
+                                        </span>
+
+                                    {% empty %}
+
+                                        <span class="event-voter-empty">
+                                            なし
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- NO -->
+
+                            <div class="event-vote-breakdown-group">
+
+                                <strong class="no">
+                                    × 参加できない
+                                </strong>
+
+
+                                <div class="event-voter-list">
+
+                                    {% for username in row.no_users %}
+
+                                        <span class="event-voter-chip">
+                                            {{ username }}
+                                        </span>
+
+                                    {% empty %}
+
+                                        <span class="event-voter-empty">
+                                            なし
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
 
                         </div>
 
-
-                        <div class="event-result-counts">
-
-                            <span class="yes">
-                                ○ {{ row.yes_count }}
-                            </span>
-
-                            <span class="maybe">
-                                △ {{ row.maybe_count }}
-                            </span>
-
-                            <span class="no">
-                                × {{ row.no_count }}
-                            </span>
-
-                        </div>
-
-                    </div>
+                    </details>
 
                 {% empty %}
 
@@ -226,39 +337,78 @@
 
                         {% for row in duration_result_rows %}
 
-                            <div class="event-duration-result-row">
+                            <details class="event-duration-result-detail">
 
-                                <div class="event-duration-result-header">
+                                <summary class="event-duration-result-row">
+
+                                    <div class="event-duration-result-header">
+
+                                        <strong>
+                                            {{ row.option.display_label }}
+                                        </strong>
+
+
+                                        <div class="event-duration-result-vote">
+
+                                            <span>
+                                                {{ row.vote_count }}票
+                                            </span>
+
+                                            <span class="event-result-chevron">
+                                                ›
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="event-duration-result-track">
+
+                                        <div
+                                            class="event-duration-result-bar"
+                                            style="width: {{ row.vote_percent }}%;"
+                                        >
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="event-duration-result-percent">
+                                        {{ row.vote_percent }}%
+                                    </div>
+
+                                </summary>
+
+
+                                <div class="event-duration-voters">
 
                                     <strong>
-                                        {{ row.option.display_label }}
+                                        この長さを選んだ人
                                     </strong>
 
-                                    <span>
-                                        {{ row.vote_count }}票
-                                    </span>
 
-                                </div>
+                                    <div class="event-voter-list">
 
+                                        {% for username in row.voters %}
 
-                                <div class="event-duration-result-track">
+                                            <span class="event-voter-chip">
+                                                {{ username }}
+                                            </span>
 
-                                    <div
-                                        class="event-duration-result-bar"
-                                        style="width: {{ row.vote_percent }}%;"
-                                    >
+                                        {% empty %}
+
+                                            <span class="event-voter-empty">
+                                                まだいません
+                                            </span>
+
+                                        {% endfor %}
+
                                     </div>
 
                                 </div>
 
-
-                                <div class="event-duration-result-percent">
-
-                                    {{ row.vote_percent }}%
-
-                                </div>
-
-                            </div>
+                            </details>
 
                         {% empty %}
 

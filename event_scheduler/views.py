@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Max
+from travel.models import UserProfile
 
 from django.db import transaction
 from django.shortcuts import (
@@ -1082,32 +1083,122 @@ def event_detail(
 
     duration_result_rows = []
 
-
-    def get_vote_counts(
+    def get_vote_breakdown(
         queryset,
     ):
 
-        return {
-
-            "yes":
-                queryset.filter(
-                    status=AvailabilityStatus.YES,
-                )
-                .count(),
-
-            "maybe":
-                queryset.filter(
-                    status=AvailabilityStatus.MAYBE,
-                )
-                .count(),
-
-            "no":
-                queryset.filter(
-                    status=AvailabilityStatus.NO,
-                )
-                .count(),
+        users = {
+            "yes": [],
+            "maybe": [],
+            "no": [],
         }
 
+
+        votes = (
+            queryset
+            .select_related(
+                "user",
+            )
+        )
+
+
+        for vote in votes:
+
+            if vote.status not in users:
+                continue
+
+
+            users[
+                vote.status
+            ].append(
+                get_event_user_name(
+                    vote.user
+                )
+            )
+
+
+        for status in users:
+
+            users[
+                status
+            ].sort(
+                key=str.casefold
+            )
+
+
+        return {
+            "yes_count":
+                len(
+                    users["yes"]
+                ),
+
+            "maybe_count":
+                len(
+                    users["maybe"]
+                ),
+
+            "no_count":
+                len(
+                    users["no"]
+                ),
+
+            "yes_users":
+                users["yes"],
+
+            "maybe_users":
+                users["maybe"],
+
+            "no_users":
+                users["no"],
+        }
+
+    # =========================================================
+    # Participant display names
+    # =========================================================
+
+    event_user_ids = (
+        EventParticipant.objects
+        .filter(
+            event=event,
+            status=EventParticipant.Status.JOINED,
+        )
+        .values_list(
+            "user_id",
+            flat=True,
+        )
+    )
+
+
+    nickname_map = dict(
+        UserProfile.objects
+        .filter(
+            user_id__in=event_user_ids,
+        )
+        .values_list(
+            "user_id",
+            "nickname",
+        )
+    )
+
+
+    def get_event_user_name(
+        user,
+    ):
+
+        nickname = (
+            nickname_map.get(
+                user.id,
+                "",
+            )
+            or ""
+        ).strip()
+
+
+        if nickname:
+            return nickname
+
+
+        return user.get_username()
 
     if has_answered:
 
@@ -1130,6 +1221,13 @@ def event_detail(
                 )
 
 
+                breakdown = get_vote_breakdown(
+                    EventDateVote.objects.filter(
+                        event_date=candidate,
+                    )
+                )
+
+
                 result_rows.append(
                     {
                         "date":
@@ -1144,17 +1242,9 @@ def event_detail(
                         "end_time":
                             None,
 
-                        "yes_count":
-                            counts["yes"],
-
-                        "maybe_count":
-                            counts["maybe"],
-
-                        "no_count":
-                            counts["no"],
+                        **breakdown,
                     }
                 )
-
 
         # =====================================================
         # Mode 2:
@@ -1188,31 +1278,31 @@ def event_detail(
                     )
 
 
-                    result_rows.append(
-                        {
-                            "date":
-                                candidate.date,
-
-                            "label":
-                                option.label,
-
-                            "start_time":
-                                option.start_time,
-
-                            "end_time":
-                                option.end_time,
-
-                            "yes_count":
-                                counts["yes"],
-
-                            "maybe_count":
-                                counts["maybe"],
-
-                            "no_count":
-                                counts["no"],
-                        }
+                breakdown = get_vote_breakdown(
+                    EventTimeOptionVote.objects.filter(
+                        event_date=candidate,
+                        time_option=option,
                     )
+                )
 
+
+                result_rows.append(
+                    {
+                        "date":
+                            candidate.date,
+
+                        "label":
+                            option.label,
+
+                        "start_time":
+                            option.start_time,
+
+                        "end_time":
+                            option.end_time,
+
+                        **breakdown,
+                    }
+                )
 
         # =====================================================
         # Mode 3:
@@ -1249,6 +1339,13 @@ def event_detail(
                 )
 
 
+                breakdown = get_vote_breakdown(
+                    EventStartTimeVote.objects.filter(
+                        start_time_option=option,
+                    )
+                )
+
+
                 result_rows.append(
                     {
                         "date":
@@ -1263,14 +1360,7 @@ def event_detail(
                         "end_time":
                             None,
 
-                        "yes_count":
-                            counts["yes"],
-
-                        "maybe_count":
-                            counts["maybe"],
-
-                        "no_count":
-                            counts["no"],
+                        **breakdown,
                     }
                 )
 
@@ -1292,7 +1382,62 @@ def event_detail(
                     .filter(
                         event_date=candidate,
                     )
+                    .select_related(
+                        "user",
+                    )
+                    .order_by(
+                        "user__username",
+                    )
                 )
+
+
+                yes_users = []
+
+                maybe_users = []
+
+                no_users = []
+
+
+                for response in responses:
+
+                    display_name = (
+                        get_event_user_name(
+                            response.user
+                        )
+                    )
+
+
+                    if (
+                        response.response_type
+                        ==
+                        EventDateResponse.ResponseType.ALL_DAY
+                    ):
+
+                        yes_users.append(
+                            username
+                        )
+
+
+                    elif (
+                        response.response_type
+                        ==
+                        EventDateResponse.ResponseType.PARTIAL
+                    ):
+
+                        maybe_users.append(
+                            username
+                        )
+
+
+                    elif (
+                        response.response_type
+                        ==
+                        EventDateResponse.ResponseType.UNAVAILABLE
+                    ):
+
+                        no_users.append(
+                            username
+                        )
 
 
                 result_rows.append(
@@ -1310,34 +1455,28 @@ def event_detail(
                             None,
 
                         "yes_count":
-                            responses.filter(
-                                response_type=(
-                                    EventDateResponse
-                                    .ResponseType
-                                    .ALL_DAY
-                                ),
-                            )
-                            .count(),
+                            len(
+                                yes_users
+                            ),
 
                         "maybe_count":
-                            responses.filter(
-                                response_type=(
-                                    EventDateResponse
-                                    .ResponseType
-                                    .PARTIAL
-                                ),
-                            )
-                            .count(),
+                            len(
+                                maybe_users
+                            ),
 
                         "no_count":
-                            responses.filter(
-                                response_type=(
-                                    EventDateResponse
-                                    .ResponseType
-                                    .UNAVAILABLE
-                                ),
-                            )
-                            .count(),
+                            len(
+                                no_users
+                            ),
+
+                        "yes_users":
+                            yes_users,
+
+                        "maybe_users":
+                            maybe_users,
+
+                        "no_users":
+                            no_users,
                     }
                 )
 
@@ -1360,12 +1499,36 @@ def event_detail(
                 )
             ):
 
-                vote_count = (
+                votes = list(
                     EventDurationVote.objects
                     .filter(
                         duration_option=option,
                     )
-                    .count()
+                    .select_related(
+                        "user",
+                    )
+                    .order_by(
+                        "user__username",
+                    )
+                )
+
+
+                voters = [
+                    get_event_user_name(
+                        vote.user
+                    )
+                    for vote
+                    in votes
+                ]
+
+
+                voters.sort(
+                    key=str.casefold
+                )
+
+
+                vote_count = len(
+                    voters
                 )
 
 
@@ -1395,6 +1558,9 @@ def event_detail(
 
                         "vote_percent":
                             vote_percent,
+
+                        "voters":
+                            voters,
                     }
                 )
 
