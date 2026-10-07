@@ -174,27 +174,18 @@
                             </div>
 
 
-                            <div class="event-result-summary-right">
+                            <div class="event-result-counts">
 
-                                <div class="event-result-counts">
+                                <span class="yes">
+                                    ○ {{ row.yes_count }}
+                                </span>
 
-                                    <span class="yes">
-                                        ○ {{ row.yes_count }}
-                                    </span>
+                                <span class="maybe">
+                                    △ {{ row.maybe_count }}
+                                </span>
 
-                                    <span class="maybe">
-                                        △ {{ row.maybe_count }}
-                                    </span>
-
-                                    <span class="no">
-                                        × {{ row.no_count }}
-                                    </span>
-
-                                </div>
-
-
-                                <span class="event-result-chevron">
-                                    ›
+                                <span class="no">
+                                    × {{ row.no_count }}
                                 </span>
 
                             </div>
@@ -210,11 +201,23 @@
 
                             <!-- YES -->
 
-                            <div class="event-vote-breakdown-group">
+                            <div class="event-vote-breakdown-group yes">
 
-                                <strong class="yes">
-                                    ○ 参加できる
-                                </strong>
+                                <div class="event-vote-breakdown-heading">
+
+                                    <span class="event-vote-breakdown-symbol">
+                                        ○
+                                    </span>
+
+                                    <strong>
+                                        参加できる
+                                    </strong>
+
+                                    <small>
+                                        {{ row.yes_count }}人
+                                    </small>
+
+                                </div>
 
 
                                 <div class="event-voter-list">
@@ -240,11 +243,23 @@
 
                             <!-- MAYBE -->
 
-                            <div class="event-vote-breakdown-group">
+                            <div class="event-vote-breakdown-group maybe">
 
-                                <strong class="maybe">
-                                    △ 未定
-                                </strong>
+                                <div class="event-vote-breakdown-heading">
+
+                                    <span class="event-vote-breakdown-symbol">
+                                        △
+                                    </span>
+
+                                    <strong>
+                                        未定
+                                    </strong>
+
+                                    <small>
+                                        {{ row.maybe_count }}人
+                                    </small>
+
+                                </div>
 
 
                                 <div class="event-voter-list">
@@ -270,11 +285,23 @@
 
                             <!-- NO -->
 
-                            <div class="event-vote-breakdown-group">
+                            <div class="event-vote-breakdown-group no">
 
-                                <strong class="no">
-                                    × 参加できない
-                                </strong>
+                                <div class="event-vote-breakdown-heading">
+
+                                    <span class="event-vote-breakdown-symbol">
+                                        ×
+                                    </span>
+
+                                    <strong>
+                                        参加できない
+                                    </strong>
+
+                                    <small>
+                                        {{ row.no_count }}人
+                                    </small>
+
+                                </div>
 
 
                                 <div class="event-voter-list">
@@ -347,18 +374,9 @@
                                             {{ row.option.display_label }}
                                         </strong>
 
-
-                                        <div class="event-duration-result-vote">
-
-                                            <span>
-                                                {{ row.vote_count }}票
-                                            </span>
-
-                                            <span class="event-result-chevron">
-                                                ›
-                                            </span>
-
-                                        </div>
+                                        <span>
+                                            {{ row.vote_count }}票
+                                        </span>
 
                                     </div>
 
@@ -383,9 +401,17 @@
 
                                 <div class="event-duration-voters">
 
-                                    <strong>
-                                        この長さを選んだ人
-                                    </strong>
+                                    <div class="event-duration-voters-heading">
+
+                                        <strong>
+                                            この長さを選んだ人
+                                        </strong>
+
+                                        <span>
+                                            {{ row.vote_count }}人
+                                        </span>
+
+                                    </div>
 
 
                                     <div class="event-voter-list">
