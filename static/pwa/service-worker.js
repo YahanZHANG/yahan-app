@@ -1,5 +1,5 @@
 /* =====================================================
-   Yahan App Service Worker
+   App Service Worker
    ===================================================== */
 
 
@@ -66,11 +66,11 @@ self.addEventListener(
         }
 
 
-        // Yahan News専用
+        // Swiss News専用
 
         const title = (
             data.title
-            || "Yahan News"
+            || "Swiss News"
         );
 
         const body = (

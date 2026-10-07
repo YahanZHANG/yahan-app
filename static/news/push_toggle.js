@@ -1,5 +1,5 @@
 /* ==========================================
-   Yahan News - Inline Push Toggle
+   Swiss News - Inline Push Toggle
 ========================================== */
 
 (() => {

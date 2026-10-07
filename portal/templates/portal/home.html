@@ -5,7 +5,7 @@
 
 
 {% block title %}
-    ホーム | yahan-app
+    ホーム | Yapp
 {% endblock %}
 
 
@@ -15,122 +15,6 @@
     rel="stylesheet"
     href="{% static 'board/board.css' %}"
 >
-
-<div class="portal-page">
-
-    <!-- =====================================================
-         Hero
-         ===================================================== -->
-
-    <header class="portal-hero portal-hero-compact">
-
-        <!-- =============================================
-             Decorations
-             ============================================= -->
-
-        <div
-            class="
-                portal-hero-decoration
-                portal-decoration-one
-            "
-            aria-hidden="true"
-        ></div>
-
-
-        <div
-            class="
-                portal-hero-decoration
-                portal-decoration-two
-            "
-            aria-hidden="true"
-        ></div>
-
-
-        <!-- =============================================
-            Brand + Chat
-            ============================================= -->
-
-        <div class="portal-hero-content">
-
-            <!-- Brand -->
-
-            <div class="portal-brand-row">
-
-                <div
-                    class="portal-brand-icon"
-                    aria-hidden="true"
-                >
-                    Y
-                </div>
-
-                <div>
-
-                    <p class="portal-eyebrow">
-                        APP HUB
-                    </p>
-
-                    <h1>
-                        yahan-app
-                    </h1>
-
-                </div>
-
-            </div>
-
-
-            <!-- =========================
-                Chat Button
-            ========================= -->
-
-            <a
-
-                href="{% url 'chat:list' %}"
-
-                class="portal-chat-button"
-
-                aria-label="Chatを開く{% if unread_chat_count %}。未読メッセージ{{ unread_chat_count }}件{% endif %}"
-
-            >
-
-                <span
-                    class="portal-chat-icon"
-                    aria-hidden="true"
-                >
-                    💬
-                </span>
-
-
-                <span class="portal-chat-label">
-
-                    Chat
-
-                </span>
-
-
-                {% if unread_chat_count > 0 %}
-
-                    <span class="portal-chat-badge">
-
-                        {% if unread_chat_count > 99 %}
-
-                            99+
-
-                        {% else %}
-
-                            {{ unread_chat_count }}
-
-                        {% endif %}
-
-                    </span>
-
-                {% endif %}
-
-            </a>
-
-        </div>
-
-    </header>
-
 
     <!-- =====================================================
          Main
@@ -427,7 +311,7 @@
     <footer class="portal-footer">
 
         <span>
-            yahan-app
+            Yapp © 2026
         </span>
 
     </footer>

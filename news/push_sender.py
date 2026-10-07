@@ -139,7 +139,7 @@ def send_news_push_for_batch(
 
     if is_test:
 
-        title = "Yahan News テスト通知"
+        title = "Swiss News テスト通知"
 
         body = (
             "Push通知の設定が完了したよ！"

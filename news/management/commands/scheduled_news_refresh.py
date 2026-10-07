@@ -23,7 +23,7 @@ REFRESH_HOURS = {
 
 class Command(BaseCommand):
     help = (
-        "Ask the Yahan-app web service to refresh "
+        "Ask the web service to refresh "
         "Swiss news at scheduled Zurich times."
     )
 

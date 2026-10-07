@@ -50,7 +50,7 @@ def should_skip_article(
 ):
     """
     広告・ニュースレター・漫画・懸賞など、
-    Yahan Newsに不要なコンテンツを除外する。
+    Swiss Newsに不要なコンテンツを除外する。
 
     AI APIを呼ぶ前に実行する。
     """

@@ -365,7 +365,7 @@ class NewsDigest(models.Model):
         )
 
 # =========================================================
-# Yahan News Push Subscription
+# Swiss News Push Subscription
 # =========================================================
 
 from django.conf import settings as django_settings

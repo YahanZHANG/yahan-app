@@ -157,7 +157,7 @@ APP_CONFIG = {
             "portal-chat-app-icon",
 
         "description": (
-            "Yahan-appのユーザー同士でメッセージ。"
+            "Appのユーザー同士でメッセージ。"
             "友だちと気軽にやりとりできる。"
         ),
 

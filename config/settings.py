@@ -81,7 +81,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "portal.middleware.PublicUserAccessMiddleware",
 
-    # Yahan-app usage tracking
+    # App usage tracking
     "usage_analytics.middleware.UsageAnalyticsMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -207,7 +207,7 @@ LOGIN_REDIRECT_URL = "portal:home"
 LOGOUT_REDIRECT_URL = "login"
 
 # =========================================================
-# Yahan News Web Push
+# Swiss News Web Push
 # =========================================================
 
 VAPID_PUBLIC_KEY = os.environ.get(

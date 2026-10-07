@@ -8,7 +8,7 @@ from news.services.digest_generator import (
 class Command(BaseCommand):
 
     help = (
-        "Generate the latest Yahan News digest."
+        "Generate the latest Swiss News digest."
     )
 
 

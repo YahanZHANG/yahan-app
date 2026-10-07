@@ -5,7 +5,7 @@ from openai import OpenAI
 
 def get_openai_client():
     """
-    Yahan-APP全体で共有するOpenAI API client。
+    全体で共有するOpenAI API client。
     """
 
     api_key = os.environ.get(
