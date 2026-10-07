@@ -171,7 +171,7 @@
             <div class="games-card-body">
 
                 <h2 class="games-card-title">
-                    パッックマン
+                    パクパクマン
                 </h2>
 
                 <p class="games-card-description">
@@ -188,6 +188,8 @@
         <!-- =========================
              4. Maaario
         ========================= -->
+        
+        {% if not is_public_user %}
 
         <a
             href="{% url 'games:maaario' %}"
@@ -222,6 +224,8 @@
             </div>
 
         </a>
+
+        {% endif %}
 
 
     </div>

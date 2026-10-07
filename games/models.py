@@ -18,7 +18,7 @@ class GameScore(models.Model):
 
         MAZE_CHASE = (
             "maze_chase",
-            "パッックマン",
+            "パクパクマン",
         )
 
         MAAARIO = (

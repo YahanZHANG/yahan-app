@@ -1,0 +1,269 @@
+{% extends "news/base.html" %}
+
+
+{% block title %}
+{{ support_config.title }} | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<div class="news-support-page">
+
+    <!-- =========================================
+         Form card
+         ========================================= -->
+
+    <section class="news-support-form-section">
+
+        <div class="news-support-form-card">
+
+            <form
+                method="post"
+                class="news-support-contact-form"
+            >
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+
+                    <div class="news-support-form-errors">
+
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+                
+                {% if support_method == "bank" %}
+
+                    <div class="news-support-field">
+
+                        <label>
+                            どちらの銀行口座をご希望ですか？
+                        </label>
+
+                        {% if form.bank_country.errors %}
+
+                            <div class="news-support-field-errors">
+
+                                {% for error in form.bank_country.errors %}
+
+                                    <p>
+                                        {{ error }}
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="news-bank-options">
+
+                            {% for choice in form.bank_country %}
+
+                                <label class="news-bank-option">
+
+                                    {{ choice.tag }}
+
+                                    <span class="news-bank-option-content">
+
+                                        <span class="news-bank-option-icon">
+
+                                            {% if choice.data.value == "ch" %}
+                                                🇨🇭
+                                            {% else %}
+                                                🇯🇵
+                                            {% endif %}
+
+                                        </span>
+
+                                        <span>
+
+                                            <strong>
+                                                {{ choice.choice_label }}
+                                            </strong>
+
+                                            <small>
+
+                                                {% if choice.data.value == "ch" %}
+
+                                                    CHFでのお振込み
+
+                                                {% else %}
+
+                                                    日本円でのお振込み
+
+                                                {% endif %}
+
+                                            </small>
+
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <p class="news-support-field-note">
+                            選択した口座の振込先を、
+                            後ほどメールでご案内します。
+                        </p>
+
+                    </div>
+
+                {% endif %}
+                        
+
+                <!-- Name -->
+
+                <div class="news-support-field">
+
+                    <label
+                        for="{{ form.name.id_for_label }}"
+                    >
+                        お名前
+                        <span>（任意）</span>
+                    </label>
+
+                    {{ form.name }}
+
+                    {% if form.name.errors %}
+                        <div class="news-support-field-errors">
+
+                            {% for error in form.name.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Email -->
+
+                <div class="news-support-field">
+
+                    <label
+                        for="{{ form.email.id_for_label }}"
+                    >
+                        メールアドレス
+                    </label>
+
+                    {{ form.email }}
+
+                    {% if form.email.errors %}
+                        <div class="news-support-field-errors">
+
+                            {% for error in form.email.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+
+                        </div>
+                    {% endif %}
+
+                    <p class="news-support-field-note">
+                        ご連絡のためにのみ使用します。
+                    </p>
+
+                </div>
+
+
+                {% if form.message %}
+
+                    <!-- Message -->
+
+                    <div class="news-support-field">
+
+                        <label
+                            for="{{ form.message.id_for_label }}"
+                        >
+                            応援方法・メッセージ
+                        </label>
+
+                        {{ form.message }}
+
+                        {% if form.message.errors %}
+                            <div class="news-support-field-errors">
+
+                                {% for error in form.message.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+
+                            </div>
+                        {% endif %}
+
+                        <p class="news-support-field-note">
+                            例：「Amazon Giftなどで送れる方法を知りたい」
+                            「別の決済方法で応援したい」など
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- Privacy note -->
+
+                <div class="news-support-privacy-box">
+
+                    <h3>
+                        入力情報の取り扱い
+                    </h3>
+
+                    <ul>
+                        <li>
+                            入力いただいた情報は、ご連絡の目的にのみ使用します。
+                        </li>
+                        <li>
+                            ご案内が完了した後は、必要以上に利用しません。
+                        </li>
+                        <li>
+                            このページは、Swiss News運営者への連絡用です。
+                        </li>
+                    </ul>
+                </div>
+
+
+                <!-- Actions -->
+
+                <div class="news-support-contact-actions">
+
+                    <a
+                        href="{% url 'news:about' %}#support"
+                        class="news-support-back-button"
+                    >
+                        ← 戻る
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="news-support-submit"
+                    >
+                        送信する
+                        <span aria-hidden="true">
+                            →
+                        </span>
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -79,4 +79,10 @@ urlpatterns = [
         views.region_detail,
         name="region_detail",
     ),
+
+    path(
+        "support/<str:method>/",
+        views.support_contact,
+        name="support_contact",
+    ),
 ]

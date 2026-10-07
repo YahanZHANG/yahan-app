@@ -1,5 +1,7 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect, render
 from django.urls import resolve
+
 from portal.models import AppAccessRequest
 
 
@@ -17,10 +19,6 @@ REQUESTABLE_APPS = {
         "name": "ワクチン記録",
     },
 
-    "games": {
-        "key": "games",
-        "name": "ミニゲーム",
-    },
 
     "chat": {
         "key": "chat",
@@ -40,6 +38,7 @@ ALLOWED_NAMESPACES = {
     "colorcheck",
     "event_scheduler",
     "board",
+    "games",
 }
 
 
@@ -159,6 +158,26 @@ class PublicUserAccessMiddleware:
 
         namespace = match.namespace
         view_name = match.view_name
+        url_name = match.url_name
+
+
+        # =========================================================
+        # Maaario is not available to public signup users
+        # =========================================================
+
+        if (
+            namespace == "games"
+            and url_name == "maaario"
+        ):
+
+            messages.info(
+                request,
+                "マアアアリオは現在、一般公開していません。",
+            )
+
+            return redirect(
+                "games:game_list"
+            )
 
 
         # ---------------------------------------------
@@ -169,7 +188,7 @@ class PublicUserAccessMiddleware:
 
             return self.get_response(
                 request
-            )
+            )   
 
 
         # ---------------------------------------------
@@ -210,11 +229,6 @@ class PublicUserAccessMiddleware:
                 "/vaccination/": {
                     "key": "vaccination",
                     "name": "ワクチン記録",
-                },
-
-                "/games/": {
-                    "key": "games",
-                    "name": "ミニゲーム",
                 },
 
                 "/chat/": {

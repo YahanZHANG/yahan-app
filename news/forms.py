@@ -337,3 +337,149 @@ class NewsFeedbackForm(forms.ModelForm):
             "message":
                 "",
         }
+
+
+from django import forms
+
+
+class SupportContactForm(forms.Form):
+
+    BANK_CHOICES = [
+        (
+            "ch",
+            "スイスの銀行口座",
+        ),
+        (
+            "jp",
+            "日本の銀行口座",
+        ),
+    ]
+
+
+    bank_country = forms.ChoiceField(
+        label="希望する銀行口座",
+        choices=BANK_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+
+    name = forms.CharField(
+        label="お名前（任意）",
+        required=False,
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={
+                "class": "news-support-input",
+                "placeholder": "お名前",
+                "autocomplete": "name",
+            }
+        ),
+    )
+
+
+    email = forms.EmailField(
+        label="メールアドレス",
+        max_length=254,
+        widget=forms.EmailInput(
+            attrs={
+                "class": "news-support-input",
+                "placeholder": "example@email.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+
+    message = forms.CharField(
+        label="応援方法・メッセージ",
+        required=False,
+        max_length=2000,
+        widget=forms.Textarea(
+            attrs={
+                "class": "news-support-textarea",
+                "placeholder": (
+                    "どのような方法で応援したいか"
+                    "教えてください。"
+                ),
+                "rows": 5,
+            }
+        ),
+    )
+
+
+    def __init__(
+        self,
+        *args,
+        support_method=None,
+        **kwargs,
+    ):
+
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        self.support_method = (
+            support_method
+        )
+
+
+        # =============================================
+        # Bank
+        # =============================================
+
+        if support_method == "bank":
+
+            self.fields.pop(
+                "message"
+            )
+
+            self.fields[
+                "bank_country"
+            ].required = True
+
+
+        # =============================================
+        # Other
+        # =============================================
+
+        else:
+
+            self.fields.pop(
+                "bank_country"
+            )
+
+
+    def clean(self):
+
+        cleaned_data = (
+            super().clean()
+        )
+
+
+        if (
+            self.support_method
+            == "other"
+        ):
+
+            message = (
+                cleaned_data.get(
+                    "message"
+                )
+                or ""
+            ).strip()
+
+
+            if not message:
+
+                self.add_error(
+                    "message",
+                    (
+                        "応援方法やメッセージを"
+                        "入力してください。"
+                    ),
+                )
+
+
+        return cleaned_data

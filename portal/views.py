@@ -175,6 +175,7 @@ PUBLIC_APP_KEYS = [
     "recipes",
     "events",
     "colorcheck",
+    "games",
 ]
 
 # =========================================================

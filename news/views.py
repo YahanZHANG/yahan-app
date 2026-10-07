@@ -3,6 +3,10 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings as django_settings
 from django.db.models import Exists, OuterRef, Q
+from django.core.mail import send_mail
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -15,6 +19,7 @@ from django.utils.http import (
 from .forms import (
     NewsFeedbackForm,
     NewsSettingsForm,
+    SupportContactForm,
 )
 
 from .models import (
@@ -1232,19 +1237,33 @@ def digest_list(request):
         },
     )
 
+
 def about(request):
 
     preference = None
     public_settings = None
 
+
+    # =====================================================
+    # User settings
+    # =====================================================
+
     if request.user.is_authenticated:
+
         preference = _get_preference(
             request.user
         )
+
     else:
+
         public_settings = _get_public_settings(
             request
         )
+
+
+    # =====================================================
+    # Feedback
+    # =====================================================
 
     if request.method == "POST":
 
@@ -1252,9 +1271,11 @@ def about(request):
             "news_feedback_last_sent_at"
         )
 
+
         if last_feedback_at:
 
             try:
+
                 last_feedback_time = (
                     timezone.datetime.fromisoformat(
                         last_feedback_at
@@ -1270,7 +1291,9 @@ def about(request):
                 TypeError,
                 ValueError,
             ):
+
                 seconds_since_last_feedback = 60
+
 
             if seconds_since_last_feedback < 60:
 
@@ -1283,13 +1306,16 @@ def about(request):
                     "news:about"
                 )
 
+
         form = NewsFeedbackForm(
             request.POST
         )
 
+
         if form.is_valid():
 
             form.save()
+
 
             request.session[
                 "news_feedback_last_sent_at"
@@ -1297,25 +1323,47 @@ def about(request):
 
             request.session.modified = True
 
+
             messages.success(
                 request,
                 "ありがとうございます。コメントを送信しました。",
             )
 
+
             return redirect(
                 "news:about"
             )
 
+
     else:
 
         form = NewsFeedbackForm()
+
+
+    # =====================================================
+    # Render
+    # =====================================================
 
     return render(
         request,
         "news/about.html",
         {
             "form": form,
+
+            "twint_url": getattr(
+                django_settings,
+                "SWISS_NEWS_TWINT_URL",
+                "",
+            ),
+
+            "bitcoin_address": getattr(
+                django_settings,
+                "SWISS_NEWS_BITCOIN_ADDRESS",
+                "",
+            ),
+
             "preference": preference,
+
             "public_settings": public_settings,
         },
     )
@@ -1325,4 +1373,186 @@ def services(request):
     return render(
         request,
         "news/services.html",
+    )
+
+
+def support_contact(
+    request,
+    method,
+):
+
+    # =====================================================
+    # Allowed methods
+    # =====================================================
+
+    method_config = {
+
+        "bank": {
+            "title": "日本の銀行口座で応援する",
+            "description": (
+                "ありがとうございます！"
+                "振込先をメールでご案内します。"
+            ),
+        },
+
+        "other": {
+            "title": "その他の方法で応援する",
+            "description": (
+                "ありがとうございます！"
+                "ご希望の応援方法を教えてください。"
+            ),
+        },
+
+    }
+
+
+    if method not in method_config:
+
+        return redirect(
+            "news:about"
+        )
+
+
+    # =====================================================
+    # Form
+    # =====================================================
+
+    if request.method == "POST":
+
+        form = SupportContactForm(
+            request.POST,
+            support_method=method,
+        )
+
+        if form.is_valid():
+
+            name = (
+                form.cleaned_data.get(
+                    "name"
+                )
+                or "未入力"
+            )
+
+            email = (
+                form.cleaned_data[
+                    "email"
+                ]
+            )
+
+            message = (
+                form.cleaned_data.get(
+                    "message"
+                )
+                or ""
+            )
+
+
+            support_email = getattr(
+                django_settings,
+                "SWISS_NEWS_SUPPORT_EMAIL",
+                "",
+            )
+
+
+            if not support_email:
+
+                messages.error(
+                    request,
+                    "現在お問い合わせを受け付けられません。",
+                )
+
+            else:
+
+                if method == "bank":
+
+                    bank_country = (
+                        form.cleaned_data[
+                            "bank_country"
+                        ]
+                    )
+
+                    bank_name = (
+                        "スイスの銀行口座"
+                        if bank_country == "ch"
+                        else "日本の銀行口座"
+                    )
+
+                    mail_subject = (
+                        "【Swiss News】"
+                        "日本の銀行口座での応援希望"
+                    )
+
+                    mail_body = (
+                        "Swiss Newsへの応援希望が届きました。\n\n"
+                        "方法：銀行振込\n"
+                        f"希望口座：{bank_name}\n"
+                        f"氏名：{name}\n"
+                        f"メールアドレス：{email}\n\n"
+                        f"{bank_name}の振込先を"
+                        "この方へ案内してください。"
+                    )
+
+                else:
+
+                    mail_subject = (
+                        "【Swiss News】"
+                        "その他の方法での応援希望"
+                    )
+
+                    mail_body = (
+                        "Swiss Newsへの応援希望が届きました。\n\n"
+                        "方法：その他\n"
+                        f"氏名：{name}\n"
+                        f"メールアドレス：{email}\n\n"
+                        "メッセージ：\n"
+                        f"{message}"
+                    )
+
+
+                send_mail(
+                    subject=mail_subject,
+                    message=mail_body,
+                    from_email=(
+                        django_settings.DEFAULT_FROM_EMAIL
+                    ),
+                    recipient_list=[
+                        support_email
+                    ],
+                    fail_silently=False,
+                )
+
+
+                messages.success(
+                    request,
+                    (
+                        "ありがとうございます！"
+                        "内容を受け付けました。"
+                        "管理者からメールでご連絡します。"
+                    ),
+                )
+
+
+                return redirect(
+                    "news:about"
+                )
+
+    else:
+
+        form = SupportContactForm(
+            support_method=method
+        )
+
+
+    return render(
+        request,
+        "news/support_contact.html",
+        {
+            "form": form,
+            "support_method": method,
+            "support_config": (
+                method_config[
+                    method
+                ]
+            ),
+        },
     )

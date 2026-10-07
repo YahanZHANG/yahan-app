@@ -208,7 +208,6 @@ class PublicUserAccessMiddleware:
         namespace = match.namespace
         view_name = match.view_name
 
-
         # ---------------------------------------------
         # Publicly available apps
         # ---------------------------------------------

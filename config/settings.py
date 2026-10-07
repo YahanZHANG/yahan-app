@@ -232,3 +232,15 @@ VAPID_CONTACT_EMAIL = os.environ.get(
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@yapp.local"
+
+SWISS_NEWS_TWINT_URL = os.getenv(
+    "SWISS_NEWS_TWINT_URL",
+    "",
+)
+
+SWISS_NEWS_BITCOIN_ADDRESS = os.getenv(
+    "SWISS_NEWS_BITCOIN_ADDRESS",
+    "",
+)
+
+SWISS_NEWS_SUPPORT_EMAIL = "yakimexi88ry@gmail.com"
