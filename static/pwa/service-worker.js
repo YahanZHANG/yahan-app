@@ -93,7 +93,7 @@ self.addEventListener(
                     // have separate notifications.
 
                     tag: (
-                        "yahan-news-"
+                        "Swiss-news-"
                         + (data.batch_id || "update")
                     ),
 

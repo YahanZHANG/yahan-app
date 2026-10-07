@@ -48,6 +48,7 @@ def post_list(request):
 
     posts = (
         BoardPost.objects
+        .visible_to(request.user)
         .select_related("author")
         .annotate(
             comment_count=Count("comments")
@@ -87,7 +88,11 @@ def post_list(request):
 def post_detail(request, pk):
 
     post = get_object_or_404(
-        BoardPost.objects.select_related(
+        BoardPost.objects
+        .visible_to(
+            request.user
+        )
+        .select_related(
             "author"
         ),
         pk=pk,
@@ -177,10 +182,9 @@ def post_create(request):
             post = form.save(
                 commit=False
             )
-
             post.author = request.user
-
             post.save()
+            form.save_m2m()
 
             messages.success(
                 request,

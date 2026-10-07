@@ -100,6 +100,54 @@
             </div>
 
 
+            <!-- =========================================
+                Audience
+                ========================================= -->
+
+            <div class="board-field">
+
+                <label for="{{ form.audience_type.id_for_label }}">
+                    公開範囲
+                </label>
+
+                {{ form.audience_type.errors }}
+
+                {{ form.audience_type }}
+
+                <small class="board-field-help">
+                    このお知らせを誰に表示するか選択します。
+                </small>
+
+            </div>
+
+
+            <!-- =========================================
+                Audience users
+                ========================================= -->
+
+            <div
+                class="board-field board-audience-users"
+                id="board-audience-users"
+            >
+
+                <label>
+                    対象ユーザー
+                </label>
+
+                {{ form.audience_users.errors }}
+
+                <div class="board-user-checkbox-list">
+                    {{ form.audience_users }}
+                </div>
+
+                <small class="board-field-help">
+                    「指定したユーザーだけ」または
+                    「指定したユーザーを除く」を選んだ場合に使用します。
+                </small>
+
+            </div>
+
+
             <!-- Pin -->
 
             <div class="board-pin-option">
@@ -157,5 +205,62 @@
     </div>
 
 </div>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const audienceSelect =
+            document.getElementById(
+                "{{ form.audience_type.id_for_label }}"
+            );
+
+        const audienceUsers =
+            document.getElementById(
+                "board-audience-users"
+            );
+
+
+        if (
+            !audienceSelect
+            || !audienceUsers
+        ) {
+            return;
+        }
+
+
+        function updateAudienceUsers() {
+
+            if (
+                audienceSelect.value === "all"
+            ) {
+
+                audienceUsers.style.display =
+                    "none";
+
+            } else {
+
+                audienceUsers.style.display =
+                    "";
+
+            }
+
+        }
+
+
+        audienceSelect.addEventListener(
+            "change",
+            updateAudienceUsers
+        );
+
+
+        updateAudienceUsers();
+
+    }
+);
+
+</script>
 
 {% endblock %}

@@ -231,4 +231,4 @@ VAPID_CONTACT_EMAIL = os.environ.get(
 
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "no-reply@yahan-app.local"
+DEFAULT_FROM_EMAIL = "no-reply@yapp.local"

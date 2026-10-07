@@ -25,13 +25,12 @@ def manifest(request):
 
         "id": "/",
 
-        "name": "Yahan App",
+        "name": "Yapp",
 
-        "short_name": "Yahan App",
+        "short_name": "Yapp",
 
         "description": (
-            "スイスニュース・育児・暮らしを"
-            "まとめたYahan App"
+            "暮らしをよりよくするための情報やサービスをまとめたYapp"
         ),
 
         "start_url": "/",

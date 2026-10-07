@@ -105,7 +105,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "YAHAN NEWS REFRESH"
+                "Swiss NEWS REFRESH"
             )
         )
 

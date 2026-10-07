@@ -142,7 +142,7 @@ APP_CONFIG = {
             "チャット",
 
         "label":
-            "YAHAN CHAT",
+            "CHAT",
 
         "icon":
             "💬",
@@ -962,6 +962,10 @@ def home(request):
         in available_choices
     ]
 
+    can_access_chat = (
+        "chat" in available_keys
+    )
+
     preferences = (
         PortalAppPreference
         .objects
@@ -1078,8 +1082,8 @@ def home(request):
 
     board_posts = (
         BoardPost.objects
-        .filter(
-            created_at__gte=two_weeks_ago,
+        .visible_to(
+            request.user
         )
         .select_related(
             "author"
@@ -1090,8 +1094,9 @@ def home(request):
             )
         )
         .order_by(
+            "-is_pinned",
             "-created_at",
-        )[:2]
+        )[:3]
     )
 
     # =====================================================
@@ -1103,6 +1108,7 @@ def home(request):
         "can_view_analytics": can_view_analytics(
             request.user
         ),
+        "can_access_chat": can_access_chat,
         "profile": profile,
         "nickname_form": nickname_form,
         "visible_apps": visible_apps,

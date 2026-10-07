@@ -27,10 +27,6 @@ REQUESTABLE_APPS = {
         "name": "チャット",
     },
 
-    "board": {
-        "key": "board",
-        "name": "掲示板",
-    },
 }
 
 # =========================================================
@@ -43,6 +39,7 @@ ALLOWED_NAMESPACES = {
     "recipes",
     "colorcheck",
     "event_scheduler",
+    "board",
 }
 
 
@@ -224,12 +221,6 @@ class PublicUserAccessMiddleware:
                     "key": "chat",
                     "name": "チャット",
                 },
-
-                "/board/": {
-                    "key": "board",
-                    "name": "掲示板",
-                },
-
             }
 
 

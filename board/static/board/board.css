@@ -1085,3 +1085,46 @@
     }
 
 }
+
+/* =========================================================
+   Audience
+   ========================================================= */
+
+.board-field-help {
+    display: block;
+    margin-top: 7px;
+    color: #7a8491;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+
+.board-user-checkbox-list {
+    margin-top: 6px;
+    padding: 14px 16px;
+    border: 1px solid #e3e6ea;
+    border-radius: 12px;
+    background: #fafbfc;
+}
+
+
+.board-user-checkbox-list > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+.board-user-checkbox-list label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+
+.board-user-checkbox-list input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+}
