@@ -85,4 +85,10 @@ urlpatterns = [
         views.support_contact,
         name="support_contact",
     ),
+    
+    path(
+        "support/bitcoin/qr/",
+        views.bitcoin_qr,
+        name="bitcoin_qr",
+    ),
 ]

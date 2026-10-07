@@ -7,6 +7,41 @@ Swiss News
 
 {% block news_content %}
 
+
+<!-- =====================================================
+     About Swiss News
+     ===================================================== -->
+
+<a
+    href="{% url 'news:about' %}"
+    class="news-home-about-link"
+>
+
+    <span class="news-home-about-icon">
+        ⓘ
+    </span>
+
+    <span class="news-home-about-copy">
+
+        <strong>
+            このサービスについて
+        </strong>
+
+        <small>
+            Swiss Newsの仕組みや運営について
+        </small>
+
+    </span>
+
+    <span
+        class="news-home-about-arrow"
+        aria-hidden="true"
+    >
+        →
+    </span>
+
+</a>
+
 <section class="news-page-heading">
 
     <div>

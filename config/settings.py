@@ -238,9 +238,8 @@ SWISS_NEWS_TWINT_URL = os.getenv(
     "",
 )
 
-SWISS_NEWS_BITCOIN_ADDRESS = os.getenv(
-    "SWISS_NEWS_BITCOIN_ADDRESS",
-    "",
+SWISS_NEWS_BITCOIN_ADDRESS = (
+    "bc1qcf3akr70r0rsjkqphsm6aldgqk9r32e9c475xc"
 )
 
 SWISS_NEWS_SUPPORT_EMAIL = "yakimexi88ry@gmail.com"

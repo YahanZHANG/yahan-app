@@ -323,64 +323,34 @@ Swiss Newsについて | Swiss News
                         Bitcoin
                         ===================================== -->
 
-                    {% if bitcoin_address %}
+                    <a
+                        href="#"
+                        class="news-support-method"
+                        data-support-toggle="bitcoin"
+                        onclick="return false;"
+                    >
 
-                        <button
-                            type="button"
-                            class="news-support-method"
-                            data-support-toggle="bitcoin"
-                        >
+                        <span class="news-support-method-icon">
+                            ₿
+                        </span>
 
-                            <span class="news-support-method-icon">
-                                ₿
-                            </span>
+                        <span class="news-support-method-copy">
 
-                            <span class="news-support-method-copy">
+                            <strong>
+                                Bitcoinで応援する
+                            </strong>
 
-                                <strong>
-                                    Bitcoinで応援する
-                                </strong>
+                            <small>
+                                Bitcoinアドレスから送金できます
+                            </small>
 
-                                <small>
-                                    Bitcoinアドレスを表示します
-                                </small>
+                        </span>
 
-                            </span>
+                        <span class="news-support-method-arrow">
+                            →
+                        </span>
 
-                            <span class="news-support-method-arrow">
-                                →
-                            </span>
-
-                        </button>
-
-                    {% else %}
-
-                        <div
-                            class="
-                                news-support-method
-                                news-support-method-disabled
-                            "
-                        >
-
-                            <span class="news-support-method-icon">
-                                ₿
-                            </span>
-
-                            <span class="news-support-method-copy">
-
-                                <strong>
-                                    Bitcoinで応援する
-                                </strong>
-
-                                <small>
-                                    準備中です
-                                </small>
-
-                            </span>
-
-                        </div>
-
-                    {% endif %}
+                    </a>
 
 
                     <!-- =====================================
@@ -433,17 +403,15 @@ Swiss Newsについて | Swiss News
                             Bitcoinで応援する
                         </h4>
 
-                        <p>
-                            以下のBitcoinアドレスへ送金できます。
-                        </p>
-
+                        <!-- =================================
+                            Bitcoin address
+                            ================================= -->
 
                         <div class="news-bitcoin-address">
 
                             <code id="bitcoin-address">
                                 {{ bitcoin_address }}
                             </code>
-
 
                             <button
                                 type="button"
@@ -454,21 +422,6 @@ Swiss Newsについて | Swiss News
                             </button>
 
                         </div>
-
-
-                        <a
-                            href="bitcoin:{{ bitcoin_address }}"
-                            class="news-support-submit"
-                        >
-                            Bitcoinウォレットで開く
-                            <span>→</span>
-                        </a>
-
-
-                        <p class="news-support-privacy">
-                            Bitcoinの取引履歴は
-                            パブリックなブロックチェーン上に記録されます。
-                        </p>
 
                     </div>
 
@@ -572,7 +525,6 @@ Swiss Newsについて | Swiss News
 
         </section>
 
-
         <!-- =================================================
              Privacy
              ================================================= -->
@@ -594,6 +546,7 @@ Swiss Newsについて | Swiss News
 
 </div>
 
+
 <script>
 
 document.addEventListener(
@@ -611,24 +564,6 @@ document.addEventListener(
             );
 
 
-        function openPanel(
-            target
-        ) {
-
-            panels.forEach(
-                function (panel) {
-
-                    panel.hidden = (
-                        panel.dataset.supportPanel
-                        !== target
-                    );
-
-                }
-            );
-
-        }
-
-
         buttons.forEach(
             function (button) {
 
@@ -639,7 +574,7 @@ document.addEventListener(
                         const target =
                             button.dataset.supportToggle;
 
-                        const panel =
+                        const targetPanel =
                             document.querySelector(
                                 '[data-support-panel="'
                                 + target
@@ -647,27 +582,29 @@ document.addEventListener(
                             );
 
 
-                        if (!panel) {
+                        if (!targetPanel) {
                             return;
                         }
 
 
                         const isOpen =
-                            !panel.hidden;
+                            !targetPanel.hidden;
 
 
+                        // いったん全部閉じる
                         panels.forEach(
-                            function (item) {
-                                item.hidden = true;
+                            function (panel) {
+                                panel.hidden = true;
                             }
                         );
 
 
+                        // 閉じていた場合だけ開く
                         if (!isOpen) {
 
-                            panel.hidden = false;
+                            targetPanel.hidden = false;
 
-                            panel.scrollIntoView(
+                            targetPanel.scrollIntoView(
                                 {
                                     behavior: "smooth",
                                     block: "nearest",
@@ -683,26 +620,9 @@ document.addEventListener(
         );
 
 
-        # --------------------------------------------------
-        # Reopen invalid form
-        # --------------------------------------------------
-
-        const initialPanel =
-            "{{ open_support_panel|default:''|escapejs }}";
-
-
-        if (initialPanel) {
-
-            openPanel(
-                initialPanel
-            );
-
-        }
-
-
-        # --------------------------------------------------
-        # Bitcoin copy
-        # --------------------------------------------------
+        // =================================================
+        // Bitcoin address copy
+        // =================================================
 
         const copyButton =
             document.getElementById(

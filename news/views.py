@@ -6,6 +6,11 @@ from django.db.models import Exists, OuterRef, Q
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from io import BytesIO
+
+import qrcode
+
+from django.http import HttpResponse
 
 from django.shortcuts import (
     get_object_or_404,
@@ -1368,6 +1373,63 @@ def about(request):
         },
     )
 
+def bitcoin_qr(request):
+
+    bitcoin_address = getattr(
+        django_settings,
+        "SWISS_NEWS_BITCOIN_ADDRESS",
+        "",
+    )
+
+    if not bitcoin_address:
+
+        return HttpResponse(
+            status=404
+        )
+
+
+    bitcoin_uri = (
+        f"bitcoin:{bitcoin_address}"
+    )
+
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=(
+            qrcode.constants
+            .ERROR_CORRECT_M
+        ),
+        box_size=8,
+        border=4,
+    )
+
+    qr.add_data(
+        bitcoin_uri
+    )
+
+    qr.make(
+        fit=True
+    )
+
+
+    image = qr.make_image(
+        fill_color="black",
+        back_color="white",
+    )
+
+
+    buffer = BytesIO()
+
+    image.save(
+        buffer,
+        format="PNG",
+    )
+
+
+    return HttpResponse(
+        buffer.getvalue(),
+        content_type="image/png",
+    )
 
 def services(request):
     return render(
