@@ -1131,7 +1131,7 @@ def event_detail(
     # =========================================================
 
     result_rows = []
-
+    top_result_rows = []
     duration_result_rows = []
 
 
@@ -1482,6 +1482,44 @@ def event_detail(
                     }
                 )
 
+        # =====================================================
+        # Recommended Top 3
+        # =====================================================
+
+        answered_result_rows = [
+            row
+            for row in result_rows
+            if (
+                row["yes_count"]
+                +
+                row["maybe_count"]
+                +
+                row["no_count"]
+            ) > 0
+        ]
+
+
+        for row in answered_result_rows:
+
+            row["recommendation_score"] = (
+                row["yes_count"] * 2
+                +
+                row["maybe_count"]
+                -
+                row["no_count"] * 2
+            )
+
+
+        top_result_rows = sorted(
+            answered_result_rows,
+            key=lambda row: (
+                row["recommendation_score"],
+                row["yes_count"],
+                -row["no_count"],
+                row["maybe_count"],
+            ),
+            reverse=True,
+        )[:3]
 
         # =====================================================
         # Duration results
@@ -1608,6 +1646,9 @@ def event_detail(
 
             "result_rows":
                 result_rows,
+            
+            "top_result_rows":
+                top_result_rows,
 
             "duration_result_rows":
                 duration_result_rows,

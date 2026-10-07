@@ -133,6 +133,110 @@
                 Schedule results
                 ============================================= -->
 
+            {% if top_result_rows %}
+
+                <!-- =====================================================
+                    Recommended Top 3
+                    ===================================================== -->
+
+                <div class="event-top-results">
+
+                    <div class="event-top-results-heading">
+
+                        <strong>
+                            ✨ おすすめ候補
+                        </strong>
+
+                        <span>
+                            みんなの回答から自動計算
+                        </span>
+
+                    </div>
+
+
+                    <div class="event-top-results-list">
+
+                        {% for row in top_result_rows %}
+
+                            <div
+                                class="
+                                    event-top-result-card
+                                    rank-{{ forloop.counter }}
+                                "
+                            >
+
+                                <div class="event-top-result-rank">
+
+                                    {% if forloop.counter == 1 %}
+                                        🥇
+                                    {% elif forloop.counter == 2 %}
+                                        🥈
+                                    {% else %}
+                                        🥉
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="event-top-result-main">
+
+                                    <strong>
+                                        {{ row.date|date:"n月j日（D）" }}
+                                    </strong>
+
+
+                                    {% if row.label %}
+
+                                        <span>
+                                            {{ row.label }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if row.start_time %}
+
+                                        <span class="event-top-result-time">
+
+                                            {{ row.start_time|time:"H:i" }}
+
+                                            {% if row.end_time %}
+                                                〜{{ row.end_time|time:"H:i" }}
+                                            {% endif %}
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="event-top-result-counts">
+
+                                    <span class="yes">
+                                        ○ {{ row.yes_count }}
+                                    </span>
+
+                                    <span class="maybe">
+                                        △ {{ row.maybe_count }}
+                                    </span>
+
+                                    <span class="no">
+                                        × {{ row.no_count }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+            
             <div class="event-result-list">
 
                 {% for row in result_rows %}
