@@ -232,6 +232,14 @@
                                     {{ event.source_name }}
                                 </div>
 
+                                {% if event.origin_path %}
+
+                                    <div class="analytics-journey-source">
+                                        クリック元：{{ event.origin_path }}
+                                    </div>
+
+                                {% endif %}
+
                                 <a
                                     href="{{ event.destination_url }}"
                                     target="_blank"
@@ -239,7 +247,7 @@
                                     class="analytics-journey-original-link"
                                 >
                                     元記事を開く ↗
-                                </a>
+</a>
 
                             {% else %}
 

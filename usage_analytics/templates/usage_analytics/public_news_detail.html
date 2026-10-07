@@ -32,15 +32,15 @@
         </h1>
 
         <p>
-            ログインしていない一般閲覧者の匿名アクセス詳細
+            匿名Visitorごとの利用状況を確認
         </p>
 
         <div class="analytics-actions">
 
             <a
-                href="{% url 'usage_analytics:dashboard' %}?days={{ days }}"
+                href="{% url 'usage_analytics:news_app_detail' %}?days={{ days }}"
             >
-                ← 利用状況に戻る
+                ← Swiss News Analytics
             </a>
 
         </div>
@@ -156,8 +156,8 @@
         </section>
 
         <!-- =====================================================
-            Article clicks
-            ===================================================== -->
+             Article clicks
+             ===================================================== -->
 
         <section class="analytics-section">
 
@@ -175,38 +175,17 @@
 
 
             <p class="analytics-description">
-                Swiss Newsから元ニュース記事を開いた回数。
-                匿名ユーザーとログインユーザーの両方を集計しています。
+                公開Swiss Newsを利用した匿名Visitorが、
+                元ニュース記事を開いた回数。
             </p>
 
 
-            <section class="analytics-summary">
-
-                <!-- Total -->
+            <div class="analytics-summary">
 
                 <div class="analytics-stat-card">
 
                     <span>
-                        合計
-                    </span>
-
-                    <strong>
-                        {{ click_summary.total }}
-                    </strong>
-
-                    <small>
-                        回
-                    </small>
-
-                </div>
-
-
-                <!-- Anonymous -->
-
-                <div class="analytics-stat-card">
-
-                    <span>
-                        匿名
+                        Article clicks
                     </span>
 
                     <strong>
@@ -219,26 +198,7 @@
 
                 </div>
 
-
-                <!-- Authenticated -->
-
-                <div class="analytics-stat-card">
-
-                    <span>
-                        ログイン済み
-                    </span>
-
-                    <strong>
-                        {{ click_summary.authenticated }}
-                    </strong>
-
-                    <small>
-                        回
-                    </small>
-
-                </div>
-
-            </section>
+            </div>
 
         </section>
 
@@ -411,7 +371,7 @@
                                         class="analytics-visitor-link"
                                     >
                                         <strong>
-                                            Visitor {{ visitor.number }}
+                                            Visitor {{ forloop.counter }}
                                         </strong>
 
                                         <span aria-hidden="true">

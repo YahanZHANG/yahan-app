@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}
-    スイスニュース | 利用状況
+    Swiss News Analytics | yahan-app
 {% endblock %}
 
 
@@ -16,6 +17,10 @@
 
 <div class="analytics-page">
 
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
     <header class="analytics-hero">
 
         <p class="analytics-eyebrow">
@@ -23,13 +28,12 @@
         </p>
 
         <h1>
-            スイスニュース
+            📰 Swiss News
         </h1>
 
         <p>
-            匿名ユーザーとログインユーザーを合わせた利用状況
+            利用者・継続率・記事閲覧・流入元を分析
         </p>
-
 
         <div class="analytics-actions">
 
@@ -46,42 +50,679 @@
 
     <main class="analytics-main">
 
-        <nav class="analytics-period">
 
-            <a
-                href="?days=7"
-                class="{% if days == '7' %}is-active{% endif %}"
-            >
-                7日間
-            </a>
-
-            <a
-                href="?days=30"
-                class="{% if days == '30' %}is-active{% endif %}"
-            >
-                30日間
-            </a>
-
-            <a
-                href="?days=all"
-                class="{% if days == 'all' %}is-active{% endif %}"
-            >
-                全期間
-            </a>
-
-        </nav>
-
+        <!-- =================================================
+             Period selector
+             ================================================= -->
 
         <section class="analytics-section">
 
             <div class="analytics-section-heading">
 
                 <p>
-                    OVERVIEW
+                    PERIOD
                 </p>
 
                 <h2>
-                    全体の利用状況
+                    表示期間
+                </h2>
+
+            </div>
+
+
+            <nav class="analytics-period">
+
+                <a
+                    href="?days=7"
+                    class="{% if days == '7' %}is-active{% endif %}"
+                >
+                    7日間
+                </a>
+
+                <a
+                    href="?days=30"
+                    class="{% if days == '30' %}is-active{% endif %}"
+                >
+                    30日間
+                </a>
+
+                <a
+                    href="?days=all"
+                    class="{% if days == 'all' %}is-active{% endif %}"
+                >
+                    全期間
+                </a>
+
+            </nav>
+
+        </section>
+
+
+        <!-- =================================================
+             Core growth metrics
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ACTIVE USERS
+                </p>
+
+                <h2>
+                    利用者
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                公開Swiss Newsを利用した匿名訪問者を、
+                ブラウザごとの匿名IDで集計。
+            </p>
+
+
+            <div class="analytics-summary analytics-summary-primary">
+
+
+                <!-- DAU -->
+
+                <div class="analytics-stat-card analytics-stat-card-primary">
+
+                    <span>
+                        DAU
+                    </span>
+
+                    <strong>
+                        {{ growth.dau|default:0 }}
+                    </strong>
+
+                    <small>
+                        今日の利用者
+                    </small>
+
+                </div>
+
+
+                <!-- WAU -->
+
+                <div class="analytics-stat-card analytics-stat-card-primary">
+
+                    <span>
+                        WAU
+                    </span>
+
+                    <strong>
+                        {{ growth.wau|default:0 }}
+                    </strong>
+
+                    <small>
+                        過去7日
+                    </small>
+
+                </div>
+
+
+                <!-- MAU -->
+
+                <div class="analytics-stat-card analytics-stat-card-primary">
+
+                    <span>
+                        MAU
+                    </span>
+
+                    <strong>
+                        {{ growth.mau|default:0 }}
+                    </strong>
+
+                    <small>
+                        過去30日
+                    </small>
+
+                </div>
+
+
+                <!-- Stickiness -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        DAU / MAU
+                    </span>
+
+                    <strong>
+                        {{ growth.dau_mau_rate|default:0 }}%
+                    </strong>
+
+                    <small>
+                        日次利用率
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             New / Returning
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    USER GROWTH
+                </p>
+
+                <h2>
+                    新規・再訪
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-summary">
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        新規Visitor
+                    </span>
+
+                    <strong>
+                        {{ growth.new_visitors|default:0 }}
+                    </strong>
+
+                    <small>
+                        選択期間
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Returning
+                    </span>
+
+                    <strong>
+                        {{ growth.returning_visitors|default:0 }}
+                    </strong>
+
+                    <small>
+                        再訪者
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Returning率
+                    </span>
+
+                    <strong>
+                        {{ growth.returning_rate|default:0 }}%
+                    </strong>
+
+                    <small>
+                        選択期間
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Total visitors
+                    </span>
+
+                    <strong>
+                        {{ anonymous_summary.users|default:0 }}
+                    </strong>
+
+                    <small>
+                        選択期間
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Retention
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    RETENTION
+                </p>
+
+                <h2>
+                    継続利用
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                初回訪問後に、再びSwiss Newsを利用したVisitorの割合。
+            </p>
+
+
+            <div class="analytics-summary">
+
+
+                <!-- 7 day retention -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        7日Retention
+                    </span>
+
+                    {% if retention.day7_rate is not None %}
+
+                        <strong>
+                            {{ retention.day7_rate }}%
+                        </strong>
+
+                        <small>
+                            {{ retention.day7_returned }}
+                            /
+                            {{ retention.day7_eligible }}
+                            人
+                        </small>
+
+                    {% else %}
+
+                        <strong>
+                            —
+                        </strong>
+
+                        <small>
+                            データ蓄積中
+                        </small>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- 30 day retention -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        30日Retention
+                    </span>
+
+                    {% if retention.day30_rate is not None %}
+
+                        <strong>
+                            {{ retention.day30_rate }}%
+                        </strong>
+
+                        <small>
+                            {{ retention.day30_returned }}
+                            /
+                            {{ retention.day30_eligible }}
+                            人
+                        </small>
+
+                    {% else %}
+
+                        <strong>
+                            —
+                        </strong>
+
+                        <small>
+                            データ蓄積中
+                        </small>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Daily active users chart
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    DAILY ACTIVITY
+                </p>
+
+                <h2>
+                    利用者数の推移
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                1日ごとの利用者数と新規Visitor数。
+            </p>
+
+
+            <div class="analytics-chart-card">
+
+                <canvas
+                    id="news-users-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Engagement
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ENGAGEMENT
+                </p>
+
+                <h2>
+                    利用の深さ
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-summary">
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Visits
+                    </span>
+
+                    <strong>
+                        {{ engagement.visits|default:0 }}
+                    </strong>
+
+                    <small>
+                        訪問
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Page views
+                    </span>
+
+                    <strong>
+                        {{ engagement.page_views|default:0 }}
+                    </strong>
+
+                    <small>
+                        閲覧
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Pages / Visit
+                    </span>
+
+                    <strong>
+                        {{ engagement.pages_per_visit|default:"0.0" }}
+                    </strong>
+
+                    <small>
+                        平均
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Article clicks
+                    </span>
+
+                    <strong>
+                        {{ engagement.article_clicks|default:0 }}
+                    </strong>
+
+                    <small>
+                        元記事クリック
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Click users
+                    </span>
+
+                    <strong>
+                        {{ engagement.article_clickers|default:0 }}
+                    </strong>
+
+                    <small>
+                        Visitor
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Clicker rate
+                    </span>
+
+                    <strong>
+                        {{ engagement.clicker_rate|default:0 }}%
+                    </strong>
+
+                    <small>
+                        記事を開いた割合
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Engagement trend
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ENGAGEMENT TREND
+                </p>
+
+                <h2>
+                    訪問・記事クリックの推移
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-chart-card">
+
+                <canvas
+                    id="news-engagement-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Acquisition
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ACQUISITION
+                </p>
+
+                <h2>
+                    どこから来たか
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                UTMパラメータと参照元を使って、
+                Swiss Newsを知った経路を確認。
+            </p>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                流入元
+                            </th>
+
+                            <th>
+                                媒体
+                            </th>
+
+                            <th>
+                                Visitor
+                            </th>
+
+                            <th>
+                                Visits
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for item in acquisition %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ item.source }}
+                                    </strong>
+
+                                    {% if item.campaign %}
+
+                                        <div class="analytics-table-subtext">
+                                            {{ item.campaign }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+                                    {{ item.medium|default:"—" }}
+                                </td>
+
+
+                                <td>
+                                    {{ item.visitors }}
+                                </td>
+
+
+                                <td>
+                                    {{ item.visits }}
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="4">
+                                    流入元データはまだありません。
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Devices
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    DEVICES
+                </p>
+
+                <h2>
+                    利用端末
                 </h2>
 
             </div>
@@ -96,23 +737,15 @@
                         <tr>
 
                             <th>
-                                区分
+                                端末
                             </th>
 
                             <th>
-                                利用者
+                                Visitor
                             </th>
 
                             <th>
-                                訪問
-                            </th>
-
-                            <th>
-                                ページ閲覧
-                            </th>
-
-                            <th>
-                                記事クリック
+                                割合
                             </th>
 
                         </tr>
@@ -122,81 +755,37 @@
 
                     <tbody>
 
-                        <tr>
+                        {% for device in devices %}
 
-                            <td>
-                                <strong>
-                                    全体
-                                </strong>
-                            </td>
+                            <tr>
 
-                            <td>
-                                {{ total_summary.users }}
-                            </td>
+                                <td>
+                                    <strong>
+                                        {{ device.label }}
+                                    </strong>
+                                </td>
 
-                            <td>
-                                {{ total_summary.visits }}
-                            </td>
+                                <td>
+                                    {{ device.visitors }}
+                                </td>
 
-                            <td>
-                                {{ total_summary.page_views }}
-                            </td>
+                                <td>
+                                    {{ device.percentage }}%
+                                </td>
 
-                            <td>
-                                {{ total_summary.article_clicks }}
-                            </td>
+                            </tr>
 
-                        </tr>
+                        {% empty %}
 
+                            <tr>
 
-                        <tr>
+                                <td colspan="3">
+                                    端末データはまだありません。
+                                </td>
 
-                            <td>
-                                匿名
-                            </td>
+                            </tr>
 
-                            <td>
-                                {{ anonymous_summary.users }}
-                            </td>
-
-                            <td>
-                                {{ anonymous_summary.visits }}
-                            </td>
-
-                            <td>
-                                {{ anonymous_summary.page_views }}
-                            </td>
-
-                            <td>
-                                {{ anonymous_summary.article_clicks }}
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-
-                            <td>
-                                ログイン済み
-                            </td>
-
-                            <td>
-                                {{ authenticated_summary.users }}
-                            </td>
-
-                            <td>
-                                {{ authenticated_summary.visits }}
-                            </td>
-
-                            <td>
-                                {{ authenticated_summary.page_views }}
-                            </td>
-
-                            <td>
-                                {{ authenticated_summary.article_clicks }}
-                            </td>
-
-                        </tr>
+                        {% endfor %}
 
                     </tbody>
 
@@ -204,296 +793,562 @@
 
             </div>
 
-            <!-- =====================================================
-                Page view trend
-                ===================================================== -->
-
-            <section class="analytics-section">
-
-                <div class="analytics-section-heading">
-
-                    <p>
-                        PAGE VIEW TREND
-                    </p>
-
-                    <h2>
-                        ページ閲覧数の推移
-                    </h2>
-
-                </div>
-
-
-                <p class="analytics-description">
-                    Swiss Newsの1日ごとのページ閲覧数。
-                    匿名ユーザーとログインユーザーを分けて表示しています。
-                </p>
-
-
-                <div class="analytics-chart-card">
-
-                    <canvas
-                        id="news-page-view-chart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-            {{ chart_data|json_script:"news-chart-data" }}
-
-
-            <script
-                src="https://cdn.jsdelivr.net/npm/chart.js"
-            ></script>
-
-
-            <script>
-
-            document.addEventListener(
-                "DOMContentLoaded",
-                function () {
-
-                    const dataElement =
-                        document.getElementById(
-                            "news-chart-data"
-                        );
-
-                    const canvas =
-                        document.getElementById(
-                            "news-page-view-chart"
-                        );
-
-                    if (!dataElement || !canvas) {
-                        return;
-                    }
-
-
-                    const chartData =
-                        JSON.parse(
-                            dataElement.textContent
-                        );
-
-
-                    new Chart(
-                        canvas,
-                        {
-
-                            type: "line",
-
-                            data: {
-
-                                labels: chartData.map(
-                                    item => item.date
-                                ),
-
-                                datasets: [
-
-                                    {
-                                        label: "全体",
-                                        data: chartData.map(
-                                            item => item.total
-                                        ),
-                                        borderWidth: 3,
-                                        tension: 0.3,
-                                    },
-
-                                    {
-                                        label: "匿名",
-                                        data: chartData.map(
-                                            item => item.anonymous
-                                        ),
-                                        borderWidth: 2,
-                                        tension: 0.3,
-                                    },
-
-                                    {
-                                        label: "ログイン済み",
-                                        data: chartData.map(
-                                            item => item.authenticated
-                                        ),
-                                        borderWidth: 2,
-                                        tension: 0.3,
-                                    },
-
-                                ],
-
-                            },
-
-                            options: {
-
-                                responsive: true,
-
-                                maintainAspectRatio: false,
-
-                                interaction: {
-                                    mode: "index",
-                                    intersect: false,
-                                },
-
-                                plugins: {
-
-                                    legend: {
-                                        position: "bottom",
-                                    },
-
-                                },
-
-                                scales: {
-
-                                    y: {
-
-                                        beginAtZero: true,
-
-                                        ticks: {
-                                            precision: 0,
-                                        },
-
-                                    },
-
-                                },
-
-                            },
-
-                        }
-                    );
-
-                    const visitCanvas =
-                        document.getElementById(
-                            "news-visit-chart"
-                        );
-
-                    if (visitCanvas) {
-
-                        new Chart(
-                            visitCanvas,
-                            {
-
-                                type: "line",
-
-                                data: {
-
-                                    labels: chartData.map(
-                                        item => item.date
-                                    ),
-
-                                    datasets: [
-
-                                        {
-                                            label: "全体",
-                                            data: chartData.map(
-                                                item => item.total_visits
-                                            ),
-                                            borderWidth: 3,
-                                            tension: 0.3,
-                                        },
-
-                                        {
-                                            label: "匿名",
-                                            data: chartData.map(
-                                                item => item.anonymous_visits
-                                            ),
-                                            borderWidth: 2,
-                                            tension: 0.3,
-                                        },
-
-                                        {
-                                            label: "ログイン済み",
-                                            data: chartData.map(
-                                                item => item.authenticated_visits
-                                            ),
-                                            borderWidth: 2,
-                                            tension: 0.3,
-                                        },
-
-                                    ],
-
-                                },
-
-                                options: {
-
-                                    responsive: true,
-
-                                    maintainAspectRatio: false,
-
-                                    interaction: {
-                                        mode: "index",
-                                        intersect: false,
-                                    },
-
-                                    plugins: {
-
-                                        legend: {
-                                            position: "bottom",
-                                        },
-
-                                    },
-
-                                    scales: {
-
-                                        y: {
-
-                                            beginAtZero: true,
-
-                                            ticks: {
-                                                precision: 0,
-                                            },
-
-                                        },
-
-                                    },
-
-                                },
-
-                            }
-                        );
-
-                    }
-
-                }
-            );
-
-            </script>
-
         </section>
 
-        <!-- =====================================================
-            Visit trend
-            ===================================================== -->
+
+        <!-- =================================================
+             Top articles
+             ================================================= -->
 
         <section class="analytics-section">
 
             <div class="analytics-section-heading">
 
                 <p>
-                    VISIT TREND
+                    TOP ARTICLES
                 </p>
 
                 <h2>
-                    訪問回数の推移
+                    よく開かれている記事
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                記事
+                            </th>
+
+                            <th>
+                                Source
+                            </th>
+
+                            <th>
+                                Visitor
+                            </th>
+
+                            <th>
+                                Clicks
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for article in top_articles %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ article.article_title }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ article.source_name }}
+                                </td>
+
+                                <td>
+                                    {{ article.visitors }}
+                                </td>
+
+                                <td>
+                                    {{ article.clicks }}
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="4">
+                                    記事クリックはまだありません。
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Top pages
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    TOP PAGES
+                </p>
+
+                <h2>
+                    よく見られているページ
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                ページ
+                            </th>
+
+                            <th>
+                                Visitor
+                            </th>
+
+                            <th>
+                                Page views
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for page in top_pages %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ page.path }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ page.visitors }}
+                                </td>
+
+                                <td>
+                                    {{ page.page_views }}
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="3">
+                                    ページ閲覧データはまだありません。
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Authenticated users
+             ================================================= -->
+
+        <section class="analytics-section analytics-secondary-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    LOGGED-IN USERS
+                </p>
+
+                <h2>
+                    ログインユーザー
                 </h2>
 
             </div>
 
 
             <p class="analytics-description">
-                Swiss Newsへの1日ごとの訪問回数。
-                匿名ユーザーとログインユーザーを分けて表示しています。
+                公開利用とは分けて表示。
+                DAU・WAU・MAUなどの主要指標には含めない。
             </p>
 
 
-            <div class="analytics-chart-card">
+            <div class="analytics-summary">
 
-                <canvas
-                    id="news-visit-chart"
-                ></canvas>
+                <div class="analytics-stat-card">
+
+                    <span>
+                        利用者
+                    </span>
+
+                    <strong>
+                        {{ authenticated_summary.users|default:0 }}
+                    </strong>
+
+                    <small>
+                        人
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Visits
+                    </span>
+
+                    <strong>
+                        {{ authenticated_summary.visits|default:0 }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Page views
+                    </span>
+
+                    <strong>
+                        {{ authenticated_summary.page_views|default:0 }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Article clicks
+                    </span>
+
+                    <strong>
+                        {{ authenticated_summary.article_clicks|default:0 }}
+                    </strong>
+
+                    <small>
+                        回
+                    </small>
+
+                </div>
 
             </div>
 
         </section>
 
+
+        <!-- =================================================
+             Detailed visitor analytics
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    VISITOR DETAILS
+                </p>
+
+                <h2>
+                    個別アクセスを見る
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+                Visitorごとの訪問回数・ページ閲覧・記事クリックを確認。
+            </p>
+
+
+            <div class="analytics-actions">
+
+                <a
+                    href="{% url 'usage_analytics:public_news_detail' %}?days={{ days }}"
+                >
+                    公開Visitor詳細を見る →
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
+        <p class="analytics-note">
+
+            ※ 公開Swiss Newsの利用者は、
+            ブラウザに保存された匿名IDを使って集計。
+
+            氏名・メールアドレスなどの個人情報とは
+            紐付けていません。
+
+            30分以上アクセスが空いた場合は、
+            新しいVisitとして計算します。
+
+        </p>
+
     </main>
 
 </div>
+
+
+<!-- =====================================================
+     Chart data
+     ===================================================== -->
+
+{{ daily_chart_data|json_script:"news-daily-chart-data" }}
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const dataElement =
+            document.getElementById(
+                "news-daily-chart-data"
+            );
+
+        if (!dataElement) {
+            return;
+        }
+
+        const chartData =
+            JSON.parse(
+                dataElement.textContent
+            );
+
+
+        // =================================================
+        // Users chart
+        // =================================================
+
+        const usersCanvas =
+            document.getElementById(
+                "news-users-chart"
+            );
+
+
+        if (usersCanvas) {
+
+            new Chart(
+                usersCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: chartData.map(
+                            item => item.date
+                        ),
+
+                        datasets: [
+
+                            {
+                                label: "DAU",
+                                data: chartData.map(
+                                    item => item.active_visitors
+                                ),
+                                borderWidth: 3,
+                                tension: 0.3,
+                            },
+
+                            {
+                                label: "新規Visitor",
+                                data: chartData.map(
+                                    item => item.new_visitors
+                                ),
+                                borderWidth: 2,
+                                tension: 0.3,
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: "index",
+                            intersect: false,
+                        },
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Engagement chart
+        // =================================================
+
+        const engagementCanvas =
+            document.getElementById(
+                "news-engagement-chart"
+            );
+
+
+        if (engagementCanvas) {
+
+            new Chart(
+                engagementCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: chartData.map(
+                            item => item.date
+                        ),
+
+                        datasets: [
+
+                            {
+                                label: "Visits",
+                                data: chartData.map(
+                                    item => item.visits
+                                ),
+                                borderWidth: 3,
+                                tension: 0.3,
+                            },
+
+                            {
+                                label: "Article clicks",
+                                data: chartData.map(
+                                    item => item.article_clicks
+                                ),
+                                borderWidth: 2,
+                                tension: 0.3,
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: "index",
+                            intersect: false,
+                        },
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+    }
+);
+
+</script>
 
 {% endblock %}

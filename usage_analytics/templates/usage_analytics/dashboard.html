@@ -358,29 +358,28 @@
 
 
         <!-- =================================================
-            Public Yahan News
-            ================================================= -->
+             Swiss News
+             ================================================= -->
 
         <section class="analytics-section">
 
             <div class="analytics-section-heading">
 
                 <p>
-                    PUBLIC NEWS
+                    SWISS NEWS
                 </p>
 
                 <h2>
-                    📰 公開 Yahan News
+                    📰 Swiss News
                 </h2>
 
             </div>
 
 
             <p class="analytics-description">
-
-                ログインしていない一般閲覧者の
-                匿名アクセス
-
+                一般公開しているSwiss Newsの利用状況。
+                詳細画面ではDAU・WAU・MAU、
+                継続利用、記事クリック、流入元などを確認できます。
             </p>
 
 
@@ -397,7 +396,7 @@
                     </strong>
 
                     <small>
-                        人
+                        Visitor
                     </small>
 
                 </div>
@@ -406,7 +405,7 @@
                 <div class="analytics-stat-card">
 
                     <span>
-                        訪問回数
+                        Visits
                     </span>
 
                     <strong>
@@ -414,7 +413,7 @@
                     </strong>
 
                     <small>
-                        回
+                        訪問
                     </small>
 
                 </div>
@@ -423,7 +422,7 @@
                 <div class="analytics-stat-card">
 
                     <span>
-                        ページ閲覧数
+                        Page views
                     </span>
 
                     <strong>
@@ -431,20 +430,21 @@
                     </strong>
 
                     <small>
-                        回
+                        閲覧
                     </small>
 
                 </div>
 
             </div>
 
+
             <div class="analytics-public-news-actions">
 
                 <a
-                    href="{% url 'usage_analytics:public_news_detail' %}?days={{ days }}"
+                    href="{% url 'usage_analytics:news_app_detail' %}?days={{ days }}"
                     class="analytics-filter-link"
                 >
-                    詳細を見る →
+                    Swiss News Analytics →
                 </a>
 
             </div>

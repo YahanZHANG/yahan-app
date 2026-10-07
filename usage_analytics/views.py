@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
+from django.db import DatabaseError
 from django.db.models import (
     Count,
     Max,
@@ -586,6 +587,7 @@ def public_news_visitor_detail(
             "type": "page",
             "timestamp": event.accessed_at,
             "path": event.path,
+            "visit_id": event.visit_id,
             "is_visit_start": event.is_visit_start,
         })
 
@@ -598,6 +600,8 @@ def public_news_visitor_detail(
             "article_title": click.article_title,
             "source_name": click.source_name,
             "destination_url": click.destination_url,
+            "origin_path": click.origin_path,
+            "visit_id": click.visit_id,
             "is_visit_start": False,
         })
 
@@ -706,14 +710,40 @@ def public_news_article_click(
                 "public_news_visitor_id"
             )
 
+            visit_id = request.session.get(
+                "public_news_visit_id"
+            )
+
+            origin_path = request.GET.get(
+                "origin",
+                "",
+            )
+
+            origin_path = (
+                origin_path
+                .split(
+                    "?",
+                    1,
+                )[0]
+            )
+
+            if not origin_path.startswith(
+                "/news"
+            ):
+                origin_path = ""
+
+            origin_path = origin_path[:500]
+
             if visitor_id:
 
                 PublicNewsArticleClick.objects.create(
                     visitor_id=visitor_id,
+                    visit_id=visit_id,
                     article_id=article.pk,
                     article_title=article_title,
                     source_name=source_name,
                     destination_url=destination_url,
+                    origin_path=origin_path,
                 )
 
     except DatabaseError:
@@ -1205,19 +1235,170 @@ def access_control(request):
         {"accounts": accounts},
     )
 
+# =========================================================
+# Swiss News analytics helpers
+# =========================================================
+
+
+def percentage(
+    numerator,
+    denominator,
+):
+    if not denominator:
+        return 0
+
+    return round(
+        numerator
+        / denominator
+        * 100,
+        1,
+    )
+
+
+def get_news_period_start(days):
+    """
+    7日・30日の集計開始日時を
+    ローカル時間の0:00で返す。
+    """
+
+    if days == "all":
+        return None
+
+    now_local = timezone.localtime(
+        timezone.now()
+    )
+
+    today_start = now_local.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+    return (
+        today_start
+        - timedelta(
+            days=int(days) - 1
+        )
+    )
+
+
+def get_news_retention(
+    events,
+    retention_days,
+):
+    """
+    初回訪問から指定日数以上経過したVisitorのうち、
+    指定日数後にも再訪しているVisitorの割合。
+
+    例：
+    7日Retention
+        初回訪問から7日以上経過したVisitorが母数。
+        初回訪問から7日後以降にもアクセスがあればReturned。
+    """
+
+    now = timezone.now()
+
+    eligible_before = (
+        now
+        - timedelta(
+            days=retention_days
+        )
+    )
+
+    cohorts = (
+        events
+        .values(
+            "visitor_id"
+        )
+        .annotate(
+            first_seen=Min(
+                "accessed_at"
+            ),
+            last_seen=Max(
+                "accessed_at"
+            ),
+        )
+    )
+
+    eligible = 0
+    returned = 0
+
+    for cohort in cohorts.iterator():
+
+        first_seen = cohort[
+            "first_seen"
+        ]
+
+        last_seen = cohort[
+            "last_seen"
+        ]
+
+        if first_seen is None:
+            continue
+
+        if first_seen > eligible_before:
+            continue
+
+        eligible += 1
+
+        retention_threshold = (
+            first_seen
+            + timedelta(
+                days=retention_days
+            )
+        )
+
+        if (
+            last_seen
+            and last_seen
+            >= retention_threshold
+        ):
+            returned += 1
+
+    if eligible == 0:
+
+        rate = None
+
+    else:
+
+        rate = percentage(
+            returned,
+            eligible,
+        )
+
+    return {
+        "rate": rate,
+        "returned": returned,
+        "eligible": eligible,
+    }
+
+
+# =========================================================
+# Swiss News Analytics
+# =========================================================
+
+
 @login_required
 def news_app_detail(request):
     """
-    Swiss News全体のAnalytics。
+    公開Swiss NewsのAnalytics。
 
-    匿名ユーザーとログインユーザーの
-    利用状況を統合して表示する。
+    メイン指標は匿名Visitorを対象とする。
+
+    ログインユーザーについては
+    ページ下部に補助情報として別表示する。
     """
+
+    # =====================================================
+    # Permission
+    # =====================================================
 
     if not can_view_analytics(
         request.user
     ):
         raise PermissionDenied
+
 
     # =====================================================
     # Period
@@ -1235,177 +1416,397 @@ def news_app_detail(request):
     }:
         days = "7"
 
+
+    period_start = (
+        get_news_period_start(
+            days
+        )
+    )
+
+
     # =====================================================
-    # Querysets
+    # Base querysets
     # =====================================================
 
-    anonymous_events = (
+    all_anonymous_events = (
         PublicNewsEvent.objects.all()
     )
 
-    authenticated_events = (
-        UserNewsEvent.objects.all()
-    )
-
-    anonymous_clicks = (
+    all_anonymous_clicks = (
         PublicNewsArticleClick.objects.all()
     )
 
-    authenticated_clicks = (
+    all_authenticated_events = (
+        UserNewsEvent.objects.all()
+    )
+
+    all_authenticated_clicks = (
         UserNewsArticleClick.objects.all()
     )
 
+
     # =====================================================
-    # Period filter
+    # Selected-period querysets
     # =====================================================
 
-    local_today = timezone.localdate()
+    anonymous_events = (
+        all_anonymous_events
+    )
 
-    if days != "all":
+    anonymous_clicks = (
+        all_anonymous_clicks
+    )
 
-        period_days = int(days)
+    authenticated_events = (
+        all_authenticated_events
+    )
 
-        start_local = (
-            timezone.localtime()
-            .replace(
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0,
-            )
-            - timedelta(
-                days=period_days - 1
-            )
-        )
+    authenticated_clicks = (
+        all_authenticated_clicks
+    )
+
+
+    if period_start is not None:
 
         anonymous_events = (
             anonymous_events.filter(
-                accessed_at__gte=start_local
-            )
-        )
-
-        authenticated_events = (
-            authenticated_events.filter(
-                accessed_at__gte=start_local
+                accessed_at__gte=(
+                    period_start
+                )
             )
         )
 
         anonymous_clicks = (
             anonymous_clicks.filter(
-                clicked_at__gte=start_local
+                clicked_at__gte=(
+                    period_start
+                )
+            )
+        )
+
+        authenticated_events = (
+            authenticated_events.filter(
+                accessed_at__gte=(
+                    period_start
+                )
             )
         )
 
         authenticated_clicks = (
             authenticated_clicks.filter(
-                clicked_at__gte=start_local
+                clicked_at__gte=(
+                    period_start
+                )
             )
         )
+
 
     # =====================================================
     # Anonymous summary
     # =====================================================
 
+    anonymous_users = (
+        anonymous_events
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+    anonymous_visits = (
+        anonymous_events
+        .filter(
+            is_visit_start=True
+        )
+        .count()
+    )
+
+    anonymous_page_views = (
+        anonymous_events.count()
+    )
+
+    anonymous_article_clicks = (
+        anonymous_clicks.count()
+    )
+
+
     anonymous_summary = {
 
         "users": (
-            anonymous_events
-            .values(
-                "visitor_id"
-            )
-            .distinct()
-            .count()
+            anonymous_users
         ),
 
         "visits": (
-            anonymous_events
-            .filter(
-                is_visit_start=True
-            )
-            .count()
+            anonymous_visits
         ),
 
         "page_views": (
-            anonymous_events.count()
+            anonymous_page_views
         ),
 
         "article_clicks": (
-            anonymous_clicks.count()
+            anonymous_article_clicks
         ),
 
     }
 
+
     # =====================================================
-    # Authenticated summary
+    # Growth
     # =====================================================
 
-    authenticated_summary = {
+    now_local = timezone.localtime(
+        timezone.now()
+    )
 
-        "users": (
-            authenticated_events
-            .values(
-                "user_id"
+    today_start = now_local.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+
+
+    wau_start = (
+        today_start
+        - timedelta(
+            days=6
+        )
+    )
+
+
+    mau_start = (
+        today_start
+        - timedelta(
+            days=29
+        )
+    )
+
+
+    dau = (
+        all_anonymous_events
+        .filter(
+            accessed_at__gte=(
+                today_start
             )
-            .distinct()
-            .count()
-        ),
+        )
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
 
-        "visits": (
-            authenticated_events
-            .filter(
-                is_visit_start=True
+
+    wau = (
+        all_anonymous_events
+        .filter(
+            accessed_at__gte=(
+                wau_start
             )
-            .count()
+        )
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+
+    mau = (
+        all_anonymous_events
+        .filter(
+            accessed_at__gte=(
+                mau_start
+            )
+        )
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+
+    new_visitors = (
+        anonymous_events
+        .filter(
+            is_new_visitor=True
+        )
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+
+    returning_visitors = max(
+        anonymous_users
+        - new_visitors,
+        0,
+    )
+
+
+    growth = {
+
+        "dau": dau,
+
+        "wau": wau,
+
+        "mau": mau,
+
+        "dau_mau_rate": (
+            percentage(
+                dau,
+                mau,
+            )
         ),
 
-        "page_views": (
-            authenticated_events.count()
+        "new_visitors": (
+            new_visitors
         ),
 
-        "article_clicks": (
-            authenticated_clicks.count()
+        "returning_visitors": (
+            returning_visitors
+        ),
+
+        "returning_rate": (
+            percentage(
+                returning_visitors,
+                anonymous_users,
+            )
         ),
 
     }
 
+
     # =====================================================
-    # Total summary
+    # Retention
     # =====================================================
 
-    total_summary = {
+    retention_7 = (
+        get_news_retention(
+            all_anonymous_events,
+            7,
+        )
+    )
 
-        "users": (
-            anonymous_summary["users"]
-            + authenticated_summary["users"]
+
+    retention_30 = (
+        get_news_retention(
+            all_anonymous_events,
+            30,
+        )
+    )
+
+
+    retention = {
+
+        "day7_rate": (
+            retention_7["rate"]
         ),
 
-        "visits": (
-            anonymous_summary["visits"]
-            + authenticated_summary["visits"]
+        "day7_returned": (
+            retention_7["returned"]
         ),
 
-        "page_views": (
-            anonymous_summary["page_views"]
-            + authenticated_summary["page_views"]
+        "day7_eligible": (
+            retention_7["eligible"]
         ),
 
-        "article_clicks": (
-            anonymous_summary["article_clicks"]
-            + authenticated_summary["article_clicks"]
+        "day30_rate": (
+            retention_30["rate"]
+        ),
+
+        "day30_returned": (
+            retention_30[
+                "returned"
+            ]
+        ),
+
+        "day30_eligible": (
+            retention_30[
+                "eligible"
+            ]
         ),
 
     }
 
+
     # =====================================================
-    # Chart date range
+    # Engagement
     # =====================================================
+
+    article_clickers = (
+        anonymous_clicks
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+
+    if anonymous_visits:
+
+        pages_per_visit = round(
+            anonymous_page_views
+            / anonymous_visits,
+            1,
+        )
+
+    else:
+
+        pages_per_visit = 0.0
+
+
+    engagement = {
+
+        "visits": (
+            anonymous_visits
+        ),
+
+        "page_views": (
+            anonymous_page_views
+        ),
+
+        "pages_per_visit": (
+            pages_per_visit
+        ),
+
+        "article_clicks": (
+            anonymous_article_clicks
+        ),
+
+        "article_clickers": (
+            article_clickers
+        ),
+
+        "clicker_rate": (
+            percentage(
+                article_clickers,
+                anonymous_users,
+            )
+        ),
+
+    }
+
+
+    # =====================================================
+    # Daily chart date range
+    # =====================================================
+
+    local_today = timezone.localdate()
+
 
     if days != "all":
 
         chart_dates = [
 
             (
-                start_local.date()
+                period_start.date()
                 + timedelta(
                     days=index
                 )
@@ -1419,8 +1820,8 @@ def news_app_detail(request):
 
     else:
 
-        first_anonymous = (
-            anonymous_events
+        first_event = (
+            all_anonymous_events
             .order_by(
                 "accessed_at"
             )
@@ -1431,53 +1832,32 @@ def news_app_detail(request):
             .first()
         )
 
-        first_authenticated = (
-            authenticated_events
-            .order_by(
-                "accessed_at"
-            )
-            .values_list(
-                "accessed_at",
-                flat=True,
-            )
-            .first()
-        )
 
-        first_dates = []
+        if first_event:
 
-        if first_anonymous:
-
-            first_dates.append(
+            first_date = (
                 timezone.localtime(
-                    first_anonymous
+                    first_event
                 ).date()
-            )
-
-        if first_authenticated:
-
-            first_dates.append(
-                timezone.localtime(
-                    first_authenticated
-                ).date()
-            )
-
-        if first_dates:
-
-            first_date = min(
-                first_dates
             )
 
         else:
 
-            first_date = local_today
+            first_date = (
+                local_today
+            )
+
 
         total_days = (
+
             (
                 local_today
                 - first_date
             ).days
+
             + 1
         )
+
 
         chart_dates = [
 
@@ -1494,19 +1874,22 @@ def news_app_detail(request):
 
         ]
 
+
     # =====================================================
-    # Empty daily buckets
+    # Daily chart empty buckets
     # =====================================================
 
-    daily_data = {
+    daily_map = {
 
         date: {
 
-            "anonymous_page_views": 0,
-            "authenticated_page_views": 0,
+            "active_visitors": 0,
 
-            "anonymous_visits": 0,
-            "authenticated_visits": 0,
+            "new_visitors": 0,
+
+            "visits": 0,
+
+            "article_clicks": 0,
 
         }
 
@@ -1514,105 +1897,137 @@ def news_app_detail(request):
 
     }
 
+
     # =====================================================
-    # Anonymous daily activity
+    # Daily page activity
     # =====================================================
 
-    for event in anonymous_events:
+    daily_event_rows = (
 
-        event_date = (
-            timezone.localtime(
-                event.accessed_at
-            ).date()
+        anonymous_events
+        .annotate(
+            local_date=TruncDate(
+                "accessed_at",
+                tzinfo=(
+                    timezone
+                    .get_current_timezone()
+                ),
+            )
         )
+        .values(
+            "local_date"
+        )
+        .annotate(
 
-        if event_date not in daily_data:
+            active_visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+
+            new_visitors=Count(
+                "visitor_id",
+                filter=Q(
+                    is_new_visitor=True
+                ),
+                distinct=True,
+            ),
+
+            visits=Count(
+                "id",
+                filter=Q(
+                    is_visit_start=True
+                ),
+            ),
+
+        )
+    )
+
+
+    for row in daily_event_rows:
+
+        date = row[
+            "local_date"
+        ]
+
+        if date not in daily_map:
             continue
 
-        daily_data[
-            event_date
+        daily_map[
+            date
         ][
-            "anonymous_page_views"
-        ] += 1
+            "active_visitors"
+        ] = row[
+            "active_visitors"
+        ]
 
-        if event.is_visit_start:
+        daily_map[
+            date
+        ][
+            "new_visitors"
+        ] = row[
+            "new_visitors"
+        ]
 
-            daily_data[
-                event_date
-            ][
-                "anonymous_visits"
-            ] += 1
+        daily_map[
+            date
+        ][
+            "visits"
+        ] = row[
+            "visits"
+        ]
+
 
     # =====================================================
-    # Authenticated daily activity
+    # Daily article clicks
     # =====================================================
 
-    for event in authenticated_events:
+    daily_click_rows = (
 
-        event_date = (
-            timezone.localtime(
-                event.accessed_at
-            ).date()
+        anonymous_clicks
+        .annotate(
+            local_date=TruncDate(
+                "clicked_at",
+                tzinfo=(
+                    timezone
+                    .get_current_timezone()
+                ),
+            )
         )
+        .values(
+            "local_date"
+        )
+        .annotate(
+            article_clicks=Count(
+                "id"
+            )
+        )
+    )
 
-        if event_date not in daily_data:
+
+    for row in daily_click_rows:
+
+        date = row[
+            "local_date"
+        ]
+
+        if date not in daily_map:
             continue
 
-        daily_data[
-            event_date
+        daily_map[
+            date
         ][
-            "authenticated_page_views"
-        ] += 1
+            "article_clicks"
+        ] = row[
+            "article_clicks"
+        ]
 
-        if event.is_visit_start:
 
-            daily_data[
-                event_date
-            ][
-                "authenticated_visits"
-            ] += 1
+    daily_chart_data = []
 
-    # =====================================================
-    # Chart data
-    # =====================================================
-
-    chart_data = []
 
     for date in chart_dates:
 
-        anonymous_page_views = (
-            daily_data[
-                date
-            ][
-                "anonymous_page_views"
-            ]
-        )
-
-        authenticated_page_views = (
-            daily_data[
-                date
-            ][
-                "authenticated_page_views"
-            ]
-        )
-
-        anonymous_visits = (
-            daily_data[
-                date
-            ][
-                "anonymous_visits"
-            ]
-        )
-
-        authenticated_visits = (
-            daily_data[
-                date
-            ][
-                "authenticated_visits"
-            ]
-        )
-
-        chart_data.append({
+        daily_chart_data.append({
 
             "date": (
                 f"{date.month}/{date.day}"
@@ -1624,41 +2039,390 @@ def news_app_detail(request):
                 )
             ),
 
-            # ---------------------------------------------
-            # Page views
-            # ---------------------------------------------
-
-            "total": (
-                anonymous_page_views
-                + authenticated_page_views
+            "active_visitors": (
+                daily_map[
+                    date
+                ][
+                    "active_visitors"
+                ]
             ),
 
-            "anonymous": (
-                anonymous_page_views
+            "new_visitors": (
+                daily_map[
+                    date
+                ][
+                    "new_visitors"
+                ]
             ),
 
-            "authenticated": (
-                authenticated_page_views
+            "visits": (
+                daily_map[
+                    date
+                ][
+                    "visits"
+                ]
             ),
 
-            # ---------------------------------------------
-            # Visits
-            # ---------------------------------------------
-
-            "total_visits": (
-                anonymous_visits
-                + authenticated_visits
-            ),
-
-            "anonymous_visits": (
-                anonymous_visits
-            ),
-
-            "authenticated_visits": (
-                authenticated_visits
+            "article_clicks": (
+                daily_map[
+                    date
+                ][
+                    "article_clicks"
+                ]
             ),
 
         })
+
+
+    # =====================================================
+    # Acquisition
+    # =====================================================
+
+    acquisition_map = {}
+
+
+    visit_starts = (
+
+        anonymous_events
+        .filter(
+            is_visit_start=True
+        )
+        .values(
+            "visitor_id",
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "referrer_host",
+        )
+    )
+
+
+    for event in visit_starts.iterator():
+
+        source = (
+            event["utm_source"]
+            or event["referrer_host"]
+            or "direct"
+        )
+
+
+        if event["utm_medium"]:
+
+            medium = (
+                event[
+                    "utm_medium"
+                ]
+            )
+
+        elif event["referrer_host"]:
+
+            medium = "referral"
+
+        else:
+
+            medium = "direct"
+
+
+        campaign = (
+            event[
+                "utm_campaign"
+            ]
+            or ""
+        )
+
+
+        key = (
+            source,
+            medium,
+            campaign,
+        )
+
+
+        if key not in acquisition_map:
+
+            acquisition_map[key] = {
+
+                "source": source,
+
+                "medium": medium,
+
+                "campaign": campaign,
+
+                "visitors": set(),
+
+                "visits": 0,
+
+            }
+
+
+        acquisition_map[
+            key
+        ][
+            "visitors"
+        ].add(
+            event[
+                "visitor_id"
+            ]
+        )
+
+
+        acquisition_map[
+            key
+        ][
+            "visits"
+        ] += 1
+
+
+    acquisition = []
+
+
+    for item in acquisition_map.values():
+
+        acquisition.append({
+
+            "source": (
+                item["source"]
+            ),
+
+            "medium": (
+                item["medium"]
+            ),
+
+            "campaign": (
+                item["campaign"]
+            ),
+
+            "visitors": len(
+                item["visitors"]
+            ),
+
+            "visits": (
+                item["visits"]
+            ),
+
+        })
+
+
+    acquisition.sort(
+        key=lambda item: (
+            item["visits"],
+            item["visitors"],
+        ),
+        reverse=True,
+    )
+
+
+    acquisition = (
+        acquisition[:20]
+    )
+
+
+    # =====================================================
+    # Devices
+    # =====================================================
+
+    latest_device_by_visitor = {}
+
+
+    device_rows = (
+
+        anonymous_events
+        .order_by(
+            "accessed_at"
+        )
+        .values(
+            "visitor_id",
+            "device_type",
+        )
+    )
+
+
+    for row in device_rows.iterator():
+
+        latest_device_by_visitor[
+            row["visitor_id"]
+        ] = (
+            row["device_type"]
+            or "other"
+        )
+
+
+    device_counts = {}
+
+
+    for device_type in (
+        latest_device_by_visitor
+        .values()
+    ):
+
+        device_counts[
+            device_type
+        ] = (
+            device_counts.get(
+                device_type,
+                0,
+            )
+            + 1
+        )
+
+
+    device_labels = {
+
+        "mobile": "Mobile",
+
+        "desktop": "Desktop",
+
+        "tablet": "Tablet",
+
+        "other": "Other",
+
+    }
+
+
+    devices = []
+
+
+    for (
+        device_type,
+        visitors_count,
+    ) in device_counts.items():
+
+        devices.append({
+
+            "label": (
+                device_labels.get(
+                    device_type,
+                    device_type,
+                )
+            ),
+
+            "visitors": (
+                visitors_count
+            ),
+
+            "percentage": (
+                percentage(
+                    visitors_count,
+                    anonymous_users,
+                )
+            ),
+
+        })
+
+
+    devices.sort(
+        key=lambda item: (
+            item["visitors"]
+        ),
+        reverse=True,
+    )
+
+
+    # =====================================================
+    # Top articles
+    # =====================================================
+
+    top_articles = list(
+
+        anonymous_clicks
+        .values(
+            "article_id",
+            "article_title",
+            "source_name",
+        )
+        .annotate(
+
+            visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+
+            clicks=Count(
+                "id"
+            ),
+
+        )
+        .order_by(
+            "-clicks",
+            "-visitors",
+        )[:20]
+
+    )
+
+
+    # =====================================================
+    # Top pages
+    # =====================================================
+
+    top_pages = list(
+
+        anonymous_events
+        .values(
+            "path"
+        )
+        .annotate(
+
+            visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+
+            page_views=Count(
+                "id"
+            ),
+
+        )
+        .order_by(
+            "-page_views",
+            "-visitors",
+        )[:20]
+
+    )
+
+
+    # =====================================================
+    # Authenticated summary
+    # =====================================================
+
+    authenticated_summary = {
+
+        "users": (
+
+            authenticated_events
+            .values(
+                "user_id"
+            )
+            .distinct()
+            .count()
+
+        ),
+
+        "visits": (
+
+            authenticated_events
+            .filter(
+                is_visit_start=True
+            )
+            .count()
+
+        ),
+
+        "page_views": (
+
+            authenticated_events
+            .count()
+
+        ),
+
+        "article_clicks": (
+
+            authenticated_clicks
+            .count()
+
+        ),
+
+    }
+
 
     # =====================================================
     # Context
@@ -1668,15 +2432,40 @@ def news_app_detail(request):
 
         "days": days,
 
-        "total_summary": total_summary,
+        "growth": growth,
 
-        "anonymous_summary": anonymous_summary,
+        "retention": retention,
 
-        "authenticated_summary": authenticated_summary,
+        "engagement": engagement,
 
-        "chart_data": chart_data,
+        "daily_chart_data": (
+            daily_chart_data
+        ),
+
+        "acquisition": (
+            acquisition
+        ),
+
+        "devices": devices,
+
+        "top_articles": (
+            top_articles
+        ),
+
+        "top_pages": (
+            top_pages
+        ),
+
+        "anonymous_summary": (
+            anonymous_summary
+        ),
+
+        "authenticated_summary": (
+            authenticated_summary
+        ),
 
     }
+
 
     return render(
         request,
