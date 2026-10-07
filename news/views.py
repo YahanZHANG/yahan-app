@@ -1319,3 +1319,10 @@ def about(request):
             "public_settings": public_settings,
         },
     )
+
+
+def services(request):
+    return render(
+        request,
+        "news/services.html",
+    )

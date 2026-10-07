@@ -1674,3 +1674,173 @@
     color:
         #478fbe;
 }
+
+/* =========================================================
+   Delete account
+   ========================================================= */
+
+.manage-account-delete {
+    margin-top: 8px;
+    border-color: rgba(174, 76, 76, .16);
+}
+
+
+.manage-account-delete .manage-account-item-icon {
+    background: #fff1f1;
+}
+
+
+.manage-delete-account-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px 16px;
+    border: 1px solid #eccfcf;
+    border-radius: 14px;
+    background: #fffafa;
+    color: #a65353;
+    font-size: .8rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+        background .18s ease,
+        border-color .18s ease;
+}
+
+
+.manage-delete-account-link:hover {
+    border-color: #ddb5b5;
+    background: #fff4f4;
+    color: #914646;
+}
+
+
+/* =========================================================
+   Delete account confirmation
+   ========================================================= */
+
+.delete-account-card {
+    max-width: 620px;
+}
+
+
+.delete-account-warning {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid #eed4d4;
+    border-radius: 18px;
+    background: #fff7f7;
+}
+
+
+.delete-account-warning h2 {
+    margin: 0 0 10px;
+    color: #934d4d;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+
+.delete-account-warning p {
+    margin: 7px 0 0;
+    color: #7c6666;
+    font-size: .78rem;
+    line-height: 1.7;
+}
+
+
+.delete-account-form {
+    margin-top: 24px;
+}
+
+
+.delete-account-form .password-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+.delete-account-confirm-button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px 18px;
+    border: 0;
+    border-radius: 14px;
+    background: #a95353;
+    color: #ffffff;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+
+.delete-account-confirm-button:hover {
+    background: #934646;
+}
+
+
+.delete-account-cancel-link {
+    display: block;
+    margin-top: 16px;
+    color: #79847e;
+    font-size: .75rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+/* =========================================================
+   Access request
+   ========================================================= */
+
+.access-request-box {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid #dfe7e2;
+    border-radius: 18px;
+    background: #f5f8f6;
+}
+
+
+.access-request-box p {
+    margin: 0 0 14px;
+    color: #718078;
+    font-size: .8rem;
+    line-height: 1.7;
+}
+
+
+.access-request-button {
+    width: 100%;
+    padding: 13px 18px;
+    border: 0;
+    border-radius: 14px;
+    background: #607c6e;
+    color: #ffffff;
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+
+.access-request-button:hover {
+    background: #516f60;
+}
+
+.access-request-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: #ecefeb;
+    color: #748078;
+    font-size: .75rem;
+    font-weight: 800;
+}

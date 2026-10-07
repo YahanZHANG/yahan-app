@@ -1,12 +1,21 @@
 from django.urls import path
-
 from . import views
-
 
 app_name = "portal"
 
-
 urlpatterns = [
+
+    path(
+        "signup/",
+        views.signup,
+        name="signup",
+    ),
+
+    path(
+        "account/delete/",
+        views.delete_account,
+        name="delete_account",
+    ),
 
     path(
         "",
@@ -38,4 +47,9 @@ urlpatterns = [
         name="manage_apps",
     ),
 
+    path(
+        "apps/request-access/",
+        views.request_app_access,
+        name="request_app_access",
+    ),
 ]

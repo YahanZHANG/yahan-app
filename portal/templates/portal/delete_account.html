@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+アカウントを削除 | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/password_change.css' %}"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/manage_apps.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="manage-page">
+
+    <div
+        class="manage-bg-orb manage-bg-orb-one"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        class="manage-bg-orb manage-bg-orb-two"
+        aria-hidden="true"
+    ></div>
+
+
+    <div class="manage-topbar">
+
+        <a
+            href="{% url 'portal:manage_apps' %}"
+            class="manage-back-button"
+        >
+            <span aria-hidden="true">
+                ←
+            </span>
+
+            <span>
+                アカウント設定に戻る
+            </span>
+        </a>
+
+    </div>
+
+
+    <main class="manage-card delete-account-card">
+
+        <header class="manage-header">
+
+            <div class="manage-header-icon">
+                ⚠️
+            </div>
+
+            <div class="manage-header-copy">
+
+                <p class="manage-eyebrow">
+                    DELETE ACCOUNT
+                </p>
+
+                <h1>
+                    アカウントを削除
+                </h1>
+
+                <p>
+                    アカウントと保存されたデータを削除する。
+                </p>
+
+            </div>
+
+        </header>
+
+
+        {% if messages %}
+
+            <div class="manage-messages">
+
+                {% for message in messages %}
+
+                    <div
+                        class="
+                            manage-message
+                            manage-message-{{ message.tags|default:'info' }}
+                        "
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <section class="delete-account-warning">
+
+            <h2>
+                この操作は元に戻せません
+            </h2>
+
+            <p>
+                アカウントを削除すると、
+                このアカウントに保存されている情報も削除されます。
+            </p>
+
+            <p>
+                本当に削除する場合は、
+                現在のパスワードを入力してください。
+            </p>
+
+        </section>
+
+
+        <form
+            method="post"
+            class="delete-account-form"
+        >
+
+            {% csrf_token %}
+
+
+            <label
+                for="delete-account-password"
+                class="manage-field-label"
+            >
+                現在のパスワード
+            </label>
+
+
+            <input
+                type="password"
+                name="password"
+                id="delete-account-password"
+                class="password-input"
+                autocomplete="current-password"
+                required
+                placeholder="パスワードを入力"
+            >
+
+
+            <button
+                type="submit"
+                class="delete-account-confirm-button"
+            >
+                アカウントを完全に削除
+            </button>
+
+        </form>
+
+
+        <a
+            href="{% url 'portal:manage_apps' %}"
+            class="delete-account-cancel-link"
+        >
+            キャンセル
+        </a>
+
+    </main>
+
+</div>
+
+{% endblock %}

@@ -634,6 +634,49 @@
 
             </div>
 
+            <!-- =============================================
+                Delete account
+                ============================================= -->
+
+            <div class="manage-account-item manage-account-delete">
+
+                <div class="manage-account-item-heading">
+
+                    <div class="manage-account-item-icon">
+                        ⚠️
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            アカウントを削除
+                        </h3>
+
+                        <p>
+                            アカウントと保存されたデータを完全に削除
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="{% url 'portal:delete_account' %}"
+                    class="manage-delete-account-link"
+                >
+                    <span>
+                        アカウントを削除
+                    </span>
+
+                    <span aria-hidden="true">
+                        →
+                    </span>
+                </a>
+
+            </div>
+
         </section>
 
     </main>

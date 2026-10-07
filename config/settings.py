@@ -79,6 +79,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "portal.middleware.PublicUserAccessMiddleware",
 
     # Yahan-app usage tracking
     "usage_analytics.middleware.UsageAnalyticsMiddleware",
@@ -223,3 +224,11 @@ VAPID_CONTACT_EMAIL = os.environ.get(
     "VAPID_CONTACT_EMAIL",
     "",
 )
+
+# =========================================================
+# Password reset email settings
+# =========================================================
+
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@yahan-app.local"

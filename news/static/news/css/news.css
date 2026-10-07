@@ -383,7 +383,7 @@
     bottom: 12px;
     left: 12px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     max-width: 620px;
     margin: 0 auto;
     padding: 7px;
@@ -2700,4 +2700,254 @@
 .news-settings-bulk-button:hover {
     background: #f5f8f6;
     border-color: #ccd6d0;
+}
+
+/* =========================================================
+   Other services
+   ========================================================= */
+
+.news-services {
+    width: 100%;
+    max-width: 960px;
+}
+
+
+.news-services-hero {
+    margin-bottom: 28px;
+}
+
+
+.news-services-kicker {
+    margin: 0 0 6px;
+    color: #8b9a92;
+    font-size: .65rem;
+    font-weight: 900;
+    letter-spacing: .16em;
+}
+
+
+.news-services-hero h2 {
+    margin: 0;
+    color: #263238;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+
+.news-services-lead {
+    max-width: 580px;
+    margin: 12px 0 0;
+    color: #74807c;
+    font-size: .86rem;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   Service cards
+   ========================================================= */
+
+.news-services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+.news-service-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 17px;
+    min-height: 150px;
+    padding: 22px;
+    border: 1px solid rgba(83, 95, 91, .09);
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 7px 24px rgba(59, 70, 66, .045);
+}
+
+
+.news-service-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    background: #f2f5f3;
+    font-size: 1.4rem;
+}
+
+
+.news-service-content {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.news-service-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+
+.news-service-heading h3 {
+    margin: 0;
+    color: #405049;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+
+.news-service-content p {
+    margin: 11px 0 0;
+    color: #78827d;
+    font-size: .78rem;
+    line-height: 1.75;
+}
+
+
+.news-service-badge {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #edf3ef;
+    color: #668071;
+    font-size: .57rem;
+    font-weight: 900;
+    letter-spacing: .05em;
+}
+
+
+.news-service-badge-coming {
+    background: #f4f1e8;
+    color: #927f51;
+}
+
+
+/* =========================================================
+   Account CTA
+   ========================================================= */
+
+.news-services-account {
+    margin-top: 28px;
+    padding: 26px;
+    border-radius: 22px;
+    background: linear-gradient(
+        135deg,
+        #edf4ef,
+        #f7f4ef
+    );
+}
+
+
+.news-services-account-kicker {
+    margin: 0 0 6px;
+    color: #7d9186;
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+
+
+.news-services-account h3 {
+    margin: 0;
+    color: #405049;
+    font-size: 1.15rem;
+}
+
+
+.news-services-account > div > p:last-child {
+    max-width: 580px;
+    margin: 9px 0 0;
+    color: #718078;
+    font-size: .8rem;
+    line-height: 1.7;
+}
+
+
+.news-services-account-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    margin-top: 19px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: #607c6e;
+    color: #ffffff;
+    font-size: .77rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+
+.news-services-account-button:hover {
+    color: #ffffff;
+    background: #516f60;
+}
+
+
+.news-services-account-button.is-disabled {
+    opacity: .55;
+    cursor: default;
+}
+
+
+.news-services-account-preparing {
+    margin: 8px 0 0;
+    color: #8d9691;
+    font-size: .66rem;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media screen and (max-width: 720px) {
+
+    .news-services-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+
+    .news-service-card {
+        min-height: 0;
+        padding: 18px;
+        border-radius: 19px;
+    }
+
+
+    .news-service-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        font-size: 1.25rem;
+    }
+
+
+    .news-services-account {
+        padding: 21px 19px;
+    }
+
+}
+
+
+@media screen and (max-width: 420px) {
+
+    .news-services-hero h2 {
+        font-size: 1.45rem;
+    }
+
+
+    .news-nav-item {
+        font-size: .56rem;
+    }
+
 }

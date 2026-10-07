@@ -1,106 +1,9 @@
-from urllib.parse import urlencode
+from django.shortcuts import render
+from django.urls import resolve
+from portal.models import AppAccessRequest
 
-from django.contrib import messages
-from django.shortcuts import redirect, render
-from django.urls import resolve, reverse
-
-from .models import AppAccessRequest
-
-
-# =========================================================
-# Travel management access
-# =========================================================
-
-class TravelAccessMiddleware:
-    """
-    travel_usersグループの利用者と管理者だけ、
-    旅行管理アプリへアクセスできるようにする。
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-
-    def __call__(self, request):
-
-        if not request.path.startswith("/travel/"):
-            return self.get_response(request)
-
-
-        if not request.user.is_authenticated:
-
-            login_url = reverse("login")
-
-            query_string = urlencode(
-                {
-                    "next": request.get_full_path(),
-                }
-            )
-
-            return redirect(
-                f"{login_url}?{query_string}"
-            )
-
-
-        can_use_travel = (
-            request.user.is_superuser
-            or request.user.groups.filter(
-                name="travel_users"
-            ).exists()
-        )
-
-
-        if not can_use_travel:
-
-            messages.error(
-                request,
-                "このアカウントでは旅行管理アプリを利用できません。",
-            )
-
-            return redirect(
-                "portal:home"
-            )
-
-
-        return self.get_response(request)
-
-
-# =========================================================
-# Public signup user access
-# =========================================================
 
 PUBLIC_USER_GROUP = "public_users"
-
-
-ALLOWED_NAMESPACES = {
-    "portal",
-    "news",
-    "recipes",
-    "colorcheck",
-    "event_scheduler",
-}
-
-
-ALLOWED_VIEW_NAMES = {
-    "login",
-    "logout",
-
-    "password_change",
-    "password_change_done",
-
-    "password_reset",
-    "password_reset_done",
-    "password_reset_confirm",
-    "password_reset_complete",
-
-    "pwa_manifest",
-    "pwa_service_worker",
-
-    "news_push_settings",
-    "news_push_subscribe",
-    "news_push_unsubscribe",
-}
-
 
 REQUESTABLE_APPS = {
 
@@ -128,45 +31,89 @@ REQUESTABLE_APPS = {
         "key": "board",
         "name": "掲示板",
     },
+}
 
+# =========================================================
+# Apps available to public signup users
+# =========================================================
+
+ALLOWED_NAMESPACES = {
+    "portal",
+    "news",
+    "recipes",
+    "colorcheck",
+    "event_scheduler",
+}
+
+
+# Namespaceを持たないが利用を許可するURL
+ALLOWED_VIEW_NAMES = {
+    "login",
+    "logout",
+
+    "password_change",
+    "password_change_done",
+
+    "password_reset",
+    "password_reset_done",
+    "password_reset_confirm",
+    "password_reset_complete",
+
+    "pwa_manifest",
+    "pwa_service_worker",
+
+    "news_push_settings",
+    "news_push_subscribe",
+    "news_push_unsubscribe",
 }
 
 
 class PublicUserAccessMiddleware:
     """
-    public_usersグループのユーザーが、
-    一般公開対象外のアプリへアクセスすることを制限する。
-
-    管理者が個別承認したアプリは利用可能。
+    public_users グループのユーザーが、
+    一般公開対象外のアプリへアクセスすることを防ぐ。
     """
 
-    def __init__(self, get_response):
+    def __init__(
+        self,
+        get_response,
+    ):
+
         self.get_response = get_response
 
 
-    def __call__(self, request):
+    def __call__(
+        self,
+        request,
+    ):
 
         user = request.user
 
 
         # ---------------------------------------------
-        # Anonymous
+        # Anonymous user
         # ---------------------------------------------
 
         if not user.is_authenticated:
-            return self.get_response(request)
+
+            return self.get_response(
+                request
+            )
 
 
         # ---------------------------------------------
-        # Superuser
+        # Admin
         # ---------------------------------------------
 
         if user.is_superuser:
-            return self.get_response(request)
+
+            return self.get_response(
+                request
+            )
 
 
         # ---------------------------------------------
-        # Existing private users
+        # Existing / private users
         # ---------------------------------------------
 
         is_public_user = (
@@ -176,7 +123,10 @@ class PublicUserAccessMiddleware:
         )
 
         if not is_public_user:
-            return self.get_response(request)
+
+            return self.get_response(
+                request
+            )
 
 
         # ---------------------------------------------
@@ -187,11 +137,14 @@ class PublicUserAccessMiddleware:
             request.path.startswith("/static/")
             or request.path.startswith("/media/")
         ):
-            return self.get_response(request)
+
+            return self.get_response(
+                request
+            )
 
 
         # ---------------------------------------------
-        # Resolve URL
+        # Resolve current URL
         # ---------------------------------------------
 
         try:
@@ -202,7 +155,9 @@ class PublicUserAccessMiddleware:
 
         except Exception:
 
-            return self.get_response(request)
+            return self.get_response(
+                request
+            )
 
 
         namespace = match.namespace
@@ -210,19 +165,29 @@ class PublicUserAccessMiddleware:
 
 
         # ---------------------------------------------
-        # Publicly available apps
+        # Allowed namespaces
         # ---------------------------------------------
 
         if namespace in ALLOWED_NAMESPACES:
-            return self.get_response(request)
 
-
-        if view_name in ALLOWED_VIEW_NAMES:
-            return self.get_response(request)
+            return self.get_response(
+                request
+            )
 
 
         # ---------------------------------------------
-        # Identify requested private app
+        # Allowed standalone views
+        # ---------------------------------------------
+
+        if view_name in ALLOWED_VIEW_NAMES:
+
+            return self.get_response(
+                request
+            )
+
+
+        # ---------------------------------------------
+        # Denied
         # ---------------------------------------------
 
         requested_app = (
@@ -232,7 +197,10 @@ class PublicUserAccessMiddleware:
         )
 
 
-        # Namespaceが取れない場合にURLから判定
+        # =========================================================
+        # Fallback: URL path
+        # =========================================================
+
         if not requested_app:
 
             path_map = {
@@ -276,9 +244,9 @@ class PublicUserAccessMiddleware:
                     break
 
 
-        # ---------------------------------------------
-        # Existing access request
-        # ---------------------------------------------
+        # =========================================================
+        # Approved access
+        # =========================================================
 
         access_request = None
 
@@ -295,7 +263,10 @@ class PublicUserAccessMiddleware:
             )
 
 
-            # Approved -> allow
+            # ---------------------------------------------
+            # Approved
+            # ---------------------------------------------
+
             if (
                 access_request
                 and access_request.status
@@ -306,10 +277,9 @@ class PublicUserAccessMiddleware:
                     request
                 )
 
-
-        # ---------------------------------------------
+        # =========================================================
         # Denied
-        # ---------------------------------------------
+        # =========================================================
 
         return render(
             request,

@@ -5,7 +5,9 @@ from datetime import timedelta
 from django.utils import timezone
 
 from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.shortcuts import redirect, render
@@ -18,9 +20,12 @@ from travel.models import UserProfile
 from .forms import (
     AppSelectionForm,
     NicknameForm,
+    SignupForm,
 )
-from .models import PortalAppPreference
-
+from .models import (
+    AppAccessRequest,
+    PortalAppPreference,
+)
 from django.db.models import Q
 
 from chat.models import (
@@ -159,6 +164,18 @@ APP_CONFIG = {
     },
 }
 
+# =========================================================
+# Public signup users
+# =========================================================
+
+PUBLIC_USER_GROUP = "public_users"
+
+
+PUBLIC_APP_KEYS = [
+    "recipes",
+    "events",
+    "colorcheck",
+]
 
 # =========================================================
 # Helpers
@@ -166,12 +183,20 @@ APP_CONFIG = {
 
 def ensure_app_preferences(user):
     """
-    ユーザーにすべてのアプリ分の設定が存在しなければ作成する。
+    ユーザーが利用できるアプリについて、
+    Portal設定が存在しなければ作成する。
     """
 
+    available_choices = (
+        get_app_choices_for_user(
+            user
+        )
+    )
+
     for index, (app_key, label) in enumerate(
-        PortalAppPreference.AppKey.choices
+        available_choices
     ):
+
         PortalAppPreference.objects.get_or_create(
             user=user,
             app_key=app_key,
@@ -180,7 +205,6 @@ def ensure_app_preferences(user):
                 "display_order": index,
             },
         )
-
 
 def redirect_to_setup_if_needed(profile):
     """
@@ -199,6 +223,150 @@ def redirect_to_setup_if_needed(profile):
 
     return None
 
+def is_public_user(user):
+
+    return (
+        user.is_authenticated
+        and user.groups.filter(
+            name=PUBLIC_USER_GROUP
+        ).exists()
+    )
+
+
+def get_approved_app_keys(user):
+
+    if not user.is_authenticated:
+        return set()
+
+    return set(
+        AppAccessRequest.objects.filter(
+            user=user,
+            status=AppAccessRequest.Status.APPROVED,
+        ).values_list(
+            "app_key",
+            flat=True,
+        )
+    )
+
+
+def get_app_choices_for_user(user):
+
+    # 既存のプライベートユーザーは従来どおり全部利用可能
+    if not is_public_user(user):
+        return PortalAppPreference.AppKey.choices
+
+
+    # 一般公開アプリ
+    allowed_keys = set(
+        PUBLIC_APP_KEYS
+    )
+
+
+    # 管理者が個別に承認したアプリを追加
+    allowed_keys.update(
+        get_approved_app_keys(
+            user
+        )
+    )
+
+
+    return [
+        (value, label)
+        for value, label
+        in PortalAppPreference.AppKey.choices
+        if value in allowed_keys
+    ]
+
+# =========================================================
+# Public signup
+# =========================================================
+
+def signup(request):
+
+    if request.user.is_authenticated:
+        return redirect(
+            "portal:home"
+        )
+
+    if request.method == "POST":
+
+        form = SignupForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            user = form.save(
+                commit=False
+            )
+
+            user.email = (
+                form.cleaned_data["email"]
+            )
+
+            user.save()
+
+
+            # ---------------------------------------------
+            # Public user group
+            # ---------------------------------------------
+
+            public_group, _ = (
+                Group.objects.get_or_create(
+                    name=PUBLIC_USER_GROUP
+                )
+            )
+
+            user.groups.add(
+                public_group
+            )
+
+
+            # ---------------------------------------------
+            # Profile
+            # ---------------------------------------------
+
+            profile, _ = (
+                UserProfile.objects.get_or_create(
+                    user=user
+                )
+            )
+
+            # Signup時に自分でパスワードを設定済み
+            profile.password_setup_completed = True
+
+            # 次の画面で設定
+            profile.nickname_setup_completed = False
+            profile.app_setup_completed = False
+
+            profile.save()
+
+
+            # ---------------------------------------------
+            # Login
+            # ---------------------------------------------
+
+            login(
+                request,
+                user,
+            )
+
+            return redirect(
+                "portal:nickname_setup"
+            )
+
+    else:
+
+        form = SignupForm()
+
+
+    return render(
+        request,
+        "registration/signup.html",
+        {
+            "form": form,
+        },
+    )
 
 # =========================================================
 # Normal password change
@@ -389,8 +557,15 @@ def app_setup(request):
 
     if request.method == "POST":
 
+        available_choices = (
+            get_app_choices_for_user(
+                request.user
+            )
+        )
+
         form = AppSelectionForm(
-            request.POST
+            request.POST,
+            choices=available_choices,
         )
 
         if form.is_valid():
@@ -453,10 +628,23 @@ def app_setup(request):
 
     else:
 
+        available_choices = (
+            get_app_choices_for_user(
+                request.user
+            )
+        )
+
+        available_keys = [
+            value
+            for value, label
+            in available_choices
+        ]
+
         form = AppSelectionForm(
+            choices=available_choices,
             initial={
-                "apps": all_app_keys,
-            }
+                "apps": available_keys,
+            },
         )
 
     return render(
@@ -493,10 +681,16 @@ def manage_apps(request):
         request.user
     )
 
+    available_choices = (
+        get_app_choices_for_user(
+            request.user
+        )
+    )
+
     allowed_keys = [
         value
         for value, label
-        in PortalAppPreference.AppKey.choices
+        in available_choices
     ]
 
     # =====================================================
@@ -635,7 +829,8 @@ def manage_apps(request):
         PortalAppPreference
         .objects
         .filter(
-            user=request.user
+            user=request.user,
+            app_key__in=allowed_keys,
         )
         .order_by(
             "display_order",
@@ -755,12 +950,25 @@ def home(request):
     # Visible apps
     # =====================================================
 
+    available_choices = (
+        get_app_choices_for_user(
+            request.user
+        )
+    )
+
+    available_keys = [
+        value
+        for value, label
+        in available_choices
+    ]
+
     preferences = (
         PortalAppPreference
         .objects
         .filter(
             user=request.user,
             is_visible=True,
+            app_key__in=available_keys,
         )
         .order_by(
             "display_order",
@@ -914,4 +1122,184 @@ def home(request):
         request,
         "portal/home.html",
         context,
+    )
+
+
+# =========================================================
+# Delete account
+# =========================================================
+
+@login_required
+def delete_account(request):
+
+    # 管理者アカウントの誤削除防止
+    if request.user.is_superuser:
+        messages.error(
+            request,
+            "管理者アカウントはこの画面から削除できません。",
+        )
+
+        return redirect(
+            "portal:manage_apps"
+        )
+
+
+    if request.method == "POST":
+
+        password = request.POST.get(
+            "password",
+            "",
+        )
+
+
+        if not request.user.check_password(
+            password
+        ):
+
+            messages.error(
+                request,
+                "パスワードが正しくありません。",
+            )
+
+            return render(
+                request,
+                "portal/delete_account.html",
+            )
+
+
+        user = request.user
+
+
+        # セッションを先に終了
+        logout(
+            request
+        )
+
+
+        # UserにCASCADEされている関連データも削除
+        user.delete()
+
+
+        return redirect(
+            "news:home"
+        )
+
+
+    return render(
+        request,
+        "portal/delete_account.html",
+    )
+
+
+# =========================================================
+# App access request
+# =========================================================
+
+@login_required
+def request_app_access(request):
+
+    if request.method != "POST":
+
+        return redirect(
+            "portal:home"
+        )
+
+
+    app_key = request.POST.get(
+        "app_key",
+        "",
+    )
+
+    requested_path = request.POST.get(
+        "requested_path",
+        "",
+    )[:500]
+
+
+    allowed_keys = {
+        value
+        for value, label
+        in AppAccessRequest.AppKey.choices
+    }
+
+
+    if app_key not in allowed_keys:
+
+        messages.error(
+            request,
+            "利用リクエストを送信できませんでした。",
+        )
+
+        return redirect(
+            "portal:home"
+        )
+
+
+    access_request, created = (
+        AppAccessRequest.objects.get_or_create(
+            user=request.user,
+            app_key=app_key,
+            defaults={
+                "requested_path": requested_path,
+            },
+        )
+    )
+
+
+    if created:
+
+        messages.success(
+            request,
+            "利用リクエストを送信しました。",
+        )
+
+
+    elif (
+        access_request.status
+        == AppAccessRequest.Status.PENDING
+    ):
+
+        messages.info(
+            request,
+            "このアプリの利用リクエストはすでに送信済みです。",
+        )
+
+
+    else:
+
+        access_request.status = (
+            AppAccessRequest.Status.PENDING
+        )
+
+        access_request.requested_path = (
+            requested_path
+        )
+
+        access_request.save(
+            update_fields=[
+                "status",
+                "requested_path",
+                "updated_at",
+            ]
+        )
+
+        messages.success(
+            request,
+            "利用リクエストを再送しました。",
+        )
+
+
+    # 元のアプリページへ戻す
+    if (
+        requested_path.startswith("/")
+        and not requested_path.startswith("//")
+    ):
+
+        return redirect(
+            requested_path
+        )
+
+
+    return redirect(
+        "portal:home"
     )

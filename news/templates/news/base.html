@@ -102,6 +102,15 @@ page-content news-site-container
                         設定
                     </a>
 
+                    <a
+                        href="{% url 'news:services' %}"
+                        class="news-desktop-nav-item
+                        {% if request.resolver_match.url_name == 'services' %}
+                            is-active
+                        {% endif %}"
+                    >
+                        他のサービス
+                    </a>
 
                     <a
                         href="{% url 'news:about' %}"
@@ -219,7 +228,31 @@ page-content news-site-container
             </span>
 
             <span>
-                過去のまとめ
+                まとめ
+            </span>
+
+        </a>
+
+        <!-- =========================
+            サービス
+        ========================= -->
+
+        <a
+            href="{% url 'news:services' %}"
+            class="
+                news-nav-item
+                {% if request.resolver_match.url_name == 'services' %}
+                    is-active
+                {% endif %}
+            "
+        >
+
+            <span class="news-nav-icon">
+                ✦
+            </span>
+
+            <span>
+                サービス
             </span>
 
         </a>

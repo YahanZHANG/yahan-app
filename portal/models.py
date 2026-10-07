@@ -107,3 +107,112 @@ class PortalAppPreference(models.Model):
             f"{self.user.username} - "
             f"{self.get_app_key_display()}"
         )
+
+
+class AppAccessRequest(models.Model):
+
+    class AppKey(models.TextChoices):
+
+        FEEDING = (
+            "feeding",
+            "離乳食記録",
+        )
+
+        VACCINATION = (
+            "vaccination",
+            "ワクチン記録",
+        )
+
+        GAMES = (
+            "games",
+            "ミニゲーム",
+        )
+
+        CHAT = (
+            "chat",
+            "チャット",
+        )
+
+        BOARD = (
+            "board",
+            "掲示板",
+        )
+
+
+    class Status(models.TextChoices):
+
+        PENDING = (
+            "pending",
+            "確認待ち",
+        )
+
+        APPROVED = (
+            "approved",
+            "承認",
+        )
+
+        DECLINED = (
+            "declined",
+            "見送り",
+        )
+
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="app_access_requests",
+    )
+
+    app_key = models.CharField(
+        "利用希望アプリ",
+        max_length=30,
+        choices=AppKey.choices,
+    )
+
+    status = models.CharField(
+        "ステータス",
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    requested_path = models.CharField(
+        "申請元URL",
+        max_length=500,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        "申請日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+
+    class Meta:
+
+        ordering = [
+            "-created_at",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "app_key",
+                ],
+                name="unique_app_access_request_per_user",
+            ),
+        ]
+
+
+    def __str__(self):
+
+        return (
+            f"{self.user.username} - "
+            f"{self.get_app_key_display()}"
+        )

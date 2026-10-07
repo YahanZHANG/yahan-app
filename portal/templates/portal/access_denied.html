@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+このアプリは利用できません | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/manage_apps.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="manage-page">
+
+    <main class="manage-card">
+
+        <header class="manage-header">
+
+            <div class="manage-header-icon">
+                🔒
+            </div>
+
+            <div class="manage-header-copy">
+
+                <p class="manage-eyebrow">
+                    ACCESS RESTRICTED
+                </p>
+
+                <h1>
+                    このアプリは利用できません
+                </h1>
+
+                {% if access_request %}
+
+                    {% if access_request.status == "declined" %}
+
+                        <p>
+                            このサービスの利用リクエストは、
+                            今回は承認されませんでした。
+                        </p>
+
+                    {% elif access_request.status == "pending" %}
+
+                        <p>
+                            このサービスの利用リクエストは、
+                            現在管理者が確認中です。
+                        </p>
+
+                    {% else %}
+
+                        <p>
+                            このアカウントでは、
+                            現在このサービスを利用できません。
+                        </p>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <p>
+                        このアカウントでは、
+                        現在このサービスを利用できません。
+                    </p>
+
+                {% endif %}
+
+                {% if requested_app %}
+
+                    <div class="access-request-box">
+
+
+                        {% if access_request and access_request.status == "pending" %}
+
+                            <p>
+                                利用リクエストを送信済みです。
+                                管理者の確認をお待ちください。
+                            </p>
+
+                            <div class="access-request-status">
+                                確認中
+                            </div>
+
+
+                        {% elif access_request and access_request.status == "declined" %}
+
+                            <p>
+                                必要であれば、
+                                もう一度利用リクエストを送ることができます。
+                            </p>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'portal:request_app_access' %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="app_key"
+                                    value="{{ requested_app.key }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="requested_path"
+                                    value="{{ requested_path }}"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="access-request-button"
+                                >
+                                    もう一度利用をリクエスト
+                                </button>
+
+                            </form>
+
+
+                        {% else %}
+
+                            <p>
+                                このサービスを利用したい場合は、
+                                管理者にリクエストを送信できます。
+                            </p>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'portal:request_app_access' %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="app_key"
+                                    value="{{ requested_app.key }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="requested_path"
+                                    value="{{ requested_path }}"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="access-request-button"
+                                >
+                                    {{ requested_app.name }}の利用をリクエスト
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="manage-account-link"
+        >
+            <span>
+                Portalに戻る
+            </span>
+
+            <span aria-hidden="true">
+                →
+            </span>
+        </a>
+
+    </main>
+
+</div>
+
+{% endblock %}

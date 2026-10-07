@@ -581,3 +581,29 @@
     }
 
 }
+
+.login-field-note {
+    margin: 7px 3px 0;
+    color: #8b9691;
+    font-size: .68rem;
+    line-height: 1.6;
+}
+
+.login-help {
+    margin-top: 16px;
+    text-align: center;
+}
+
+
+.login-help-link {
+    color: #788680;
+    font-size: .75rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+
+.login-help-link:hover {
+    color: #536b5f;
+    text-decoration: underline;
+}

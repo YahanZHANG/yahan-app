@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+無料アカウント作成 | yahan-app
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/login.css' %}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="login-page">
+
+    <div
+        class="login-decoration login-decoration-one"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        class="login-decoration login-decoration-two"
+        aria-hidden="true"
+    ></div>
+
+
+    <main class="login-card">
+
+        <div class="login-brand">
+
+            <div
+                class="login-brand-icon"
+                aria-hidden="true"
+            >
+                Y
+            </div>
+
+            <div>
+
+                <p class="login-eyebrow">
+                    CREATE ACCOUNT
+                </p>
+
+                <h1>
+                    yahan-app
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <p class="login-description">
+            無料アカウントを作成して、
+            ほかのサービスも使ってみよう。
+        </p>
+
+
+        <form
+            method="post"
+            class="login-form"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- User ID -->
+
+            <div class="login-field">
+
+                <label for="{{ form.username.id_for_label }}">
+
+                    <span>
+                        ユーザーID
+                    </span>
+
+                    <small>
+                        USER ID
+                    </small>
+
+                </label>
+
+                <div class="login-input-wrap">
+
+                    <span class="login-input-icon">
+                        👤
+                    </span>
+
+                    {{ form.username }}
+
+                </div>
+
+                {% for error in form.username.errors %}
+
+                    <div class="login-field-error">
+                        <p>{{ error }}</p>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Email -->
+
+            <div class="login-field">
+
+                <label for="{{ form.email.id_for_label }}">
+
+                    <span>
+                        メールアドレス
+                    </span>
+
+                    <small>
+                        EMAIL
+                    </small>
+
+                </label>
+
+                <div class="login-input-wrap">
+
+                    <span class="login-input-icon">
+                        ✉️
+                    </span>
+
+                    {{ form.email }}
+
+                </div>
+
+                <p class="login-field-note">
+                    パスワードを忘れた際の再設定に使用します。入力間違いにご注意ください。
+                </p>
+
+                {% for error in form.email.errors %}
+
+                    <div class="login-field-error">
+                        <p>{{ error }}</p>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="login-field">
+
+                <label for="{{ form.password1.id_for_label }}">
+
+                    <span>
+                        パスワード
+                    </span>
+
+                    <small>
+                        PASSWORD
+                    </small>
+
+                </label>
+
+                <div class="login-input-wrap">
+
+                    <span class="login-input-icon">
+                        🔑
+                    </span>
+
+                    {{ form.password1 }}
+
+                </div>
+
+                {% for error in form.password1.errors %}
+
+                    <div class="login-field-error">
+                        <p>{{ error }}</p>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Password confirmation -->
+
+            <div class="login-field">
+
+                <label for="{{ form.password2.id_for_label }}">
+
+                    <span>
+                        パスワード確認
+                    </span>
+
+                    <small>
+                        CONFIRM PASSWORD
+                    </small>
+
+                </label>
+
+                <div class="login-input-wrap">
+
+                    <span class="login-input-icon">
+                        🔑
+                    </span>
+
+                    {{ form.password2 }}
+
+                </div>
+
+                {% for error in form.password2.errors %}
+
+                    <div class="login-field-error">
+                        <p>{{ error }}</p>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            {% if form.non_field_errors %}
+
+                <div class="login-error">
+
+                    {% for error in form.non_field_errors %}
+
+                        <p>{{ error }}</p>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <button
+                type="submit"
+                class="login-button"
+            >
+
+                <span>
+                    無料アカウントを作成
+                </span>
+
+                <span
+                    class="login-button-arrow"
+                    aria-hidden="true"
+                >
+                    →
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <div class="login-footer">
+
+            <a href="{% url 'login' %}">
+                すでにアカウントを持っている方はログイン
+            </a>
+
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}

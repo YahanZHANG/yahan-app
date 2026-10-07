@@ -45,6 +45,12 @@ urlpatterns = [
     ),
 
     path(
+        "services/",
+        views.services,
+        name="services",
+    ),
+
+    path(
         "favorite/<int:article_id>/toggle/",
         views.toggle_favorite,
         name="toggle_favorite",

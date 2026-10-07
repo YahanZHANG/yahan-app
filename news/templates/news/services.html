@@ -1,0 +1,220 @@
+{% extends "news/base.html" %}
+
+
+{% block news_content %}
+
+<section class="news-services">
+
+    <!-- =========================
+         Hero
+    ========================= -->
+
+    <header class="news-services-hero">
+
+        <p class="news-services-kicker">
+            OTHER SERVICES
+        </p>
+
+        <h2>
+            他のサービス
+        </h2>
+
+        <p class="news-services-lead">
+            Swiss Newsのほかにも、
+            毎日の生活やお出かけに使える小さなサービスを作っています。
+        </p>
+
+    </header>
+
+
+    <!-- =========================
+         Services
+    ========================= -->
+
+    <div class="news-services-grid">
+
+
+        <!-- Recipe -->
+
+        <article class="news-service-card">
+
+            <div class="news-service-icon">
+                🍳
+            </div>
+
+            <div class="news-service-content">
+
+                <div class="news-service-heading">
+
+                    <h3>
+                        レシピ
+                    </h3>
+
+                </div>
+
+                <p>
+                    ホットクックやシェフドラムなど、
+                    家にある調理家電に合わせてレシピを探せます。
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <!-- Events -->
+
+        <article class="news-service-card">
+
+            <div class="news-service-icon">
+                📅
+            </div>
+
+            <div class="news-service-content">
+
+                <div class="news-service-heading">
+
+                    <h3>
+                        イベント
+                    </h3>
+
+                </div>
+
+                <p>
+                    みんなの予定を入力して、
+                    集まりやすい日時を簡単に見つけられます。
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <!-- Travel -->
+
+        <article class="news-service-card">
+
+            <div class="news-service-icon">
+                🧳
+            </div>
+
+            <div class="news-service-content">
+
+                <div class="news-service-heading">
+
+                    <h3>
+                        旅トモ
+                    </h3>
+
+                    <span class="news-service-badge news-service-badge-coming">
+                        COMING SOON
+                    </span>
+
+                </div>
+
+                <p>
+                    旅先の国の緊急電話や、病院にかかったときに医師に見せられる自分の健康状況を相手国の言語で見せられます。
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <!-- Color check -->
+
+        <article class="news-service-card">
+
+            <div class="news-service-icon">
+                🎨
+            </div>
+
+            <div class="news-service-content">
+
+                <div class="news-service-heading">
+
+                    <h3>
+                        色判定
+                    </h3>
+
+                </div>
+
+                <p>
+                    色を見分けたり比較したりできる、
+                    シンプルな色判定ツールです。
+                </p>
+
+            </div>
+
+        </article>
+
+    </div>
+
+
+    <!-- =========================
+         Account
+    ========================= -->
+
+    <section class="news-services-account">
+
+        {% if request.user.is_authenticated %}
+
+            <div>
+
+                <p class="news-services-account-kicker">
+                    YOUR APPS
+                </p>
+
+                <h3>
+                    ほかのサービスを使ってみる
+                </h3>
+
+                <p>
+                    ログイン済みです。
+                    Portalから利用するサービスを選べます。
+                </p>
+
+            </div>
+
+            <a
+                href="{% url 'portal:home' %}"
+                class="news-services-account-button"
+            >
+                Portalを開く
+                <span>→</span>
+            </a>
+
+        {% else %}
+
+            <div>
+
+                <p class="news-services-account-kicker">
+                    FREE ACCOUNT
+                </p>
+
+                <h3>
+                    もっと使ってみたい方へ
+                </h3>
+
+                <p>
+                    無料アカウントを作成すると、
+                    News以外のサービスも利用できるようになります。
+                </p>
+
+            </div>
+
+            <a
+                href="{% url 'portal:signup' %}"
+                class="news-services-account-button"
+            >
+                無料アカウントを作成
+                <span>→</span>
+            </a>
+
+        {% endif %}
+
+    </section>
+
+</section>
+
+{% endblock %}
