@@ -930,6 +930,7 @@ def event_create(request):
     )
 
 
+
 # =========================================================
 # Event detail
 # =========================================================
@@ -1060,7 +1061,7 @@ def event_detail(
 
 
     # =========================================================
-    # Joined participants
+    # Joined participant count
     # =========================================================
 
     joined_participant_count = (
@@ -1074,6 +1075,56 @@ def event_detail(
 
 
     # =========================================================
+    # Participant display names
+    # =========================================================
+
+    event_user_ids = (
+        EventParticipant.objects
+        .filter(
+            event=event,
+            status=EventParticipant.Status.JOINED,
+        )
+        .values_list(
+            "user_id",
+            flat=True,
+        )
+    )
+
+
+    nickname_map = dict(
+        UserProfile.objects
+        .filter(
+            user_id__in=event_user_ids,
+        )
+        .values_list(
+            "user_id",
+            "nickname",
+        )
+    )
+
+
+    def get_event_user_name(
+        user,
+    ):
+
+        nickname = (
+            nickname_map.get(
+                user.id,
+                "",
+            )
+            or ""
+        ).strip()
+
+
+        if nickname:
+
+            return nickname
+
+
+        return user.get_username()
+
+
+    # =========================================================
     # Result data
     #
     # 回答済みのユーザーだけに作成する
@@ -1082,6 +1133,7 @@ def event_detail(
     result_rows = []
 
     duration_result_rows = []
+
 
     def get_vote_breakdown(
         queryset,
@@ -1152,53 +1204,10 @@ def event_detail(
                 users["no"],
         }
 
+
     # =========================================================
-    # Participant display names
+    # Show results only after current user has answered
     # =========================================================
-
-    event_user_ids = (
-        EventParticipant.objects
-        .filter(
-            event=event,
-            status=EventParticipant.Status.JOINED,
-        )
-        .values_list(
-            "user_id",
-            flat=True,
-        )
-    )
-
-
-    nickname_map = dict(
-        UserProfile.objects
-        .filter(
-            user_id__in=event_user_ids,
-        )
-        .values_list(
-            "user_id",
-            "nickname",
-        )
-    )
-
-
-    def get_event_user_name(
-        user,
-    ):
-
-        nickname = (
-            nickname_map.get(
-                user.id,
-                "",
-            )
-            or ""
-        ).strip()
-
-
-        if nickname:
-            return nickname
-
-
-        return user.get_username()
 
     if has_answered:
 
@@ -1213,13 +1222,6 @@ def event_detail(
         ):
 
             for candidate in candidate_dates:
-
-                counts = get_vote_counts(
-                    EventDateVote.objects.filter(
-                        event_date=candidate,
-                    )
-                )
-
 
                 breakdown = get_vote_breakdown(
                     EventDateVote.objects.filter(
@@ -1246,6 +1248,7 @@ def event_detail(
                     }
                 )
 
+
         # =====================================================
         # Mode 2:
         # Time options
@@ -1270,7 +1273,7 @@ def event_detail(
 
                 for option in time_options:
 
-                    counts = get_vote_counts(
+                    breakdown = get_vote_breakdown(
                         EventTimeOptionVote.objects.filter(
                             event_date=candidate,
                             time_option=option,
@@ -1278,31 +1281,24 @@ def event_detail(
                     )
 
 
-                breakdown = get_vote_breakdown(
-                    EventTimeOptionVote.objects.filter(
-                        event_date=candidate,
-                        time_option=option,
+                    result_rows.append(
+                        {
+                            "date":
+                                candidate.date,
+
+                            "label":
+                                option.label,
+
+                            "start_time":
+                                option.start_time,
+
+                            "end_time":
+                                option.end_time,
+
+                            **breakdown,
+                        }
                     )
-                )
 
-
-                result_rows.append(
-                    {
-                        "date":
-                            candidate.date,
-
-                        "label":
-                            option.label,
-
-                        "start_time":
-                            option.start_time,
-
-                        "end_time":
-                            option.end_time,
-
-                        **breakdown,
-                    }
-                )
 
         # =====================================================
         # Mode 3:
@@ -1331,13 +1327,6 @@ def event_detail(
 
 
             for option in start_options:
-
-                counts = get_vote_counts(
-                    EventStartTimeVote.objects.filter(
-                        start_time_option=option,
-                    )
-                )
-
 
                 breakdown = get_vote_breakdown(
                     EventStartTimeVote.objects.filter(
@@ -1414,7 +1403,7 @@ def event_detail(
                     ):
 
                         yes_users.append(
-                            username
+                            display_name
                         )
 
 
@@ -1425,7 +1414,7 @@ def event_detail(
                     ):
 
                         maybe_users.append(
-                            username
+                            display_name
                         )
 
 
@@ -1436,8 +1425,21 @@ def event_detail(
                     ):
 
                         no_users.append(
-                            username
+                            display_name
                         )
+
+
+                yes_users.sort(
+                    key=str.casefold
+                )
+
+                maybe_users.sort(
+                    key=str.casefold
+                )
+
+                no_users.sort(
+                    key=str.casefold
+                )
 
 
                 result_rows.append(
