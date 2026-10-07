@@ -2425,6 +2425,19 @@ def news_app_detail(request):
 
 
     # =====================================================
+    # JCZ campaign
+    # =====================================================
+
+    jcz_campaign = (
+        get_campaign_analytics(
+            source="jcz",
+            medium="print",
+            campaign="launch_2026_11",
+        )
+    )
+
+
+    # =====================================================
     # Context
     # =====================================================
 
@@ -2464,11 +2477,1027 @@ def news_app_detail(request):
             authenticated_summary
         ),
 
+        "jcz_campaign": (
+            jcz_campaign
+        ),
     }
 
 
     return render(
         request,
         "usage_analytics/news_app_detail.html",
+        context,
+    )
+
+
+# =========================================================
+# Campaign Analytics
+# =========================================================
+
+def get_campaign_analytics(
+    source,
+    medium,
+    campaign,
+):
+    """
+    UTM campaign単位の公開Swiss News Analytics。
+
+    campaignのUTM付きVisitを起点として、
+    Visitor・Page view・Article click・Deviceなどを集計する。
+    """
+
+    # =====================================================
+    # Campaign entry events
+    # =====================================================
+
+    campaign_entries = (
+        PublicNewsEvent.objects
+        .filter(
+            utm_source__iexact=source,
+            utm_medium__iexact=medium,
+            utm_campaign__iexact=campaign,
+        )
+        .order_by(
+            "accessed_at"
+        )
+    )
+
+
+    campaign_visit_ids = list(
+        campaign_entries
+        .exclude(
+            visit_id__isnull=True
+        )
+        .values_list(
+            "visit_id",
+            flat=True,
+        )
+        .distinct()
+    )
+
+
+    campaign_visitor_ids = list(
+        campaign_entries
+        .values_list(
+            "visitor_id",
+            flat=True,
+        )
+        .distinct()
+    )
+
+
+    # =====================================================
+    # Events belonging to campaign Visits
+    # =====================================================
+
+    campaign_events = (
+        PublicNewsEvent.objects
+        .filter(
+            visit_id__in=campaign_visit_ids
+        )
+    )
+
+
+    campaign_clicks = (
+        PublicNewsArticleClick.objects
+        .filter(
+            visit_id__in=campaign_visit_ids
+        )
+    )
+
+
+    # =====================================================
+    # Basic numbers
+    # =====================================================
+
+    visitors = len(
+        campaign_visitor_ids
+    )
+
+    visits = len(
+        campaign_visit_ids
+    )
+
+    page_views = (
+        campaign_events.count()
+    )
+
+    article_clicks = (
+        campaign_clicks.count()
+    )
+
+
+    article_clickers = (
+        campaign_clicks
+        .values(
+            "visitor_id"
+        )
+        .distinct()
+        .count()
+    )
+
+
+    if visits:
+
+        pages_per_visit = round(
+            page_views / visits,
+            1,
+        )
+
+        clicks_per_visit = round(
+            article_clicks / visits,
+            2,
+        )
+
+    else:
+
+        pages_per_visit = 0.0
+
+        clicks_per_visit = 0.0
+
+
+    # =====================================================
+    # Returning visitors after JCZ acquisition
+    # =====================================================
+
+    first_campaign_by_visitor = {}
+
+    first_campaign_visit_by_visitor = {}
+
+
+    for entry in (
+        campaign_entries
+        .values(
+            "visitor_id",
+            "visit_id",
+            "accessed_at",
+        )
+    ):
+
+        visitor_id = entry[
+            "visitor_id"
+        ]
+
+        if (
+            visitor_id
+            not in first_campaign_by_visitor
+        ):
+
+            first_campaign_by_visitor[
+                visitor_id
+            ] = entry[
+                "accessed_at"
+            ]
+
+            first_campaign_visit_by_visitor[
+                visitor_id
+            ] = entry[
+                "visit_id"
+            ]
+
+
+    returning_visitor_ids = set()
+
+
+    if campaign_visitor_ids:
+
+        later_visits = (
+            PublicNewsEvent.objects
+            .filter(
+                visitor_id__in=(
+                    campaign_visitor_ids
+                ),
+                is_visit_start=True,
+            )
+            .values(
+                "visitor_id",
+                "visit_id",
+                "accessed_at",
+            )
+            .order_by(
+                "accessed_at"
+            )
+        )
+
+
+        for event in later_visits.iterator():
+
+            visitor_id = event[
+                "visitor_id"
+            ]
+
+            first_campaign_time = (
+                first_campaign_by_visitor
+                .get(
+                    visitor_id
+                )
+            )
+
+            first_campaign_visit = (
+                first_campaign_visit_by_visitor
+                .get(
+                    visitor_id
+                )
+            )
+
+
+            if not first_campaign_time:
+                continue
+
+
+            if (
+                event["accessed_at"]
+                > first_campaign_time
+                and event["visit_id"]
+                != first_campaign_visit
+            ):
+
+                returning_visitor_ids.add(
+                    visitor_id
+                )
+
+
+    returning_visitors = len(
+        returning_visitor_ids
+    )
+
+
+    # =====================================================
+    # Summary
+    # =====================================================
+
+    summary = {
+
+        "visitors": visitors,
+
+        "visits": visits,
+
+        "page_views": page_views,
+
+        "article_clicks": (
+            article_clicks
+        ),
+
+        "article_clickers": (
+            article_clickers
+        ),
+
+        "pages_per_visit": (
+            pages_per_visit
+        ),
+
+        "clicks_per_visit": (
+            clicks_per_visit
+        ),
+
+        "clicker_rate": (
+            percentage(
+                article_clickers,
+                visitors,
+            )
+        ),
+
+        "returning_visitors": (
+            returning_visitors
+        ),
+
+        "returning_rate": (
+            percentage(
+                returning_visitors,
+                visitors,
+            )
+        ),
+
+    }
+
+
+    # =====================================================
+    # Campaign period
+    # =====================================================
+
+    first_campaign_event = (
+        campaign_entries
+        .values_list(
+            "accessed_at",
+            flat=True,
+        )
+        .first()
+    )
+
+
+    local_today = (
+        timezone.localdate()
+    )
+
+
+    if first_campaign_event:
+
+        first_campaign_date = (
+            timezone.localtime(
+                first_campaign_event
+            ).date()
+        )
+
+    else:
+
+        first_campaign_date = (
+            local_today
+        )
+
+
+    number_of_days = (
+        (
+            local_today
+            - first_campaign_date
+        ).days
+        + 1
+    )
+
+
+    campaign_dates = [
+
+        first_campaign_date
+        + timedelta(
+            days=index
+        )
+
+        for index in range(
+            number_of_days
+        )
+
+    ]
+
+
+    # =====================================================
+    # Daily data
+    # =====================================================
+
+    daily_map = {
+
+        date: {
+
+            "visitors": 0,
+
+            "visits": 0,
+
+            "page_views": 0,
+
+            "article_clicks": 0,
+
+            "new_campaign_visitors": 0,
+
+        }
+
+        for date in campaign_dates
+
+    }
+
+
+    # -----------------------------------------------------
+    # Entry visitors / Visits
+    # -----------------------------------------------------
+
+    entry_rows = (
+
+        campaign_entries
+        .annotate(
+            local_date=TruncDate(
+                "accessed_at",
+                tzinfo=(
+                    timezone
+                    .get_current_timezone()
+                ),
+            )
+        )
+        .values(
+            "local_date"
+        )
+        .annotate(
+
+            visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+
+            visits=Count(
+                "visit_id",
+                distinct=True,
+            ),
+
+        )
+
+    )
+
+
+    for row in entry_rows:
+
+        date = row[
+            "local_date"
+        ]
+
+        if date not in daily_map:
+            continue
+
+        daily_map[
+            date
+        ][
+            "visitors"
+        ] = row[
+            "visitors"
+        ]
+
+        daily_map[
+            date
+        ][
+            "visits"
+        ] = row[
+            "visits"
+        ]
+
+
+    # -----------------------------------------------------
+    # First campaign appearance per Visitor
+    # -----------------------------------------------------
+
+    first_visitor_rows = (
+
+        campaign_entries
+        .values(
+            "visitor_id"
+        )
+        .annotate(
+            first_campaign_seen=Min(
+                "accessed_at"
+            )
+        )
+
+    )
+
+
+    for row in first_visitor_rows:
+
+        first_seen = row[
+            "first_campaign_seen"
+        ]
+
+        if not first_seen:
+            continue
+
+        date = (
+            timezone.localtime(
+                first_seen
+            ).date()
+        )
+
+        if date not in daily_map:
+            continue
+
+        daily_map[
+            date
+        ][
+            "new_campaign_visitors"
+        ] += 1
+
+
+    # -----------------------------------------------------
+    # Page views
+    # -----------------------------------------------------
+
+    page_rows = (
+
+        campaign_events
+        .annotate(
+            local_date=TruncDate(
+                "accessed_at",
+                tzinfo=(
+                    timezone
+                    .get_current_timezone()
+                ),
+            )
+        )
+        .values(
+            "local_date"
+        )
+        .annotate(
+            page_views=Count(
+                "id"
+            )
+        )
+
+    )
+
+
+    for row in page_rows:
+
+        date = row[
+            "local_date"
+        ]
+
+        if date not in daily_map:
+            continue
+
+        daily_map[
+            date
+        ][
+            "page_views"
+        ] = row[
+            "page_views"
+        ]
+
+
+    # -----------------------------------------------------
+    # Article clicks
+    # -----------------------------------------------------
+
+    click_rows = (
+
+        campaign_clicks
+        .annotate(
+            local_date=TruncDate(
+                "clicked_at",
+                tzinfo=(
+                    timezone
+                    .get_current_timezone()
+                ),
+            )
+        )
+        .values(
+            "local_date"
+        )
+        .annotate(
+            article_clicks=Count(
+                "id"
+            )
+        )
+
+    )
+
+
+    for row in click_rows:
+
+        date = row[
+            "local_date"
+        ]
+
+        if date not in daily_map:
+            continue
+
+        daily_map[
+            date
+        ][
+            "article_clicks"
+        ] = row[
+            "article_clicks"
+        ]
+
+
+    # =====================================================
+    # Cumulative visitors
+    # =====================================================
+
+    cumulative_visitors = 0
+
+    daily_chart_data = []
+
+
+    for date in campaign_dates:
+
+        cumulative_visitors += (
+            daily_map[
+                date
+            ][
+                "new_campaign_visitors"
+            ]
+        )
+
+
+        daily_chart_data.append({
+
+            "date": (
+                f"{date.month}/{date.day}"
+            ),
+
+            "visitors": (
+                daily_map[
+                    date
+                ][
+                    "visitors"
+                ]
+            ),
+
+            "visits": (
+                daily_map[
+                    date
+                ][
+                    "visits"
+                ]
+            ),
+
+            "page_views": (
+                daily_map[
+                    date
+                ][
+                    "page_views"
+                ]
+            ),
+
+            "article_clicks": (
+                daily_map[
+                    date
+                ][
+                    "article_clicks"
+                ]
+            ),
+
+            "cumulative_visitors": (
+                cumulative_visitors
+            ),
+
+        })
+
+
+    # =====================================================
+    # Devices
+    # =====================================================
+
+    first_device_by_visitor = {}
+
+
+    device_rows = (
+
+        campaign_entries
+        .order_by(
+            "accessed_at"
+        )
+        .values(
+            "visitor_id",
+            "device_type",
+        )
+
+    )
+
+
+    for row in device_rows.iterator():
+
+        visitor_id = row[
+            "visitor_id"
+        ]
+
+        if (
+            visitor_id
+            in first_device_by_visitor
+        ):
+            continue
+
+        first_device_by_visitor[
+            visitor_id
+        ] = (
+            row[
+                "device_type"
+            ]
+            or "other"
+        )
+
+
+    device_counts = {}
+
+
+    for device_type in (
+        first_device_by_visitor.values()
+    ):
+
+        device_counts[
+            device_type
+        ] = (
+            device_counts.get(
+                device_type,
+                0,
+            )
+            + 1
+        )
+
+
+    device_labels = {
+
+        "mobile": "Mobile",
+
+        "desktop": "Desktop",
+
+        "tablet": "Tablet",
+
+        "other": "Other",
+
+    }
+
+
+    devices = []
+
+
+    for (
+        device_type,
+        count,
+    ) in device_counts.items():
+
+        devices.append({
+
+            "label": (
+                device_labels.get(
+                    device_type,
+                    device_type,
+                )
+            ),
+
+            "visitors": count,
+
+            "percentage": (
+                percentage(
+                    count,
+                    visitors,
+                )
+            ),
+
+        })
+
+
+    devices.sort(
+        key=lambda item: (
+            item["visitors"]
+        ),
+        reverse=True,
+    )
+
+
+    # =====================================================
+    # Top articles
+    # =====================================================
+
+    top_article_rows = list(
+
+        campaign_clicks
+        .values(
+            "article_title",
+            "source_name",
+        )
+        .annotate(
+
+            visitors=Count(
+                "visitor_id",
+                distinct=True,
+            ),
+
+            clicks=Count(
+                "id"
+            ),
+
+        )
+        .order_by(
+            "-clicks",
+            "-visitors",
+        )[:10]
+
+    )
+
+
+    top_articles = []
+
+
+    for article in top_article_rows:
+
+        title = (
+            article[
+                "article_title"
+            ]
+            or "Untitled"
+        )
+
+        if len(title) > 42:
+
+            short_title = (
+                title[:39]
+                + "…"
+            )
+
+        else:
+
+            short_title = title
+
+
+        top_articles.append({
+
+            "label": short_title,
+
+            "article_title": title,
+
+            "source_name": (
+                article[
+                    "source_name"
+                ]
+            ),
+
+            "visitors": (
+                article[
+                    "visitors"
+                ]
+            ),
+
+            "clicks": (
+                article[
+                    "clicks"
+                ]
+            ),
+
+        })
+
+
+    # =====================================================
+    # JCZ vs other traffic
+    # =====================================================
+
+    if first_campaign_event:
+
+        other_events = (
+            PublicNewsEvent.objects
+            .filter(
+                accessed_at__gte=(
+                    first_campaign_event
+                )
+            )
+        )
+
+        other_clicks = (
+            PublicNewsArticleClick.objects
+            .filter(
+                clicked_at__gte=(
+                    first_campaign_event
+                )
+            )
+        )
+
+
+        if campaign_visit_ids:
+
+            other_events = (
+                other_events.exclude(
+                    visit_id__in=(
+                        campaign_visit_ids
+                    )
+                )
+            )
+
+            other_clicks = (
+                other_clicks.exclude(
+                    visit_id__in=(
+                        campaign_visit_ids
+                    )
+                )
+            )
+
+
+        other_visits = (
+            other_events
+            .filter(
+                is_visit_start=True
+            )
+            .count()
+        )
+
+        other_page_views = (
+            other_events.count()
+        )
+
+        other_article_clicks = (
+            other_clicks.count()
+        )
+
+
+        if other_visits:
+
+            other_pages_per_visit = round(
+                other_page_views
+                / other_visits,
+                1,
+            )
+
+            other_clicks_per_visit = round(
+                other_article_clicks
+                / other_visits,
+                2,
+            )
+
+        else:
+
+            other_pages_per_visit = 0.0
+
+            other_clicks_per_visit = 0.0
+
+    else:
+
+        other_pages_per_visit = 0.0
+
+        other_clicks_per_visit = 0.0
+
+
+    comparison = {
+
+        "jcz_pages_per_visit": (
+            pages_per_visit
+        ),
+
+        "jcz_clicks_per_visit": (
+            clicks_per_visit
+        ),
+
+        "other_pages_per_visit": (
+            other_pages_per_visit
+        ),
+
+        "other_clicks_per_visit": (
+            other_clicks_per_visit
+        ),
+
+    }
+
+
+    return {
+
+        "has_data": bool(
+            campaign_visit_ids
+        ),
+
+        "source": source,
+
+        "medium": medium,
+
+        "campaign": campaign,
+
+        "distribution_households": 700,
+
+        "summary": summary,
+
+        "daily_chart_data": (
+            daily_chart_data
+        ),
+
+        "devices": devices,
+
+        "top_articles": (
+            top_articles
+        ),
+
+        "comparison": comparison,
+
+    }
+
+
+@login_required
+def news_campaign_detail(
+    request,
+    source,
+    medium,
+    campaign,
+):
+    """
+    Swiss NewsのUTM campaign別Analytics。
+    """
+
+    if not can_view_analytics(
+        request.user
+    ):
+        raise PermissionDenied
+
+
+    campaign_data = (
+        get_campaign_analytics(
+            source=source,
+            medium=medium,
+            campaign=campaign,
+        )
+    )
+
+
+    context = {
+
+        "campaign_data": (
+            campaign_data
+        ),
+
+        "source": source,
+
+        "medium": medium,
+
+        "campaign": campaign,
+
+        "is_jcz_campaign": (
+            source == "jcz"
+            and medium == "print"
+            and campaign == "launch_2026_11"
+        ),
+
+    }
+
+
+    return render(
+        request,
+        "usage_analytics/news_campaign_detail.html",
         context,
     )

@@ -31,6 +31,12 @@ urlpatterns = [
         name="news_app_detail",
     ),
 
+    path(
+        "apps/news/campaigns/<slug:source>/<slug:medium>/<slug:campaign>/",
+        views.news_campaign_detail,
+        name="news_campaign_detail",
+    ),
+
     # =====================================================
     # Public News detail
     # =====================================================

@@ -657,15 +657,32 @@
 
                                 <td>
 
-                                    <strong>
-                                        {{ item.source }}
-                                    </strong>
-
                                     {% if item.campaign %}
 
-                                        <div class="analytics-table-subtext">
-                                            {{ item.campaign }}
-                                        </div>
+                                        <a
+                                            href="{% url 'usage_analytics:news_campaign_detail' item.source item.medium item.campaign %}"
+                                            class="analytics-campaign-link"
+                                        >
+
+                                            <strong>
+                                                {{ item.source }}
+                                            </strong>
+
+                                            <div class="analytics-table-subtext">
+                                                {{ item.campaign }}
+                                            </div>
+
+                                            <span>
+                                                →
+                                            </span>
+
+                                        </a>
+
+                                    {% else %}
+
+                                        <strong>
+                                            {{ item.source }}
+                                        </strong>
 
                                     {% endif %}
 
@@ -1142,6 +1159,8 @@
 
 {{ daily_chart_data|json_script:"news-daily-chart-data" }}
 
+{{ jcz_campaign|json_script:"jcz-campaign-data" }}
+
 
 <script
     src="https://cdn.jsdelivr.net/npm/chart.js"
@@ -1335,6 +1354,498 @@ document.addEventListener(
                                     precision: 0,
                                 },
 
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const campaignElement =
+            document.getElementById(
+                "jcz-campaign-data"
+            );
+
+        if (
+            !campaignElement
+            || typeof Chart === "undefined"
+        ) {
+            return;
+        }
+
+
+        const campaignData =
+            JSON.parse(
+                campaignElement.textContent
+            );
+
+
+        const dailyData =
+            campaignData.daily_chart_data
+            || [];
+
+
+        // =================================================
+        // JCZ Daily
+        // =================================================
+
+        const dailyCanvas =
+            document.getElementById(
+                "jcz-daily-chart"
+            );
+
+
+        if (dailyCanvas) {
+
+            new Chart(
+                dailyCanvas,
+                {
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            dailyData.map(
+                                item => item.date
+                            ),
+
+                        datasets: [
+
+                            {
+                                label: "Visitor",
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.visitors
+                                    ),
+                                borderColor:
+                                    "#647cba",
+                                backgroundColor:
+                                    "rgba(100, 124, 186, .12)",
+                                borderWidth: 3,
+                                tension: .3,
+                            },
+
+                            {
+                                label: "Visits",
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.visits
+                                    ),
+                                borderColor:
+                                    "#55a184",
+                                backgroundColor:
+                                    "rgba(85, 161, 132, .10)",
+                                borderWidth: 2,
+                                tension: .3,
+                            },
+
+                            {
+                                label: "Article clicks",
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.article_clicks
+                                    ),
+                                borderColor:
+                                    "#d78a75",
+                                backgroundColor:
+                                    "rgba(215, 138, 117, .10)",
+                                borderWidth: 2,
+                                tension: .3,
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: "index",
+                            intersect: false,
+                        },
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Cumulative visitors
+        // =================================================
+
+        const cumulativeCanvas =
+            document.getElementById(
+                "jcz-cumulative-chart"
+            );
+
+
+        if (cumulativeCanvas) {
+
+            new Chart(
+                cumulativeCanvas,
+                {
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            dailyData.map(
+                                item => item.date
+                            ),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "累積Visitor",
+
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.cumulative_visitors
+                                    ),
+
+                                borderColor:
+                                    "#766bb5",
+
+                                backgroundColor:
+                                    "rgba(118, 107, 181, .13)",
+
+                                fill: true,
+
+                                borderWidth: 3,
+
+                                tension: .25,
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Devices
+        // =================================================
+
+        const deviceCanvas =
+            document.getElementById(
+                "jcz-device-chart"
+            );
+
+
+        if (deviceCanvas) {
+
+            const devices =
+                campaignData.devices
+                || [];
+
+
+            new Chart(
+                deviceCanvas,
+                {
+                    type: "doughnut",
+
+                    data: {
+
+                        labels:
+                            devices.map(
+                                item => item.label
+                            ),
+
+                        datasets: [
+
+                            {
+                                data:
+                                    devices.map(
+                                        item =>
+                                            item.visitors
+                                    ),
+
+                                backgroundColor: [
+                                    "#647cba",
+                                    "#55a184",
+                                    "#d78a75",
+                                    "#a58ac5",
+                                ],
+
+                                borderWidth: 0,
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // JCZ vs other
+        // =================================================
+
+        const comparisonCanvas =
+            document.getElementById(
+                "jcz-comparison-chart"
+            );
+
+
+        if (comparisonCanvas) {
+
+            const comparison =
+                campaignData.comparison
+                || {};
+
+
+            new Chart(
+                comparisonCanvas,
+                {
+                    type: "bar",
+
+                    data: {
+
+                        labels: [
+                            "Pages / Visit",
+                            "Clicks / Visit",
+                        ],
+
+                        datasets: [
+
+                            {
+                                label: "JCZ",
+
+                                data: [
+                                    comparison
+                                        .jcz_pages_per_visit
+                                        || 0,
+
+                                    comparison
+                                        .jcz_clicks_per_visit
+                                        || 0,
+                                ],
+
+                                backgroundColor:
+                                    "#647cba",
+                            },
+
+                            {
+                                label: "その他",
+
+                                data: [
+                                    comparison
+                                        .other_pages_per_visit
+                                        || 0,
+
+                                    comparison
+                                        .other_clicks_per_visit
+                                        || 0,
+                                ],
+
+                                backgroundColor:
+                                    "#b6becb",
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+                                beginAtZero: true,
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Top articles
+        // =================================================
+
+        const articleCanvas =
+            document.getElementById(
+                "jcz-top-articles-chart"
+            );
+
+
+        if (articleCanvas) {
+
+            const articles =
+                campaignData.top_articles
+                || [];
+
+
+            new Chart(
+                articleCanvas,
+                {
+                    type: "bar",
+
+                    data: {
+
+                        labels:
+                            articles.map(
+                                item => item.label
+                            ),
+
+                        datasets: [
+
+                            {
+                                label: "Clicks",
+
+                                data:
+                                    articles.map(
+                                        item =>
+                                            item.clicks
+                                    ),
+
+                                backgroundColor:
+                                    "#7187be",
+                            },
+
+                        ],
+
+                    },
+
+                    options: {
+
+                        indexAxis: "y",
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: false,
+                            },
+
+                        },
+
+                        scales: {
+
+                            x: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
                             },
 
                         },

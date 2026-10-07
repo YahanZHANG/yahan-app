@@ -1,0 +1,1203 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+
+    {% if is_jcz_campaign %}
+        JCZ Campaign Analytics | yahan-app
+    {% else %}
+        Campaign Analytics | yahan-app
+    {% endif %}
+
+{% endblock %}
+
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'usage_analytics/analytics.css' %}"
+>
+
+
+<div class="analytics-page">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+
+    <header class="analytics-hero">
+
+        <p class="analytics-eyebrow">
+            CAMPAIGN ANALYTICS
+        </p>
+
+
+        <h1>
+
+            {% if is_jcz_campaign %}
+
+                📰 JCZ紙面キャンペーン
+
+            {% else %}
+
+                📣 {{ campaign }}
+
+            {% endif %}
+
+        </h1>
+
+
+        <p>
+            {{ source }}
+            /
+            {{ medium }}
+            /
+            {{ campaign }}
+        </p>
+
+
+        <div class="analytics-actions">
+
+            <a
+                href="{% url 'usage_analytics:news_app_detail' %}?days=30"
+            >
+                ← Swiss News Analytics
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="analytics-main">
+
+
+        <!-- =================================================
+             Campaign information
+             ================================================= -->
+
+        <section class="analytics-section analytics-campaign-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    CAMPAIGN
+                </p>
+
+                <h2>
+                    キャンペーン概要
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-campaign-header">
+
+                <p class="analytics-description">
+
+                    このページでは、
+                    UTMパラメータを使って識別した
+                    キャンペーン経由のアクセスを集計しています。
+
+                </p>
+
+
+                {% if is_jcz_campaign %}
+
+                    <span class="analytics-campaign-badge">
+                        約700世帯に紙面配布
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="analytics-info-card">
+
+                <strong>
+                    {{ source }}
+                </strong>
+
+                <span>
+                    /
+                </span>
+
+                <strong>
+                    {{ medium }}
+                </strong>
+
+                <span>
+                    /
+                </span>
+
+                <strong>
+                    {{ campaign }}
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Summary
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    CAMPAIGN PERFORMANCE
+                </p>
+
+                <h2>
+                    利用状況
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-summary">
+
+                <!-- Visitors -->
+
+                <div class="analytics-stat-card analytics-stat-card-primary">
+
+                    <span>
+                        Visitor
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.visitors|default:0 }}
+                    </strong>
+
+                    <small>
+                        Unique
+                    </small>
+
+                </div>
+
+
+                <!-- Visits -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Visits
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.visits|default:0 }}
+                    </strong>
+
+                    <small>
+                        訪問
+                    </small>
+
+                </div>
+
+
+                <!-- Page views -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Page views
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.page_views|default:0 }}
+                    </strong>
+
+                    <small>
+                        閲覧
+                    </small>
+
+                </div>
+
+
+                <!-- Article clicks -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Article clicks
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.article_clicks|default:0 }}
+                    </strong>
+
+                    <small>
+                        元記事
+                    </small>
+
+                </div>
+
+
+                <!-- Returning -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Returning
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.returning_visitors|default:0 }}
+                    </strong>
+
+                    <small>
+                        {{ campaign_data.summary.returning_rate|default:0 }}%
+                    </small>
+
+                </div>
+
+
+                <!-- Clicker rate -->
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Clicker rate
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.clicker_rate|default:0 }}%
+                    </strong>
+
+                    <small>
+                        記事を開いたVisitor
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            {% if not campaign_data.has_data %}
+
+                <p class="analytics-campaign-empty">
+
+                    このキャンペーン経由のアクセスは
+                    まだ記録されていません。
+
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- =================================================
+             Daily traffic
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    DAILY TRAFFIC
+                </p>
+
+                <h2>
+                    日別の流入
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+
+                キャンペーン経由のVisitor、
+                Visit、記事クリックの推移。
+
+            </p>
+
+
+            <div class="analytics-chart-card">
+
+                <canvas
+                    id="campaign-daily-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Cumulative visitors
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    CUMULATIVE GROWTH
+                </p>
+
+                <h2>
+                    累積Visitor
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+
+                このキャンペーンをきっかけに
+                Swiss Newsを訪れたUnique Visitorの累積。
+
+            </p>
+
+
+            <div class="analytics-chart-card">
+
+                <canvas
+                    id="campaign-cumulative-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Engagement
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ENGAGEMENT
+                </p>
+
+                <h2>
+                    どのくらい使われたか
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-summary">
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Pages / Visit
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.pages_per_visit|default:"0.0" }}
+                    </strong>
+
+                    <small>
+                        平均
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Clicks / Visit
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.clicks_per_visit|default:"0.0" }}
+                    </strong>
+
+                    <small>
+                        平均
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Click users
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.article_clickers|default:0 }}
+                    </strong>
+
+                    <small>
+                        Visitor
+                    </small>
+
+                </div>
+
+
+                <div class="analytics-stat-card">
+
+                    <span>
+                        Returning rate
+                    </span>
+
+                    <strong>
+                        {{ campaign_data.summary.returning_rate|default:0 }}%
+                    </strong>
+
+                    <small>
+                        再訪
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Comparison + device
+             ================================================= -->
+
+        <div class="analytics-chart-grid">
+
+
+            <!-- JCZ vs Other -->
+
+            <section class="analytics-section analytics-chart-panel">
+
+                <div class="analytics-section-heading">
+
+                    <p>
+                        COMPARISON
+                    </p>
+
+                    <h2>
+                        JCZ vs その他
+                    </h2>
+
+                </div>
+
+
+                <p class="analytics-description">
+
+                    1 Visitあたりの利用の深さを比較。
+
+                </p>
+
+
+                <div class="analytics-chart-card analytics-chart-card-compact">
+
+                    <canvas
+                        id="campaign-comparison-chart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+            <!-- Device -->
+
+            <section class="analytics-section analytics-chart-panel">
+
+                <div class="analytics-section-heading">
+
+                    <p>
+                        DEVICES
+                    </p>
+
+                    <h2>
+                        利用端末
+                    </h2>
+
+                </div>
+
+
+                <p class="analytics-description">
+
+                    キャンペーン経由Visitorの端末構成。
+
+                </p>
+
+
+                <div class="analytics-chart-card analytics-chart-card-compact">
+
+                    <canvas
+                        id="campaign-device-chart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- =================================================
+             Top articles graph
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    TOP ARTICLES
+                </p>
+
+                <h2>
+                    よく開かれた記事
+                </h2>
+
+            </div>
+
+
+            <p class="analytics-description">
+
+                このキャンペーン経由のVisitorが
+                元ニュースサイトで開いた記事。
+
+            </p>
+
+
+            <div class="analytics-chart-card analytics-chart-card-top-articles">
+
+                <canvas
+                    id="campaign-top-articles-chart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Top articles table
+             ================================================= -->
+
+        <section class="analytics-section">
+
+            <div class="analytics-section-heading">
+
+                <p>
+                    ARTICLE DETAILS
+                </p>
+
+                <h2>
+                    記事ランキング
+                </h2>
+
+            </div>
+
+
+            <div class="analytics-table-wrap">
+
+                <table class="analytics-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                記事
+                            </th>
+
+                            <th>
+                                Source
+                            </th>
+
+                            <th>
+                                Visitor
+                            </th>
+
+                            <th>
+                                Clicks
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for article in campaign_data.top_articles %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ article.article_title }}
+                                    </strong>
+
+                                </td>
+
+                                <td>
+                                    {{ article.source_name }}
+                                </td>
+
+                                <td>
+                                    {{ article.visitors }}
+                                </td>
+
+                                <td>
+                                    {{ article.clicks }}
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td colspan="4">
+                                    記事クリックはまだありません。
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             Note
+             ================================================= -->
+
+        <p class="analytics-note">
+
+            ※ Visitorはブラウザに保存された匿名IDをもとに集計しています。
+
+            {% if is_jcz_campaign %}
+
+                「約700世帯」は紙面の配布規模であり、
+                Visitor数を世帯利用率として直接計算するものではありません。
+
+            {% endif %}
+
+        </p>
+
+    </main>
+
+</div>
+
+
+<!-- =====================================================
+     Chart data
+     ===================================================== -->
+
+{{ campaign_data|json_script:"campaign-analytics-data" }}
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const dataElement =
+            document.getElementById(
+                "campaign-analytics-data"
+            );
+
+
+        if (
+            !dataElement
+            || typeof Chart === "undefined"
+        ) {
+            return;
+        }
+
+
+        const campaignData =
+            JSON.parse(
+                dataElement.textContent
+            );
+
+
+        const dailyData =
+            campaignData.daily_chart_data
+            || [];
+
+
+        // =================================================
+        // Daily traffic
+        // =================================================
+
+        const dailyCanvas =
+            document.getElementById(
+                "campaign-daily-chart"
+            );
+
+
+        if (dailyCanvas) {
+
+            new Chart(
+                dailyCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            dailyData.map(
+                                item => item.date
+                            ),
+
+                        datasets: [
+
+                            {
+                                label: "Visitor",
+
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.visitors
+                                    ),
+
+                                borderWidth: 3,
+
+                                tension: .3,
+                            },
+
+                            {
+                                label: "Visits",
+
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.visits
+                                    ),
+
+                                borderWidth: 2,
+
+                                tension: .3,
+                            },
+
+                            {
+                                label: "Article clicks",
+
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.article_clicks
+                                    ),
+
+                                borderWidth: 2,
+
+                                tension: .3,
+                            },
+
+                        ],
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+
+                            mode: "index",
+
+                            intersect: false,
+
+                        },
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Cumulative visitors
+        // =================================================
+
+        const cumulativeCanvas =
+            document.getElementById(
+                "campaign-cumulative-chart"
+            );
+
+
+        if (cumulativeCanvas) {
+
+            new Chart(
+                cumulativeCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            dailyData.map(
+                                item => item.date
+                            ),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "累積Visitor",
+
+                                data:
+                                    dailyData.map(
+                                        item =>
+                                            item.cumulative_visitors
+                                    ),
+
+                                fill: true,
+
+                                borderWidth: 3,
+
+                                tension: .25,
+                            },
+
+                        ],
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Device
+        // =================================================
+
+        const deviceCanvas =
+            document.getElementById(
+                "campaign-device-chart"
+            );
+
+
+        if (deviceCanvas) {
+
+            const devices =
+                campaignData.devices
+                || [];
+
+
+            new Chart(
+                deviceCanvas,
+                {
+
+                    type: "doughnut",
+
+                    data: {
+
+                        labels:
+                            devices.map(
+                                item => item.label
+                            ),
+
+                        datasets: [
+
+                            {
+                                data:
+                                    devices.map(
+                                        item =>
+                                            item.visitors
+                                    ),
+                            },
+
+                        ],
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Campaign vs other
+        // =================================================
+
+        const comparisonCanvas =
+            document.getElementById(
+                "campaign-comparison-chart"
+            );
+
+
+        if (comparisonCanvas) {
+
+            const comparison =
+                campaignData.comparison
+                || {};
+
+
+            new Chart(
+                comparisonCanvas,
+                {
+
+                    type: "bar",
+
+                    data: {
+
+                        labels: [
+                            "Pages / Visit",
+                            "Clicks / Visit",
+                        ],
+
+                        datasets: [
+
+                            {
+                                label: "Campaign",
+
+                                data: [
+
+                                    comparison
+                                        .jcz_pages_per_visit
+                                        || 0,
+
+                                    comparison
+                                        .jcz_clicks_per_visit
+                                        || 0,
+
+                                ],
+                            },
+
+                            {
+                                label: "その他",
+
+                                data: [
+
+                                    comparison
+                                        .other_pages_per_visit
+                                        || 0,
+
+                                    comparison
+                                        .other_clicks_per_visit
+                                        || 0,
+
+                                ],
+                            },
+
+                        ],
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom",
+                            },
+
+                        },
+
+                        scales: {
+
+                            y: {
+                                beginAtZero: true,
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+
+        // =================================================
+        // Top articles
+        // =================================================
+
+        const articleCanvas =
+            document.getElementById(
+                "campaign-top-articles-chart"
+            );
+
+
+        if (articleCanvas) {
+
+            const articles =
+                campaignData.top_articles
+                || [];
+
+
+            new Chart(
+                articleCanvas,
+                {
+
+                    type: "bar",
+
+                    data: {
+
+                        labels:
+                            articles.map(
+                                item => item.label
+                            ),
+
+                        datasets: [
+
+                            {
+                                label: "Clicks",
+
+                                data:
+                                    articles.map(
+                                        item =>
+                                            item.clicks
+                                    ),
+                            },
+
+                        ],
+
+                    },
+
+
+                    options: {
+
+                        indexAxis: "y",
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: false,
+                            },
+
+                        },
+
+                        scales: {
+
+                            x: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                },
+
+                            },
+
+                        },
+
+                    },
+
+                }
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+
+{% endblock %}

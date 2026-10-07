@@ -1525,3 +1525,193 @@
     }
 
 }
+
+/* =========================================================
+   JCZ Campaign Analytics
+   ========================================================= */
+
+.analytics-campaign-section {
+    border:
+        1px solid
+        rgba(112, 129, 184, .15);
+
+    background:
+        linear-gradient(
+            145deg,
+            #fbfcff 0%,
+            #f7f5ff 48%,
+            #fffaf7 100%
+        );
+}
+
+
+.analytics-campaign-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+
+    gap: 16px;
+
+    margin-bottom: 24px;
+}
+
+
+.analytics-campaign-header
+.analytics-description {
+    flex: 1;
+
+    min-width: 260px;
+
+    margin-bottom: 0;
+}
+
+
+.analytics-campaign-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding:
+        8px
+        13px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(100, 124, 186, .11);
+
+    color: #5d6fa6;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+.analytics-campaign-empty {
+    margin:
+        4px
+        0
+        26px;
+
+    padding:
+        14px
+        17px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, .72);
+
+    color: #8590a1;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   Campaign chart grid
+   ========================================================= */
+
+.analytics-chart-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 18px;
+
+    margin-top: 30px;
+}
+
+
+.analytics-chart-panel {
+    min-width: 0;
+}
+
+
+.analytics-chart-panel h3 {
+    margin:
+        0
+        0
+        5px;
+
+    color: #465367;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+
+.analytics-chart-panel > p {
+    margin: 0;
+
+    color: #8a95a5;
+
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+
+.analytics-chart-panel-wide {
+    grid-column:
+        1 / -1;
+}
+
+
+.analytics-chart-card-compact {
+    height: 310px;
+}
+
+
+.analytics-chart-card-top-articles {
+    height: 410px;
+}
+
+
+/* =========================================================
+   Campaign mobile
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .analytics-chart-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .analytics-chart-panel-wide {
+        grid-column:
+            auto;
+    }
+
+
+    .analytics-campaign-header {
+        flex-direction:
+            column;
+    }
+
+
+    .analytics-campaign-badge {
+        white-space:
+            normal;
+    }
+
+
+    .analytics-chart-card-compact {
+        height: 290px;
+    }
+
+
+    .analytics-chart-card-top-articles {
+        height: 380px;
+    }
+
+}
