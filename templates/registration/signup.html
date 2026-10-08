@@ -245,7 +245,7 @@
             >
 
                 <span>
-                    無料アカウントを作成
+                    新しいアカウントを作成
                 </span>
 
                 <span
@@ -260,11 +260,55 @@
         </form>
 
 
+        <!-- =============================================
+            Login link
+            ============================================= -->
+
+        <div class="login-signup">
+
+            <div class="login-signup-divider">
+
+                <span>
+                    または
+                </span>
+
+            </div>
+
+
+            <a
+                href="{% url 'login' %}"
+                class="login-signup-button"
+            >
+
+                <span>
+                    ログイン
+                </span>
+
+                <span
+                    class="login-signup-arrow"
+                    aria-hidden="true"
+                >
+                    →
+                </span>
+
+            </a>
+
+        </div>
+
+
+        <!-- =============================================
+            Footer
+            ============================================= -->
+
         <div class="login-footer">
 
-            <a href="{% url 'login' %}">
-                すでにアカウントを持っている方はログイン
-            </a>
+            <span>
+                Yapp
+            </span>
+
+            <small>
+                personal app hub
+            </small>
 
         </div>
 

@@ -607,3 +607,139 @@
     color: #536b5f;
     text-decoration: underline;
 }
+
+/* =========================================================
+   Sign up
+   ========================================================= */
+
+.login-signup {
+    margin-top: 22px;
+}
+
+
+.login-signup-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 16px;
+
+    color: #a0a8ad;
+}
+
+
+.login-signup-divider::before,
+.login-signup-divider::after {
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        rgba(54, 95, 117, .08);
+}
+
+
+.login-signup-divider span {
+    flex: 0 0 auto;
+
+    font-size: .68rem;
+    font-weight: 700;
+}
+
+
+.login-signup-text {
+    margin:
+        0
+        0
+        10px;
+
+    color: #7b858c;
+
+    text-align: center;
+
+    font-size: .75rem;
+    line-height: 1.6;
+}
+
+
+.login-signup-button {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    min-height: 50px;
+
+    padding:
+        0
+        18px;
+
+    border:
+        1px solid
+        rgba(54, 95, 117, .16);
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(255, 255, 255, .74);
+
+    color:
+        #365f75;
+
+    box-sizing: border-box;
+
+    font-size: .84rem;
+    font-weight: 900;
+
+    text-decoration: none;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.login-signup-button:hover {
+    border-color:
+        rgba(54, 95, 117, .26);
+
+    background:
+        #ffffff;
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 9px 22px
+        rgba(54, 95, 117, .08);
+}
+
+
+.login-signup-button:active {
+    transform:
+        translateY(0);
+}
+
+
+.login-signup-arrow {
+    display: grid;
+
+    place-items: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(54, 95, 117, .08);
+
+    font-size: 15px;
+}
