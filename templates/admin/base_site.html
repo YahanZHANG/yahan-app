@@ -1,0 +1,130 @@
+{% extends "admin/base.html" %}
+
+{% load i18n %}
+
+
+{% block title %}
+    {{ title }} | Yapp Admin
+{% endblock %}
+
+
+{% block branding %}
+
+    <div
+        style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+        "
+    >
+
+        <h1 id="site-name">
+
+            <a href="{% url 'admin:index' %}">
+                Yapp administration
+            </a>
+
+        </h1>
+
+    </div>
+
+{% endblock %}
+
+
+{% block nav-global %}
+
+    {% if admin_attention.total %}
+
+        <div
+            style="
+                margin:12px 20px;
+                padding:14px 16px;
+                border:1px solid #f0d7a5;
+                border-radius:10px;
+                background:#fff8e8;
+                color:#5b4930;
+            "
+        >
+
+            <div
+                style="
+                    margin-bottom:10px;
+                    font-weight:700;
+                "
+            >
+                🔔 要確認
+                {{ admin_attention.total }}件
+            </div>
+
+
+            <div
+                style="
+                    display:flex;
+                    flex-wrap:wrap;
+                    gap:10px;
+                "
+            >
+
+                {% if admin_attention.feedback %}
+
+                    <a
+                        href="{% url 'admin:news_newsfeedback_changelist' %}?is_read__exact=0"
+                        style="
+                            padding:7px 10px;
+                            border-radius:7px;
+                            background:#fff;
+                            color:#333;
+                            text-decoration:none;
+                        "
+                    >
+                        💬 ご意見・ご要望
+                        {{ admin_attention.feedback }}件
+                    </a>
+
+                {% endif %}
+
+
+                {% if admin_attention.support %}
+
+                    <a
+                        href="{% url 'admin:news_supportrequest_changelist' %}?is_read__exact=0"
+                        style="
+                            padding:7px 10px;
+                            border-radius:7px;
+                            background:#fff;
+                            color:#333;
+                            text-decoration:none;
+                        "
+                    >
+                        ❤️ 応援問い合わせ
+                        {{ admin_attention.support }}件
+                    </a>
+
+                {% endif %}
+
+
+                {% if admin_attention.access %}
+
+                    <a
+                        href="{% url 'admin:portal_appaccessrequest_changelist' %}?status__exact=pending"
+                        style="
+                            padding:7px 10px;
+                            border-radius:7px;
+                            background:#fff;
+                            color:#333;
+                            text-decoration:none;
+                        "
+                    >
+                        🔐 アクセス申請
+                        {{ admin_attention.access }}件
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+{% endblock %}

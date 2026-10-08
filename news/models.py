@@ -474,3 +474,80 @@ class NewsFeedback(models.Model):
 
     def __str__(self):
         return self.message[:50]
+
+
+# =========================================================
+# Swiss News support requests
+# =========================================================
+
+class SupportRequest(models.Model):
+
+    class Method(models.TextChoices):
+        BANK = (
+            "bank",
+            "銀行口座で応援",
+        )
+        OTHER = (
+            "other",
+            "その他の方法で応援",
+        )
+
+    class BankCountry(models.TextChoices):
+        CH = (
+            "ch",
+            "スイスの銀行口座",
+        )
+        JP = (
+            "jp",
+            "日本の銀行口座",
+        )
+
+    method = models.CharField(
+        max_length=20,
+        choices=Method.choices,
+    )
+
+    bank_country = models.CharField(
+        max_length=10,
+        choices=BankCountry.choices,
+        blank=True,
+    )
+
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    email = models.EmailField()
+
+    message = models.TextField(
+        blank=True,
+    )
+
+    is_read = models.BooleanField(
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = [
+            "-created_at",
+        ]
+
+        verbose_name = (
+            "Swiss News 応援問い合わせ"
+        )
+
+        verbose_name_plural = (
+            "Swiss News 応援問い合わせ"
+        )
+
+    def __str__(self):
+
+        return (
+            f"{self.get_method_display()} "
+            f"- {self.email}"
+        )

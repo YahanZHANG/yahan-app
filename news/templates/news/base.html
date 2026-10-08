@@ -102,6 +102,7 @@ page-content news-site-container
                         設定
                     </a>
 
+                    {% if not request.user.is_authenticated %}
                     <a
                         href="{% url 'news:services' %}"
                         class="news-desktop-nav-item
@@ -111,6 +112,7 @@ page-content news-site-container
                     >
                         他のサービス
                     </a>
+                    {% endif %}
 
                     <a
                         href="{% url 'news:about' %}"

@@ -104,6 +104,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "portal.context_processors.admin_attention_counts",
                 "travel.context_processors.current_travel_group",
                 "vaccination.context_processors.vaccination_ui",
                 "recipes.context_processors.recipe_ui_settings",
@@ -243,3 +244,46 @@ SWISS_NEWS_BITCOIN_ADDRESS = (
 )
 
 SWISS_NEWS_SUPPORT_EMAIL = "yakimexi88ry@gmail.com"
+
+# =========================================================
+# Email
+# =========================================================
+
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+)
+
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv(
+    "EMAIL_HOST_USER",
+    "",
+)
+
+EMAIL_HOST_PASSWORD = os.getenv(
+    "EMAIL_HOST_PASSWORD",
+    "",
+)
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    EMAIL_HOST_USER,
+)
+
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+EMAIL_TIMEOUT = 20
+
+
+# =========================================================
+# Swiss News support
+# =========================================================
+
+SWISS_NEWS_SUPPORT_EMAIL = os.getenv(
+    "SWISS_NEWS_SUPPORT_EMAIL",
+    EMAIL_HOST_USER,
+)

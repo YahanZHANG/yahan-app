@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings as django_settings
 from django.db.models import Exists, OuterRef, Q
-from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from io import BytesIO
@@ -34,6 +33,7 @@ from .models import (
     NewsPreference,
     NewsSource,
     Region,
+    SupportRequest,
     Topic,
 )
 
@@ -1432,6 +1432,12 @@ def bitcoin_qr(request):
     )
 
 def services(request):
+
+    if request.user.is_authenticated:
+        return redirect(
+            "portal:home"
+        )
+    
     return render(
         request,
         "news/services.html",
@@ -1450,10 +1456,11 @@ def support_contact(
     method_config = {
 
         "bank": {
-            "title": "日本の銀行口座で応援する",
+            "title": "銀行口座で応援する",
             "description": (
                 "ありがとうございます！"
-                "振込先をメールでご案内します。"
+                "振込先をご案内するため、"
+                "必要事項を入力してください。"
             ),
         },
 
@@ -1486,117 +1493,61 @@ def support_contact(
             support_method=method,
         )
 
+
         if form.is_valid():
 
-            name = (
-                form.cleaned_data.get(
-                    "name"
-                )
-                or "未入力"
+            SupportRequest.objects.create(
+
+                method=method,
+
+                bank_country=(
+                    form.cleaned_data.get(
+                        "bank_country",
+                        "",
+                    )
+                    or ""
+                ),
+
+                name=(
+                    form.cleaned_data.get(
+                        "name",
+                        "",
+                    )
+                    or ""
+                ),
+
+                email=(
+                    form.cleaned_data[
+                        "email"
+                    ]
+                ),
+
+                message=(
+                    form.cleaned_data.get(
+                        "message",
+                        "",
+                    )
+                    or ""
+                ),
+
             )
 
-            email = (
-                form.cleaned_data[
-                    "email"
-                ]
-            )
 
-            message = (
-                form.cleaned_data.get(
-                    "message"
-                )
-                or ""
-            )
-
-
-            support_email = getattr(
-                django_settings,
-                "SWISS_NEWS_SUPPORT_EMAIL",
-                "",
+            messages.success(
+                request,
+                (
+                    "ありがとうございます！"
+                    "内容を受け付けました。"
+                    "必要に応じて管理者から"
+                    "メールでご連絡します。"
+                ),
             )
 
 
-            if not support_email:
+            return redirect(
+                "news:about"
+            )
 
-                messages.error(
-                    request,
-                    "現在お問い合わせを受け付けられません。",
-                )
-
-            else:
-
-                if method == "bank":
-
-                    bank_country = (
-                        form.cleaned_data[
-                            "bank_country"
-                        ]
-                    )
-
-                    bank_name = (
-                        "スイスの銀行口座"
-                        if bank_country == "ch"
-                        else "日本の銀行口座"
-                    )
-
-                    mail_subject = (
-                        "【Swiss News】"
-                        "日本の銀行口座での応援希望"
-                    )
-
-                    mail_body = (
-                        "Swiss Newsへの応援希望が届きました。\n\n"
-                        "方法：銀行振込\n"
-                        f"希望口座：{bank_name}\n"
-                        f"氏名：{name}\n"
-                        f"メールアドレス：{email}\n\n"
-                        f"{bank_name}の振込先を"
-                        "この方へ案内してください。"
-                    )
-
-                else:
-
-                    mail_subject = (
-                        "【Swiss News】"
-                        "その他の方法での応援希望"
-                    )
-
-                    mail_body = (
-                        "Swiss Newsへの応援希望が届きました。\n\n"
-                        "方法：その他\n"
-                        f"氏名：{name}\n"
-                        f"メールアドレス：{email}\n\n"
-                        "メッセージ：\n"
-                        f"{message}"
-                    )
-
-
-                send_mail(
-                    subject=mail_subject,
-                    message=mail_body,
-                    from_email=(
-                        django_settings.DEFAULT_FROM_EMAIL
-                    ),
-                    recipient_list=[
-                        support_email
-                    ],
-                    fail_silently=False,
-                )
-
-
-                messages.success(
-                    request,
-                    (
-                        "ありがとうございます！"
-                        "内容を受け付けました。"
-                        "管理者からメールでご連絡します。"
-                    ),
-                )
-
-
-                return redirect(
-                    "news:about"
-                )
 
     else:
 
@@ -1604,6 +1555,10 @@ def support_contact(
             support_method=method
         )
 
+
+    # =====================================================
+    # Render
+    # =====================================================
 
     return render(
         request,
