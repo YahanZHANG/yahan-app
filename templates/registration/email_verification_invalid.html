@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+確認リンクが無効です | Yapp
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/login.css' %}"
+>
+
+<div class="login-page">
+
+    <div class="login-card">
+
+        <div class="login-brand">
+            <span class="login-brand-mark">
+                Y
+            </span>
+
+            <span class="login-brand-text">
+                Yapp
+            </span>
+        </div>
+
+
+        <p class="login-eyebrow">
+            EMAIL VERIFICATION
+        </p>
+
+
+        <h1>
+            確認リンクが無効です
+        </h1>
+
+
+        <p class="login-description">
+            この確認リンクは無効になっているか、
+            有効期限が切れている可能性があります。
+        </p>
+
+
+        <p class="login-description">
+            登録をもう一度お試しください。
+        </p>
+
+
+        <a
+            href="{% url 'portal:signup' %}"
+            class="login-submit-button"
+        >
+            アカウント作成に戻る
+        </a>
+
+
+        <div class="login-footer">
+
+            <span>
+                Yapp
+            </span>
+
+            <small>
+                personal app hub
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

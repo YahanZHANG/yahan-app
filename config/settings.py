@@ -265,6 +265,14 @@ LOGIN_REDIRECT_URL = (
 
 LOGOUT_REDIRECT_URL = "login"
 
+# ------------------------------------------------------------------------------
+# Authentication
+# ------------------------------------------------------------------------------
+
+AUTHENTICATION_BACKENDS = [
+    "portal.backends.EmailOrUsernameBackend",
+]
+
 
 # =========================================================
 # Swiss News Web Push

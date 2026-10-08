@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    UserCreationForm,
+)
 
 from travel.models import UserProfile
 
@@ -8,6 +11,53 @@ from .models import PortalAppPreference
 
 
 User = get_user_model()
+
+class YappAuthenticationForm(
+    AuthenticationForm
+):
+
+    username = forms.CharField(
+        label=(
+            "ユーザーIDまたは"
+            "メールアドレス"
+        ),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": (
+                    "ユーザーIDまたは"
+                    "メールアドレス"
+                ),
+                "autocomplete": "username",
+                "autofocus": True,
+            }
+        ),
+    )
+
+    password = forms.CharField(
+        label="パスワード",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "placeholder": "パスワード",
+                "autocomplete": (
+                    "current-password"
+                ),
+            }
+        ),
+    )
+
+    error_messages = {
+        "invalid_login": (
+            "ユーザーIDまたはメールアドレス、"
+            "パスワードを確認してください。"
+            "メール確認がまだの場合は、"
+            "確認メール内のリンクを開いてください。"
+        ),
+        "inactive": (
+            "このアカウントは現在利用できません。"
+        ),
+    }
+
 
 class SignupForm(UserCreationForm):
 
@@ -66,6 +116,7 @@ class SignupForm(UserCreationForm):
 
         return email
 
+
 class NicknameForm(forms.ModelForm):
 
     nickname = forms.CharField(
@@ -88,9 +139,15 @@ class NicknameForm(forms.ModelForm):
         ]
 
     def clean_nickname(self):
-        nickname = self.cleaned_data["nickname"].strip()
+
+        nickname = (
+            self.cleaned_data[
+                "nickname"
+            ].strip()
+        )
 
         if not nickname:
+
             raise forms.ValidationError(
                 "ニックネームを入力してください。"
             )
@@ -106,7 +163,10 @@ class AppSelectionForm(forms.Form):
         required=True,
         widget=forms.CheckboxSelectMultiple,
         error_messages={
-            "required": "少なくとも1つのアプリを選んでください。",
+            "required": (
+                "少なくとも1つのアプリを"
+                "選んでください。"
+            ),
         },
     )
 
@@ -123,6 +183,12 @@ class AppSelectionForm(forms.Form):
         )
 
         if choices is None:
-            choices = PortalAppPreference.AppKey.choices
+            choices = (
+                PortalAppPreference
+                .AppKey
+                .choices
+            )
 
-        self.fields["apps"].choices = choices
+        self.fields[
+            "apps"
+        ].choices = choices

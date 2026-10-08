@@ -12,6 +12,12 @@ urlpatterns = [
     ),
 
     path(
+        "signup/verify/<uidb64>/<token>/",
+        views.verify_email,
+        name="verify_email",
+    ),
+
+    path(
         "account/delete/",
         views.delete_account,
         name="delete_account",

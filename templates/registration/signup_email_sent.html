@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+メールを確認してください | Yapp
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'portal/login.css' %}"
+>
+
+<div class="login-page">
+
+    <div class="login-card">
+
+
+        <p class="login-eyebrow">
+            EMAIL VERIFICATION
+        </p>
+
+
+        <h1>
+            メールを確認してください
+        </h1>
+
+
+        <p class="login-description">
+            <strong>{{ email }}</strong>
+            宛に確認メールを送りました。
+        </p>
+
+
+        <p class="login-description">
+            メール内のリンクを開くと、
+            Yappのアカウント登録が完了します。
+            迷惑メールボックスもご確認ください。
+            確認メールが届かない場合、下記までご連絡ください。
+        </p>
+
+        <small>
+            yapp.admin@gmail.com
+        </small>
+
+        <div class="login-footer">
+
+            <span>
+                Yapp
+            </span>
+
+            <small>
+                personal app hub
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

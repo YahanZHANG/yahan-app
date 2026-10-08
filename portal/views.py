@@ -1,21 +1,41 @@
-from django.db.models import Count
-from board.models import BoardPost
-from board.permissions import can_post_board
 from datetime import timedelta
-from django.utils import timezone
 
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import (
+    get_user_model,
+    login,
+    logout,
+)
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.models import Group
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db.models import Count, Q
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from usage_analytics.permissions import can_view_analytics
+from django.utils import timezone
+from django.utils.encoding import (
+    force_bytes,
+    force_str,
+)
+from django.utils.http import (
+    urlsafe_base64_decode,
+    urlsafe_base64_encode,
+)
 
+from board.models import BoardPost
+from board.permissions import can_post_board
+from chat.models import (
+    ChatConnection,
+    ChatMessage,
+)
 from feeding.models import BabyMembership
 from travel.models import UserProfile
+from usage_analytics.permissions import can_view_analytics
 
 from .forms import (
     AppSelectionForm,
@@ -26,6 +46,7 @@ from .models import (
     AppAccessRequest,
     PortalAppPreference,
 )
+
 from django.db.models import Q
 
 from chat.models import (
@@ -286,6 +307,7 @@ def get_app_choices_for_user(user):
 def signup(request):
 
     if request.user.is_authenticated:
+
         return redirect(
             "portal:home"
         )
@@ -298,20 +320,30 @@ def signup(request):
 
         if form.is_valid():
 
+            # =================================================
+            # Create inactive user
+            # =================================================
+
             user = form.save(
                 commit=False
             )
 
             user.email = (
-                form.cleaned_data["email"]
+                form.cleaned_data[
+                    "email"
+                ]
             )
+
+            # メール確認が終わるまでは
+            # ログインできない状態にする
+            user.is_active = False
 
             user.save()
 
 
-            # ---------------------------------------------
+            # =================================================
             # Public user group
-            # ---------------------------------------------
+            # =================================================
 
             public_group, _ = (
                 Group.objects.get_or_create(
@@ -324,9 +356,9 @@ def signup(request):
             )
 
 
-            # ---------------------------------------------
+            # =================================================
             # Profile
-            # ---------------------------------------------
+            # =================================================
 
             profile, _ = (
                 UserProfile.objects.get_or_create(
@@ -334,33 +366,102 @@ def signup(request):
                 )
             )
 
-            # Signup時に自分でパスワードを設定済み
+            # Signup時にパスワードは設定済み
             profile.password_setup_completed = True
 
-            # 次の画面で設定
+            # メール認証後に設定
             profile.nickname_setup_completed = False
             profile.app_setup_completed = False
 
             profile.save()
 
 
-            # ---------------------------------------------
-            # Login
-            # ---------------------------------------------
+            # =================================================
+            # Email verification
+            # =================================================
 
-            login(
-                request,
-                user,
+            uid = urlsafe_base64_encode(
+                force_bytes(
+                    user.pk
+                )
             )
 
-            return redirect(
-                "portal:nickname_setup"
+            token = (
+                default_token_generator
+                .make_token(
+                    user
+                )
             )
+
+            verification_url = (
+                request.build_absolute_uri(
+                    reverse(
+                        "portal:verify_email",
+                        kwargs={
+                            "uidb64": uid,
+                            "token": token,
+                        },
+                    )
+                )
+            )
+
+            subject = (
+                "【Yapp】"
+                "メールアドレスを確認してください"
+            )
+
+            message = (
+                "Yappへようこそ。\n\n"
+                "アカウント登録ありがとうございます。\n"
+                "以下のリンクを開いて、"
+                "メールアドレスを確認してください。\n\n"
+                f"{verification_url}\n\n"
+                "このメールに心当たりがない場合は、"
+                "そのまま破棄してください。\n\n"
+                "Yapp"
+            )
+
+            try:
+
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=(
+                        settings.DEFAULT_FROM_EMAIL
+                    ),
+                    recipient_list=[
+                        user.email
+                    ],
+                    fail_silently=False,
+                )
+
+            except Exception:
+
+                # メール送信に失敗した場合、
+                # 使えない未認証アカウントを残さない
+                user.delete()
+
+                form.add_error(
+                    None,
+                    (
+                        "確認メールを送信できませんでした。"
+                        "時間をおいてもう一度お試しください。"
+                    ),
+                )
+
+            else:
+
+                return render(
+                    request,
+                    "registration/signup_email_sent.html",
+                    {
+                        "email": user.email,
+                    },
+                )
 
     else:
 
         form = SignupForm()
-
 
     return render(
         request,
@@ -368,6 +469,119 @@ def signup(request):
         {
             "form": form,
         },
+    )
+
+def verify_email(
+    request,
+    uidb64,
+    token,
+):
+
+    # =====================================================
+    # Find user
+    # =====================================================
+
+    try:
+
+        user_id = force_str(
+            urlsafe_base64_decode(
+                uidb64
+            )
+        )
+
+        user = (
+            get_user_model()
+            .objects
+            .get(
+                pk=user_id
+            )
+        )
+
+    except (
+        TypeError,
+        ValueError,
+        OverflowError,
+        get_user_model().DoesNotExist,
+    ):
+
+        user = None
+
+
+    # =====================================================
+    # Invalid link
+    # =====================================================
+
+    if (
+        user is None
+        or not default_token_generator.check_token(
+            user,
+            token,
+        )
+    ):
+
+        return render(
+            request,
+            "registration/email_verification_invalid.html",
+        )
+
+
+    # =====================================================
+    # Already verified
+    # =====================================================
+
+    if user.is_active:
+
+        messages.info(
+            request,
+            (
+                "このメールアドレスは"
+                "すでに確認済みです。"
+            ),
+        )
+
+        return redirect(
+            "login"
+        )
+
+
+    # =====================================================
+    # Activate
+    # =====================================================
+
+    user.is_active = True
+
+    user.save(
+        update_fields=[
+            "is_active",
+        ]
+    )
+
+
+    # =====================================================
+    # Login
+    # =====================================================
+
+    login(
+        request,
+        user,
+        backend=(
+            "portal.backends."
+            "EmailOrUsernameBackend"
+        ),
+    )
+
+
+    messages.success(
+        request,
+        (
+            "メールアドレスを確認しました。"
+            "Yappへようこそ！"
+        ),
+    )
+
+
+    return redirect(
+        "portal:nickname_setup"
     )
 
 # =========================================================
