@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings as django_settings
 from django.db.models import Exists, OuterRef, Q
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from io import BytesIO
@@ -36,6 +37,37 @@ from .models import (
     SupportRequest,
     Topic,
 )
+
+
+# =========================================================
+# Email notification helper
+# =========================================================
+
+def _send_admin_notification(
+    subject,
+    message,
+):
+
+    recipient = getattr(
+        django_settings,
+        "ADMIN_NOTIFICATION_EMAIL",
+        "",
+    )
+
+    if not recipient:
+        return
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=(
+            django_settings.DEFAULT_FROM_EMAIL
+        ),
+        recipient_list=[
+            recipient
+        ],
+        fail_silently=True,
+    )
 
 
 def _get_preference(user):
@@ -1319,7 +1351,21 @@ def about(request):
 
         if form.is_valid():
 
-            form.save()
+            feedback = form.save()
+
+
+            _send_admin_notification(
+                subject=(
+                    "【Yapp】"
+                    "Swiss Newsに新しいコメント"
+                ),
+                message=(
+                    "Swiss Newsに新しいコメントが届きました。\n\n"
+                    "コメント：\n"
+                    f"{feedback.message}\n\n"
+                    "Yapp Adminから確認してください。"
+                ),
+            )
 
 
             request.session[
@@ -1496,42 +1542,60 @@ def support_contact(
 
         if form.is_valid():
 
-            SupportRequest.objects.create(
+            support_request = (
+                SupportRequest.objects.create(
 
-                method=method,
+                    method=method,
 
-                bank_country=(
-                    form.cleaned_data.get(
-                        "bank_country",
-                        "",
-                    )
-                    or ""
-                ),
+                    bank_country=(
+                        form.cleaned_data.get(
+                            "bank_country",
+                            "",
+                        )
+                        or ""
+                    ),
 
-                name=(
-                    form.cleaned_data.get(
-                        "name",
-                        "",
-                    )
-                    or ""
-                ),
+                    name=(
+                        form.cleaned_data.get(
+                            "name",
+                            "",
+                        )
+                        or ""
+                    ),
 
-                email=(
-                    form.cleaned_data[
-                        "email"
-                    ]
-                ),
+                    email=(
+                        form.cleaned_data[
+                            "email"
+                        ]
+                    ),
 
-                message=(
-                    form.cleaned_data.get(
-                        "message",
-                        "",
-                    )
-                    or ""
-                ),
+                    message=(
+                        form.cleaned_data.get(
+                            "message",
+                            "",
+                        )
+                        or ""
+                    ),
 
+                )
             )
 
+            _send_admin_notification(
+                subject=(
+                    "【Yapp】"
+                    "Swiss Newsへの応援問い合わせ"
+                ),
+                message=(
+                    "Swiss Newsへの応援問い合わせが届きました。\n\n"
+                    f"方法：{support_request.get_method_display()}\n"
+                    f"氏名：{support_request.name or '未入力'}\n"
+                    f"メール：{support_request.email}\n"
+                    f"希望口座：{support_request.bank_country or 'なし'}\n\n"
+                    "メッセージ：\n"
+                    f"{support_request.message or 'なし'}\n\n"
+                    "Yapp Adminから内容を確認してください。"
+                ),
+            )
 
             messages.success(
                 request,

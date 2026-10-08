@@ -10,11 +10,13 @@ import os
 import dj_database_url
 from django.utils.translation import gettext_lazy as _
 
+
 # ------------------------------------------------------------------------------
 # Paths
 # ------------------------------------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # ------------------------------------------------------------------------------
 # Security
@@ -35,6 +37,7 @@ ALLOWED_HOSTS = [
     "localhost",
     ".onrender.com",
 ]
+
 
 # ------------------------------------------------------------------------------
 # Applications
@@ -59,13 +62,16 @@ INSTALLED_APPS = [
 
     # お知らせ
     "board.apps.BoardConfig",
+
     # チャット
     "chat.apps.ChatConfig",
+
     # イベント・日程調整
     "event_scheduler.apps.EventSchedulerConfig",
 
     "usage_analytics.apps.UsageAnalyticsConfig",
 ]
+
 
 # ------------------------------------------------------------------------------
 # Middleware
@@ -79,6 +85,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
     "portal.middleware.PublicUserAccessMiddleware",
 
     # App usage tracking
@@ -88,7 +95,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 ROOT_URLCONF = "config.urls"
+
 
 # ------------------------------------------------------------------------------
 # Templates
@@ -96,15 +105,30 @@ ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "BACKEND": (
+            "django.template.backends.django.DjangoTemplates"
+        ),
+        "DIRS": [
+            BASE_DIR / "templates"
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+                (
+                    "django.template.context_processors."
+                    "request"
+                ),
+                (
+                    "django.contrib.auth.context_processors."
+                    "auth"
+                ),
+                (
+                    "django.contrib.messages."
+                    "context_processors.messages"
+                ),
+
                 "portal.context_processors.admin_attention_counts",
+
                 "travel.context_processors.current_travel_group",
                 "vaccination.context_processors.vaccination_ui",
                 "recipes.context_processors.recipe_ui_settings",
@@ -113,7 +137,9 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = "config.wsgi.application"
+
 
 # ------------------------------------------------------------------------------
 # Database
@@ -121,16 +147,21 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASE_PATH = os.environ.get(
     "DATABASE_PATH",
-    str(BASE_DIR / "db.sqlite3"),
+    str(
+        BASE_DIR / "db.sqlite3"
+    ),
 )
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{DATABASE_PATH}",
+        default=(
+            f"sqlite:///{DATABASE_PATH}"
+        ),
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
+
 
 # ------------------------------------------------------------------------------
 # Password validation
@@ -138,18 +169,31 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
+
 
 # ------------------------------------------------------------------------------
 # Internationalization
@@ -175,6 +219,7 @@ LOCALE_PATHS = [
     BASE_DIR / "locale",
 ]
 
+
 # ------------------------------------------------------------------------------
 # Static files
 # ------------------------------------------------------------------------------
@@ -185,27 +230,41 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+)
 
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
     },
 }
+
 
 # ------------------------------------------------------------------------------
 # Default primary key
 # ------------------------------------------------------------------------------
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = (
+    "django.db.models.BigAutoField"
+)
+
 
 # ------------------------------------------------------------------------------
 # Login / Logout
 # ------------------------------------------------------------------------------
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "portal:home"
+
+LOGIN_REDIRECT_URL = (
+    "portal:home"
+)
+
 LOGOUT_REDIRECT_URL = "login"
+
 
 # =========================================================
 # Swiss News Web Push
@@ -226,13 +285,10 @@ VAPID_CONTACT_EMAIL = os.environ.get(
     "",
 )
 
-# =========================================================
-# Password reset email settings
-# =========================================================
 
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "no-reply@yapp.local"
+# =========================================================
+# Swiss News support
+# =========================================================
 
 SWISS_NEWS_TWINT_URL = os.getenv(
     "SWISS_NEWS_TWINT_URL",
@@ -243,21 +299,17 @@ SWISS_NEWS_BITCOIN_ADDRESS = (
     "bc1qcf3akr70r0rsjkqphsm6aldgqk9r32e9c475xc"
 )
 
-SWISS_NEWS_SUPPORT_EMAIL = "yakimexi88ry@gmail.com"
 
 # =========================================================
 # Email
 # =========================================================
-
-EMAIL_BACKEND = (
-    "django.core.mail.backends.smtp.EmailBackend"
-)
 
 EMAIL_HOST = "smtp.gmail.com"
 
 EMAIL_PORT = 587
 
 EMAIL_USE_TLS = True
+
 
 EMAIL_HOST_USER = os.getenv(
     "EMAIL_HOST_USER",
@@ -269,21 +321,55 @@ EMAIL_HOST_PASSWORD = os.getenv(
     "",
 )
 
+
+# RenderでGmail情報が設定されている場合は
+# 本物のメールを送信する。
+#
+# ローカルで環境変数がない場合は
+# メール内容をターミナルに表示する。
+
+if (
+    EMAIL_HOST_USER
+    and EMAIL_HOST_PASSWORD
+):
+
+    EMAIL_BACKEND = (
+        "django.core.mail.backends."
+        "smtp.EmailBackend"
+    )
+
+else:
+
+    EMAIL_BACKEND = (
+        "django.core.mail.backends."
+        "console.EmailBackend"
+    )
+
+
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    EMAIL_HOST_USER,
+    "Yapp <yapp.admin@gmail.com>",
 )
 
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-EMAIL_TIMEOUT = 20
+
+# Yapp管理者への通知先
+
+ADMIN_NOTIFICATION_EMAIL = os.getenv(
+    "ADMIN_NOTIFICATION_EMAIL",
+    "yapp.admin@gmail.com",
+)
 
 
-# =========================================================
-# Swiss News support
-# =========================================================
+# 古いコードとの互換性のため残す。
+# 今後は基本的に
+# ADMIN_NOTIFICATION_EMAIL を使用する。
 
 SWISS_NEWS_SUPPORT_EMAIL = os.getenv(
     "SWISS_NEWS_SUPPORT_EMAIL",
-    EMAIL_HOST_USER,
+    ADMIN_NOTIFICATION_EMAIL,
 )
+
+
+EMAIL_TIMEOUT = 20
