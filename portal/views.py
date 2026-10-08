@@ -41,6 +41,7 @@ from .forms import (
     AppSelectionForm,
     NicknameForm,
     SignupForm,
+    ResendVerificationForm,
 )
 from .models import (
     AppAccessRequest,
@@ -466,6 +467,116 @@ def signup(request):
     return render(
         request,
         "registration/signup.html",
+        {
+            "form": form,
+        },
+    )
+
+def resend_verification(request):
+
+    if request.user.is_authenticated:
+
+        return redirect(
+            "portal:home"
+        )
+
+    if request.method == "POST":
+
+        form = ResendVerificationForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            email = (
+                form.cleaned_data[
+                    "email"
+                ]
+            )
+
+            user = (
+                get_user_model()
+                .objects
+                .filter(
+                    email__iexact=email,
+                    is_active=False,
+                )
+                .first()
+            )
+
+            if user is not None:
+
+                uid = urlsafe_base64_encode(
+                    force_bytes(
+                        user.pk
+                    )
+                )
+
+                token = (
+                    default_token_generator
+                    .make_token(
+                        user
+                    )
+                )
+
+                verification_url = (
+                    request.build_absolute_uri(
+                        reverse(
+                            "portal:verify_email",
+                            kwargs={
+                                "uidb64": uid,
+                                "token": token,
+                            },
+                        )
+                    )
+                )
+
+                subject = (
+                    "【Yapp】"
+                    "メールアドレスを確認してください"
+                )
+
+                message = (
+                    "Yappへようこそ。\n\n"
+                    "以下のリンクを開いて、"
+                    "メールアドレスを確認してください。\n\n"
+                    f"{verification_url}\n\n"
+                    "このメールに心当たりがない場合は、"
+                    "そのまま破棄してください。\n\n"
+                    "Yapp"
+                )
+
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=(
+                        settings.DEFAULT_FROM_EMAIL
+                    ),
+                    recipient_list=[
+                        user.email
+                    ],
+                    fail_silently=True,
+                )
+
+            # 存在するメールかどうかは明かさない
+            return render(
+                request,
+                (
+                    "registration/"
+                    "verification_email_resent.html"
+                ),
+                {
+                    "email": email,
+                },
+            )
+
+    else:
+
+        form = ResendVerificationForm()
+
+    return render(
+        request,
+        "registration/resend_verification.html",
         {
             "form": form,
         },

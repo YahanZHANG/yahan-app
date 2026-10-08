@@ -1,9 +1,13 @@
 from django import forms
+
 from django.contrib.auth import get_user_model
+
 from django.contrib.auth.forms import (
     AuthenticationForm,
     UserCreationForm,
 )
+
+from django.core.exceptions import ValidationError
 
 from travel.models import UserProfile
 
@@ -50,13 +54,116 @@ class YappAuthenticationForm(
         "invalid_login": (
             "ユーザーIDまたはメールアドレス、"
             "パスワードを確認してください。"
-            "メール確認がまだの場合は、"
-            "確認メール内のリンクを開いてください。"
         ),
         "inactive": (
             "このアカウントは現在利用できません。"
         ),
     }
+
+    def _find_user(
+        self,
+        identifier,
+    ):
+
+        user = (
+            User.objects
+            .filter(
+                username__iexact=identifier
+            )
+            .first()
+        )
+
+        if user is not None:
+            return user
+
+        email_users = (
+            User.objects
+            .filter(
+                email__iexact=identifier
+            )
+        )
+
+        if email_users.count() == 1:
+            return email_users.first()
+
+        return None
+
+
+    def clean(self):
+
+        try:
+
+            return super().clean()
+
+        except ValidationError as error:
+
+            identifier = (
+                self.cleaned_data.get(
+                    "username",
+                    "",
+                )
+                .strip()
+            )
+
+            password = (
+                self.cleaned_data.get(
+                    "password"
+                )
+            )
+
+            if (
+                identifier
+                and password
+            ):
+
+                user = self._find_user(
+                    identifier
+                )
+
+                if (
+                    user is not None
+                    and not user.is_active
+                    and user.check_password(
+                        password
+                    )
+                ):
+
+                    raise ValidationError(
+                        (
+                            "メールアドレスの確認が"
+                            "まだ完了していません。"
+                            "確認メール内のリンクを開くか、"
+                            "確認メールを再送してください。"
+                        ),
+                        code="inactive",
+                    )
+
+            raise error
+
+class ResendVerificationForm(
+    forms.Form
+):
+
+    email = forms.EmailField(
+        label="メールアドレス",
+        required=True,
+        widget=forms.EmailInput(
+            attrs={
+                "placeholder": "example@email.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+    def clean_email(self):
+
+        return (
+            self.cleaned_data[
+                "email"
+            ]
+            .strip()
+            .lower()
+        )
 
 
 class SignupForm(UserCreationForm):
@@ -192,3 +299,25 @@ class AppSelectionForm(forms.Form):
         self.fields[
             "apps"
         ].choices = choices
+
+
+class ResendVerificationForm(forms.Form):
+
+    email = forms.EmailField(
+        label="メールアドレス",
+        required=True,
+        widget=forms.EmailInput(
+            attrs={
+                "placeholder": "example@email.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+    def clean_email(self):
+
+        return (
+            self.cleaned_data["email"]
+            .strip()
+            .lower()
+        )

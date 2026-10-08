@@ -18,6 +18,12 @@ urlpatterns = [
     ),
 
     path(
+        "signup/resend-verification/",
+        views.resend_verification,
+        name="resend_verification",
+    ),
+
+    path(
         "account/delete/",
         views.delete_account,
         name="delete_account",
