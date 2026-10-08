@@ -172,6 +172,7 @@ PUBLIC_USER_GROUP = "public_users"
 
 
 PUBLIC_APP_KEYS = [
+    "news",
     "recipes",
     "events",
     "colorcheck",
