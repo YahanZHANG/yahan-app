@@ -4706,3 +4706,85 @@ button {
     opacity:
         .55;
 }
+
+/* =========================================================
+   Portal hero
+   ========================================================= */
+
+.portal-hero {
+    margin-bottom: 26px;
+    padding: 22px 22px 18px;
+
+    border: 1px solid #e7ebef;
+    border-radius: 22px;
+
+    background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f8fbfd 100%
+    );
+
+    box-shadow: 0 10px 24px rgba(36, 61, 82, 0.05);
+}
+
+.portal-hero-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.portal-hero-logo {
+    display: block;
+    width: min(100%, 320px);
+    height: auto;
+}
+
+.portal-hero-description {
+    margin: 14px 0 0;
+
+    color: #6f7b86;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+    .portal-hero {
+        margin-bottom: 20px;
+        padding: 18px 16px 14px;
+        border-radius: 18px;
+    }
+
+    .portal-hero-logo {
+        width: min(100%, 240px);
+    }
+
+    .portal-hero-description {
+        margin-top: 10px;
+        font-size: 0.84rem;
+        line-height: 1.65;
+    }
+}
+
+/* =========================================================
+   Yapp brand logo
+   ========================================================= */
+
+.portal-brand-logo {
+    display: block;
+    width: 210px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+
+@media (max-width: 600px) {
+
+    .portal-brand-logo {
+        width: 165px;
+    }
+
+}
