@@ -1,47 +1,156 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}
-確認メールを送信しました | Yapp
+確認メールを再送しました | Yapp
 {% endblock %}
 
-{% block content %}
+
+{% block extra_css %}
 
 <link
     rel="stylesheet"
     href="{% static 'portal/login.css' %}"
 >
 
+{% endblock %}
+
+
+{% block content %}
+
 <div class="login-page">
 
-    <div class="login-card">
+    <!-- Decorative background -->
 
-        <p class="login-eyebrow">
-            EMAIL VERIFICATION
-        </p>
+    <div
+        class="login-decoration login-decoration-one"
+        aria-hidden="true"
+    ></div>
 
-        <h1>
-            メールをご確認ください
-        </h1>
+    <div
+        class="login-decoration login-decoration-two"
+        aria-hidden="true"
+    ></div>
+
+
+    <main class="login-card">
+
+        <!-- =============================================
+             Brand
+             ============================================= -->
+
+        <div class="login-brand">
+
+            <div
+                class="login-brand-icon"
+                aria-hidden="true"
+            >
+                <img
+                    src="{% static 'portal/yapp-icon.png' %}"
+                    alt=""
+                    class="yapp-icon-fill"
+                >
+            </div>
+
+            <div>
+
+                <p class="login-eyebrow">
+                    EMAIL SENT
+                </p>
+
+                <h1>
+                    確認メールを再送しました
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             Status
+             ============================================= -->
+
+        <div class="login-success-message">
+
+            <span
+                class="login-success-icon"
+                aria-hidden="true"
+            >
+                ✓
+            </span>
+
+            <span>
+                送信リクエストを受け付けました
+            </span>
+
+        </div>
+
 
         <p class="login-description">
-            未確認のアカウントが存在する場合、
-            確認メールを送信しました。
+            入力されたメールアドレスに
+            未確認のYappアカウントが存在する場合、
+            新しい確認メールを送信しました。
         </p>
 
+
         <p class="login-description">
-            メール内のリンクを開いて、
-            アカウント登録を完了してください。
+            メールが届くまで少し時間がかかる場合があります。
+            迷惑メールボックスもあわせてご確認ください。
         </p>
+
+
+        <!-- =============================================
+             Actions
+             ============================================= -->
 
         <a
-            href="{% url 'login' %}"
-            class="login-submit-button"
+            href="{% url 'portal:resend_verification' %}"
+            class="login-signup-button"
         >
-            ログイン画面に戻る
+            <span>
+                別のメールアドレスで再送する
+            </span>
+
+            <span
+                class="login-signup-arrow"
+                aria-hidden="true"
+            >
+                →
+            </span>
         </a>
 
-    </div>
+
+        <div class="login-help">
+
+            <a
+                href="{% url 'login' %}"
+                class="login-help-link"
+            >
+                ← ログインに戻る
+            </a>
+
+        </div>
+
+
+        <!-- =============================================
+             Footer
+             ============================================= -->
+
+        <div class="login-footer">
+
+            <span>
+                Yapp
+            </span>
+
+            <small>
+                personal app hub
+            </small>
+
+        </div>
+
+    </main>
 
 </div>
 

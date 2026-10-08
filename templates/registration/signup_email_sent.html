@@ -16,23 +16,31 @@
 
     <div class="login-card">
 
+        <div
+            class="login-brand-icon"
+            aria-hidden="true"
+            style="margin: 0 auto 16px;"
+        >
+            <img
+                src="{% static 'portal/yapp-icon.png' %}"
+                alt=""
+                class="yapp-icon-fill"
+            >
+        </div>
 
         <p class="login-eyebrow">
             EMAIL VERIFICATION
         </p>
 
-
         <h1>
             メールを確認してください
         </h1>
 
-
         <p class="login-description">
             <strong>{{ email }}</strong>
             宛に確認メールを送りました。
-            迷惑メールボックスもご確認ください。
+            迷惑メールボックスもあわせてご確認ください。
         </p>
-
 
         <p class="login-description">
             メール内のリンクを開くと、
@@ -40,10 +48,9 @@
         </p>
 
         <p class="login-description">
-            確認メールが届かない場合、迷惑メールボックスもご確認ください。
-            もしくは、下記のボタンで、確認メールを再送できます。
+            確認メールが届かない場合は、
+            下記のボタンから確認メールを再送してください。
         </p>
-
 
         <a
             href="{% url 'portal:resend_verification' %}"
@@ -53,8 +60,9 @@
         </a>
 
         <p class="login-description">
-            再送しても確認メールが届かない場合、下記までご連絡ください。
-            yapp.admin@gmail.com
+            再送しても届かない場合は、
+            <a href="mailto:yapp.admin@gmail.com">yapp.admin@gmail.com</a>
+            までご連絡ください。
         </p>
 
         <div class="login-footer">

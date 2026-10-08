@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}
-確認リンクが無効です | Yapp
+ログイン制限 | Yapp
 {% endblock %}
+
 
 {% block content %}
 
@@ -11,6 +13,7 @@
     rel="stylesheet"
     href="{% static 'portal/login.css' %}"
 >
+
 
 <div class="login-page">
 
@@ -27,34 +30,36 @@
             >
         </div>
 
+        <!-- =================================================
+             Message
+             ================================================= -->
 
         <p class="login-eyebrow">
-            EMAIL VERIFICATION
+            LOGIN SECURITY
         </p>
 
 
         <h1>
-            確認リンクが無効です
+            ログインを一時的に制限しています
         </h1>
 
 
         <p class="login-description">
-            この確認リンクは無効になっているか、
-            有効期限が切れている可能性があります。
+            セキュリティ保護のため、
+            ログイン試行回数が上限に達しました。
         </p>
 
 
         <p class="login-description">
-            下記のボタンから確認メールを再送し、
-            新しい確認リンクをお使いください。
+            30分後にもう一度お試しください。
         </p>
 
 
         <a
-            href="{% url 'portal:resend_verification' %}"
-            class="login-signup-button"
+            href="{% url 'login' %}"
+            class="login-button"
         >
-            確認メールを再送する
+            ログイン画面に戻る
         </a>
 
 
