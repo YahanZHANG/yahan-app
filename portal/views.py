@@ -134,7 +134,7 @@ APP_CONFIG = {
     "events": {
 
         "name":
-            "イベント",
+            "イベント・日程調整",
 
         "label":
             "EVENT SCHEDULER",
@@ -418,7 +418,7 @@ def signup(request):
                 f"{verification_url}\n\n"
                 "このメールに心当たりがない場合は、"
                 "そのまま破棄してください。\n\n"
-                "Yapp"
+                "Yapp @ 2026"
             )
 
             try:
