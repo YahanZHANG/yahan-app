@@ -20,12 +20,21 @@
 
         <div>
 
-            <a
-                href="{% url 'portal:home' %}"
-                class="event-response-back"
-            >
-                ← Portalに戻る
-            </a>
+            {% if request.user.is_authenticated %}
+                <a
+                    href="{% url 'portal:home' %}"
+                    class="event-response-back"
+                >
+                    ← Portalに戻る
+                </a>
+            {% else %}
+                <a
+                    href="{% url 'news:services' %}"
+                    class="event-response-back"
+                >
+                    ← Yappのサービス一覧へ
+                </a>
+            {% endif %}
 
             <p class="event-eyebrow">
                 EVENTS SCHEDULER
@@ -40,12 +49,14 @@
 
         <div class="event-list-header-actions">
 
-            <a
-                href="{% url 'event_scheduler:archived_event_list' %}"
-                class="event-archive-link"
-            >
-                📦 アーカイブ
-            </a>
+            {% if request.user.is_authenticated %}
+                <a
+                    href="{% url 'event_scheduler:archived_event_list' %}"
+                    class="event-archive-link"
+                >
+                    📦 アーカイブ
+                </a>
+            {% endif %}
 
 
             <a
@@ -270,182 +281,184 @@
     <!-- =====================================================
          My events
          ===================================================== -->
+         {% if request.user.is_authenticated %}
 
-    <section class="event-list-section">
+            <section class="event-list-section">
 
-        <div class="event-section-header">
+                <div class="event-section-header">
 
-            <p class="event-section-eyebrow">
-                MY EVENTS
-            </p>
+                    <p class="event-section-eyebrow">
+                        MY EVENTS
+                    </p>
 
-            <h2>
-                参加中のイベント
-            </h2>
+                    <h2>
+                        参加中のイベント
+                    </h2>
 
-        </div>
-
-
-        <div class="event-card-list">
-
-            {% for event in events %}
-
-                <a
-                    href="{% url 'event_scheduler:event_detail' event.id %}"
-                    class="event-list-card"
-                >
-
-                    <!-- =====================================
-                         Main
-                         ===================================== -->
-
-                    <div class="event-list-card-main">
-
-                        <div class="event-list-card-icon">
-                            {{ event.auto_icon }}
-                        </div>
+                </div>
 
 
-                        <div class="event-list-card-content">
+                <div class="event-card-list">
 
-                            <h3>
-                                {{ event.title }}
-                            </h3>
+                    {% for event in events %}
 
+                        <a
+                            href="{% url 'event_scheduler:event_detail' event.id %}"
+                            class="event-list-card"
+                        >
 
-                            <!-- =============================
-                                 Meta
-                                 ============================= -->
+                            <!-- =====================================
+                                Main
+                                ===================================== -->
 
-                            <div class="event-list-card-meta">
+                            <div class="event-list-card-main">
 
-                                {% if event.location %}
-
-                                    <span>
-                                        📍 {{ event.location }}
-                                    </span>
-
-                                {% endif %}
+                                <div class="event-list-card-icon">
+                                    {{ event.auto_icon }}
+                                </div>
 
 
-                                <span>
-                                    📅
-                                    {{ event.get_scheduling_mode_display }}
-                                </span>
+                                <div class="event-list-card-content">
+
+                                    <h3>
+                                        {{ event.title }}
+                                    </h3>
 
 
-                                {% if event.duration_mode == "none" %}
+                                    <!-- =============================
+                                        Meta
+                                        ============================= -->
 
-                                    <span>
-                                        ⏱ 長さ指定なし
-                                    </span>
+                                    <div class="event-list-card-meta">
 
-                                {% elif event.duration_mode == "fixed" %}
+                                        {% if event.location %}
 
-                                    <span>
-                                        ⏱ {{ event.duration_minutes }}分
-                                    </span>
+                                            <span>
+                                                📍 {{ event.location }}
+                                            </span>
 
-                                {% elif event.duration_mode == "vote" %}
+                                        {% endif %}
 
-                                    <span>
-                                        🗳 長さもみんなで決定
-                                    </span>
 
-                                {% endif %}
+                                        <span>
+                                            📅
+                                            {{ event.get_scheduling_mode_display }}
+                                        </span>
+
+
+                                        {% if event.duration_mode == "none" %}
+
+                                            <span>
+                                                ⏱ 長さ指定なし
+                                            </span>
+
+                                        {% elif event.duration_mode == "fixed" %}
+
+                                            <span>
+                                                ⏱ {{ event.duration_minutes }}分
+                                            </span>
+
+                                        {% elif event.duration_mode == "vote" %}
+
+                                            <span>
+                                                🗳 長さもみんなで決定
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <!-- =============================
+                                        Deadline
+                                        ============================= -->
+
+                                    {% if event.response_deadline %}
+
+                                        <div class="event-list-deadline">
+
+                                            回答締切：
+                                            {{ event.response_deadline|date:"n月j日" }}
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    <!-- =============================
+                                        Description
+                                        ============================= -->
+
+                                    {% if event.description %}
+
+                                        <p class="event-list-description">
+                                            {{ event.description|truncatechars:90 }}
+                                        </p>
+
+                                    {% endif %}
+
+                                </div>
 
                             </div>
 
 
-                            <!-- =============================
-                                 Deadline
-                                 ============================= -->
+                            <!-- =====================================
+                                Right side
+                                ===================================== -->
 
-                            {% if event.response_deadline %}
+                            <div class="event-list-card-side">
 
-                                <div class="event-list-deadline">
+                                {% if event.is_public %}
 
-                                    回答締切：
-                                    {{ event.response_deadline|date:"n月j日" }}
+                                    <span class="event-status-pill public">
+                                        公開
+                                    </span>
 
-                                </div>
+                                {% else %}
 
-                            {% endif %}
+                                    <span class="event-status-pill private">
+                                        招待制
+                                    </span>
+
+                                {% endif %}
 
 
-                            <!-- =============================
-                                 Description
-                                 ============================= -->
+                                <span class="event-card-arrow">
+                                    ›
+                                </span>
 
-                            {% if event.description %}
+                            </div>
 
-                                <p class="event-list-description">
-                                    {{ event.description|truncatechars:90 }}
-                                </p>
+                        </a>
 
-                            {% endif %}
+                    {% empty %}
+
+                        <div class="event-empty-card">
+
+                            <div class="event-empty-icon">
+                                🗓️
+                            </div>
+
+                            <h3>
+                                まだイベントがありません
+                            </h3>
+
+                            <a
+                                href="{% url 'event_scheduler:event_create' %}"
+                                class="event-secondary-button"
+                            >
+                                ＋ イベントを作成
+                            </a>
 
                         </div>
 
-                    </div>
-
-
-                    <!-- =====================================
-                         Right side
-                         ===================================== -->
-
-                    <div class="event-list-card-side">
-
-                        {% if event.is_public %}
-
-                            <span class="event-status-pill public">
-                                公開
-                            </span>
-
-                        {% else %}
-
-                            <span class="event-status-pill private">
-                                招待制
-                            </span>
-
-                        {% endif %}
-
-
-                        <span class="event-card-arrow">
-                            ›
-                        </span>
-
-                    </div>
-
-                </a>
-
-            {% empty %}
-
-                <div class="event-empty-card">
-
-                    <div class="event-empty-icon">
-                        🗓️
-                    </div>
-
-                    <h3>
-                        まだイベントがありません
-                    </h3>
-
-                    <a
-                        href="{% url 'event_scheduler:event_create' %}"
-                        class="event-secondary-button"
-                    >
-                        ＋ イベントを作成
-                    </a>
+                    {% endfor %}
 
                 </div>
 
-            {% endfor %}
+            </section>
 
-        </div>
-
-    </section>
-
+        {% endif %}
 
     <!-- =====================================================
          Public events
@@ -481,7 +494,7 @@
                          ===================================== -->
 
                     <a
-                        href="{% url 'event_scheduler:event_detail' event.id %}"
+                        href="{% if request.user.is_authenticated %}{% url 'event_scheduler:event_detail' event.id %}{% else %}{% url 'event_scheduler:guest_event_detail' event.share_token %}{% endif %}"
                         class="event-list-card-main"
                     >
 
@@ -566,22 +579,39 @@
                          Join
                          ===================================== -->
 
-                    <form
-                        method="post"
-                        action="{% url 'event_scheduler:join_event' event.id %}"
-                        class="event-list-join-form"
-                    >
+                                        
+                    {% if request.user.is_authenticated %}
 
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="event-join-button"
+                        <form
+                            method="post"
+                            action="{% url 'event_scheduler:join_event' event.id %}"
+                            class="event-list-join-form"
                         >
-                            参加する
-                        </button>
+                            {% csrf_token %}
 
-                    </form>
+                            <button
+                                type="submit"
+                                class="event-join-button"
+                            >
+                                参加する
+                            </button>
+                        </form>
+
+                    {% else %}
+
+                        <div class="event-list-join-form">
+
+                            <a
+                                href="{% url 'event_scheduler:guest_event_detail' event.share_token %}"
+                                class="event-join-button"
+                            >
+                                回答する
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
 
                 </div>
 
@@ -610,6 +640,7 @@
          Archive shortcut
          ===================================================== -->
 
+    {% if request.user.is_authenticated %}
     <section class="event-list-archive-shortcut">
 
         <div>
@@ -642,6 +673,7 @@
         </a>
 
     </section>
+    {% endif %}
 
 </div>
 

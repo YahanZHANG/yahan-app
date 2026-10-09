@@ -383,7 +383,7 @@
     bottom: 12px;
     left: 12px;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     max-width: 620px;
     margin: 0 auto;
     padding: 7px;
@@ -4801,6 +4801,31 @@
 
     .news-about-share-button {
         width: 100%;
+    }
+
+}
+
+
+/* =========================================================
+   News mobile navigation - five items
+   ========================================================= */
+
+.news-bottom-nav .news-nav-item {
+    min-width: 0;
+}
+
+.news-bottom-nav .news-nav-item > span:last-child {
+    white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+
+    .news-bottom-nav .news-nav-item {
+        font-size: .53rem;
+    }
+
+    .news-bottom-nav .news-nav-icon {
+        font-size: 1.05rem;
     }
 
 }

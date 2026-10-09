@@ -51,71 +51,30 @@ from .models import (
 )
 
 
+
 # =========================================================
 # Event list
 # =========================================================
 
-@login_required
-def event_list(
-    request,
-):
+def event_list(request):
 
-    # =========================================================
-    # My joined events
-    # =========================================================
+    # =====================================================
+    # Defaults for anonymous users
+    # =====================================================
 
-    events = (
-        Event.objects
-        .filter(
-            participants__user=request.user,
-            participants__status=EventParticipant.Status.JOINED,
-            is_archived=False,
-        )
-        .distinct()
-    )
-
-
-    # =========================================================
-    # Participant invitations
-    # =========================================================
+    events = Event.objects.none()
 
     pending_participant_invitations = (
-        EventParticipant.objects
-        .filter(
-            user=request.user,
-            status=EventParticipant.Status.INVITED,
-            event__is_archived=False,
-        )
-        .select_related(
-            "event",
-        )
-        .order_by(
-            "-updated_at",
-        )
+        EventParticipant.objects.none()
     )
 
-
-    # =========================================================
-    # Public events
-    #
-    # JOINED / INVITED のイベントはDISCOVERに重複表示しない
-    # =========================================================
-
-    hidden_public_event_ids = (
-        EventParticipant.objects
-        .filter(
-            user=request.user,
-            status__in=[
-                EventParticipant.Status.JOINED,
-                EventParticipant.Status.INVITED,
-            ],
-        )
-        .values_list(
-            "event_id",
-            flat=True,
-        )
+    pending_admin_invitations = (
+        EventAdminInvitation.objects.none()
     )
 
+    # =====================================================
+    # Public events: available to everyone
+    # =====================================================
 
     public_events = (
         Event.objects
@@ -123,54 +82,91 @@ def event_list(
             is_public=True,
             is_archived=False,
         )
-        .exclude(
-            id__in=hidden_public_event_ids,
-        )
         .distinct()
     )
 
+    # =====================================================
+    # Logged-in users
+    # =====================================================
 
-    # =========================================================
-    # Admin invitations
-    # =========================================================
+    if request.user.is_authenticated:
 
-    pending_admin_invitations = (
-        EventAdminInvitation.objects
-        .filter(
-            invited_user=request.user,
-            status=EventAdminInvitation.Status.PENDING,
+        # My joined events
+
+        events = (
+            Event.objects
+            .filter(
+                participants__user=request.user,
+                participants__status=EventParticipant.Status.JOINED,
+                is_archived=False,
+            )
+            .distinct()
         )
-        .select_related(
-            "event",
-            "invited_by",
-        )
-        .order_by(
-            "-created_at",
-        )
-    )
 
+        # Participant invitations
 
-    # =========================================================
+        pending_participant_invitations = (
+            EventParticipant.objects
+            .filter(
+                user=request.user,
+                status=EventParticipant.Status.INVITED,
+                event__is_archived=False,
+            )
+            .select_related("event")
+            .order_by("-updated_at")
+        )
+
+        # Avoid duplicate public events
+
+        hidden_public_event_ids = (
+            EventParticipant.objects
+            .filter(
+                user=request.user,
+                status__in=[
+                    EventParticipant.Status.JOINED,
+                    EventParticipant.Status.INVITED,
+                ],
+            )
+            .values_list(
+                "event_id",
+                flat=True,
+            )
+        )
+
+        public_events = public_events.exclude(
+            id__in=hidden_public_event_ids
+        )
+
+        # Admin invitations
+
+        pending_admin_invitations = (
+            EventAdminInvitation.objects
+            .filter(
+                invited_user=request.user,
+                status=EventAdminInvitation.Status.PENDING,
+            )
+            .select_related(
+                "event",
+                "invited_by",
+            )
+            .order_by("-created_at")
+        )
+
+    # =====================================================
     # Render
-    # =========================================================
+    # =====================================================
 
     return render(
         request,
         "event_scheduler/event_list.html",
         {
-            "events":
-                events,
-
-            "public_events":
-                public_events,
-
-            "pending_admin_invitations":
-                pending_admin_invitations,
-
-            "pending_participant_invitations":
-                pending_participant_invitations,
+            "events": events,
+            "public_events": public_events,
+            "pending_admin_invitations": pending_admin_invitations,
+            "pending_participant_invitations": pending_participant_invitations,
         },
     )
+
 
 # =========================================================
 # Archived event list
