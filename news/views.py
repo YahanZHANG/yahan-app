@@ -1479,11 +1479,6 @@ def bitcoin_qr(request):
 
 def services(request):
 
-    if request.user.is_authenticated:
-        return redirect(
-            "portal:home"
-        )
-    
     return render(
         request,
         "news/services.html",

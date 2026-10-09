@@ -383,7 +383,7 @@
     bottom: 12px;
     left: 12px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     max-width: 620px;
     margin: 0 auto;
     padding: 7px;
@@ -4134,7 +4134,7 @@
 .news-services {
     width: 100%;
     max-width: 960px;
-    margin: 0 auto;
+    margin: 0 auto 0 0;
 }
 
 
@@ -4561,6 +4561,246 @@
 
     .news-service-card-link:hover::after {
         transform: none;
+    }
+
+}
+
+/* Mobile bottom navigation: four items */
+
+.news-bottom-nav .news-nav-item {
+    min-width: 0;
+}
+
+.news-bottom-nav .news-nav-item > span:last-child {
+    white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+    .news-bottom-nav .news-nav-item {
+        font-size: .58rem;
+    }
+}
+
+
+/* =========================================================
+   ABOUT YAPP - October 2026
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   Swiss News information
+   --------------------------------------------------------- */
+
+.news-about-info-list {
+    display: grid;
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.news-about-info-item {
+    padding-bottom: 18px;
+    border-bottom: 1px solid #edf0ed;
+}
+
+.news-about-info-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.news-about-info-item h4 {
+    margin: 0 0 9px;
+    color: #465a50;
+    font-size: .87rem;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.news-about-info-item p {
+    margin: 0 0 8px;
+    color: #6b7770;
+    font-size: .82rem;
+    line-height: 1.8;
+}
+
+
+/* ---------------------------------------------------------
+   Yapp services link
+   --------------------------------------------------------- */
+
+.news-about-services-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    padding: 19px 20px;
+    border: 1px solid #dfe8e1;
+    border-radius: 17px;
+    background: #f5f9f5;
+    color: #456653;
+    text-decoration: none;
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+.news-about-services-link:hover {
+    background: #eaf3ec;
+    color: #365642;
+    transform: translateY(-1px);
+}
+
+.news-about-services-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.news-about-services-copy strong {
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.news-about-services-copy small {
+    color: #81938a;
+    font-size: .72rem;
+    line-height: 1.6;
+}
+
+.news-about-services-arrow {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    transition: transform .18s ease;
+}
+
+.news-about-services-link:hover
+.news-about-services-arrow {
+    transform: translateX(3px);
+}
+
+
+/* ---------------------------------------------------------
+   Share button
+   --------------------------------------------------------- */
+
+.news-about-share {
+    margin: 20px 0 22px;
+}
+
+.news-about-share-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 11px 19px;
+    border: 0;
+    border-radius: 13px;
+    background: #607c6e;
+    color: #fff;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+.news-about-share-button:hover {
+    background: #4f6c5d;
+    transform: translateY(-1px);
+}
+
+.news-about-share-feedback {
+    margin: 9px 0 0 !important;
+    color: #53826a !important;
+    font-size: .73rem !important;
+    line-height: 1.6 !important;
+}
+
+.news-about-share-feedback:empty {
+    display: none;
+}
+
+.news-share-fallback-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #d8e2db;
+    border-radius: 10px;
+    background: #fff;
+    color: #465a50;
+    font: inherit;
+    font-size: .78rem;
+}
+
+
+/* ---------------------------------------------------------
+   Discreet support disclosure
+   --------------------------------------------------------- */
+
+.news-about-support-details {
+    margin-top: 18px;
+    border-top: 1px solid #e6ebe7;
+}
+
+.news-about-support-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 0;
+    color: #87928b;
+    font-size: .76rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.news-about-support-details
+> summary::-webkit-details-marker {
+    display: none;
+}
+
+.news-about-support-details > summary span {
+    font-size: 1rem;
+    transition: transform .2s ease;
+}
+
+.news-about-support-details[open]
+> summary span {
+    transform: rotate(180deg);
+}
+
+.news-about-support-details-body {
+    padding: 0 0 12px;
+}
+
+.news-about-support-details .news-support-methods {
+    margin-top: 8px;
+}
+
+
+/* ---------------------------------------------------------
+   Mobile
+   --------------------------------------------------------- */
+
+@media (max-width: 600px) {
+
+    .news-about-info-list {
+        gap: 17px;
+        margin-top: 19px;
+    }
+
+    .news-about-services-link {
+        padding: 16px;
+    }
+
+    .news-about-share-button {
+        width: 100%;
     }
 
 }

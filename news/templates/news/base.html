@@ -56,7 +56,7 @@ page-content news-site-container
 
                 </div>
 
-
+         
                 <nav class="news-desktop-nav">
 
                     <a
@@ -69,7 +69,6 @@ page-content news-site-container
                         HOME
                     </a>
 
-
                     <a
                         href="{% url 'news:topic_list' %}"
                         class="news-desktop-nav-item
@@ -79,7 +78,6 @@ page-content news-site-container
                     >
                         探す
                     </a>
-
 
                     <a
                         href="{% url 'news:digest_list' %}"
@@ -91,7 +89,6 @@ page-content news-site-container
                         過去のまとめ
                     </a>
 
-
                     <a
                         href="{% url 'news:settings' %}"
                         class="news-desktop-nav-item
@@ -102,29 +99,18 @@ page-content news-site-container
                         設定
                     </a>
 
-                    {% if not request.user.is_authenticated %}
-                    <a
-                        href="{% url 'news:services' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'services' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        他のサービス
-                    </a>
-                    {% endif %}
-
                     <a
                         href="{% url 'news:about' %}"
                         class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'about' %}
+                        {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
                             is-active
                         {% endif %}"
                     >
-                        このサービスについて
+                        Yappについて
                     </a>
 
                 </nav>
+
 
             </div>
 
@@ -230,35 +216,10 @@ page-content news-site-container
             </span>
 
             <span>
-                まとめ
+                過去のまとめ
             </span>
 
         </a>
-
-        <!-- =========================
-            サービス
-        ========================= -->
-
-        <a
-            href="{% url 'news:services' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'services' %}
-                    is-active
-                {% endif %}
-            "
-        >
-
-            <span class="news-nav-icon">
-                ✦
-            </span>
-
-            <span>
-                サービス
-            </span>
-
-        </a>
-
 
         <!-- =========================
              設定
