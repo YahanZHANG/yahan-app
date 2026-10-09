@@ -5554,3 +5554,27 @@ def event_settings_edit(request, event_id):
             "form": form,
         },
     )
+
+from django.contrib.auth.views import redirect_to_login
+
+
+def event_detail_entry(request, event_id):
+
+    event = get_object_or_404(
+        Event,
+        pk=event_id,
+    )
+
+    # ログイン済みなら既存の詳細画面
+    if request.user.is_authenticated:
+        return event_detail(request, event_id)
+
+    # 未ログインかつ公開イベントならゲスト画面
+    if event.is_public and not event.is_archived:
+        return redirect(
+            "event_scheduler:guest_event_detail",
+            share_token=event.share_token,
+        )
+
+    # 非公開イベントはログインが必要
+    return redirect_to_login(request.get_full_path())

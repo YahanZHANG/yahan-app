@@ -166,6 +166,12 @@ urlpatterns = [
     ),
 
     path(
+        "<int:event_id>/",
+        views.event_detail_entry,
+        name="event_detail",
+    ),
+
+    path(
         "<int:event_id>/settings/",
         views.event_settings_edit,
         name="event_settings_edit",
