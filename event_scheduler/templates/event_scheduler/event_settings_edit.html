@@ -1,0 +1,214 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+イベント設定 | Yapp
+{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+<div class="event-response-page">
+
+    <header class="event-response-header">
+
+        <a
+            href="{% url 'event_scheduler:event_detail' event.id %}"
+            class="event-response-back"
+        >
+            ← イベントに戻る
+        </a>
+
+        <p class="event-section-eyebrow">
+            EVENT SETTINGS
+        </p>
+
+        <h1>イベント設定</h1>
+
+        <p class="event-settings-subtitle">
+            {{ event.title }}
+        </p>
+
+    </header>
+
+
+    <form method="post" class="event-settings-form">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="event-response-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+
+        <!-- Basic information -->
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">BASIC</p>
+                <h2>基本情報</h2>
+            </div>
+
+            <div class="event-settings-fields">
+
+                <div class="event-settings-field">
+                    <label for="{{ form.title.id_for_label }}">
+                        イベント名
+                    </label>
+                    {{ form.title }}
+                    {{ form.title.errors }}
+                </div>
+
+                <div class="event-settings-field">
+                    <label for="{{ form.description.id_for_label }}">
+                        説明
+                    </label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+                </div>
+
+                <div class="event-settings-field">
+                    <label for="{{ form.location.id_for_label }}">
+                        場所
+                    </label>
+                    {{ form.location }}
+                    {{ form.location.errors }}
+                </div>
+
+                <div class="event-settings-field">
+                    <label for="{{ form.response_deadline.id_for_label }}">
+                        回答期限
+                    </label>
+                    {{ form.response_deadline }}
+                    {{ form.response_deadline.errors }}
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Visibility -->
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">VISIBILITY</p>
+                <h2>公開設定</h2>
+            </div>
+
+            <label class="event-settings-toggle">
+                {{ form.is_public }}
+
+                <span>
+                    <strong>イベントを公開する</strong>
+                    <small>
+                        公開すると、ログインユーザーの
+                        イベント一覧から見つけられます。
+                    </small>
+                </span>
+            </label>
+
+            {{ form.is_public.errors }}
+
+            <p class="event-settings-note">
+                非公開でも、ゲスト用共有リンクを知っている人は
+                イベントを閲覧・回答できます。
+            </p>
+
+        </section>
+
+
+        <!-- Candidate permissions -->
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">PARTICIPANTS</p>
+                <h2>参加者による候補追加</h2>
+                <small>
+                    途中でOFFにしても、追加済みの候補は残ります。
+                </small>
+            </div>
+
+            <div class="event-settings-toggle-list">
+
+                <label class="event-settings-toggle">
+                    {{ form.allow_participant_date_addition }}
+
+                    <span>
+                        <strong>候補日の追加を許可</strong>
+                        <small>
+                            参加者が新しい日程を提案できます。
+                        </small>
+                    </span>
+                </label>
+
+                {% if form.allow_participant_time_option_addition %}
+
+                    <label class="event-settings-toggle">
+                        {{ form.allow_participant_time_option_addition }}
+
+                        <span>
+                            <strong>時間帯の追加を許可</strong>
+                            <small>
+                                参加者が時間帯の選択肢を追加できます。
+                            </small>
+                        </span>
+                    </label>
+
+                {% endif %}
+
+                {% if form.allow_participant_duration_addition %}
+
+                    <label class="event-settings-toggle">
+                        {{ form.allow_participant_duration_addition }}
+
+                        <span>
+                            <strong>長さの候補追加を許可</strong>
+                            <small>
+                                参加者が新しい所要時間を提案できます。
+                            </small>
+                        </span>
+                    </label>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Save -->
+
+        <div class="event-response-submit-panel">
+
+            <button
+                type="submit"
+                class="event-primary-button event-save-button"
+            >
+                設定を保存
+            </button>
+
+            <a
+                href="{% url 'event_scheduler:event_detail' event.id %}"
+                class="event-secondary-button"
+            >
+                キャンセル
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

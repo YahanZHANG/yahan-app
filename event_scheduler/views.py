@@ -2,8 +2,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from django.db.models import Max
+from django.db.models import Max, Q
 from travel.models import UserProfile
+from django.views.decorators.http import require_http_methods
+
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+)
+
 
 from django.db import transaction
 from django.shortcuts import (
@@ -20,6 +27,7 @@ from .forms import (
     EventAdminInviteForm,
     EventDateForm,
     EventForm,
+    EventSettingsForm,
     EventParticipantInviteForm,
 )
 
@@ -34,6 +42,7 @@ from .models import (
     EventDateVote,
     EventDurationOption,
     EventDurationVote,
+    EventGuestParticipant,
     EventParticipant,
     EventStartTimeOption,
     EventStartTimeVote,
@@ -932,6 +941,309 @@ def event_create(request):
 
 
 # =========================================================
+# Shared event results
+# Logged-in users + guests
+# =========================================================
+
+def build_event_results(event):
+
+    candidate_dates = list(
+        event.candidate_dates.all().order_by("date", "id")
+    )
+
+    joined_count = EventParticipant.objects.filter(
+        event=event,
+        status=EventParticipant.Status.JOINED,
+    ).count()
+
+    guest_count = EventGuestParticipant.objects.filter(
+        event=event,
+    ).filter(
+        Q(date_votes__isnull=False)
+        | Q(time_option_votes__isnull=False)
+        | Q(start_time_votes__isnull=False)
+        | Q(date_responses__isnull=False)
+    ).distinct().count()
+
+    participant_count = joined_count + guest_count
+
+    user_ids = EventParticipant.objects.filter(
+        event=event,
+        status=EventParticipant.Status.JOINED,
+    ).values_list("user_id", flat=True)
+
+    nickname_map = dict(
+        UserProfile.objects.filter(
+            user_id__in=user_ids,
+        ).values_list("user_id", "nickname")
+    )
+
+    def display_name(item):
+
+        if item.guest_id:
+            return item.guest.display_name
+
+        if item.user_id:
+            nickname = (
+                nickname_map.get(item.user_id, "") or ""
+            ).strip()
+
+            return nickname or item.user.get_username()
+
+        return "不明"
+
+    def vote_breakdown(queryset):
+
+        groups = {
+            "yes": [],
+            "maybe": [],
+            "no": [],
+        }
+
+        for vote in queryset.select_related("user", "guest"):
+
+            if vote.status in groups:
+                groups[vote.status].append(
+                    display_name(vote)
+                )
+
+        for names in groups.values():
+            names.sort(key=str.casefold)
+
+        return {
+            "yes_count": len(groups["yes"]),
+            "maybe_count": len(groups["maybe"]),
+            "no_count": len(groups["no"]),
+            "yes_users": groups["yes"],
+            "maybe_users": groups["maybe"],
+            "no_users": groups["no"],
+        }
+
+    result_rows = []
+
+    # -----------------------------------------------------
+    # Date only
+    # -----------------------------------------------------
+
+    if event.scheduling_mode == Event.SchedulingMode.DATE_ONLY:
+
+        for candidate in candidate_dates:
+
+            breakdown = vote_breakdown(
+                EventDateVote.objects.filter(
+                    event_date=candidate,
+                )
+            )
+
+            result_rows.append({
+                "date": candidate.date,
+                "label": "",
+                "start_time": None,
+                "end_time": None,
+                **breakdown,
+            })
+
+    # -----------------------------------------------------
+    # Time options
+    # -----------------------------------------------------
+
+    elif event.scheduling_mode == Event.SchedulingMode.TIME_OPTIONS:
+
+        options = event.time_options.all().order_by(
+            "order", "id"
+        )
+
+        for candidate in candidate_dates:
+            for option in options:
+
+                breakdown = vote_breakdown(
+                    EventTimeOptionVote.objects.filter(
+                        event_date=candidate,
+                        time_option=option,
+                    )
+                )
+
+                result_rows.append({
+                    "date": candidate.date,
+                    "label": option.label,
+                    "start_time": option.start_time,
+                    "end_time": option.end_time,
+                    **breakdown,
+                })
+
+    # -----------------------------------------------------
+    # Start times
+    # -----------------------------------------------------
+
+    elif event.scheduling_mode == Event.SchedulingMode.START_TIMES:
+
+        options = (
+            EventStartTimeOption.objects.filter(
+                event_date__event=event,
+            )
+            .select_related("event_date")
+            .order_by(
+                "event_date__date",
+                "start_time",
+                "id",
+            )
+        )
+
+        for option in options:
+
+            breakdown = vote_breakdown(
+                EventStartTimeVote.objects.filter(
+                    start_time_option=option,
+                )
+            )
+
+            result_rows.append({
+                "date": option.event_date.date,
+                "label": "",
+                "start_time": option.start_time,
+                "end_time": None,
+                **breakdown,
+            })
+
+    # -----------------------------------------------------
+    # Free input
+    # -----------------------------------------------------
+
+    elif event.scheduling_mode == Event.SchedulingMode.FREE_INPUT:
+
+        for candidate in candidate_dates:
+
+            groups = {
+                "yes": [],
+                "maybe": [],
+                "no": [],
+            }
+
+            responses = (
+                EventDateResponse.objects.filter(
+                    event_date=candidate,
+                )
+                .select_related("user", "guest")
+            )
+
+            for response in responses:
+
+                if response.response_type == (
+                    EventDateResponse.ResponseType.ALL_DAY
+                ):
+                    key = "yes"
+
+                elif response.response_type == (
+                    EventDateResponse.ResponseType.PARTIAL
+                ):
+                    key = "maybe"
+
+                elif response.response_type == (
+                    EventDateResponse.ResponseType.UNAVAILABLE
+                ):
+                    key = "no"
+
+                else:
+                    continue
+
+                groups[key].append(
+                    display_name(response)
+                )
+
+            for names in groups.values():
+                names.sort(key=str.casefold)
+
+            result_rows.append({
+                "date": candidate.date,
+                "label": "",
+                "start_time": None,
+                "end_time": None,
+                "yes_count": len(groups["yes"]),
+                "maybe_count": len(groups["maybe"]),
+                "no_count": len(groups["no"]),
+                "yes_users": groups["yes"],
+                "maybe_users": groups["maybe"],
+                "no_users": groups["no"],
+            })
+
+    # =====================================================
+    # Recommended Top 3
+    # =====================================================
+
+    answered_rows = [
+        row for row in result_rows
+        if (
+            row["yes_count"]
+            + row["maybe_count"]
+            + row["no_count"]
+        ) > 0
+    ]
+
+    for row in answered_rows:
+        row["recommendation_score"] = (
+            row["yes_count"] * 2
+            + row["maybe_count"]
+            - row["no_count"] * 2
+        )
+
+    top_result_rows = sorted(
+        answered_rows,
+        key=lambda row: (
+            row["recommendation_score"],
+            row["yes_count"],
+            -row["no_count"],
+            row["maybe_count"],
+        ),
+        reverse=True,
+    )[:3]
+
+    # =====================================================
+    # Duration results
+    # =====================================================
+
+    duration_result_rows = []
+
+    if event.duration_mode == Event.DurationMode.VOTE:
+
+        for option in event.duration_options.all().order_by(
+            "minutes", "id"
+        ):
+
+            votes = list(
+                EventDurationVote.objects.filter(
+                    duration_option=option,
+                ).select_related("user", "guest")
+            )
+
+            voters = sorted(
+                [display_name(vote) for vote in votes],
+                key=str.casefold,
+            )
+
+            vote_count = len(voters)
+
+            vote_percent = (
+                round(vote_count / participant_count * 100)
+                if participant_count
+                else 0
+            )
+
+            duration_result_rows.append({
+                "option": option,
+                "vote_count": vote_count,
+                "vote_percent": vote_percent,
+                "voters": voters,
+            })
+
+    return {
+        "joined_participant_count": participant_count,
+        "result_rows": result_rows,
+        "top_result_rows": top_result_rows,
+        "duration_result_rows": duration_result_rows,
+    }
+
+
+# =========================================================
 # Event detail
 # =========================================================
 
@@ -1061,549 +1373,31 @@ def event_detail(
 
 
     # =========================================================
-    # Joined participant count
-    # =========================================================
-
-    joined_participant_count = (
-        EventParticipant.objects
-        .filter(
-            event=event,
-            status=EventParticipant.Status.JOINED,
-        )
-        .count()
-    )
-
-
-    # =========================================================
-    # Participant display names
-    # =========================================================
-
-    event_user_ids = (
-        EventParticipant.objects
-        .filter(
-            event=event,
-            status=EventParticipant.Status.JOINED,
-        )
-        .values_list(
-            "user_id",
-            flat=True,
-        )
-    )
-
-
-    nickname_map = dict(
-        UserProfile.objects
-        .filter(
-            user_id__in=event_user_ids,
-        )
-        .values_list(
-            "user_id",
-            "nickname",
-        )
-    )
-
-
-    def get_event_user_name(
-        user,
-    ):
-
-        nickname = (
-            nickname_map.get(
-                user.id,
-                "",
-            )
-            or ""
-        ).strip()
-
-
-        if nickname:
-
-            return nickname
-
-
-        return user.get_username()
-
-
-    # =========================================================
-    # Result data
-    #
-    # 回答済みのユーザーだけに作成する
+    # Shared results
     # =========================================================
 
     result_rows = []
     top_result_rows = []
     duration_result_rows = []
 
-
-    def get_vote_breakdown(
-        queryset,
-    ):
-
-        users = {
-            "yes": [],
-            "maybe": [],
-            "no": [],
-        }
-
-
-        votes = (
-            queryset
-            .select_related(
-                "user",
-            )
-        )
-
-
-        for vote in votes:
-
-            if vote.status not in users:
-                continue
-
-
-            users[
-                vote.status
-            ].append(
-                get_event_user_name(
-                    vote.user
-                )
-            )
-
-
-        for status in users:
-
-            users[
-                status
-            ].sort(
-                key=str.casefold
-            )
-
-
-        return {
-            "yes_count":
-                len(
-                    users["yes"]
-                ),
-
-            "maybe_count":
-                len(
-                    users["maybe"]
-                ),
-
-            "no_count":
-                len(
-                    users["no"]
-                ),
-
-            "yes_users":
-                users["yes"],
-
-            "maybe_users":
-                users["maybe"],
-
-            "no_users":
-                users["no"],
-        }
-
-
-    # =========================================================
-    # Show results only after current user has answered
-    # =========================================================
+    joined_participant_count = (
+        EventParticipant.objects.filter(
+            event=event,
+            status=EventParticipant.Status.JOINED,
+        ).count()
+    )
 
     if has_answered:
 
-        # =====================================================
-        # Mode 1:
-        # Date only
-        # =====================================================
+        results = build_event_results(event)
 
-        if (
-            event.scheduling_mode
-            == Event.SchedulingMode.DATE_ONLY
-        ):
+        result_rows = results["result_rows"]
+        top_result_rows = results["top_result_rows"]
+        duration_result_rows = results["duration_result_rows"]
 
-            for candidate in candidate_dates:
-
-                breakdown = get_vote_breakdown(
-                    EventDateVote.objects.filter(
-                        event_date=candidate,
-                    )
-                )
-
-
-                result_rows.append(
-                    {
-                        "date":
-                            candidate.date,
-
-                        "label":
-                            "",
-
-                        "start_time":
-                            None,
-
-                        "end_time":
-                            None,
-
-                        **breakdown,
-                    }
-                )
-
-
-        # =====================================================
-        # Mode 2:
-        # Time options
-        # =====================================================
-
-        elif (
-            event.scheduling_mode
-            == Event.SchedulingMode.TIME_OPTIONS
-        ):
-
-            time_options = (
-                event.time_options
-                .all()
-                .order_by(
-                    "order",
-                    "id",
-                )
-            )
-
-
-            for candidate in candidate_dates:
-
-                for option in time_options:
-
-                    breakdown = get_vote_breakdown(
-                        EventTimeOptionVote.objects.filter(
-                            event_date=candidate,
-                            time_option=option,
-                        )
-                    )
-
-
-                    result_rows.append(
-                        {
-                            "date":
-                                candidate.date,
-
-                            "label":
-                                option.label,
-
-                            "start_time":
-                                option.start_time,
-
-                            "end_time":
-                                option.end_time,
-
-                            **breakdown,
-                        }
-                    )
-
-
-        # =====================================================
-        # Mode 3:
-        # Start times
-        # =====================================================
-
-        elif (
-            event.scheduling_mode
-            == Event.SchedulingMode.START_TIMES
-        ):
-
-            start_options = (
-                EventStartTimeOption.objects
-                .filter(
-                    event_date__event=event,
-                )
-                .select_related(
-                    "event_date",
-                )
-                .order_by(
-                    "event_date__date",
-                    "start_time",
-                    "id",
-                )
-            )
-
-
-            for option in start_options:
-
-                breakdown = get_vote_breakdown(
-                    EventStartTimeVote.objects.filter(
-                        start_time_option=option,
-                    )
-                )
-
-
-                result_rows.append(
-                    {
-                        "date":
-                            option.event_date.date,
-
-                        "label":
-                            "",
-
-                        "start_time":
-                            option.start_time,
-
-                        "end_time":
-                            None,
-
-                        **breakdown,
-                    }
-                )
-
-
-        # =====================================================
-        # Mode 4:
-        # Free input
-        # =====================================================
-
-        elif (
-            event.scheduling_mode
-            == Event.SchedulingMode.FREE_INPUT
-        ):
-
-            for candidate in candidate_dates:
-
-                responses = (
-                    EventDateResponse.objects
-                    .filter(
-                        event_date=candidate,
-                    )
-                    .select_related(
-                        "user",
-                    )
-                    .order_by(
-                        "user__username",
-                    )
-                )
-
-
-                yes_users = []
-
-                maybe_users = []
-
-                no_users = []
-
-
-                for response in responses:
-
-                    display_name = (
-                        get_event_user_name(
-                            response.user
-                        )
-                    )
-
-
-                    if (
-                        response.response_type
-                        ==
-                        EventDateResponse.ResponseType.ALL_DAY
-                    ):
-
-                        yes_users.append(
-                            display_name
-                        )
-
-
-                    elif (
-                        response.response_type
-                        ==
-                        EventDateResponse.ResponseType.PARTIAL
-                    ):
-
-                        maybe_users.append(
-                            display_name
-                        )
-
-
-                    elif (
-                        response.response_type
-                        ==
-                        EventDateResponse.ResponseType.UNAVAILABLE
-                    ):
-
-                        no_users.append(
-                            display_name
-                        )
-
-
-                yes_users.sort(
-                    key=str.casefold
-                )
-
-                maybe_users.sort(
-                    key=str.casefold
-                )
-
-                no_users.sort(
-                    key=str.casefold
-                )
-
-
-                result_rows.append(
-                    {
-                        "date":
-                            candidate.date,
-
-                        "label":
-                            "",
-
-                        "start_time":
-                            None,
-
-                        "end_time":
-                            None,
-
-                        "yes_count":
-                            len(
-                                yes_users
-                            ),
-
-                        "maybe_count":
-                            len(
-                                maybe_users
-                            ),
-
-                        "no_count":
-                            len(
-                                no_users
-                            ),
-
-                        "yes_users":
-                            yes_users,
-
-                        "maybe_users":
-                            maybe_users,
-
-                        "no_users":
-                            no_users,
-                    }
-                )
-
-        # =====================================================
-        # Recommended Top 3
-        # =====================================================
-
-        answered_result_rows = [
-            row
-            for row in result_rows
-            if (
-                row["yes_count"]
-                +
-                row["maybe_count"]
-                +
-                row["no_count"]
-            ) > 0
+        joined_participant_count = results[
+            "joined_participant_count"
         ]
-
-
-        for row in answered_result_rows:
-
-            row["recommendation_score"] = (
-                row["yes_count"] * 2
-                +
-                row["maybe_count"]
-                -
-                row["no_count"] * 2
-            )
-
-
-        top_result_rows = sorted(
-            answered_result_rows,
-            key=lambda row: (
-                row["recommendation_score"],
-                row["yes_count"],
-                -row["no_count"],
-                row["maybe_count"],
-            ),
-            reverse=True,
-        )[:3]
-
-        # =====================================================
-        # Duration results
-        # =====================================================
-
-        if (
-            event.duration_mode
-            == Event.DurationMode.VOTE
-        ):
-
-            for option in (
-                event.duration_options
-                .all()
-                .order_by(
-                    "minutes",
-                    "id",
-                )
-            ):
-
-                votes = list(
-                    EventDurationVote.objects
-                    .filter(
-                        duration_option=option,
-                    )
-                    .select_related(
-                        "user",
-                    )
-                    .order_by(
-                        "user__username",
-                    )
-                )
-
-
-                voters = [
-                    get_event_user_name(
-                        vote.user
-                    )
-                    for vote
-                    in votes
-                ]
-
-
-                voters.sort(
-                    key=str.casefold
-                )
-
-
-                vote_count = len(
-                    voters
-                )
-
-
-                if joined_participant_count:
-
-                    vote_percent = round(
-                        (
-                            vote_count
-                            /
-                            joined_participant_count
-                        )
-                        * 100
-                    )
-
-                else:
-
-                    vote_percent = 0
-
-
-                duration_result_rows.append(
-                    {
-                        "option":
-                            option,
-
-                        "vote_count":
-                            vote_count,
-
-                        "vote_percent":
-                            vote_percent,
-
-                        "voters":
-                            voters,
-                    }
-                )
-
 
     # =========================================================
     # Admin
@@ -1968,13 +1762,7 @@ def event_respond(
     # FREE_INPUT では候補日追加を常に許可
     can_add_date = (
         can_manage
-        or
-        event.allow_participant_date_addition
-        or
-        (
-            event.scheduling_mode
-            == Event.SchedulingMode.FREE_INPUT
-        )
+        or event.allow_participant_date_addition
     )
 
 
@@ -4616,4 +4404,1153 @@ def event_participant_invitation_cancel(
     return redirect(
         "event_scheduler:event_participants",
         event_id=event.id,
+    )
+
+
+
+# =========================================================
+# Guest event detail with results
+# =========================================================
+
+def guest_event_detail(request, share_token):
+
+    event = get_object_or_404(
+        Event,
+        share_token=share_token,
+        is_archived=False,
+    )
+
+    session_key = f"event_guest_{event.pk}"
+    guest_token = request.session.get(session_key)
+
+    guest = None
+
+    if guest_token:
+        guest = EventGuestParticipant.objects.filter(
+            event=event,
+            edit_token=guest_token,
+        ).first()
+
+    has_answered = False
+
+    if guest:
+
+        if event.scheduling_mode == Event.SchedulingMode.DATE_ONLY:
+
+            has_answered = EventDateVote.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            ).exists()
+
+        elif event.scheduling_mode == Event.SchedulingMode.TIME_OPTIONS:
+
+            has_answered = EventTimeOptionVote.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            ).exists()
+
+        elif event.scheduling_mode == Event.SchedulingMode.START_TIMES:
+
+            has_answered = EventStartTimeVote.objects.filter(
+                start_time_option__event_date__event=event,
+                guest=guest,
+            ).exists()
+
+        elif event.scheduling_mode == Event.SchedulingMode.FREE_INPUT:
+
+            has_answered = EventDateResponse.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            ).exists()
+
+    context = {
+        "event": event,
+        "guest": guest,
+        "has_answered": has_answered,
+        "result_rows": [],
+        "top_result_rows": [],
+        "duration_result_rows": [],
+    }
+
+    if has_answered:
+        context.update(
+            build_event_results(event)
+        )
+
+    return render(
+        request,
+        "event_scheduler/guest_event_detail.html",
+        context,
+    )
+
+
+# =========================================================
+# Guest event response
+# All four scheduling modes + duration voting
+# =========================================================
+
+@require_http_methods(["GET", "POST"])
+def guest_event_respond(request, share_token):
+
+    event = get_object_or_404(
+        Event,
+        share_token=share_token,
+        is_archived=False,
+    )
+
+    session_key = f"event_guest_{event.pk}"
+
+    guest = None
+    guest_token = request.session.get(session_key)
+
+    if guest_token:
+        guest = EventGuestParticipant.objects.filter(
+            event=event,
+            edit_token=guest_token,
+        ).first()
+
+    candidate_dates = list(
+        event.candidate_dates.all().order_by("date", "id")
+    )
+
+    time_options = list(
+        event.time_options.all().order_by("order", "id")
+    )
+
+    start_options = list(
+        EventStartTimeOption.objects.filter(
+            event_date__event=event,
+        )
+        .select_related("event_date")
+        .order_by(
+            "event_date__date",
+            "start_time",
+            "id",
+        )
+    )
+
+    duration_options = list(
+        event.duration_options.all().order_by(
+            "minutes",
+            "id",
+        )
+    )
+
+    errors = []
+    display_name = guest.display_name if guest else ""
+
+    # =====================================================
+    # Existing guest answers
+    # =====================================================
+
+    date_votes = {}
+    time_votes = {}
+    start_votes = {}
+    free_responses = {}
+    duration_votes = set()
+
+    if guest:
+
+        date_votes = {
+            vote.event_date_id: vote.status
+            for vote in EventDateVote.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            )
+        }
+
+        time_votes = {
+            (
+                vote.event_date_id,
+                vote.time_option_id,
+            ): vote.status
+            for vote in EventTimeOptionVote.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            )
+        }
+
+        start_votes = {
+            vote.start_time_option_id: vote.status
+            for vote in EventStartTimeVote.objects.filter(
+                start_time_option__event_date__event=event,
+                guest=guest,
+            )
+        }
+
+        free_responses = {
+            response.event_date_id: response
+            for response in EventDateResponse.objects.filter(
+                event_date__event=event,
+                guest=guest,
+            ).prefetch_related("windows")
+        }
+
+        duration_votes = set(
+            EventDurationVote.objects.filter(
+                duration_option__event=event,
+                guest=guest,
+            ).values_list(
+                "duration_option_id",
+                flat=True,
+            )
+        )
+
+    # =====================================================
+    # Helpers
+    # =====================================================
+
+    def read_status(field_name):
+
+        value = request.POST.get(
+            field_name,
+            "",
+        )
+
+        if value and value not in AvailabilityStatus.values:
+            errors.append(
+                "回答に不正な値が含まれています。"
+            )
+            return ""
+
+        return value
+
+    def normalize_time(value):
+
+        value = (value or "").strip()
+
+        if len(value) == 4 and value.isdigit():
+            value = f"{value[:2]}:{value[2:]}"
+
+        return value
+
+    # =====================================================
+    # POST validation
+    # =====================================================
+
+    posted_statuses = {}
+    posted_free = {}
+    posted_duration_ids = set()
+
+    if request.method == "POST":
+
+        display_name = request.POST.get(
+            "display_name",
+            "",
+        ).strip()
+
+        if not display_name:
+            errors.append(
+                "お名前を入力してください。"
+            )
+
+        if len(display_name) > 50:
+            errors.append(
+                "お名前は50文字以内にしてください。"
+            )
+
+        has_response = False
+
+        # -------------------------------------------------
+        # Mode 1: Date only
+        # -------------------------------------------------
+
+        if event.scheduling_mode == Event.SchedulingMode.DATE_ONLY:
+
+            for candidate in candidate_dates:
+
+                status = read_status(
+                    f"date_status_{candidate.id}"
+                )
+
+                posted_statuses[candidate.id] = status
+
+                if status:
+                    has_response = True
+
+        # -------------------------------------------------
+        # Mode 2: Time options
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == Event.SchedulingMode.TIME_OPTIONS:
+
+            for candidate in candidate_dates:
+
+                for option in time_options:
+
+                    status = read_status(
+                        f"time_option_status_{candidate.id}_{option.id}"
+                    )
+
+                    posted_statuses[
+                        (candidate.id, option.id)
+                    ] = status
+
+                    if status:
+                        has_response = True
+
+        # -------------------------------------------------
+        # Mode 3: Start times
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == Event.SchedulingMode.START_TIMES:
+
+            for option in start_options:
+
+                status = read_status(
+                    f"start_status_{option.id}"
+                )
+
+                posted_statuses[option.id] = status
+
+                if status:
+                    has_response = True
+
+        # -------------------------------------------------
+        # Mode 4: Free input
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == Event.SchedulingMode.FREE_INPUT:
+
+            for candidate in candidate_dates:
+
+                response_type = request.POST.get(
+                    f"response_type_{candidate.id}",
+                    "",
+                )
+
+                note = request.POST.get(
+                    f"note_{candidate.id}",
+                    "",
+                ).strip()
+
+                if response_type and response_type not in (
+                    EventDateResponse.ResponseType.values
+                ):
+                    errors.append(
+                        f"{candidate.date} の回答が正しくありません。"
+                    )
+                    response_type = ""
+
+                if len(note) > 255:
+                    errors.append(
+                        f"{candidate.date} のメモは255文字以内にしてください。"
+                    )
+
+                windows = []
+
+                if response_type == (
+                    EventDateResponse.ResponseType.PARTIAL
+                ):
+
+                    starts = request.POST.getlist(
+                        f"free_start_{candidate.id}"
+                    )
+
+                    ends = request.POST.getlist(
+                        f"free_end_{candidate.id}"
+                    )
+
+                    if len(starts) != len(ends) or len(starts) > 20:
+                        errors.append(
+                            f"{candidate.date} の時間入力が正しくありません。"
+                        )
+
+                    else:
+                        for start, end in zip(starts, ends):
+
+                            start = normalize_time(start)
+                            end = normalize_time(end)
+
+                            if not start and not end:
+                                continue
+
+                            parsed_start = parse_time(start)
+                            parsed_end = parse_time(end)
+
+                            if (
+                                parsed_start is None
+                                or parsed_end is None
+                                or parsed_end <= parsed_start
+                            ):
+                                errors.append(
+                                    f"{candidate.date} の時間帯を正しく入力してください。"
+                                )
+                                continue
+
+                            windows.append(
+                                (parsed_start, parsed_end)
+                            )
+
+                    if not windows:
+                        errors.append(
+                            f"{candidate.date} の空き時間を入力してください。"
+                        )
+
+                posted_free[candidate.id] = {
+                    "response_type": response_type,
+                    "note": note,
+                    "windows": windows,
+                }
+
+                if response_type:
+                    has_response = True
+
+        else:
+            errors.append(
+                "未対応の日程調整方式です。"
+            )
+
+        # -------------------------------------------------
+        # Duration voting
+        # -------------------------------------------------
+
+        if event.duration_mode == Event.DurationMode.VOTE:
+
+            valid_duration_ids = {
+                option.id for option in duration_options
+            }
+
+            for raw_id in request.POST.getlist(
+                "duration_option"
+            ):
+
+                try:
+                    option_id = int(raw_id)
+                except (TypeError, ValueError):
+                    errors.append(
+                        "イベントの長さの回答が正しくありません。"
+                    )
+                    continue
+
+                if option_id not in valid_duration_ids:
+                    errors.append(
+                        "存在しない長さの候補が含まれています。"
+                    )
+                    continue
+
+                posted_duration_ids.add(option_id)
+
+        if not has_response:
+            errors.append(
+                "少なくとも1つの候補に回答してください。"
+            )
+
+        # =================================================
+        # Save everything atomically
+        # =================================================
+
+        if not errors:
+
+            with transaction.atomic():
+
+                if guest is None:
+
+                    guest = EventGuestParticipant.objects.create(
+                        event=event,
+                        display_name=display_name,
+                    )
+
+                elif guest.display_name != display_name:
+
+                    guest.display_name = display_name
+                    guest.save(
+                        update_fields=[
+                            "display_name",
+                            "updated_at",
+                        ]
+                    )
+
+                # -----------------------------------------
+                # Date only
+                # -----------------------------------------
+
+                if event.scheduling_mode == (
+                    Event.SchedulingMode.DATE_ONLY
+                ):
+
+                    for candidate in candidate_dates:
+
+                        status = posted_statuses[candidate.id]
+
+                        if status:
+
+                            EventDateVote.objects.update_or_create(
+                                event_date=candidate,
+                                guest=guest,
+                                defaults={"status": status},
+                            )
+
+                        else:
+
+                            EventDateVote.objects.filter(
+                                event_date=candidate,
+                                guest=guest,
+                            ).delete()
+
+                # -----------------------------------------
+                # Time options
+                # -----------------------------------------
+
+                elif event.scheduling_mode == (
+                    Event.SchedulingMode.TIME_OPTIONS
+                ):
+
+                    for candidate in candidate_dates:
+                        for option in time_options:
+
+                            status = posted_statuses[
+                                (candidate.id, option.id)
+                            ]
+
+                            if status:
+
+                                EventTimeOptionVote.objects.update_or_create(
+                                    event_date=candidate,
+                                    time_option=option,
+                                    guest=guest,
+                                    defaults={"status": status},
+                                )
+
+                            else:
+
+                                EventTimeOptionVote.objects.filter(
+                                    event_date=candidate,
+                                    time_option=option,
+                                    guest=guest,
+                                ).delete()
+
+                # -----------------------------------------
+                # Start times
+                # -----------------------------------------
+
+                elif event.scheduling_mode == (
+                    Event.SchedulingMode.START_TIMES
+                ):
+
+                    for option in start_options:
+
+                        status = posted_statuses[option.id]
+
+                        if status:
+
+                            EventStartTimeVote.objects.update_or_create(
+                                start_time_option=option,
+                                guest=guest,
+                                defaults={"status": status},
+                            )
+
+                        else:
+
+                            EventStartTimeVote.objects.filter(
+                                start_time_option=option,
+                                guest=guest,
+                            ).delete()
+
+                # -----------------------------------------
+                # Free input
+                # -----------------------------------------
+
+                elif event.scheduling_mode == (
+                    Event.SchedulingMode.FREE_INPUT
+                ):
+
+                    for candidate in candidate_dates:
+
+                        item = posted_free[candidate.id]
+
+                        if not item["response_type"]:
+
+                            EventDateResponse.objects.filter(
+                                event_date=candidate,
+                                guest=guest,
+                            ).delete()
+
+                            continue
+
+                        response, created = (
+                            EventDateResponse.objects.update_or_create(
+                                event_date=candidate,
+                                guest=guest,
+                                defaults={
+                                    "response_type":
+                                        item["response_type"],
+                                    "note": item["note"],
+                                },
+                            )
+                        )
+
+                        response.windows.all().delete()
+
+                        if item["response_type"] == (
+                            EventDateResponse.ResponseType.PARTIAL
+                        ):
+
+                            for start_time, end_time in item["windows"]:
+
+                                AvailabilityWindow.objects.create(
+                                    response=response,
+                                    start_time=start_time,
+                                    end_time=end_time,
+                                )
+
+                # -----------------------------------------
+                # Duration
+                # -----------------------------------------
+
+                if event.duration_mode == (
+                    Event.DurationMode.VOTE
+                ):
+
+                    EventDurationVote.objects.filter(
+                        duration_option__event=event,
+                        guest=guest,
+                    ).delete()
+
+                    EventDurationVote.objects.bulk_create([
+                        EventDurationVote(
+                            duration_option_id=option_id,
+                            guest=guest,
+                        )
+                        for option_id in posted_duration_ids
+                    ])
+
+            # Only set session after successful save
+            request.session[session_key] = str(
+                guest.edit_token
+            )
+
+            messages.success(
+                request,
+                "回答を保存しました！",
+            )
+
+            return redirect(
+                "event_scheduler:guest_event_detail",
+                share_token=event.share_token,
+            )
+
+    # =====================================================
+    # Build template data
+    # =====================================================
+
+    date_rows = []
+
+    for candidate in candidate_dates:
+
+        row = {
+            "candidate": candidate,
+        }
+
+        # -------------------------------------------------
+        # Date only
+        # -------------------------------------------------
+
+        if event.scheduling_mode == (
+            Event.SchedulingMode.DATE_ONLY
+        ):
+
+            row["status"] = (
+                request.POST.get(
+                    f"date_status_{candidate.id}", ""
+                )
+                if request.method == "POST"
+                else date_votes.get(candidate.id, "")
+            )
+
+        # -------------------------------------------------
+        # Time options
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == (
+            Event.SchedulingMode.TIME_OPTIONS
+        ):
+
+            row["options"] = []
+
+            for option in time_options:
+
+                status = (
+                    request.POST.get(
+                        f"time_option_status_{candidate.id}_{option.id}",
+                        "",
+                    )
+                    if request.method == "POST"
+                    else time_votes.get(
+                        (candidate.id, option.id),
+                        "",
+                    )
+                )
+
+                row["options"].append({
+                    "option": option,
+                    "status": status,
+                })
+
+        # -------------------------------------------------
+        # Start times
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == (
+            Event.SchedulingMode.START_TIMES
+        ):
+
+            row["options"] = []
+
+            for option in start_options:
+
+                if option.event_date_id != candidate.id:
+                    continue
+
+                status = (
+                    request.POST.get(
+                        f"start_status_{option.id}", ""
+                    )
+                    if request.method == "POST"
+                    else start_votes.get(option.id, "")
+                )
+
+                row["options"].append({
+                    "option": option,
+                    "status": status,
+                })
+
+        # -------------------------------------------------
+        # Free input
+        # -------------------------------------------------
+
+        elif event.scheduling_mode == (
+            Event.SchedulingMode.FREE_INPUT
+        ):
+
+            if request.method == "POST":
+
+                row["response_type"] = request.POST.get(
+                    f"response_type_{candidate.id}", ""
+                )
+
+                row["note"] = request.POST.get(
+                    f"note_{candidate.id}", ""
+                )
+
+                starts = request.POST.getlist(
+                    f"free_start_{candidate.id}"
+                )
+
+                ends = request.POST.getlist(
+                    f"free_end_{candidate.id}"
+                )
+
+                row["windows"] = [
+                    {
+                        "start": normalize_time(start),
+                        "end": normalize_time(end),
+                    }
+                    for start, end in zip(starts, ends)
+                ]
+
+            else:
+
+                response = free_responses.get(candidate.id)
+
+                row["response_type"] = (
+                    response.response_type if response else ""
+                )
+
+                row["note"] = (
+                    response.note if response else ""
+                )
+
+                row["windows"] = [
+                    {
+                        "start": window.start_time.strftime("%H:%M"),
+                        "end": window.end_time.strftime("%H:%M"),
+                    }
+                    for window in (
+                        response.windows.all() if response else []
+                    )
+                ]
+
+            if not row["windows"]:
+                row["windows"] = [
+                    {"start": "", "end": ""}
+                ]
+
+        date_rows.append(row)
+
+    selected_duration_option_ids = (
+        posted_duration_ids
+        if request.method == "POST"
+        else duration_votes
+    )
+
+    return render(
+        request,
+        "event_scheduler/guest_event_respond.html",
+        {
+            "event": event,
+            "guest": guest,
+            "display_name": display_name,
+            "date_rows": date_rows,
+            "duration_options": duration_options,
+            "selected_duration_option_ids":
+                selected_duration_option_ids,
+            "errors": errors,
+            "can_add_date": event.allow_participant_date_addition,
+
+            "can_add_time_option": (
+                event.scheduling_mode == Event.SchedulingMode.TIME_OPTIONS
+                and event.allow_participant_time_option_addition
+            ),
+
+            "can_add_duration": (
+                event.duration_mode == Event.DurationMode.VOTE
+                and event.allow_participant_duration_addition
+            ),
+        },
+        
+    )
+
+
+# =========================================================
+# Guest: add event candidates
+# =========================================================
+
+@require_http_methods(["POST"])
+def guest_event_add_candidate(request, share_token):
+
+    event = get_object_or_404(
+        Event,
+        share_token=share_token,
+        is_archived=False,
+    )
+
+    redirect_kwargs = {
+        "share_token": event.share_token,
+    }
+
+    def back():
+        return redirect(
+            "event_scheduler:guest_event_respond",
+            **redirect_kwargs,
+        )
+
+    # -----------------------------------------------------
+    # Identify guest
+    # -----------------------------------------------------
+
+    session_key = f"event_guest_{event.pk}"
+    guest_token = request.session.get(session_key)
+
+    guest = None
+
+    if guest_token:
+        guest = EventGuestParticipant.objects.filter(
+            event=event,
+            edit_token=guest_token,
+        ).first()
+
+
+    # -----------------------------------------------------
+    # Permissions
+    # -----------------------------------------------------
+
+    can_add_date = event.allow_participant_date_addition
+
+    can_add_time_option = (
+        event.scheduling_mode == Event.SchedulingMode.TIME_OPTIONS
+        and event.allow_participant_time_option_addition
+    )
+
+    can_add_duration = (
+        event.duration_mode == Event.DurationMode.VOTE
+        and event.allow_participant_duration_addition
+    )
+
+    action = request.POST.get("action", "")
+
+    # -----------------------------------------------------
+    # Add date / start time
+    # -----------------------------------------------------
+
+    if action == "add_candidate_date":
+
+        if not can_add_date:
+            return HttpResponseForbidden(
+                "候補日の追加は許可されていません。"
+            )
+
+        new_date = parse_date(
+            request.POST.get("new_candidate_date", "")
+        )
+
+        if new_date is None:
+            messages.error(request, "正しい日付を入力してください。")
+            return back()
+
+        if event.scheduling_mode == Event.SchedulingMode.START_TIMES:
+
+            raw_time = request.POST.get(
+                "new_candidate_start_time", ""
+            ).strip()
+
+            if len(raw_time) == 4 and raw_time.isdigit():
+                raw_time = f"{raw_time[:2]}:{raw_time[2:]}"
+
+            start_time = parse_time(raw_time)
+
+            if start_time is None:
+                messages.error(
+                    request,
+                    "正しい開始時間を入力してください。",
+                )
+                return back()
+
+            with transaction.atomic():
+
+                candidate, _ = EventDate.objects.get_or_create(
+                    event=event,
+                    date=new_date,
+                    defaults={"created_by": None},
+                )
+
+                if EventStartTimeOption.objects.filter(
+                    event_date=candidate,
+                    start_time=start_time,
+                ).exists():
+
+                    messages.warning(
+                        request,
+                        "この日時はすでに候補にあります。",
+                    )
+                    return back()
+
+                EventStartTimeOption.objects.create(
+                    event_date=candidate,
+                    start_time=start_time,
+                )
+
+        else:
+
+            if EventDate.objects.filter(
+                event=event,
+                date=new_date,
+            ).exists():
+
+                messages.warning(
+                    request,
+                    "この日はすでに候補にあります。",
+                )
+                return back()
+
+            EventDate.objects.create(
+                event=event,
+                date=new_date,
+                created_by=None,
+            )
+
+        messages.success(
+            request,
+            "候補を追加しました。",
+        )
+        return back()
+
+    # -----------------------------------------------------
+    # Add time option
+    # -----------------------------------------------------
+
+    if action == "add_time_option":
+
+        if not can_add_time_option:
+            return HttpResponseForbidden(
+                "時間帯の追加は許可されていません。"
+            )
+
+        label = request.POST.get(
+            "new_time_option_label", ""
+        ).strip()
+
+        start_value = request.POST.get(
+            "new_time_option_start", ""
+        ).strip()
+
+        end_value = request.POST.get(
+            "new_time_option_end", ""
+        ).strip()
+
+        if not label or len(label) > 100:
+            messages.error(
+                request,
+                "時間帯の名前を1〜100文字で入力してください。",
+            )
+            return back()
+
+        start_time = parse_time(start_value) if start_value else None
+        end_time = parse_time(end_value) if end_value else None
+
+        if (start_value and start_time is None) or (
+            end_value and end_time is None
+        ):
+            messages.error(
+                request,
+                "時間の形式が正しくありません。",
+            )
+            return back()
+
+        if (start_time is None) != (end_time is None):
+            messages.error(
+                request,
+                "開始時間と終了時間は両方入力してください。",
+            )
+            return back()
+
+        if start_time and end_time <= start_time:
+            messages.error(
+                request,
+                "終了時間は開始時間より後にしてください。",
+            )
+            return back()
+
+        if EventTimeOption.objects.filter(
+            event=event,
+            label__iexact=label,
+            start_time=start_time,
+            end_time=end_time,
+        ).exists():
+
+            messages.warning(
+                request,
+                "同じ時間帯がすでにあります。",
+            )
+            return back()
+
+        next_order = (
+            EventTimeOption.objects.filter(
+                event=event,
+            ).aggregate(
+                max_order=Max("order")
+            )["max_order"]
+        )
+
+        EventTimeOption.objects.create(
+            event=event,
+            label=label,
+            start_time=start_time,
+            end_time=end_time,
+            order=(next_order + 1 if next_order is not None else 0),
+        )
+
+        messages.success(
+            request,
+            "時間帯を追加しました。",
+        )
+        return back()
+
+    # -----------------------------------------------------
+    # Add duration
+    # -----------------------------------------------------
+
+    if action == "add_duration_option":
+
+        if not can_add_duration:
+            return HttpResponseForbidden(
+                "イベントの長さの追加は許可されていません。"
+            )
+
+        try:
+            minutes = int(
+                request.POST.get("new_duration_minutes", "")
+            )
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                "正しい長さを入力してください。",
+            )
+            return back()
+
+        if minutes < 15 or minutes > 1440 or minutes % 15 != 0:
+            messages.error(
+                request,
+                "15〜1440分の範囲で15分刻みで入力してください。",
+            )
+            return back()
+
+        option, created = EventDurationOption.objects.get_or_create(
+            event=event,
+            minutes=minutes,
+        )
+
+        if created:
+            messages.success(
+                request,
+                "長さの候補を追加しました。",
+            )
+        else:
+            messages.warning(
+                request,
+                "この長さはすでに候補にあります。",
+            )
+
+        return back()
+
+    return HttpResponseBadRequest(
+        "不正な操作です。"
+    )
+
+
+# =========================================================
+# Edit event settings
+# =========================================================
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def event_settings_edit(request, event_id):
+
+    event = get_object_or_404(
+        Event,
+        pk=event_id,
+        is_archived=False,
+    )
+
+    # Only event administrators can edit settings
+    if not event.can_manage(request.user):
+
+        return HttpResponseForbidden(
+            "イベント設定を変更する権限がありません。"
+        )
+
+    if request.method == "POST":
+
+        form = EventSettingsForm(
+            request.POST,
+            instance=event,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "イベント設定を更新しました。",
+            )
+
+            return redirect(
+                "event_scheduler:event_detail",
+                event_id=event.id,
+            )
+
+    else:
+
+        form = EventSettingsForm(
+            instance=event,
+        )
+
+    return render(
+        request,
+        "event_scheduler/event_settings_edit.html",
+        {
+            "event": event,
+            "form": form,
+        },
     )

@@ -1,0 +1,810 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}日程を回答 | Yapp{% endblock %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+<div class="event-response-page">
+
+    <!-- Header -->
+
+    <header class="event-response-header">
+        <a
+            href="{% url 'event_scheduler:guest_event_detail' event.share_token %}"
+            class="event-response-back"
+        >
+            ← 戻る
+        </a>
+
+        <h1>{{ event.title }}</h1>
+    </header>
+
+
+    <!-- Errors -->
+
+    {% if errors %}
+        <div class="event-response-errors">
+            {% for error in errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
+    <form method="post" id="event-guest-response-form">
+
+        {% csrf_token %}
+
+        <!-- Guest identity -->
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">
+                    YOUR NAME
+                </p>
+                <h2>お名前</h2>
+                <small>集計結果に表示する名前です。</small>
+            </div>
+
+            <input
+                type="text"
+                name="display_name"
+                value="{{ display_name }}"
+                maxlength="50"
+                autocomplete="name"
+                placeholder="例：山田"
+                class="event-guest-name-input"
+                required
+            >
+
+            <p class="event-guest-helper">
+                ログイン不要で回答できます。
+                同じブラウザなら後から回答を修正できます。
+            </p>
+
+        </section>
+
+
+        <!-- ================================================
+             Mode 1: Date only
+             ================================================ -->
+
+        {% if event.scheduling_mode == "date_only" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">DATES</p>
+                <h2>日程</h2>
+            </div>
+
+            <div class="event-response-date-list">
+
+                {% for row in date_rows %}
+
+                <div class="event-response-date-card">
+
+                    <div class="event-response-date-title">
+                        <strong>
+                            {{ row.candidate.date|date:"n月j日" }}
+                        </strong>
+                        <span>
+                            {{ row.candidate.date|date:"D" }}
+                        </span>
+                    </div>
+
+                    <div class="event-status-buttons">
+
+                        <label class="yes">
+                            <input
+                                type="radio"
+                                name="date_status_{{ row.candidate.id }}"
+                                value="yes"
+                                {% if row.status == "yes" %}checked{% endif %}
+                            >
+                            <span>○ 参加</span>
+                        </label>
+
+                        <label class="maybe">
+                            <input
+                                type="radio"
+                                name="date_status_{{ row.candidate.id }}"
+                                value="maybe"
+                                {% if row.status == "maybe" %}checked{% endif %}
+                            >
+                            <span>△ 未定</span>
+                        </label>
+
+                        <label class="no">
+                            <input
+                                type="radio"
+                                name="date_status_{{ row.candidate.id }}"
+                                value="no"
+                                {% if row.status == "no" %}checked{% endif %}
+                            >
+                            <span>× 難しい</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+                    <p class="event-empty-message">
+                        まだ候補日がありません。
+                    </p>
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================
+             Mode 2: Time options
+             ================================================ -->
+
+        {% elif event.scheduling_mode == "time_options" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">TIME OPTIONS</p>
+                <h2>時間帯</h2>
+                <small>
+                    参加できる時間帯の目安を選んでください。
+                </small>
+            </div>
+
+            {% for row in date_rows %}
+
+            <div class="event-response-date-card">
+
+                <div class="event-response-date-title">
+                    <strong>
+                        {{ row.candidate.date|date:"n月j日" }}
+                    </strong>
+                    <span>
+                        {{ row.candidate.date|date:"D" }}
+                    </span>
+                </div>
+
+                {% for item in row.options %}
+
+                <div class="event-response-option-row">
+
+                    <div class="event-response-option-info">
+
+                        <strong>{{ item.option.label }}</strong>
+
+                        {% if item.option.start_time %}
+                            <span>
+                                {{ item.option.start_time|time:"H:i" }}
+                                {% if item.option.end_time %}
+                                    〜{{ item.option.end_time|time:"H:i" }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="event-mini-status-buttons">
+
+                        <label class="yes">
+                            <input
+                                type="radio"
+                                name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                value="yes"
+                                {% if item.status == "yes" %}checked{% endif %}
+                            >
+                            <span>○</span>
+                        </label>
+
+                        <label class="maybe">
+                            <input
+                                type="radio"
+                                name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                value="maybe"
+                                {% if item.status == "maybe" %}checked{% endif %}
+                            >
+                            <span>△</span>
+                        </label>
+
+                        <label class="no">
+                            <input
+                                type="radio"
+                                name="time_option_status_{{ row.candidate.id }}_{{ item.option.id }}"
+                                value="no"
+                                {% if item.status == "no" %}checked{% endif %}
+                            >
+                            <span>×</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+                    <p class="event-empty-message">
+                        時間帯の候補がありません。
+                    </p>
+                {% endfor %}
+
+            </div>
+
+            {% endfor %}
+
+        </section>
+
+
+        <!-- ================================================
+             Mode 3: Start times
+             ================================================ -->
+
+        {% elif event.scheduling_mode == "start_times" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">START TIMES</p>
+                <h2>開始時間</h2>
+            </div>
+
+            <div class="event-start-slot-list">
+
+                {% for row in date_rows %}
+                    {% for item in row.options %}
+
+                    <div class="event-start-slot-row">
+
+                        <div class="event-slot-datetime">
+                            <strong>
+                                {{ row.candidate.date|date:"n月j日（D）" }}
+                            </strong>
+
+                            <span>
+                                {{ item.option.start_time|time:"H:i" }}
+                            </span>
+                        </div>
+
+                        <div class="event-mini-status-buttons">
+
+                            <label class="yes">
+                                <input
+                                    type="radio"
+                                    name="start_status_{{ item.option.id }}"
+                                    value="yes"
+                                    {% if item.status == "yes" %}checked{% endif %}
+                                >
+                                <span>○</span>
+                            </label>
+
+                            <label class="maybe">
+                                <input
+                                    type="radio"
+                                    name="start_status_{{ item.option.id }}"
+                                    value="maybe"
+                                    {% if item.status == "maybe" %}checked{% endif %}
+                                >
+                                <span>△</span>
+                            </label>
+
+                            <label class="no">
+                                <input
+                                    type="radio"
+                                    name="start_status_{{ item.option.id }}"
+                                    value="no"
+                                    {% if item.status == "no" %}checked{% endif %}
+                                >
+                                <span>×</span>
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    {% empty %}
+                        <p class="event-empty-message">
+                            この日の候補時刻はありません。
+                        </p>
+                    {% endfor %}
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================
+             Mode 4: Free input
+             ================================================ -->
+
+        {% elif event.scheduling_mode == "free_input" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">AVAILABILITY</p>
+                <h2>空き時間を入力</h2>
+                <small>
+                    参加できる日と時間帯を教えてください。
+                </small>
+            </div>
+
+            {% for row in date_rows %}
+
+            <div class="event-response-date-card">
+
+                <div class="event-response-date-title">
+                    <strong>
+                        {{ row.candidate.date|date:"n月j日" }}
+                    </strong>
+                    <span>
+                        {{ row.candidate.date|date:"D" }}
+                    </span>
+                </div>
+
+                <div class="event-guest-free-status">
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="response_type_{{ row.candidate.id }}"
+                            value="all_day"
+                            {% if row.response_type == "all_day" %}checked{% endif %}
+                        >
+                        終日OK
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="response_type_{{ row.candidate.id }}"
+                            value="partial"
+                            {% if row.response_type == "partial" %}checked{% endif %}
+                        >
+                        時間を指定
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="response_type_{{ row.candidate.id }}"
+                            value="unavailable"
+                            {% if row.response_type == "unavailable" %}checked{% endif %}
+                        >
+                        参加できない
+                    </label>
+
+                </div>
+
+                <div
+                    class="event-guest-free-times"
+                    data-free-times="{{ row.candidate.id }}"
+                    {% if row.response_type != "partial" %}hidden{% endif %}
+                >
+
+                    <div
+                        class="event-guest-window-list"
+                        data-window-list
+                    >
+
+                        {% for window in row.windows %}
+
+                        <div class="event-guest-window-row">
+                            <input
+                                type="time"
+                                name="free_start_{{ row.candidate.id }}"
+                                value="{{ window.start }}"
+                                aria-label="開始時刻"
+                            >
+
+                            <span>〜</span>
+
+                            <input
+                                type="time"
+                                name="free_end_{{ row.candidate.id }}"
+                                value="{{ window.end }}"
+                                aria-label="終了時刻"
+                            >
+
+                            <button
+                                type="button"
+                                class="event-guest-remove-window"
+                                aria-label="この時間帯を削除"
+                            >×</button>
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="event-guest-add-window"
+                        data-add-window="{{ row.candidate.id }}"
+                    >
+                        ＋ 時間帯を追加
+                    </button>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="note_{{ row.candidate.id }}"
+                    value="{{ row.note }}"
+                    maxlength="255"
+                    placeholder="メモ（任意）"
+                    class="event-guest-note-input"
+                >
+
+            </div>
+
+            {% endfor %}
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- ================================================
+             Duration voting
+             ================================================ -->
+
+        {% if event.duration_mode == "vote" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">DURATION</p>
+                <h2>イベントの長さ</h2>
+                <small>複数選択できます。</small>
+            </div>
+
+            <div class="event-duration-vote-list">
+
+                {% for option in duration_options %}
+
+                <label class="event-duration-vote-option">
+
+                    <input
+                        type="checkbox"
+                        name="duration_option"
+                        value="{{ option.id }}"
+                        {% if option.id in selected_duration_option_ids %}checked{% endif %}
+                    >
+
+                    <span>
+                        {{ option.display_label }}
+                    </span>
+
+                </label>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% elif event.duration_mode == "fixed" %}
+
+        <section class="event-response-section">
+
+            <div class="event-compact-heading">
+                <p class="event-section-eyebrow">DURATION</p>
+                <h2>イベントの長さ</h2>
+            </div>
+
+            <strong class="event-fixed-duration">
+                ⏱ {{ event.duration_minutes }}分
+            </strong>
+
+        </section>
+
+        {% endif %}
+
+
+        <!-- Submit -->
+
+        <div class="event-response-submit-panel">
+
+            <button
+                type="submit"
+                name="save_response"
+                value="1"
+                class="event-primary-button event-save-button"
+            >
+                {% if guest %}
+                    回答を更新する
+                {% else %}
+                    回答を保存する
+                {% endif %}
+            </button>
+
+        </div>
+
+    </form>
+
+        
+    <!-- =====================================================
+        Guest candidate additions
+        ===================================================== -->
+
+    {% if can_add_date or can_add_time_option or can_add_duration %}
+
+    <section class="event-response-section event-guest-add-section">
+
+        <div class="event-compact-heading">
+            <p class="event-section-eyebrow">
+                ADD OPTIONS
+            </p>
+
+            <h2>候補を追加</h2>
+
+            <small>
+                追加した候補は他の参加者にも表示されます。
+            </small>
+        </div>
+
+
+        <!-- Add candidate date -->
+
+        {% if can_add_date %}
+
+        <form
+            method="post"
+            action="{% url 'event_scheduler:guest_event_add_candidate' event.share_token %}"
+            class="event-guest-add-form"
+        >
+            {% csrf_token %}
+
+            <h3>候補日を追加</h3>
+
+            <div class="event-inline-add-row">
+
+                <input
+                    type="date"
+                    name="new_candidate_date"
+                    required
+                >
+
+                {% if event.scheduling_mode == "start_times" %}
+
+                    <input
+                        type="time"
+                        name="new_candidate_start_time"
+                        required
+                    >
+
+                {% endif %}
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="add_candidate_date"
+                    class="event-add-small-button"
+                >
+                    ＋
+                </button>
+
+            </div>
+        </form>
+
+        {% endif %}
+
+
+        <!-- Add time option -->
+
+        {% if can_add_time_option %}
+
+        <form
+            method="post"
+            action="{% url 'event_scheduler:guest_event_add_candidate' event.share_token %}"
+            class="event-guest-add-form"
+        >
+            {% csrf_token %}
+
+            <h3>時間帯を追加</h3>
+
+            <div class="event-guest-add-fields">
+
+                <input
+                    type="text"
+                    name="new_time_option_label"
+                    maxlength="100"
+                    placeholder="例：夕方"
+                    required
+                >
+
+                <div class="event-inline-add-row">
+
+                    <input
+                        type="time"
+                        name="new_time_option_start"
+                        aria-label="開始時間"
+                    >
+
+                    <span>〜</span>
+
+                    <input
+                        type="time"
+                        name="new_time_option_end"
+                        aria-label="終了時間"
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="add_time_option"
+                    class="event-secondary-button"
+                >
+                    ＋ 時間帯を追加
+                </button>
+
+            </div>
+        </form>
+
+        {% endif %}
+
+
+        <!-- Add duration -->
+
+        {% if can_add_duration %}
+
+        <form
+            method="post"
+            action="{% url 'event_scheduler:guest_event_add_candidate' event.share_token %}"
+            class="event-guest-add-form"
+        >
+            {% csrf_token %}
+
+            <h3>長さの候補を追加</h3>
+
+            <div class="event-inline-add-row">
+
+                <input
+                    type="number"
+                    name="new_duration_minutes"
+                    min="15"
+                    max="1440"
+                    step="15"
+                    placeholder="例：90"
+                    required
+                >
+
+                <span>分</span>
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="add_duration_option"
+                    class="event-add-small-button"
+                >
+                    ＋
+                </button>
+
+            </div>
+        </form>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+
+</div>
+
+
+<!-- Free-input interactions -->
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    "use strict";
+
+    document.querySelectorAll(
+        'input[name^="response_type_"]'
+    ).forEach(input => {
+
+        input.addEventListener("change", () => {
+
+            const dateId = input.name.replace(
+                "response_type_",
+                ""
+            );
+
+            const times = document.querySelector(
+                `[data-free-times="${dateId}"]`
+            );
+
+            if (times) {
+                times.hidden = input.value !== "partial";
+            }
+        });
+    });
+
+    document.querySelectorAll(
+        "[data-add-window]"
+    ).forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const dateId = button.dataset.addWindow;
+
+            const container = button.parentElement.querySelector(
+                "[data-window-list]"
+            );
+
+            if (!container) return;
+
+            if (
+                container.querySelectorAll(
+                    ".event-guest-window-row"
+                ).length >= 20
+            ) {
+                return;
+            }
+
+            const row = document.createElement("div");
+            row.className = "event-guest-window-row";
+
+            const start = document.createElement("input");
+            start.type = "time";
+            start.name = `free_start_${dateId}`;
+            start.setAttribute("aria-label", "開始時刻");
+
+            const separator = document.createElement("span");
+            separator.textContent = "〜";
+
+            const end = document.createElement("input");
+            end.type = "time";
+            end.name = `free_end_${dateId}`;
+            end.setAttribute("aria-label", "終了時刻");
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "event-guest-remove-window";
+            remove.textContent = "×";
+            remove.setAttribute(
+                "aria-label",
+                "この時間帯を削除"
+            );
+
+            row.append(
+                start,
+                separator,
+                end,
+                remove
+            );
+
+            container.appendChild(row);
+        });
+    });
+
+    document.addEventListener("click", event => {
+
+        const button = event.target.closest(
+            ".event-guest-remove-window"
+        );
+
+        if (!button) return;
+
+        button.closest(
+            ".event-guest-window-row"
+        )?.remove();
+    });
+
+});
+</script>
+
+{% endblock %}

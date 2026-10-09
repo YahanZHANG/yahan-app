@@ -237,3 +237,96 @@ class EventParticipantInviteForm(forms.Form):
             }
         ),
     )
+
+
+# =========================================================
+# Event settings edit form
+# =========================================================
+
+class EventSettingsForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Event
+
+        fields = [
+            "title",
+            "description",
+            "location",
+            "is_public",
+            "response_deadline",
+            "allow_participant_date_addition",
+            "allow_participant_time_option_addition",
+            "allow_participant_duration_addition",
+        ]
+
+        widgets = {
+            "title": forms.TextInput(
+                attrs={
+                    "class": "event-settings-input",
+                    "placeholder": "イベント名",
+                }
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "event-settings-textarea",
+                    "rows": 4,
+                    "placeholder": "イベントの説明",
+                }
+            ),
+            "location": forms.TextInput(
+                attrs={
+                    "class": "event-settings-input",
+                    "placeholder": "場所（任意）",
+                }
+            ),
+            "response_deadline": forms.DateInput(
+                attrs={
+                    "class": "event-settings-input",
+                    "type": "date",
+                },
+                format="%Y-%m-%d",
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.fields["title"].label = "イベント名"
+        self.fields["description"].label = "説明"
+        self.fields["location"].label = "場所"
+        self.fields["is_public"].label = "イベントを公開する"
+        self.fields["response_deadline"].label = "回答期限"
+
+        self.fields[
+            "allow_participant_date_addition"
+        ].label = "参加者による候補日の追加を許可"
+
+        self.fields[
+            "allow_participant_time_option_addition"
+        ].label = "参加者による時間帯の追加を許可"
+
+        self.fields[
+            "allow_participant_duration_addition"
+        ].label = "参加者による長さの候補追加を許可"
+
+        self.fields["response_deadline"].required = False
+
+        if self.instance.pk:
+
+            if self.instance.scheduling_mode != (
+                Event.SchedulingMode.TIME_OPTIONS
+            ):
+                self.fields.pop(
+                    "allow_participant_time_option_addition",
+                    None,
+                )
+
+            if self.instance.duration_mode != (
+                Event.DurationMode.VOTE
+            ):
+                self.fields.pop(
+                    "allow_participant_duration_addition",
+                    None,
+                )

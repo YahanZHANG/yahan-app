@@ -108,458 +108,67 @@
 
     </section>
 
-    <!-- =====================================================
-        Results
-        ===================================================== -->
 
-    {% if has_answered %}
-
-        <section class="event-result-section">
-
-            <div class="event-simple-heading">
-
-                <p class="event-section-eyebrow">
-                    RESULTS
-                </p>
-
-                <h2>
-                    回答結果
-                </h2>
-
-            </div>
-
-
-            <!-- =============================================
-                Schedule results
-                ============================================= -->
-
-            {% if top_result_rows %}
-
-                <!-- =====================================================
-                    Recommended Top 3
-                    ===================================================== -->
-
-                <div class="event-top-results">
-
-                    <div class="event-top-results-heading">
-
-                        <strong>
-                            ✨ おすすめ候補
-                        </strong>
-
-                        <span>
-                            みんなの回答から自動計算
-                        </span>
-
-                    </div>
-
-
-                    <div class="event-top-results-list">
-
-                        {% for row in top_result_rows %}
-
-                            <div
-                                class="
-                                    event-top-result-card
-                                    rank-{{ forloop.counter }}
-                                "
-                            >
-
-                                <div class="event-top-result-rank">
-
-                                    {% if forloop.counter == 1 %}
-                                        🥇
-                                    {% elif forloop.counter == 2 %}
-                                        🥈
-                                    {% else %}
-                                        🥉
-                                    {% endif %}
-
-                                </div>
-
-
-                                <div class="event-top-result-main">
-
-                                    <strong>
-                                        {{ row.date|date:"n月j日（D）" }}
-                                    </strong>
-
-
-                                    {% if row.label %}
-
-                                        <span>
-                                            {{ row.label }}
-                                        </span>
-
-                                    {% endif %}
-
-
-                                    {% if row.start_time %}
-
-                                        <span class="event-top-result-time">
-
-                                            {{ row.start_time|time:"H:i" }}
-
-                                            {% if row.end_time %}
-                                                〜{{ row.end_time|time:"H:i" }}
-                                            {% endif %}
-
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-
-                                <div class="event-top-result-counts">
-
-                                    <span class="yes">
-                                        ○ {{ row.yes_count }}
-                                    </span>
-
-                                    <span class="maybe">
-                                        △ {{ row.maybe_count }}
-                                    </span>
-
-                                    <span class="no">
-                                        × {{ row.no_count }}
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            {% endif %}
-            
-            <div class="event-result-list">
-
-                {% for row in result_rows %}
-
-                    <details class="event-result-detail">
-
-                        <summary class="event-result-row">
-
-                            <div class="event-result-datetime">
-
-                                <strong>
-                                    {{ row.date|date:"n月j日（D）" }}
-                                </strong>
-
-
-                                {% if row.label %}
-
-                                    <span>
-                                        {{ row.label }}
-                                    </span>
-
-                                {% endif %}
-
-
-                                {% if row.start_time %}
-
-                                    <span class="event-result-time">
-
-                                        {{ row.start_time|time:"H:i" }}
-
-                                        {% if row.end_time %}
-                                            〜{{ row.end_time|time:"H:i" }}
-                                        {% endif %}
-
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="event-result-counts">
-
-                                <span class="yes">
-                                    ○ {{ row.yes_count }}
-                                </span>
-
-                                <span class="maybe">
-                                    △ {{ row.maybe_count }}
-                                </span>
-
-                                <span class="no">
-                                    × {{ row.no_count }}
-                                </span>
-
-                            </div>
-
-                        </summary>
-
-
-                        <!-- =============================================
-                            Vote details
-                            ============================================= -->
-
-                        <div class="event-vote-breakdown">
-
-                            <!-- YES -->
-
-                            <div class="event-vote-breakdown-group yes">
-
-                                <div class="event-vote-breakdown-heading">
-
-                                    <span class="event-vote-breakdown-symbol">
-                                        ○
-                                    </span>
-
-                                    <strong>
-                                        参加できる
-                                    </strong>
-
-                                    <small>
-                                        {{ row.yes_count }}人
-                                    </small>
-
-                                </div>
-
-
-                                <div class="event-voter-list">
-
-                                    {% for username in row.yes_users %}
-
-                                        <span class="event-voter-chip">
-                                            {{ username }}
-                                        </span>
-
-                                    {% empty %}
-
-                                        <span class="event-voter-empty">
-                                            なし
-                                        </span>
-
-                                    {% endfor %}
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- MAYBE -->
-
-                            <div class="event-vote-breakdown-group maybe">
-
-                                <div class="event-vote-breakdown-heading">
-
-                                    <span class="event-vote-breakdown-symbol">
-                                        △
-                                    </span>
-
-                                    <strong>
-                                        未定
-                                    </strong>
-
-                                    <small>
-                                        {{ row.maybe_count }}人
-                                    </small>
-
-                                </div>
-
-
-                                <div class="event-voter-list">
-
-                                    {% for username in row.maybe_users %}
-
-                                        <span class="event-voter-chip">
-                                            {{ username }}
-                                        </span>
-
-                                    {% empty %}
-
-                                        <span class="event-voter-empty">
-                                            なし
-                                        </span>
-
-                                    {% endfor %}
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- NO -->
-
-                            <div class="event-vote-breakdown-group no">
-
-                                <div class="event-vote-breakdown-heading">
-
-                                    <span class="event-vote-breakdown-symbol">
-                                        ×
-                                    </span>
-
-                                    <strong>
-                                        参加できない
-                                    </strong>
-
-                                    <small>
-                                        {{ row.no_count }}人
-                                    </small>
-
-                                </div>
-
-
-                                <div class="event-voter-list">
-
-                                    {% for username in row.no_users %}
-
-                                        <span class="event-voter-chip">
-                                            {{ username }}
-                                        </span>
-
-                                    {% empty %}
-
-                                        <span class="event-voter-empty">
-                                            なし
-                                        </span>
-
-                                    {% endfor %}
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </details>
-
-                {% empty %}
-
-                    <p class="event-empty-message">
-                        まだ回答結果がありません。
-                    </p>
-
-                {% endfor %}
-
-            </div>
-
-
-            <!-- =============================================
-                Duration results
-                ============================================= -->
-
-            {% if event.duration_mode == "vote" %}
-
-                <div class="event-duration-result-section">
-
-                    <div class="event-result-subheading">
-
-                        <span>
-                            ⏱
-                        </span>
-
-                        <strong>
-                            長さ
-                        </strong>
-
-                    </div>
-
-
-                    <div class="event-duration-result-list">
-
-                        {% for row in duration_result_rows %}
-
-                            <details class="event-duration-result-detail">
-
-                                <summary class="event-duration-result-row">
-
-                                    <div class="event-duration-result-header">
-
-                                        <strong>
-                                            {{ row.option.display_label }}
-                                        </strong>
-
-                                        <span>
-                                            {{ row.vote_count }}票
-                                        </span>
-
-                                    </div>
-
-
-                                    <div class="event-duration-result-track">
-
-                                        <div
-                                            class="event-duration-result-bar"
-                                            style="width: {{ row.vote_percent }}%;"
-                                        >
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="event-duration-result-percent">
-                                        {{ row.vote_percent }}%
-                                    </div>
-
-                                </summary>
-
-
-                                <div class="event-duration-voters">
-
-                                    <div class="event-duration-voters-heading">
-
-                                        <strong>
-                                            この長さを選んだ人
-                                        </strong>
-
-                                        <span>
-                                            {{ row.vote_count }}人
-                                        </span>
-
-                                    </div>
-
-
-                                    <div class="event-voter-list">
-
-                                        {% for username in row.voters %}
-
-                                            <span class="event-voter-chip">
-                                                {{ username }}
-                                            </span>
-
-                                        {% empty %}
-
-                                            <span class="event-voter-empty">
-                                                まだいません
-                                            </span>
-
-                                        {% endfor %}
-
-                                    </div>
-
-                                </div>
-
-                            </details>
-
-                        {% empty %}
-
-                            <p class="event-empty-message">
-                                長さの候補がありません。
-                            </p>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            {% endif %}
-
-        </section>
-
-    {% endif %}
+    {% include "event_scheduler/_event_results.html" %}
 
 
     {% if can_manage %}
+
+
+        {% if not event.is_archived %}
+
+            <section class="event-simple-section event-share-section">
+
+                <div class="event-simple-heading">
+
+                    <p class="event-section-eyebrow">
+                        SHARE EVENT
+                    </p>
+
+                    <h2>イベントを共有</h2>
+
+                </div>
+
+                <p class="event-share-description">
+                    このリンクを送ると、相手はログインせずに日程を回答できます。
+                </p>
+
+                <div class="event-share-controls">
+
+                    <input
+                        type="text"
+                        id="event-share-url"
+                        value="{{ request.scheme }}://{{ request.get_host }}{% url 'event_scheduler:guest_event_detail' event.share_token %}"
+                        readonly
+                        aria-label="イベント共有リンク"
+                    >
+
+                    <button
+                        type="button"
+                        id="event-copy-share-url"
+                        class="event-secondary-button"
+                    >
+                        <span>リンクをコピー</span>
+                    </button>
+
+                </div>
+
+                <p
+                    id="event-share-feedback"
+                    class="event-share-feedback"
+                    role="status"
+                    aria-live="polite"
+                ></p>
+
+                <p class="event-share-warning">
+                    リンクを知っている人はイベント情報を閲覧できます。
+                    信頼できる相手にのみ共有してください。
+                </p>
+
+            </section>
+
+        {% endif %}
+
 
         <div class="event-management-grid">
 
@@ -640,6 +249,13 @@
 
                 </div>
 
+                <a
+                    href="{% url 'event_scheduler:event_settings_edit' event.id %}"
+                    class="event-secondary-button event-management-button"
+                >
+                    ⚙ イベント設定を編集
+                </a>
+
 
                 {% if event.is_archived %}
 
@@ -698,5 +314,51 @@
     {% endif %}
 
 </div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    "use strict";
+
+    const copyButton = document.getElementById(
+        "event-copy-share-url"
+    );
+
+    const shareInput = document.getElementById(
+        "event-share-url"
+    );
+
+    const feedback = document.getElementById(
+        "event-share-feedback"
+    );
+
+    if (!copyButton || !shareInput || !feedback) {
+        return;
+    }
+
+    copyButton.addEventListener("click", async () => {
+        const url = shareInput.value;
+
+        try {
+            if (!navigator.clipboard?.writeText) {
+                throw new Error("Clipboard API unavailable");
+            }
+
+            await navigator.clipboard.writeText(url);
+
+            feedback.textContent = "✓ リンクをコピーしました";
+
+        } catch (error) {
+            shareInput.focus();
+            shareInput.select();
+
+            feedback.textContent =
+                "自動コピーできませんでした。選択したURLを手動でコピーしてください。";
+        }
+    });
+});
+</script>
+
 
 {% endblock %}

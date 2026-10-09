@@ -147,4 +147,28 @@ urlpatterns = [
         name="event_participant_invitation_cancel",
     ),
 
+    path(
+        "share/<uuid:share_token>/",
+        views.guest_event_detail,
+        name="guest_event_detail",
+    ),
+
+    path(
+        "share/<uuid:share_token>/respond/",
+        views.guest_event_respond,
+        name="guest_event_respond",
+    ),
+
+    path(
+        "share/<uuid:share_token>/add-candidate/",
+        views.guest_event_add_candidate,
+        name="guest_event_add_candidate",
+    ),
+
+    path(
+        "<int:event_id>/settings/",
+        views.event_settings_edit,
+        name="event_settings_edit",
+    ),
+
 ]

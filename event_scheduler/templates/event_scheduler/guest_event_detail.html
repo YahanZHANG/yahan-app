@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'event_scheduler/event_scheduler.css' %}"
+>
+
+<div class="event-page">
+
+    <header class="event-header">
+
+        <p class="event-eyebrow">
+            EVENT
+        </p>
+
+        <h1>
+            {{ event.title }}
+        </h1>
+
+        {% if event.description %}
+            <p class="event-description">
+                {{ event.description|linebreaksbr }}
+            </p>
+        {% endif %}
+
+        <div class="event-meta">
+
+            {% if event.location %}
+                <span>
+                    📍 {{ event.location }}
+                </span>
+            {% endif %}
+
+            {% if event.duration_mode == "fixed" %}
+                <span>
+                    ⏱ {{ event.duration_minutes }}分
+                </span>
+            {% endif %}
+
+        </div>
+
+    </header>
+
+    <section class="event-simple-action">
+
+        <a
+            href="{% url 'event_scheduler:guest_event_respond' event.share_token %}"
+            class="event-primary-button event-large-action"
+        >
+            {% if has_answered %}
+                ✎ 回答を修正する
+            {% else %}
+                ✓ ログインせずに回答する
+            {% endif %}
+        </a>
+
+    </section>
+
+    {% include "event_scheduler/_event_results.html" %}
+
+</div>
+
+{% endblock %}

@@ -1,3 +1,6 @@
+import uuid
+from django.db.models import Q
+
 from datetime import datetime, time
 
 from django.conf import settings
@@ -112,6 +115,16 @@ class Event(models.Model):
 
 
     # =========================================================
+    # Guest share link
+    # =========================================================
+
+    share_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+
+    # =========================================================
     # Visibility / participant settings
     # =========================================================
 
@@ -219,21 +232,6 @@ class Event(models.Model):
         # =========================================================
         # Scheduling settings
         # =========================================================
-
-        # ---------------------------------------------------------
-        # FREE INPUT
-        #
-        # 空き時間入力では、参加者自身が候補日を
-        # 追加できることを前提にする。
-        # ---------------------------------------------------------
-
-        if (
-            self.scheduling_mode
-            == self.SchedulingMode.FREE_INPUT
-        ):
-
-            self.allow_participant_date_addition = True
-
 
         # ---------------------------------------------------------
         # TIME OPTIONS 以外では
@@ -947,6 +945,7 @@ class EventAdmin(models.Model):
             ),
         ]
 
+
     def __str__(self):
 
         return (
@@ -1101,6 +1100,47 @@ class EventParticipant(models.Model):
             f"{self.status}"
         )
 
+# =========================================================
+# Guest participants
+# =========================================================
+
+class EventGuestParticipant(models.Model):
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="guest_participants",
+    )
+
+    display_name = models.CharField(
+        max_length=50,
+    )
+
+    edit_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "created_at",
+            "id",
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.event.title} - "
+            f"{self.display_name}"
+        )
 
 # =========================================================
 # Event duration
@@ -1182,15 +1222,26 @@ class EventDurationVote(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="event_duration_votes",
+        null=True,
+        blank=True,
     )
+
+    guest = models.ForeignKey(
+        EventGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="duration_votes",
+    )
+
 
     updated_at = models.DateTimeField(
         auto_now=True,
     )
 
     class Meta:
-
         constraints = [
+
             models.UniqueConstraint(
                 fields=[
                     "duration_option",
@@ -1198,6 +1249,23 @@ class EventDurationVote(models.Model):
                 ],
                 name="unique_event_duration_vote",
             ),
+
+            models.UniqueConstraint(
+                fields=[
+                    "duration_option",
+                    "guest",
+                ],
+                name="unique_guest_duration_vote",
+            ),
+
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, guest__isnull=True)
+                    | Q(user__isnull=True, guest__isnull=False)
+                ),
+                name="event_duration_vote_one_owner",
+            ),
+
         ]
 
     def __str__(self):
@@ -1273,6 +1341,16 @@ class EventDateVote(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="event_date_votes",
+        null=True,
+        blank=True,
+    )
+
+    guest = models.ForeignKey(
+        EventGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="date_votes",
     )
 
     status = models.CharField(
@@ -1291,6 +1369,7 @@ class EventDateVote(models.Model):
 
     class Meta:
         constraints = [
+
             models.UniqueConstraint(
                 fields=[
                     "event_date",
@@ -1298,8 +1377,24 @@ class EventDateVote(models.Model):
                 ],
                 name="unique_event_date_vote",
             ),
-        ]
 
+            models.UniqueConstraint(
+                fields=[
+                    "event_date",
+                    "guest",
+                ],
+                name="unique_guest_event_date_vote",
+            ),
+
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, guest__isnull=True)
+                    | Q(user__isnull=True, guest__isnull=False)
+                ),
+                name="event_date_vote_one_owner",
+            ),
+
+        ]
 
 # =========================================================
 # Mode 2
@@ -1391,6 +1486,16 @@ class EventTimeOptionVote(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="event_time_option_votes",
+        null=True,
+        blank=True,
+    )
+
+    guest = models.ForeignKey(
+        EventGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="time_option_votes",
     )
 
     status = models.CharField(
@@ -1404,6 +1509,7 @@ class EventTimeOptionVote(models.Model):
 
     class Meta:
         constraints = [
+
             models.UniqueConstraint(
                 fields=[
                     "event_date",
@@ -1412,8 +1518,25 @@ class EventTimeOptionVote(models.Model):
                 ],
                 name="unique_event_time_option_vote",
             ),
-        ]
 
+            models.UniqueConstraint(
+                fields=[
+                    "event_date",
+                    "time_option",
+                    "guest",
+                ],
+                name="unique_guest_time_option_vote",
+            ),
+
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, guest__isnull=True)
+                    | Q(user__isnull=True, guest__isnull=False)
+                ),
+                name="event_time_vote_one_owner",
+            ),
+
+        ]
 
 # =========================================================
 # Mode 3
@@ -1476,7 +1599,18 @@ class EventStartTimeVote(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="event_start_time_votes",
+        null=True,
+        blank=True,
     )
+
+    guest = models.ForeignKey(
+        EventGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="start_time_votes",
+    )
+
 
     status = models.CharField(
         max_length=20,
@@ -1489,6 +1623,7 @@ class EventStartTimeVote(models.Model):
 
     class Meta:
         constraints = [
+
             models.UniqueConstraint(
                 fields=[
                     "start_time_option",
@@ -1496,8 +1631,24 @@ class EventStartTimeVote(models.Model):
                 ],
                 name="unique_event_start_time_vote",
             ),
-        ]
 
+            models.UniqueConstraint(
+                fields=[
+                    "start_time_option",
+                    "guest",
+                ],
+                name="unique_guest_start_time_vote",
+            ),
+
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, guest__isnull=True)
+                    | Q(user__isnull=True, guest__isnull=False)
+                ),
+                name="event_start_time_vote_one_owner",
+            ),
+
+        ]
 
 # =========================================================
 # Mode 4
@@ -1534,7 +1685,18 @@ class EventDateResponse(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="event_date_responses",
+        null=True,
+        blank=True,
     )
+
+    guest = models.ForeignKey(
+        EventGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="date_responses",
+    )
+
 
     response_type = models.CharField(
         max_length=20,
@@ -1556,6 +1718,7 @@ class EventDateResponse(models.Model):
 
     class Meta:
         constraints = [
+
             models.UniqueConstraint(
                 fields=[
                     "event_date",
@@ -1563,6 +1726,23 @@ class EventDateResponse(models.Model):
                 ],
                 name="unique_event_date_response",
             ),
+
+            models.UniqueConstraint(
+                fields=[
+                    "event_date",
+                    "guest",
+                ],
+                name="unique_guest_date_response",
+            ),
+
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, guest__isnull=True)
+                    | Q(user__isnull=True, guest__isnull=False)
+                ),
+                name="event_date_response_one_owner",
+            ),
+
         ]
 
     def __str__(self):
