@@ -1,5 +1,7 @@
 import json
 
+from django.conf import settings
+from django.shortcuts import render, resolve_url
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -7,7 +9,6 @@ from django.http import (
     HttpResponseForbidden,
     JsonResponse,
 )
-from django.shortcuts import render
 from django.views.decorators.http import (
     require_GET,
     require_POST,
@@ -55,13 +56,15 @@ def can_access_game(user, game):
     # マアアアリオだけ一般公開しない
     # -----------------------------------------------------
 
-    if (
-        game == GameScore.Game.MAAARIO
-        and is_public_user(user)
-    ):
-        return False
+    if game == GameScore.Game.MAAARIO:
+
+        return (
+            user.is_authenticated
+            and not is_public_user(user)
+        )
 
     return True
+
 
 
 def normalise_level(
@@ -93,11 +96,8 @@ def normalise_level(
     return None
 
 
-def get_ranking_data(
-    user,
-    game,
-    level,
-):
+
+def get_ranking_data(user, game, level):
 
     base_queryset = (
         GameScore.objects
@@ -116,68 +116,63 @@ def get_ranking_data(
         )
     )
 
+    # =========================================
+    # Top 5 ranking
+    # =========================================
 
-    top_scores = list(
-        base_queryset[:5]
-    )
-
+    top_scores = list(base_queryset[:5])
 
     entries = []
+
+    is_authenticated = user.is_authenticated
 
     for index, item in enumerate(
         top_scores,
         start=1,
     ):
 
-        entries.append(
-            {
-                "rank": index,
-                "name": get_display_name(
-                    item.user
-                ),
-                "score": item.score,
-                "is_me": (
-                    item.user_id
-                    == user.id
-                ),
-            }
+        entries.append({
+            "rank": index,
+            "name": get_display_name(item.user),
+            "score": item.score,
+            "is_me": (
+                is_authenticated
+                and item.user_id == user.pk
+            ),
+        })
+
+    # =========================================
+    # Personal best
+    # =========================================
+
+    personal_best = None
+    personal_rank = None
+
+    if is_authenticated:
+
+        personal_score = (
+            base_queryset
+            .filter(user=user)
+            .first()
         )
 
+        if personal_score is not None:
 
-    personal_score = (
-        base_queryset
-        .filter(
-            user=user
-        )
-        .first()
-    )
+            personal_best = personal_score.score
 
-
-    if personal_score is None:
-
-        personal_best = None
-        personal_rank = None
-
-    else:
-
-        personal_best = (
-            personal_score.score
-        )
-
-        better_score_count = (
-            GameScore.objects
-            .filter(
-                game=game,
-                level=level,
-                score__gt=personal_best,
+            better_score_count = (
+                GameScore.objects
+                .filter(
+                    game=game,
+                    level=level,
+                    score__gt=personal_best,
+                )
+                .count()
             )
-            .count()
-        )
 
-        personal_rank = (
-            better_score_count + 1
-        )
-
+            personal_rank = (
+                better_score_count + 1
+            )
 
     return {
         "entries": entries,
@@ -186,28 +181,34 @@ def get_ranking_data(
     }
 
 
+
 # =========================================================
 # Game list
 # =========================================================
 
-@login_required
 def game_list(request):
+
+    user = request.user
+
+    can_play_maaario = (
+        user.is_authenticated
+        and not is_public_user(user)
+    )
 
     return render(
         request,
         "games/index.html",
         {
-            "is_public_user": is_public_user(
-                request.user
-            ),
+            "can_play_maaario": can_play_maaario,
+            "is_authenticated": user.is_authenticated,
         },
     )
+
 
 # =========================================================
 # Block Breaker
 # =========================================================
 
-@login_required
 def block_breaker(request):
 
     ranking = get_ranking_data(
@@ -226,6 +227,7 @@ def block_breaker(request):
         "personal_rank": (
             ranking["personal_rank"]
         ),
+        "login_url": resolve_url(settings.LOGIN_URL),
     }
 
     return render(
@@ -239,7 +241,7 @@ def block_breaker(request):
 # Tap Star
 # =========================================================
 
-@login_required
+
 def tap_star(request):
 
     ranking = get_ranking_data(
@@ -249,15 +251,10 @@ def tap_star(request):
     )
 
     context = {
-        "ranking_entries": (
-            ranking["entries"]
-        ),
-        "personal_best": (
-            ranking["personal_best"]
-        ),
-        "personal_rank": (
-            ranking["personal_rank"]
-        ),
+        "ranking_entries": ranking["entries"],
+        "personal_best": ranking["personal_best"],
+        "personal_rank": ranking["personal_rank"],
+        "login_url": resolve_url(settings.LOGIN_URL),
     }
 
     return render(
@@ -271,7 +268,7 @@ def tap_star(request):
 # Maze Chase
 # =========================================================
 
-@login_required
+
 def maze_chase(request):
 
     ranking = get_ranking_data(
@@ -281,15 +278,10 @@ def maze_chase(request):
     )
 
     context = {
-        "ranking_entries": (
-            ranking["entries"]
-        ),
-        "personal_best": (
-            ranking["personal_best"]
-        ),
-        "personal_rank": (
-            ranking["personal_rank"]
-        ),
+        "ranking_entries": ranking["entries"],
+        "personal_best": ranking["personal_best"],
+        "personal_rank": ranking["personal_rank"],
+        "login_url": resolve_url(settings.LOGIN_URL),
     }
 
     return render(
@@ -297,7 +289,6 @@ def maze_chase(request):
         "games/maze_chase/index.html",
         context,
     )
-
 
 # =========================================================
 # Maaario
@@ -517,12 +508,8 @@ def save_score(request):
 # Ranking API
 # =========================================================
 
-@login_required
 @require_GET
-def ranking(
-    request,
-    game,
-):
+def ranking(request, game):
 
     if game not in GameScore.Game.values:
 

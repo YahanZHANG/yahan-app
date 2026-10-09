@@ -36,6 +36,28 @@ const levelTitleDisplay = document.getElementById("block-level-name");
 const quitButton = document.getElementById("quit-button");
 const saveStatus = document.getElementById("block-save-status");
 
+// =========================================================
+// Authentication and pending score
+// =========================================================
+
+const isAuthenticated =
+    gameShell.dataset.isAuthenticated === "true";
+
+const loginUrl =
+    gameShell.dataset.loginUrl;
+
+const loginScoreButton =
+    document.getElementById("login-score-button");
+
+const PENDING_SCORE_KEY =
+    "yapp:block_breaker:pending_score";
+
+const PENDING_SCORE_MAX_AGE =
+    30 * 60 * 1000;
+
+const MAX_SAVED_SCORE =
+    1_000_000;
+
 let rankingRequestId = 0;
 let sessionId = 0;
 
@@ -1437,6 +1459,9 @@ function checkStageClear() {
         `LEVEL ${state.levelIndex + 1} クリア！`,
         `${getCurrentLevel().name} ／ ${state.score}点。もう一度挑戦しよう！`,
         "もう一度遊ぶ",
+        {
+            showLoginScore: !isAuthenticated,
+        },
     );
 
     syncLevelButtons();
@@ -1466,6 +1491,9 @@ function handleBallLoss() {
             "ゲームオーバー",
             `LEVEL ${state.levelIndex + 1} ／ ${state.score}点。`,
             "もう一度遊ぶ",
+            {
+                showLoginScore: !isAuthenticated,
+            },
         );
 
         syncLevelButtons();
@@ -1663,14 +1691,190 @@ function hideOverlay() {
     overlay.classList.add("is-hidden");
 }
 
+// =========================================================
+// Guest score handling
+// =========================================================
 
-function showOverlay(title, message, buttonText) {
-    overlayTitle.textContent = title;
-    overlayMessage.textContent = message;
-    startButton.textContent = buttonText;
-    overlay.classList.remove("is-hidden");
+function updateLoginScoreButton(show = false) {
+
+    if (!loginScoreButton) {
+        return;
+    }
+
+    loginScoreButton.hidden = (
+        isAuthenticated || !show
+    );
 }
 
+
+function getLoginRedirectUrl() {
+
+    const url = new URL(
+        loginUrl,
+        window.location.origin,
+    );
+
+    url.searchParams.set(
+        "next",
+        window.location.pathname + window.location.search,
+    );
+
+    return url.toString();
+}
+
+
+function savePendingScore() {
+
+    const pendingScore = {
+        game: "block_breaker",
+        level: state.levelIndex + 1,
+        score: state.score,
+        createdAt: Date.now(),
+    };
+
+    try {
+
+        sessionStorage.setItem(
+            PENDING_SCORE_KEY,
+            JSON.stringify(pendingScore),
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.warn(
+            "スコアを一時保存できませんでした。",
+            error,
+        );
+
+        return false;
+    }
+}
+
+
+function readPendingScore() {
+
+    let raw;
+
+    try {
+
+        raw = sessionStorage.getItem(
+            PENDING_SCORE_KEY,
+        );
+
+    } catch (error) {
+
+        return null;
+    }
+
+    if (!raw) {
+        return null;
+    }
+
+    try {
+
+        const pending = JSON.parse(raw);
+
+        const isValid = (
+            pending.game === "block_breaker"
+            && Number.isInteger(pending.level)
+            && pending.level >= 1
+            && pending.level <= LEVELS.length
+            && Number.isInteger(pending.score)
+            && pending.score >= 0
+            && pending.score <= MAX_SAVED_SCORE
+            && Number.isFinite(pending.createdAt)
+            && pending.createdAt <= Date.now()
+            && Date.now() - pending.createdAt
+                <= PENDING_SCORE_MAX_AGE
+        );
+
+        if (!isValid) {
+            clearPendingScore();
+            return null;
+        }
+
+        return pending;
+
+    } catch (error) {
+
+        clearPendingScore();
+        return null;
+    }
+}
+
+
+function clearPendingScore() {
+
+    try {
+
+        sessionStorage.removeItem(
+            PENDING_SCORE_KEY,
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "一時スコアを削除できませんでした。",
+            error,
+        );
+    }
+}
+
+
+function goToLoginWithScore(event) {
+
+    event.preventDefault();
+
+    if (isAuthenticated) {
+        return;
+    }
+
+    if (!loginUrl) {
+        console.warn("ログインURLが未設定です。");
+        return;
+    }
+
+    savePendingScore();
+
+    window.location.assign(
+        getLoginRedirectUrl(),
+    );
+}
+
+
+if (loginScoreButton) {
+
+    loginScoreButton.addEventListener(
+        "click",
+        goToLoginWithScore,
+    );
+}
+
+// =========================================================
+// Game overlay
+// =========================================================
+
+function showOverlay(
+    title,
+    message,
+    buttonText,
+    options = {},
+) {
+
+    overlayTitle.textContent = title;
+
+    overlayMessage.textContent = message;
+
+    startButton.textContent = buttonText;
+
+    updateLoginScoreButton(
+        options.showLoginScore === true,
+    );
+
+    overlay.classList.remove("is-hidden");
+}
 
 function renderRanking(data, level = state.levelIndex + 1) {
     rankingLevelDisplay.textContent = String(level);
@@ -1755,53 +1959,100 @@ function renderRanking(data, level = state.levelIndex + 1) {
 }
 
 
+// =========================================================
+// Score submission
+// =========================================================
+
+async function postGameScore(level, score) {
+
+    const response = await fetch(scoreSaveUrl, {
+        method: "POST",
+        credentials: "same-origin",
+
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+        },
+
+        body: JSON.stringify({
+            game: "block_breaker",
+            level,
+            score,
+        }),
+    });
+
+    if (!response.ok) {
+
+        throw new Error(
+            `Score save failed: ${response.status}`
+        );
+    }
+
+    const data = await response.json();
+
+    if (!data.ok) {
+
+        throw new Error(
+            data.error || "Score save failed"
+        );
+    }
+
+    return data;
+}
+
+
+// =========================================================
+// Score submission
+// =========================================================
+
 async function submitScoreIfEligible() {
-    if (state.scoreSubmitted || state.score < 0) return;
+
+    if (
+        state.scoreSubmitted
+        || state.score < 0
+    ) {
+        return;
+    }
 
     state.scoreSubmitted = true;
+
+    // =====================================================
+    // Guest user
+    // =====================================================
+
+    if (!isAuthenticated) {
+
+        saveStatus.textContent =
+            "今回のスコアは未保存です。ログインすると記録できます。";
+
+        return;
+    }
+
+    // =====================================================
+    // Authenticated user
+    // =====================================================
 
     const level = state.levelIndex + 1;
     const score = state.score;
     const session = sessionId;
 
-    saveStatus.textContent = "スコアを保存中…";
+    saveStatus.textContent =
+        "スコアを保存中…";
 
     try {
-        const response = await fetch(scoreSaveUrl, {
-            method: "POST",
-            credentials: "same-origin",
 
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-
-            body: JSON.stringify({
-                game: "block_breaker",
-                level,
-                score,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error(
-                `Score save failed: ${response.status}`
-            );
-        }
-
-        const data = await response.json();
-
-        if (!data.ok) {
-            throw new Error(
-                data.error || "Score save failed"
-            );
-        }
+        const data = await postGameScore(
+            level,
+            score,
+        );
 
         if (
             state.levelIndex + 1 === level
             && sessionId === session
         ) {
+
             rankingRequestId++;
+
             renderRanking(data, level);
 
             saveStatus.textContent =
@@ -1809,17 +2060,103 @@ async function submitScoreIfEligible() {
                 ? "🎉 自己ベスト更新！"
                 : "スコアを保存したよ。";
         }
+
     } catch (error) {
+
         if (
             state.levelIndex + 1 === level
             && sessionId === session
         ) {
+
             saveStatus.textContent =
-                "保存できなかった。通信状態を確認してね。";
+                "スコアを保存できませんでした。";
         }
 
         console.warn(
-            "ランキングを保存できませんでした。",
+            "スコア保存エラー:",
+            error,
+        );
+    }
+}
+
+
+// =========================================================
+// Restore score after login
+// =========================================================
+
+async function restorePendingScoreAfterLogin() {
+
+    if (!isAuthenticated) {
+        return;
+    }
+
+    const pending = readPendingScore();
+
+    if (!pending) {
+        return;
+    }
+
+    // 同一ページで二重送信しないため、
+    // 一時保存した記録は最初の処理で削除する。
+
+    clearPendingScore();
+
+    saveStatus.textContent =
+        "ログイン前のスコアを記録中…";
+
+    try {
+
+        const data = await postGameScore(
+            pending.level,
+            pending.score,
+        );
+
+        if (
+            state.levelIndex + 1 === pending.level
+        ) {
+
+            rankingRequestId++;
+
+            renderRanking(
+                data,
+                pending.level,
+            );
+
+        } else {
+
+            await loadRanking(
+                state.levelIndex + 1,
+            );
+        }
+
+        saveStatus.textContent =
+            data.is_new_best
+            ? `🎉 LEVEL ${pending.level} の自己ベストを更新したよ！`
+            : `LEVEL ${pending.level} のスコアを記録したよ。`;
+
+    } catch (error) {
+
+        // 通信エラー時に再試行できるように残す。
+        try {
+
+            sessionStorage.setItem(
+                PENDING_SCORE_KEY,
+                JSON.stringify(pending),
+            );
+
+        } catch (storageError) {
+
+            console.warn(
+                "一時スコアの復元に失敗しました。",
+                storageError,
+            );
+        }
+
+        saveStatus.textContent =
+            "ログインは完了したけど、スコアを保存できなかった。再読み込みしてね。";
+
+        console.warn(
+            "ログイン前のスコアを保存できませんでした。",
             error,
         );
     }
@@ -2285,6 +2622,15 @@ if (laserButton) {
 }
 
 
+// =========================================================
+// Initialise game
+// =========================================================
+
 startButton.dataset.action = "start";
 
 selectStage(1);
+
+// ログイン画面から戻ってきた場合、
+// 一時保存していたスコアをランキングへ登録する。
+
+void restorePendingScoreAfterLogin();

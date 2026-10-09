@@ -90,3 +90,102 @@ body.maze-fullscreen-active {overflow:hidden;}
     .maze-action-controls button {padding:9px 10px;font-size:.74rem;}
     .maze-ranking-header {flex-direction:column;}
 }
+
+
+/* =========================================================
+   Maze Chase - Guest Login CTA
+   ========================================================= */
+
+.maze-login-score-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 46px;
+    margin: 0 auto 12px;
+    padding: 11px 13px;
+    border: 1px solid rgba(137, 230, 190, .42);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #a8f1ce, #78dcb6);
+    color: #153d32;
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 900;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 7px 22px rgba(61, 198, 146, .17);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.maze-login-score-button[hidden] {
+    display: none !important;
+}
+
+.maze-login-score-button:hover {
+    color: #153d32;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(61, 198, 146, .24);
+}
+
+.maze-login-score-button:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+/* Ranking information */
+
+.maze-ranking-note a {
+    color: #4c8973;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.maze-ranking-note a:hover {
+    color: #2f6954;
+    text-decoration: underline;
+}
+
+/* Keep status inside ranking */
+
+.maze-ranking .maze-save-status {
+    max-width: none;
+    min-height: 0;
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+.maze-ranking .maze-save-status:empty {
+    display: none;
+}
+
+/* More space below game controls */
+
+.maze-hint {
+    margin-bottom: 23px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    .maze-login-score-button {
+        font-size: .73rem;
+        padding: 10px 11px;
+    }
+
+    .maze-overlay-panel {
+        padding: 19px 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .maze-login-score-button {
+        transition: none;
+    }
+
+    .maze-login-score-button:hover {
+        transform: none;
+    }
+}

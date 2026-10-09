@@ -1291,3 +1291,138 @@
     }
 
 }
+
+
+/* =========================================================
+   Guest Login / Ranking Information
+   ========================================================= */
+
+.tap-star-login-score-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    width: min(100%, 310px);
+    min-height: 48px;
+
+    margin: 0 auto 12px;
+    padding: 12px 18px;
+
+    border: 1px solid #acd9bf;
+    border-radius: 999px;
+
+    background: linear-gradient(
+        135deg,
+        #e1f5e7,
+        #bdebd0
+    );
+
+    color: #285c3c;
+
+    font-size: 0.83rem;
+    font-weight: 800;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+
+    box-shadow:
+        0 5px 16px rgba(61, 145, 92, 0.12);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.tap-star-login-score-button[hidden] {
+    display: none !important;
+}
+
+.tap-star-login-score-button:hover {
+    transform: translateY(-2px);
+
+    background: #c9f0d8;
+    color: #285c3c;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 9px 20px rgba(61, 145, 92, 0.18);
+}
+
+.tap-star-login-score-button:focus-visible {
+    outline: 3px solid #45966a;
+    outline-offset: 3px;
+}
+
+.tap-star-save-status {
+    margin: 12px 0 0;
+
+    color: #58806a;
+    font-size: 0.76rem;
+    line-height: 1.7;
+    text-align: center;
+}
+
+.tap-star-save-status:empty {
+    display: none;
+}
+
+.tap-star-ranking-note {
+    margin: 15px 0 0;
+
+    color: #878b96;
+    font-size: 0.75rem;
+    line-height: 1.85;
+}
+
+.tap-star-ranking-note a {
+    color: #498c67;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.tap-star-ranking-note a:hover {
+    color: #2c6947;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+
+    .tap-star-login-score-button {
+        width: min(100%, 290px);
+        min-height: 46px;
+        padding: 11px 14px;
+        font-size: 0.78rem;
+    }
+
+    .tap-star-ranking-note {
+        font-size: 0.72rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .tap-star-login-score-button {
+        transition: none;
+    }
+
+    .tap-star-login-score-button:hover {
+        transform: none;
+    }
+}
+
+
+/* =========================================================
+   Ranking below the game
+   ========================================================= */
+
+.tap-star-hint {
+    margin-bottom: 25px;
+}
+
+.tap-star-ranking {
+    margin-top: 0;
+    margin-bottom: 20px;
+}

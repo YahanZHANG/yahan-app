@@ -20,134 +20,235 @@
         </h2>
 
         <p class="news-services-lead">
-            Swiss Newsのほかにも、下記のような、
-            毎日の生活に使える小さなサービスを作っています。
+            Swiss Newsのほかにも、
+            スイスでの毎日の生活に使える小さなサービスを作っています。
         </p>
 
     </header>
 
 
     <!-- =========================
-         Services
+         Available services
     ========================= -->
 
-    <div class="news-services-grid">
+    <section class="news-services-section">
+
+        <div class="news-services-section-header">
+
+            <p class="news-services-section-kicker">
+                AVAILABLE NOW
+            </p>
+
+            <h3>
+                今すぐ使えるサービス
+            </h3>
+
+        </div>
 
 
-        <!-- Recipe -->
+        <div class="news-services-grid">
 
-        <article class="news-service-card">
 
-            <div class="news-service-icon">
-                🍳
-            </div>
+            <!-- Events -->
 
-            <div class="news-service-content">
+            <a
+                href="{% url 'event_scheduler:event_list' %}"
+                class="news-service-card news-service-card-link"
+            >
 
-                <div class="news-service-heading">
+                <div class="news-service-icon">
+                    📅
+                </div>
 
-                    <h3>
-                        レシピ検索・提案
-                    </h3>
+                <div class="news-service-content">
+
+                    <div class="news-service-heading">
+
+                        <h4>
+                            イベント・日程調整
+                        </h4>
+
+                    </div>
+
+                    <p>
+                        イベントの予定を共有して、
+                        みんなが集まりやすい日時を簡単に見つけられます。
+                    </p>
 
                 </div>
 
-                <p>
-                    ホットクックやシェフドラムなど、
-                    家にある調理家電に合わせてレシピを探せます。
-                </p>
-
-            </div>
-
-        </article>
+            </a>
 
 
-        <!-- Events -->
+            <!-- Color check -->
 
-        <article class="news-service-card">
+            <a
+                href="{% url 'colorcheck:index' %}"
+                class="news-service-card news-service-card-link"
+            >
 
-            <div class="news-service-icon">
-                📅
-            </div>
+                <div class="news-service-icon">
+                    🎨
+                </div>
 
-            <div class="news-service-content">
+                <div class="news-service-content">
 
-                <div class="news-service-heading">
+                    <div class="news-service-heading">
 
-                    <h3>
-                        イベント・日程調整
-                    </h3>
+                        <h4>
+                            色判定
+                        </h4>
+
+                    </div>
+
+                    <p>
+                        色の見分けに困ったときに、
+                        気になる色を簡単に確認できるツールです。
+                    </p>
 
                 </div>
 
-                <p>
-                    みんなの予定を入力して、
-                    集まりやすい日時を簡単に見つけられます。
-                </p>
+            </a>
 
-            </div>
 
-        </article>
+            <!-- Game -->
 
-        <!-- Color check -->
+            <a
+                href="{% url 'games:game_list' %}"
+                class="news-service-card news-service-card-link"
+            >
 
-        <article class="news-service-card">
+                <div class="news-service-icon">
+                    🎮
+                </div>
 
-            <div class="news-service-icon">
-                🎨
-            </div>
+                <div class="news-service-content">
 
-            <div class="news-service-content">
+                    <div class="news-service-heading">
 
-                <div class="news-service-heading">
+                        <h4>
+                            ミニゲーム
+                        </h4>
 
-                    <h3>
-                        色判定
-                    </h3>
+                    </div>
+
+                    <p>
+                        ちょっとした空き時間に遊べる、
+                        シンプルなミニゲームを集めています。
+                    </p>
 
                 </div>
 
-                <p>
-                    色覚異常の方のために、色を見分けたり比較したりできる、
-                    シンプルな色判定ツールです。
-                </p>
+            </a>
 
-            </div>
 
-        </article>
+        </div>
 
-        <!-- Game -->
-
-        <article class="news-service-card">
-
-            <div class="news-service-icon">
-                🎮
-            </div>
-
-            <div class="news-service-content">
-
-                <div class="news-service-heading">
-
-                    <h3>
-                        ミニゲーム
-                    </h3>
-
-                </div>
-
-                <p>
-                    ミニゲームで息抜きしませんか。
-                </p>
-
-            </div>
-
-        </article>
-
-    </div>
+    </section>
 
 
     <!-- =========================
-         Account
+         Coming soon
     ========================= -->
+
+    <section class="news-services-section news-services-coming-section">
+
+        <div class="news-services-section-header">
+
+            <p class="news-services-section-kicker">
+                COMING SOON
+            </p>
+
+            <h3>
+                これから追加予定
+            </h3>
+
+        </div>
+
+
+        <div class="news-services-grid">
+
+
+            <!-- Recipe -->
+
+            <article
+                class="news-service-card news-service-card-coming"
+            >
+
+                <div class="news-service-icon">
+                    🍳
+                </div>
+
+                <div class="news-service-content">
+
+                    <div class="news-service-heading">
+
+                        <h4>
+                            Japanレシピ  
+                        </h4>
+
+                        <span class="news-service-status">
+                            COMING SOON
+                        </span>
+
+                    </div>
+
+                    <p>
+                        スイスのスーパーで手に入りやすい食材を中心に、
+                        日本人の舌に合う献立を探せるレシピサービスを準備中です。
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- Travel -->
+
+            <article
+                class="news-service-card news-service-card-coming"
+            >
+
+                <div class="news-service-icon">
+                    ✈️
+                </div>
+
+                <div class="news-service-content">
+
+                    <div class="news-service-heading">
+
+                        <h4>
+                            旅トモ
+                        </h4>
+
+                        <span class="news-service-status">
+                            COMING SOON
+                        </span>
+
+                    </div>
+
+                    <p>
+                        ヨーロッパを中心とした海外での病院受診や緊急時も安心。
+                        病歴・ワクチン履歴の多言語表示や、各国の緊急連絡先を簡単に確認できます。
+                    </p>
+
+                </div>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}
+
+<!-- 
+    =========================
+         Account
+    ========================= 
 
     <section class="news-services-account">
 
@@ -208,7 +309,4 @@
         {% endif %}
 
     </section>
-
-</section>
-
-{% endblock %}
+    -->

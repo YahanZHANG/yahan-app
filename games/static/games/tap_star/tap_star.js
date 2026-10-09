@@ -1,112 +1,164 @@
+
 document.addEventListener("DOMContentLoaded", function () {
 
+    // =========================================================
+    // Configuration
+    // =========================================================
+
     const GAME_DURATION = 30;
-
-
-    // ========================================
-    // Level Settings
-    // ========================================
 
     const LEVELS = {
         1: {
             name: "やさしい",
             size: 88,
             fontSize: 52,
-            moveInterval: null
+            moveInterval: null,
         },
-
         2: {
             name: "ふつう",
             size: 76,
             fontSize: 44,
-            moveInterval: 1500
+            moveInterval: 1500,
         },
-
         3: {
             name: "むずかしい",
             size: 62,
             fontSize: 35,
-            moveInterval: 900
+            moveInterval: 900,
         },
-
         4: {
             name: "激ムズ",
             size: 48,
             fontSize: 27,
-            moveInterval: 550
+            moveInterval: 550,
         },
-
         5: {
             name: "鬼",
             size: 30,
             fontSize: 17,
-            moveInterval: 250
-        }
+            moveInterval: 250,
+        },
     };
 
+    const PENDING_SCORE_KEY =
+        "yapp:tap_star:pending_score";
 
-    // ========================================
+    const PENDING_SCORE_MAX_AGE =
+        30 * 60 * 1000;
+
+    const MAX_SAVED_SCORE = 1_000_000;
+
+
+    // =========================================================
     // Elements
-    // ========================================
+    // =========================================================
 
-    const gameArea =
-        document.getElementById("tap-star-game-area");
+    const page = document.querySelector(
+        ".tap-star-page"
+    );
 
-    const scoreDisplay =
-        document.getElementById("tap-star-score");
+    if (!page) {
+        return;
+    }
 
-    const timeDisplay =
-        document.getElementById("tap-star-time");
+    const gameArea = document.getElementById(
+        "tap-star-game-area"
+    );
 
-    const currentLevelDisplay =
-        document.getElementById("tap-star-current-level");
+    const scoreDisplay = document.getElementById(
+        "tap-star-score"
+    );
 
-    const selectedLevelDisplay =
-        document.getElementById("tap-star-selected-level");
+    const timeDisplay = document.getElementById(
+        "tap-star-time"
+    );
 
-    const levelButtons =
-        document.querySelectorAll(".tap-star-level-button");
+    const currentLevelDisplay = document.getElementById(
+        "tap-star-current-level"
+    );
 
-    const readyScreen =
-        document.getElementById("tap-star-ready");
+    const selectedLevelDisplay = document.getElementById(
+        "tap-star-selected-level"
+    );
 
-    const resultScreen =
-        document.getElementById("tap-star-result");
+    const levelButtons = [
+        ...document.querySelectorAll(
+            ".tap-star-level-button"
+        ),
+    ];
 
-    const pauseOverlay =
-        document.getElementById("tap-star-pause-overlay");
+    const readyScreen = document.getElementById(
+        "tap-star-ready"
+    );
 
-    const startButton =
-        document.getElementById("tap-star-start-button");
+    const resultScreen = document.getElementById(
+        "tap-star-result"
+    );
 
-    const restartButton =
-        document.getElementById("tap-star-restart-button");
+    const pauseOverlay = document.getElementById(
+        "tap-star-pause-overlay"
+    );
 
-    const pauseButton =
-        document.getElementById("tap-star-pause-button");
+    const startButton = document.getElementById(
+        "tap-star-start-button"
+    );
 
-    const quitButton =
-        document.getElementById("tap-star-quit-button");
+    const restartButton = document.getElementById(
+        "tap-star-restart-button"
+    );
 
-    const gameControls =
-        document.getElementById("tap-star-game-controls");
+    const pauseButton = document.getElementById(
+        "tap-star-pause-button"
+    );
 
-    const target =
-        document.getElementById("tap-star-target");
+    const quitButton = document.getElementById(
+        "tap-star-quit-button"
+    );
 
-    const finalScore =
-        document.getElementById("tap-star-final-score");
+    const gameControls = document.getElementById(
+        "tap-star-game-controls"
+    );
 
-    const resultLevel =
-        document.getElementById("tap-star-result-level");
+    const target = document.getElementById(
+        "tap-star-target"
+    );
 
-    const resultMessage =
-        document.getElementById("tap-star-result-message");
+    const finalScore = document.getElementById(
+        "tap-star-final-score"
+    );
 
-    const page =
-        document.querySelector(
-            ".tap-star-page"
-        );
+    const resultLevel = document.getElementById(
+        "tap-star-result-level"
+    );
+
+    const resultMessage = document.getElementById(
+        "tap-star-result-message"
+    );
+
+    const rankingList = document.getElementById(
+        "tap-star-ranking-list"
+    );
+
+    const rankingLevelDisplay = document.getElementById(
+        "tap-star-ranking-level"
+    );
+
+    const personalBestDisplay = document.getElementById(
+        "tap-star-personal-best"
+    );
+
+    const saveStatus = document.getElementById(
+        "tap-star-save-status"
+    );
+
+    const loginScoreButton = document.getElementById(
+        "tap-star-login-score-button"
+    );
+
+
+    // =========================================================
+    // Authentication / URLs
+    // =========================================================
 
     const scoreSaveUrl =
         page.dataset.scoreUrl;
@@ -117,42 +169,82 @@ document.addEventListener("DOMContentLoaded", function () {
     const csrfToken =
         page.dataset.csrfToken;
 
-    const rankingList =
-        document.getElementById(
-            "tap-star-ranking-list"
-        );
+    const isAuthenticated =
+        page.dataset.isAuthenticated === "true";
 
-    const rankingLevelDisplay =
-        document.getElementById(
-            "tap-star-ranking-level"
-        );
-
-    const personalBestDisplay =
-        document.getElementById(
-            "tap-star-personal-best"
-        );
+    const loginUrl =
+        page.dataset.loginUrl;
 
 
-    // ========================================
-    // State
-    // ========================================
+    // =========================================================
+    // Game State
+    // =========================================================
 
     let selectedLevel = 1;
+
     let score = 0;
+
     let remainingTime = GAME_DURATION;
 
     let timerId = null;
+
     let targetMoveTimerId = null;
 
     let gameRunning = false;
+
     let isPaused = false;
 
+    let gameSessionId = 0;
 
-    // ========================================
+    let rankingRequestId = 0;
+
+    let lastFinishedResult = null;
+
+
+    // =========================================================
+    // Helpers
+    // =========================================================
+
+    function setSaveStatus(message) {
+
+        if (saveStatus) {
+            saveStatus.textContent = message;
+        }
+    }
+
+
+    function isValidLevel(level) {
+
+        return (
+            Number.isInteger(level)
+            && Object.prototype.hasOwnProperty.call(
+                LEVELS,
+                level
+            )
+        );
+    }
+
+
+    function updateLoginScoreButton(show) {
+
+        if (!loginScoreButton) {
+            return;
+        }
+
+        loginScoreButton.hidden =
+            isAuthenticated || !show;
+    }
+
+
+    // =========================================================
     // Level Selection
-    // ========================================
+    // =========================================================
 
     function selectLevel(level) {
+
+        if (!isValidLevel(level)) {
+            return;
+        }
 
         if (gameRunning) {
             return;
@@ -171,15 +263,21 @@ document.addEventListener("DOMContentLoaded", function () {
             const buttonLevel =
                 Number(button.dataset.level);
 
+            const active =
+                buttonLevel === selectedLevel;
+
             button.classList.toggle(
                 "is-active",
-                buttonLevel === selectedLevel
+                active
             );
 
+            button.setAttribute(
+                "aria-pressed",
+                String(active)
+            );
         });
 
-        loadRanking(selectedLevel);
-
+        void loadRanking(selectedLevel);
     }
 
 
@@ -188,7 +286,6 @@ document.addEventListener("DOMContentLoaded", function () {
         levelButtons.forEach(function (button) {
             button.disabled = true;
         });
-
     }
 
 
@@ -197,31 +294,18 @@ document.addEventListener("DOMContentLoaded", function () {
         levelButtons.forEach(function (button) {
             button.disabled = false;
         });
-
     }
 
 
-    levelButtons.forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const level =
-                Number(button.dataset.level);
-
-            selectLevel(level);
-
-        });
-
-    });
-
-
-    // ========================================
+    // =========================================================
     // Start Game
-    // ========================================
+    // =========================================================
 
     function startGame() {
 
         clearGameTimers();
+
+        gameSessionId += 1;
 
         score = 0;
         remainingTime = GAME_DURATION;
@@ -230,7 +314,9 @@ document.addEventListener("DOMContentLoaded", function () {
         isPaused = false;
 
         scoreDisplay.textContent = "0";
-        timeDisplay.textContent = String(GAME_DURATION);
+
+        timeDisplay.textContent =
+            String(GAME_DURATION);
 
         currentLevelDisplay.textContent =
             String(selectedLevel);
@@ -242,7 +328,14 @@ document.addEventListener("DOMContentLoaded", function () {
         target.hidden = false;
         gameControls.hidden = false;
 
-        pauseButton.textContent = "⏸ 一時停止";
+        target.classList.remove("is-paused");
+
+        pauseButton.textContent =
+            "⏸ 一時停止";
+
+        updateLoginScoreButton(false);
+
+        setSaveStatus("");
 
         disableLevelButtons();
 
@@ -251,13 +344,12 @@ document.addEventListener("DOMContentLoaded", function () {
         moveTarget();
 
         startTimers();
-
     }
 
 
-    // ========================================
+    // =========================================================
     // Timers
-    // ========================================
+    // =========================================================
 
     function startTimers() {
 
@@ -270,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
             remainingTime -= 1;
 
             timeDisplay.textContent =
-                String(remainingTime);
+                String(Math.max(0, remainingTime));
 
             if (remainingTime <= 0) {
                 endGame();
@@ -278,50 +370,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }, 1000);
 
-
         startTargetMovement();
-
     }
 
 
     function startTargetMovement() {
 
-        const settings = LEVELS[selectedLevel];
+        const settings =
+            LEVELS[selectedLevel];
 
         if (!settings.moveInterval) {
             return;
         }
 
-        targetMoveTimerId =
-            setInterval(function () {
+        targetMoveTimerId = setInterval(
+            function () {
 
                 if (gameRunning && !isPaused) {
                     moveTarget();
                 }
 
-            }, settings.moveInterval);
-
+            },
+            settings.moveInterval
+        );
     }
 
 
     function clearGameTimers() {
 
-        if (timerId) {
+        if (timerId !== null) {
+
             clearInterval(timerId);
             timerId = null;
         }
 
-        if (targetMoveTimerId) {
+        if (targetMoveTimerId !== null) {
+
             clearInterval(targetMoveTimerId);
             targetMoveTimerId = null;
         }
-
     }
 
 
-    // ========================================
+    // =========================================================
     // Pause / Resume
-    // ========================================
+    // =========================================================
 
     function togglePause() {
 
@@ -329,13 +422,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-
         if (isPaused) {
             resumeGame();
         } else {
             pauseGame();
         }
-
     }
 
 
@@ -347,10 +438,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         pauseOverlay.hidden = false;
 
-        pauseButton.textContent = "▶ 再開";
+        pauseButton.textContent =
+            "▶ 再開";
 
         target.classList.add("is-paused");
-
     }
 
 
@@ -360,20 +451,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         pauseOverlay.hidden = true;
 
-        pauseButton.textContent = "⏸ 一時停止";
+        pauseButton.textContent =
+            "⏸ 一時停止";
 
         target.classList.remove("is-paused");
 
         startTimers();
-
     }
 
 
-    // ========================================
+    // =========================================================
     // Quit Game
-    // ========================================
+    // =========================================================
 
     function quitGame() {
+
+        gameSessionId += 1;
 
         clearGameTimers();
 
@@ -384,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function () {
         remainingTime = GAME_DURATION;
 
         target.hidden = true;
+
         target.classList.remove("is-paused");
 
         pauseOverlay.hidden = true;
@@ -393,20 +487,24 @@ document.addEventListener("DOMContentLoaded", function () {
         gameControls.hidden = true;
 
         scoreDisplay.textContent = "0";
+
         timeDisplay.textContent =
             String(GAME_DURATION);
 
         pauseButton.textContent =
             "⏸ 一時停止";
 
-        enableLevelButtons();
+        updateLoginScoreButton(false);
 
+        setSaveStatus("");
+
+        enableLevelButtons();
     }
 
 
-    // ========================================
+    // =========================================================
     // Difficulty
-    // ========================================
+    // =========================================================
 
     function applyLevelSettings() {
 
@@ -421,13 +519,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         target.style.fontSize =
             `${settings.fontSize}px`;
-
     }
 
 
-    // ========================================
+    // =========================================================
     // Move Star
-    // ========================================
+    // =========================================================
 
     function moveTarget() {
 
@@ -449,29 +546,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const padding = 10;
 
-        const availableWidth =
-            Math.max(
-                0,
-                areaWidth -
-                targetWidth -
-                padding * 2
-            );
+        const availableWidth = Math.max(
+            0,
+            areaWidth - targetWidth - padding * 2
+        );
 
-        const availableHeight =
-            Math.max(
-                0,
-                areaHeight -
-                targetHeight -
-                padding * 2
-            );
+        const availableHeight = Math.max(
+            0,
+            areaHeight - targetHeight - padding * 2
+        );
 
         const x =
-            padding +
-            Math.random() * availableWidth;
+            padding + Math.random() * availableWidth;
 
         const y =
-            padding +
-            Math.random() * availableHeight;
+            padding + Math.random() * availableHeight;
 
         target.style.left =
             `${x}px`;
@@ -480,13 +569,12 @@ document.addEventListener("DOMContentLoaded", function () {
             `${y}px`;
 
         restartTargetAnimation();
-
     }
 
 
-    // ========================================
+    // =========================================================
     // Hit
-    // ========================================
+    // =========================================================
 
     function hitTarget(event) {
 
@@ -502,7 +590,6 @@ document.addEventListener("DOMContentLoaded", function () {
             String(score);
 
         moveTarget();
-
     }
 
 
@@ -513,242 +600,519 @@ document.addEventListener("DOMContentLoaded", function () {
         void target.offsetWidth;
 
         target.style.animation = "";
-
     }
 
-// ========================================
-// Ranking
-// ========================================
 
-function renderRanking(
-    data,
-    level,
-) {
+    // =========================================================
+    // Ranking Rendering
+    // =========================================================
 
-    rankingLevelDisplay.textContent =
-        String(level);
+    function renderRanking(data, level) {
 
-    rankingList.innerHTML = "";
+        if (!data || !Array.isArray(data.entries)) {
+            return;
+        }
 
-    const entries =
-        data.entries ?? [];
+        rankingLevelDisplay.textContent =
+            String(level);
 
-    if (entries.length === 0) {
+        rankingList.replaceChildren();
 
-        const emptyItem =
-            document.createElement("li");
+        if (data.entries.length === 0) {
 
-        emptyItem.className =
-            "tap-star-ranking-empty";
-
-        emptyItem.textContent =
-            "まだ記録がない";
-
-        rankingList.appendChild(
-            emptyItem
-        );
-
-    } else {
-
-        entries.forEach(function (entry) {
-
-            const item =
+            const emptyItem =
                 document.createElement("li");
 
-            if (entry.is_me) {
-                item.classList.add(
-                    "is-me"
+            emptyItem.className =
+                "tap-star-ranking-empty";
+
+            emptyItem.textContent =
+                "まだ記録がない";
+
+            rankingList.appendChild(emptyItem);
+
+        } else {
+
+            data.entries.forEach(function (entry) {
+
+                const item =
+                    document.createElement("li");
+
+                if (entry.is_me) {
+
+                    item.classList.add("is-me");
+                }
+
+                const position =
+                    document.createElement("span");
+
+                position.className =
+                    "tap-star-ranking-position";
+
+                position.textContent =
+                    String(entry.rank);
+
+                const name =
+                    document.createElement("strong");
+
+                name.textContent =
+                    String(entry.name);
+
+                const scoreElement =
+                    document.createElement("span");
+
+                scoreElement.textContent =
+                    `${entry.score} 回`;
+
+                item.append(
+                    position,
+                    name,
+                    scoreElement
+                );
+
+                rankingList.appendChild(item);
+            });
+        }
+
+        personalBestDisplay.textContent =
+            data.personal_best == null
+            ? "--"
+            : String(data.personal_best);
+    }
+
+
+    // =========================================================
+    // Ranking API
+    // =========================================================
+
+    async function loadRanking(level) {
+
+        const requestId =
+            ++rankingRequestId;
+
+        rankingLevelDisplay.textContent =
+            String(level);
+
+        personalBestDisplay.textContent = "--";
+
+        rankingList.replaceChildren();
+
+        const loading =
+            document.createElement("li");
+
+        loading.className =
+            "tap-star-ranking-empty";
+
+        loading.textContent =
+            "ランキングを読み込み中…";
+
+        rankingList.appendChild(loading);
+
+        try {
+
+            const response = await fetch(
+                `${rankingUrl}?level=${level}`,
+                {
+                    credentials: "same-origin",
+                }
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Ranking failed: ${response.status}`
                 );
             }
 
+            const data = await response.json();
 
-            const position =
-                document.createElement(
-                    "span"
-                );
+            if (
+                data.ok
+                && selectedLevel === level
+                && requestId === rankingRequestId
+            ) {
 
-            position.className =
-                "tap-star-ranking-position";
+                renderRanking(data, level);
+            }
 
-            position.textContent =
-                String(entry.rank);
+        } catch (error) {
 
+            if (
+                selectedLevel === level
+                && requestId === rankingRequestId
+            ) {
 
-            const name =
-                document.createElement(
-                    "strong"
-                );
+                loading.textContent =
+                    "ランキングを取得できませんでした。";
+            }
 
-            name.textContent =
-                entry.name;
-
-
-            const scoreElement =
-                document.createElement(
-                    "span"
-                );
-
-            scoreElement.textContent =
-                `${entry.score} 回`;
-
-
-            item.append(
-                position,
-                name,
-                scoreElement,
+            console.warn(
+                "ランキング取得エラー:",
+                error
             );
-
-            rankingList.appendChild(
-                item
-            );
-
-        });
-
+        }
     }
 
 
-    personalBestDisplay.textContent = (
-        data.personal_best === null
-        ? "--"
-        : String(data.personal_best)
-    );
+    // =========================================================
+    // Score API
+    // =========================================================
 
-}
+    async function postGameScore(level, currentScore) {
 
+        const response = await fetch(
+            scoreSaveUrl,
+            {
+                method: "POST",
+                credentials: "same-origin",
 
-async function loadRanking(level) {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
 
-    try {
-
-        const response =
-            await fetch(
-                `${rankingUrl}?level=${level}`,
-                {
-                    credentials:
-                        "same-origin",
-                }
-            );
-
-
-        if (!response.ok) {
-            return;
-        }
-
-
-        const data =
-            await response.json();
-
-
-        // 読み込み中に別レベルへ
-        // 切り替えた場合は表示しない
-        if (
-            selectedLevel
-            !== level
-        ) {
-            return;
-        }
-
-
-        if (data.ok) {
-            renderRanking(
-                data,
-                level,
-            );
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "ランキングを取得できませんでした。",
-            error,
+                body: JSON.stringify({
+                    game: "tap_star",
+                    level: level,
+                    score: currentScore,
+                }),
+            }
         );
 
-    }
-
-}
-
-
-async function saveScore(
-    level,
-    currentScore,
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                scoreSaveUrl,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-
-                        "X-CSRFToken":
-                            csrfToken,
-                    },
-
-                    credentials:
-                        "same-origin",
-
-                    body:
-                        JSON.stringify(
-                            {
-                                game:
-                                    "tap_star",
-
-                                level:
-                                    level,
-
-                                score:
-                                    currentScore,
-                            }
-                        ),
-                }
-            );
-
-
         if (!response.ok) {
+
             throw new Error(
-                "Score save failed."
+                `Score save failed: ${response.status}`
             );
         }
 
+        const data = await response.json();
 
-        const data =
-            await response.json();
+        if (!data.ok) {
 
-
-        if (
-            data.ok
-            && selectedLevel === level
-        ) {
-
-            renderRanking(
-                data,
-                level,
+            throw new Error(
+                data.error || "Score save failed"
             );
-
         }
 
-    } catch (error) {
-
-        console.warn(
-            "スコアを保存できませんでした。",
-            error,
-        );
-
+        return data;
     }
 
-}
+
+    // =========================================================
+    // Submit Score
+    // =========================================================
+
+    async function saveScore(level, currentScore, session) {
+
+        // Guests can play but cannot save scores.
+
+        if (!isAuthenticated) {
+
+            setSaveStatus(
+                "今回のスコアは未保存です。ログインすると記録できます。"
+            );
+
+            return;
+        }
+
+        setSaveStatus(
+            "スコアを保存中…"
+        );
+
+        try {
+
+            const data = await postGameScore(
+                level,
+                currentScore
+            );
+
+            if (
+                selectedLevel === level
+                && gameSessionId === session
+            ) {
+
+                rankingRequestId += 1;
+
+                renderRanking(data, level);
+
+                setSaveStatus(
+                    data.is_new_best
+                    ? "🎉 自己ベスト更新！"
+                    : "スコアを保存したよ。"
+                );
+            }
+
+        } catch (error) {
+
+            if (
+                selectedLevel === level
+                && gameSessionId === session
+            ) {
+
+                setSaveStatus(
+                    "スコアを保存できませんでした。"
+                );
+            }
+
+            console.warn(
+                "スコア保存エラー:",
+                error
+            );
+        }
+    }
 
 
-    // ========================================
+    // =========================================================
+    // Pending Score Storage
+    // =========================================================
+
+    function clearPendingScore() {
+
+        try {
+
+            sessionStorage.removeItem(
+                PENDING_SCORE_KEY
+            );
+
+        } catch (error) {
+
+            console.warn(
+                "一時スコア削除エラー:",
+                error
+            );
+        }
+    }
+
+
+    function savePendingScore() {
+
+        const pending = {
+            game: "tap_star",
+            level: lastFinishedResult?.level ?? selectedLevel,
+            score: lastFinishedResult?.score ?? score,
+            createdAt: Date.now(),
+        };
+
+        try {
+
+            sessionStorage.setItem(
+                PENDING_SCORE_KEY,
+                JSON.stringify(pending)
+            );
+
+            return true;
+
+        } catch (error) {
+
+            console.warn(
+                "スコアを一時保存できませんでした。",
+                error
+            );
+
+            return false;
+        }
+    }
+
+
+    function readPendingScore() {
+
+        let raw = null;
+
+        try {
+
+            raw = sessionStorage.getItem(
+                PENDING_SCORE_KEY
+            );
+
+        } catch (error) {
+
+            return null;
+        }
+
+        if (!raw) {
+            return null;
+        }
+
+        try {
+
+            const pending = JSON.parse(raw);
+
+            const now = Date.now();
+
+            const isValid = (
+                pending !== null
+                && typeof pending === "object"
+                && pending.game === "tap_star"
+                && isValidLevel(pending.level)
+                && Number.isInteger(pending.score)
+                && pending.score >= 0
+                && pending.score <= MAX_SAVED_SCORE
+                && Number.isFinite(pending.createdAt)
+                && pending.createdAt <= now
+                && now - pending.createdAt
+                    <= PENDING_SCORE_MAX_AGE
+            );
+
+            if (!isValid) {
+
+                clearPendingScore();
+                return null;
+            }
+
+            return pending;
+
+        } catch (error) {
+
+            clearPendingScore();
+            return null;
+        }
+    }
+
+
+    // =========================================================
+    // Redirect to Login
+    // =========================================================
+
+    function getLoginRedirectUrl() {
+
+        const url = new URL(
+            loginUrl,
+            window.location.origin
+        );
+
+        url.searchParams.set(
+            "next",
+            window.location.pathname
+                + window.location.search
+        );
+
+        return url.toString();
+    }
+
+
+    function goToLoginWithScore(event) {
+
+        event.preventDefault();
+
+        if (isAuthenticated) {
+            return;
+        }
+
+        if (!loginUrl) {
+
+            console.warn(
+                "ログインURLが設定されていません。"
+            );
+
+            return;
+        }
+
+        const stored = savePendingScore();
+
+        if (!stored) {
+
+            setSaveStatus(
+                "点数を一時保存できませんでした。ブラウザの設定を確認してください。"
+            );
+
+            return;
+        }
+
+        window.location.assign(
+            getLoginRedirectUrl()
+        );
+    }
+
+
+    // =========================================================
+    // Restore Score After Login
+    // =========================================================
+
+    async function restorePendingScoreAfterLogin() {
+
+        if (!isAuthenticated) {
+            return;
+        }
+
+        const pending = readPendingScore();
+
+        if (!pending) {
+            return;
+        }
+
+        // Remove first to prevent duplicate submissions.
+        clearPendingScore();
+
+        setSaveStatus(
+            "ログイン前のスコアを記録中…"
+        );
+
+        try {
+
+            const data = await postGameScore(
+                pending.level,
+                pending.score
+            );
+
+            if (selectedLevel === pending.level) {
+
+                rankingRequestId += 1;
+
+                renderRanking(
+                    data,
+                    pending.level
+                );
+
+            } else {
+
+                await loadRanking(selectedLevel);
+            }
+
+            setSaveStatus(
+                data.is_new_best
+                ? `🎉 LEVEL ${pending.level} の自己ベストを更新したよ！`
+                : `LEVEL ${pending.level} のスコアを記録したよ。`
+            );
+
+        } catch (error) {
+
+            try {
+
+                sessionStorage.setItem(
+                    PENDING_SCORE_KEY,
+                    JSON.stringify(pending)
+                );
+
+            } catch (storageError) {
+
+                console.warn(
+                    "一時スコアを復元できませんでした。",
+                    storageError
+                );
+            }
+
+            setSaveStatus(
+                "ログインできましたが、点数を保存できませんでした。ページを再読み込みしてください。"
+            );
+
+            console.warn(
+                "ログイン前スコア保存エラー:",
+                error
+            );
+        }
+    }
+
+
+    // =========================================================
     // End Game
-    // ========================================
+    // =========================================================
 
     function endGame() {
+
+        if (!gameRunning) {
+            return;
+        }
 
         gameRunning = false;
         isPaused = false;
@@ -777,68 +1141,88 @@ async function saveScore(
 
         enableLevelButtons();
 
-        saveScore(
-            selectedLevel,
-            score,
+        updateLoginScoreButton(
+            !isAuthenticated
         );
 
+        const finishedLevel = selectedLevel;
+        const finishedScore = score;
+        const finishedSession = gameSessionId;
+
+        lastFinishedResult = {
+            level: finishedLevel,
+            score: finishedScore,
+        };
+
+        void saveScore(
+            finishedLevel,
+            finishedScore,
+            finishedSession
+        );
     }
 
 
-    // ========================================
+    // =========================================================
     // Result Message
-    // ========================================
+    // =========================================================
 
     function getResultMessage(level, currentScore) {
 
         if (level === 5) {
 
             if (currentScore >= 20) {
+
                 return "え、速すぎる。LEVEL 5を完全攻略！";
             }
 
             if (currentScore >= 10) {
+
                 return "すごい！鬼レベルで二桁はかなり強い！";
             }
 
             if (currentScore >= 5) {
+
                 return "LEVEL 5でこれはかなりすごい！";
             }
 
             if (currentScore >= 1) {
+
                 return "捕まえた！LEVEL 5は本気で鬼難易度。";
             }
 
             return "0回でも正常。LEVEL 5はそういうゲーム。";
         }
 
-
         if (level === 4) {
 
             if (currentScore >= 30) {
+
                 return "激ムズなのに速すぎる！";
             }
 
             if (currentScore >= 15) {
+
                 return "かなりいい記録！";
             }
-
         }
 
-
         if (currentScore >= 50) {
+
             return "すごすぎる！スタータップマスター！";
         }
 
         if (currentScore >= 35) {
+
             return "めっちゃ速い！すごい！";
         }
 
         if (currentScore >= 20) {
+
             return "ナイス！かなりいい記録！";
         }
 
         if (currentScore >= 10) {
+
             return "いい感じ！もう一回挑戦してみよう！";
         }
 
@@ -846,34 +1230,61 @@ async function saveScore(
     }
 
 
-    // ========================================
+    // =========================================================
     // Events
-    // ========================================
+    // =========================================================
+
+    levelButtons.forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                selectLevel(
+                    Number(button.dataset.level)
+                );
+            }
+        );
+    });
+
 
     startButton.addEventListener(
         "click",
         startGame
     );
 
+
     restartButton.addEventListener(
         "click",
         startGame
     );
+
 
     pauseButton.addEventListener(
         "click",
         togglePause
     );
 
+
     quitButton.addEventListener(
         "click",
         quitGame
     );
 
+
     target.addEventListener(
         "pointerdown",
         hitTarget
     );
+
+
+    if (loginScoreButton) {
+
+        loginScoreButton.addEventListener(
+            "click",
+            goToLoginWithScore
+        );
+    }
 
 
     window.addEventListener(
@@ -883,15 +1294,16 @@ async function saveScore(
             if (gameRunning && !isPaused) {
                 moveTarget();
             }
-
         }
     );
 
 
-    // ========================================
+    // =========================================================
     // Initial State
-    // ========================================
+    // =========================================================
 
     selectLevel(1);
+
+    void restorePendingScoreAfterLogin();
 
 });

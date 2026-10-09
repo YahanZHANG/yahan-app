@@ -2,7 +2,9 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}ゲーム | Yapp {% endblock %}
+{% block title %}
+    ミニゲーム | Yapp
+{% endblock %}
 
 
 {% block extra_css %}
@@ -17,219 +19,481 @@
 
 {% block content %}
 
-<section class="games-page">
+<main class="games-page">
 
-    <!-- =========================
-         Back to Portal
-    ========================= -->
+    <div class="games-container">
 
-    <div class="games-page-nav">
 
-        <a
-            href="/"
-            class="games-back-button"
-        >
-            ← ポータルに戻る
-        </a>
+        <!-- =========================================
+             Navigation
+        ========================================= -->
+
+        <nav class="games-page-nav">
+
+            {% if request.user.is_authenticated %}
+
+                <a
+                    href="{% url 'portal:home' %}"
+                    class="games-back-button"
+                >
+                    <span aria-hidden="true">←</span>
+                    アプリ一覧に戻る
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'news:services' %}"
+                    class="games-back-button"
+                >
+                    <span aria-hidden="true">←</span>
+                    他のサービスに戻る
+                </a>
+
+            {% endif %}
+
+            <span class="games-nav-brand">
+                Yapp
+            </span>
+
+        </nav>
+
+
+        <!-- =========================================
+             Hero
+        ========================================= -->
+
+        <header class="games-hero">
+
+            <div class="games-hero-glow"></div>
+
+            <div class="games-hero-inner">
+
+                <div class="games-hero-copy">
+
+                    <div class="games-hero-top">
+
+                        <span class="games-eyebrow">
+                            YAPP / PLAY
+                        </span>
+
+                        <span class="games-hero-pill">
+                            FREE TO PLAY
+                        </span>
+
+                    </div>
+
+                    <h1 class="games-title">
+                        ちょっと<br>
+                        <span>息抜き</span>
+                    </h1>
+
+                    <p class="games-hero-description">
+                        すきま時間に、気分転換。
+                        好きなゲームを選んで、
+                        さっそくプレイしよう。
+                    </p>
+
+                    <div class="games-hero-features">
+
+                        <span>
+                            <span aria-hidden="true">✓</span>
+                            無料で遊べる
+                        </span>
+
+                        <span>
+                            <span aria-hidden="true">✓</span>
+                            ログイン不要
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="games-hero-visual"
+                    aria-hidden="true"
+                >
+
+                    <div class="games-visual-orbit">
+
+                        <span class="games-visual-icon games-visual-icon-one">
+                            ⭐
+                        </span>
+
+                        <span class="games-visual-icon games-visual-icon-two">
+                            🧱
+                        </span>
+
+                        <span class="games-visual-icon games-visual-icon-three">
+                            🟡
+                        </span>
+
+                        <span class="games-visual-center">
+                            🎮
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================================
+             Section heading
+        ========================================= -->
+
+        <section class="games-library">
+
+            <div class="games-section-header">
+
+                <div>
+
+                    <p class="games-section-eyebrow">
+                        CHOOSE YOUR GAME
+                    </p>
+
+                    <h2>
+                        ゲームを選ぶ
+                    </h2>
+
+                </div>
+
+                <span class="games-count">
+                    {% if can_play_maaario %}
+                        04 GAMES
+                    {% else %}
+                        03 GAMES
+                    {% endif %}
+                </span>
+
+            </div>
+
+
+            <!-- =====================================
+                 Game grid
+            ===================================== -->
+
+            <div class="games-grid">
+
+
+                <!-- Block Breaker -->
+
+                <a
+                    href="{% url 'games:block_breaker' %}"
+                    class="games-card games-card-block"
+                >
+
+                    <div class="games-card-art">
+
+                        <div class="games-card-art-glow"></div>
+
+                        <span
+                            class="games-card-art-icon"
+                            aria-hidden="true"
+                        >
+                            🧱
+                        </span>
+
+                        <span class="games-card-badge">
+                            ARCADE
+                        </span>
+
+                    </div>
+
+
+                    <div class="games-card-body">
+
+                        <div class="games-card-meta">
+                            CLASSIC GAME
+                        </div>
+
+                        <h3 class="games-card-title">
+                            ブロック崩し
+                        </h3>
+
+                        <p class="games-card-description">
+                            ボールを跳ね返して、
+                            ブロックを壊そう。
+                            全部壊せるかな？
+                        </p>
+
+                        <div class="games-card-bottom">
+
+                            <span class="games-card-play">
+                                PLAY NOW
+                            </span>
+
+                            <span
+                                class="games-card-arrow"
+                                aria-hidden="true"
+                            >
+                                ↗
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Star Tap -->
+
+                <a
+                    href="{% url 'games:tap_star' %}"
+                    class="games-card games-card-star"
+                >
+
+                    <div class="games-card-art">
+
+                        <div class="games-card-art-glow"></div>
+
+                        <span
+                            class="games-card-art-icon"
+                            aria-hidden="true"
+                        >
+                            ⭐
+                        </span>
+
+                        <span class="games-card-badge">
+                            SPEED
+                        </span>
+
+                    </div>
+
+
+                    <div class="games-card-body">
+
+                        <div class="games-card-meta">
+                            30 SECOND CHALLENGE
+                        </div>
+
+                        <h3 class="games-card-title">
+                            スタータップ
+                        </h3>
+
+                        <p class="games-card-description">
+                            次々に現れる星をタップ！
+                            30秒間でどこまでスコアを伸ばせる？
+                        </p>
+
+                        <div class="games-card-bottom">
+
+                            <span class="games-card-play">
+                                PLAY NOW
+                            </span>
+
+                            <span
+                                class="games-card-arrow"
+                                aria-hidden="true"
+                            >
+                                ↗
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Maze Chase -->
+
+                <a
+                    href="{% url 'games:maze_chase' %}"
+                    class="games-card games-card-maze"
+                >
+
+                    <div class="games-card-art">
+
+                        <div class="games-card-art-glow"></div>
+
+                        <span
+                            class="games-card-art-icon"
+                            aria-hidden="true"
+                        >
+                            🟡
+                        </span>
+
+                        <span class="games-card-badge">
+                            MAZE
+                        </span>
+
+                    </div>
+
+
+                    <div class="games-card-body">
+
+                        <div class="games-card-meta">
+                            MAZE ADVENTURE
+                        </div>
+
+                        <h3 class="games-card-title">
+                            パクパクマン
+                        </h3>
+
+                        <p class="games-card-description">
+                            ドットを集めて、
+                            ゴーストから逃げよう。
+                            5つの迷路に挑戦！
+                        </p>
+
+                        <div class="games-card-bottom">
+
+                            <span class="games-card-play">
+                                PLAY NOW
+                            </span>
+
+                            <span
+                                class="games-card-arrow"
+                                aria-hidden="true"
+                            >
+                                ↗
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Maaario (Private) -->
+
+                {% if can_play_maaario %}
+
+                <a
+                    href="{% url 'games:maaario' %}"
+                    class="games-card games-card-jump"
+                >
+
+                    <div class="games-card-art">
+
+                        <div class="games-card-art-glow"></div>
+
+                        <span
+                            class="games-card-art-icon"
+                            aria-hidden="true"
+                        >
+                            🍄
+                        </span>
+
+                        <span class="games-card-badge">
+                            ADVENTURE
+                        </span>
+
+                    </div>
+
+
+                    <div class="games-card-body">
+
+                        <div class="games-card-meta">
+                            PLATFORM ADVENTURE
+                        </div>
+
+                        <h3 class="games-card-title">
+                            マアアアリオ
+                        </h3>
+
+                        <p class="games-card-description">
+                            敵や穴を乗り越え、
+                            コインを集めてゴールへ。
+                            5段階の難易度に挑戦！
+                        </p>
+
+                        <div class="games-card-bottom">
+
+                            <span class="games-card-play">
+                                PLAY NOW
+                            </span>
+
+                            <span
+                                class="games-card-arrow"
+                                aria-hidden="true"
+                            >
+                                ↗
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+                {% endif %}
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             Ranking information
+        ========================================= -->
+
+        <section class="games-ranking-guide">
+
+            <div class="games-ranking-guide-icon">
+                🏆
+            </div>
+
+            <div class="games-ranking-guide-copy">
+
+                <h2>
+                    ランキングにも挑戦しよう
+                </h2>
+
+                {% if request.user.is_authenticated %}
+
+                    <p>
+                        ゲームでハイスコアを目指そう。
+                        自己ベストを更新すると、
+                        ランキングに記録できる。
+                    </p>
+
+                {% else %}
+
+                    <p>
+                        ゲームはログインなしでも楽しめる。
+                        無料アカウントを作ると、
+                        自己ベストを記録してランキングに参加できる。
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+            {% if not request.user.is_authenticated %}
+
+                <a
+                    href="{% url 'portal:signup' %}"
+                    class="games-ranking-signup"
+                >
+                    無料登録
+                    <span aria-hidden="true">↗</span>
+                </a>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- =========================================
+             Footer
+        ========================================= -->
+
+        <footer class="games-footer">
+            Yapp MINI GAMES
+        </footer>
 
     </div>
 
-
-    <!-- =========================
-         Header
-    ========================= -->
-
-    <div class="games-hero">
-
-        <div class="games-hero-copy">
-
-            <p class="games-eyebrow">
-                MINI GAMES
-            </p>
-
-            <h1 class="games-title">
-                ミニゲーム
-            </h1>
-
-        </div>
-
-        <div
-            class="games-hero-decoration"
-            aria-hidden="true"
-        >
-            🎮
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         Game Cards
-    ========================= -->
-
-    <div class="games-grid">
-
-
-        <!-- =========================
-             1. Block Breaker
-        ========================= -->
-
-        <a
-            href="{% url 'games:block_breaker' %}"
-            class="games-card games-card-block"
-        >
-
-            <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    🧱
-                </div>
-
-                <span class="games-card-badge">
-                    ARCADE
-                </span>
-
-            </div>
-
-
-            <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    ブロック崩し
-                </h2>
-
-                <p class="games-card-description">
-                    バーでボールを跳ね返して、
-                    ブロックを全部壊そう。
-                </p>
-
-            </div>
-
-        </a>
-
-
-        <!-- =========================
-             2. Star Tap
-        ========================= -->
-
-        <a
-            href="{% url 'games:tap_star' %}"
-            class="games-card games-card-star"
-        >
-
-            <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    ⭐
-                </div>
-
-                <span class="games-card-badge">
-                    30 SEC
-                </span>
-
-            </div>
-
-
-            <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    スタータップ
-                </h2>
-
-                <p class="games-card-description">
-                    次々に現れる星をタップ。
-                    30秒で何回押せるかな？
-                </p>
-
-            </div>
-
-        </a>
-
-
-        <!-- =========================
-             3. Maze Chase
-        ========================= -->
-
-        <a
-            href="{% url 'games:maze_chase' %}"
-            class="games-card games-card-maze"
-        >
-
-            <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    🟡
-                </div>
-
-                <span class="games-card-badge">
-                    MAZE
-                </span>
-
-            </div>
-
-
-            <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    パクパクマン
-                </h2>
-
-                <p class="games-card-description">
-                    ドットを集めて、
-                    ゴーストから逃げよう。
-                    5つの迷路に挑戦！
-                </p>
-
-            </div>
-
-        </a>
-
-
-        <!-- =========================
-             4. Maaario
-        ========================= -->
-        
-        {% if not is_public_user %}
-
-        <a
-            href="{% url 'games:maaario' %}"
-            class="games-card games-card-jump"
-        >
-
-            <div class="games-card-top">
-
-                <div class="games-card-icon">
-                    🍄
-                </div>
-
-                <span class="games-card-badge">
-                    ADVENTURE
-                </span>
-
-            </div>
-
-
-            <div class="games-card-body">
-
-                <h2 class="games-card-title">
-                    マアアアリオ
-                </h2>
-
-                <p class="games-card-description">
-                    ジャンプで敵や穴を乗り越え、
-                    コインを集めてゴールを目指そう。
-                    難易度は5段階！
-                </p>
-
-            </div>
-
-        </a>
-
-        {% endif %}
-
-
-    </div>
-
-</section>
+</main>
 
 {% endblock %}

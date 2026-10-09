@@ -1,107 +1,524 @@
+
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}ブロック崩し | ゲーム{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'games/block_breaker/css/style.css' %}">
+{% block title %}
+    ブロック崩し | Yapp
 {% endblock %}
 
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{% static 'games/block_breaker/css/style.css' %}"
+>
+
+{% endblock %}
+
+
 {% block content %}
+
 <section
     id="game-shell"
     class="block-breaker-page"
     data-score-url="{% url 'games:save_score' %}"
     data-ranking-url="{% url 'games:ranking' 'block_breaker' %}"
     data-csrf-token="{{ csrf_token }}"
+    data-is-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}"
+    data-login-url="{{ login_url }}"
 >
-    <button type="button" id="exit-fullscreen-button" class="exit-fullscreen-button" aria-label="全画面を終了">
+
+    <!-- =====================================================
+         Fullscreen exit
+         ===================================================== -->
+
+    <button
+        type="button"
+        id="exit-fullscreen-button"
+        class="exit-fullscreen-button"
+        aria-label="全画面を終了"
+    >
         × 全画面終了
     </button>
 
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
     <div class="block-breaker-heading fullscreen-hidden">
-        <a class="back-to-games" href="{% url 'games:game_list' %}">← ゲーム一覧</a>
+
+        <a
+            class="back-to-games"
+            href="{% url 'games:game_list' %}"
+        >
+            ← ゲーム一覧
+        </a>
+
+
         <div class="block-title-row">
-            <span class="block-title-icon" aria-hidden="true">🧱</span>
+
+            <span
+                class="block-title-icon"
+                aria-hidden="true"
+            >
+                🧱
+            </span>
+
             <div>
-                <p class="block-eyebrow">MINI GAME</p>
-                <h1 class="block-breaker-title">ブロック崩し</h1>
-                <p class="block-description">バーでボールを跳ね返して、ブロックを壊そう！</p>
+
+                <p class="block-eyebrow">
+                    MINI GAME
+                </p>
+
+                <h1 class="block-breaker-title">
+                    ブロック崩し
+                </h1>
+
+                <p class="block-description">
+                    バーでボールを跳ね返して、
+                    ブロックを壊そう！
+                </p>
+
             </div>
+
         </div>
+
     </div>
 
-    <section class="block-level-section fullscreen-hidden" aria-label="レベル選択">
+
+    <!-- =====================================================
+         Level selector
+         ===================================================== -->
+
+    <section
+        class="block-level-section fullscreen-hidden"
+        aria-label="レベル選択"
+    >
+
         <div class="block-level-heading">
+
             <div>
-                <span class="block-level-label">LEVEL SELECT</span>
-                <h2>難易度を選ぶ</h2>
+
+                <span class="block-level-label">
+                    LEVEL SELECT
+                </span>
+
+                <h2>
+                    難易度を選ぶ
+                </h2>
+
             </div>
-            <span class="block-selected-level">LEVEL <strong id="block-selected-level">1</strong></span>
+
+
+            <span class="block-selected-level">
+                LEVEL
+                <strong id="block-selected-level">
+                    1
+                </strong>
+            </span>
+
         </div>
+
+
         <div class="block-level-buttons">
-            <button type="button" class="block-level-button is-active" data-level="1" aria-pressed="true"><strong>1</strong><span>やさしい</span></button>
-            <button type="button" class="block-level-button" data-level="2" aria-pressed="false"><strong>2</strong><span>ふつう</span></button>
-            <button type="button" class="block-level-button" data-level="3" aria-pressed="false"><strong>3</strong><span>むずかしい</span></button>
-            <button type="button" class="block-level-button" data-level="4" aria-pressed="false"><strong>4</strong><span>激ムズ</span></button>
-            <button type="button" class="block-level-button" data-level="5" aria-pressed="false"><strong>5</strong><span>鬼</span></button>
+
+            <button
+                type="button"
+                class="block-level-button is-active"
+                data-level="1"
+                aria-pressed="true"
+            >
+                <strong>1</strong>
+                <span>やさしい</span>
+            </button>
+
+
+            <button
+                type="button"
+                class="block-level-button"
+                data-level="2"
+                aria-pressed="false"
+            >
+                <strong>2</strong>
+                <span>ふつう</span>
+            </button>
+
+
+            <button
+                type="button"
+                class="block-level-button"
+                data-level="3"
+                aria-pressed="false"
+            >
+                <strong>3</strong>
+                <span>むずかしい</span>
+            </button>
+
+
+            <button
+                type="button"
+                class="block-level-button"
+                data-level="4"
+                aria-pressed="false"
+            >
+                <strong>4</strong>
+                <span>激ムズ</span>
+            </button>
+
+
+            <button
+                type="button"
+                class="block-level-button"
+                data-level="5"
+                aria-pressed="false"
+            >
+                <strong>5</strong>
+                <span>鬼</span>
+            </button>
+
         </div>
-        <p class="block-level-name">選択中：<strong id="block-level-name">鋼鉄の迷路</strong></p>
+
+
+        <p class="block-level-name">
+            選択中：
+            <strong id="block-level-name">
+                鋼鉄の迷路
+            </strong>
+        </p>
+
     </section>
 
-    <div class="game-status" aria-label="ゲームの状況">
-        <div class="status-item fullscreen-hidden"><span>LEVEL</span><strong id="stage-display">1</strong></div>
-        <div class="status-item fullscreen-hidden"><span>SCORE</span><strong id="score-display">0</strong></div>
-        <div class="status-item lives-status"><span>残機</span><strong id="lives-display">3</strong></div>
-        <div id="powerup-status" class="status-item powerup-status is-hidden fullscreen-hidden">
-            <span>パワー</span><strong id="powerup-display"></strong>
+
+    <!-- =====================================================
+         Game status
+         ===================================================== -->
+
+    <div
+        class="game-status"
+        aria-label="ゲームの状況"
+    >
+
+        <div class="status-item fullscreen-hidden">
+
+            <span>LEVEL</span>
+
+            <strong id="stage-display">
+                1
+            </strong>
+
         </div>
+
+
+        <div class="status-item fullscreen-hidden">
+
+            <span>SCORE</span>
+
+            <strong id="score-display">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="status-item lives-status">
+
+            <span>残機</span>
+
+            <strong id="lives-display">
+                3
+            </strong>
+
+        </div>
+
+
+        <div
+            id="powerup-status"
+            class="status-item powerup-status is-hidden fullscreen-hidden"
+        >
+
+            <span>パワー</span>
+
+            <strong id="powerup-display"></strong>
+
+        </div>
+
     </div>
+
+
+    <!-- =====================================================
+         Game canvas
+         ===================================================== -->
 
     <div class="game-container">
-        <div class="rotate-device-message"><span>↻</span>携帯を横向きにしてください</div>
-        <canvas id="game-canvas" width="720" height="520" aria-label="ブロック崩しのゲーム画面"></canvas>
-        <div id="game-overlay" class="game-overlay">
-            <div class="overlay-panel">
-                <span class="overlay-icon" aria-hidden="true">🧱</span>
-                <p class="overlay-eyebrow">BLOCK BREAKER</p>
-                <h2 id="overlay-title">LEVEL 1：鋼鉄の迷路</h2>
-                <p id="overlay-message">マウスまたは指でバーを動かそう。</p>
-                <button id="start-button" type="button">ゲームスタート</button>
-            </div>
+
+        <div class="rotate-device-message">
+
+            <span>↻</span>
+
+            携帯を横向きにしてください
+
         </div>
+
+
+        <canvas
+            id="game-canvas"
+            width="720"
+            height="520"
+            aria-label="ブロック崩しのゲーム画面"
+        ></canvas>
+
+
+        <!-- Overlay -->
+
+        <div
+            id="game-overlay"
+            class="game-overlay"
+        >
+
+            <div class="overlay-panel">
+
+                <span
+                    class="overlay-icon"
+                    aria-hidden="true"
+                >
+                    🧱
+                </span>
+
+                <p class="overlay-eyebrow">
+                    BLOCK BREAKER
+                </p>
+
+                <h2 id="overlay-title">
+                    LEVEL 1：鋼鉄の迷路
+                </h2>
+
+                <p id="overlay-message">
+                    マウスまたは指でバーを動かそう。
+                </p>
+
+                <button
+                    id="start-button"
+                    type="button"
+                >
+                    ゲームスタート
+                </button>
+
+                <a
+                    id="login-score-button"
+                    class="block-login-score-button"
+                    href="#"
+                    hidden
+                >
+                    🏆 ログインして点数を記録する
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
+
+
+    <!-- =====================================================
+         Mobile controls
+         ===================================================== -->
 
     <div class="mobile-controls">
-        <button type="button" id="laser-button" class="control-button" disabled>⚡ レーザー</button>
-        <button type="button" id="pause-button" disabled>⏸ 一時停止</button>
-        <button type="button" id="quit-button" disabled>やめる</button>
-        <button type="button" id="fullscreen-button" class="fullscreen-button">⛶ 全画面</button>
+
+        <button
+            type="button"
+            id="laser-button"
+            class="control-button"
+            disabled
+        >
+            ⚡ レーザー
+        </button>
+
+
+        <button
+            type="button"
+            id="pause-button"
+            disabled
+        >
+            ⏸ 一時停止
+        </button>
+
+
+        <button
+            type="button"
+            id="quit-button"
+            disabled
+        >
+            やめる
+        </button>
+
+
+        <button
+            type="button"
+            id="fullscreen-button"
+            class="fullscreen-button"
+        >
+            ⛶ 全画面
+        </button>
+
     </div>
 
-    <section class="block-ranking-card fullscreen-hidden" aria-labelledby="block-ranking-title">
+
+    <!-- =====================================================
+         Ranking
+         ===================================================== -->
+
+    <section
+        class="block-ranking-card fullscreen-hidden"
+        aria-labelledby="block-ranking-title"
+    >
+
         <div class="block-ranking-header">
+
             <div>
-                <p class="block-ranking-eyebrow">HIGH SCORES</p>
-                <h2 id="block-ranking-title">🏆 LEVEL <span id="block-ranking-level">1</span> ランキング</h2>
+
+                <p class="block-ranking-eyebrow">
+                    HIGH SCORES
+                </p>
+
+                <h2 id="block-ranking-title">
+                    🏆 LEVEL
+                    <span id="block-ranking-level">1</span>
+                    ランキング
+                </h2>
+
             </div>
-            <div class="block-personal-best"><span>MY BEST</span><strong id="block-personal-best">{% if personal_best is not None %}{{ personal_best }}{% else %}--{% endif %}</strong><small>点</small></div>
+
+
+            <!-- Personal best -->
+
+            {% if request.user.is_authenticated %}
+
+                <div class="block-personal-best">
+
+                    <span>
+                        MY BEST
+                    </span>
+
+                    <strong id="block-personal-best">
+                        {% if personal_best is not None %}
+                            {{ personal_best }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </strong>
+
+                    <small>
+                        点
+                    </small>
+
+                </div>
+
+            {% else %}
+
+                <div class="block-personal-best">
+
+                    <span>
+                        GUEST
+                    </span>
+
+                    <strong id="block-personal-best">
+                        --
+                    </strong>
+
+                </div>
+
+            {% endif %}
+
         </div>
-        <ol id="block-ranking-list" class="block-ranking-list">
+
+
+        <!-- Ranking list -->
+
+        <ol
+            id="block-ranking-list"
+            class="block-ranking-list"
+        >
+
             {% for item in ranking_entries %}
-            <li{% if item.is_me %} class="is-me"{% endif %}>
-                <span class="block-ranking-position">{{ item.rank }}</span><strong>{{ item.name }}</strong><span class="block-ranking-score">{{ item.score }} 点</span>
-            </li>
+
+                <li
+                    {% if item.is_me %}
+                        class="is-me"
+                    {% endif %}
+                >
+
+                    <span class="block-ranking-position">
+                        {{ item.rank }}
+                    </span>
+
+                    <strong>
+                        {{ item.name }}
+                    </strong>
+
+                    <span class="block-ranking-score">
+                        {{ item.score }} 点
+                    </span>
+
+                </li>
+
             {% empty %}
-            <li class="block-ranking-empty">まだ記録がない</li>
+
+                <li class="block-ranking-empty">
+                    まだ記録がない
+                </li>
+
             {% endfor %}
+
         </ol>
-        <p id="block-save-status" class="block-save-status" aria-live="polite"></p>
-        <p class="block-ranking-note">レベルごとに自己ベストを保存する</p>
+
+
+        <!-- Score save status -->
+
+        <p
+            id="block-save-status"
+            class="block-save-status"
+            aria-live="polite"
+        ></p>
+
+
+        <!-- Ranking information -->
+
+        {% if request.user.is_authenticated %}
+
+            <p class="block-ranking-note">
+                レベルごとに自己ベストを保存する
+            </p>
+
+        {% else %}
+
+            <p class="block-ranking-note">
+
+                ランキングは誰でも閲覧できる。
+                スコアを保存するには無料アカウントが必要。
+
+                <a href="{% url 'portal:signup' %}">
+                    無料登録はこちら →
+                </a>
+
+            </p>
+
+        {% endif %}
+
     </section>
+
 </section>
+
 {% endblock %}
 
+
 {% block extra_js %}
-<script type="module" src="{% static 'games/block_breaker/js/game.js' %}"></script>
+
+<script
+    type="module"
+    src="{% static 'games/block_breaker/js/game.js' %}"
+></script>
+
 {% endblock %}
