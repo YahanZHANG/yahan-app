@@ -1,17 +1,30 @@
 
 /* =========================================================
-   Swiss News - Dark Mode
+   SWISS NEWS - DARK MODE
+   ========================================================= */
+
+
+/* =========================================================
+   01. Color system
    ========================================================= */
 
 .news-app.news-dark {
-    --news-dark-bg: #141a18;
-    --news-dark-surface: #202924;
-    --news-dark-surface-alt: #27332c;
-    --news-dark-border: #39473e;
-    --news-dark-text: #e6eee8;
-    --news-dark-muted: #adbbb1;
-    --news-dark-faint: #91a297;
-    --news-dark-accent: #a0c8af;
+    --news-dark-bg: #171d1a;
+    --news-dark-header: #202923;
+    --news-dark-surface: #252f29;
+    --news-dark-surface-alt: #303d34;
+    --news-dark-hover: #36473b;
+
+    --news-dark-border: #435348;
+    --news-dark-border-soft: #354239;
+
+    --news-dark-text: #f0f5f1;
+    --news-dark-body: #d4e0d7;
+    --news-dark-muted: #b6c8bb;
+    --news-dark-faint: #9daf9f;
+
+    --news-dark-accent: #a9d8b7;
+    --news-dark-accent-bg: #405747;
 
     background: var(--news-dark-bg);
     color: var(--news-dark-text);
@@ -20,18 +33,21 @@
 
 
 /* =========================================================
-   Header
+   02. Header
    ========================================================= */
 
 .news-dark .news-header {
-    background: #1b2520;
+    background: var(--news-dark-header);
     border-color: var(--news-dark-border);
 }
 
 .news-dark .news-header h1,
-.news-dark .news-brand h1,
-.news-dark .news-header .news-site-description {
+.news-dark .news-brand h1 {
     color: var(--news-dark-text);
+}
+
+.news-dark .news-header .news-site-description {
+    color: var(--news-dark-body);
 }
 
 .news-dark .news-eyebrow,
@@ -45,7 +61,7 @@
 
 
 /* =========================================================
-   Desktop navigation
+   03. Desktop navigation
    ========================================================= */
 
 .news-dark .news-desktop-nav {
@@ -53,7 +69,7 @@
 }
 
 .news-dark .news-desktop-nav-item {
-    color: var(--news-dark-muted);
+    color: var(--news-dark-body);
 }
 
 .news-dark .news-desktop-nav-item:hover,
@@ -67,49 +83,59 @@
 
 
 /* =========================================================
-   Mobile navigation
+   04. Mobile navigation
    ========================================================= */
 
 .news-dark .news-bottom-nav {
-    background: rgba(34, 44, 38, .97);
+    background: rgba(37, 47, 41, .97);
     border-color: var(--news-dark-border);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .35);
 }
 
 .news-dark .news-nav-item {
-    color: var(--news-dark-muted);
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-nav-item:hover {
+    color: var(--news-dark-text);
 }
 
 .news-dark .news-nav-item.is-active {
-    background: #34483b;
-    color: #d2ebd9;
+    background: var(--news-dark-accent-bg);
+    color: #e5f7e9;
 }
 
 
 /* =========================================================
-   Shared text and surfaces
+   05. Shared headings
    ========================================================= */
+
+.news-dark .news-main h1,
+.news-dark .news-main h2,
+.news-dark .news-main h3,
+.news-dark .news-main h4 {
+    color: var(--news-dark-text);
+}
 
 .news-dark .news-page-heading h2,
 .news-dark .news-search-section-heading h3,
-.news-dark .news-digest h3,
-.news-dark .news-about-hero h2,
-.news-dark .news-about-section-content h3,
-.news-dark .news-about-info-item h4,
-.news-dark .news-settings-card h3,
-.news-dark .news-settings-disclosure-copy strong,
-.news-dark .news-settings-about-copy strong,
-.news-dark .news-services-hero h2,
-.news-dark .news-service-heading h3 {
+.news-dark .news-digest-day-title,
+.news-dark .news-region-list-heading strong,
+.news-dark .news-region-map-header strong {
     color: var(--news-dark-text);
 }
+
+
+/* =========================================================
+   06. Shared cards
+   ========================================================= */
 
 .news-dark .news-card,
 .news-dark .news-topic-card,
 .news-dark .news-settings-card,
 .news-dark .news-empty,
-.news-dark .news-source-card,
 .news-dark .news-discovery-card,
+.news-dark .news-source-card,
 .news-dark .news-region-list-item,
 .news-dark .news-region-map-card,
 .news-dark .news-switzerland-wide-link,
@@ -124,91 +150,101 @@
     background: var(--news-dark-surface);
     border-color: var(--news-dark-border);
     color: var(--news-dark-text);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, .12);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .12);
 }
 
 
 /* =========================================================
-   News cards
+   07. News articles
    ========================================================= */
 
 .news-dark .news-card-title,
-.news-dark .news-card-title a,
-.news-dark .news-discovery-content strong,
-.news-dark .news-source-card-main strong,
-.news-dark .news-service-content strong,
-.news-dark .news-bank-option-content strong {
+.news-dark .news-card-title a {
     color: var(--news-dark-text);
 }
 
 .news-dark .news-card-summary,
 .news-dark .news-card-meta,
-.news-dark .news-source-link,
-.news-dark .news-service-content p,
-.news-dark .news-discovery-content small,
-.news-dark .news-source-card-main span {
-    color: var(--news-dark-muted);
+.news-dark .news-source {
+    color: var(--news-dark-body);
 }
 
-.news-dark .news-card-footer,
-.news-dark .news-info-item,
-.news-dark .news-about-section,
-.news-dark .news-about-sections {
-    border-color: var(--news-dark-border);
+.news-dark .news-source-link {
+    color: var(--news-dark-accent);
 }
 
-.news-dark .news-topic-badge,
-.news-dark .news-favorite-button,
-.news-dark .news-discovery-icon,
-.news-dark .news-service-icon,
-.news-dark .news-support-method-icon {
+.news-dark .news-card-footer {
+    border-color: var(--news-dark-border-soft);
+}
+
+.news-dark .news-topic-badge {
     background: var(--news-dark-surface-alt);
     color: var(--news-dark-accent);
 }
 
+.news-dark .news-favorite-button {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-muted);
+}
+
 .news-dark .news-favorite-button.is-favorite {
-    background: #4b4027;
-    color: #f4d786;
+    background: #514425;
+    color: #ffdf85;
+}
+
+.news-dark .news-favorite-count {
+    background: #514425;
+    color: #ffdf85;
 }
 
 
 /* =========================================================
-   Digests
+   08. Daily digest
    ========================================================= */
 
 .news-dark .news-digest,
 .news-dark .news-digest-history-card {
     background: linear-gradient(
         145deg,
-        #2a3028,
-        #1f2b27
+        #303629,
+        #242f2a
     );
     border-color: var(--news-dark-border);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .13);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .14);
 }
 
+.news-dark .news-digest h3,
 .news-dark .news-digest-lead,
 .news-dark .news-digest-history-text,
-.news-dark .news-digest-day-title,
 .news-dark .news-digest-history-period {
     color: var(--news-dark-text);
 }
 
+.news-dark .news-digest-footer,
+.news-dark .news-digest-history-meta,
+.news-dark .news-digest-history-top time {
+    color: var(--news-dark-muted);
+}
+
 .news-dark .news-digest-time,
 .news-dark .news-digest-toggle {
-    background: #354239;
+    background: var(--news-dark-surface-alt);
     color: var(--news-dark-text);
     border-color: var(--news-dark-border);
 }
 
-.news-dark .news-digest-footer,
-.news-dark .news-digest-history-meta {
-    color: var(--news-dark-muted);
+.news-dark .news-digest-toggle:hover {
+    background: var(--news-dark-hover);
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-digest-history-link {
+    color: var(--news-dark-accent);
 }
 
 
 /* =========================================================
-   Search and filters
+   09. Search / discover
    ========================================================= */
 
 .news-dark .news-search-tabs,
@@ -218,7 +254,12 @@
 }
 
 .news-dark .news-search-tab {
-    color: var(--news-dark-muted);
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-search-tab:hover {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-text);
 }
 
 .news-dark .news-search-tab.is-active {
@@ -226,24 +267,51 @@
     color: var(--news-dark-text);
 }
 
+.news-dark .news-search-intro,
+.news-dark .news-search-coming-soon p,
+.news-dark .news-source-detail-meta {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-discovery-content strong,
+.news-dark .news-source-card-main strong,
+.news-dark .news-switzerland-wide-link strong {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-discovery-content small,
+.news-dark .news-source-card-main span,
+.news-dark .news-switzerland-wide-link small {
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-discovery-icon,
+.news-dark .news-region-map-point,
+.news-dark .news-service-icon {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-accent);
+}
+
 .news-dark .news-source-card:hover,
 .news-dark .news-discovery-card:hover,
 .news-dark .news-region-list-item:hover,
 .news-dark .news-switzerland-wide-link:hover {
-    background: #2d3a31;
-    border-color: #536456;
+    background: var(--news-dark-hover);
+    border-color: #637968;
 }
 
-.news-dark .news-search-intro,
-.news-dark .news-search-coming-soon p,
-.news-dark .news-region-list-heading strong,
-.news-dark .news-region-map-header strong {
-    color: var(--news-dark-muted);
+.news-dark .news-region-list-item,
+.news-dark .news-page-back-link {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-region-map-point span {
+    background: var(--news-dark-accent);
 }
 
 
 /* =========================================================
-   Settings
+   10. Settings
    ========================================================= */
 
 .news-dark .news-radio-option,
@@ -256,24 +324,36 @@
     border-color: var(--news-dark-border);
 }
 
+.news-dark .news-radio-option,
 .news-dark .news-toggle-row,
-.news-dark .news-settings-about-link,
-.news-dark .news-settings-disclosure-body {
-    border-color: var(--news-dark-border);
+.news-dark .news-push-toggle-copy strong,
+.news-dark .news-dark-setting-copy strong,
+.news-dark .news-settings-disclosure-copy strong,
+.news-dark .news-settings-about-copy strong {
+    color: var(--news-dark-text);
 }
 
-.news-dark .news-toggle-row,
-.news-dark .news-radio-option,
-.news-dark .news-push-toggle-copy strong,
-.news-dark .news-dark-setting-copy strong {
+.news-dark .news-settings-card h3,
+.news-dark .news-settings-guide h3 {
     color: var(--news-dark-text);
 }
 
 .news-dark .news-settings-disclosure-copy small,
 .news-dark .news-settings-about-copy small,
 .news-dark .news-dark-setting-copy small,
-.news-dark .news-push-toggle-copy small {
+.news-dark .news-push-toggle-copy small,
+.news-dark .news-settings-guide p {
     color: var(--news-dark-muted);
+}
+
+.news-dark .news-toggle-row,
+.news-dark .news-settings-about-link,
+.news-dark .news-settings-disclosure-body {
+    border-color: var(--news-dark-border-soft);
+}
+
+.news-dark .news-settings-about-link:hover {
+    color: var(--news-dark-accent);
 }
 
 .news-dark .news-settings-bulk-button,
@@ -283,161 +363,32 @@
     color: var(--news-dark-text);
 }
 
-.news-dark .news-save-button {
-    background: #7eaa8f;
-    color: #102016;
-}
-
-.news-dark .news-save-button:hover {
-    background: #98c3a6;
+.news-dark .news-settings-bulk-button:hover,
+.news-dark .news-push-settings-link:hover {
+    background: var(--news-dark-hover);
+    color: var(--news-dark-text);
 }
 
 .news-dark .news-slider {
-    background: #4e5b51;
+    background: #59685d;
 }
 
 .news-dark .news-switch input:checked + .news-slider {
-    background: #729e80;
+    background: #83b591;
+}
+
+.news-dark .news-save-button {
+    background: #94c9a4;
+    color: #15241a;
+}
+
+.news-dark .news-save-button:hover {
+    background: #b1dfbc;
 }
 
 
 /* =========================================================
-   About Yapp
-   ========================================================= */
-
-.news-dark .news-about-lead,
-.news-dark .news-about-section-content p,
-.news-dark .news-about-info-item p,
-.news-dark .news-about-privacy p,
-.news-dark .news-about-note {
-    color: var(--news-dark-muted) !important;
-}
-
-.news-dark .news-about-sources span,
-.news-dark .news-about-services-link,
-.news-dark .news-about-privacy {
-    background: var(--news-dark-surface);
-    border-color: var(--news-dark-border);
-    color: var(--news-dark-text);
-}
-
-.news-dark .news-about-services-copy strong {
-    color: var(--news-dark-text);
-}
-
-.news-dark .news-about-services-copy small {
-    color: var(--news-dark-muted);
-}
-
-.news-dark .news-about-info-item {
-    border-color: var(--news-dark-border);
-}
-
-.news-dark .news-about-support-details,
-.news-dark .news-about-support-details > summary {
-    border-color: var(--news-dark-border);
-    color: var(--news-dark-muted);
-}
-
-.news-dark .news-feedback-textarea,
-.news-dark .news-share-fallback-input {
-    background: var(--news-dark-surface-alt);
-    border-color: var(--news-dark-border);
-    color: var(--news-dark-text);
-}
-
-.news-dark .news-feedback-textarea::placeholder {
-    color: var(--news-dark-faint);
-}
-
-.news-dark .news-feedback-note {
-    color: var(--news-dark-muted) !important;
-}
-
-
-/* =========================================================
-   Forms and support
-   ========================================================= */
-
-.news-dark .news-support-input,
-.news-dark .news-support-textarea,
-.news-dark .news-bitcoin-address {
-    background: var(--news-dark-surface-alt);
-    border-color: var(--news-dark-border);
-    color: var(--news-dark-text);
-}
-
-.news-dark .news-support-method-copy strong,
-.news-dark .news-support-panel h4,
-.news-dark .news-support-hero-copy h1,
-.news-dark .news-support-form-header h2,
-.news-dark .news-support-step-copy h2,
-.news-dark .news-support-field label {
-    color: var(--news-dark-text);
-}
-
-.news-dark .news-support-method-copy small,
-.news-dark .news-support-hero-copy p,
-.news-dark .news-support-form-header p,
-.news-dark .news-support-step-copy p {
-    color: var(--news-dark-muted);
-}
-
-.news-dark .news-support-submit,
-.news-dark .news-feedback-submit,
-.news-dark .news-about-share-button {
-    background: #759c82;
-    color: #102016;
-}
-
-.news-dark .news-support-submit:hover,
-.news-dark .news-feedback-submit:hover,
-.news-dark .news-about-share-button:hover {
-    background: #94bba0;
-}
-
-
-/* =========================================================
-   Messages and focus
-   ========================================================= */
-
-.news-dark .news-message {
-    background: #2a4032;
-    color: #c9e4d0;
-}
-
-.news-dark .news-message-error,
-.news-dark .news-feedback-errors {
-    background: #493031;
-    color: #ffd6d6;
-}
-
-.news-dark :is(
-    a,
-    button,
-    input,
-    textarea,
-    summary
-):focus-visible {
-    outline: 2px solid #a6d7b5;
-    outline-offset: 3px;
-}
-
-
-/* =========================================================
-   No color inversion for images / emojis
-   ========================================================= */
-
-.news-dark img,
-.news-dark picture,
-.news-dark video,
-.news-dark svg {
-    filter: none;
-}
-
-
-/* =========================================================
-   Dark mode setting switch
+   11. Dark mode setting switch
    ========================================================= */
 
 .news-dark-setting-row {
@@ -472,11 +423,254 @@
 
 .news-dark-setting .news-switch input:focus-visible
 + .news-slider {
-    outline: 2px solid #8db59a;
+    outline: 2px solid #a9d8b7;
     outline-offset: 3px;
 }
 
-/* Ensure color changes are visible without inversion */
+
+/* =========================================================
+   12. About Yapp
+   ========================================================= */
+
+.news-dark .news-about-hero h2,
+.news-dark .news-about-section-content h3,
+.news-dark .news-about-info-item h4 {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-about-lead,
+.news-dark .news-about-section-content p,
+.news-dark .news-about-info-item p {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-about-note,
+.news-dark .news-feedback-note {
+    color: var(--news-dark-muted) !important;
+}
+
+.news-dark .news-about-section,
+.news-dark .news-about-sections,
+.news-dark .news-about-info-item {
+    border-color: var(--news-dark-border);
+}
+
+.news-dark .news-about-section-number {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-about-sources span,
+.news-dark .news-about-services-link,
+.news-dark .news-about-privacy {
+    background: var(--news-dark-surface);
+    border-color: var(--news-dark-border);
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-about-services-link:hover {
+    background: var(--news-dark-hover);
+}
+
+.news-dark .news-about-services-copy strong {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-about-services-copy small,
+.news-dark .news-about-privacy p {
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-about-support-details {
+    border-color: var(--news-dark-border);
+}
+
+.news-dark .news-about-support-details > summary {
+    color: var(--news-dark-body);
+}
+
+
+/* =========================================================
+   13. Other Yapp services
+   ========================================================= */
+
+.news-dark .news-services-hero h2,
+.news-dark .news-service-heading h3,
+.news-dark .news-services-account h3 {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-services-lead,
+.news-dark .news-service-content p,
+.news-dark .news-services-account p {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-service-badge {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-services-account-button {
+    background: #94c9a4;
+    color: #15241a;
+}
+
+.news-dark .news-services-account-button:hover {
+    background: #b1dfbc;
+    color: #15241a;
+}
+
+
+/* =========================================================
+   14. Forms
+   ========================================================= */
+
+.news-dark .news-feedback-textarea,
+.news-dark .news-support-input,
+.news-dark .news-support-textarea,
+.news-dark .news-share-fallback-input {
+    background: var(--news-dark-surface-alt);
+    border-color: var(--news-dark-border);
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-feedback-textarea::placeholder,
+.news-dark .news-support-input::placeholder,
+.news-dark .news-support-textarea::placeholder {
+    color: var(--news-dark-faint);
+}
+
+.news-dark .news-feedback-textarea:focus,
+.news-dark .news-support-input:focus,
+.news-dark .news-support-textarea:focus {
+    background: #39483e;
+    border-color: var(--news-dark-accent);
+    color: var(--news-dark-text);
+    box-shadow: 0 0 0 3px rgba(169, 216, 183, .13);
+}
+
+.news-dark .news-feedback-submit,
+.news-dark .news-about-share-button,
+.news-dark .news-support-submit {
+    background: #94c9a4;
+    color: #15241a;
+}
+
+.news-dark .news-feedback-submit:hover,
+.news-dark .news-about-share-button:hover,
+.news-dark .news-support-submit:hover {
+    background: #b1dfbc;
+    color: #15241a;
+}
+
+
+/* =========================================================
+   15. Financial support
+   ========================================================= */
+
+.news-dark .news-support-method-icon {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-support-method-copy strong,
+.news-dark .news-support-panel h4,
+.news-dark .news-support-hero-copy h1,
+.news-dark .news-support-form-header h2,
+.news-dark .news-support-step-copy h2,
+.news-dark .news-support-field label {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-support-method-copy small,
+.news-dark .news-support-hero-copy p,
+.news-dark .news-support-form-header p,
+.news-dark .news-support-step-copy p,
+.news-dark .news-support-field-note {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-bitcoin-address,
+.news-dark .news-support-privacy-box {
+    background: var(--news-dark-surface-alt);
+    border-color: var(--news-dark-border);
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-bitcoin-address code {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-support-method:hover {
+    background: var(--news-dark-hover);
+}
+
+
+/* =========================================================
+   16. Messages
+   ========================================================= */
+
+.news-dark .news-message {
+    background: #304c3a;
+    color: #d9f0df;
+}
+
+.news-dark .news-message-error,
+.news-dark .news-feedback-errors,
+.news-dark .news-support-field-errors,
+.news-dark .news-support-form-errors {
+    background: #583638;
+    color: #ffe1e1;
+}
+
+.news-dark .news-message-error p,
+.news-dark .news-feedback-errors p {
+    color: #ffe1e1;
+}
+
+
+/* =========================================================
+   17. Interactive elements
+   ========================================================= */
+
+.news-dark .news-main a:not(
+    .news-feedback-submit,
+    .news-about-share-button,
+    .news-support-submit,
+    .news-services-account-button,
+    .news-save-button
+):hover {
+    opacity: .92;
+}
+
+.news-dark :is(
+    a,
+    button,
+    input,
+    textarea,
+    select,
+    summary
+):focus-visible {
+    outline: 2px solid var(--news-dark-accent);
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   18. Images and media
+   ========================================================= */
+
+.news-dark img,
+.news-dark picture,
+.news-dark video,
+.news-dark svg {
+    filter: none;
+}
+
+
+/* =========================================================
+   19. Smooth transitions
+   ========================================================= */
 
 .news-app {
     transition:
