@@ -274,6 +274,11 @@ class NewsPreference(models.Model):
         default="medium",
     )
 
+    dark_mode = models.BooleanField(
+        default=False,
+        verbose_name="ダークモード",
+    )
+
     hidden_topics = models.ManyToManyField(
         Topic,
         blank=True,

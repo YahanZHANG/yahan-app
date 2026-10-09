@@ -4829,3 +4829,40 @@
     }
 
 }
+
+
+/* =========================================================
+   Mobile navigation - 5 items
+   ========================================================= */
+
+@media screen and (max-width: 899px) {
+
+    .news-bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2px;
+    }
+
+    .news-bottom-nav .news-nav-item {
+        min-width: 0;
+        padding: 4px 2px;
+        font-size: .56rem;
+    }
+
+    .news-bottom-nav .news-nav-icon {
+        font-size: 1.05rem;
+    }
+
+    .news-bottom-nav .news-nav-item > span:last-child {
+        white-space: nowrap;
+    }
+
+}
+
+@media screen and (max-width: 380px) {
+
+    .news-bottom-nav .news-nav-item {
+        font-size: .5rem;
+    }
+
+}

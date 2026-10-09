@@ -40,6 +40,7 @@ class NewsSettingsForm(forms.ModelForm):
         fields = [
             "display_language",
             "font_size",
+            "dark_mode",
         ]
 
         widgets = {
@@ -48,6 +49,12 @@ class NewsSettingsForm(forms.ModelForm):
 
             "font_size":
                 forms.RadioSelect,
+
+            "dark_mode": forms.CheckboxInput(
+                attrs={
+                    "class": "news-dark-checkbox",
+                }
+            ),
         }
 
         labels = {
@@ -56,6 +63,8 @@ class NewsSettingsForm(forms.ModelForm):
 
             "font_size":
                 "文字サイズ",
+
+             "dark_mode": "ダークモード",
         }
 
 

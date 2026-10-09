@@ -116,6 +116,11 @@ def _get_public_settings(request):
             "enabled_source_ids",
             None,
         ),
+
+        "dark_mode": settings.get(
+            "dark_mode",
+            False,
+        ),
     }
 
 def _apply_public_news_settings(
@@ -1175,6 +1180,10 @@ def settings_view(request):
                         flat=True,
                     )
                 ),
+
+                "dark_mode": (
+                    form.cleaned_data["dark_mode"]
+                ),
             }
 
 
@@ -1242,6 +1251,11 @@ def settings_view(request):
                         "enabled_source_ids",
                         default_source_ids,
                     )
+                ),
+
+                "dark_mode": public_settings.get(
+                    "dark_mode",
+                    False,
                 ),
             }
         )

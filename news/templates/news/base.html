@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -14,8 +15,15 @@ page-content news-site-container
     href="{% static 'news/css/news.css' %}"
 >
 
+<link
+    rel="stylesheet"
+    href="{% static 'news/css/news-dark.css' %}"
+>
+
+
 <div class="
     news-app
+
     {% if preference %}
         news-font-{{ preference.font_size }}
     {% elif public_settings %}
@@ -23,7 +31,20 @@ page-content news-site-container
     {% else %}
         news-font-medium
     {% endif %}
+
+    {% if request.user.is_authenticated %}
+        {% if request.user.news_preference.dark_mode %}
+            news-dark
+        {% endif %}
+    {% elif public_settings.dark_mode %}
+        news-dark
+    {% endif %}
 ">
+
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
 
     <header class="news-header">
 
@@ -38,84 +59,95 @@ page-content news-site-container
 
         {% endif %}
 
-            <div class="news-header-inner">
 
-                <div class="news-brand">
+        <div class="news-header-inner">
 
-                    <div class="news-eyebrow">
-                        
-                    </div>
+            <div class="news-brand">
 
-                    <h1>
-                        Swiss News
-                    </h1>
+                <div class="news-eyebrow"></div>
 
-                    <p class="news-site-description">
-                        スイスのニュースを日本語で読もう
-                    </p>
+                <h1>
+                    Swiss News
+                </h1>
 
-                </div>
-
-         
-                <nav class="news-desktop-nav">
-
-                    <a
-                        href="{% url 'news:home' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'home' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        HOME
-                    </a>
-
-                    <a
-                        href="{% url 'news:topic_list' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        探す
-                    </a>
-
-                    <a
-                        href="{% url 'news:digest_list' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'digest_list' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        過去のまとめ
-                    </a>
-
-                    <a
-                        href="{% url 'news:settings' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'settings' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        設定
-                    </a>
-
-                    <a
-                        href="{% url 'news:about' %}"
-                        class="news-desktop-nav-item
-                        {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
-                            is-active
-                        {% endif %}"
-                    >
-                        Yappについて
-                    </a>
-
-                </nav>
-
+                <p class="news-site-description">
+                    スイスのニュースを日本語で読もう
+                </p>
 
             </div>
 
+
+            <!-- =============================================
+                 Desktop navigation
+                 ============================================= -->
+
+            <nav class="news-desktop-nav">
+
+                <a
+                    href="{% url 'news:home' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'home' %}
+                        is-active
+                    {% endif %}"
+                >
+                    HOME
+                </a>
+
+
+                <a
+                    href="{% url 'news:topic_list' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
+                        is-active
+                    {% endif %}"
+                >
+                    探す
+                </a>
+
+
+                <a
+                    href="{% url 'news:digest_list' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'digest_list' %}
+                        is-active
+                    {% endif %}"
+                >
+                    過去のまとめ
+                </a>
+
+
+                <a
+                    href="{% url 'news:settings' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'settings' %}
+                        is-active
+                    {% endif %}"
+                >
+                    設定
+                </a>
+
+
+                <a
+                    href="{% url 'news:about' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
+                        is-active
+                    {% endif %}"
+                >
+                    Yappについて
+                </a>
+
+            </nav>
+
+        </div>
+
     </header>
 
+
+
+    <!-- =====================================================
+         Django messages
+         ===================================================== -->
 
     {% if messages %}
 
@@ -137,6 +169,11 @@ page-content news-site-container
     {% endif %}
 
 
+
+    <!-- =====================================================
+         Main content
+         ===================================================== -->
+
     <main class="news-main">
 
         {% block news_content %}
@@ -145,20 +182,22 @@ page-content news-site-container
     </main>
 
 
+
+    <!-- =====================================================
+         Mobile bottom navigation
+         ===================================================== -->
+
     <nav class="news-bottom-nav">
 
-        <!-- =========================
-             HOME
-        ========================= -->
+
+        <!-- HOME -->
 
         <a
             href="{% url 'news:home' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'home' %}
-                    is-active
-                {% endif %}
-            "
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'home' %}
+                is-active
+            {% endif %}"
         >
 
             <span class="news-nav-icon">
@@ -172,18 +211,15 @@ page-content news-site-container
         </a>
 
 
-        <!-- =========================
-             探す
-        ========================= -->
+
+        <!-- 探す -->
 
         <a
             href="{% url 'news:topic_list' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' %}
-                    is-active
-                {% endif %}
-            "
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
+                is-active
+            {% endif %}"
         >
 
             <span class="news-nav-icon">
@@ -197,18 +233,15 @@ page-content news-site-container
         </a>
 
 
-        <!-- =========================
-             過去のまとめ
-        ========================= -->
+
+        <!-- 過去のまとめ -->
 
         <a
             href="{% url 'news:digest_list' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'digest_list' %}
-                    is-active
-                {% endif %}
-            "
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'digest_list' %}
+                is-active
+            {% endif %}"
         >
 
             <span class="news-nav-icon">
@@ -216,23 +249,21 @@ page-content news-site-container
             </span>
 
             <span>
-                過去のまとめ
+                まとめ
             </span>
 
         </a>
 
-        <!-- =========================
-             設定
-        ========================= -->
-      
+
+
+        <!-- 設定 -->
+
         <a
             href="{% url 'news:settings' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'settings' %}
-                    is-active
-                {% endif %}
-            "
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'settings' %}
+                is-active
+            {% endif %}"
         >
 
             <span class="news-nav-icon">
@@ -245,19 +276,16 @@ page-content news-site-container
 
         </a>
 
-                
-        <!-- =========================
-            Yappについて
-        ========================= -->
+
+
+        <!-- Yappについて -->
 
         <a
             href="{% url 'news:about' %}"
-            class="
-                news-nav-item
-                {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
-                    is-active
-                {% endif %}
-            "
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
+                is-active
+            {% endif %}"
         >
 
             <span class="news-nav-icon">
@@ -270,9 +298,141 @@ page-content news-site-container
 
         </a>
 
-
     </nav>
 
 </div>
+
+
+
+<!-- =========================================================
+     Dark mode
+     ========================================================= -->
+
+<script>
+(function () {
+    "use strict";
+
+    const newsApp = document.querySelector(".news-app");
+
+    if (!newsApp) {
+        return;
+    }
+
+    const isAuthenticated =
+        "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
+
+    const storageKey = "yapp_news_dark_mode";
+
+
+    function readStoredMode() {
+        try {
+            return localStorage.getItem(storageKey);
+        } catch (error) {
+            return null;
+        }
+    }
+
+
+    function saveStoredMode(enabled) {
+        try {
+            localStorage.setItem(
+                storageKey,
+                enabled ? "dark" : "light"
+            );
+        } catch (error) {
+            // 保存できない環境でも表示切替は継続する
+        }
+    }
+
+
+    // =====================================================
+    // Anonymous users: restore browser preference
+    // =====================================================
+
+    if (!isAuthenticated) {
+
+        const storedMode = readStoredMode();
+
+        if (storedMode !== null) {
+
+            newsApp.classList.toggle(
+                "news-dark",
+                storedMode === "dark"
+            );
+
+        }
+
+    }
+
+
+    // =====================================================
+    // Settings page interactions
+    // =====================================================
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toggle = document.querySelector(
+            ".news-dark-checkbox"
+        );
+
+        if (!toggle) {
+            return;
+        }
+
+
+        // Anonymous users: restore checkbox value
+
+        if (!isAuthenticated) {
+
+            const storedMode = readStoredMode();
+
+            if (storedMode !== null) {
+
+                toggle.checked = storedMode === "dark";
+
+            }
+
+        }
+
+
+        // Preview dark / light immediately
+
+        toggle.addEventListener("change", function () {
+
+            newsApp.classList.toggle(
+                "news-dark",
+                toggle.checked
+            );
+
+            if (!isAuthenticated) {
+                saveStoredMode(toggle.checked);
+            }
+
+        });
+
+
+        // Save browser preference when submitting settings
+
+        const settingsForm = document.querySelector(
+            ".news-settings-form"
+        );
+
+        if (settingsForm) {
+
+            settingsForm.addEventListener("submit", function () {
+
+                if (!isAuthenticated) {
+                    saveStoredMode(toggle.checked);
+                }
+
+            });
+
+        }
+
+    });
+
+})();
+</script>
+
 
 {% endblock %}

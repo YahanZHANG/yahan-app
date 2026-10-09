@@ -97,6 +97,49 @@
 
         </section>
 
+                
+        <!-- =================================================
+            Dark mode
+            ================================================= -->
+
+        <section class="news-settings-card news-dark-setting">
+
+            <label class="news-dark-setting-row">
+
+                <span class="news-dark-setting-copy">
+
+                    <strong>
+                        🌙 ダークモード
+                    </strong>
+
+                    <small>
+                        画面を暗い配色に切り替えます
+                    </small>
+
+                </span>
+
+                <span class="news-switch">
+
+                    {{ form.dark_mode }}
+
+                    <span
+                        class="news-slider"
+                        aria-hidden="true"
+                    ></span>
+
+                </span>
+
+            </label>
+
+            {% for error in form.dark_mode.errors %}
+                <p class="news-message news-message-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+
+        </section>
+
+
 
         <!-- =================================================
              表示するニューステーマ
