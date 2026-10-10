@@ -74,18 +74,36 @@
 
             <!-- Comments -->
 
-            <div class="sb-mypage-item is-upcoming">
+            <a
+                href="{% url 'swiss_board:my_comments' %}"
+                class="sb-mypage-item"
+            >
+
                 <span class="sb-mypage-item-icon is-blue">
-                    <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                    <i
+                        class="bi bi-chat-left-text"
+                        aria-hidden="true"
+                    ></i>
                 </span>
 
                 <span class="sb-mypage-item-content">
-                    <strong>自分のコメント・回答</strong>
-                    <small>コメントや回答の履歴</small>
+
+                    <strong>
+                        自分のコメント・回答
+                    </strong>
+
+                    <small>
+                        コメント・回答の履歴
+                    </small>
+
                 </span>
 
-                <span class="sb-mypage-upcoming">準備中</span>
-            </div>
+                <i
+                    class="bi bi-chevron-right sb-mypage-chevron"
+                    aria-hidden="true"
+                ></i>
+
+            </a>
 
 
             <!-- Questions -->

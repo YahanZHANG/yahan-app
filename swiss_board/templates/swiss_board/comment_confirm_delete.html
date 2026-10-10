@@ -1,0 +1,65 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    コメントを削除 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-comment-management-page">
+
+    <div class="sb-comment-management-card">
+
+        <h1>
+            コメントを削除しますか？
+        </h1>
+
+        <p>
+            以下のコメントを削除します。
+            この操作は取り消せません。
+        </p>
+
+        <div class="sb-comment-delete-preview">
+            {{ comment.body|linebreaksbr }}
+        </div>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="sb-comment-management-actions">
+
+                <button
+                    type="submit"
+                    class="sb-comment-management-delete"
+                >
+                    削除する
+                </button>
+
+                <a
+                    href="{% url 'swiss_board:post_detail' comment.post_id %}#comment-{{ comment.pk }}"
+                    class="sb-comment-management-cancel"
+                >
+                    キャンセル
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

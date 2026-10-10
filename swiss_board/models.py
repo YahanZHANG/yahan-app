@@ -232,3 +232,55 @@ class SwissBoardProfile(models.Model):
 
     def __str__(self):
         return self.display_name or "掲示板ユーザー"
+
+# =========================================================
+# Swiss Board Comment
+# =========================================================
+
+class SwissBoardComment(models.Model):
+
+    post = models.ForeignKey(
+        SwissBoardPost,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="投稿",
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="swiss_board_comments",
+        verbose_name="投稿者",
+    )
+
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="replies",
+        verbose_name="返信先コメント",
+    )
+
+    body = models.TextField(
+        "コメント本文",
+        max_length=500,
+    )
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "掲示板コメント"
+        verbose_name_plural = "掲示板コメント"
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"Comment {self.pk} on post {self.post_id}"

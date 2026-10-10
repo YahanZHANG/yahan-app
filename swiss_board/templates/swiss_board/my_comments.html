@@ -1,0 +1,105 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    自分のコメント・回答 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-my-comments-page">
+
+    <header class="sb-my-comments-header">
+
+        <a
+            href="{% url 'swiss_board:my_page' %}"
+            class="sb-my-comments-back"
+        >
+            ← マイページ
+        </a>
+
+        <h1>
+            自分のコメント・回答
+        </h1>
+
+    </header>
+
+
+    <div class="sb-my-comments-list">
+
+        {% for comment in page_obj %}
+
+            <a
+                href="{% url 'swiss_board:post_detail' comment.post.pk %}#comment-{{ comment.pk }}"
+                class="sb-my-comment-item"
+            >
+
+                <div class="sb-my-comment-text">
+
+                    <strong>
+                        {{ comment.post.title }}
+                    </strong>
+
+                    <p>
+                        {{ comment.body|truncatechars:100 }}
+                    </p>
+
+                </div>
+
+                <i
+                    class="bi bi-chevron-right"
+                    aria-hidden="true"
+                ></i>
+
+            </a>
+
+        {% empty %}
+
+            <div class="sb-my-comments-empty">
+                まだコメント・回答はありません。
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="sb-my-comments-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

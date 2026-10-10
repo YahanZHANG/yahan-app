@@ -204,4 +204,335 @@
 
 </div>
 
+<!-- =====================================================
+     Comments and Replies
+     ===================================================== -->
+
+<section class="sb-comments" id="comments">
+
+    <h2 class="sb-comments-heading">
+
+        {% if post.category == "questions" %}
+            回答・返信
+        {% else %}
+            コメント・返信
+        {% endif %}
+
+        <span>{{ comment_count }}件</span>
+
+    </h2>
+
+
+    <!-- =================================================
+         Comment list
+         ================================================= -->
+
+    <div class="sb-comments-list">
+
+        {% for comment in comments %}
+
+            <article
+                class="sb-comment"
+                id="comment-{{ comment.pk }}"
+            >
+
+                <!-- Parent comment -->
+
+                <div class="sb-comment-header">
+
+                    <span class="sb-comment-author">
+
+                        <i
+                            class="bi bi-person-circle"
+                            aria-hidden="true"
+                        ></i>
+
+                        {% if comment.author.swiss_board_profile.display_name %}
+                            {{ comment.author.swiss_board_profile.display_name }}
+                        {% else %}
+                            掲示板ユーザー
+                        {% endif %}
+
+                        {% if comment.author_id == post.author_id %}
+                            <span class="sb-comment-owner-badge">
+                                投稿者
+                            </span>
+                        {% endif %}
+
+                    </span>
+
+                    <time datetime="{{ comment.created_at|date:'c' }}">
+                        {{ comment.created_at|date:"Y年n月j日 H:i" }}
+                    </time>
+
+                </div>
+
+
+                <div class="sb-comment-body">
+                    {{ comment.body|linebreaksbr }}
+                </div>
+
+
+                <!-- Actions -->
+
+                <div class="sb-comment-actions">
+
+
+                    {% if user.is_authenticated and comment.author_id == user.pk %}
+
+                        <a
+                            href="{% url 'swiss_board:comment_edit' comment.pk %}"
+                            class="sb-comment-edit-link"
+                        >
+                            編集
+                        </a>
+
+                        <a
+                            href="{% url 'swiss_board:comment_delete' comment.pk %}"
+                            class="sb-comment-delete-link"
+                        >
+                            削除
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =====================================
+                     Replies
+                     ===================================== -->
+
+                {% for reply in comment.replies.all %}
+
+                    <div
+                        class="sb-comment-reply"
+                        id="comment-{{ reply.pk }}"
+                    >
+
+                        <div class="sb-comment-header">
+
+                            <span class="sb-comment-author">
+
+                                <i
+                                    class="bi bi-arrow-return-right"
+                                    aria-hidden="true"
+                                ></i>
+
+                                {% if reply.author.swiss_board_profile.display_name %}
+                                    {{ reply.author.swiss_board_profile.display_name }}
+                                {% else %}
+                                    掲示板ユーザー
+                                {% endif %}
+
+                                {% if reply.author_id == post.author_id %}
+                                    <span class="sb-comment-owner-badge">
+                                        投稿者
+                                    </span>
+                                {% endif %}
+
+                            </span>
+
+                            <time datetime="{{ reply.created_at|date:'c' }}">
+                                {{ reply.created_at|date:"Y年n月j日 H:i" }}
+                            </time>
+
+                        </div>
+
+
+                        <div class="sb-comment-body">
+                            {{ reply.body|linebreaksbr }}
+                        </div>
+
+
+                        {% if user.is_authenticated and reply.author_id == user.pk %}
+
+                            <div class="sb-comment-actions">
+
+                                <a
+                                    href="{% url 'swiss_board:comment_edit' reply.pk %}"
+                                    class="sb-comment-edit-link"
+                                >
+                                    編集
+                                </a>
+
+                                <a
+                                    href="{% url 'swiss_board:comment_delete' reply.pk %}"
+                                    class="sb-comment-delete-link"
+                                >
+                                    削除
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+
+                <!-- =====================================
+                     Reply form
+                     ===================================== -->
+
+                {% if user.is_authenticated %}
+
+                    <details
+                        class="sb-reply-details"
+                        id="reply-form-{{ comment.pk }}"
+                        {% if reply_error_parent_id == comment.pk %}open{% endif %}
+                    >
+
+                        <summary>
+                            <i
+                                class="bi bi-chat-left-text"
+                                aria-hidden="true"
+                            ></i>
+                            返信を入力する
+                        </summary>
+
+                        <form
+                            method="post"
+                            action="{% url 'swiss_board:comment_create' post.pk %}"
+                            class="sb-reply-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="parent"
+                                value="{{ comment.pk }}"
+                            >
+
+                            {% if reply_error_parent_id == comment.pk and reply_form %}
+
+                                {{ reply_form.body }}
+
+                                {% for error in reply_form.body.errors %}
+                                    <p class="sb-comment-error">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+
+                            {% else %}
+
+                                <textarea
+                                    name="body"
+                                    rows="3"
+                                    maxlength="500"
+                                    required
+                                    placeholder="返信を入力してください（500文字以内）"
+                                ></textarea>
+
+                            {% endif %}
+
+                            <div class="sb-comment-compose-bottom">
+
+                                <span>最大500文字</span>
+
+                                <button type="submit">
+                                    返信する
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </details>
+
+                {% endif %}
+
+            </article>
+
+        {% empty %}
+
+            <div class="sb-comments-empty">
+                まだコメントはありません。
+                最初のコメントを投稿してみましょう。
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- =================================================
+         New comment form
+         ================================================= -->
+
+    <div class="sb-comment-compose" id="comment-form">
+
+        <h3>
+            {% if post.category == "questions" %}
+                回答を投稿する
+            {% else %}
+                コメントを投稿する
+            {% endif %}
+        </h3>
+
+        {% if user.is_authenticated %}
+
+            <form
+                method="post"
+                action="{% url 'swiss_board:comment_create' post.pk %}"
+            >
+
+                {% csrf_token %}
+
+                <div class="sb-comment-field">
+
+                    {{ comment_form.body }}
+
+                    {% for error in comment_form.body.errors %}
+                        <p class="sb-comment-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+
+                </div>
+
+                <div class="sb-comment-compose-bottom">
+
+                    <span>最大500文字</span>
+
+                    <button type="submit">
+
+                        <i
+                            class="bi bi-send"
+                            aria-hidden="true"
+                        ></i>
+
+                        {% if post.category == "questions" %}
+                            回答する
+                        {% else %}
+                            コメントする
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        {% else %}
+
+            <p class="sb-comment-login-description">
+                コメントや返信にはYappへのログインが必要です。
+            </p>
+
+            <a
+                href="{% url 'login' %}?next={{ request.path|urlencode }}"
+                class="sb-comment-login-link"
+            >
+                ログインしてコメントする
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
 {% endblock %}

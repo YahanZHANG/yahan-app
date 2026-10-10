@@ -3,6 +3,7 @@ from django import forms
 from .models import (
     SwissBoardPost,
     SwissBoardProfile,
+    SwissBoardComment,
 )
 
 
@@ -226,3 +227,36 @@ class SwissBoardProfileForm(forms.ModelForm):
             )
 
         return display_name
+
+
+# =========================================================
+# Swiss Board Comment Form
+# =========================================================
+
+class SwissBoardCommentForm(forms.ModelForm):
+
+    class Meta:
+        model = SwissBoardComment
+        fields = ["body"]
+
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "maxlength": 500,
+                    "placeholder": "コメントを入力してください（500文字以内）",
+                }
+            ),
+        }
+
+    def clean_body(self):
+        body = (
+            self.cleaned_data.get("body") or ""
+        ).strip()
+
+        if not body:
+            raise forms.ValidationError(
+                "コメントを入力してください。"
+            )
+
+        return body

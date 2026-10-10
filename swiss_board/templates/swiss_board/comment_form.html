@@ -1,0 +1,74 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    コメントを編集 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-comment-management-page">
+
+    <header class="sb-comment-management-header">
+
+        <h1>コメントを編集</h1>
+
+        <p>
+            投稿先：{{ comment.post.title }}
+        </p>
+
+    </header>
+
+
+    <form
+        method="post"
+        class="sb-comment-management-card"
+    >
+
+        {% csrf_token %}
+
+        <div class="sb-comment-field">
+
+            {{ form.body }}
+
+            {% for error in form.body.errors %}
+                <p class="sb-comment-error">
+                    {{ error }}
+                </p>
+            {% endfor %}
+
+        </div>
+
+        <div class="sb-comment-management-actions">
+
+            <button
+                type="submit"
+                class="sb-comment-management-save"
+            >
+                変更を保存
+            </button>
+
+            <a
+                href="{% url 'swiss_board:post_detail' comment.post_id %}#comment-{{ comment.pk }}"
+                class="sb-comment-management-cancel"
+            >
+                キャンセル
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

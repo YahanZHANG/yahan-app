@@ -1,21 +1,31 @@
 from datetime import timedelta
 
 from django.core.paginator import Paginator
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.http import Http404
+from django.db.models import Q, Prefetch
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+
+from django.views.decorators.http import require_POST
+
 
 from .models import (
     SwissBoardPost,
     SwissBoardProfile,
+    SwissBoardComment
 )
 from .forms import (
     SwissBoardPostForm,
     SwissBoardProfileForm,
+    SwissBoardCommentForm
 )
+
+
+
 
 MAIN_CATEGORIES = [
     {
@@ -302,12 +312,18 @@ def post_detail(request, pk):
             status=404,
         )
 
+    comments = get_post_comments(post)
+    comment_count = post.comments.count()
+
     return render(
         request,
         "swiss_board/post_detail.html",
         {
             "post": post,
-        },
+            "comments": comments,
+            "comment_count": comment_count,
+            "comment_form": SwissBoardCommentForm(),
+        }
     )
 
 # =========================================================
@@ -898,4 +914,231 @@ def profile_edit(request):
         {
             "form": form,
         },
+    )
+
+
+# =========================================================
+# Create Comment / Reply
+# =========================================================
+
+@login_required
+@require_POST
+def comment_create(request, pk):
+
+    post = get_object_or_404(
+        SwissBoardPost,
+        pk=pk,
+        status=SwissBoardPost.Status.PUBLISHED,
+    )
+
+    parent_id = request.POST.get("parent", "").strip()
+    parent = None
+
+    if parent_id:
+
+        parent = get_object_or_404(
+            SwissBoardComment,
+            pk=parent_id,
+            post=post,
+            parent__isnull=True,
+        )
+
+    form = SwissBoardCommentForm(request.POST)
+
+    if form.is_valid():
+
+        comment = form.save(commit=False)
+
+        comment.post = post
+        comment.author = request.user
+        comment.parent = parent
+        comment.save()
+
+        return redirect(
+            reverse(
+                "swiss_board:post_detail",
+                kwargs={"pk": post.pk},
+            )
+            + f"#comment-{comment.pk}"
+        )
+
+    # 入力エラー時
+
+    context = {
+        "post": post,
+        "comments": get_post_comments(post),
+        "comment_count": post.comments.count(),
+        "comment_form": (
+            form if parent is None
+            else SwissBoardCommentForm()
+        ),
+        "reply_form": form if parent else None,
+        "reply_error_parent_id": parent.pk if parent else None,
+    }
+
+    return render(
+        request,
+        "swiss_board/post_detail.html",
+        context,
+        status=400,
+    )
+
+# =========================================================
+# My Comments
+# =========================================================
+
+@login_required
+def my_comments(request):
+    """
+    自分が投稿したコメントの一覧。
+    非公開・削除済みの元投稿は表示しない。
+    """
+
+    comments = (
+        SwissBoardComment.objects
+        .filter(
+            author=request.user,
+            post__status=SwissBoardPost.Status.PUBLISHED,
+        )
+        .select_related("post")
+        .order_by("-created_at", "-pk")
+    )
+
+    paginator = Paginator(comments, 20)
+
+    page_obj = paginator.get_page(
+        request.GET.get("page", 1)
+    )
+
+    return render(
+        request,
+        "swiss_board/my_comments.html",
+        {
+            "page_obj": page_obj,
+        },
+    )   
+
+
+# =========================================================
+# Comment Query
+# =========================================================
+
+def get_post_comments(post):
+
+    reply_queryset = (
+        SwissBoardComment.objects
+        .filter(parent__isnull=False)
+        .select_related(
+            "author",
+            "author__swiss_board_profile",
+        )
+        .order_by("created_at", "pk")
+    )
+
+    return (
+        SwissBoardComment.objects
+        .filter(
+            post=post,
+            parent__isnull=True,
+        )
+        .select_related(
+            "author",
+            "author__swiss_board_profile",
+        )
+        .prefetch_related(
+            Prefetch(
+                "replies",
+                queryset=reply_queryset,
+            )
+        )
+        .order_by("created_at", "pk")
+    )
+
+
+# =========================================================
+# Edit Comment
+# =========================================================
+
+@login_required
+def comment_edit(request, pk):
+
+    comment = get_object_or_404(
+        SwissBoardComment.objects.select_related("post"),
+        pk=pk,
+        author=request.user,
+        post__status=SwissBoardPost.Status.PUBLISHED,
+    )
+
+    form = SwissBoardCommentForm(
+        request.POST if request.method == "POST" else None,
+        instance=comment,
+    )
+
+    if request.method == "POST" and form.is_valid():
+
+        form.save()
+
+        return redirect(
+            reverse(
+                "swiss_board:post_detail",
+                kwargs={"pk": comment.post_id},
+            )
+            + f"#comment-{comment.pk}"
+        )
+
+    return render(
+        request,
+        "swiss_board/comment_form.html",
+        {
+            "form": form,
+            "comment": comment,
+        },
+    )
+
+# =========================================================
+# Delete Comment
+# =========================================================
+
+@login_required
+def comment_delete(request, pk):
+
+    comment = get_object_or_404(
+        SwissBoardComment.objects.select_related("post"),
+        pk=pk,
+        author=request.user,
+        post__status=SwissBoardPost.Status.PUBLISHED,
+    )
+
+    post_pk = comment.post_id
+
+    if request.method == "POST":
+
+        comment.delete()
+
+        return redirect(
+            reverse(
+                "swiss_board:post_detail",
+                kwargs={"pk": post_pk},
+            )
+            + "#comments"
+        )
+
+    return render(
+        request,
+        "swiss_board/comment_confirm_delete.html",
+        {
+            "comment": comment,
+        },
+    )
+
+# =========================================================
+# Swiss Board 404
+# =========================================================
+
+def page_not_found(request, exception=None):
+
+    return render(
+        request,
+        "swiss_board/page_not_found.html",
+        status=404,
     )

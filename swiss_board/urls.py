@@ -45,6 +45,18 @@ urlpatterns = [
     ),
 
     path(
+        "my-comments/",
+        views.my_comments,
+        name="my_comments",
+    ),
+
+    path(
+        "posts/<int:pk>/comments/new/",
+        views.comment_create,
+        name="comment_create",
+    ),
+
+    path(
         "posts/new/",
         views.post_create,
         name="post_create",
@@ -68,4 +80,41 @@ urlpatterns = [
         name="post_detail",
     ),
 
+    path(
+        "comments/<int:pk>/edit/",
+        views.comment_edit,
+        name="comment_edit",
+    ),
+
+    path(
+        "comments/<int:pk>/delete/",
+        views.comment_delete,
+        name="comment_delete",
+    ),
+
 ]
+
+# =========================================================
+# 404 Handler
+# =========================================================
+
+def custom_404(request, exception):
+
+    if request.path.startswith("/swiss-board/"):
+
+        from swiss_board.views import page_not_found
+
+        return page_not_found(
+            request,
+            exception,
+        )
+
+    from django.views.defaults import page_not_found
+
+    return page_not_found(
+        request,
+        exception,
+    )
+
+
+handler404 = custom_404
