@@ -3,7 +3,11 @@
 
 
 {% block title %}
-    新規投稿 | スイス掲示板
+    {% if is_edit %}
+        投稿を編集 | スイス掲示板
+    {% else %}
+        新規投稿 | スイス掲示板
+    {% endif %}
 {% endblock %}
 
 
@@ -26,14 +30,19 @@
                 class="bi bi-pencil-square"
                 aria-hidden="true"
             ></i>
-            新規投稿
+
+            {% if is_edit %}
+                投稿を編集
+            {% else %}
+                新規投稿
+            {% endif %}
         </h1>
 
     </header>
 
 
     <form
-        action="{% url 'swiss_board:post_create' %}"
+        action="{% if is_edit %}{% url 'swiss_board:post_edit' form.instance.pk %}{% else %}{% url 'swiss_board:post_create' %}{% endif %}"
         method="post"
         class="sb-create-form"
         id="sb-create-form"
@@ -207,14 +216,19 @@
                 class="sb-create-submit"
             >
                 <i
-                    class="bi bi-send"
+                    class="bi {% if is_edit %}bi-check-circle{% else %}bi-send{% endif %}"
                     aria-hidden="true"
                 ></i>
-                投稿を公開する
+
+                {% if is_edit %}
+                    変更を保存する
+                {% else %}
+                    投稿を公開する
+                {% endif %}
             </button>
 
             <a
-                href="{% url 'swiss_board:home' %}"
+                href="{% if is_edit %}{% url 'swiss_board:my_posts' %}{% else %}{% url 'swiss_board:home' %}{% endif %}"
                 class="sb-create-cancel"
             >
                 キャンセル

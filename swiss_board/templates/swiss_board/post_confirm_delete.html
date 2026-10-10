@@ -1,0 +1,75 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    投稿を削除 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-delete-page">
+
+    <div class="sb-delete-card">
+
+        <div class="sb-delete-icon">
+            <i
+                class="bi bi-trash"
+                aria-hidden="true"
+            ></i>
+        </div>
+
+        <h1>
+            投稿を削除しますか？
+        </h1>
+
+        <p>
+            以下の投稿を削除します。
+        </p>
+
+        <div class="sb-delete-target">
+            {{ post.title }}
+        </div>
+
+        <p class="sb-delete-warning">
+            この操作は取り消せません。
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="sb-delete-actions">
+
+                <button
+                    type="submit"
+                    class="sb-delete-confirm"
+                >
+                    完全に削除する
+                </button>
+
+                <a
+                    href="{% url 'swiss_board:my_posts' %}"
+                    class="sb-delete-cancel"
+                >
+                    キャンセル
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -375,3 +375,428 @@
 #sb-region-other {
     background: #fffdf7;
 }
+
+/* =========================================================
+   My Posts
+   ========================================================= */
+
+.sb-my-posts-page {
+    max-width: 900px;
+    padding-top: 25px;
+    padding-bottom: 55px;
+}
+
+.sb-my-posts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.sb-my-posts-heading h1 {
+    margin: 0;
+    color: #2c3038;
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.sb-my-posts-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background: #b51e32;
+    color: #ffffff !important;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.sb-my-posts-new:hover {
+    background: #981727;
+}
+
+.sb-my-posts-list {
+    display: grid;
+    gap: 12px;
+}
+
+.sb-my-post-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid #e2dcd9;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: var(--sb-shadow);
+}
+
+.sb-my-post-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.sb-my-post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px 12px;
+    color: #555b64;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sb-my-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.sb-my-status.is-published {
+    background: #e0f4e8;
+    color: #156b50;
+}
+
+.sb-my-status.is-draft {
+    background: #fff0d8;
+    color: #80500a;
+}
+
+.sb-my-status.is-hidden {
+    background: #f0f0f2;
+    color: #454a54;
+}
+
+.sb-my-post-title {
+    margin: 10px 0 7px;
+    color: #2c3038;
+    font-size: 17px;
+    font-weight: 850;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.sb-my-post-title a {
+    color: inherit;
+}
+
+.sb-my-post-title a:hover {
+    text-decoration: underline;
+}
+
+.sb-my-post-main time {
+    color: #616771;
+    font-size: 11px;
+}
+
+.sb-my-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.sb-my-edit,
+.sb-my-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 9px 13px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.sb-my-edit {
+    border: 1px solid #b8cbed;
+    background: #edf3ff;
+    color: #2458a6;
+}
+
+.sb-my-delete {
+    border: 1px solid #e8b5bd;
+    background: #fff0f1;
+    color: #981727;
+}
+
+.sb-my-edit:hover {
+    background: #dce9ff;
+}
+
+.sb-my-delete:hover {
+    background: #ffe0e4;
+}
+
+.sb-my-posts-empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 45px 20px;
+    border: 1px dashed #d7cbc8;
+    border-radius: 15px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.sb-my-posts-empty > .bi {
+    color: #b51e32;
+    font-size: 30px;
+}
+
+.sb-my-posts-empty p {
+    margin: 0;
+    color: #555b64;
+    font-size: 13px;
+}
+
+.sb-my-posts-empty a {
+    color: #2458a6;
+    font-weight: 800;
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   Delete Confirmation
+   ========================================================= */
+
+.sb-delete-page {
+    display: flex;
+    justify-content: center;
+    padding-top: 55px;
+    padding-bottom: 60px;
+}
+
+.sb-delete-card {
+    width: min(100%, 560px);
+    padding: 35px 27px;
+    border: 1px solid #e2dcd9;
+    border-radius: 19px;
+    background: #ffffff;
+    box-shadow: var(--sb-shadow);
+    text-align: center;
+}
+
+.sb-delete-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    background: #fff0f1;
+    color: #981727;
+    font-size: 29px;
+}
+
+.sb-delete-card h1 {
+    margin: 0 0 15px;
+    color: #2c3038;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.sb-delete-card > p {
+    color: #555b64;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.sb-delete-target {
+    margin: 18px 0;
+    padding: 16px;
+    border-radius: 11px;
+    background: #f7f5f3;
+    color: #2c3038;
+    font-size: 15px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.sb-delete-card .sb-delete-warning {
+    color: #981727;
+    font-weight: 800;
+}
+
+.sb-delete-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.sb-delete-confirm,
+.sb-delete-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 47px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.sb-delete-confirm {
+    border: 1px solid #b51e32;
+    background: #b51e32;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.sb-delete-confirm:hover {
+    background: #981727;
+}
+
+.sb-delete-cancel {
+    border: 1px solid #c9c7ca;
+    background: #ffffff;
+    color: #2c3038;
+}
+
+.sb-delete-cancel:hover {
+    background: #f5f3f2;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .sb-my-posts-page {
+        padding-top: 20px;
+        padding-bottom: 35px;
+    }
+
+    .sb-my-posts-heading h1 {
+        font-size: 23px;
+    }
+
+    .sb-my-post-card {
+        padding: 16px;
+    }
+
+    .sb-my-post-actions {
+        width: 100%;
+    }
+
+    .sb-my-edit,
+    .sb-my-delete {
+        flex: 1;
+    }
+
+    .sb-delete-page {
+        padding-top: 25px;
+    }
+
+    .sb-delete-card {
+        padding: 28px 19px;
+    }
+}
+
+/* =========================================================
+   My Posts Pagination
+   ========================================================= */
+
+.sb-my-posts-page .sb-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+.sb-my-posts-page .sb-page-link {
+    min-width: 75px;
+    padding: 10px 15px;
+    border: 1px solid #c9c7ca;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #2458a6;
+    font-size: 13px;
+    font-weight: 850;
+    text-align: center;
+}
+
+.sb-my-posts-page .sb-page-current {
+    color: #2c3038;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   Compact My Posts
+   ========================================================= */
+
+.sb-my-posts-list {
+    gap: 0;
+    border: 1px solid #e2dcd9;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.sb-my-post-card {
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.sb-my-post-card + .sb-my-post-card {
+    border-top: 1px solid #ebe7e5;
+}
+
+.sb-my-post-title {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 750;
+}
+
+.sb-my-post-actions {
+    flex-shrink: 0;
+    width: auto;
+    gap: 6px;
+}
+
+.sb-my-edit,
+.sb-my-delete {
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+@media (max-width: 760px) {
+
+    .sb-my-post-card {
+        padding: 9px 10px;
+    }
+
+    .sb-my-post-actions {
+        width: auto;
+    }
+
+    .sb-my-edit,
+    .sb-my-delete {
+        flex: none;
+        min-height: 31px;
+        padding: 5px 8px;
+    }
+}

@@ -1,15 +1,14 @@
-from django.shortcuts import render
-from .models import SwissBoardPost
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-from django.core.paginator import Paginator
-from django.db.models import Q
 from datetime import timedelta
 
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from django.db.models import Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
 from .forms import SwissBoardPostForm
+from .models import SwissBoardPost
 
 
 MAIN_CATEGORIES = [
@@ -617,5 +616,162 @@ def post_create(request):
         {
             "form": form,
             "subcategories_by_category": category_map,
+        },
+    )
+
+
+# =========================================================
+# My Posts
+# =========================================================
+
+@login_required
+def my_posts(request):
+    """
+    ログインユーザー自身の投稿一覧。
+
+    公開、下書き、非公開を含む。
+    """
+
+    posts = (
+        SwissBoardPost.objects
+        .filter(author=request.user)
+        .order_by("-created_at", "-id")
+    )
+
+    paginator = Paginator(posts, 20)
+
+    page_obj = paginator.get_page(
+        request.GET.get("page", 1)
+    )
+
+    return render(
+        request,
+        "swiss_board/my_posts.html",
+        {
+            "page_obj": page_obj,
+        },
+    )
+
+
+# =========================================================
+# Edit Post
+# =========================================================
+
+@login_required
+def post_edit(request, pk):
+    """
+    自分の投稿のみ編集可能。
+
+    公開状態は変更しない。
+    管理者が非公開にした投稿を、
+    編集によって再公開させない。
+    """
+
+    post = get_object_or_404(
+        SwissBoardPost,
+        pk=pk,
+        author=request.user,
+    )
+
+    category_map = {
+        item["slug"]: item["subcategories"]
+        for item in BOARD_CATEGORIES
+    }
+
+    # -----------------------------------------------------
+    # Existing region
+    # -----------------------------------------------------
+
+    region = post.region or ""
+
+    known_regions = {
+        value
+        for value, label
+        in SwissBoardPostForm.REGION_CHOICES
+        if value and value != "other"
+    }
+
+    region_initial = {}
+
+    if region in known_regions:
+        region_initial["region_choice"] = region
+
+    elif region:
+        region_initial["region_choice"] = "other"
+        region_initial["region_other"] = region
+
+    else:
+        region_initial["region_choice"] = ""
+
+    # -----------------------------------------------------
+    # Form
+    # -----------------------------------------------------
+
+    form = SwissBoardPostForm(
+        request.POST if request.method == "POST" else None,
+        instance=post,
+        initial=region_initial,
+        category_map=category_map,
+    )
+
+    if request.method == "POST" and form.is_valid():
+
+        # Do not change author or publication status.
+        form.save()
+
+        # Public posts have a detail page.
+        if post.status == SwissBoardPost.Status.PUBLISHED:
+
+            return redirect(
+                "swiss_board:post_detail",
+                pk=post.pk,
+            )
+
+        return redirect(
+            "swiss_board:my_posts"
+        )
+
+    return render(
+        request,
+        "swiss_board/post_form.html",
+        {
+            "form": form,
+            "is_edit": True,
+            "subcategories_by_category": category_map,
+        },
+    )
+
+
+# =========================================================
+# Delete Post
+# =========================================================
+
+@login_required
+def post_delete(request, pk):
+    """
+    自分の投稿のみ削除可能。
+
+    削除処理はPOSTリクエストのみ。
+    """
+
+    post = get_object_or_404(
+        SwissBoardPost,
+        pk=pk,
+        author=request.user,
+    )
+
+    if request.method == "POST":
+
+        post.delete()
+
+        return redirect(
+            "swiss_board:my_posts"
+        )
+
+    return render(
+        request,
+        "swiss_board/post_confirm_delete.html",
+        {
+            "post": post,
         },
     )

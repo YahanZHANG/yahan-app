@@ -1,0 +1,156 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    自分の投稿 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-my-posts-page">
+
+    <header class="sb-my-posts-heading">
+
+        <h1>
+            自分の投稿
+        </h1>
+
+        <a
+            href="{% url 'swiss_board:post_create' %}"
+            class="sb-my-posts-new"
+        >
+            <i
+                class="bi bi-plus-circle"
+                aria-hidden="true"
+            ></i>
+            新しく投稿する
+        </a>
+
+    </header>
+
+
+    <div class="sb-my-posts-list">
+
+        {% for post in page_obj %}
+
+            <article class="sb-my-post-card">
+
+                <div class="sb-my-post-main">
+
+                    <h2 class="sb-my-post-title">
+
+                        {% if post.status == "published" %}
+
+                            <a
+                                href="{% url 'swiss_board:post_detail' post.pk %}"
+                            >
+                                {{ post.title }}
+                            </a>
+
+                        {% else %}
+
+                            {{ post.title }}
+
+                        {% endif %}
+
+                    </h2>
+
+                </div>
+
+
+                <div class="sb-my-post-actions">
+
+                    <a
+                        href="{% url 'swiss_board:post_edit' post.pk %}"
+                        class="sb-my-edit"
+                    >
+                        編集
+                    </a>
+
+                    <a
+                        href="{% url 'swiss_board:post_delete' post.pk %}"
+                        class="sb-my-delete"
+                    >
+                        削除
+                    </a>
+
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <div class="sb-my-posts-empty">
+
+                <i
+                    class="bi bi-chat-square-text"
+                    aria-hidden="true"
+                ></i>
+
+                <strong>
+                    まだ投稿がありません
+                </strong>
+
+                <p>
+                    最初の投稿を作成してみましょう。
+                </p>
+
+                <a href="{% url 'swiss_board:post_create' %}">
+                    新しく投稿する
+                </a>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav
+            class="sb-pagination"
+            aria-label="自分の投稿のページ"
+        >
+
+            {% if page_obj.has_previous %}
+                <a
+                    href="?page={{ page_obj.previous_page_number }}"
+                    class="sb-page-link"
+                >
+                    前へ
+                </a>
+            {% endif %}
+
+            <span class="sb-page-current">
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a
+                    href="?page={{ page_obj.next_page_number }}"
+                    class="sb-page-link"
+                >
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
