@@ -55,13 +55,7 @@
 
 
         <p>
-
-            売買・譲渡、住まい、仲間募集、育児、質問など、
-
-            スイスでの暮らしに役立つ情報を日本語で交換できる掲示板です。
-
-            投稿の閲覧は登録不要。投稿するにはログインが必要です。
-
+            スイスに住む日本語話者のための掲示板です！投稿の閲覧は登録不要ですが、投稿するにはアカウントの登録が必要です。
         </p>
 
 
@@ -112,14 +106,9 @@
 
 
 
-            <button
-
-                type="button"
-
+            <a
+                href="{% url 'swiss_board:post_create' %}?category=marketplace&amp;intent=sell"
                 class="sb-action-card sb-action-sell"
-
-                data-preview="post"
-
             >
 
 
@@ -180,7 +169,7 @@
 
 
 
-            </button>
+            </a>
 
 
 

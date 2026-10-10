@@ -4,6 +4,12 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.core.paginator import Paginator
 from django.db.models import Q
+from datetime import timedelta
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+from django.utils import timezone
+from .forms import SwissBoardPostForm
 
 
 MAIN_CATEGORIES = [
@@ -499,4 +505,117 @@ def post_search(request):
         request,
         "swiss_board/search.html",
         context,
+    )
+
+
+# =========================================================
+# Create Post
+# =========================================================
+
+@login_required
+def post_create(request):
+    """
+    ログイン済みユーザーの新規投稿。
+
+    - サーバー側で投稿者を確定
+    - カテゴリー・サブカテゴリーの入力を検証
+    - 新規投稿は公開状態で保存
+    """
+
+    category_map = {
+        item["slug"]: item["subcategories"]
+        for item in BOARD_CATEGORIES
+    }
+
+    valid_categories = {
+        value
+        for value, label
+        in SwissBoardPost.Category.choices
+    }
+
+    # -----------------------------------------------------
+    # Initial values from HOME shortcuts
+    # -----------------------------------------------------
+
+    initial = {}
+
+    if request.method == "GET":
+
+        selected_category = request.GET.get(
+            "category", ""
+        )
+
+        if selected_category in valid_categories:
+            initial["category"] = selected_category
+
+        intent = request.GET.get(
+            "intent", ""
+        )
+
+        if intent == "wanted":
+            initial["title"] = "【探しています】"
+
+        elif intent == "sell":
+            initial["title"] = "【売ります】"
+
+    # -----------------------------------------------------
+    # Form
+    # -----------------------------------------------------
+
+    form = SwissBoardPostForm(
+        request.POST if request.method == "POST" else None,
+        initial=initial,
+        category_map=category_map,
+    )
+
+    # -----------------------------------------------------
+    # Save
+    # -----------------------------------------------------
+
+    if request.method == "POST" and form.is_valid():
+
+        # Basic protection against rapid repeated posting.
+        recently_posted = SwissBoardPost.objects.filter(
+            author=request.user,
+            created_at__gte=(
+                timezone.now() - timedelta(seconds=60)
+            ),
+        ).exists()
+
+        if recently_posted:
+
+            form.add_error(
+                None,
+                "連続投稿を防ぐため、前回の投稿から"
+                "1分以上空けてください。",
+            )
+
+        else:
+
+            post = form.save(commit=False)
+
+            post.author = request.user
+
+            post.status = (
+                SwissBoardPost.Status.PUBLISHED
+            )
+
+            post.save()
+
+            return redirect(
+                "swiss_board:post_detail",
+                pk=post.pk,
+            )
+
+    # -----------------------------------------------------
+    # Render
+    # -----------------------------------------------------
+
+    return render(
+        request,
+        "swiss_board/post_form.html",
+        {
+            "form": form,
+            "subcategories_by_category": category_map,
+        },
     )

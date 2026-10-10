@@ -37,7 +37,9 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
     const initialSubcategory =
-        subcategorySelect.dataset.selected || "";
+        subcategorySelect.dataset.selected ||
+        subcategorySelect.value ||
+        "";
 
     // -----------------------------------------------------
     // Build subcategory options
@@ -60,8 +62,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         defaultOption.value = "";
 
+        const isPostForm = Boolean(
+            document.getElementById("sb-create-form")
+        );
+
         defaultOption.textContent = category
-            ? "すべてのサブカテゴリー"
+            ? (
+                isPostForm
+                    ? "選択してください（任意）"
+                    : "すべてのサブカテゴリー"
+            )
             : "先にカテゴリーを選択";
 
         subcategorySelect.appendChild(

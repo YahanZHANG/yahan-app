@@ -94,12 +94,13 @@
                     メニュー
                 </a>
 
-                <button
-                    type="button"
-                    data-preview="post"
+                <a
+                    href="{% url 'swiss_board:post_create' %}"
+                    class="{% if request.resolver_match.url_name == 'post_create' %}is-current{% endif %}"
+                    {% if request.resolver_match.url_name == 'post_create' %}aria-current="page"{% endif %}
                 >
                     投稿する
-                </button>
+                </a>
 
                 <button
                     type="button"
@@ -196,14 +197,14 @@
     </a>
 
 
-    <button
-        type="button"
-        class="sb-nav-item"
-        data-preview="post"
+    <a
+        href="{% url 'swiss_board:post_create' %}"
+        class="sb-nav-item {% if request.resolver_match.url_name == 'post_create' %}is-current{% endif %}"
+        {% if request.resolver_match.url_name == 'post_create' %}aria-current="page"{% endif %}
     >
         <i class="bi bi-plus-circle"></i>
         <span>投稿</span>
-    </button>
+    </a>
 
 
     <button
