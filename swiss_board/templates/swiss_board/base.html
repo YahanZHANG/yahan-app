@@ -1,0 +1,259 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta
+        name="description"
+        content="スイス在住の日本語話者のための掲示板。売買、仲間募集、育児、住まいなどの情報を交換できます。"
+    >
+
+    <title>
+        {% block title %}
+            スイス掲示板
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'swiss_board/base.css' %}"
+    >
+
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+
+<body class="sb-body">
+
+<div class="sb-layout">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="sb-header">
+
+        <div class="sb-header-inner">
+
+            <a
+                href="{% url 'swiss_board:home' %}"
+                class="sb-brand"
+            >
+
+                <span class="sb-brand-icon">
+                    <i class="bi bi-chat-square-text"></i>
+                </span>
+
+                <span class="sb-brand-text">
+
+                    <strong>
+                        スイス掲示板
+                    </strong>
+
+                    <small>
+                        スイス在住の日本語話者のためのサイト
+                    </small>
+
+                </span>
+
+            </a>
+
+
+            <nav
+                class="sb-desktop-nav"
+                aria-label="メインメニュー"
+            >
+
+                <a
+                    href="{% url 'swiss_board:home' %}"
+                    class="{% if request.resolver_match.url_name == 'home' %}is-current{% endif %}"
+                    {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+                >
+                    ホーム
+                </a>
+
+                <a
+                    href="{% url 'swiss_board:categories' %}"
+                    class="{% if request.resolver_match.url_name == 'categories' %}is-current{% endif %}"
+                    {% if request.resolver_match.url_name == 'categories' %}aria-current="page"{% endif %}
+                >
+                    メニュー
+                </a>
+
+                <button
+                    type="button"
+                    data-preview="post"
+                >
+                    投稿する
+                </button>
+
+                <button
+                    type="button"
+                    data-preview="mypage"
+                >
+                    マイページ
+                </button>
+
+            </nav>
+
+
+            <a
+                href="{% url 'swiss_board:search' %}"
+                class="sb-header-search"
+                aria-label="投稿を検索する"
+                title="投稿を検索"
+            >
+                <i class="bi bi-search"></i>
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Main
+         ===================================================== -->
+
+    <main
+        id="main-content"
+        class="sb-main"
+    >
+        {% block content %}
+        {% endblock %}
+    </main>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+
+    <footer class="sb-footer">
+
+        <span>
+            © 2026 Yapp
+        </span>
+
+        <span>
+            スイスでつながる、日本語のコミュニティ
+        </span>
+
+    </footer>
+
+</div>
+
+
+<!-- =====================================================
+     Mobile Navigation
+     ===================================================== -->
+
+<nav
+    class="sb-bottom-nav"
+    aria-label="スマートフォン用メニュー"
+>
+
+    <a
+        href="{% url 'swiss_board:home' %}"
+        class="sb-nav-item {% if request.resolver_match.url_name == 'home' %}is-current{% endif %}"
+        {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+    >
+        <i class="bi bi-house"></i>
+        <span>ホーム</span>
+    </a>
+
+
+    <a
+        href="{% url 'swiss_board:search' %}"
+        class="sb-nav-item {% if request.resolver_match.url_name == 'search' %}is-current{% endif %}"
+        {% if request.resolver_match.url_name == 'search' %}aria-current="page"{% endif %}
+    >
+        <i class="bi bi-search"></i>
+        <span>探す</span>
+    </a>
+
+
+    <a
+        href="{% url 'swiss_board:categories' %}"
+        class="sb-nav-item {% if request.resolver_match.url_name == 'categories' %}is-current{% endif %}"
+        {% if request.resolver_match.url_name == 'categories' %}aria-current="page"{% endif %}
+    >
+        <i class="bi bi-grid"></i>
+        <span>メニュー</span>
+    </a>
+
+
+    <button
+        type="button"
+        class="sb-nav-item"
+        data-preview="post"
+    >
+        <i class="bi bi-plus-circle"></i>
+        <span>投稿</span>
+    </button>
+
+
+    <button
+        type="button"
+        class="sb-nav-item"
+        data-preview="mypage"
+    >
+        <i class="bi bi-person-circle"></i>
+        <span>マイページ</span>
+    </button>
+
+</nav>
+
+
+<!-- =====================================================
+     Scroll To Top
+     ===================================================== -->
+
+<button
+    type="button"
+    id="sb-scroll-top"
+    class="sb-scroll-top"
+    aria-label="ページの先頭へ戻る"
+    title="ページの先頭へ戻る"
+    hidden
+>
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+
+<!-- =====================================================
+     Preview Message
+     ===================================================== -->
+
+<div
+    id="sb-preview-message"
+    class="sb-preview-message"
+    role="status"
+    aria-live="polite"
+    hidden
+></div>
+
+
+<script
+    src="{% static 'swiss_board/board.js' %}"
+    defer
+></script>
+
+{% block extra_js %}
+{% endblock %}
+
+</body>
+</html>

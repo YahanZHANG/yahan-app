@@ -221,4 +221,16 @@ urlpatterns = [
         ),
     ),
 
+    # =====================================================
+    # Swiss Board
+    # =====================================================
+    
+    path(
+        "swiss-board/",
+        include(
+            "swiss_board.urls",
+            namespace="swiss_board",
+        ),
+    ),
+
 ]

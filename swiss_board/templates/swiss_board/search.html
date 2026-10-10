@@ -1,0 +1,431 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    投稿を探す | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/search.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-search-page">
+
+    <!-- =====================================================
+         Heading
+         ===================================================== -->
+
+    <header class="sb-search-page-header">
+
+        <h1>
+            投稿を探す
+        </h1>
+
+    </header>
+
+
+    <!-- =====================================================
+         Search Form
+         ===================================================== -->
+
+    <form
+        action="{% url 'swiss_board:search' %}"
+        method="get"
+        class="sb-search-form"
+        id="sb-search-form"
+        role="search"
+    >
+
+
+        <!-- Keyword -->
+
+        <div class="sb-search-form-main">
+
+            <label for="sb-keyword">
+                キーワード
+            </label>
+
+            <div class="sb-search-input-wrap">
+
+                <i
+                    class="bi bi-search"
+                    aria-hidden="true"
+                ></i>
+
+                <input
+                    type="search"
+                    id="sb-keyword"
+                    name="q"
+                    value="{{ keyword }}"
+                    placeholder="例：ベビーカー、Kita、テニス"
+                    maxlength="100"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             Filters
+             ================================================= -->
+
+        <div class="sb-search-form-filters">
+
+            <!-- Category -->
+
+            <div class="sb-search-field">
+
+                <label for="sb-category">
+                    カテゴリー
+                </label>
+
+                <select
+                    id="sb-category"
+                    name="category"
+                >
+
+                    <option value="">
+                        すべてのカテゴリー
+                    </option>
+
+                    {% for value, label in category_choices %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_category == value %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <!-- Subcategory -->
+
+            <div class="sb-search-field">
+
+                <label for="sb-subcategory">
+                    サブカテゴリー
+                </label>
+
+                <select
+                    id="sb-subcategory"
+                    name="subcategory"
+                    data-selected="{{ selected_subcategory }}"
+                    {% if not selected_category %}disabled{% endif %}
+                >
+
+                    <option value="">
+                        {% if selected_category %}
+                            すべてのサブカテゴリー
+                        {% else %}
+                            先にカテゴリーを選択
+                        {% endif %}
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Region -->
+
+            <div class="sb-search-field">
+
+                <label for="sb-region">
+                    地域
+                </label>
+
+                <input
+                    type="search"
+                    id="sb-region"
+                    name="region"
+                    value="{{ selected_region }}"
+                    placeholder="例：Zürich"
+                    maxlength="100"
+                >
+
+            </div>
+
+
+            <!-- Sorting -->
+
+            <div class="sb-search-field">
+
+                <label for="sb-sort">
+                    並び替え
+                </label>
+
+                <select
+                    id="sb-sort"
+                    name="sort"
+                >
+
+                    {% for value, label in sort_options.items %}
+
+                        <option
+                            value="{{ value }}"
+                            {% if selected_sort == value %}selected{% endif %}
+                        >
+                            {{ label }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             Form Actions
+             ================================================= -->
+
+        <div class="sb-search-form-actions">
+
+            <button
+                type="submit"
+                class="sb-search-submit"
+            >
+                <i
+                    class="bi bi-search"
+                    aria-hidden="true"
+                ></i>
+                この条件で検索
+            </button>
+
+            <a
+                href="{% url 'swiss_board:search' %}"
+                class="sb-search-clear"
+            >
+                条件をクリア
+            </a>
+
+        </div>
+
+    </form>
+
+
+    <!-- =====================================================
+         Search Results
+         ===================================================== -->
+
+    <section class="sb-search-results">
+
+        <!-- Selected Subcategory -->
+
+        {% if selected_subcategory %}
+
+            <div class="sb-search-subcategory-info">
+
+                <span>
+                    サブカテゴリー：
+                    <strong>
+                        {{ selected_subcategory }}
+                    </strong>
+                </span>
+
+                <a
+                    href="{% url 'swiss_board:search' %}?q={{ keyword|urlencode }}&amp;category={{ selected_category|urlencode }}&amp;region={{ selected_region|urlencode }}&amp;sort={{ selected_sort|urlencode }}"
+                >
+                    絞り込みを解除
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- Results Heading -->
+
+        <div class="sb-search-results-heading">
+
+            <h2>
+                検索結果
+            </h2>
+
+            <span class="sb-search-count">
+                {{ page_obj.paginator.count }}件
+            </span>
+
+        </div>
+
+
+        <!-- Result List -->
+
+        <div class="sb-post-list">
+
+            {% for post in page_obj %}
+
+                <a
+                    href="{% url 'swiss_board:post_detail' post.pk %}"
+                    class="sb-post-card"
+                >
+
+                    <span class="sb-post-main">
+
+                        <span class="sb-post-meta">
+
+                            {{ post.get_category_display }}
+
+                            {% if post.region %}
+
+                                <span class="sb-dot">
+                                    ·
+                                </span>
+
+                                {{ post.region }}
+
+                            {% endif %}
+
+                        </span>
+
+                        <strong class="sb-post-title">
+                            {{ post.title }}
+                        </strong>
+
+                    </span>
+
+
+                    <span class="sb-post-right">
+
+                        <i
+                            class="bi bi-chevron-right sb-post-chevron"
+                            aria-hidden="true"
+                        ></i>
+
+                    </span>
+
+                </a>
+
+            {% empty %}
+
+                <div class="sb-search-no-results">
+
+                    <i
+                        class="bi bi-search"
+                        aria-hidden="true"
+                    ></i>
+
+                    <strong>
+                        該当する投稿がありません
+                    </strong>
+
+                    <p>
+                        キーワードやカテゴリー、地域を変えて
+                        もう一度検索してみてください。
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             Pagination
+             ================================================= -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+            <nav
+                class="sb-pagination"
+                aria-label="検索結果のページ"
+            >
+
+                <!-- Previous -->
+
+                {% if page_obj.has_previous %}
+
+                    <a
+                        href="?{{ query_string }}&amp;page={{ page_obj.previous_page_number }}"
+                        class="sb-page-link"
+                    >
+                        <i
+                            class="bi bi-chevron-left"
+                            aria-hidden="true"
+                        ></i>
+                        前へ
+                    </a>
+
+                {% else %}
+
+                    <span class="sb-page-link is-disabled">
+                        前へ
+                    </span>
+
+                {% endif %}
+
+
+                <!-- Page Number -->
+
+                <span class="sb-page-current">
+                    {{ page_obj.number }}
+                    /
+                    {{ page_obj.paginator.num_pages }}
+                </span>
+
+
+                <!-- Next -->
+
+                {% if page_obj.has_next %}
+
+                    <a
+                        href="?{{ query_string }}&amp;page={{ page_obj.next_page_number }}"
+                        class="sb-page-link"
+                    >
+                        次へ
+                        <i
+                            class="bi bi-chevron-right"
+                            aria-hidden="true"
+                        ></i>
+                    </a>
+
+                {% else %}
+
+                    <span class="sb-page-link is-disabled">
+                        次へ
+                    </span>
+
+                {% endif %}
+
+            </nav>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     Search Form Behavior
+     ========================================================= -->
+
+<!-- Subcategory definitions -->
+
+{{ subcategories_by_category|json_script:"sb-subcategory-data" }}
+
+
+<!-- Search behavior -->
+
+<script
+    src="{% static 'swiss_board/search.js' %}"
+    defer
+></script>
+
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends "swiss_board/base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+{% block title %}
+    {{ post.title }} | スイス掲示板
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-detail-page">
+
+    <!-- =====================================================
+         Breadcrumb
+         ===================================================== -->
+
+    <nav
+        class="sb-detail-breadcrumb"
+        aria-label="パンくずリスト"
+    >
+
+        <a href="{% url 'swiss_board:home' %}">
+            ホーム
+        </a>
+
+        <i
+            class="bi bi-chevron-right"
+            aria-hidden="true"
+        ></i>
+
+        <a href="{% url 'swiss_board:categories' %}">
+            カテゴリー
+        </a>
+
+        <i
+            class="bi bi-chevron-right"
+            aria-hidden="true"
+        ></i>
+
+        <span aria-current="page">
+            投稿詳細
+        </span>
+
+    </nav>
+
+
+    <!-- =====================================================
+         Post
+         ===================================================== -->
+
+    <article class="sb-detail-card">
+
+        <header class="sb-detail-header">
+
+            <div class="sb-detail-tags">
+
+                <span class="sb-detail-category">
+                    {{ post.get_category_display }}
+                </span>
+
+                {% if post.region %}
+
+                    <span class="sb-detail-region">
+
+                        <i
+                            class="bi bi-geo-alt"
+                            aria-hidden="true"
+                        ></i>
+
+                        {{ post.region }}
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <h1 class="sb-detail-title">
+                {{ post.title }}
+            </h1>
+
+
+            {% if post.subcategory %}
+
+                <p class="sb-detail-subcategory">
+
+                    <i
+                        class="bi bi-tag"
+                        aria-hidden="true"
+                    ></i>
+
+                    {{ post.subcategory }}
+
+                </p>
+
+            {% endif %}
+
+
+            <div class="sb-detail-meta">
+
+                <span>
+
+                    <i
+                        class="bi bi-person-circle"
+                        aria-hidden="true"
+                    ></i>
+
+                    {% if post.author.profile.nickname %}
+                        {{ post.author.profile.nickname }}
+                    {% else %}
+                        Yappユーザー
+                    {% endif %}
+
+                </span>
+
+
+                <span>
+
+                    <i
+                        class="bi bi-clock"
+                        aria-hidden="true"
+                    ></i>
+
+                    {{ post.created_at|date:"Y年n月j日 H:i" }}
+
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             Content
+             ================================================= -->
+
+        <div class="sb-detail-body">
+            {{ post.body|linebreaks }}
+        </div>
+
+
+        <!-- =================================================
+             Footer
+             ================================================= -->
+
+        <footer class="sb-detail-footer">
+
+            <p class="sb-detail-notice">
+
+                <i
+                    class="bi bi-info-circle"
+                    aria-hidden="true"
+                ></i>
+
+                投稿内容についてのお問い合わせや
+                コメント機能は今後追加予定です。
+
+            </p>
+
+        </footer>
+
+    </article>
+
+
+    <!-- =====================================================
+         Navigation
+         ===================================================== -->
+
+    <div class="sb-detail-actions">
+
+        <a
+            href="{% url 'swiss_board:home' %}"
+            class="sb-detail-back"
+        >
+
+            <i class="bi bi-arrow-left"></i>
+
+            ホームに戻る
+
+        </a>
+
+
+        <a
+            href="{% url 'swiss_board:categories' %}"
+            class="sb-detail-categories"
+        >
+
+            カテゴリーから探す
+
+            <i class="bi bi-arrow-right"></i>
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

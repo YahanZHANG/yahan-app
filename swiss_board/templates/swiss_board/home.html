@@ -1,0 +1,1109 @@
+{% extends "swiss_board/base.html" %}
+
+{% load static %}
+
+
+
+
+
+{% block title %}
+
+    ホーム | スイス掲示板
+
+{% endblock %}
+
+
+
+
+
+{% block extra_css %}
+
+<link
+
+    rel="stylesheet"
+
+    href="{% static 'swiss_board/home.css' %}"
+
+>
+
+{% endblock %}
+
+
+
+
+
+{% block content %}
+
+
+
+<div class="sb-container sb-home">
+
+
+
+
+
+    <!-- =====================================================
+
+         Introduction
+
+         ===================================================== -->
+
+
+
+    <section class="sb-home-intro">
+
+
+
+        <p>
+
+            売買・譲渡、住まい、仲間募集、育児、質問など、
+
+            スイスでの暮らしに役立つ情報を日本語で交換できる掲示板です。
+
+            投稿の閲覧は登録不要。投稿するにはログインが必要です。
+
+        </p>
+
+
+
+    </section>
+
+
+
+
+
+    <!-- =====================================================
+
+         Quick Actions
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                何をしたいですか？
+
+            </h2>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-action-grid">
+
+
+
+
+
+            <!-- Sell -->
+
+
+
+            <button
+
+                type="button"
+
+                class="sb-action-card sb-action-sell"
+
+                data-preview="post"
+
+            >
+
+
+
+                <span class="sb-action-icon">
+
+
+
+                    <i
+
+                        class="bi bi-bag"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-action-copy">
+
+
+
+                    <strong>
+
+                        売ります
+
+                    </strong>
+
+
+
+                    <small>
+
+                        不用品などを出品
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right sb-action-arrow"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </button>
+
+
+
+
+
+            <!-- Wanted -->
+
+
+
+            <button
+
+                type="button"
+
+                class="sb-action-card sb-action-wanted"
+
+                data-preview="post"
+
+            >
+
+
+
+                <span class="sb-action-icon">
+
+
+
+                    <i
+
+                        class="bi bi-search"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-action-copy">
+
+
+
+                    <strong>
+
+                        探しています
+
+                    </strong>
+
+
+
+                    <small>
+
+                        欲しいものを募集
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right sb-action-arrow"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </button>
+
+
+
+
+
+            <!-- Question -->
+
+
+
+            <button
+
+                type="button"
+
+                class="sb-action-card sb-action-question"
+
+                data-preview="post"
+
+            >
+
+
+
+                <span class="sb-action-icon">
+
+
+
+                    <i
+
+                        class="bi bi-chat-dots"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-action-copy">
+
+
+
+                    <strong>
+
+                        質問する
+
+                    </strong>
+
+
+
+                    <small>
+
+                        暮らしの疑問を相談
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right sb-action-arrow"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </button>
+
+
+
+
+
+            <!-- Friends -->
+
+
+
+            <button
+
+                type="button"
+
+                class="sb-action-card sb-action-friends"
+
+                data-preview="post"
+
+            >
+
+
+
+                <span class="sb-action-icon">
+
+
+
+                    <i
+
+                        class="bi bi-people"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-action-copy">
+
+
+
+                    <strong>
+
+                        仲間を募集
+
+                    </strong>
+
+
+
+                    <small>
+
+                        趣味や交流の仲間探し
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right sb-action-arrow"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </button>
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =====================================================
+
+         Popular Categories
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                よく使うメニュー
+
+            </h2>
+
+
+
+
+
+            <a
+
+                href="{% url 'swiss_board:categories' %}"
+
+                class="sb-section-more"
+
+            >
+
+                すべて見る
+
+
+
+                <i
+
+                    class="bi bi-arrow-right"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </a>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-category-grid">
+
+
+
+            {% for category in main_categories %}
+
+
+
+                <a
+
+                    href="{% url 'swiss_board:search' %}?category={{ category.slug|urlencode }}"
+
+                    class="sb-category-card"
+
+                >
+
+
+
+                    <span class="sb-category-icon">
+
+
+
+                        <i
+
+                            class="bi {{ category.icon }}"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+
+
+                    </span>
+
+
+
+
+
+                    <span class="sb-category-name">
+
+                        {{ category.name }}
+
+                    </span>
+
+
+
+                </a>
+
+
+
+            {% endfor %}
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =====================================================
+
+         Featured Topics
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                注目のトピック
+
+            </h2>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-topic-list">
+
+
+
+            {% for topic in featured_topics %}
+
+
+
+                <a
+
+                    href="{% url 'swiss_board:search' %}?q={{ topic|urlencode }}"
+
+                    class="sb-topic"
+
+                >
+
+                    {{ topic }}
+
+                </a>
+
+
+
+            {% endfor %}
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =====================================================
+
+         Latest Posts
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section sb-post-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                新着の投稿
+
+            </h2>
+
+
+
+
+
+            <a
+
+                href="{% url 'swiss_board:search' %}"
+
+                class="sb-section-more"
+
+            >
+
+                もっと投稿を見る
+
+
+
+                <i
+
+                    class="bi bi-arrow-right"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </a>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-post-list">
+
+
+
+            {% for post in posts %}
+
+
+
+                <a
+
+                    href="{% url 'swiss_board:post_detail' post.pk %}"
+
+                    class="sb-post-card"
+
+                >
+
+
+
+                    <span class="sb-post-main">
+
+
+
+                        <span class="sb-post-meta">
+
+
+
+                            {{ post.get_category_display }}
+
+
+
+
+
+                            {% if post.region %}
+
+
+
+                                <span class="sb-dot">
+
+                                    ·
+
+                                </span>
+
+
+
+                                {{ post.region }}
+
+
+
+                            {% endif %}
+
+
+
+                        </span>
+
+
+
+
+
+                        <strong class="sb-post-title">
+
+                            {{ post.title }}
+
+                        </strong>
+
+
+
+                    </span>
+
+
+
+
+
+                    <span class="sb-post-right">
+
+
+
+                        <i
+
+                            class="bi bi-chevron-right sb-post-chevron"
+
+                            aria-hidden="true"
+
+                        ></i>
+
+
+
+                    </span>
+
+
+
+                </a>
+
+
+
+            {% empty %}
+
+
+
+                <div class="sb-empty">
+
+
+
+                    <i
+
+                        class="bi bi-chat-square-text"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                    <p>
+
+                        まだ投稿がありません。
+
+                    </p>
+
+
+
+                </div>
+
+
+
+            {% endfor %}
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =====================================================
+
+         Recently Viewed
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                最近見た投稿
+
+            </h2>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-recent-empty">
+
+
+
+            <i
+
+                class="bi bi-clock-history"
+
+                aria-hidden="true"
+
+            ></i>
+
+
+
+
+
+            <div>
+
+
+
+                <strong>
+
+                    閲覧履歴はまだありません
+
+                </strong>
+
+
+
+                <p>
+
+                    最近見た投稿を表示する機能は、
+
+                    今後追加予定です。
+
+                </p>
+
+
+
+            </div>
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =====================================================
+
+         Other Yapp Services
+
+         ===================================================== -->
+
+
+
+    <section class="sb-section">
+
+
+
+        <div class="sb-section-heading">
+
+
+
+            <h2>
+
+                その他のサービス
+
+            </h2>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="sb-services-grid">
+
+
+
+
+
+            <!-- Swiss News -->
+
+
+
+            <a
+
+                href="{% url 'news:home' %}"
+
+                class="sb-service-card"
+
+            >
+
+
+
+                <span class="sb-service-icon">
+
+
+
+                    <i
+
+                        class="bi bi-newspaper"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-service-content">
+
+
+
+                    <strong>
+
+                        スイスニュース
+
+                    </strong>
+
+
+
+                    <small>
+
+                        スイスのニュースを日本語で
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </a>
+
+
+
+
+
+            <!-- Recipes -->
+
+
+
+            <button
+
+                type="button"
+
+                class="sb-service-card"
+
+                data-preview="recipes"
+
+            >
+
+
+
+                <span class="sb-service-icon">
+
+
+
+                    <i
+
+                        class="bi bi-journal-text"
+
+                        aria-hidden="true"
+
+                    ></i>
+
+
+
+                </span>
+
+
+
+
+
+                <span class="sb-service-content">
+
+
+
+                    <strong>
+
+                        料理・レシピ
+
+                    </strong>
+
+
+
+                    <small>
+
+                        毎日の献立づくりに
+
+                    </small>
+
+
+
+                </span>
+
+
+
+
+
+                <i
+
+                    class="bi bi-chevron-right"
+
+                    aria-hidden="true"
+
+                ></i>
+
+
+
+            </button>
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,198 @@
+from django.conf import settings
+from django.db import models
+from django.urls import reverse
+
+
+# =========================================================
+# Swiss Board Post
+# =========================================================
+
+class SwissBoardPost(models.Model):
+
+    # -----------------------------------------------------
+    # Categories
+    # -----------------------------------------------------
+
+    class Category(models.TextChoices):
+
+        MARKETPLACE = (
+            "marketplace",
+            "売買・譲渡・レンタル",
+        )
+
+        HOUSING = (
+            "housing",
+            "不動産・住まい",
+        )
+
+        JOBS = (
+            "jobs",
+            "求人・仕事探し",
+        )
+
+        FRIENDS = (
+            "friends",
+            "仲間募集",
+        )
+
+        EVENTS = (
+            "events",
+            "イベント",
+        )
+
+        LESSONS = (
+            "lessons",
+            "レッスン・習い事",
+        )
+
+        PARENTING = (
+            "parenting",
+            "育児・教育",
+        )
+
+        SERVICES = (
+            "services",
+            "サービス・ビジネス",
+        )
+
+        RECOMMENDATIONS = (
+            "recommendations",
+            "みんなのおすすめ",
+        )
+
+        QUESTIONS = (
+            "questions",
+            "質問・雑談",
+        )
+
+    # -----------------------------------------------------
+    # Status
+    # -----------------------------------------------------
+
+    class Status(models.TextChoices):
+
+        DRAFT = (
+            "draft",
+            "下書き",
+        )
+
+        PUBLISHED = (
+            "published",
+            "公開",
+        )
+
+        HIDDEN = (
+            "hidden",
+            "非公開",
+        )
+
+    # -----------------------------------------------------
+    # Author
+    # -----------------------------------------------------
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="swiss_board_posts",
+        verbose_name="投稿者",
+    )
+
+    # -----------------------------------------------------
+    # Content
+    # -----------------------------------------------------
+
+    title = models.CharField(
+        "タイトル",
+        max_length=30,
+    )
+
+    body = models.TextField(
+        "本文",
+        max_length=500,
+    )
+
+    category = models.CharField(
+        "カテゴリー",
+        max_length=30,
+        choices=Category.choices,
+        db_index=True,
+    )
+
+    subcategory = models.CharField(
+        "サブカテゴリー",
+        max_length=100,
+        blank=True,
+    )
+
+    region = models.CharField(
+        "地域",
+        max_length=100,
+        blank=True,
+        db_index=True,
+    )
+
+    # -----------------------------------------------------
+    # Publication
+    # -----------------------------------------------------
+
+    status = models.CharField(
+        "公開状態",
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        db_index=True,
+    )
+
+    # -----------------------------------------------------
+    # Timestamps
+    # -----------------------------------------------------
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    # -----------------------------------------------------
+    # Meta
+    # -----------------------------------------------------
+
+    class Meta:
+
+        verbose_name = "スイス掲示板の投稿"
+        verbose_name_plural = "スイス掲示板の投稿"
+
+        ordering = [
+            "-created_at",
+            "-id",
+        ]
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "status",
+                    "-created_at",
+                ],
+            ),
+        ]
+
+    # -----------------------------------------------------
+    # Methods
+    # -----------------------------------------------------
+
+    def __str__(self):
+        return self.title
+
+    @classmethod
+    def public_posts(cls):
+        """
+        公開中の投稿のみを取得する。
+        """
+        return cls.objects.filter(
+            status=cls.Status.PUBLISHED,
+        )

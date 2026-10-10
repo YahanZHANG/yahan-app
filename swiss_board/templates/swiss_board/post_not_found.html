@@ -1,0 +1,48 @@
+{% extends "swiss_board/base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+{% block title %}
+    投稿が見つかりません | スイス掲示板
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-not-found-page">
+
+    <div class="sb-not-found-card">
+
+        <h1>
+            投稿が見つかりません
+        </h1>
+
+        <p class="sb-not-found-description">
+            この投稿は削除されたか、
+            現在公開されていない可能性があります。
+        </p>
+
+        <a
+            href="{% url 'swiss_board:home' %}"
+            class="sb-not-found-button"
+        >
+            <i
+                class="bi bi-arrow-left"
+                aria-hidden="true"
+            ></i>
+
+            掲示板のホームに戻る
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

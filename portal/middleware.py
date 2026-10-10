@@ -39,6 +39,7 @@ ALLOWED_NAMESPACES = {
     "event_scheduler",
     "board",
     "games",
+    "swiss_board",
 }
 
 

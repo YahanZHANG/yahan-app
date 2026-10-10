@@ -72,7 +72,11 @@ INSTALLED_APPS = [
     # イベント・日程調整
     "event_scheduler.apps.EventSchedulerConfig",
 
+    # アナリティクス
     "usage_analytics.apps.UsageAnalyticsConfig",
+
+    # スイス掲示板
+    "swiss_board.apps.SwissBoardConfig",
 ]
 
 # ------------------------------------------------------------------------------
