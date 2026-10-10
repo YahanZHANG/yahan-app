@@ -1037,3 +1037,55 @@
         font-size: 11px;
     }
 }
+
+/* =========================================================
+   Swiss Board Profile
+   ========================================================= */
+
+.sb-profile-page {
+    max-width: 760px;
+    padding-top: 27px;
+    padding-bottom: 55px;
+}
+
+.sb-profile-header {
+    margin-bottom: 22px;
+}
+
+.sb-profile-header h1 {
+    margin: 0 0 10px;
+    color: #2c3038;
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.sb-profile-header p {
+    margin: 0;
+    color: #5c626c;
+    font-size: 13px;
+    line-height: 1.85;
+}
+
+.sb-profile-form {
+    padding: 26px;
+    border: 1px solid #e2dcd9;
+    border-radius: 17px;
+    background: #ffffff;
+    box-shadow: var(--sb-shadow);
+}
+
+@media (max-width: 760px) {
+
+    .sb-profile-page {
+        padding-top: 20px;
+        padding-bottom: 35px;
+    }
+
+    .sb-profile-form {
+        padding: 19px 16px;
+    }
+
+    .sb-profile-header h1 {
+        font-size: 23px;
+    }
+}

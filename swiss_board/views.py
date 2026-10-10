@@ -8,9 +8,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from .forms import SwissBoardPostForm
-from .models import SwissBoardPost
-
+from .models import (
+    SwissBoardPost,
+    SwissBoardProfile,
+)
+from .forms import (
+    SwissBoardPostForm,
+    SwissBoardProfileForm,
+)
 
 MAIN_CATEGORIES = [
     {
@@ -284,7 +289,7 @@ def post_detail(request, pk):
         post = get_object_or_404(
             SwissBoardPost.objects.select_related(
                 "author",
-                "author__profile",
+                "author__swiss_board_profile",
             ),
             pk=pk,
             status=SwissBoardPost.Status.PUBLISHED,
@@ -854,3 +859,43 @@ class YappPasswordChangeDoneView(PasswordChangeDoneView):
             context["return_url"] = "/"
 
         return context
+
+
+# =========================================================
+# Edit Swiss Board Profile
+# =========================================================
+
+@login_required
+def profile_edit(request):
+    """
+    Swiss Board専用プロフィールの編集。
+
+    Yapp共通プロフィールは変更しない。
+    """
+
+    profile, created = (
+        SwissBoardProfile.objects.get_or_create(
+            user=request.user,
+        )
+    )
+
+    form = SwissBoardProfileForm(
+        request.POST if request.method == "POST" else None,
+        instance=profile,
+    )
+
+    if request.method == "POST" and form.is_valid():
+
+        form.save()
+
+        return redirect(
+            "swiss_board:my_page"
+        )
+
+    return render(
+        request,
+        "swiss_board/profile_edit.html",
+        {
+            "form": form,
+        },
+    )

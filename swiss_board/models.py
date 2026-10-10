@@ -196,3 +196,39 @@ class SwissBoardPost(models.Model):
         return cls.objects.filter(
             status=cls.Status.PUBLISHED,
         )
+
+# =========================================================
+# Swiss Board Profile
+# =========================================================
+
+class SwissBoardProfile(models.Model):
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="swiss_board_profile",
+        verbose_name="ユーザー",
+    )
+
+    display_name = models.CharField(
+        "掲示板の表示名",
+        max_length=30,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        "作成日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "掲示板プロフィール"
+        verbose_name_plural = "掲示板プロフィール"
+
+    def __str__(self):
+        return self.display_name or "掲示板ユーザー"

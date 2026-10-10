@@ -114,10 +114,10 @@
                         aria-hidden="true"
                     ></i>
 
-                    {% if post.author.profile.nickname %}
-                        {{ post.author.profile.nickname }}
+                    {% if post.author.swiss_board_profile.display_name %}
+                        {{ post.author.swiss_board_profile.display_name }}
                     {% else %}
-                        Yappユーザー
+                        掲示板ユーザー
                     {% endif %}
 
                 </span>

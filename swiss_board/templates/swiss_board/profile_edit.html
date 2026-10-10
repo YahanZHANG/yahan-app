@@ -1,0 +1,108 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    掲示板の表示名 | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-profile-page">
+
+    <header class="sb-profile-header">
+
+        <h1>
+            掲示板の表示名
+        </h1>
+
+        <p>
+            投稿時にほかの利用者へ公開される名前を設定します。
+            YappのログインIDや共通ニックネームには影響しません。
+        </p>
+
+    </header>
+
+
+    <form
+        method="post"
+        class="sb-profile-form"
+    >
+
+        {% csrf_token %}
+
+        <div class="sb-create-field">
+
+            <label for="{{ form.display_name.id_for_label }}">
+                表示名
+            </label>
+
+            {{ form.display_name }}
+
+            <small>
+                2〜30文字。
+                本名である必要はありません。
+            </small>
+
+            {% for error in form.display_name.errors %}
+
+                <p class="sb-create-error">
+                    {{ error }}
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div class="sb-create-notice">
+
+            <i
+                class="bi bi-info-circle"
+                aria-hidden="true"
+            ></i>
+
+            <p>
+                設定した名前は公開投稿に表示されます。個人を特定できる内容を含めないことをおすすめします。
+            </p>
+
+        </div>
+
+
+        <div class="sb-create-actions">
+
+            <button
+                type="submit"
+                class="sb-create-submit"
+            >
+                <i
+                    class="bi bi-check-circle"
+                    aria-hidden="true"
+                ></i>
+                保存する
+            </button>
+
+
+            <a
+                href="{% url 'swiss_board:my_page' %}"
+                class="sb-create-cancel"
+            >
+                キャンセル
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

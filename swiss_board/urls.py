@@ -33,6 +33,12 @@ urlpatterns = [
     ),
 
     path(
+        "mypage/profile/",
+        views.profile_edit,
+        name="profile_edit",
+    ),
+
+    path(
         "my-posts/",
         views.my_posts,
         name="my_posts",

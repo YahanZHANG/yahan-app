@@ -136,19 +136,36 @@
 
             <!-- Board display name -->
 
-            <div class="sb-mypage-item is-upcoming">
-                <span class="sb-mypage-item-icon is-red">
-                    <i class="bi bi-person-badge" aria-hidden="true"></i>
-                </span>
+                <a
+                    href="{% url 'swiss_board:profile_edit' %}"
+                    class="sb-mypage-item"
+                >
 
-                <span class="sb-mypage-item-content">
-                    <strong>掲示板の表示名</strong>
-                    <small>公開される名前を設定</small>
-                </span>
+                    <span class="sb-mypage-item-icon is-red">
+                        <i
+                            class="bi bi-person-badge"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
 
-                <span class="sb-mypage-upcoming">準備中</span>
-            </div>
+                    <span class="sb-mypage-item-content">
 
+                        <strong>
+                            掲示板の表示名
+                        </strong>
+
+                        <small>
+                            公開される名前を設定・変更
+                        </small>
+
+                    </span>
+
+                    <i
+                        class="bi bi-chevron-right sb-mypage-chevron"
+                        aria-hidden="true"
+                    ></i>
+
+                </a>
 
             <!-- Marketplace name -->
 

@@ -1,6 +1,9 @@
 from django import forms
 
-from .models import SwissBoardPost
+from .models import (
+    SwissBoardPost,
+    SwissBoardProfile,
+)
 
 
 # =========================================================
@@ -185,3 +188,41 @@ class SwissBoardPostForm(forms.ModelForm):
         cleaned_data["region"] = region
 
         return cleaned_data
+
+
+# =========================================================
+# Swiss Board Profile Form
+# =========================================================
+
+class SwissBoardProfileForm(forms.ModelForm):
+
+    class Meta:
+
+        model = SwissBoardProfile
+
+        fields = [
+            "display_name",
+        ]
+
+        widgets = {
+            "display_name": forms.TextInput(
+                attrs={
+                    "placeholder": "例：スイス生活ママ",
+                    "maxlength": 30,
+                    "autocomplete": "nickname",
+                }
+            ),
+        }
+
+    def clean_display_name(self):
+
+        display_name = (
+            self.cleaned_data.get("display_name") or ""
+        ).strip()
+
+        if len(display_name) < 2:
+            raise forms.ValidationError(
+                "表示名は2文字以上で入力してください。"
+            )
+
+        return display_name
