@@ -1,0 +1,232 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+
+{% block title %}
+    マイページ | スイス掲示板
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sb-container sb-mypage">
+
+    <!-- =====================================================
+         Header
+         ===================================================== -->
+
+    <header class="sb-mypage-header">
+
+        <div class="sb-mypage-avatar">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+        </div>
+
+        <div>
+            <h1>マイページ</h1>
+            <p>
+                掲示板での活動とアカウントの管理
+            </p>
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         Board Activity
+         ===================================================== -->
+
+    <section class="sb-mypage-section">
+
+        <h2>掲示板での活動</h2>
+
+        <div class="sb-mypage-menu">
+
+            <!-- My posts -->
+
+            <a
+                href="{% url 'swiss_board:my_posts' %}"
+                class="sb-mypage-item"
+            >
+                <span class="sb-mypage-item-icon is-red">
+                    <i class="bi bi-file-text" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>自分の投稿</strong>
+                    <small>投稿の確認・編集・削除</small>
+                </span>
+
+                <span class="sb-mypage-count">
+                    {{ my_post_count }}件
+                </span>
+
+                <i class="bi bi-chevron-right sb-mypage-chevron" aria-hidden="true"></i>
+            </a>
+
+
+            <!-- Comments -->
+
+            <div class="sb-mypage-item is-upcoming">
+                <span class="sb-mypage-item-icon is-blue">
+                    <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>自分のコメント・回答</strong>
+                    <small>コメントや回答の履歴</small>
+                </span>
+
+                <span class="sb-mypage-upcoming">準備中</span>
+            </div>
+
+
+            <!-- Questions -->
+
+            <div class="sb-mypage-item is-upcoming">
+                <span class="sb-mypage-item-icon is-green">
+                    <i class="bi bi-question-circle" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>自分の質問</strong>
+                    <small>質問の確認と回答状況</small>
+                </span>
+
+                <span class="sb-mypage-upcoming">準備中</span>
+            </div>
+
+
+            <!-- Favorites -->
+
+            <div class="sb-mypage-item is-upcoming">
+                <span class="sb-mypage-item-icon is-purple">
+                    <i class="bi bi-heart" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>お気に入り・いいね</strong>
+                    <small>保存した投稿やリアクション</small>
+                </span>
+
+                <span class="sb-mypage-upcoming">準備中</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Profile and Account
+         ===================================================== -->
+
+    <section class="sb-mypage-section">
+
+        <h2>プロフィール・アカウント</h2>
+
+        <div class="sb-mypage-menu">
+
+            <!-- Board display name -->
+
+            <div class="sb-mypage-item is-upcoming">
+                <span class="sb-mypage-item-icon is-red">
+                    <i class="bi bi-person-badge" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>掲示板の表示名</strong>
+                    <small>公開される名前を設定</small>
+                </span>
+
+                <span class="sb-mypage-upcoming">準備中</span>
+            </div>
+
+
+            <!-- Marketplace name -->
+
+            <div class="sb-mypage-item is-upcoming">
+                <span class="sb-mypage-item-icon is-orange">
+                    <i class="bi bi-bag" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>売買時の表示名</strong>
+                    <small>取引で使う名前を設定</small>
+                </span>
+
+                <span class="sb-mypage-upcoming">準備中</span>
+            </div>
+
+
+            <!-- Password change -->
+
+            <a
+                href="{% url 'password_change' %}?next={% url 'swiss_board:my_page' %}"
+                class="sb-mypage-item"
+            >
+                <span class="sb-mypage-item-icon is-blue">
+                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+                    <strong>パスワード変更</strong>
+                    <small>Yapp共通アカウントの設定</small>
+                </span>
+
+                <i class="bi bi-chevron-right sb-mypage-chevron" aria-hidden="true"></i>
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Logout
+         ===================================================== -->
+
+    <section class="sb-mypage-section">
+
+        <h2>アカウント操作</h2>
+
+        <div class="sb-mypage-menu">
+
+            <form
+                action="{% url 'logout' %}"
+                method="post"
+                class="sb-mypage-logout-form"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="sb-mypage-item sb-mypage-logout"
+                >
+                    <span class="sb-mypage-item-icon is-gray">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                    </span>
+
+                    <span class="sb-mypage-item-content">
+                        <strong>ログアウト</strong>
+                        <small>Yappからログアウトします</small>
+                    </span>
+
+                    <i class="bi bi-chevron-right sb-mypage-chevron" aria-hidden="true"></i>
+                </button>
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

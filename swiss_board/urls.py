@@ -27,6 +27,12 @@ urlpatterns = [
     ),
 
     path(
+        "mypage/",
+        views.my_page,
+        name="my_page",
+    ),
+
+    path(
         "my-posts/",
         views.my_posts,
         name="my_posts",

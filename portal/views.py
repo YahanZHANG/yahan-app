@@ -25,6 +25,7 @@ from django.utils.encoding import (
 from django.utils.http import (
     urlsafe_base64_decode,
     urlsafe_base64_encode,
+    url_has_allowed_host_and_scheme
 )
 
 from board.models import BoardPost
@@ -54,6 +55,8 @@ from chat.models import (
     ChatMessage,
     ChatConnection,
 )
+
+from urllib.parse import urlencode
 
 
 # =========================================================
@@ -702,15 +705,56 @@ def verify_email(
 class PortalPasswordChangeView(
     auth_views.PasswordChangeView
 ):
+
     template_name = (
         "registration/password_change_form.html"
     )
 
-    def get_success_url(self):
-        return reverse(
-            "password_change_done"
+    # -----------------------------------------------------
+    # Safe return URL
+    # -----------------------------------------------------
+
+    def get_return_url(self):
+
+        next_url = (
+            self.request.POST.get("next")
+            or self.request.GET.get("next", "")
         )
 
+        if next_url and url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            return next_url
+
+        return reverse("portal:home")
+
+    # -----------------------------------------------------
+    # Template context
+    # -----------------------------------------------------
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        context["return_url"] = self.get_return_url()
+
+        return context
+
+    # -----------------------------------------------------
+    # After password change
+    # -----------------------------------------------------
+
+    def get_success_url(self):
+
+        return (
+            reverse("password_change_done")
+            + "?"
+            + urlencode({
+                "next": self.get_return_url(),
+            })
+        )
 
 # =========================================================
 # Initial password setup
@@ -1636,3 +1680,36 @@ def request_app_access(request):
     return redirect(
         "portal:home"
     )
+
+
+# =========================================================
+# Password Change Done
+# =========================================================
+
+class YappPasswordChangeDoneView(
+    auth_views.PasswordChangeDoneView
+):
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        next_url = self.request.GET.get(
+            "next", ""
+        )
+
+        if next_url and url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+
+            context["return_url"] = next_url
+
+        else:
+
+            context["return_url"] = reverse(
+                "portal:home"
+            )
+
+        return context

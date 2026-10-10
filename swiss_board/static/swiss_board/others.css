@@ -800,3 +800,240 @@
         padding: 5px 8px;
     }
 }
+
+/* =========================================================
+   Swiss Board My Page
+   ========================================================= */
+
+.sb-mypage {
+    max-width: 860px;
+    padding-top: 27px;
+    padding-bottom: 55px;
+}
+
+
+/* Header */
+
+.sb-mypage-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.sb-mypage-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
+    border-radius: 17px;
+    background: #fff0f1;
+    color: #981727;
+    font-size: 29px;
+}
+
+.sb-mypage-header h1 {
+    margin: 0 0 5px;
+    color: #2c3038;
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.sb-mypage-header p {
+    margin: 0;
+    color: #5c626c;
+    font-size: 13px;
+}
+
+
+/* Sections */
+
+.sb-mypage-section {
+    margin-top: 28px;
+}
+
+.sb-mypage-section h2 {
+    margin: 0 0 13px;
+    color: #2c3038;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.sb-mypage-menu {
+    overflow: hidden;
+    border: 1px solid #e2dcd9;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.sb-mypage-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 72px;
+    padding: 13px 17px;
+    color: #2c3038;
+    text-align: left;
+    text-decoration: none;
+}
+
+.sb-mypage-item + .sb-mypage-item,
+.sb-mypage-item + .sb-mypage-logout-form,
+.sb-mypage-logout-form + .sb-mypage-item {
+    border-top: 1px solid #efebea;
+}
+
+.sb-mypage-item:not(.is-upcoming):hover {
+    background: #fff8f8;
+}
+
+.sb-mypage-item-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+.sb-mypage-item-icon.is-red {
+    background: #fff0f1;
+    color: #981727;
+}
+
+.sb-mypage-item-icon.is-blue {
+    background: #edf3ff;
+    color: #2458a6;
+}
+
+.sb-mypage-item-icon.is-green {
+    background: #e9f7ef;
+    color: #156b50;
+}
+
+.sb-mypage-item-icon.is-purple {
+    background: #f3eeff;
+    color: #7144a2;
+}
+
+.sb-mypage-item-icon.is-orange {
+    background: #fff0d8;
+    color: #99540c;
+}
+
+.sb-mypage-item-icon.is-gray {
+    background: #f0f0f2;
+    color: #4c525b;
+}
+
+.sb-mypage-item-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+}
+
+.sb-mypage-item-content strong {
+    font-size: 14px;
+    font-weight: 850;
+    line-height: 1.4;
+}
+
+.sb-mypage-item-content small {
+    color: #606670;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.sb-mypage-chevron {
+    flex-shrink: 0;
+    color: #7a7d83;
+    font-size: 13px;
+}
+
+.sb-mypage-count {
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #fff0f1;
+    color: #981727;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.sb-mypage-upcoming {
+    flex-shrink: 0;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #f0f0f2;
+    color: #606670;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.sb-mypage-item.is-upcoming {
+    background: #faf9f8;
+}
+
+
+/* Logout */
+
+.sb-mypage-logout-form {
+    margin: 0;
+}
+
+.sb-mypage-logout {
+    border: 0;
+    border-radius: 0;
+    background: #ffffff;
+    cursor: pointer;
+    font: inherit;
+}
+
+.sb-mypage-logout:hover {
+    background: #fff0f1;
+}
+
+
+/* Mobile */
+
+@media (max-width: 760px) {
+
+    .sb-mypage {
+        padding-top: 20px;
+        padding-bottom: 35px;
+    }
+
+    .sb-mypage-header {
+        margin-bottom: 23px;
+    }
+
+    .sb-mypage-header h1 {
+        font-size: 23px;
+    }
+
+    .sb-mypage-item {
+        min-height: 65px;
+        gap: 11px;
+        padding: 11px 13px;
+    }
+
+    .sb-mypage-item-icon {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .sb-mypage-item-content strong {
+        font-size: 13px;
+    }
+
+    .sb-mypage-item-content small {
+        font-size: 11px;
+    }
+}

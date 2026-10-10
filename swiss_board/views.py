@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 
 from .forms import SwissBoardPostForm
@@ -775,3 +776,81 @@ def post_delete(request, pk):
             "post": post,
         },
     )
+
+# =========================================================
+# Swiss Board My Page
+# =========================================================
+
+@login_required
+def my_page(request):
+    """
+    Swiss Board専用マイページ。
+
+    Yapp共通アカウントとは分離し、
+    掲示板の活動への入口を表示する。
+    """
+
+    my_post_count = SwissBoardPost.objects.filter(
+        author=request.user,
+    ).count()
+
+    return render(
+        request,
+        "swiss_board/my_page.html",
+        {
+            "my_post_count": my_post_count,
+        },
+    )
+
+
+
+
+from django.contrib.auth.views import (
+    PasswordChangeView,
+    PasswordChangeDoneView,
+)
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+
+
+class YappPasswordChangeView(PasswordChangeView):
+
+    def get_success_url(self):
+
+        next_url = self.request.POST.get(
+            "next",
+            self.request.GET.get("next", ""),
+        )
+
+        if next_url and url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            return (
+                reverse("password_change_done")
+                + "?next="
+                + next_url
+            )
+
+        return reverse("password_change_done")
+
+
+class YappPasswordChangeDoneView(PasswordChangeDoneView):
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        next_url = self.request.GET.get("next", "")
+
+        if next_url and url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            context["return_url"] = next_url
+        else:
+            context["return_url"] = "/"
+
+        return context
