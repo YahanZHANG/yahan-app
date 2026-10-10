@@ -26,15 +26,22 @@
     <header class="sb-mypage-header">
 
         <div class="sb-mypage-avatar">
-            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <i
+                class="bi bi-person-circle"
+                aria-hidden="true"
+            ></i>
         </div>
 
-        <div>
+        <div class="sb-mypage-header-content">
+
             <h1>マイページ</h1>
+
             <p>
                 掲示板での活動とアカウントの管理
             </p>
+
         </div>
+
 
     </header>
 
@@ -71,6 +78,38 @@
                 <i class="bi bi-chevron-right sb-mypage-chevron" aria-hidden="true"></i>
             </a>
 
+            <!-- Notifications -->
+
+            <a
+                href="{% url 'swiss_board:my_notifications' %}"
+                class="sb-mypage-item"
+            >
+
+                <span class="sb-mypage-item-icon is-red">
+                    <i class="bi bi-bell"></i>
+                </span>
+
+                <span class="sb-mypage-item-content">
+
+                    <strong>お知らせ</strong>
+
+                    <small>
+                        コメント・返信の通知
+                    </small>
+
+                </span>
+
+                {% if unread_notification_count > 0 %}
+
+                    <span class="sb-mypage-unread-count">
+                        {{ unread_notification_count }}
+                    </span>
+
+                {% endif %}
+
+                <i class="bi bi-chevron-right sb-mypage-chevron"></i>
+
+            </a>
 
             <!-- Comments -->
 
@@ -108,18 +147,32 @@
 
             <!-- Questions -->
 
-            <div class="sb-mypage-item is-upcoming">
+            <a
+                href="{% url 'swiss_board:my_questions' %}"
+                class="sb-mypage-item"
+            >
+
                 <span class="sb-mypage-item-icon is-green">
-                    <i class="bi bi-question-circle" aria-hidden="true"></i>
+                    <i class="bi bi-question-circle"></i>
                 </span>
 
                 <span class="sb-mypage-item-content">
+
                     <strong>自分の質問</strong>
-                    <small>質問の確認と回答状況</small>
+
+                    <small>
+                        質問と回答状況の確認
+                    </small>
+
                 </span>
 
-                <span class="sb-mypage-upcoming">準備中</span>
-            </div>
+                <span class="sb-mypage-count">
+                    {{ my_question_count }}件
+                </span>
+
+                <i class="bi bi-chevron-right sb-mypage-chevron"></i>
+
+            </a>
 
 
             <!-- Favorites -->

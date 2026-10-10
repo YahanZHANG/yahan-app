@@ -39,6 +39,18 @@ urlpatterns = [
     ),
 
     path(
+        "mypage/notifications/",
+        views.my_notifications,
+        name="my_notifications",
+    ),
+
+    path(
+        "mypage/notifications/<int:pk>/open/",
+        views.notification_open,
+        name="notification_open",
+    ),
+
+    path(
         "my-posts/",
         views.my_posts,
         name="my_posts",
@@ -90,6 +102,12 @@ urlpatterns = [
         "comments/<int:pk>/delete/",
         views.comment_delete,
         name="comment_delete",
+    ),
+
+    path(
+        "my-questions/",
+        views.my_questions,
+        name="my_questions",
     ),
 
 ]

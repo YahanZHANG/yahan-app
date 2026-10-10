@@ -140,6 +140,7 @@ TEMPLATES = [
                 "travel.context_processors.current_travel_group",
                 "vaccination.context_processors.vaccination_ui",
                 "recipes.context_processors.recipe_ui_settings",
+                "swiss_board.context_processors.notification_count",
             ],
         },
     },

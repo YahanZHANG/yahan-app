@@ -1,0 +1,107 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+{% block title %}
+自分の質問 | スイス掲示板
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="sb-container sb-my-questions-page">
+
+    <header class="sb-my-questions-header">
+
+        <a href="{% url 'swiss_board:my_page' %}">
+            ← マイページ
+        </a>
+
+        <h1>自分の質問</h1>
+
+    </header>
+
+    <div class="sb-my-questions-list">
+
+        {% for question in page_obj %}
+
+            <div class="sb-my-question-item">
+
+                <div class="sb-my-question-main">
+
+                    {% if question.status == "published" %}
+
+                        <a
+                            href="{% url 'swiss_board:post_detail' question.pk %}"
+                            class="sb-my-question-title"
+                        >
+                            {{ question.title }}
+                        </a>
+
+                    {% else %}
+
+                        <span class="sb-my-question-title">
+                            {{ question.title }}
+                        </span>
+
+                    {% endif %}
+
+                    <span class="sb-my-question-count">
+                        回答・返信 {{ question.answer_count }}件
+                    </span>
+
+                </div>
+
+                <a
+                    href="{% url 'swiss_board:post_edit' question.pk %}"
+                    class="sb-my-question-edit"
+                >
+                    編集
+                </a>
+
+            </div>
+
+        {% empty %}
+
+            <div class="sb-my-questions-empty">
+                まだ質問を投稿していません。
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="sb-my-questions-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

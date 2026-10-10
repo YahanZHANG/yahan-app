@@ -104,10 +104,20 @@
 
                 <a
                     href="{% url 'swiss_board:my_page' %}"
-                    class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_posts' or request.resolver_match.url_name == 'post_edit' or request.resolver_match.url_name == 'post_delete' %}is-current{% endif %}"
+                    class="sb-nav-mypage {% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_posts' or request.resolver_match.url_name == 'post_edit' or request.resolver_match.url_name == 'post_delete' %}is-current{% endif %}"
                     {% if request.resolver_match.url_name == 'my_page' %}aria-current="page"{% endif %}
                 >
                     マイページ
+
+                    {% if sb_unread_count > 0 %}
+                        <span class="sb-nav-notification-badge">
+                            {% if sb_unread_count >= 10 %}
+                                9+
+                            {% else %}
+                                {{ sb_unread_count }}
+                            {% endif %}
+                        </span>
+                    {% endif %}
                 </a>
 
             </nav>
@@ -210,13 +220,27 @@
 
     <a
         href="{% url 'swiss_board:my_page' %}"
-        class="sb-nav-item {% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_posts' or request.resolver_match.url_name == 'post_edit' or request.resolver_match.url_name == 'post_delete' %}is-current{% endif %}"
+        class="sb-nav-item sb-nav-mypage {% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_posts' or request.resolver_match.url_name == 'post_edit' or request.resolver_match.url_name == 'post_delete' %}is-current{% endif %}"
         {% if request.resolver_match.url_name == 'my_page' %}aria-current="page"{% endif %}
     >
-        <i
-            class="bi bi-person-circle"
-            aria-hidden="true"
-        ></i>
+        <span class="sb-nav-mypage-icon">
+
+            <i
+                class="bi bi-person-circle"
+                aria-hidden="true"
+            ></i>
+
+            {% if sb_unread_count > 0 %}
+                <span class="sb-nav-notification-badge">
+                    {% if sb_unread_count >= 10 %}
+                        9+
+                    {% else %}
+                        {{ sb_unread_count }}
+                    {% endif %}
+                </span>
+            {% endif %}
+
+        </span>
 
         <span>マイページ</span>
     </a>

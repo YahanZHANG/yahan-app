@@ -955,14 +955,28 @@
     font-size: 13px;
 }
 
+/* =========================================================
+   My Page - Regular Count
+   ========================================================= */
+
 .sb-mypage-count {
     flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 36px;
     padding: 5px 10px;
+
     border-radius: 999px;
-    background: #fff0f1;
-    color: #981727;
+
+    background: #f0f0f2;
+    color: #555b64;
+
     font-size: 12px;
-    font-weight: 850;
+    font-weight: 800;
+    line-height: 1.4;
 }
 
 .sb-mypage-upcoming {
@@ -1595,4 +1609,302 @@
         padding: 17px;
     }
 
+}
+
+/* =========================================================
+   My Questions
+   ========================================================= */
+
+.sb-my-questions-page,
+.sb-notifications-page {
+    max-width: 860px;
+    padding-top: 25px;
+    padding-bottom: 55px;
+}
+
+.sb-my-questions-header,
+.sb-notifications-header {
+    margin-bottom: 20px;
+}
+
+.sb-my-questions-header > a,
+.sb-notifications-header > a {
+    display: inline-block;
+    margin-bottom: 13px;
+    color: #2458a6;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sb-my-questions-header h1,
+.sb-notifications-header h1 {
+    margin: 0 0 8px;
+    color: #2c3038;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.sb-notifications-header p {
+    margin: 0;
+    color: #606670;
+    font-size: 13px;
+}
+
+.sb-my-questions-list {
+    overflow: hidden;
+    border: 1px solid #e2dcd9;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.sb-my-question-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 15px;
+}
+
+.sb-my-question-item + .sb-my-question-item {
+    border-top: 1px solid #eee9e7;
+}
+
+.sb-my-question-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 5px;
+}
+
+.sb-my-question-title {
+    color: #2c3038;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+a.sb-my-question-title:hover {
+    color: #b51e32;
+}
+
+.sb-my-question-count {
+    color: #69707a;
+    font-size: 11px;
+}
+
+.sb-my-question-edit {
+    flex-shrink: 0;
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: #edf3ff;
+    color: #2458a6;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.sb-my-questions-empty {
+    padding: 30px 20px;
+    color: #606670;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+/* =========================================================
+   Notifications
+   ========================================================= */
+
+.sb-mypage-unread-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #b51e32;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.sb-notifications-list {
+    overflow: hidden;
+    border: 1px solid #e2dcd9;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.sb-notification-form {
+    margin: 0;
+}
+
+.sb-notification-form + .sb-notification-form {
+    border-top: 1px solid #eee9e7;
+}
+
+.sb-notification-item {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    gap: 13px;
+    padding: 16px;
+    border: 0;
+    background: #ffffff;
+    color: #2c3038;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.sb-notification-item:hover {
+    background: #f9f8f7;
+}
+
+.sb-notification-item.is-unread {
+    background: #fff7f8;
+}
+
+.sb-notification-item.is-unread:hover {
+    background: #fff0f2;
+}
+
+.sb-notification-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #fff0f1;
+    color: #981727;
+    font-size: 19px;
+}
+
+.sb-notification-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 5px;
+}
+
+.sb-notification-content strong {
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.55;
+}
+
+.sb-notification-post-title {
+    color: #363b44;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.sb-notification-preview {
+    color: #626874;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.sb-notification-content time {
+    color: #7a7d83;
+    font-size: 11px;
+}
+
+.sb-notification-dot {
+    flex: 0 0 9px;
+    width: 9px;
+    height: 9px;
+    margin-top: 8px;
+    border-radius: 50%;
+    background: #b51e32;
+}
+
+.sb-notification-chevron {
+    margin-top: 8px;
+    color: #7a7d83;
+    font-size: 12px;
+}
+
+.sb-notifications-empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    padding: 40px 20px;
+    color: #626874;
+    text-align: center;
+}
+
+.sb-notifications-empty .bi {
+    color: #b51e32;
+    font-size: 27px;
+}
+
+.sb-notifications-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   Pagination
+   ========================================================= */
+
+.sb-my-questions-pagination,
+.sb-notifications-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 22px;
+}
+
+.sb-my-questions-pagination a,
+.sb-notifications-pagination a {
+    color: #2458a6;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.sb-my-questions-pagination span,
+.sb-notifications-pagination span {
+    color: #555b64;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .sb-my-questions-page,
+    .sb-notifications-page {
+        padding-top: 20px;
+        padding-bottom: 35px;
+    }
+
+    .sb-my-questions-header h1,
+    .sb-notifications-header h1 {
+        font-size: 22px;
+    }
+
+    .sb-my-question-item {
+        padding: 10px 12px;
+    }
+
+    .sb-notification-item {
+        gap: 10px;
+        padding: 13px 11px;
+    }
+
+    .sb-notification-icon {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
+    }
 }

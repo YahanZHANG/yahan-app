@@ -3,7 +3,8 @@ from datetime import timedelta
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Prefetch
+from django.db import transaction
+from django.db.models import Q, Prefetch, Count
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -16,7 +17,8 @@ from django.views.decorators.http import require_POST
 from .models import (
     SwissBoardPost,
     SwissBoardProfile,
-    SwissBoardComment
+    SwissBoardComment,
+    SwissBoardNotification
 )
 from .forms import (
     SwissBoardPostForm,
@@ -803,27 +805,36 @@ def post_delete(request, pk):
 # =========================================================
 
 @login_required
+@login_required
 def my_page(request):
-    """
-    Swiss Board専用マイページ。
-
-    Yapp共通アカウントとは分離し、
-    掲示板の活動への入口を表示する。
-    """
 
     my_post_count = SwissBoardPost.objects.filter(
         author=request.user,
     ).count()
+
+    my_question_count = SwissBoardPost.objects.filter(
+        author=request.user,
+        category=SwissBoardPost.Category.QUESTIONS,
+    ).count()
+
+    unread_notification_count = (
+        SwissBoardNotification.objects
+        .filter(
+            recipient=request.user,
+            is_read=False,
+        )
+        .count()
+    )
 
     return render(
         request,
         "swiss_board/my_page.html",
         {
             "my_post_count": my_post_count,
+            "my_question_count": my_question_count,
+            "unread_notification_count":unread_notification_count,
         },
     )
-
-
 
 
 from django.contrib.auth.views import (
@@ -916,9 +927,8 @@ def profile_edit(request):
         },
     )
 
-
 # =========================================================
-# Create Comment / Reply
+# Create Comment / Reply + Notification
 # =========================================================
 
 @login_required
@@ -930,6 +940,10 @@ def comment_create(request, pk):
         pk=pk,
         status=SwissBoardPost.Status.PUBLISHED,
     )
+
+    # =====================================================
+    # Parent comment
+    # =====================================================
 
     parent_id = request.POST.get("parent", "").strip()
     parent = None
@@ -943,16 +957,63 @@ def comment_create(request, pk):
             parent__isnull=True,
         )
 
+    # =====================================================
+    # Form validation
+    # =====================================================
+
     form = SwissBoardCommentForm(request.POST)
 
     if form.is_valid():
 
-        comment = form.save(commit=False)
+        # コメントと通知をまとめて保存
+        with transaction.atomic():
 
-        comment.post = post
-        comment.author = request.user
-        comment.parent = parent
-        comment.save()
+            comment = form.save(commit=False)
+
+            comment.post = post
+            comment.author = request.user
+            comment.parent = parent
+
+            comment.save()
+
+            # =============================================
+            # Notification recipients
+            # =============================================
+
+            recipients = {}
+
+            # 投稿者への通知
+            if post.author_id != request.user.pk:
+
+                recipients[post.author_id] = (
+                    SwissBoardNotification.Kind.COMMENT
+                )
+
+            # 返信先コメントの作者への通知
+            if parent is not None:
+
+                if parent.author_id != request.user.pk:
+
+                    recipients[parent.author_id] = (
+                        SwissBoardNotification.Kind.REPLY
+                    )
+
+            # =============================================
+            # Create notifications
+            # =============================================
+
+            for recipient_id, kind in recipients.items():
+
+                SwissBoardNotification.objects.create(
+                    recipient_id=recipient_id,
+                    actor=request.user,
+                    comment=comment,
+                    kind=kind,
+                )
+
+        # =================================================
+        # Redirect to new comment
+        # =================================================
 
         return redirect(
             reverse(
@@ -962,7 +1023,9 @@ def comment_create(request, pk):
             + f"#comment-{comment.pk}"
         )
 
-    # 入力エラー時
+    # =====================================================
+    # Invalid form
+    # =====================================================
 
     context = {
         "post": post,
@@ -973,7 +1036,9 @@ def comment_create(request, pk):
             else SwissBoardCommentForm()
         ),
         "reply_form": form if parent else None,
-        "reply_error_parent_id": parent.pk if parent else None,
+        "reply_error_parent_id": (
+            parent.pk if parent else None
+        ),
     }
 
     return render(
@@ -1142,3 +1207,109 @@ def page_not_found(request, exception=None):
         "swiss_board/page_not_found.html",
         status=404,
     )
+
+
+# =========================================================
+# My Questions
+# =========================================================
+
+@login_required
+def my_questions(request):
+
+    questions = (
+        SwissBoardPost.objects
+        .filter(
+            author=request.user,
+            category=SwissBoardPost.Category.QUESTIONS,
+        )
+        .annotate(
+            answer_count=Count("comments"),
+        )
+        .order_by("-created_at", "-pk")
+    )
+
+    paginator = Paginator(questions, 20)
+
+    page_obj = paginator.get_page(
+        request.GET.get("page", 1)
+    )
+
+    return render(
+        request,
+        "swiss_board/my_questions.html",
+        {
+            "page_obj": page_obj,
+        },
+    )
+
+# =========================================================
+# Notifications
+# =========================================================
+
+@login_required
+def my_notifications(request):
+
+    notifications = (
+        SwissBoardNotification.objects
+        .filter(recipient=request.user)
+        .select_related(
+            "actor",
+            "actor__swiss_board_profile",
+            "comment",
+            "comment__post",
+        )
+        .order_by("-created_at", "-pk")
+    )
+
+    paginator = Paginator(notifications, 20)
+
+    page_obj = paginator.get_page(
+        request.GET.get("page", 1)
+    )
+
+    return render(
+        request,
+        "swiss_board/my_notifications.html",
+        {
+            "page_obj": page_obj,
+        },
+    )
+
+
+# =========================================================
+# Open Notification
+# =========================================================
+
+@login_required
+@require_POST
+def notification_open(request, pk):
+
+    notification = get_object_or_404(
+        SwissBoardNotification.objects.select_related(
+            "comment",
+            "comment__post",
+        ),
+        pk=pk,
+        recipient=request.user,
+    )
+
+    if not notification.is_read:
+
+        notification.is_read = True
+        notification.save(
+            update_fields=["is_read"]
+        )
+
+    comment = notification.comment
+
+    if comment.post.status != SwissBoardPost.Status.PUBLISHED:
+        return redirect("swiss_board:my_notifications")
+
+    return redirect(
+        reverse(
+            "swiss_board:post_detail",
+            kwargs={"pk": comment.post_id},
+        )
+        + f"#comment-{comment.pk}"
+    )
+

@@ -177,3 +177,56 @@ body.sb-body { background: #fff9f6; }
 @media (prefers-contrast: more) {
   .sb-nav-item.is-current { outline: 2px solid currentColor; outline-offset: -2px; }
 }
+
+/* =========================================================
+   Navigation Notification Badge
+   ========================================================= */
+
+.sb-nav-mypage {
+    position: relative;
+}
+
+.sb-nav-notification-badge {
+    position: absolute;
+    top: -7px;
+    right: -10px;
+
+    display: grid;
+    place-items: center;
+
+    min-width: 21px;
+    height: 21px;
+    padding: 0 5px;
+
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+
+    background: #b51e32;
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+
+/* Mobile */
+
+.sb-nav-mypage-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 760px) {
+
+    .sb-nav-mypage-icon .sb-nav-notification-badge {
+        top: -9px;
+        right: -13px;
+    }
+
+}

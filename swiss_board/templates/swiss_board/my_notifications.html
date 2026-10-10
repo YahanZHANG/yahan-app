@@ -1,0 +1,148 @@
+{% extends "swiss_board/base.html" %}
+{% load static %}
+
+{% block title %}
+お知らせ | スイス掲示板
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'swiss_board/others.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="sb-container sb-notifications-page">
+
+    <header class="sb-notifications-header">
+
+        <a href="{% url 'swiss_board:my_page' %}">
+            ← マイページ
+        </a>
+
+        <h1>お知らせ</h1>
+
+        <p>
+            コメントや返信が届いたときに表示されます。
+        </p>
+
+    </header>
+
+    <div class="sb-notifications-list">
+
+        {% for notification in page_obj %}
+
+            <form
+                method="post"
+                action="{% url 'swiss_board:notification_open' notification.pk %}"
+                class="sb-notification-form"
+            >
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="sb-notification-item {% if not notification.is_read %}is-unread{% endif %}"
+                >
+
+                    <span class="sb-notification-icon">
+
+                        {% if notification.kind == "reply" %}
+                            <i class="bi bi-reply"></i>
+                        {% else %}
+                            <i class="bi bi-chat-left-text"></i>
+                        {% endif %}
+
+                    </span>
+
+                    <span class="sb-notification-content">
+
+                        <strong>
+
+                            {% if notification.actor.swiss_board_profile.display_name %}
+                                {{ notification.actor.swiss_board_profile.display_name }}
+                            {% else %}
+                                掲示板ユーザー
+                            {% endif %}
+
+                            さんから
+
+                            {% if notification.kind == "reply" %}
+                                返信がありました
+                            {% else %}
+                                コメントがありました
+                            {% endif %}
+
+                        </strong>
+
+                        <small class="sb-notification-post-title">
+                            {{ notification.comment.post.title }}
+                        </small>
+
+                        <small class="sb-notification-preview">
+                            {{ notification.comment.body|truncatechars:85 }}
+                        </small>
+
+                        <time datetime="{{ notification.created_at|date:'c' }}">
+                            {{ notification.created_at|date:"Y年n月j日 H:i" }}
+                        </time>
+
+                    </span>
+
+                    {% if not notification.is_read %}
+                        <span class="sb-notification-dot"></span>
+                    {% else %}
+                        <i class="bi bi-chevron-right sb-notification-chevron"></i>
+                    {% endif %}
+
+                </button>
+
+            </form>
+
+        {% empty %}
+
+            <div class="sb-notifications-empty">
+
+                <i class="bi bi-bell"></i>
+
+                <p>
+                    まだお知らせはありません。
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="sb-notifications-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
