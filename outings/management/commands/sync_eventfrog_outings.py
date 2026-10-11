@@ -25,6 +25,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from .eventfrog_quality import evaluate
+from outings.eventfrog_translation_store import (
+    prepare_translation_csv, persist_translation_csv,
+)
 
 OUT = Path('outings_audit')
 SNAPSHOT = OUT / 'eventfrog_current_45days.csv'
@@ -146,8 +149,13 @@ class Command(BaseCommand):
         call_command('prepare_eventfrog_review')
 
         self.stdout.write('4/5 Quality filter + JP translation of new PASS rows')
+        cached = prepare_translation_csv(TRANSLATED, REVIEW, commit=opts['commit'])
+        self.stdout.write(f'DB translation cache restored: {cached} series')
         call_command('translate_eventfrog_batch', limit=opts['limit'], quality_filter=True,
                      commit=opts['commit'], model=opts['model'])
+        if opts['commit']:
+            saved = persist_translation_csv(TRANSLATED)
+            self.stdout.write(f'DB translation cache saved: {saved} series')
         if not TRANSLATED.is_file():
             self.stdout.write('No translated events yet. Finished without publishing.')
             return
@@ -186,6 +194,22 @@ class Command(BaseCommand):
                          auto_publish=True, commit=opts['commit'])
         else:
             self.stdout.write('No matching translated PASS rows; import skipped.')
+        
+        # =====================================================
+        # 6/6 Eventfrog occurrence tracking
+        # =====================================================
+
+        self.stdout.write(
+            '6/6 Reconcile Eventfrog occurrence dates'
+        )
+
+        call_command(
+            'eventfrog_occurrence_tracking',
+            review=str(REVIEW),
+            snapshot=str(SNAPSHOT),
+            commit=opts['commit'],
+        )
+        
         self.stdout.write(self.style.SUCCESS(
             'Finished. ' + ('DB updated, OpenAI used for new items.' if opts['commit']
                             else 'Dry-run: no DB changes or OpenAI calls.')

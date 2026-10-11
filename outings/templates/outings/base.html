@@ -104,10 +104,11 @@
             <span>HOME</span>
         </a>
 
-        <span class="nav-disabled">
+        <a href="{% url 'outings:search' %}"
+            class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}">
             <i class="bi bi-search"></i>
             <span>探す</span>
-        </span>
+        </a>
 
         <a
             href="{% url 'outings:event_create' %}"

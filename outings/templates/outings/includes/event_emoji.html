@@ -1,0 +1,19 @@
+{% if event.category.slug == "festival" %}
+    🎪
+{% elif event.category.slug == "art" %}
+    🎨
+{% elif event.category.slug == "music" %}
+    🎵
+{% elif event.category.slug == "food" %}
+    🍽️
+{% elif event.category.slug == "outdoor" %}
+    🌿
+{% elif event.category.slug == "sports" %}
+    ⚽
+{% elif event.category.slug == "workshop" %}
+    ✂️
+{% elif event.category.slug == "sightseeing" %}
+    🏔️
+{% else %}
+    🎈
+{% endif %}

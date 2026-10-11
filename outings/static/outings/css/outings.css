@@ -2426,3 +2426,210 @@ a.outings-mypage-item:hover {
         font-size: 12px;
     }
 }
+
+/* ==========================================
+   Event detail - occurrence dates
+   ========================================== */
+
+.outings-date-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.outings-date-details {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #fafafa;
+}
+
+.outings-date-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.outings-date-list {
+    margin-top: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.outings-date-list p {
+    margin: 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.outings-date-list p:last-child {
+    border-bottom: none;
+}
+
+/* ==========================================
+   Outings HOME / Search
+   ========================================== */
+
+.outings-home-search-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 18px;
+    border: 1px solid var(--outings-border);
+    border-radius: 12px;
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.outings-home-search-link .bi-chevron-right {
+    margin-left: auto;
+}
+
+.outings-search-page {
+    width: 100%;
+}
+
+.outings-search-page .section-heading h1 {
+    font-size: 25px;
+    margin: 0 0 8px;
+}
+
+.outings-search-form {
+    padding: 20px;
+    border: 1px solid var(--outings-border);
+    border-radius: 16px;
+    background: var(--outings-surface);
+}
+
+.outings-search-form h2 {
+    font-size: 18px;
+    margin: 0 0 10px;
+}
+
+.outings-search-form .outings-category-section {
+    margin-top: 28px;
+    margin-bottom: 20px;
+}
+
+.outings-search-form .outings-region-chip,
+.outings-search-form .outings-category-card {
+    cursor: pointer;
+}
+
+.outings-search-form input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.outings-search-form label:focus-within {
+    outline: 2px solid var(--outings-accent);
+    outline-offset: 2px;
+}
+
+.outings-search-options {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0;
+    font-size: 13px;
+}
+
+.outings-search-options input[type="search"] {
+    width: 100%;
+    min-height: 45px;
+    padding: 11px 13px;
+    border: 1px solid var(--outings-border);
+    border-radius: 10px;
+    font: inherit;
+}
+
+.outings-search-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.outings-search-submit {
+    padding: 12px 22px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--outings-accent);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.outings-search-actions a {
+    color: var(--outings-muted);
+    font-size: 13px;
+}
+
+.outings-search-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 24px 0;
+    font-size: 13px;
+}
+
+.outings-search-pagination a {
+    color: var(--outings-accent);
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .outings-search-form {
+        padding: 14px;
+    }
+}
+
+/* ==========================================
+   Event emoji placeholder
+   ========================================== */
+
+.outings-emoji-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        135deg,
+        #e8f6f1,
+        #e9f1fa
+    );
+    font-size: 48px;
+    line-height: 1;
+}
+
+@media (min-width: 900px) {
+    .outings-emoji-image {
+        font-size: 62px;
+    }
+}
+
+.outings-emoji-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8f6f1, #e9f1fa);
+    font-size: 50px;
+    line-height: 1;
+}
+
+/* hidden属性を確実に反映 */
+.outings-emoji-image[hidden] {
+    display: none !important;
+}
+
+@media (min-width: 900px) {
+    .outings-emoji-image {
+        font-size: 64px;
+    }
+}

@@ -404,3 +404,32 @@ class OutingsComment(models.Model):
 
     def __str__(self):
         return f"Comment {self.pk} on event {self.event_id}"
+
+
+class EventfrogTranslationCache(models.Model):
+    """Reusable JP translation keyed by a stable Eventfrog series_key."""
+    series_key = models.CharField(max_length=255, unique=True)
+    title_ja = models.CharField(max_length=250)
+    summary_ja = models.TextField()
+    row_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title_ja
+
+
+class EventfrogOccurrenceLink(models.Model):
+    """Exact Eventfrog event ID to local occurrence relationship."""
+    eventfrog_id = models.CharField(max_length=100, unique=True)
+    event = models.ForeignKey(
+        "Event", on_delete=models.CASCADE, related_name="eventfrog_links"
+    )
+    occurrence = models.ForeignKey(
+        "EventOccurrence", on_delete=models.CASCADE, related_name="eventfrog_links"
+    )
+    last_source_start_at = models.DateTimeField(null=True, blank=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.eventfrog_id

@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 
 from django.db import transaction
 
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Prefetch, Q, Min, Max
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
@@ -58,9 +58,59 @@ def get_weekend_range(today):
     return saturday, sunday, start, end
 
 
+def get_event_emoji(event):
+    """
+    イベントのカテゴリーとタイトルから絵文字を選択する。
+    """
+
+    title = (
+        (event.title or "") + " "
+        + (event.title_original or "")
+    ).lower()
+
+    keywords = [
+        (["weihnacht", "christmas", "クリスマス"], "🎄"),
+        (["halloween", "ハロウィン"], "🎃"),
+        (["baby", "ベビー", "赤ちゃん"], "👶"),
+        (["kind", "子ども", "こども", "親子"], "🧸"),
+        (["markt", "market", "マーケット"], "🛍️"),
+        (["festival", "fest", "祭り", "フェス"], "🎪"),
+        (["museum", "美術館", "博物館"], "🏛️"),
+        (["kunst", "art", "アート", "絵画"], "🎨"),
+        (["musik", "music", "konzert", "音楽"], "🎵"),
+        (["theater", "劇", "舞台"], "🎭"),
+        (["essen", "food", "グルメ", "料理"], "🍽️"),
+        (["wander", "山", "ハイキング"], "🥾"),
+        (["natur", "nature", "自然"], "🌿"),
+        (["sport", "スポーツ"], "⚽"),
+        (["workshop", "体験", "ワークショップ"], "✂️"),
+        (["schloss", "castle", "城"], "🏰"),
+    ]
+
+    for words, emoji in keywords:
+        if any(word in title for word in words):
+            return emoji
+
+    category_emojis = {
+        "festival": "🎪",
+        "art": "🎨",
+        "music": "🎵",
+        "food": "🍽️",
+        "outdoor": "🌿",
+        "sports": "⚽",
+        "workshop": "✂️",
+        "sightseeing": "🏔️",
+    }
+
+    if event.category:
+        return category_emojis.get(event.category.slug, "🎈")
+
+    return "🎈"
+
 def home(request):
 
     now = timezone.now()
+    seven_days_later = now + timedelta(days=7)
     today = timezone.localdate()
 
     saturday, sunday, weekend_start, weekend_end = (
@@ -156,15 +206,10 @@ def home(request):
     )
 
     weekend_occurrences = (
-        upcoming_occurrences.filter(
-            start_at__lt=weekend_end,
-        )
+        upcoming_occurrences
         .filter(
-            Q(end_at__gt=weekend_start)
-            | Q(
-                end_at__isnull=True,
-                start_at__gte=weekend_start,
-            )
+            start_at__gte=now,
+            start_at__lt=seven_days_later,
         )
     )
 
@@ -184,11 +229,54 @@ def home(request):
         )
     )
 
+    for event in events:
+        event.display_emoji = get_event_emoji(event)
+
+
+    # =====================================================
+    # 今後7日以内のイベント（14日以上の長期開催は除外）
+    # =====================================================
+
+    event_ids = [event.pk for event in events]
+
+    event_spans = {
+        row["event_id"]: row
+        for row in (
+            EventOccurrence.objects
+            .filter(
+                event_id__in=event_ids,
+                is_cancelled=False,
+            )
+            .values("event_id")
+            .annotate(
+                first_date=Min("start_at"),
+                last_date=Max("start_at"),
+            )
+        )
+    }
+
+    def is_long_running(event):
+        span = event_spans.get(event.pk)
+
+        if not span:
+            return False
+
+        first_date = span["first_date"]
+        last_date = span["last_date"]
+
+        if not first_date or not last_date:
+            return False
+
+        return (
+            last_date - first_date
+        ) >= timedelta(days=14)
+
     weekend_events = sorted(
         (
             event
             for event in events
             if event.weekend_dates
+            and not is_long_running(event)
         ),
         key=lambda event: event.weekend_dates[0].start_at,
     )[:12]
@@ -330,6 +418,158 @@ def home(request):
         visitor_id,
     )
 
+
+def search(request):
+
+    now = timezone.now()
+
+    regions = [
+        ("ZH", "Zürich"),
+        ("AG", "Aargau"),
+        ("BS", "Basel-Stadt"),
+        ("BL", "Basel-Landschaft"),
+        ("ZG", "Zug"),
+        ("LU", "Luzern"),
+        ("BE", "Bern"),
+    ]
+
+    valid_regions = {code for code, name in regions}
+
+    region = request.GET.get("region", "").strip().upper()
+    if region not in valid_regions:
+        region = ""
+
+    categories = EventCategory.objects.filter(
+        is_active=True
+    ).order_by("sort_order", "name")
+
+    category = request.GET.get("category", "").strip()
+
+    valid_categories = set(
+        categories.values_list("slug", flat=True)
+    )
+
+    if category not in valid_categories:
+        category = ""
+
+    family_only = request.GET.get("tag") == "family"
+    query = request.GET.get("q", "").strip()[:100]
+
+    preview_mode = (
+        request.user.is_authenticated
+        and request.user.is_staff
+        and request.GET.get("preview") == "1"
+    )
+
+    statuses = [Event.Status.PUBLISHED]
+
+    if preview_mode:
+        statuses.append(Event.Status.DRAFT)
+
+    future_dates = (
+        EventOccurrence.objects
+        .filter(
+            is_cancelled=False,
+        )
+        .filter(
+            Q(end_at__gt=now)
+            | Q(
+                end_at__isnull=True,
+                start_at__gte=now,
+            )
+        )
+        .order_by("start_at")
+    )
+
+    events = (
+        Event.objects
+        .filter(
+            status__in=statuses,
+            occurrences__is_cancelled=False,
+        )
+        .filter(
+            Q(occurrences__end_at__gt=now)
+            | Q(
+                occurrences__end_at__isnull=True,
+                occurrences__start_at__gte=now,
+            )
+        )
+        .select_related("location", "category")
+        .distinct()
+    )
+
+    if region:
+        events = events.filter(
+            location__canton=region
+        )
+
+    if category:
+        events = events.filter(
+            category__slug=category,
+            category__is_active=True,
+        )
+
+    if family_only:
+        events = events.filter(
+            tags__slug="family"
+        )
+
+    if query:
+        events = events.filter(
+            Q(title__icontains=query)
+            | Q(title_original__icontains=query)
+            | Q(summary_ja__icontains=query)
+            | Q(location__city__icontains=query)
+            | Q(location__name__icontains=query)
+        )
+
+    events = (
+        events
+        .annotate(
+            next_start=Min(
+                "occurrences__start_at",
+                filter=Q(
+                    occurrences__is_cancelled=False,
+                    occurrences__start_at__gte=now,
+                ),
+            )
+        )
+        .order_by("next_start", "pk")
+        .prefetch_related(
+            Prefetch(
+                "occurrences",
+                queryset=future_dates,
+                to_attr="search_dates",
+            )
+        )
+    )
+
+    paginator = Paginator(events, 20)
+    page_obj = paginator.get_page(
+        request.GET.get("page", 1)
+    )
+
+    for event in page_obj.object_list:
+        event.display_emoji = get_event_emoji(event)
+
+    context = {
+        "events": page_obj.object_list,
+        "page_obj": page_obj,
+        "result_count": paginator.count,
+        "regions": regions,
+        "active_region": region,
+        "categories": categories,
+        "active_category": category,
+        "family_only": family_only,
+        "query": query,
+        "preview_mode": preview_mode,
+    }
+
+    return render(
+        request,
+        "outings/search.html",
+        context,
+    )
 
 def event_detail(request, pk):
 

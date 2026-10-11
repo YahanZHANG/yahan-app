@@ -25,39 +25,6 @@
 {% endif %}
 
 
-<section class="outings-region-section">
-
-    <div class="section-heading">
-        <div>
-            <h2>📍 地域から探す</h2>
-            <p>お住まいの地域やおでかけ先を選択</p>
-        </div>
-    </div>
-
-    <div class="outings-region-list">
-
-        <a
-            href="?{% if preview_mode %}preview=1{% endif %}{% if active_category %}{% if preview_mode %}&amp;{% endif %}category={{ active_category.slug|urlencode }}{% endif %}{% if active_tag %}&amp;tag={{ active_tag.slug|urlencode }}{% endif %}"
-            class="outings-region-chip {% if not active_region %}selected{% endif %}"
-        >
-            すべて
-        </a>
-
-        {% for code, name in regions %}
-            <a
-                href="?region={{ code }}{% if preview_mode %}&amp;preview=1{% endif %}{% if active_category %}&amp;category={{ active_category.slug|urlencode }}{% endif %}{% if active_tag %}&amp;tag={{ active_tag.slug|urlencode }}{% endif %}"
-                class="outings-region-chip {% if active_region == code %}selected{% endif %}"
-            >
-                {{ name }}
-            </a>
-        {% endfor %}
-
-    </div>
-
-</section>
-
-
-
 <!-- =================================================
      Recommended events
      ================================================= -->
@@ -81,23 +48,24 @@
         >
 
             {% if event.image_url %}
-
                 <img
                     src="{{ event.image_url }}"
                     alt=""
                     class="event-image"
                     loading="lazy"
+                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
                 >
-
-            {% else %}
-
-                <div class="event-image placeholder">
-                    🎈
+                <div class="event-image outings-emoji-image" hidden>
+                    {{ event.display_emoji }}
                 </div>
-
+            {% else %}
+                <div class="event-image outings-emoji-image">
+                    {{ event.display_emoji }}
+                </div>
             {% endif %}
 
             <div class="event-info">
+            <h3>{{ event.title }}</h3>
 
             {% if preview_mode and event.status == "draft" %}
                 <span class="outings-draft-label">
@@ -173,13 +141,8 @@
         <div class="section-heading">
 
             <div>
-                <h2>✨ 今週末のおでかけ</h2>
-
-                <p>
-                    {{ weekend_start|date:"n月j日" }}
-                    〜
-                    {{ weekend_end|date:"n月j日" }}
-                </p>
+                <h2>✨ 今後7日以内のイベント</h2>
+                <p>これから1週間以内に開催されるイベントを紹介</p>
             </div>
 
         </div>
@@ -191,18 +154,25 @@
                 class="event-card"
             >
 
-                {% if event.image_url %}
-                    <img
-                        src="{{ event.image_url }}"
-                        alt=""
-                        class="event-image"
-                        loading="lazy"
-                    >
-                {% else %}
-                    <div class="event-image placeholder">🎈</div>
-                {% endif %}
+            {% if event.image_url %}
+                <img
+                    src="{{ event.image_url }}"
+                    alt=""
+                    class="event-image"
+                    loading="lazy"
+                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
+                >
+                <div class="event-image outings-emoji-image" hidden>
+                    {{ event.display_emoji }}
+                </div>
+            {% else %}
+                <div class="event-image outings-emoji-image">
+                    {{ event.display_emoji }}
+                </div>
+            {% endif %}
 
                 <div class="event-info">
+                <h3>{{ event.title }}</h3>
 
                     {% if preview_mode and event.status == "draft" %}
                         <span class="outings-draft-label">
@@ -269,7 +239,7 @@
         {% empty %}
 
             <div class="empty-state">
-                今週末のイベントはまだ登録されていない。
+                今後7日以内の対象イベントはまだ登録されていません。
             </div>
 
         {% endfor %}
@@ -298,18 +268,25 @@
                 class="event-card"
             >
 
-                {% if event.image_url %}
-                    <img
-                        src="{{ event.image_url }}"
-                        alt=""
-                        class="event-image"
-                        loading="lazy"
-                    >
-                {% else %}
-                    <div class="event-image placeholder">🎈</div>
-                {% endif %}
+            {% if event.image_url %}
+                <img
+                    src="{{ event.image_url }}"
+                    alt=""
+                    class="event-image"
+                    loading="lazy"
+                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
+                >
+                <div class="event-image outings-emoji-image" hidden>
+                    {{ event.display_emoji }}
+                </div>
+            {% else %}
+                <div class="event-image outings-emoji-image">
+                    {{ event.display_emoji }}
+                </div>
+            {% endif %}
 
                 <div class="event-info">
+                <h3>{{ event.title }}</h3>
 
                     {% if preview_mode and event.status == "draft" %}
                         <span class="outings-draft-label">
@@ -378,82 +355,6 @@
     </section>
 
 
-    <!-- =================================================
-         Categories
-         ================================================= -->
-
-    <section class="outings-category-section">
-
-        <div class="section-heading">
-            <h2>🎈 カテゴリーから探す</h2>
-        </div>
-
-        <div class="outings-category-grid">
-
-            {% for category in categories %}
-
-                <a
-                    href="{% url 'outings:home' %}?category={{ category.slug|urlencode }}"
-                    class="outings-category-card {% if active_category.pk == category.pk %}selected{% endif %}"
-                >
-                    <i class="bi bi-grid"></i>
-                    <span>{{ category.name }}</span>
-                </a>
-
-            {% empty %}
-
-                <div class="empty-state">
-                    カテゴリーは準備中。
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-        <div class="outings-discovery-links">
-
-            <a href="{% url 'outings:home' %}?tag=family">
-                👶 子連れ
-            </a>
-
-            <a href="{% url 'outings:home' %}?tag=rainy-day">
-                ☔ 雨でもOK
-            </a>
-
-            <a href="{% url 'outings:home' %}?tag=japan">
-                🇯🇵 日本関連
-            </a>
-
-            <a href="{% url 'outings:home' %}">
-                すべて表示
-            </a>
-
-        </div>
-
-        {% if is_filtered %}
-
-            <div class="outings-filter-status">
-
-                <span>
-                    絞り込み中：
-                    {% if active_category %}
-                        {{ active_category.name }}
-                    {% elif active_tag %}
-                        {{ active_tag.name }}
-                    {% else %}
-                        指定した条件
-                    {% endif %}
-                </span>
-
-                <a href="{% url 'outings:home' %}">
-                    解除
-                </a>
-
-            </div>
-
-        {% endif %}
-
-    </section>
 
 
 </div>

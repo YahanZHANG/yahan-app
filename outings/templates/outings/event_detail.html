@@ -9,11 +9,6 @@
 
 <div class="detail-page">
 
-    <a href="{% url 'outings:home' %}" class="back-link">
-        <i class="bi bi-chevron-left"></i>
-        イベント一覧へ戻る
-    </a>
-
     {% if event.image_url %}
         <img
             src="{{ event.image_url }}"
@@ -84,43 +79,70 @@
 
         <h2>開催日時</h2>
 
-        {% for occurrence in event.occurrences.all %}
+        {% with occurrences=event.occurrences.all %}
 
-            {% if not occurrence.is_cancelled %}
+            {% if occurrences|length > 5 %}
 
-                <p>
+                <div class="outings-date-summary">
                     <i class="bi bi-calendar3"></i>
+                    開催日程：全{{ occurrences|length }}件
+                </div>
 
+                <details class="outings-date-details">
+                    <summary>
+                        全日程を見る
+                    </summary>
 
-                    {% for occurrence in event.occurrences.all %}
-                        {% if not occurrence.is_cancelled %}
-                            <p>
-                                <i class="bi bi-calendar3"></i>
+                    <div class="outings-date-list">
 
-                                {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
+                        {% for occurrence in occurrences %}
 
-                                {% if occurrence.end_at %}
-                                    〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
-                                {% else %}
-                                    <span class="text-muted">
-                                        （終了時刻未確認）
-                                    </span>
-                                {% endif %}
-                            </p>
-                        {% endif %}
-                    {% empty %}
-                        <p>開催日時は未登録</p>
-                    {% endfor %}
+                            {% if not occurrence.is_cancelled %}
 
-                </p>
+                                <p>
+                                    <i class="bi bi-calendar3"></i>
+
+                                    {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
+
+                                    {% if occurrence.end_at %}
+                                        〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
+                                    {% endif %}
+                                </p>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+                </details>
+
+            {% else %}
+
+                {% for occurrence in occurrences %}
+
+                    {% if not occurrence.is_cancelled %}
+
+                        <p>
+                            <i class="bi bi-calendar3"></i>
+
+                            {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
+
+                            {% if occurrence.end_at %}
+                                〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
+                            {% endif %}
+                        </p>
+
+                    {% endif %}
+
+                {% empty %}
+
+                    <p>開催日時は未登録</p>
+
+                {% endfor %}
 
             {% endif %}
 
-        {% empty %}
-
-            <p>開催日時は未登録</p>
-
-        {% endfor %}
+        {% endwith %}
 
     </div>
 

@@ -95,5 +95,7 @@ urlpatterns = [
         name="my_comments",
     ),
 
+    path("search/", views.search, name="search"),
+
 
 ]

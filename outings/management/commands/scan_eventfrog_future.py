@@ -83,6 +83,7 @@ class Command(BaseCommand):
 
         results = []
         page_report = []
+        status_rows = []
         seen = set()
 
         session = requests.Session()
@@ -180,6 +181,29 @@ class Command(BaseCommand):
                     if not (now <= start <= horizon):
                         continue
 
+                    # =====================================================
+                    # Eventfrog status audit
+                    # Save source status before filtering public events.
+                    # =====================================================
+
+                    status_rows.append({
+                        "eventfrog_id": event_id,
+                        "begin": start.isoformat(),
+                        "end": end.isoformat(),
+                        "cancelled": str(event.get("cancelled")),
+                        "published": str(event.get("published")),
+                        "visible": str(event.get("visible")),
+                        "checked_at": now.isoformat(),
+                    })
+
+                    # Existing publication filters remain unchanged.
+
+                    if end <= start:
+                        continue
+
+                    if event.get("cancelled") is True:
+                        continue
+
                     if end <= start:
                         continue
 
@@ -244,6 +268,29 @@ class Command(BaseCommand):
         future_file = OUT / f"eventfrog_future_events_{suffix}.csv"
         report_file = OUT / f"eventfrog_page_report_{suffix}.csv"
 
+        status_file = OUT / f"eventfrog_status_{suffix}.csv"
+
+        with status_file.open(
+            "w",
+            encoding="utf-8-sig",
+            newline="",
+        ) as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "eventfrog_id",
+                    "begin",
+                    "end",
+                    "cancelled",
+                    "published",
+                    "visible",
+                    "checked_at",
+                ],
+            )
+
+            writer.writeheader()
+            writer.writerows(status_rows)
+
         with future_file.open(
             "w",
             encoding="utf-8-sig",
@@ -282,3 +329,17 @@ class Command(BaseCommand):
         self.stdout.write(f"イベントCSV: {future_file}")
         self.stdout.write(f"ページ診断CSV: {report_file}")
         self.stdout.write("DB変更なし")
+
+        self.stdout.write(f"状態確認CSV: {status_file}")
+        self.stdout.write(
+            f"状態確認レコード: {len(status_rows)}"
+        )
+
+        cancelled_count = sum(
+            row["cancelled"] == "True"
+            for row in status_rows
+        )
+
+        self.stdout.write(
+            f"明示的な中止イベント: {cancelled_count}"
+        )
