@@ -77,6 +77,9 @@ INSTALLED_APPS = [
 
     # スイス掲示板
     "swiss_board.apps.SwissBoardConfig",
+    
+    # スイスおでかけ
+    "outings.apps.OutingsConfig",
 ]
 
 # ------------------------------------------------------------------------------
@@ -142,6 +145,7 @@ TEMPLATES = [
                 "vaccination.context_processors.vaccination_ui",
                 "recipes.context_processors.recipe_ui_settings",
                 "swiss_board.context_processors.notification_count",
+                "outings.context_processors.outings_notifications",
             ],
         },
     },

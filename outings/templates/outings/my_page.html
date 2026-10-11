@@ -1,0 +1,290 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+マイページ | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-my-page outings-mypage">
+
+    <!-- Header -->
+
+    <header class="outings-mypage-header">
+
+        <div class="outings-mypage-avatar">
+            <i class="bi bi-person-circle"></i>
+        </div>
+
+        <div>
+            <h1>マイページ</h1>
+            <p>おでかけでの活動と設定</p>
+        </div>
+
+    </header>
+
+
+    <!-- Favorites -->
+
+    <section class="outings-mypage-section">
+
+        <h2>お気に入り</h2>
+
+        <div class="outings-mypage-menu">
+
+            <a
+                href="#outings-saved-events"
+                class="outings-mypage-item"
+            >
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-heart"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>ハートを押したイベント</strong>
+                    <small>気になるイベントをまとめて確認</small>
+                </span>
+
+                <span class="outings-mypage-count">
+                    {{ heart_count }}件
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- Activity -->
+
+    <section class="outings-mypage-section">
+
+        <h2>おでかけでの活動</h2>
+
+        <div class="outings-mypage-menu">
+
+                    
+        {% if request.user.is_authenticated %}
+
+            <a
+                href="{% url 'outings:my_posts' %}"
+                class="outings-mypage-item"
+            >
+
+        {% else %}
+
+            <a
+                href="{% url 'login' %}?next={% url 'outings:my_posts' %}"
+                class="outings-mypage-item"
+            >
+
+        {% endif %}
+
+            <span class="outings-mypage-icon">
+                <i class="bi bi-file-text"></i>
+            </span>
+
+            <span class="outings-mypage-item-content">
+
+                <strong>自分の投稿</strong>
+
+                <small>
+                    {% if request.user.is_authenticated %}
+                        イベント投稿 {{ my_post_count }}件
+                    {% else %}
+                        ログインすると投稿を管理できる
+                    {% endif %}
+                </small>
+
+            </span>
+
+            <i class="bi bi-chevron-right"></i>
+
+        </a>
+
+
+            {% if request.user.is_authenticated %}
+
+                <a
+                    href="{% url 'outings:my_notifications' %}"
+                    class="outings-mypage-item"
+                >
+
+                    <span class="outings-mypage-icon">
+                        <i class="bi bi-bell"></i>
+                    </span>
+
+                    <span class="outings-mypage-item-content">
+                        <strong>お知らせ</strong>
+                        <small>コメント・返信・投稿承認</small>
+                    </span>
+
+                    {% if unread_notification_count > 0 %}
+                        <span class="outings-unread-badge">
+                            {{ unread_notification_count }}
+                        </span>
+                    {% endif %}
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}?next={% url 'outings:my_notifications' %}"
+                    class="outings-mypage-item"
+                >
+                    <span class="outings-mypage-icon">
+                        <i class="bi bi-bell"></i>
+                    </span>
+
+                    <span class="outings-mypage-item-content">
+                        <strong>お知らせ</strong>
+                        <small>ログインすると確認できる</small>
+                    </span>
+
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+
+            {% endif %}
+
+
+            <div class="outings-mypage-item is-upcoming">
+
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-chat-left-text"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>自分のコメント</strong>
+                    <small>コメントと返信の履歴</small>
+                </span>
+
+                <span class="outings-mypage-upcoming">
+                    準備中
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Preferences -->
+
+    <section class="outings-mypage-section">
+
+        <h2>表示・おすすめ設定</h2>
+
+        <div class="outings-mypage-menu">
+
+            <a
+                href="#outings-preferences"
+                class="outings-mypage-item"
+            >
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-geo-alt"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>お気に入りの地域</strong>
+                    <small>地域を選んでおすすめに反映</small>
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+            </a>
+
+            <a
+                href="#outings-preferences"
+                class="outings-mypage-item"
+            >
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-stars"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>おすすめのカスタマイズ</strong>
+                    <small>好みに合わせたイベント表示</small>
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+            </a>
+
+            <div class="outings-mypage-item is-upcoming">
+
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-moon"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>ダークモード</strong>
+                    <small>表示テーマの設定</small>
+                </span>
+
+                <span class="outings-mypage-upcoming">
+                    準備中
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Account -->
+
+    <section class="outings-mypage-section">
+
+        <h2>アカウント</h2>
+
+        <div class="outings-mypage-menu">
+
+            {% if request.user.is_authenticated %}
+
+                <a
+                    href="{% url 'portal:manage_apps' %}"
+                    class="outings-mypage-item"
+                >
+
+            {% else %}
+
+                <a
+                    href="{% url 'portal:home' %}"
+                    class="outings-mypage-item"
+                >
+
+            {% endif %}
+
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-person-gear"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+                    <strong>Yapp My Account</strong>
+
+                    <small>
+                        {% if request.user.is_authenticated %}
+                            共通アカウントの管理
+                        {% else %}
+                            Yapp Portalへ
+                        {% endif %}
+                    </small>
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

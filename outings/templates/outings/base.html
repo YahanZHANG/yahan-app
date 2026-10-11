@@ -1,0 +1,144 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}おでかけ | Yapp{% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'outings/css/outings.css' %}"
+    >
+</head>
+
+<body>
+
+<div class="outings-app">
+
+        
+    <header class="outings-header">
+
+        <div class="outings-header-inner">
+
+            <a href="{% url 'outings:home' %}" class="outings-brand">
+                <span class="brand-icon">🎈</span>
+
+                <span>
+                    <strong>おでかけ</strong>
+                    <small>スイスの週末をもっと楽しく</small>
+                </span>
+            </a>
+
+                        
+            <nav class="outings-desktop-nav" aria-label="PCメニュー">
+
+                <a
+                    href="{% url 'outings:home' %}"
+                    class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                >
+                    <i class="bi bi-house"></i>
+                    HOME
+                </a>
+
+                <a
+                    href="{% url 'outings:event_create' %}"
+                    class="{% if request.resolver_match.url_name == 'event_create' %}active{% endif %}"
+                >
+                    <i class="bi bi-plus-circle"></i>
+                    投稿
+                </a>
+
+                                
+                <a
+                    href="{% url 'outings:my_page' %}"
+                    class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
+                >
+                    <i class="bi bi-person"></i>
+                    マイページ
+
+                    {% if outings_unread_count > 0 %}
+                        <span class="outings-nav-badge">
+                            {{ outings_unread_count }}
+                        </span>
+                    {% endif %}
+                </a>
+
+
+                <span class="outings-search-nav nav-disabled">
+                    <i class="bi bi-search"></i>
+                    探す
+                </span>
+
+            </nav>
+
+
+        </div>
+
+    </header>
+
+
+    <main class="outings-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <nav class="outings-bottom-nav" aria-label="メインメニュー">
+
+        <a href="{% url 'outings:home' %}"
+           class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="bi bi-house"></i>
+            <span>HOME</span>
+        </a>
+
+        <span class="nav-disabled">
+            <i class="bi bi-search"></i>
+            <span>探す</span>
+        </span>
+
+        <a
+            href="{% url 'outings:event_create' %}"
+            class="{% if request.resolver_match.url_name == 'event_create' %}active{% endif %}"
+        >
+            <i class="bi bi-plus-circle"></i>
+            <span>投稿</span>
+        </a>
+
+                
+        <a
+            href="{% url 'outings:my_page' %}"
+            class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
+        >
+            <span class="outings-nav-icon-wrap">
+                <i class="bi bi-person"></i>
+
+                {% if outings_unread_count > 0 %}
+                    <span class="outings-nav-badge">
+                        {{ outings_unread_count }}
+                    </span>
+                {% endif %}
+            </span>
+
+            <span>マイページ</span>
+        </a>
+
+
+    </nav>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+イベントを投稿 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-create-page">
+
+    <header class="outings-form-header">
+
+        <h1>イベントを投稿する</h1>
+
+        <p>
+            自分が開催するイベントを掲載できる。
+            投稿内容は管理者の確認後に公開される。
+        </p>
+
+    </header>
+
+
+    <form
+        method="post"
+        class="outings-create-form"
+    >
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="outings-form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+
+        <div class="outings-form-grid">
+
+                    
+        {% for field in form %}
+
+            <div
+                class="outings-form-field"
+                {% if field.name == "price_text" %}
+                    id="outings-price-detail-field"
+                    {% if form.price_type.value != "paid" %}hidden{% endif %}
+                {% endif %}
+            >
+
+                <label for="{{ field.id_for_label }}">
+                    {% if field.name == "price_text" %}
+                        料金の詳細
+                    {% else %}
+                        {{ field.label }}
+                    {% endif %}
+
+                    {% if field.field.required or field.name == "price_text" %}
+                        <span class="outings-required">必須</span>
+                    {% endif %}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                    <small>{{ field.help_text }}</small>
+                {% endif %}
+
+                {% for error in field.errors %}
+                    <p class="outings-field-error">{{ error }}</p>
+                {% endfor %}
+
+            </div>
+
+        {% endfor %}
+
+
+        </div>
+
+
+        <div class="outings-submit-notice">
+
+            <i class="bi bi-info-circle"></i>
+
+            <p>
+                投稿後は「承認待ち」となる。
+                管理者が内容を確認してから公開される。
+            </p>
+
+        </div>
+
+
+        <div class="outings-form-actions">
+
+            <button type="submit">
+                イベントを投稿する
+            </button>
+
+            <a href="{% url 'outings:home' %}">
+                キャンセル
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const priceRadios = document.querySelectorAll(
+        'input[name="price_type"]'
+    );
+
+    const priceField = document.getElementById(
+        "outings-price-detail-field"
+    );
+
+    const priceInput = document.querySelector(
+        'input[name="price_text"]'
+    );
+
+    if (!priceField || !priceInput) return;
+
+    function updatePriceField() {
+
+        const selected = document.querySelector(
+            'input[name="price_type"]:checked'
+        );
+
+        const isPaid = selected && selected.value === "paid";
+
+        priceField.hidden = !isPaid;
+        priceInput.required = Boolean(isPaid);
+
+        if (!isPaid) {
+            priceInput.value = "";
+        }
+    }
+
+    priceRadios.forEach(function (radio) {
+        radio.addEventListener("change", updatePriceField);
+    });
+
+    updatePriceField();
+
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,351 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+おでかけ | Yapp
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-home">
+
+
+<!-- =================================================
+     Recommended events
+     ================================================= -->
+
+<section class="event-section outings-recommended-section">
+
+    <div class="section-heading">
+
+        <div>
+            <h2>💚 おすすめイベント</h2>
+            <p>気になるおでかけ先を見つけよう</p>
+        </div>
+
+    </div>
+
+    {% for event in recommended_events %}
+
+        <a
+            href="{% url 'outings:event_detail' event.pk %}"
+            class="event-card"
+        >
+
+            {% if event.image_url %}
+
+                <img
+                    src="{{ event.image_url }}"
+                    alt=""
+                    class="event-image"
+                    loading="lazy"
+                >
+
+            {% else %}
+
+                <div class="event-image placeholder">
+                    🎈
+                </div>
+
+            {% endif %}
+
+            <div class="event-info">
+
+                <h3>{{ event.title }}</h3>
+
+                {% with occurrence=event.upcoming_dates.0 %}
+
+                    <p>
+                        <i class="bi bi-calendar3"></i>
+                        {{ occurrence.start_at|date:"n月j日 H:i" }}
+                    </p>
+
+                {% endwith %}
+
+                {% if event.location %}
+
+                    <p>
+                        <i class="bi bi-geo-alt"></i>
+                        {{ event.location.city }}
+                    </p>
+
+                {% endif %}
+
+                <div class="event-tags">
+
+                    {% if event.category %}
+                        <span>{{ event.category.name }}</span>
+                    {% endif %}
+
+                    {% if event.is_free %}
+                        <span>無料</span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </a>
+
+    {% empty %}
+
+        <div class="empty-state">
+            おすすめイベントを準備中。
+        </div>
+
+    {% endfor %}
+
+</section>
+
+
+    <!-- =================================================
+         Weekend recommendations
+         ================================================= -->
+
+    <section class="event-section outings-weekend-section">
+
+        <div class="section-heading">
+
+            <div>
+                <h2>✨ 今週末のおでかけ</h2>
+
+                <p>
+                    {{ weekend_start|date:"n月j日" }}
+                    〜
+                    {{ weekend_end|date:"n月j日" }}
+                </p>
+            </div>
+
+        </div>
+
+        {% for event in weekend_events %}
+
+            <a
+                href="{% url 'outings:event_detail' event.pk %}"
+                class="event-card"
+            >
+
+                {% if event.image_url %}
+                    <img
+                        src="{{ event.image_url }}"
+                        alt=""
+                        class="event-image"
+                        loading="lazy"
+                    >
+                {% else %}
+                    <div class="event-image placeholder">🎈</div>
+                {% endif %}
+
+                <div class="event-info">
+
+                    <h3>{{ event.title }}</h3>
+
+                    {% with occurrence=event.weekend_dates.0 %}
+
+                        <p>
+                            <i class="bi bi-calendar3"></i>
+                            {{ occurrence.start_at|date:"n月j日 H:i" }}
+                        </p>
+
+                    {% endwith %}
+
+                    {% if event.location %}
+                        <p>
+                            <i class="bi bi-geo-alt"></i>
+                            {{ event.location.city }}
+                        </p>
+                    {% endif %}
+
+                    <div class="event-tags">
+
+                        {% if event.category %}
+                            <span>{{ event.category.name }}</span>
+                        {% endif %}
+
+                        {% if event.is_free %}
+                            <span>無料</span>
+                        {% endif %}
+
+                        {% if event.language_barrier != "unknown" %}
+                            <span>
+                                {{ event.get_language_barrier_display }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        {% empty %}
+
+            <div class="empty-state">
+                今週末のイベントはまだ登録されていない。
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+        <!-- =================================================
+         Upcoming events
+         ================================================= -->
+
+    <section class="event-section outings-upcoming-section">
+
+        <div class="section-heading">
+
+            <div>
+                <h2>📅 これからのイベント</h2>
+                <p>開催日が近い順に表示</p>
+            </div>
+
+        </div>
+
+        {% for event in upcoming_events %}
+
+            <a
+                href="{% url 'outings:event_detail' event.pk %}"
+                class="event-card"
+            >
+
+                {% if event.image_url %}
+                    <img
+                        src="{{ event.image_url }}"
+                        alt=""
+                        class="event-image"
+                        loading="lazy"
+                    >
+                {% else %}
+                    <div class="event-image placeholder">🎈</div>
+                {% endif %}
+
+                <div class="event-info">
+
+                    <h3>{{ event.title }}</h3>
+
+                    {% with occurrence=event.upcoming_dates.0 %}
+
+                        <p>
+                            <i class="bi bi-calendar3"></i>
+                            {{ occurrence.start_at|date:"n月j日 H:i" }}
+                        </p>
+
+                    {% endwith %}
+
+                    {% if event.location %}
+                        <p>
+                            <i class="bi bi-geo-alt"></i>
+                            {{ event.location.city }}
+                        </p>
+                    {% endif %}
+
+                    <div class="event-tags">
+
+                        {% if event.category %}
+                            <span>{{ event.category.name }}</span>
+                        {% endif %}
+
+                        {% if event.is_free %}
+                            <span>無料</span>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        {% empty %}
+
+            <div class="empty-state">
+                現在、表示できるイベントはない。
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+
+    <!-- =================================================
+         Categories
+         ================================================= -->
+
+    <section class="outings-category-section">
+
+        <div class="section-heading">
+            <h2>🎈 カテゴリーから探す</h2>
+        </div>
+
+        <div class="outings-category-grid">
+
+            {% for category in categories %}
+
+                <a
+                    href="{% url 'outings:home' %}?category={{ category.slug|urlencode }}"
+                    class="outings-category-card {% if active_category.pk == category.pk %}selected{% endif %}"
+                >
+                    <i class="bi bi-grid"></i>
+                    <span>{{ category.name }}</span>
+                </a>
+
+            {% empty %}
+
+                <div class="empty-state">
+                    カテゴリーは準備中。
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="outings-discovery-links">
+
+            <a href="{% url 'outings:home' %}?tag=family">
+                👶 子連れ
+            </a>
+
+            <a href="{% url 'outings:home' %}?tag=rainy-day">
+                ☔ 雨でもOK
+            </a>
+
+            <a href="{% url 'outings:home' %}?tag=japan">
+                🇯🇵 日本関連
+            </a>
+
+            <a href="{% url 'outings:home' %}">
+                すべて表示
+            </a>
+
+        </div>
+
+        {% if is_filtered %}
+
+            <div class="outings-filter-status">
+
+                <span>
+                    絞り込み中：
+                    {% if active_category %}
+                        {{ active_category.name }}
+                    {% elif active_tag %}
+                        {{ active_tag.name }}
+                    {% else %}
+                        指定した条件
+                    {% endif %}
+                </span>
+
+                <a href="{% url 'outings:home' %}">
+                    解除
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+</div>
+
+{% endblock %}

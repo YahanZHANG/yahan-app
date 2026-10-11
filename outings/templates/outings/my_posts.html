@@ -1,0 +1,105 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+自分の投稿 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-my-posts-page">
+
+    <header class="outings-my-posts-header">
+
+        <div>
+            <h1>自分の投稿</h1>
+            <p>イベントの掲載状況を確認できる。</p>
+        </div>
+
+        <a href="{% url 'outings:event_create' %}"
+           class="outings-new-post-button">
+            <i class="bi bi-plus-circle"></i>
+            新しく投稿する
+        </a>
+
+    </header>
+
+
+    <div class="outings-my-posts-list">
+
+        {% for event in page_obj %}
+
+            <article class="outings-my-post-item">
+
+                <div class="outings-my-post-content">
+
+                    <span class="outings-post-status status-{{ event.status }}">
+                        {{ event.get_status_display }}
+                    </span>
+
+                    <h2>
+                        {% if event.status == "published" %}
+                            <a href="{% url 'outings:event_detail' event.pk %}">
+                                {{ event.title }}
+                            </a>
+                        {% else %}
+                            {{ event.title }}
+                        {% endif %}
+                    </h2>
+
+                    <small>
+                        {{ event.created_at|date:"Y年n月j日 H:i" }}
+                        {% if event.location %}
+                            ・{{ event.location.city }}
+                        {% endif %}
+                    </small>
+
+                </div>
+
+            </article>
+
+        {% empty %}
+
+            <div class="outings-my-posts-empty">
+                <i class="bi bi-calendar-plus"></i>
+
+                <p>まだイベントを投稿していない。</p>
+
+                <a href="{% url 'outings:event_create' %}">
+                    最初のイベントを投稿する
+                </a>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="outings-notifications-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }} /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,133 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+お知らせ | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-notifications-page">
+
+    <header class="outings-notifications-header">
+
+        <a href="{% url 'outings:my_page' %}">
+            <i class="bi bi-chevron-left"></i>
+            マイページ
+        </a>
+
+        <h1>お知らせ</h1>
+
+        <p>
+            コメント・返信・イベント掲載の審査結果を確認できる。
+        </p>
+
+    </header>
+
+
+    <div class="outings-notifications-list">
+
+        {% for notification in page_obj %}
+
+            <form
+                method="post"
+                action="{% url 'outings:notification_open' notification.pk %}"
+                class="outings-notification-form"
+            >
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="outings-notification-item {% if not notification.is_read %}is-unread{% endif %}"
+                >
+
+                    <span class="outings-notification-icon">
+
+                        {% if notification.kind == "reply" %}
+                            <i class="bi bi-reply"></i>
+                        {% elif notification.kind == "comment" %}
+                            <i class="bi bi-chat-left-text"></i>
+                        {% elif notification.kind == "approved" %}
+                            <i class="bi bi-check-circle"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle"></i>
+                        {% endif %}
+
+                    </span>
+
+                    <span class="outings-notification-content">
+
+                        <strong>
+                            {{ notification.get_kind_display }}
+                        </strong>
+
+                        {% if notification.event %}
+                            <small class="outings-notification-title">
+                                {{ notification.event.title }}
+                            </small>
+                        {% endif %}
+
+                        {% if notification.message %}
+                            <small>
+                                {{ notification.message }}
+                            </small>
+                        {% endif %}
+
+                        <time datetime="{{ notification.created_at|date:'c' }}">
+                            {{ notification.created_at|date:"Y年n月j日 H:i" }}
+                        </time>
+
+                    </span>
+
+                    {% if not notification.is_read %}
+                        <span class="outings-notification-dot"></span>
+                    {% else %}
+                        <i class="bi bi-chevron-right"></i>
+                    {% endif %}
+
+                </button>
+
+            </form>
+
+        {% empty %}
+
+            <div class="outings-notifications-empty">
+                <i class="bi bi-bell"></i>
+                <p>まだお知らせはない。</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="outings-notifications-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

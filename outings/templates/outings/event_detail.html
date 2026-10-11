@@ -1,0 +1,164 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+{{ event.title }} | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="detail-page">
+
+    <a href="{% url 'outings:home' %}" class="back-link">
+        <i class="bi bi-chevron-left"></i>
+        イベント一覧へ戻る
+    </a>
+
+    {% if event.image_url %}
+        <img
+            src="{{ event.image_url }}"
+            alt=""
+            class="detail-image"
+        >
+    {% endif %}
+
+    <h1>{{ event.title }}</h1>
+
+        
+    <form
+        method="post"
+        action="{% url 'outings:toggle_heart' event.pk %}"
+        class="outings-heart-form"
+    >
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="outings-heart-button {% if is_hearted %}hearted{% endif %}"
+        >
+            {% if is_hearted %}
+                <i class="bi bi-heart-fill"></i>
+            {% else %}
+                <i class="bi bi-heart"></i>
+            {% endif %}
+
+            <span>{{ heart_count }}</span>
+        </button>
+    </form>
+
+
+    {% if event.title_original %}
+        <p class="original-title">
+            {{ event.title_original }}
+        </p>
+    {% endif %}
+
+    <div class="detail-tags">
+
+        {% if event.category %}
+            <span>{{ event.category.name }}</span>
+        {% endif %}
+
+        {% if event.is_free %}
+            <span>無料</span>
+        {% endif %}
+
+        <span>{{ event.get_event_type_display }}</span>
+        <span>{{ event.get_language_barrier_display }}</span>
+
+        {% for tag in event.tags.all %}
+            <span>{{ tag.name }}</span>
+        {% endfor %}
+
+    </div>
+
+
+    <div class="detail-panel">
+
+        <h2>開催日時</h2>
+
+        {% for occurrence in event.occurrences.all %}
+
+            {% if not occurrence.is_cancelled %}
+
+                <p>
+                    <i class="bi bi-calendar3"></i>
+
+                    {{ occurrence.start_at|date:"Y年n月j日 H:i" }}
+                    〜
+                    {{ occurrence.end_at|date:"n月j日 H:i" }}
+                </p>
+
+            {% endif %}
+
+        {% empty %}
+
+            <p>開催日時は未登録</p>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if event.location %}
+
+        <div class="detail-panel">
+
+            <h2>場所</h2>
+
+            <p>
+                <i class="bi bi-geo-alt"></i>
+                {{ event.location.name }}
+            </p>
+
+            <p>{{ event.location.address }}</p>
+            <p>{{ event.location.city }}</p>
+
+        </div>
+
+    {% endif %}
+
+
+    <div class="detail-panel">
+
+        <h2>イベントについて</h2>
+
+        <div class="description">
+            {{ event.summary_ja|linebreaks }}
+        </div>
+
+    </div>
+
+
+    <div class="detail-panel">
+
+        <h2>料金</h2>
+
+        {% if event.is_free %}
+            <p>無料</p>
+        {% elif event.price_text %}
+            <p>{{ event.price_text }}</p>
+        {% else %}
+            <p>公式サイトで確認</p>
+        {% endif %}
+
+    </div>
+
+
+    {% if event.original_url %}
+
+        <a
+            href="{{ event.original_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="official-link"
+        >
+            公式サイトで詳しく見る
+            <i class="bi bi-box-arrow-up-right"></i>
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
