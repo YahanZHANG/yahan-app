@@ -1,0 +1,107 @@
+{% extends "outings/base.html" %}
+
+{% block title %}イベントを探す | Yapp{% endblock %}
+
+{% block content %}
+<div class="outings-search-page">
+    <div class="section-heading">
+        <div>
+            <h1>🔎 イベントを探す</h1>
+            <p>地域・カテゴリー・キーワードを組み合わせて検索できます。</p>
+        </div>
+    </div>
+
+    <form method="get" action="{% url 'outings:search' %}" class="outings-search-form">
+        {% if preview_mode %}<input type="hidden" name="preview" value="1">{% endif %}
+
+        <section class="outings-region-section">
+            <h2>📍 地域から探す</h2>
+            <p>お住まいの地域やおでかけ先を選択</p>
+            <div class="outings-region-list">
+                <label class="outings-region-chip {% if not active_region %}selected{% endif %}">
+                    <input type="radio" name="region" value="" {% if not active_region %}checked{% endif %}>
+                    すべて
+                </label>
+                {% for code, name in regions %}
+                <label class="outings-region-chip {% if active_region == code %}selected{% endif %}">
+                    <input type="radio" name="region" value="{{ code }}" {% if active_region == code %}checked{% endif %}>
+                    {{ name }}
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="outings-category-section">
+            <h2>🎈 カテゴリーから探す</h2>
+            <div class="outings-category-grid">
+                <label class="outings-category-card {% if not active_category %}selected{% endif %}">
+                    <input type="radio" name="category" value="" {% if not active_category %}checked{% endif %}>
+                    <i class="bi bi-grid"></i><span>すべて</span>
+                </label>
+                {% for category in categories %}
+                <label class="outings-category-card {% if active_category == category.slug %}selected{% endif %}">
+                    <input type="radio" name="category" value="{{ category.slug }}" {% if active_category == category.slug %}checked{% endif %}>
+                    <i class="bi bi-grid"></i><span>{{ category.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="outings-search-options">
+            <label><input type="checkbox" name="tag" value="family" {% if family_only %}checked{% endif %}> 👶 子連れ</label>
+            <label for="outings-q">キーワード</label>
+            <input id="outings-q" type="search" name="q" value="{{ query }}" placeholder="イベント名・紹介文・都市名">
+        </div>
+
+        <div class="outings-search-actions">
+            <button type="submit" class="outings-search-submit">この条件で探す</button>
+            <a href="{% url 'outings:search' %}">条件をクリア</a>
+        </div>
+    </form>
+
+    <section class="event-section outings-search-results">
+        <div class="section-heading"><div>
+            <h2>検索結果</h2>
+            <p>{{ result_count }}件のイベントが見つかりました</p>
+        </div></div>
+
+        {% for event in events %}
+        <a href="{% url 'outings:event_detail' event.pk %}" class="event-card">
+            {% if event.image_url %}
+            <img src="{{ event.image_url }}" alt="" loading="lazy" class="event-image">
+            {% endif %}
+            <div class="event-info">
+                <h3>{{ event.title }}</h3>
+                {% with occurrence=event.search_dates.0 %}
+                {% if occurrence %}<p><i class="bi bi-calendar3"></i> {{ occurrence.start_at|date:"Y年n月j日 H:i" }}</p>{% endif %}
+                {% endwith %}
+                {% if event.location %}<p><i class="bi bi-geo-alt"></i> {{ event.location.city }}{% if event.location.name %}・{{ event.location.name }}{% endif %}</p>{% endif %}
+                {% if event.summary_ja %}<p class="outings-card-summary">{{ event.summary_ja|truncatechars:100 }}</p>{% endif %}
+            </div>
+        </a>
+        {% empty %}
+        <div class="empty-state">条件に一致するイベントがありません。条件を減らして再検索してみてください。</div>
+        {% endfor %}
+    </section>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="outings-search-pagination" aria-label="検索結果のページ切り替え">
+        {% if page_obj.has_previous %}
+        <a href="?region={{ active_region|urlencode }}&amp;category={{ active_category|urlencode }}{% if family_only %}&amp;tag=family{% endif %}&amp;q={{ query|urlencode }}&amp;page={{ page_obj.previous_page_number }}{% if preview_mode %}&amp;preview=1{% endif %}">前へ</a>
+        {% endif %}
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?region={{ active_region|urlencode }}&amp;category={{ active_category|urlencode }}{% if family_only %}&amp;tag=family{% endif %}&amp;q={{ query|urlencode }}&amp;page={{ page_obj.next_page_number }}{% if preview_mode %}&amp;preview=1{% endif %}">次へ</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+<script>
+    document.querySelectorAll('.outings-search-form input[type="radio"]').forEach((input) => {
+        input.addEventListener('change', () => {
+            document.querySelectorAll('.outings-search-form label.selected').forEach((label) => label.classList.remove('selected'));
+            document.querySelectorAll('.outings-search-form input[type="radio"]:checked').forEach((checked) => checked.closest('label').classList.add('selected'));
+        });
+    });
+</script>
+{% endblock %}
