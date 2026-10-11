@@ -56,4 +56,44 @@ urlpatterns = [
         name="my_posts",
     ),
 
+        path(
+        "post/<int:pk>/edit/",
+        views.event_edit,
+        name="event_edit",
+    ),
+
+    path(
+        "post/<int:pk>/delete/",
+        views.event_delete,
+        name="event_delete",
+    ),
+
+    
+    # Comments
+
+    path(
+        "event/<int:pk>/comments/new/",
+        views.comment_create,
+        name="comment_create",
+    ),
+
+    path(
+        "comments/<int:pk>/edit/",
+        views.comment_edit,
+        name="comment_edit",
+    ),
+
+    path(
+        "comments/<int:pk>/delete/",
+        views.comment_delete,
+        name="comment_delete",
+    ),
+
+    path(
+        "my/comments/",
+        views.my_comments,
+        name="my_comments",
+    ),
+
+
 ]

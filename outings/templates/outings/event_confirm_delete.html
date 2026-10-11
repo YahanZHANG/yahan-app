@@ -1,0 +1,57 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+イベントを削除 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-delete-page">
+
+    <div class="outings-delete-card">
+
+        <div class="outings-delete-icon">
+            <i class="bi bi-trash"></i>
+        </div>
+
+        <h1>イベントを削除する？</h1>
+
+        <p>
+            次のイベントを削除する。
+            削除後は元に戻せない。
+        </p>
+
+        <div class="outings-delete-target">
+            {{ event.title }}
+        </div>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="outings-delete-actions">
+
+                <button
+                    type="submit"
+                    class="outings-delete-confirm"
+                >
+                    削除する
+                </button>
+
+                <a
+                    href="{% url 'outings:my_posts' %}"
+                    class="outings-delete-cancel"
+                >
+                    キャンセル
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

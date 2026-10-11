@@ -1,0 +1,56 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+コメントを削除 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-comment-management">
+
+    <h1>コメントを削除する？</h1>
+
+    <p>
+        削除すると、このコメントは一般公開されなくなる。
+    </p>
+
+    <div class="outings-comment-delete-preview">
+        {{ comment.body|linebreaksbr }}
+    </div>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <label for="delete-reason">
+            削除理由（任意）
+        </label>
+
+        <textarea
+            id="delete-reason"
+            name="reason"
+            rows="2"
+            maxlength="200"
+            placeholder="例：イベントと無関係な内容"
+        ></textarea>
+
+        <div class="outings-comment-delete-actions">
+
+            <button type="submit" class="is-delete">
+                削除する
+            </button>
+
+            <a
+                href="{% url 'outings:event_detail' event.pk %}#comment-{{ comment.pk }}"
+            >
+                キャンセル
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

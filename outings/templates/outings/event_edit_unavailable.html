@@ -1,0 +1,37 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+イベントの編集 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-delete-page">
+
+    <div class="outings-delete-card">
+
+        <h1>このイベントは編集できない</h1>
+
+        <p>
+            このイベントには複数の開催日、
+            または開催日の未登録があるため、
+            現在の編集フォームには対応していない。
+        </p>
+
+        <div class="outings-delete-target">
+            {{ event.title }}
+        </div>
+
+        <a
+            href="{% url 'outings:my_posts' %}"
+            class="outings-delete-cancel"
+        >
+            自分の投稿に戻る
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

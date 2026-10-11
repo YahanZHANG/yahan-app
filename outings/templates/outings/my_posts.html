@@ -16,8 +16,10 @@
             <p>イベントの掲載状況を確認できる。</p>
         </div>
 
-        <a href="{% url 'outings:event_create' %}"
-           class="outings-new-post-button">
+        <a
+            href="{% url 'outings:event_create' %}"
+            class="outings-new-post-button"
+        >
             <i class="bi bi-plus-circle"></i>
             新しく投稿する
         </a>
@@ -30,6 +32,14 @@
         {% for event in page_obj %}
 
             <article class="outings-my-post-item">
+                        
+                <a
+                    href="{% url 'outings:event_detail' event.pk %}"
+                    class="outings-my-post-overlay"
+                    aria-label="{{ event.title }}の詳細を見る"
+                ></a>
+
+                <!-- Event information -->
 
                 <div class="outings-my-post-content">
 
@@ -37,22 +47,53 @@
                         {{ event.get_status_display }}
                     </span>
 
-                    <h2>
-                        {% if event.status == "published" %}
-                            <a href="{% url 'outings:event_detail' event.pk %}">
-                                {{ event.title }}
-                            </a>
-                        {% else %}
+                    <h2 class="outings-my-post-title">
+                        <a href="{% url 'outings:event_detail' event.pk %}">
                             {{ event.title }}
-                        {% endif %}
+                        </a>
                     </h2>
 
-                    <small>
-                        {{ event.created_at|date:"Y年n月j日 H:i" }}
+                    <div class="outings-my-post-meta">
+
+                        <span>
+                            <i class="bi bi-calendar3"></i>
+                            投稿日：
+                            {{ event.created_at|date:"Y年n月j日" }}
+                        </span>
+
                         {% if event.location %}
-                            ・{{ event.location.city }}
+
+                            <span>
+                                <i class="bi bi-geo-alt"></i>
+                                {{ event.location.city }}
+                            </span>
+
                         {% endif %}
-                    </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Edit / Delete -->
+
+                <div class="outings-my-post-actions">
+
+                    <a
+                        href="{% url 'outings:event_edit' event.pk %}"
+                        class="outings-my-edit"
+                    >
+                        <i class="bi bi-pencil"></i>
+                        編集
+                    </a>
+
+                    <a
+                        href="{% url 'outings:event_delete' event.pk %}"
+                        class="outings-my-delete"
+                    >
+                        <i class="bi bi-trash"></i>
+                        削除
+                    </a>
 
                 </div>
 
@@ -61,6 +102,7 @@
         {% empty %}
 
             <div class="outings-my-posts-empty">
+
                 <i class="bi bi-calendar-plus"></i>
 
                 <p>まだイベントを投稿していない。</p>
@@ -68,6 +110,7 @@
                 <a href="{% url 'outings:event_create' %}">
                     最初のイベントを投稿する
                 </a>
+
             </div>
 
         {% endfor %}
@@ -86,7 +129,8 @@
             {% endif %}
 
             <span>
-                {{ page_obj.number }} /
+                {{ page_obj.number }}
+                /
                 {{ page_obj.paginator.num_pages }}
             </span>
 

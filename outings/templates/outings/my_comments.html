@@ -1,0 +1,75 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+自分のコメント | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-comment-management">
+
+    <a href="{% url 'outings:my_page' %}" class="back-link">
+        ← マイページ
+    </a>
+
+    <h1>自分のコメント</h1>
+
+    <div class="outings-my-comments-list">
+
+        {% for comment in page_obj %}
+
+            <a
+                href="{% url 'outings:event_detail' comment.event_id %}#comment-{{ comment.pk }}"
+                class="outings-my-comment-item"
+            >
+
+                <strong>{{ comment.event.title }}</strong>
+
+                <p>{{ comment.body|truncatechars:100 }}</p>
+
+                <small>
+                    {{ comment.created_at|date:"Y年n月j日 H:i" }}
+                </small>
+
+            </a>
+
+        {% empty %}
+
+            <div class="outings-comments-empty">
+                まだコメントはない。
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <nav class="outings-notifications-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }}
+                /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">
+                    次へ
+                </a>
+            {% endif %}
+
+        </nav>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

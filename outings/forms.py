@@ -1,8 +1,7 @@
 
 from django import forms
 from django.utils import timezone
-
-from .models import Event, EventCategory
+from .models import Event, EventCategory, OutingsComment
 
 
 CANTON_CHOICES = [
@@ -126,6 +125,46 @@ class EventSubmissionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        
+        # 編集時は既存のイベント情報をフォームに反映
+        if self.instance and self.instance.pk:
+
+            event = self.instance
+            location = event.location
+
+            if location:
+                self.initial.setdefault("venue_name", location.name)
+                self.initial.setdefault("city", location.city)
+                self.initial.setdefault("canton", location.canton)
+                self.initial.setdefault("address", location.address)
+
+            occurrence = event.occurrences.order_by("start_at").first()
+
+            if occurrence:
+                self.initial.setdefault(
+                    "start_at",
+                    timezone.localtime(occurrence.start_at),
+                )
+                self.initial.setdefault(
+                    "end_at",
+                    timezone.localtime(occurrence.end_at),
+                )
+
+            self.initial.setdefault(
+                "price_type",
+                "free" if event.is_free else "paid",
+            )
+
+            if event.is_indoor and event.is_outdoor:
+                venue_type = "both"
+            elif event.is_outdoor:
+                venue_type = "outdoor"
+            else:
+                venue_type = "indoor"
+
+            self.initial.setdefault("venue_type", venue_type)
+
+
         self.fields["category"].queryset = (
             EventCategory.objects.filter(
                 is_active=True
@@ -213,3 +252,44 @@ class EventSubmissionForm(forms.ModelForm):
 
         return event
 
+
+
+# =========================================================
+# Comment Form
+# =========================================================
+
+class OutingsCommentForm(forms.ModelForm):
+
+    class Meta:
+        model = OutingsComment
+
+        fields = ["body"]
+
+        labels = {
+            "body": "コメント",
+        }
+
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "maxlength": 500,
+                    "placeholder": "質問や感想を書いてみよう…",
+                }
+            ),
+        }
+
+    def clean_body(self):
+        body = self.cleaned_data["body"].strip()
+
+        if not body:
+            raise forms.ValidationError(
+                "コメントを入力して。"
+            )
+
+        if len(body) > 500:
+            raise forms.ValidationError(
+                "コメントは500文字以内で入力して。"
+            )
+
+        return body

@@ -197,6 +197,14 @@ class EventOccurrence(models.Model):
         related_name="occurrences",
     )
 
+    comment = models.ForeignKey(
+        "OutingsComment",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
 
@@ -317,3 +325,79 @@ class OutingsNotification(models.Model):
 
     def __str__(self):
         return f"Outings Notification {self.pk}"
+
+
+
+# =========================================================
+# Outings Comment
+# =========================================================
+
+class OutingsComment(models.Model):
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="outings_comments",
+    )
+
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="replies",
+    )
+
+    body = models.TextField(
+        max_length=500,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    # Soft delete
+    is_deleted = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="outings_deleted_comments",
+    )
+
+    deleted_reason = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        indexes = [
+            models.Index(
+                fields=["event", "created_at"],
+                name="outings_comment_event_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Comment {self.pk} on event {self.event_id}"

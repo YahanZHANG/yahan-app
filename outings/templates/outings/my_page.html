@@ -153,22 +153,41 @@
             {% endif %}
 
 
-            <div class="outings-mypage-item is-upcoming">
+                        
+            {% if request.user.is_authenticated %}
+
+                <a
+                    href="{% url 'outings:my_comments' %}"
+                    class="outings-mypage-item"
+                >
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}?next={% url 'outings:my_comments' %}"
+                    class="outings-mypage-item"
+                >
+
+            {% endif %}
 
                 <span class="outings-mypage-icon">
                     <i class="bi bi-chat-left-text"></i>
                 </span>
 
                 <span class="outings-mypage-item-content">
+
                     <strong>自分のコメント</strong>
-                    <small>コメントと返信の履歴</small>
+
+                    <small>
+                        コメント・返信の履歴
+                    </small>
+
                 </span>
 
-                <span class="outings-mypage-upcoming">
-                    準備中
-                </span>
+                <i class="bi bi-chevron-right"></i>
 
-            </div>
+            </a>
+
 
         </div>
 

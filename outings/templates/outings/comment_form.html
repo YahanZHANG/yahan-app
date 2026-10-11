@@ -1,0 +1,51 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+コメントを編集 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-comment-management">
+
+    <a
+        href="{% url 'outings:event_detail' comment.event_id %}#comment-{{ comment.pk }}"
+        class="back-link"
+    >
+        ← イベントに戻る
+    </a>
+
+    <h1>コメントを編集</h1>
+
+    <form method="post" class="outings-comment-edit-form">
+
+        {% csrf_token %}
+
+        {{ form.body }}
+
+        {% for error in form.body.errors %}
+            <p class="outings-field-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+
+        <div class="outings-comment-compose-bottom">
+
+            <a
+                href="{% url 'outings:event_detail' comment.event_id %}#comment-{{ comment.pk }}"
+            >
+                キャンセル
+            </a>
+
+            <button type="submit">
+                変更を保存
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

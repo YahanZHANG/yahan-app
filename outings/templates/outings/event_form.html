@@ -2,23 +2,36 @@
 {% extends "outings/base.html" %}
 
 {% block title %}
-イベントを投稿 | おでかけ
+{% if is_edit %}イベントを編集{% else %}イベントを投稿{% endif %} | おでかけ
 {% endblock %}
 
 {% block content %}
 
 <div class="outings-create-page">
 
+        
     <header class="outings-form-header">
 
-        <h1>イベントを投稿する</h1>
+        <h1>
+            {% if is_edit %}
+                イベントを編集する
+            {% else %}
+                イベントを投稿する
+            {% endif %}
+        </h1>
 
         <p>
-            自分が開催するイベントを掲載できる。
-            投稿内容は管理者の確認後に公開される。
+            {% if is_edit %}
+                変更後は再び承認待ちになる。
+                公開中のイベントは審査が終わるまで非公開になる。
+            {% else %}
+                イベント情報を登録できる。
+                管理者の確認後に公開される。
+            {% endif %}
         </p>
 
     </header>
+
 
 
     <form
@@ -93,7 +106,11 @@
         <div class="outings-form-actions">
 
             <button type="submit">
-                イベントを投稿する
+                {% if is_edit %}
+                    変更を保存する
+                {% else %}
+                    イベントを投稿する
+                {% endif %}
             </button>
 
             <a href="{% url 'outings:home' %}">
