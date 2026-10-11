@@ -734,6 +734,25 @@ class UserProfile(models.Model):
         blank=True,
     )
 
+    
+    # =====================================================
+    # Yapp display theme
+    # =====================================================
+
+    THEME_CHOICES = [
+        ("system", "端末の設定に合わせる"),
+        ("light", "ライトモード"),
+        ("dark", "ダークモード"),
+    ]
+
+    theme_preference = models.CharField(
+        "表示テーマ",
+        max_length=10,
+        choices=THEME_CHOICES,
+        default="system",
+    )
+
+
     photo = models.ImageField(
         "プロフィール写真",
         upload_to="profile_photos/",

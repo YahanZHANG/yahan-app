@@ -1,404 +1,250 @@
+
 {% extends "base.html" %}
-
 {% load static %}
-{% load board_extras %}
-
 
 {% block title %}
-    ホーム | Yapp
+Yapp | 毎日を、ちょっと便利に。
 {% endblock %}
 
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'portal/public_home.css' %}"
+>
+<link
+    rel="stylesheet"
+    href="{% static 'portal/theme.css' %}"
+>
+{% endblock %}
+
+{% block main_class %}
+yapp-public-home
+{% endblock %}
 
 {% block content %}
 
-<link
-    rel="stylesheet"
-    href="{% static 'board/board.css' %}"
->
+<div class="yapp-public-page">
 
+    <!-- =============================================
+         Header
+         ============================================= -->
 
-<!-- =====================================================
-     Hero
-     ===================================================== -->
+    <header class="yapp-public-header">
 
-<header class="portal-hero portal-hero-compact">
-
-    <!-- Decorative background -->
-
-    <div
-        class="portal-hero-decoration portal-decoration-one"
-        aria-hidden="true"
-    ></div>
-
-    <div
-        class="portal-hero-decoration portal-decoration-two"
-        aria-hidden="true"
-    ></div>
-
-
-    <div class="portal-hero-content">
-
-        <!-- =============================================
-             Brand
-             ============================================= -->
-
-        <div class="portal-brand-row">
-
+        <a
+            href="{% url 'portal:home' %}"
+            class="yapp-public-brand"
+            aria-label="Yapp ホーム"
+        >                
             <img
                 src="{% static 'portal/yapp-logo.png' %}"
                 alt="Yapp"
-                class="portal-brand-logo"
+                class="yapp-logo-light"
             >
+
+            <img
+                src="{% static 'portal/yapp-logo-dark.png' %}"
+                alt="Yapp"
+                class="yapp-logo-dark"
+            >
+
+        </a>
+
+        <nav
+            class="yapp-public-account-nav"
+            aria-label="アカウント"
+        >
+
+            {% if user.is_authenticated %}
+
+                <a
+                    href="{% url 'portal:manage_apps' %}"
+                    class="yapp-public-account-button"
+                >
+                    <i class="bi bi-person-circle"></i>
+                    My Account
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}"
+                    class="yapp-public-login"
+                >
+                    ログイン
+                </a>
+
+                <a
+                    href="{% url 'portal:signup' %}"
+                    class="yapp-public-signup"
+                >
+                    アカウント作成
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+    </header>
+
+
+    <!-- =============================================
+         Introduction
+         ============================================= -->
+
+    <section class="yapp-public-intro">
+
+        <h1>
+            スイスの毎日を、もっと便利に。
+        </h1>
+        
+        <p>
+            ニュースやレシピ、日程調整など、毎日の生活に役立つサービスをお届けします。
+        </p>
+
+        <div class="yapp-public-account-note">
+            <i class="bi bi-person-check"></i>
+
+            <span>
+                アカウントなしでも多くのサービスを利用できます。アカウントは全サービス共通で使えます。
+            </span>
+        </div>
+
+    </section>
+
+
+    <!-- =============================================
+         Services
+         ============================================= -->
+
+    <main class="yapp-public-main">
+
+        <div class="yapp-public-section-header">
+
+            <div>
+
+                <p class="yapp-public-eyebrow">
+                    EXPLORE SERVICES
+                </p>
+
+                <h2>
+                    サービス一覧
+                </h2>
+
+            </div>
 
         </div>
 
-        <!-- =============================================
-             Chat
-             ============================================= -->
 
-        {% if can_access_chat %}
+        <div class="yapp-public-grid">
 
-            <a
-                href="{% url 'chat:list' %}"
-                class="portal-chat-button"
-                aria-label="
-                    Chatを開く
-                    {% if unread_chat_count %}
-                        。未読メッセージ{{ unread_chat_count }}件
-                    {% endif %}
-                "
-            >
+            {% for app in apps %}
 
-                <span
-                    class="portal-chat-icon"
-                    aria-hidden="true"
-                >
-                    💬
-                </span>
+                {% if app.coming_soon %}
 
-                <span class="portal-chat-label">
-                    Chat
-                </span>
-
-
-                {% if unread_chat_count > 0 %}
-
-                    <span class="portal-chat-badge">
-
-                        {% if unread_chat_count > 99 %}
-                            99+
-                        {% else %}
-                            {{ unread_chat_count }}
-                        {% endif %}
-
-                    </span>
-
-                {% endif %}
-
-            </a>
-
-        {% endif %}
-
-    </div>
-
-</header>
-
-
-<!-- =====================================================
-     Main
-     ===================================================== -->
-
-
-        <!-- =====================================================
-            Board
-            ===================================================== -->
-
-        <section
-            class="portal-board"
-            aria-labelledby="portal-board-heading"
-        >
-
-            <!-- =============================================
-                 Section heading
-                 ============================================= -->
-
-            <div class="portal-section-heading">
-
-                <div>
-
-                    <p class="portal-section-eyebrow">
-                        UPDATES
-                    </p>
-
-                    <h2 id="portal-board-heading">
-                        お知らせ
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-            <!-- =============================================
-                 Notice feed
-                 ============================================= -->
-
-            <div class="portal-board-feed">
-
-                {% for post in board_posts %}
-
-                    <a
-                        href="{% url 'board:post_detail' post.pk %}"
-                        class="portal-board-item portal-board-item-compact"
+                    <article
+                        class="yapp-public-card yapp-public-coming"
                     >
-
-                        <h3 class="portal-board-title">
-                            {{ post.title }}
-                        </h3>
-
-
-                        <div class="portal-board-meta portal-board-meta-compact">
-
-                            <span>
-                                {{ post.created_at|date:"n月j日" }}
-                            </span>
-
-                            <span class="portal-board-dot">
-                                ·
-                            </span>
-
-                            <span>
-                                {{ post.author|board_name }}
-                            </span>
-
-                            <span class="portal-board-dot">
-                                ·
-                            </span>
-
-                            <span>
-                                💬 {{ post.comment_count }}
-                            </span>
-
-                        </div>
-
-                    </a>
-
-                {% empty %}
-
-                    <div class="portal-board-empty">
-
-                        <p>
-                            最近のお知らせはありません。
-                        </p>
-
-                    </div>
-
-                {% endfor %}
-
-            </div>
-
-
-            <!-- =============================================
-                 Actions
-                 ============================================= -->
-
-            <div class="portal-board-actions">
-
-                {% if can_post_board %}
-
-                    <a
-                        href="{% url 'board:post_create' %}"
-                        class="portal-board-create"
-                    >
-                        ＋ 新しく投稿
-                    </a>
 
                 {% else %}
 
-                    <span></span>
+                    <a
+                        href="{{ app.url }}"
+                        class="yapp-public-card yapp-public-card-link"
+                        aria-label="{{ app.name }}を開く"
+                    >
 
                 {% endif %}
 
 
-                <a
-                    href="{% url 'board:post_list' %}"
-                    class="portal-board-view-all"
-                >
-                    すべて見る
-                    <span>→</span>
-                </a>
+                                    
+                <!-- =============================================
+                    Main card content
+                    ============================================= -->
 
-            </div>
+                <div class="yapp-public-card-main">
 
-        </section>
-
-         <!-- =====================================================
-             My Apps
-             ===================================================== -->
-
-        <section
-            class="portal-section"
-            aria-labelledby="portal-apps-heading"
-        >
-
-
-            <!-- =============================================
-                 Section heading
-                 ============================================= -->
-
-            <div class="portal-section-heading">
-
-                <div>
-
-                    <p class="portal-section-eyebrow">
-                        YOUR APPS
-                    </p>
-
-                    <h2 id="portal-apps-heading">
-                        マイアプリ
-                    </h2>
-
-                </div>
-
-
-                <!-- =========================================
-                     Actions
-                     ========================================= -->
-
-                <div class="portal-heading-actions">
-
-                    <!-- =====================================
-                         Analytics
-                         ===================================== -->
-
-                    {% if can_view_analytics %}
-
-                        <a
-                            href="{% url 'usage_analytics:dashboard' %}"
-                            class="portal-manage-apps-button"
-                        >
-                            📊 利用状況
-                        </a>
-
-                    {% endif %}
-
-
-                    <!-- =====================================
-                         App management
-                         ===================================== -->
-
-                    <a
-                        href="{% url 'portal:manage_apps' %}"
-                        class="portal-manage-apps-button"
+                    <div
+                        class="yapp-public-card-icon"
+                        aria-hidden="true"
                     >
-                        ⚙ アプリを管理
-                    </a>
+                        {{ app.icon }}
+                    </div>
 
-                </div>
+                    <div class="yapp-public-card-body">
 
-            </div>
+                        <h3>
+                            {{ app.name }}
+                        </h3>
 
-
-            <!-- =============================================
-                 App grid
-                 ============================================= -->
-
-            <div class="portal-app-grid">
-
-                {% for app in visible_apps %}
-
-                    <a
-                        href="{{ app.url }}"
-                        class="
-                            portal-app-card
-                            {{ app.card_class }}
-                        "
-                        aria-label="{{ app.name }}を開く"
-                    >
-
-                        <!-- =================================
-                             App icon
-                             ================================= -->
-
-                        <div
-                            class="
-                                portal-app-icon
-                                {{ app.icon_class }}
-                            "
-                            aria-hidden="true"
-                        >
-
-                            <span>
-                                {{ app.icon }}
-                            </span>
-
-                        </div>
-
-
-                        <!-- =================================
-                             App information
-                             ================================= -->
-
-                        <div class="portal-card-content">
-
-                            <h3>
-                                {{ app.name }}
-                            </h3>
-
-
-                            <p class="portal-card-label">
-                                {{ app.label }}
-                            </p>
-
-                        </div>
-
-                    </a>
-
-
-                {% empty %}
-
-                    <!-- =====================================
-                         Empty state
-                         ===================================== -->
-
-                    <div class="portal-app-empty">
-
-                        <span>
-                            📱
-                        </span>
-
-
-                        <p>
-                            表示中のアプリがありません。
+                        <p class="yapp-public-card-label">
+                            {{ app.label }}
                         </p>
 
-
-                        <a
-                            href="{% url 'portal:manage_apps' %}"
-                        >
-                            アプリを管理
-                        </a>
+                        <p class="yapp-public-card-description">
+                            {{ app.description }}
+                        </p>
 
                     </div>
 
-                {% endfor %}
+                </div>
 
-            </div>
 
-        </section>
+
+                    <div class="yapp-public-card-bottom">
+
+                        {% if app.coming_soon %}
+
+                            <span class="yapp-public-coming-label">
+                                COMING SOON
+                            </span>
+
+                        {% else %}
+
+                            <span class="yapp-public-access">
+                                {{ app.status }}
+                            </span>
+
+                            <i
+                                class="bi bi-arrow-up-right"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% endif %}
+
+                    </div>
+
+
+                {% if app.coming_soon %}
+
+                    </article>
+
+                {% else %}
+
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
 
     </main>
 
 
-    <!-- =====================================================
+    <!-- =============================================
          Footer
-         ===================================================== -->
+         ============================================= -->
 
-    <footer class="portal-footer">
+    <footer class="yapp-public-footer">
 
         <span>
-            Yapp © 2026
+            © 2026 Yapp
         </span>
+
+        <a href="{% url 'news:about' %}">
+            お問い合わせ
+        </a>
 
     </footer>
 

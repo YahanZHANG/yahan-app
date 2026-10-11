@@ -136,6 +136,7 @@ TEMPLATES = [
                 ),
 
                 "portal.context_processors.admin_attention_counts",
+                "portal.theme_context.yapp_theme",
 
                 "travel.context_processors.current_travel_group",
                 "vaccination.context_processors.vaccination_ui",

@@ -2,14 +2,75 @@
 
 <!DOCTYPE html>
 
+
 <html
     lang="{% block html_lang %}ja{% endblock %}"
     class="{% block html_class %}{% endblock %}"
+    data-yapp-theme="{{ yapp_theme|default:'system' }}"
 >
 
 <head>
 
     <meta charset="UTF-8">
+
+        
+    <!-- =====================================================
+        Yapp global theme
+        ===================================================== -->
+
+    <script>
+
+    (function () {
+
+        "use strict";
+
+        const root = document.documentElement;
+
+        const preference = root.dataset.yappTheme || "system";
+
+        function applyTheme() {
+
+            const systemDark = window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            ).matches;
+
+            const dark = preference === "dark"
+                || (
+                    preference === "system"
+                    && systemDark
+                );
+
+            root.dataset.yappResolvedTheme = dark
+                ? "dark"
+                : "light";
+
+        }
+
+        applyTheme();
+
+        const media = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+        );
+
+        if (media.addEventListener) {
+
+            media.addEventListener(
+                "change",
+                applyTheme
+            );
+
+        } else if (media.addListener) {
+
+            media.addListener(
+                applyTheme
+            );
+
+        }
+
+    })();
+
+    </script>
+
 
     <meta
         name="viewport"

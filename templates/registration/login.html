@@ -289,10 +289,12 @@
 
         <div class="login-signup">
 
-            <a
-                href="{% url 'portal:signup' %}"
-                class="login-signup-button"
-            >
+                    
+        <a
+            href="{% url 'portal:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+            class="login-signup-button"
+        >
+
 
                 <span>
                     新しいアカウントを作成

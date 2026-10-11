@@ -72,6 +72,18 @@
             class="login-form"
         >
 
+                
+        {% if next_url %}
+
+            <input
+                type="hidden"
+                name="next"
+                value="{{ next_url }}"
+            >
+
+        {% endif %}
+
+
             {% csrf_token %}
 
 

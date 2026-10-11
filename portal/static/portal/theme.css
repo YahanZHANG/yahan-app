@@ -1,0 +1,445 @@
+
+/* =====================================================
+   Yapp Theme
+   Scope: Public Portal and My Account
+   ===================================================== */
+
+/* =====================================================
+   Dark theme - Public Portal
+   ===================================================== */
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-home {
+    background: #141a20;
+    color: #e8edf1;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-intro h1,
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-section-header h2 {
+    color: #f0f3f6;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-intro > p {
+    color: #aebbc5;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-account-note {
+    background: #263541;
+    color: #c4d9e5;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-login {
+    color: #cfdee8;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card {
+    border-color: #36434e;
+    background: #222b33;
+    color: #e9eef2;
+    box-shadow: none;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-body h3 {
+    color: #f0f3f6;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-label,
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-description {
+    color: #aebbc5;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-icon {
+    background: #33434f;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-bottom {
+    border-top-color: #394651;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-access,
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-bottom > i {
+    color: #b6cedc;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-coming {
+    border-color: #34414b;
+    background: #1b232a;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-coming-label {
+    color: #a9b6bf;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-footer {
+    border-top-color: #34414b;
+    color: #aab7c0;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-footer a {
+    color: #bdd1de;
+}
+
+/* =====================================================
+   Dark theme - My Account
+   ===================================================== */
+
+html[data-yapp-resolved-theme="dark"]
+body:has(.manage-page) {
+    background: #141a20;
+    color: #e8edf1;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page {
+    color: #e8edf1;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-card,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-settings-section,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-item,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-summary {
+    border-color: #36434e;
+    background: #222b33;
+    color: #e8edf1;
+    box-shadow: none;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page h1,
+html[data-yapp-resolved-theme="dark"]
+.manage-page h2,
+html[data-yapp-resolved-theme="dark"]
+.manage-page h3,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-user-copy span {
+    color: #f0f3f6;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page p,
+html[data-yapp-resolved-theme="dark"]
+.manage-page small,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-eyebrow,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-section-eyebrow,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-field-label,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-back-button {
+    color: #b4c0c9;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page input:not([type="radio"]):not([type="checkbox"]) {
+    border-color: #4c5a65;
+    background: #192229;
+    color: #f0f3f6;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-link {
+    color: #c5dce9;
+}
+
+/* =====================================================
+   Theme choices - Both themes
+   ===================================================== */
+
+.manage-theme-form {
+    display: grid;
+    gap: 15px;
+}
+
+.manage-theme-options {
+    display: grid;
+    gap: 9px;
+}
+
+.manage-theme-option {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 15px;
+    border: 1px solid #e1e7eb;
+    border-radius: 13px;
+    background: #fff;
+    color: #34424a;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.manage-theme-option input {
+    width: 17px;
+    height: 17px;
+    accent-color: #365f75;
+}
+
+.manage-theme-option:has(input:checked) {
+    border-color: #86a4b5;
+    background: #edf4f7;
+}
+
+.manage-theme-option:focus-within {
+    outline: 2px solid #86a4b5;
+    outline-offset: 2px;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-theme-option {
+    border-color: #45525d;
+    background: #26313a;
+    color: #e8edf1;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-theme-option:has(input:checked) {
+    border-color: #89acc0;
+    background: #344b5a;
+}
+
+
+/* =====================================================
+   Dark mode - Readability fixes
+   ===================================================== */
+
+/* My Account: Yapp logo / avatar */
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-header-icon {
+    background: #344b5a;
+    color: #ffffff;
+    border-color: #547184;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-user-avatar {
+    background: #344b5a;
+    color: #ffffff;
+}
+
+/* Back to Portal */
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-back-button {
+    background: #2c3d49;
+    color: #e7f1f7;
+    border-color: #4d6270;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-back-button:hover,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-back-button:focus-visible {
+    background: #405767;
+    color: #ffffff;
+    border-color: #82a2b5;
+}
+
+/* Password change link */
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-link {
+    background: #2d414f;
+    border-color: #4b6575;
+    color: #e9f4fb;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-link:hover,
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-link:focus-visible {
+    background: #405b6c;
+    border-color: #83aabd;
+    color: #ffffff;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page .manage-account-link span {
+    color: inherit;
+}
+
+/* Accessible focus */
+
+html[data-yapp-resolved-theme="dark"]
+.manage-page a:focus-visible {
+    outline: 2px solid #a7d0e6;
+    outline-offset: 3px;
+}
+
+
+/* =====================================================
+   Typography improvements - My Account
+   Both light and dark themes
+   ===================================================== */
+
+.manage-page .manage-header-copy h1 {
+    font-size: clamp(27px, 3.5vw, 34px);
+}
+
+.manage-page .manage-header-copy > p:last-child {
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.manage-page .manage-user-copy span {
+    font-size: 16px;
+}
+
+.manage-page .manage-user-copy small {
+    font-size: 13px;
+}
+
+.manage-page .manage-section-heading h2 {
+    font-size: 22px;
+}
+
+.manage-page .manage-section-heading > p:last-child {
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.manage-page .manage-account-item-heading h3 {
+    font-size: 18px;
+}
+
+.manage-page .manage-account-item-heading p {
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.manage-page .manage-field-label {
+    font-size: 14px;
+}
+
+.manage-page .manage-nickname-form input {
+    font-size: 16px;
+}
+
+.manage-page .manage-theme-option {
+    font-size: 15px;
+}
+
+.manage-page .manage-account-link,
+.manage-page .manage-delete-account-link,
+.manage-page .manage-back-button,
+.manage-page .manage-account-save-button,
+.manage-page .manage-logout-button {
+    font-size: 14px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .manage-page .manage-header-copy h1 {
+        font-size: 27px;
+    }
+
+    .manage-page .manage-account-item-heading h3 {
+        font-size: 16px;
+    }
+
+    .manage-page .manage-account-item-heading p {
+        font-size: 13px;
+    }
+
+    .manage-page .manage-theme-option {
+        font-size: 14px;
+    }
+
+}
+
+
+/* =====================================================
+   Yapp logo - Light / Dark mode
+   ===================================================== */
+
+/* Default: show light logo */
+
+.yapp-logo-light {
+    display: block;
+}
+
+.yapp-logo-dark {
+    display: none;
+}
+
+/* Dark mode: switch logo */
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-logo-light {
+    display: none;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-logo-dark {
+    display: block;
+}
+
+
+/* =====================================================
+   Yapp logo - Definitive light/dark switching
+   ===================================================== */
+
+.yapp-public-brand img.yapp-logo-light {
+    display: block;
+}
+
+.yapp-public-brand img.yapp-logo-dark {
+    display: none;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-brand img.yapp-logo-light {
+    display: none;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-brand img.yapp-logo-dark {
+    display: block;
+}
+
+
+/* =====================================================
+   Dark theme - Large service icons
+   ===================================================== */
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card .yapp-public-card-icon {
+    background: #334551;
+    color: #ffffff;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-card-link:hover {
+    border-color: #7293a7;
+    background: #293743;
+}
+
+html[data-yapp-resolved-theme="dark"]
+.yapp-public-coming .yapp-public-card-icon {
+    background: #29343d;
+}

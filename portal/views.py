@@ -13,7 +13,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
+
 from django.core.mail import send_mail
+from django.core import signing
+
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -189,6 +192,90 @@ APP_CONFIG = {
     },
 }
 
+
+# =========================================================
+# Safe redirect after signup
+# =========================================================
+
+SIGNUP_RETURN_SALT = "yapp-signup-return"
+
+
+def get_safe_next(request, value):
+    """
+    Yapp内の安全な戻り先URLのみ許可。
+    """
+
+    if not value:
+        return ""
+
+    if not value.startswith("/") or value.startswith("//"):
+        return ""
+
+    if not url_has_allowed_host_and_scheme(
+        url=value,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return ""
+
+    return value
+
+
+def make_signup_return_token(request, next_url):
+    """
+    メール認証リンクに載せる署名付き戻り先。
+    """
+
+    safe_next = get_safe_next(request, next_url)
+
+    if not safe_next:
+        return ""
+
+    return signing.dumps(
+        safe_next,
+        salt=SIGNUP_RETURN_SALT,
+    )
+
+
+def read_signup_return_token(request, token):
+    """
+    48時間以内の署名付き戻り先を復元。
+    """
+
+    if not token:
+        return ""
+
+    try:
+        next_url = signing.loads(
+            token,
+            salt=SIGNUP_RETURN_SALT,
+            max_age=60 * 60 * 48,
+        )
+
+    except signing.BadSignature:
+        return ""
+
+    return get_safe_next(request, next_url)
+
+
+def redirect_after_signup(request):
+    """
+    ニックネーム設定後、元のサービスへ戻る。
+    """
+
+    next_url = request.session.pop(
+        "yapp_post_signup_next",
+        "",
+    )
+
+    safe_next = get_safe_next(request, next_url)
+
+    if safe_next:
+        return redirect(safe_next)
+
+    return redirect("portal:home")
+
+
 # =========================================================
 # Public signup users
 # =========================================================
@@ -233,10 +320,13 @@ def ensure_app_preferences(user):
             },
         )
 
+
 def redirect_to_setup_if_needed(profile):
     """
-    初回セットアップが終わっていなければ
-    適切な画面名を返す。
+    初回設定が未完了の場合、
+    必要な設定画面へ誘導する。
+
+    アプリ選択は不要。
     """
 
     if not profile.password_setup_completed:
@@ -245,10 +335,8 @@ def redirect_to_setup_if_needed(profile):
     if not profile.nickname_setup_completed:
         return "portal:nickname_setup"
 
-    if not profile.app_setup_completed:
-        return "portal:app_setup"
-
     return None
+
 
 def is_public_user(user):
 
@@ -309,6 +397,12 @@ def get_app_choices_for_user(user):
 # =========================================================
 
 def signup(request):
+
+    next_url = get_safe_next(
+        request,
+        request.POST.get("next")
+        or request.GET.get("next", ""),
+    )
 
     if request.user.is_authenticated:
 
@@ -397,17 +491,27 @@ def signup(request):
                 )
             )
 
-            verification_url = (
-                request.build_absolute_uri(
-                    reverse(
-                        "portal:verify_email",
-                        kwargs={
-                            "uidb64": uid,
-                            "token": token,
-                        },
-                    )
+
+            verification_url = request.build_absolute_uri(
+                reverse(
+                    "portal:verify_email",
+                    kwargs={
+                        "uidb64": uid,
+                        "token": token,
+                    },
                 )
             )
+
+            return_token = make_signup_return_token(
+                request,
+                next_url,
+            )
+
+            if return_token:
+                verification_url += "?" + urlencode({
+                    "return_token": return_token,
+                })
+
 
             subject = (
                 "【Yapp】"
@@ -472,6 +576,7 @@ def signup(request):
         "registration/signup.html",
         {
             "form": form,
+            "next_url": next_url,
         },
     )
 
@@ -694,9 +799,29 @@ def verify_email(
     )
 
 
-    return redirect(
-        "portal:nickname_setup"
+        
+    return_token = request.GET.get(
+        "return_token",
+        "",
     )
+
+    next_url = read_signup_return_token(
+        request,
+        return_token,
+    )
+
+    if next_url:
+        request.session[
+            "yapp_post_signup_next"
+        ] = next_url
+    else:
+        request.session.pop(
+            "yapp_post_signup_next",
+            None,
+        )
+
+    return redirect("portal:nickname_setup")
+
 
 # =========================================================
 # Normal password change
@@ -769,41 +894,31 @@ class InitialPasswordSetupView(
 
     form_class = SetPasswordForm
 
-    def dispatch(
-        self,
-        request,
-        *args,
-        **kwargs,
-    ):
-        if request.user.is_authenticated:
 
-            profile, _ = (
-                UserProfile.objects.get_or_create(
-                    user=request.user
-                )
-            )
+    def dispatch(self, request, *args, **kwargs):
 
-            if profile.password_setup_completed:
+        if not request.user.is_authenticated:
+            return redirect("login")
 
-                if not profile.nickname_setup_completed:
-                    return redirect(
-                        "portal:nickname_setup"
-                    )
+        profile, _ = UserProfile.objects.get_or_create(
+            user=request.user
+        )
 
-                if not profile.app_setup_completed:
-                    return redirect(
-                        "portal:app_setup"
-                    )
+        if profile.password_setup_completed:
 
+            if not profile.nickname_setup_completed:
                 return redirect(
-                    "portal:home"
+                    "portal:nickname_setup"
                 )
+
+            return redirect("portal:home")
 
         return super().dispatch(
             request,
             *args,
             **kwargs,
         )
+
 
     def form_valid(self, form):
 
@@ -846,16 +961,10 @@ def nickname_setup(request):
             "portal:password_setup"
         )
 
+
     if profile.nickname_setup_completed:
+        return redirect_after_signup(request)
 
-        if not profile.app_setup_completed:
-            return redirect(
-                "portal:app_setup"
-            )
-
-        return redirect(
-            "portal:home"
-        )
 
     if request.method == "POST":
 
@@ -874,9 +983,7 @@ def nickname_setup(request):
 
             profile.save()
 
-            return redirect(
-                "portal:app_setup"
-            )
+            return redirect_after_signup(request)
 
     else:
 
@@ -898,138 +1005,30 @@ def nickname_setup(request):
 # Initial app setup
 # =========================================================
 
+
 @login_required
 def app_setup(request):
+    """
+    旧アプリ選択URLとの互換性を維持。
+    アプリ選択は廃止。
+    """
 
     profile, _ = UserProfile.objects.get_or_create(
         user=request.user
     )
 
-    if not profile.password_setup_completed:
-        return redirect(
-            "portal:password_setup"
-        )
+    setup_redirect = redirect_to_setup_if_needed(profile)
 
-    if not profile.nickname_setup_completed:
-        return redirect(
-            "portal:nickname_setup"
-        )
+    if setup_redirect:
+        return redirect(setup_redirect)
 
-    if profile.app_setup_completed:
-        return redirect(
-            "portal:home"
-        )
+    return redirect("portal:home")
 
-    all_app_keys = [
-        value
-        for value, label
-        in PortalAppPreference.AppKey.choices
-    ]
 
-    if request.method == "POST":
-
-        available_choices = (
-            get_app_choices_for_user(
-                request.user
-            )
-        )
-
-        form = AppSelectionForm(
-            request.POST,
-            choices=available_choices,
-        )
-
-        if form.is_valid():
-
-            selected_apps = form.cleaned_data[
-                "apps"
-            ]
-
-            for index, app_key in enumerate(
-                all_app_keys
-            ):
-
-                is_visible = (
-                    app_key in selected_apps
-                )
-
-                if is_visible:
-                    display_order = (
-                        selected_apps.index(
-                            app_key
-                        )
-                    )
-                else:
-                    display_order = (
-                        100 + index
-                    )
-
-                (
-                    PortalAppPreference
-                    .objects
-                    .update_or_create(
-                        user=request.user,
-                        app_key=app_key,
-                        defaults={
-                            "is_visible": is_visible,
-                            "display_order": (
-                                display_order
-                            ),
-                        },
-                    )
-                )
-
-            profile.app_setup_completed = True
-
-            profile.save(
-                update_fields=[
-                    "app_setup_completed",
-                    "updated_at",
-                ]
-            )
-
-            messages.success(
-                request,
-                "初回設定が完了しました。",
-            )
-
-            return redirect(
-                "portal:home"
-            )
-
-    else:
-
-        available_choices = (
-            get_app_choices_for_user(
-                request.user
-            )
-        )
-
-        available_keys = [
-            value
-            for value, label
-            in available_choices
-        ]
-
-        form = AppSelectionForm(
-            choices=available_choices,
-            initial={
-                "apps": available_keys,
-            },
-        )
-
-    return render(
-        request,
-        "portal/app_setup.html",
-        {
-            "form": form,
-            "profile": profile,
-        },
-    )
 
 
 # =========================================================
-# Manage apps and account settings
+# My Account
 # =========================================================
 
 @login_required
@@ -1039,30 +1038,16 @@ def manage_apps(request):
         user=request.user
     )
 
+    # =====================================================
+    # Initial setup
+    # =====================================================
+
     setup_redirect = redirect_to_setup_if_needed(
         profile
     )
 
     if setup_redirect:
-        return redirect(
-            setup_redirect
-        )
-
-    ensure_app_preferences(
-        request.user
-    )
-
-    available_choices = (
-        get_app_choices_for_user(
-            request.user
-        )
-    )
-
-    allowed_keys = [
-        value
-        for value, label
-        in available_choices
-    ]
+        return redirect(setup_redirect)
 
     # =====================================================
     # Nickname form
@@ -1073,170 +1058,90 @@ def manage_apps(request):
     )
 
     # =====================================================
-    # POST: Save nickname
+    # POST
     # =====================================================
 
-    if (
-        request.method == "POST"
-        and request.POST.get("form_type") == "nickname"
-    ):
+    if request.method == "POST":
 
-        nickname_form = NicknameForm(
-            request.POST,
-            instance=profile,
+        form_type = request.POST.get(
+            "form_type",
+            "",
         )
 
-        if nickname_form.is_valid():
+        # ---------------------------------------------
+        # Nickname
+        # ---------------------------------------------
 
-            nickname_form.save()
+        if form_type == "nickname":
 
-            messages.success(
-                request,
-                "ニックネームを保存しました。",
+            nickname_form = NicknameForm(
+                request.POST,
+                instance=profile,
             )
 
-            return redirect(
-                "portal:manage_apps"
+            if nickname_form.is_valid():
+
+                nickname_form.save()
+
+                messages.success(
+                    request,
+                    "ニックネームを保存しました。",
+                )
+
+                return redirect(
+                    "portal:manage_apps"
+                )
+
+        # ---------------------------------------------
+        # Theme
+        # ---------------------------------------------
+
+        elif form_type == "theme":
+
+            theme = request.POST.get(
+                "theme_preference",
+                "",
             )
 
-    # =====================================================
-    # POST: Save app preferences
-    # =====================================================
+            valid_themes = {
+                "system",
+                "light",
+                "dark",
+            }
 
-    elif request.method == "POST":
+            if theme not in valid_themes:
 
-        visible_keys = set(
-            request.POST.getlist(
-                "visible_apps"
-            )
-        )
+                messages.error(
+                    request,
+                    "有効な表示テーマを選択してください。",
+                )
 
-        visible_keys = {
-            key
-            for key in visible_keys
-            if key in allowed_keys
-        }
+            else:
 
-        if not visible_keys:
+                profile.theme_preference = theme
 
-            messages.error(
-                request,
-                "少なくとも1つのアプリを表示してください。",
-            )
+                profile.save(
+                    update_fields=[
+                        "theme_preference",
+                        "updated_at",
+                    ]
+                )
+
+                messages.success(
+                    request,
+                    "表示テーマを保存しました。",
+                )
+
+                return redirect(
+                    "portal:manage_apps"
+                )
 
         else:
 
-            raw_order = (
-                request.POST
-                .get(
-                    "app_order",
-                    "",
-                )
-                .split(",")
-            )
-
-            submitted_order = []
-
-            for key in raw_order:
-
-                if (
-                    key in allowed_keys
-                    and key not in submitted_order
-                ):
-
-                    submitted_order.append(
-                        key
-                    )
-
-            # JavaScriptから一部送られなかった場合も
-            # 残りのアプリを後ろに補完する
-
-            ordered_keys = (
-                submitted_order
-                + [
-                    key
-                    for key in allowed_keys
-                    if key not in submitted_order
-                ]
-            )
-
-            for index, app_key in enumerate(
-                ordered_keys
-            ):
-
-                (
-                    PortalAppPreference
-                    .objects
-                    .update_or_create(
-
-                        user=request.user,
-
-                        app_key=app_key,
-
-                        defaults={
-                            "is_visible": (
-                                app_key in visible_keys
-                            ),
-                            "display_order": index,
-                        },
-
-                    )
-                )
-
-            messages.success(
+            messages.error(
                 request,
-                "アプリの表示と順番を保存しました。",
+                "無効な操作です。",
             )
-
-            return redirect(
-                "portal:home"
-            )
-
-    # =====================================================
-    # App preferences
-    # =====================================================
-
-    preferences = (
-        PortalAppPreference
-        .objects
-        .filter(
-            user=request.user,
-            app_key__in=allowed_keys,
-        )
-        .order_by(
-            "display_order",
-            "id",
-        )
-    )
-
-    apps = []
-
-    for preference in preferences:
-
-        config = APP_CONFIG.get(
-            preference.app_key
-        )
-
-        if not config:
-            continue
-
-        apps.append(
-            {
-                "key": preference.app_key,
-
-                "name": config["name"],
-
-                "label": config["label"],
-
-                "icon": config["icon"],
-
-                "description": config["description"],
-
-                "is_visible": (
-                    preference.is_visible
-                ),
-            }
-        )
 
     # =====================================================
     # Render
@@ -1247,258 +1152,90 @@ def manage_apps(request):
         "portal/manage_apps.html",
         {
             "profile": profile,
-            "apps": apps,
             "nickname_form": nickname_form,
         },
     )
 
+
+
 # =========================================================
-# Portal home
+# Public Portal Home
 # =========================================================
 
-@login_required
 def home(request):
 
-    profile, _ = UserProfile.objects.get_or_create(
-        user=request.user
-    )
-
-    setup_redirect = redirect_to_setup_if_needed(
-        profile
-    )
-
-    if setup_redirect:
-        return redirect(
-            setup_redirect
-        )
-
-    ensure_app_preferences(
-        request.user
-    )
-
-    # =====================================================
-    # Feeding permission
-    # =====================================================
-
-    can_use_feeding = (
-        request.user.is_superuser
-        or BabyMembership.objects.filter(
-            user=request.user
-        ).exists()
-    )
-
-    # =====================================================
-    # Nickname edit
-    # =====================================================
-
-    if request.method == "POST":
-
-        nickname_form = NicknameForm(
-            request.POST,
-            instance=profile,
-        )
-
-        if nickname_form.is_valid():
-
-            nickname_form.save()
-
-            messages.success(
-                request,
-                "ニックネームを保存しました。",
-            )
-
-            return redirect(
-                "portal:home"
-            )
-
-    else:
-
-        nickname_form = NicknameForm(
-            instance=profile
-        )
-
-    # =====================================================
-    # Visible apps
-    # =====================================================
-
-    available_choices = (
-        get_app_choices_for_user(
-            request.user
-        )
-    )
-
-    available_keys = [
-        value
-        for value, label
-        in available_choices
+    apps = [
+        {
+            "name": "Swiss News",
+            "label": "SWISS NEWS",
+            "icon": "📰",
+            "description": "スイスのニュースを日本語でチェック。",
+            "url": reverse("news:home"),
+            "status": "ログイン不要",
+            "coming_soon": False,
+            "card_class": "portal-news-card",
+        },
+        {
+            "name": "ミニゲーム",
+            "label": "MINI GAMES",
+            "icon": "🎮",
+            "description": "ちょっとした空き時間に遊べるゲーム。",
+            "url": reverse("games:game_list"),
+            "status": "ランキング登録時にログイン必要",
+            "coming_soon": False,
+            "card_class": "portal-games-card",
+        },
+        {
+            "name": "イベント・日程調整",
+            "label": "EVENT SCHEDULER",
+            "icon": "📅",
+            "description": "みんなの予定を簡単に調整。",
+            "url": reverse("event_scheduler:event_list"),
+            "status": "イベント作成時にログイン必要",
+            "coming_soon": False,
+            "card_class": "portal-events-card",
+        },
+        {
+            "name": "色判定",
+            "label": "COLOR CHECKER",
+            "icon": "🎨",
+            "description": "気になる色を簡単に確認。",
+            "url": reverse("colorcheck:index"),
+            "status": "ログイン不要",
+            "coming_soon": False,
+            "card_class": "portal-colorcheck-card",
+        },
+        {
+            "name": "Japanレシピ",
+            "label": "JAPAN RECIPES",
+            "icon": "🍳",
+            "description": (
+                "スイスで手に入る食材を使った、"
+                "日本人向けレシピ。"
+            ),
+            "url": None,
+            "status": "COMING SOON",
+            "coming_soon": True,
+            "card_class": "portal-recipes-card",
+        },
+        {
+            "name": "旅トモ",
+            "label": "TRAVEL COMPANIONS",
+            "icon": "✈️",
+            "description": "一緒に旅行する仲間を見つける。",
+            "url": None,
+            "status": "COMING SOON",
+            "coming_soon": True,
+            "card_class": "portal-travel-card",
+        },
     ]
-
-    can_access_chat = (
-        "chat" in available_keys
-    )
-
-    preferences = (
-        PortalAppPreference
-        .objects
-        .filter(
-            user=request.user,
-            is_visible=True,
-            app_key__in=available_keys,
-        )
-        .order_by(
-            "display_order",
-            "id",
-        )
-    )
-
-    visible_apps = []
-
-    for preference in preferences:
-
-        # 離乳食アプリの利用権限がない場合は
-        # Portalには表示しない
-        if (
-            preference.app_key == "feeding"
-            and not can_use_feeding
-        ):
-            continue
-
-        config = APP_CONFIG.get(
-            preference.app_key
-        )
-
-        if not config:
-            continue
-
-        visible_apps.append(
-            {
-                "key": preference.app_key,
-                "name": config["name"],
-                "label": config["label"],
-                "icon": config["icon"],
-                "url": reverse(
-                    config["url_name"]
-                ),
-                "card_class": (
-                    config["card_class"]
-                ),
-                "icon_class": (
-                    config["icon_class"]
-                ),
-            }
-        )
-
-    # =====================================================
-    # Chat - Unread messages
-    # =====================================================
-
-    current_user = request.user
-
-    # 承認済みの友達関係のみ取得
-
-    accepted_connections = (
-        ChatConnection.objects.filter(
-
-            Q(user_low=current_user)
-            |
-            Q(user_high=current_user),
-
-            status=ChatConnection.Status.ACCEPTED,
-
-        )
-    )
-
-    # 友達のユーザーIDを取得
-    # 数字IDは内部処理にのみ使用
-
-    friend_ids = []
-
-    for connection in accepted_connections:
-
-        other_user = connection.other_user(
-            current_user
-        )
-
-        if other_user.is_active:
-
-            friend_ids.append(
-                other_user.pk
-            )
-
-    # 友達から届いた未読メッセージ数
-
-    unread_chat_count = (
-        ChatMessage.objects.filter(
-
-            recipient=current_user,
-
-            sender_id__in=friend_ids,
-
-            is_read=False,
-
-        ).count()
-    )
-
-    # =====================================================
-    # Board - Latest posts
-    # =====================================================
-
-    two_weeks_ago = (
-        timezone.now()
-        - timedelta(
-            days=14
-        )
-    )
-
-
-    board_posts = (
-        BoardPost.objects
-        .visible_to(
-            request.user
-        )
-        .select_related(
-            "author"
-        )
-        .annotate(
-            comment_count=Count(
-                "comments"
-            )
-        )
-        .order_by(
-            "-is_pinned",
-            "-created_at",
-        )[:3]
-    )
-
-    # =====================================================
-    # Context
-    # =====================================================
-
-    context = {
-        "can_use_feeding": can_use_feeding,
-        "can_view_analytics": can_view_analytics(
-            request.user
-        ),
-        "can_access_chat": can_access_chat,
-        "profile": profile,
-        "nickname_form": nickname_form,
-        "visible_apps": visible_apps,
-
-        # お知らせ
-        "board_posts": board_posts,
-        "can_post_board": can_post_board(
-            request.user
-        ),
-
-        # Chat
-        "unread_chat_count": unread_chat_count,
-
-    }
 
     return render(
         request,
         "portal/home.html",
-        context,
+        {
+            "apps": apps,
+        },
     )
 
 

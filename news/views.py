@@ -1491,12 +1491,14 @@ def bitcoin_qr(request):
         content_type="image/png",
     )
 
+
 def services(request):
 
-    return render(
-        request,
-        "news/services.html",
+    return redirect(
+        "portal:home",
+        permanent=True,
     )
+
 
 
 def support_contact(

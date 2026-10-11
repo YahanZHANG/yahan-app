@@ -4866,3 +4866,92 @@
     }
 
 }
+
+
+/* =========================================================
+   Swiss News - Desktop content width refinement
+   ========================================================= */
+
+@media screen and (min-width: 900px) {
+
+    /* Header and desktop navigation */
+
+    .news-header-inner {
+        width: min(calc(100% - 80px), 1000px);
+        margin-inline: auto;
+    }
+
+    /* Back to Yapp Portal */
+
+    .news-back-link {
+        width: min(calc(100% - 80px), 1000px);
+        margin-inline: auto;
+    }
+
+    /* Main content */
+
+    .news-main {
+        width: min(calc(100% - 80px), 1000px);
+        margin-inline: auto;
+    }
+
+    /* Django messages */
+
+    .news-messages {
+        width: min(calc(100% - 80px), 1000px);
+        margin-inline: auto;
+    }
+
+}
+
+
+/* =========================================================
+   Swiss News HOME - Top spacing
+   ========================================================= */
+
+/* HOME only: reduce space above AI News Brief */
+
+.news-main:has(.news-digest) {
+    padding-top: 12px;
+}
+
+/* Remove spacing from an empty heading wrapper */
+
+.news-main:has(.news-digest)
+.news-page-heading:empty {
+    display: none;
+}
+
+/* Desktop */
+
+@media screen and (min-width: 900px) {
+
+    .news-main:has(.news-digest) {
+        padding-top: 6px;
+    }
+
+}
+
+
+/* =========================================================
+   AI News Brief - Full text on desktop
+   ========================================================= */
+
+@media screen and (min-width: 900px) {
+
+    /* Always show complete summary */
+
+    .news-digest-lead.is-collapsed {
+        display: block;
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        overflow: visible;
+    }
+
+    /* Hide Read More / Close button */
+
+    .news-digest-toggle {
+        display: none;
+    }
+
+}

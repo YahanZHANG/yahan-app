@@ -1,0 +1,634 @@
+
+/* ================================================
+   Yapp Public Portal
+   ================================================ */
+
+.yapp-public-home {
+    min-height: 100vh;
+    background: #f7f9fb;
+}
+
+.yapp-public-page {
+    width: min(100%, 1100px);
+    margin: 0 auto;
+    padding: 24px 22px 36px;
+}
+
+/* ================================================
+   Header
+   ================================================ */
+
+.yapp-public-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 36px;
+}
+
+.yapp-public-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.yapp-public-brand img {
+    display: block;
+    width: 145px;
+    max-width: 100%;
+    height: auto;
+}
+
+.yapp-public-account-nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.yapp-public-login,
+.yapp-public-signup,
+.yapp-public-account-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 9px 14px;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 750;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.yapp-public-login {
+    color: #476173;
+}
+
+.yapp-public-signup,
+.yapp-public-account-button {
+    background: #365f75;
+    color: #fff;
+}
+
+.yapp-public-signup:hover,
+.yapp-public-account-button:hover {
+    background: #294c5f;
+    color: #fff;
+}
+
+/* ================================================
+   Introduction
+   ================================================ */
+
+.yapp-public-intro {
+    margin-bottom: 38px;
+    padding: 10px 0;
+}
+
+.yapp-public-intro h1 {
+    margin: 0 0 13px;
+    color: #293640;
+    font-size: clamp(26px, 4.5vw, 37px);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: 1.35;
+}
+
+.yapp-public-intro > p {
+    max-width: 630px;
+    margin: 0;
+    color: #697782;
+    font-size: 15px;
+    line-height: 1.85;
+}
+
+.yapp-public-account-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 19px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: #eaf1f5;
+    color: #476779;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.yapp-public-account-note i {
+    font-size: 17px;
+}
+
+/* ================================================
+   Section
+   ================================================ */
+
+.yapp-public-section-header {
+    margin-bottom: 20px;
+}
+
+.yapp-public-eyebrow {
+    margin: 0 0 7px;
+    color: #7c91a0;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+.yapp-public-section-header h2 {
+    margin: 0;
+    color: #303c44;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+/* ================================================
+   Grid
+   ================================================ */
+
+.yapp-public-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* ================================================
+   Cards
+   ================================================ */
+
+.yapp-public-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 215px;
+    padding: 22px;
+    border: 1px solid #e4e9ee;
+    border-radius: 20px;
+    background: #fff;
+    color: #293640;
+    box-shadow: 0 5px 20px rgba(35, 54, 68, .035);
+    text-align: left;
+    text-decoration: none;
+}
+
+.yapp-public-card-link {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+.yapp-public-card-link:hover {
+    transform: translateY(-3px);
+    border-color: #cbd8e0;
+    box-shadow: 0 10px 24px rgba(35, 54, 68, .09);
+    color: #293640;
+}
+
+.yapp-public-card-icon {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    background: #f0f4f7;
+    font-size: 26px;
+}
+
+.yapp-public-card-body {
+    flex: 1;
+}
+
+.yapp-public-card-body h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.yapp-public-card-label {
+    margin: 3px 0 12px;
+    color: #84909a;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .09em;
+}
+
+.yapp-public-card-description {
+    margin: 0;
+    color: #6c7882;
+    font-size: 12px;
+    line-height: 1.75;
+}
+
+.yapp-public-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-top: 18px;
+    padding-top: 13px;
+    border-top: 1px solid #eef1f3;
+}
+
+.yapp-public-access {
+    color: #66808d;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.yapp-public-card-bottom > i {
+    color: #547487;
+    font-size: 16px;
+}
+
+/* ================================================
+   Coming soon
+   ================================================ */
+
+.yapp-public-coming {
+    border-style: dashed;
+    background: #f4f6f8;
+    box-shadow: none;
+}
+
+.yapp-public-coming .yapp-public-card-icon {
+    background: #e9edf0;
+}
+
+.yapp-public-coming .yapp-public-card-body,
+.yapp-public-coming .yapp-public-card-icon {
+    opacity: .75;
+}
+
+.yapp-public-coming-label {
+    color: #7b8892;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: .1em;
+}
+
+/* ================================================
+   Footer
+   ================================================ */
+
+.yapp-public-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 35px;
+    padding-top: 20px;
+    border-top: 1px solid #e4e9ee;
+    color: #8a969e;
+    font-size: 12px;
+}
+
+.yapp-public-footer a {
+    color: #607b8e;
+}
+
+/* ================================================
+   Mobile
+   ================================================ */
+
+@media (max-width: 600px) {
+
+    .yapp-public-page {
+        padding: 18px 14px 32px;
+    }
+
+    .yapp-public-header {
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    .yapp-public-brand img {
+        width: 100px;
+    }
+
+    .yapp-public-account-nav {
+        gap: 4px;
+    }
+
+    .yapp-public-login,
+    .yapp-public-signup,
+    .yapp-public-account-button {
+        min-height: 35px;
+        padding: 7px 9px;
+        font-size: 10px;
+    }
+
+    .yapp-public-intro {
+        margin-bottom: 29px;
+    }
+
+    .yapp-public-intro > p {
+        font-size: 13px;
+    }
+
+    .yapp-public-account-note {
+        font-size: 11px;
+    }
+
+    .yapp-public-grid {
+        gap: 10px;
+    }
+
+    .yapp-public-card {
+        min-height: 205px;
+        padding: 14px 12px;
+        border-radius: 16px;
+    }
+
+    .yapp-public-card-icon {
+        width: 43px;
+        height: 43px;
+        margin-bottom: 12px;
+        font-size: 23px;
+    }
+
+    .yapp-public-card-body h3 {
+        font-size: 14px;
+    }
+
+    .yapp-public-card-label {
+        font-size: 9px;
+    }
+
+    .yapp-public-card-description {
+        font-size: 11px;
+    }
+
+    .yapp-public-access,
+    .yapp-public-coming-label {
+        font-size: 9px;
+    }
+
+}
+
+
+/* =====================================================
+   Typography improvements - Portal
+   ===================================================== */
+
+.yapp-public-intro > p {
+    font-size: 17px;
+}
+
+.yapp-public-account-note {
+    font-size: 14px;
+}
+
+.yapp-public-section-header h2 {
+    font-size: 26px;
+}
+
+.yapp-public-card-body h3 {
+    font-size: 20px;
+}
+
+.yapp-public-card-label {
+    font-size: 12px;
+}
+
+.yapp-public-card-description {
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.yapp-public-access {
+    font-size: 13px;
+}
+
+.yapp-public-coming-label {
+    font-size: 12px;
+}
+
+.yapp-public-login,
+.yapp-public-signup,
+.yapp-public-account-button {
+    font-size: 14px;
+}
+
+.yapp-public-footer {
+    font-size: 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .yapp-public-intro > p {
+        font-size: 15px;
+    }
+
+    .yapp-public-account-note {
+        font-size: 12px;
+    }
+
+    .yapp-public-section-header h2 {
+        font-size: 23px;
+    }
+
+    .yapp-public-card {
+        min-height: 235px;
+    }
+
+    .yapp-public-card-body h3 {
+        font-size: 16px;
+    }
+
+    .yapp-public-card-label {
+        font-size: 10px;
+    }
+
+    .yapp-public-card-description {
+        font-size: 13px;
+    }
+
+    .yapp-public-access,
+    .yapp-public-coming-label {
+        font-size: 11px;
+    }
+
+    .yapp-public-login,
+    .yapp-public-signup,
+    .yapp-public-account-button {
+        font-size: 12px;
+    }
+
+}
+
+
+/* =====================================================
+   Portal cards - Large horizontal layout
+   ===================================================== */
+
+/* Keep two columns */
+
+.yapp-public-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* Card */
+
+.yapp-public-card {
+    min-height: 205px;
+    padding: 23px;
+    align-items: stretch;
+}
+
+/* Icon + description side by side */
+
+.yapp-public-card-main {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Large icon */
+
+.yapp-public-card-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 95px;
+    width: 95px;
+    height: 95px;
+    margin: 0;
+    border-radius: 24px;
+    background: #f0f4f7;
+    font-size: 55px;
+    line-height: 1;
+}
+
+/* Text */
+
+.yapp-public-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.yapp-public-card-body h3 {
+    font-size: 23px;
+    line-height: 1.35;
+    margin-bottom: 3px;
+}
+
+.yapp-public-card-label {
+    margin: 0 0 12px;
+    font-size: 12px;
+}
+
+.yapp-public-card-description {
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+/* Bottom */
+
+.yapp-public-card-bottom {
+    margin-top: 22px;
+}
+
+.yapp-public-access {
+    font-size: 13px;
+}
+
+/* =====================================================
+   Tablet
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .yapp-public-card {
+        padding: 17px;
+    }
+
+    .yapp-public-card-main {
+        gap: 13px;
+    }
+
+    .yapp-public-card-icon {
+        flex-basis: 72px;
+        width: 72px;
+        height: 72px;
+        border-radius: 19px;
+        font-size: 43px;
+    }
+
+    .yapp-public-card-body h3 {
+        font-size: 19px;
+    }
+
+    .yapp-public-card-description {
+        font-size: 14px;
+    }
+
+}
+
+/* =====================================================
+   Mobile
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .yapp-public-grid {
+        gap: 10px;
+    }
+
+    .yapp-public-card {
+        min-height: 185px;
+        padding: 13px;
+    }
+
+    .yapp-public-card-main {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .yapp-public-card-icon {
+        flex: 0 0 auto;
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        font-size: 37px;
+    }
+
+    .yapp-public-card-body h3 {
+        font-size: 17px;
+        margin-bottom: 3px;
+    }
+
+    .yapp-public-card-label {
+        margin-bottom: 8px;
+        font-size: 10px;
+    }
+
+    .yapp-public-card-description {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .yapp-public-card-bottom {
+        margin-top: 15px;
+        padding-top: 10px;
+    }
+
+    .yapp-public-access,
+    .yapp-public-coming-label {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+}

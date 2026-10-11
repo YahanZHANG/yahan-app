@@ -1,312 +1,312 @@
-{% extends "news/base.html" %}
+    {% extends "news/base.html" %}
 
 
-{% block news_content %}
+    {% block news_content %}
 
-<section class="news-services">
+    <section class="news-services">
 
-    <!-- =========================
-         Hero
-    ========================= -->
+        <!-- =========================
+            Hero
+        ========================= -->
 
-    <header class="news-services-hero">
+        <header class="news-services-hero">
 
-        <p class="news-services-kicker">
-            OTHER SERVICES
-        </p>
-
-        <h2>
-            他のサービス
-        </h2>
-
-        <p class="news-services-lead">
-            YappはSwiss Newsのほかにも、
-            スイスでの毎日の生活に使える小さなサービスを作っています。
-        </p>
-
-    </header>
-
-
-    <!-- =========================
-         Available services
-    ========================= -->
-
-    <section class="news-services-section">
-
-        <div class="news-services-section-header">
-
-            <p class="news-services-section-kicker">
-                AVAILABLE NOW
+            <p class="news-services-kicker">
+                OTHER SERVICES
             </p>
 
-            <h3>
-                今すぐ使えるサービス
-            </h3>
+            <h2>
+                他のサービス
+            </h2>
 
-        </div>
-
-
-        <div class="news-services-grid">
-
-
-            <!-- Events -->
-
-            <a
-                href="{% url 'event_scheduler:event_list' %}"
-                class="news-service-card news-service-card-link"
-            >
-
-                <div class="news-service-icon">
-                    📅
-                </div>
-
-                <div class="news-service-content">
-
-                    <div class="news-service-heading">
-
-                        <h4>
-                            イベント・日程調整
-                        </h4>
-
-                    </div>
-
-                    <p>
-                        イベントの予定を共有して、
-                        みんなが集まりやすい日時を簡単に見つけられます。
-                    </p>
-
-                </div>
-
-            </a>
-
-
-            <!-- Color check -->
-
-            <a
-                href="{% url 'colorcheck:index' %}"
-                class="news-service-card news-service-card-link"
-            >
-
-                <div class="news-service-icon">
-                    🎨
-                </div>
-
-                <div class="news-service-content">
-
-                    <div class="news-service-heading">
-
-                        <h4>
-                            色判定
-                        </h4>
-
-                    </div>
-
-                    <p>
-                        色の見分けに困ったときに、
-                        気になる色を簡単に確認できるツールです。
-                    </p>
-
-                </div>
-
-            </a>
-
-
-            <!-- Game -->
-
-            <a
-                href="{% url 'games:game_list' %}"
-                class="news-service-card news-service-card-link"
-            >
-
-                <div class="news-service-icon">
-                    🎮
-                </div>
-
-                <div class="news-service-content">
-
-                    <div class="news-service-heading">
-
-                        <h4>
-                            ミニゲーム
-                        </h4>
-
-                    </div>
-
-                    <p>
-                        ちょっとした空き時間に遊べる、
-                        シンプルなミニゲームを集めています。
-                    </p>
-
-                </div>
-
-            </a>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================
-         Coming soon
-    ========================= -->
-
-    <section class="news-services-section news-services-coming-section">
-
-        <div class="news-services-section-header">
-
-            <p class="news-services-section-kicker">
-                COMING SOON
+            <p class="news-services-lead">
+                YappはSwiss Newsのほかにも、
+                スイスでの毎日の生活に使える小さなサービスを作っています。
             </p>
 
-            <h3>
-                これから追加予定
-            </h3>
-
-        </div>
+        </header>
 
 
-        <div class="news-services-grid">
+        <!-- =========================
+            Available services
+        ========================= -->
 
+        <section class="news-services-section">
 
-            <!-- Recipe -->
+            <div class="news-services-section-header">
 
-            <article
-                class="news-service-card news-service-card-coming"
-            >
-
-                <div class="news-service-icon">
-                    🍳
-                </div>
-
-                <div class="news-service-content">
-
-                    <div class="news-service-heading">
-
-                        <h4>
-                            Japanレシピ  
-                        </h4>
-
-                        <span class="news-service-status">
-                            COMING SOON
-                        </span>
-
-                    </div>
-
-                    <p>
-                        スイスのスーパーで手に入りやすい食材を中心に、
-                        日本人の舌に合う献立を探せるレシピサービスを準備中です。
-                    </p>
-
-                </div>
-
-            </article>
-
-
-            <!-- Travel -->
-
-            <article
-                class="news-service-card news-service-card-coming"
-            >
-
-                <div class="news-service-icon">
-                    ✈️
-                </div>
-
-                <div class="news-service-content">
-
-                    <div class="news-service-heading">
-
-                        <h4>
-                            旅トモ
-                        </h4>
-
-                        <span class="news-service-status">
-                            COMING SOON
-                        </span>
-
-                    </div>
-
-                    <p>
-                        ヨーロッパを中心とした海外での病院受診や緊急時も安心。
-                        病歴・ワクチン履歴の多言語表示や、各国の緊急連絡先を簡単に確認できます。
-                    </p>
-
-                </div>
-
-            </article>
-
-
-        </div>
-
-    </section>
-
-</section>
-
-{% endblock %}
-
-<!-- 
-    =========================
-         Account
-    ========================= 
-
-    <section class="news-services-account">
-
-        {% if request.user.is_authenticated %}
-
-            <div>
-
-                <p class="news-services-account-kicker">
-                    YOUR APPS
+                <p class="news-services-section-kicker">
+                    AVAILABLE NOW
                 </p>
 
                 <h3>
-                    他のサービスを使ってみる
+                    今すぐ使えるサービス
                 </h3>
-
-                <p>
-                    ログイン済みです。
-                    Portalから利用するサービスを選べます。
-                </p>
 
             </div>
 
-            <a
-                href="{% url 'portal:home' %}"
-                class="news-services-account-button"
-            >
-                Portalを開く
-                <span>→</span>
-            </a>
 
-        {% else %}
+            <div class="news-services-grid">
 
-            <div>
 
-                <p class="news-services-account-kicker">
-                    FREE ACCOUNT
+                <!-- Events -->
+
+                <a
+                    href="{% url 'event_scheduler:event_list' %}"
+                    class="news-service-card news-service-card-link"
+                >
+
+                    <div class="news-service-icon">
+                        📅
+                    </div>
+
+                    <div class="news-service-content">
+
+                        <div class="news-service-heading">
+
+                            <h4>
+                                イベント・日程調整
+                            </h4>
+
+                        </div>
+
+                        <p>
+                            イベントの予定を共有して、
+                            みんなが集まりやすい日時を簡単に見つけられます。
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Color check -->
+
+                <a
+                    href="{% url 'colorcheck:index' %}"
+                    class="news-service-card news-service-card-link"
+                >
+
+                    <div class="news-service-icon">
+                        🎨
+                    </div>
+
+                    <div class="news-service-content">
+
+                        <div class="news-service-heading">
+
+                            <h4>
+                                色判定
+                            </h4>
+
+                        </div>
+
+                        <p>
+                            色の見分けに困ったときに、
+                            気になる色を簡単に確認できるツールです。
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+                <!-- Game -->
+
+                <a
+                    href="{% url 'games:game_list' %}"
+                    class="news-service-card news-service-card-link"
+                >
+
+                    <div class="news-service-icon">
+                        🎮
+                    </div>
+
+                    <div class="news-service-content">
+
+                        <div class="news-service-heading">
+
+                            <h4>
+                                ミニゲーム
+                            </h4>
+
+                        </div>
+
+                        <p>
+                            ちょっとした空き時間に遊べる、
+                            シンプルなミニゲームを集めています。
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+            Coming soon
+        ========================= -->
+
+        <section class="news-services-section news-services-coming-section">
+
+            <div class="news-services-section-header">
+
+                <p class="news-services-section-kicker">
+                    COMING SOON
                 </p>
 
                 <h3>
-                    もっと使ってみたい方へ
+                    これから追加予定
                 </h3>
-
-                <p>
-                    無料アカウントを作成すると、
-                    News以外のサービスも利用できるようになります。
-                </p>
 
             </div>
 
-            <a
-                href="{% url 'portal:signup' %}"
-                class="news-services-account-button"
-            >
-                無料アカウントを作成
-                <span>→</span>
-            </a>
 
-        {% endif %}
+            <div class="news-services-grid">
+
+
+                <!-- Recipe -->
+
+                <article
+                    class="news-service-card news-service-card-coming"
+                >
+
+                    <div class="news-service-icon">
+                        🍳
+                    </div>
+
+                    <div class="news-service-content">
+
+                        <div class="news-service-heading">
+
+                            <h4>
+                                Japanレシピ  
+                            </h4>
+
+                            <span class="news-service-status">
+                                COMING SOON
+                            </span>
+
+                        </div>
+
+                        <p>
+                            スイスのスーパーで手に入りやすい食材を中心に、
+                            日本人の舌に合う献立を探せるレシピサービスを準備中です。
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+                <!-- Travel -->
+
+                <article
+                    class="news-service-card news-service-card-coming"
+                >
+
+                    <div class="news-service-icon">
+                        ✈️
+                    </div>
+
+                    <div class="news-service-content">
+
+                        <div class="news-service-heading">
+
+                            <h4>
+                                旅トモ
+                            </h4>
+
+                            <span class="news-service-status">
+                                COMING SOON
+                            </span>
+
+                        </div>
+
+                        <p>
+                            ヨーロッパを中心とした海外での病院受診や緊急時も安心。
+                            病歴・ワクチン履歴の多言語表示や、各国の緊急連絡先を簡単に確認できます。
+                        </p>
+
+                    </div>
+
+                </article>
+
+
+            </div>
+
+        </section>
 
     </section>
-    -->
+
+    {% endblock %}
+
+    <!-- 
+        =========================
+            Account
+        ========================= 
+
+        <section class="news-services-account">
+
+            {% if request.user.is_authenticated %}
+
+                <div>
+
+                    <p class="news-services-account-kicker">
+                        YOUR APPS
+                    </p>
+
+                    <h3>
+                        他のサービスを使ってみる
+                    </h3>
+
+                    <p>
+                        ログイン済みです。
+                        Portalから利用するサービスを選べます。
+                    </p>
+
+                </div>
+
+                <a
+                    href="{% url 'portal:home' %}"
+                    class="news-services-account-button"
+                >
+                    Portalを開く
+                    <span>→</span>
+                </a>
+
+            {% else %}
+
+                <div>
+
+                    <p class="news-services-account-kicker">
+                        FREE ACCOUNT
+                    </p>
+
+                    <h3>
+                        もっと使ってみたい方へ
+                    </h3>
+
+                    <p>
+                        無料アカウントを作成すると、
+                        News以外のサービスも利用できるようになります。
+                    </p>
+
+                </div>
+
+                <a
+                    href="{% url 'portal:signup' %}"
+                    class="news-services-account-button"
+                >
+                    無料アカウントを作成
+                    <span>→</span>
+                </a>
+
+            {% endif %}
+
+        </section>
+        -->

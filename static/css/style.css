@@ -4788,3 +4788,50 @@ button {
     }
 
 }
+
+
+/* =====================================================
+   Yapp - Shared content width
+   ===================================================== */
+
+:root {
+    --yapp-content-wide: 1100px;
+    --yapp-content-compact: 800px;
+    --yapp-content-auth: 500px;
+    --yapp-page-gutter: 20px;
+}
+
+/* Standard service pages */
+
+.yapp-layout-wide {
+    width: 100%;
+    max-width: var(--yapp-content-wide);
+    margin-inline: auto;
+    padding-inline: var(--yapp-page-gutter);
+}
+
+/* Settings and compact pages */
+
+.yapp-layout-compact {
+    width: 100%;
+    max-width: var(--yapp-content-compact);
+    margin-inline: auto;
+    padding-inline: var(--yapp-page-gutter);
+}
+
+/* Login / signup / password reset */
+
+.yapp-layout-auth {
+    width: 100%;
+    max-width: var(--yapp-content-auth);
+    margin-inline: auto;
+    padding-inline: 16px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    :root {
+        --yapp-page-gutter: 14px;
+    }
+}
