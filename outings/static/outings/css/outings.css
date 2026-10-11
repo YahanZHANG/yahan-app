@@ -2326,3 +2326,103 @@ a.outings-mypage-item:hover {
 .outings-my-post-item {
     transition: background-color .15s ease;
 }
+
+
+/* =========================================================
+   Outings region filter
+   ========================================================= */
+
+.outings-region-section {
+    margin-bottom: 28px;
+}
+
+.outings-region-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.outings-region-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 15px;
+    border: 1px solid #e2e8e5;
+    border-radius: 999px;
+    background: #fff;
+    color: #485951;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.outings-region-chip:hover {
+    background: #edf5ef;
+    border-color: #bad6c3;
+    color: #245b3a;
+}
+
+.outings-region-chip.selected {
+    background: #2d7651;
+    color: #fff;
+    border-color: #2d7651;
+}
+
+.outings-card-summary {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #68766e;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.outings-draft-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 6px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: #fff4dc;
+    color: #92610c;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.outings-preview-banner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 13px 16px;
+    margin-bottom: 24px;
+    border: 1px solid #efd7a4;
+    border-radius: 12px;
+    background: #fffaf0;
+    color: #775416;
+    font-size: 13px;
+}
+
+.outings-preview-banner a {
+    margin-left: auto;
+    color: inherit;
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .outings-region-list {
+        gap: 7px;
+    }
+
+    .outings-region-chip {
+        min-height: 36px;
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+}

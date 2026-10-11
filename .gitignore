@@ -16,3 +16,18 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Outings generated data
+/outings_audit/
+
+# Local output
+/pbz_pagination_result.txt
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.pyc

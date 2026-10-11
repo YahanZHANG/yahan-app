@@ -206,7 +206,10 @@ class EventOccurrence(models.Model):
     )
 
     start_at = models.DateTimeField()
-    end_at = models.DateTimeField()
+    end_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
 
     is_cancelled = models.BooleanField(default=False)
 

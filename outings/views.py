@@ -70,16 +70,64 @@ def home(request):
     category_slug = request.GET.get("category", "").strip()
     tag_slug = request.GET.get("tag", "").strip()
 
-    # 公開中かつ、今後の開催が存在するイベント
+        # =====================================================
+    # Region filter
+    # =====================================================
+
+    region = request.GET.get("region", "").strip().upper()
+
+    regions = [
+        ("ZH", "Zürich"),
+        ("AG", "Aargau"),
+        ("BS", "Basel-Stadt"),
+        ("BL", "Basel-Landschaft"),
+        ("ZG", "Zug"),
+        ("LU", "Luzern"),
+        ("BE", "Bern"),
+    ]
+
+    valid_regions = {code for code, name in regions}
+
+    if region not in valid_regions:
+        region = ""
+
+    
+    # 管理者は ?preview=1 でDRAFTも確認できる
+    preview_mode = (
+        request.user.is_authenticated
+        and request.user.is_staff
+        and request.GET.get("preview") == "1"
+    )
+
+    visible_statuses = [Event.Status.PUBLISHED]
+
+    if preview_mode:
+        visible_statuses.append(Event.Status.DRAFT)
+
+    # 終了日時が未登録でも、開始日時が未来なら表示対象
+    valid_occurrence = (
+        Q(occurrences__end_at__gt=now)
+        | Q(
+            occurrences__end_at__isnull=True,
+            occurrences__start_at__gte=now,
+        )
+    )
+
     base_events = (
         Event.objects.filter(
-            status=Event.Status.PUBLISHED,
+            status__in=visible_statuses,
             occurrences__is_cancelled=False,
-            occurrences__end_at__gt=now,
         )
+        .filter(valid_occurrence)
         .select_related("category", "location")
         .distinct()
     )
+
+    if region:
+        base_events = base_events.filter(
+            location__canton=region
+        )
+
 
     if category_slug:
         base_events = base_events.filter(
@@ -96,7 +144,13 @@ def home(request):
     upcoming_occurrences = (
         EventOccurrence.objects.filter(
             is_cancelled=False,
-            end_at__gt=now,
+        )
+        .filter(
+            Q(end_at__gt=now)
+            | Q(
+                end_at__isnull=True,
+                start_at__gte=now,
+            )
         )
         .order_by("start_at")
     )
@@ -104,7 +158,13 @@ def home(request):
     weekend_occurrences = (
         upcoming_occurrences.filter(
             start_at__lt=weekend_end,
-            end_at__gt=weekend_start,
+        )
+        .filter(
+            Q(end_at__gt=weekend_start)
+            | Q(
+                end_at__isnull=True,
+                start_at__gte=weekend_start,
+            )
         )
     )
 
@@ -248,6 +308,14 @@ def home(request):
         "is_filtered": bool(category_slug or tag_slug),
         "recommended_events": recommended_events,
         "personalization_enabled": personalization_enabled,
+        "preview_mode": preview_mode,
+        "draft_count": sum(
+            event.status == Event.Status.DRAFT
+            for event in events
+        ),
+        "regions": regions,
+        "active_region": region,
+        "is_filtered": bool(category_slug or tag_slug or region),
     }
 
     response = render(
@@ -265,6 +333,29 @@ def home(request):
 
 def event_detail(request, pk):
 
+    # 公開イベントは全員閲覧可能。
+    # 管理者はDRAFTも閲覧可能。
+    # 一般投稿者は自分の投稿も閲覧可能。
+    if request.user.is_authenticated and request.user.is_staff:
+        visibility_filter = Q(
+            status__in=[
+                Event.Status.PUBLISHED,
+                Event.Status.DRAFT,
+            ]
+        )
+    elif request.user.is_authenticated:
+        visibility_filter = (
+            Q(status=Event.Status.PUBLISHED)
+            | Q(
+                created_by=request.user,
+                source__isnull=True,
+            )
+        )
+    else:
+        visibility_filter = Q(
+            status=Event.Status.PUBLISHED
+        )
+
     event = get_object_or_404(
         Event.objects.select_related(
             "category",
@@ -273,18 +364,7 @@ def event_detail(request, pk):
         ).prefetch_related(
             "tags",
             "occurrences",
-        ).filter(
-            Q(status=Event.Status.PUBLISHED)
-            | Q(
-                created_by=(
-                    request.user
-                    if request.user.is_authenticated
-                    else None
-                ),
-                source__isnull=True,
-            ) if request.user.is_authenticated
-            else Q(status=Event.Status.PUBLISHED)
-        ),
+        ).filter(visibility_filter),
         pk=pk,
     )
 

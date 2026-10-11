@@ -10,6 +10,7 @@ from .models import (
     EventSource,
     EventTag,
     OutingsComment,
+    OutingsNotification,
 )
 
 
@@ -109,6 +110,71 @@ class EventAdmin(admin.ModelAdmin):
             },
         ),
     )
+    
+    def save_model(self, request, obj, form, change):
+
+        old_status = None
+
+        if change:
+            old_status = (
+                Event.objects
+                .filter(pk=obj.pk)
+                .values_list("status", flat=True)
+                .first()
+            )
+
+        super().save_model(request, obj, form, change)
+
+        # 新規作成時や状態が変わらない場合は通知しない
+        if not change or old_status == obj.status:
+            return
+
+        # 投稿者がいない外部収集イベントは通知しない
+        if not obj.created_by_id:
+            return
+
+        if obj.status == Event.Status.PUBLISHED:
+            kind = OutingsNotification.Kind.APPROVED
+            message = "イベントが承認され、公開された。"
+
+        elif obj.status == Event.Status.REJECTED:
+            kind = OutingsNotification.Kind.REJECTED
+            message = "イベントの掲載が承認されなかった。"
+
+        else:
+            return
+
+        OutingsNotification.objects.create(
+            recipient_id=obj.created_by_id,
+            actor=request.user,
+            event=obj,
+            kind=kind,
+            message=message,
+        )
+
+    
+    def changelist_view(self, request, extra_context=None):
+
+        extra_context = extra_context or {}
+
+        extra_context["outings_pending_count"] = (
+            Event.objects.filter(
+                status=Event.Status.PENDING
+            ).count()
+        )
+
+        extra_context["outings_pending_events"] = (
+            Event.objects.filter(
+                status=Event.Status.PENDING
+            )
+            .order_by("-created_at")[:5]
+        )
+
+        return super().changelist_view(
+            request,
+            extra_context=extra_context,
+        )
+
 
 
 @admin.register(EventOccurrence)

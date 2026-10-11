@@ -1,7 +1,6 @@
+
 {% extends "admin/base.html" %}
-
 {% load i18n %}
-
 
 {% block title %}
     {{ title }} | Yapp Admin
@@ -9,121 +8,286 @@
 
 
 {% block branding %}
+    <h1 id="site-name">
+        <a href="{% url 'admin:index' %}">
+            Yapp administration
+        </a>
+    </h1>
+{% endblock %}
 
-    <div
-        style="
-            display:flex;
-            align-items:center;
-            gap:12px;
-        "
-    >
 
-        <h1 id="site-name">
+{% block extrahead %}
+    {{ block.super }}
 
-            <a href="{% url 'admin:index' %}">
-                Yapp administration
-            </a>
+    <style>
+        .yapp-attention {
+            width: 100%;
+            padding: 16px 20px;
+            background: #f6f8fa;
+            border-bottom: 1px solid #e1e7eb;
+            color: #25313b;
+            box-sizing: border-box;
+        }
 
-        </h1>
+        .yapp-attention-inner {
+            max-width: 1160px;
+            margin: 0 auto;
+        }
 
-    </div>
+        .yapp-attention-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
 
+        .yapp-attention-heading {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 15px;
+            font-weight: 750;
+        }
+
+        .yapp-attention-total {
+            padding: 5px 11px;
+            border-radius: 999px;
+            background: #e7edf1;
+            color: #405466;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .yapp-attention-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .yapp-attention-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+            padding: 13px 15px;
+            border: 1px solid #e0e6ea;
+            border-radius: 11px;
+            background: #ffffff;
+            text-decoration: none !important;
+            color: #25313b !important;
+            transition: border-color .15s, background-color .15s;
+        }
+
+        .yapp-attention-card:hover {
+            border-color: #77afb2;
+            background: #f3f9f9;
+        }
+
+        .yapp-attention-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .yapp-attention-icon {
+            display: grid;
+            place-items: center;
+            width: 33px;
+            height: 33px;
+            border-radius: 9px;
+            background: #e7f4f3;
+            color: #287b83;
+            font-size: 17px;
+        }
+
+        .yapp-attention-number {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1;
+            color: #25313b;
+        }
+
+        .yapp-attention-number small {
+            font-size: 11px;
+            font-weight: 500;
+            color: #78838e;
+        }
+
+        .yapp-attention-label {
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .yapp-attention-sub {
+            font-size: 11px;
+            color: #78838e;
+        }
+
+        .yapp-attention-card.is-empty {
+            opacity: .65;
+        }
+
+        .yapp-attention-card.has-pending {
+            border-color: #a1d2d0;
+        }
+
+        .yapp-attention-card.has-pending .yapp-attention-number {
+            color: #287b83;
+        }
+
+        @media (max-width: 900px) {
+            .yapp-attention-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .yapp-attention {
+                padding: 12px;
+            }
+
+            .yapp-attention-card {
+                padding: 11px;
+            }
+
+            .yapp-attention-label {
+                font-size: 12px;
+            }
+
+            .yapp-attention-number {
+                font-size: 21px;
+            }
+        }
+    </style>
 {% endblock %}
 
 
 {% block nav-global %}
 
-    {% if admin_attention.total %}
+    {% if admin_attention %}
 
-        <div
-            style="
-                margin:12px 20px;
-                padding:14px 16px;
-                border:1px solid #f0d7a5;
-                border-radius:10px;
-                background:#fff8e8;
-                color:#5b4930;
-            "
-        >
+        <section class="yapp-attention">
 
-            <div
-                style="
-                    margin-bottom:10px;
-                    font-weight:700;
-                "
-            >
-                🔔 要確認
-                {{ admin_attention.total }}件
-            </div>
+            <div class="yapp-attention-inner">
+
+                <div class="yapp-attention-header">
+
+                    <div class="yapp-attention-heading">
+                        <span aria-hidden="true">🔔</span>
+                        管理者の対応待ち
+                    </div>
+
+                    <span class="yapp-attention-total">
+                        合計 {{ admin_attention.total }}件
+                    </span>
+
+                </div>
 
 
-            <div
-                style="
-                    display:flex;
-                    flex-wrap:wrap;
-                    gap:10px;
-                "
-            >
+                <div class="yapp-attention-grid">
 
-                {% if admin_attention.feedback %}
+                    <!-- Outings -->
 
                     <a
-                        href="{% url 'admin:news_newsfeedback_changelist' %}?is_read__exact=0"
-                        style="
-                            padding:7px 10px;
-                            border-radius:7px;
-                            background:#fff;
-                            color:#333;
-                            text-decoration:none;
-                        "
+                        href="{% url 'admin:outings_event_changelist' %}?status__exact=pending"
+                        class="yapp-attention-card {% if admin_attention.outings %}has-pending{% else %}is-empty{% endif %}"
                     >
-                        💬 ご意見・ご要望
-                        {{ admin_attention.feedback }}件
+                        <div class="yapp-attention-card-top">
+                            <span class="yapp-attention-icon">📅</span>
+                            <span class="yapp-attention-number">
+                                {{ admin_attention.outings }}
+                                <small>件</small>
+                            </span>
+                        </div>
+
+                        <span class="yapp-attention-label">
+                            イベント承認
+                        </span>
+
+                        <span class="yapp-attention-sub">
+                            おでかけ
+                        </span>
                     </a>
 
-                {% endif %}
 
-
-                {% if admin_attention.support %}
-
-                    <a
-                        href="{% url 'admin:news_supportrequest_changelist' %}?is_read__exact=0"
-                        style="
-                            padding:7px 10px;
-                            border-radius:7px;
-                            background:#fff;
-                            color:#333;
-                            text-decoration:none;
-                        "
-                    >
-                        ❤️ 応援問い合わせ
-                        {{ admin_attention.support }}件
-                    </a>
-
-                {% endif %}
-
-
-                {% if admin_attention.access %}
+                    <!-- Access requests -->
 
                     <a
                         href="{% url 'admin:portal_appaccessrequest_changelist' %}?status__exact=pending"
-                        style="
-                            padding:7px 10px;
-                            border-radius:7px;
-                            background:#fff;
-                            color:#333;
-                            text-decoration:none;
-                        "
+                        class="yapp-attention-card {% if admin_attention.access %}has-pending{% else %}is-empty{% endif %}"
                     >
-                        🔐 アクセス申請
-                        {{ admin_attention.access }}件
+                        <div class="yapp-attention-card-top">
+                            <span class="yapp-attention-icon">🔐</span>
+                            <span class="yapp-attention-number">
+                                {{ admin_attention.access }}
+                                <small>件</small>
+                            </span>
+                        </div>
+
+                        <span class="yapp-attention-label">
+                            利用申請
+                        </span>
+
+                        <span class="yapp-attention-sub">
+                            アプリへのアクセス
+                        </span>
                     </a>
 
-                {% endif %}
+
+                    <!-- News feedback -->
+
+                    <a
+                        href="{% url 'admin:news_newsfeedback_changelist' %}?is_read__exact=0"
+                        class="yapp-attention-card {% if admin_attention.feedback %}has-pending{% else %}is-empty{% endif %}"
+                    >
+                        <div class="yapp-attention-card-top">
+                            <span class="yapp-attention-icon">💬</span>
+                            <span class="yapp-attention-number">
+                                {{ admin_attention.feedback }}
+                                <small>件</small>
+                            </span>
+                        </div>
+
+                        <span class="yapp-attention-label">
+                            ご意見・ご要望
+                        </span>
+
+                        <span class="yapp-attention-sub">
+                            Swiss News
+                        </span>
+                    </a>
+
+
+                    <!-- Support requests -->
+
+                    <a
+                        href="{% url 'admin:news_supportrequest_changelist' %}?is_read__exact=0"
+                        class="yapp-attention-card {% if admin_attention.support %}has-pending{% else %}is-empty{% endif %}"
+                    >
+                        <div class="yapp-attention-card-top">
+                            <span class="yapp-attention-icon">❤️</span>
+                            <span class="yapp-attention-number">
+                                {{ admin_attention.support }}
+                                <small>件</small>
+                            </span>
+                        </div>
+
+                        <span class="yapp-attention-label">
+                            応援問い合わせ
+                        </span>
+
+                        <span class="yapp-attention-sub">
+                            Swiss News
+                        </span>
+                    </a>
+
+                </div>
 
             </div>
 
-        </div>
+        </section>
 
     {% endif %}
 
