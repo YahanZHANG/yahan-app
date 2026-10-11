@@ -141,6 +141,46 @@ My Account | Yapp
 
         {% endif %}
 
+                
+        {% if can_view_analytics %}
+
+            <!-- =============================================
+                Analytics access
+                ============================================= -->
+
+            <div class="manage-analytics-card">
+
+                <div class="manage-analytics-icon" aria-hidden="true">
+                    📊
+                </div>
+
+                <div class="manage-analytics-copy">
+
+                    <strong>
+                        利用状況
+                    </strong>
+
+                    <small>
+                        Yappのアクセス数や利用状況を確認
+                    </small>
+
+                </div>
+
+                <a
+                    href="{% url 'usage_analytics:dashboard' %}"
+                    class="manage-analytics-button"
+                >
+                    <span>開く</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+
+
 
         <!-- =============================================
              Account settings

@@ -1153,6 +1153,7 @@ def manage_apps(request):
         {
             "profile": profile,
             "nickname_form": nickname_form,
+            "can_view_analytics": can_view_analytics(request.user),
         },
     )
 

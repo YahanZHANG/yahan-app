@@ -443,3 +443,36 @@ html[data-yapp-resolved-theme="dark"]
 .yapp-public-coming .yapp-public-card-icon {
     background: #29343d;
 }
+
+
+/* =========================================================
+   Analytics access - Dark mode
+   ========================================================= */
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-card {
+    background: #27343d;
+    border-color: #40515d;
+}
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-icon {
+    background: #364956;
+}
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-copy strong {
+    color: #edf3f7;
+}
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-copy small {
+    color: #b6c4ce;
+}
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-button {
+    background: #344754;
+    border-color: #536a79;
+    color: #e2eef5;
+}
+
+html[data-yapp-resolved-theme="dark"] .manage-analytics-button:hover {
+    background: #405867;
+    color: #ffffff;
+}
