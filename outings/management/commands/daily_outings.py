@@ -19,6 +19,7 @@ from outings.services.ai_editor import evaluate, editorial_key
 from outings.services.selector import select
 from outings.services.candidate_ranker import rank_daily_candidates
 from outings.services.eventfrog_existing_sync import sync_existing
+from outings.services.eventfrog_daily_images import upload_images_for_selected
 
 
 class Command(BaseCommand):
@@ -32,6 +33,7 @@ class Command(BaseCommand):
         parser.add_argument('--days', type=int, default=30)
         parser.add_argument('--model', default='gpt-4.1-mini')
         parser.add_argument('--cleanup', action='store_true', help='Also unpublish ended Eventfrog events after successful import')
+        parser.add_argument('--images', action='store_true', help='Upload images for newly selected events to Cloudinary (opt-in)')
 
     def handle(self, *args, **opts):
         if not 1 <= opts['max_new'] <= 15:
@@ -42,8 +44,15 @@ class Command(BaseCommand):
             raise CommandError('--pages 1..60; --days 1..90 required')
         if not opts['commit']:
             self.stdout.write('DRY RUN: no Eventfrog/OpenAI requests, no DB changes.')
-            self.stdout.write(f"Configured: max-new={opts['max_new']}, max-ai={opts['max_ai']}, pages={opts['pages']}, days={opts['days']}, cleanup={opts['cleanup']}")
+            self.stdout.write(f"Configured: max-new={opts['max_new']}, max-ai={opts['max_ai']}, pages={opts['pages']}, days={opts['days']}, cleanup={opts['cleanup']}, images={opts['images']}")
             return
+
+        if opts['images']:
+            import os
+            required = ('CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET')
+            missing = [name for name in required if not os.environ.get(name, '').strip()]
+            if missing:
+                raise CommandError('Cloudinary env vars missing: ' + ', '.join(missing))
 
         from django.conf import settings
         base = Path(settings.BASE_DIR)
@@ -52,8 +61,12 @@ class Command(BaseCommand):
         locations_cache = data_dir / 'locations.json'
         self.stdout.write('Fetching Eventfrog events...', ending='\n')
         raw = collect(pages=opts['pages'], days=opts['days'])
-        changed = sync_existing(raw, commit=True)
-        self.stdout.write(f"Existing Eventfrog occurrences: {changed}")
+        try:
+            changed = sync_existing(raw, commit=True)
+        except Exception as exc:
+            self.stderr.write(f'ERROR existing Eventfrog date sync: {type(exc).__name__}: {exc}')
+            raise CommandError('Date sync failed; daily run stopped before AI/import') from exc
+        self.stdout.write(f'Existing Eventfrog date sync (COMMIT): {changed}')
         located = enrich_locations(raw, cache_file=locations_cache)
         grouped = group(located)
         self.stdout.write(f'Candidates: {len(grouped)} grouped, {len(located)} located')
@@ -122,6 +135,19 @@ class Command(BaseCommand):
                 filename = Path(tmp) / 'selected.json'
                 filename.write_text(json.dumps(selected, ensure_ascii=False), encoding='utf-8')
                 call_command('import_outings_selected', file=str(filename), commit=True)
+            if opts['images']:
+                # Reuse the snapshot fetched above; no second 20-page Eventfrog request.
+                try:
+                    image_stats = upload_images_for_selected(selected, raw, max_uploads=opts['max_new'])
+                    self.stdout.write(f'Cloudinary images: {image_stats}')
+                except Exception as exc:
+                    self.stderr.write(f'ERROR Cloudinary images: {type(exc).__name__}: {exc}')
+                    self.stderr.write('Events were already imported; image failure does not roll back published events.')
+                    raise CommandError('Image sync failed; please inspect logs and retry safely') from exc
         if opts['cleanup']:
-            call_command('cleanup_outings', commit=True)
+            try:
+                call_command('cleanup_outings', commit=True)
+            except Exception as exc:
+                self.stderr.write(f'ERROR cleanup_outings: {type(exc).__name__}: {exc}')
+                raise CommandError('Cleanup failed; check logs') from exc
         self.stdout.write(self.style.SUCCESS('Daily run finished.'))
