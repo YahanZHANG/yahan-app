@@ -5389,3 +5389,57 @@ a.outings-mypage-item:hover {
 @media (prefers-reduced-motion: reduce) {
     .outings-collapse-button, .outings-back-to-top { transition: none; }
 }
+
+
+/* =========================================================
+   Outings - Featured event cards
+   ========================================================= */
+
+.outings-featured-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.outings-tier-card {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .outings-tier-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 28px rgba(30, 60, 70, 0.13);
+        border-color: var(--outings-accent);
+    }
+}
+
+.outings-tier-card:focus-visible {
+    outline: 2px solid var(--outings-accent);
+    outline-offset: 3px;
+}
+
+@media (min-width: 900px) {
+    .outings-featured-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+}
+
+@media (max-width: 600px) {
+    .outings-featured-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .outings-tier-card {
+        transition: none;
+    }
+
+    .outings-tier-card:hover {
+        transform: none;
+    }
+}

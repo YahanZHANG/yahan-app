@@ -300,9 +300,7 @@ AXES_COOLOFF_TIME = timedelta(
 
 AXES_RESET_ON_SUCCESS = True
 
-AXES_LOCKOUT_PARAMETERS = [
-    "username",
-]
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
 
 AXES_USERNAME_CALLABLE = (
     "portal.axes_utils."
