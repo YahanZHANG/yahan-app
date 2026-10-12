@@ -24,6 +24,11 @@
         rel="stylesheet"
         href="{% static 'outings/css/outings.css' %}"
     >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'outings/css/outings-dark.css' %}"
+    >
 </head>
 
 <body>
@@ -56,6 +61,14 @@
                 </a>
 
                 <a
+                    href="{% url 'outings:saved_events' %}"
+                    class="{% if request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
+                >
+                    <i class="bi bi-heart"></i>
+                    <span>お気に入り</span>
+                </a>
+
+                <a
                     href="{% url 'outings:event_create' %}"
                     class="{% if request.resolver_match.url_name == 'event_create' %}active{% endif %}"
                 >
@@ -79,10 +92,11 @@
                 </a>
 
 
-                <span class="outings-search-nav nav-disabled">
+                <a href="{% url 'outings:search' %}"
+                    class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}">
                     <i class="bi bi-search"></i>
-                    探す
-                </span>
+                    <span>探す</span>
+                </a>
 
             </nav>
 
@@ -111,11 +125,11 @@
         </a>
 
         <a
-            href="{% url 'outings:event_create' %}"
-            class="{% if request.resolver_match.url_name == 'event_create' %}active{% endif %}"
+            href="{% url 'outings:saved_events' %}"
+            class="{% if request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
         >
-            <i class="bi bi-plus-circle"></i>
-            <span>投稿</span>
+            <i class="bi bi-heart"></i>
+            <span>お気に入り</span>
         </a>
 
                 
@@ -140,6 +154,77 @@
     </nav>
 
 </div>
+
+<script>
+(function () {
+    const storageKey = "yapp-outings-theme";
+
+    function applyTheme(theme) {
+        const isDark = theme === "dark";
+
+        document.documentElement.setAttribute(
+            "data-outings-theme",
+            isDark ? "dark" : "light"
+        );
+
+        const toggle = document.getElementById(
+            "outings-theme-toggle"
+        );
+
+        const description = document.getElementById(
+            "outings-theme-description"
+        );
+
+        if (toggle) {
+            toggle.setAttribute(
+                "aria-pressed",
+                String(isDark)
+            );
+        }
+
+        if (description) {
+            description.textContent = isDark
+                ? "ダークモードが有効です"
+                : "ライトモードが有効です";
+        }
+    }
+
+    let savedTheme = "light";
+
+    try {
+        savedTheme =
+            localStorage.getItem(storageKey) || "light";
+    } catch (error) {
+        // Storage unavailable: keep light mode.
+    }
+
+    applyTheme(savedTheme);
+
+    const toggle = document.getElementById(
+        "outings-theme-toggle"
+    );
+
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            const current =
+                document.documentElement.getAttribute(
+                    "data-outings-theme"
+                );
+
+            const next =
+                current === "dark" ? "light" : "dark";
+
+            applyTheme(next);
+
+            try {
+                localStorage.setItem(storageKey, next);
+            } catch (error) {
+                // Theme still works for this page.
+            }
+        });
+    }
+})();
+</script>
 
 </body>
 </html>

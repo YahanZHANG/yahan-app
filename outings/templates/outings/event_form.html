@@ -9,31 +9,6 @@
 
 <div class="outings-create-page">
 
-        
-    <header class="outings-form-header">
-
-        <h1>
-            {% if is_edit %}
-                イベントを編集する
-            {% else %}
-                イベントを投稿する
-            {% endif %}
-        </h1>
-
-        <p>
-            {% if is_edit %}
-                変更後は再び承認待ちになる。
-                公開中のイベントは審査が終わるまで非公開になる。
-            {% else %}
-                イベント情報を登録できる。
-                管理者の確認後に公開される。
-            {% endif %}
-        </p>
-
-    </header>
-
-
-
     <form
         method="post"
         class="outings-create-form"

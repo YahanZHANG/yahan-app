@@ -1,0 +1,64 @@
+{% extends "outings/base.html" %}
+
+{% block title %}
+ハートしたイベント | Yapp
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-mypage">
+
+    <div class="outings-mypage-menu">
+
+        {% for event in hearted_events %}
+
+            <a
+                href="{% url 'outings:event_detail' event.pk %}"
+                class="outings-mypage-item"
+            >
+
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-heart-fill"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+
+                    <strong>{{ event.title }}</strong>
+
+                    <small>
+                        {% if event.location %}
+                            {{ event.location.city }}
+                        {% endif %}
+                        · 詳細を見る
+                    </small>
+
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+
+            </a>
+
+        {% empty %}
+
+            <div class="outings-mypage-empty">
+
+                まだハートしたイベントはありません。
+
+                <p>
+                    <a
+                        href="{% url 'outings:home' %}"
+                        class="back-link"
+                    >
+                        イベントを探す →
+                    </a>
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,62 +1,32 @@
-
-
 from datetime import datetime, time, timedelta
 
-
-
 from django.contrib import messages
-
 from django.contrib.auth.decorators import login_required
-
 from django.core.paginator import Paginator
-
-
 
 from django.db import transaction
 
-
-
 from django.db.models import Count, Prefetch, Q, Min, Max
-
 from django.shortcuts import get_object_or_404, render, redirect
-
 from django.http import HttpResponseRedirect, Http404
-
 from django.urls import reverse
-
 from django.utils import timezone
-
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
-
-
 
 from .forms import EventSubmissionForm, OutingsCommentForm
 
-
-
 from .models import (
-
     Event,
-
     EventCategory,
-
     EventLocation,
-
     EventOccurrence,
-
     EventTag,
-
     EventHeart, 
-
     OutingsPreference,
-
     OutingsComment,
-
     OutingsNotification
-
 )
-
-
 
 from .visitor import get_visitor_id, set_visitor_cookie
 
@@ -771,17 +741,135 @@ def home(request):
         ).first()
 
 
+    # =====================================================
+    # Featured eligibility
+    # Long-running / regularly recurring events
+    # =====================================================
 
-    # Editorial tiers are separate from event content categories.
-    # User-submitted events remain a distinct community section.
-    featured_events = [e for e in events if e.listing_tier == Event.ListingTier.FEATURED and e.upcoming_dates]
-    featured_events.sort(key=lambda e: e.upcoming_dates[0].start_at)
-    standard_events = [e for e in events if e.listing_tier == Event.ListingTier.STANDARD and e.upcoming_dates]
-    standard_events.sort(key=lambda e: e.upcoming_dates[0].start_at)
-    compact_events = [e for e in events if e.listing_tier == Event.ListingTier.COMPACT and e.upcoming_dates]
-    compact_events.sort(key=lambda e: e.upcoming_dates[0].start_at)
-    community_events = [e for e in events if e.source_id is None and e.upcoming_dates]
-    community_events.sort(key=lambda e: e.upcoming_dates[0].start_at)
+    occurrence_rows = (
+        EventOccurrence.objects
+        .filter(
+            event_id__in=[e.pk for e in events],
+            is_cancelled=False,
+        )
+        .values(
+            "event_id",
+            "start_at",
+            "end_at",
+        )
+        .order_by("start_at")
+    )
+
+    occurrence_data = {}
+
+    for row in occurrence_rows:
+        occurrence_data.setdefault(
+            row["event_id"], []
+        ).append(row)
+
+    def is_featured_ineligible(event):
+
+        rows = occurrence_data.get(event.pk, [])
+
+        if not rows:
+            return False
+
+        # Individual occurrence lasting at least 14 days.
+        for row in rows:
+
+            start = row["start_at"]
+            end = row["end_at"]
+
+            if (
+                start
+                and end
+                and end - start >= timedelta(days=14)
+            ):
+                return True
+
+        # All distinct scheduled calendar dates.
+        dates = sorted({
+            timezone.localtime(
+                row["start_at"]
+            ).date()
+            for row in rows
+            if row["start_at"]
+        })
+
+        if len(dates) < 2:
+            return False
+
+        # Overall scheduled span of at least 14 days.
+        if (dates[-1] - dates[0]).days >= 14:
+            return True
+
+        # Weekly or biweekly repetitions.
+        if any(
+            (later - earlier).days in (7, 14)
+            for earlier, later in zip(
+                dates,
+                dates[1:],
+            )
+        ):
+            return True
+
+        return False
+
+
+    # =====================================================
+    # Editorial tiers
+    # =====================================================
+
+    featured_events = []
+    standard_events = []
+    compact_events = []
+    community_events = []
+
+    for event in events:
+
+        if not event.upcoming_dates:
+            continue
+
+        # Member-submitted events belong in Community.
+        if event.source_id is None:
+            community_events.append(event)
+            continue
+
+        if event.listing_tier == Event.ListingTier.FEATURED:
+
+            if is_featured_ineligible(event):
+                # Keep published, but show in Event Information.
+                standard_events.append(event)
+            else:
+                featured_events.append(event)
+
+        elif event.listing_tier == Event.ListingTier.STANDARD:
+            standard_events.append(event)
+
+        elif event.listing_tier == Event.ListingTier.COMPACT:
+            compact_events.append(event)
+
+    # Keep the existing chronological ordering.
+    for event_list in (
+        featured_events,
+        standard_events,
+        compact_events,
+        community_events,
+    ):
+        event_list.sort(
+            key=lambda e: e.upcoming_dates[0].start_at
+        )
+
+    # =====================================================
+    # Hearted event IDs for HOME cards
+    # =====================================================
+
+    hearted_ids = set(
+        EventHeart.objects.filter(
+            visitor_id=visitor_id,
+            event_id__in=[event.pk for event in events],
+        ).values_list("event_id", flat=True)
+    )
 
     context = {
         "featured_events": featured_events[:24],
@@ -789,43 +877,24 @@ def home(request):
         "compact_events": compact_events[:60],
         "community_events": community_events[:30],
         "weekend_events": weekend_events,
-
-        "weekend_events": weekend_events,
-
+        "hearted_ids": hearted_ids,
         "upcoming_events": upcoming_events,
-
         "weekend_start": saturday,
-
         "weekend_end": sunday,
-
         "categories": categories,
-
         "active_category": active_category,
-
         "active_tag": active_tag,
-
         "is_filtered": bool(category_slug or tag_slug),
-
         "recommended_events": recommended_events,
-
         "personalization_enabled": personalization_enabled,
-
         "preview_mode": preview_mode,
-
         "draft_count": sum(
-
             event.status == Event.Status.DRAFT
-
             for event in events
-
         ),
-
         "regions": regions,
-
         "active_region": region,
-
         "is_filtered": bool(category_slug or tag_slug or region),
-
     }
 
 
@@ -854,310 +923,345 @@ def home(request):
 
 
 
-
-
 def search(request):
-
-
 
     now = timezone.now()
 
-
+    # =====================================================
+    # Regions
+    # =====================================================
 
     regions = [
-
         ("ZH", "Zürich"),
-
         ("AG", "Aargau"),
-
         ("BS", "Basel-Stadt"),
-
         ("BL", "Basel-Landschaft"),
-
         ("ZG", "Zug"),
-
         ("LU", "Luzern"),
-
         ("BE", "Bern"),
-
     ]
-
-
 
     valid_regions = {code for code, name in regions}
 
-
-
-    region = request.GET.get("region", "").strip().upper()
+    region = request.GET.get(
+        "region", ""
+    ).strip().upper()
 
     if region not in valid_regions:
-
         region = ""
 
-
+    # =====================================================
+    # Categories
+    # =====================================================
 
     categories = EventCategory.objects.filter(
-
         is_active=True
-
     ).order_by("sort_order", "name")
 
-
-
-    category = request.GET.get("category", "").strip()
-
-
+    category = request.GET.get(
+        "category", ""
+    ).strip()
 
     valid_categories = set(
-
         categories.values_list("slug", flat=True)
-
     )
-
-
 
     if category not in valid_categories:
-
         category = ""
 
+    # =====================================================
+    # Other filters
+    # =====================================================
 
-
-    family_only = request.GET.get("tag") == "family"
-
-    query = request.GET.get("q", "").strip()[:100]
-
-
-
-    preview_mode = (
-
-        request.user.is_authenticated
-
-        and request.user.is_staff
-
-        and request.GET.get("preview") == "1"
-
+    family_only = (
+        request.GET.get("tag") == "family"
     )
 
+    query = request.GET.get(
+        "q", ""
+    ).strip()[:100]
 
+    # =====================================================
+    # Date filters
+    # =====================================================
+
+    date_from = request.GET.get(
+        "date_from", ""
+    ).strip()
+
+    date_to = request.GET.get(
+        "date_to", ""
+    ).strip()
+
+    start_date = (
+        parse_date(date_from)
+        if date_from
+        else None
+    )
+
+    end_date = (
+        parse_date(date_to)
+        if date_to
+        else None
+    )
+
+    # Invalid dates are ignored.
+    if start_date is None:
+        date_from = ""
+
+    if end_date is None:
+        date_to = ""
+
+    # If the dates are reversed, swap them.
+    if (
+        start_date is not None
+        and end_date is not None
+        and start_date > end_date
+    ):
+        start_date, end_date = (
+            end_date,
+            start_date,
+        )
+
+        date_from = start_date.isoformat()
+        date_to = end_date.isoformat()
+
+    # Convert local calendar dates to aware datetimes.
+    #
+    # Start: 00:00 on the selected date
+    # End:   00:00 on the day AFTER the selected date
+    #
+    # Exclusive upper bound avoids issues with seconds,
+    # microseconds and daylight-saving transitions.
+
+    tz = timezone.get_current_timezone()
+
+    range_start = None
+    range_end = None
+
+    if start_date:
+        range_start = timezone.make_aware(
+            datetime.combine(
+                start_date,
+                time.min,
+            ),
+            tz,
+        )
+
+    if end_date:
+        range_end = timezone.make_aware(
+            datetime.combine(
+                end_date + timedelta(days=1),
+                time.min,
+            ),
+            tz,
+        )
+
+    # =====================================================
+    # Staff preview
+    # =====================================================
+
+    preview_mode = (
+        request.user.is_authenticated
+        and request.user.is_staff
+        and request.GET.get("preview") == "1"
+    )
 
     statuses = [Event.Status.PUBLISHED]
 
-
-
     if preview_mode:
-
         statuses.append(Event.Status.DRAFT)
 
+    # =====================================================
+    # Eligible occurrences
+    # =====================================================
 
+    # Occurrences must still be ongoing or upcoming.
+    #
+    # Events with no end_at are considered point-in-time
+    # events for the purposes of searching.
 
-    future_dates = (
-
-        EventOccurrence.objects
-
-        .filter(
-
-            is_cancelled=False,
-
-        )
-
-        .filter(
-
+    occurrence_filter = (
+        Q(is_cancelled=False)
+        &
+        (
             Q(end_at__gt=now)
-
             | Q(
-
                 end_at__isnull=True,
-
                 start_at__gte=now,
-
             )
-
         )
-
-        .order_by("start_at")
-
     )
 
+    # Date range overlap:
+    #
+    # occurrence_start < selected_range_end
+    # AND
+    # occurrence_end > selected_range_start
+    #
+    # For occurrences without end_at, use start_at.
 
+    if range_start is not None:
+        occurrence_filter &= (
+            Q(end_at__gt=range_start)
+            | Q(
+                end_at__isnull=True,
+                start_at__gte=range_start,
+            )
+        )
+
+    if range_end is not None:
+        occurrence_filter &= Q(
+            start_at__lt=range_end
+        )
+
+    # =====================================================
+    # Matching occurrences
+    # =====================================================
+
+    matching_dates = (
+        EventOccurrence.objects
+        .filter(occurrence_filter)
+        .order_by("start_at")
+    )
+
+    matching_event_ids = (
+        matching_dates
+        .values("event_id")
+    )
+
+    # =====================================================
+    # Event queryset
+    # =====================================================
 
     events = (
-
         Event.objects
-
         .filter(
-
             status__in=statuses,
-
-            occurrences__is_cancelled=False,
-
+            pk__in=matching_event_ids,
         )
-
-        .filter(
-
-            Q(occurrences__end_at__gt=now)
-
-            | Q(
-
-                occurrences__end_at__isnull=True,
-
-                occurrences__start_at__gte=now,
-
-            )
-
+        .select_related(
+            "location",
+            "category",
         )
-
-        .select_related("location", "category")
-
-        .distinct()
-
     )
 
-
+    # =====================================================
+    # Region filter
+    # =====================================================
 
     if region:
-
         events = events.filter(
-
             location__canton=region
-
         )
 
-
+    # =====================================================
+    # Category filter
+    # =====================================================
 
     if category:
-
         events = events.filter(
-
             category__slug=category,
-
             category__is_active=True,
-
         )
 
-
+    # =====================================================
+    # Family filter
+    # =====================================================
 
     if family_only:
-
         events = events.filter(
-
             tags__slug="family"
-
         )
 
-
+    # =====================================================
+    # Keyword search
+    # =====================================================
 
     if query:
-
         events = events.filter(
-
             Q(title__icontains=query)
-
             | Q(title_original__icontains=query)
-
             | Q(summary_ja__icontains=query)
-
             | Q(location__city__icontains=query)
-
             | Q(location__name__icontains=query)
-
         )
 
-
+    # =====================================================
+    # Sort by first matching occurrence
+    # =====================================================
 
     events = (
-
         events
-
+        .distinct()
         .annotate(
-
             next_start=Min(
-
                 "occurrences__start_at",
-
                 filter=Q(
-
-                    occurrences__is_cancelled=False,
-
-                    occurrences__start_at__gte=now,
-
+                    occurrences__in=matching_dates
                 ),
-
             )
-
         )
-
-        .order_by("next_start", "pk")
-
+        .order_by(
+            "next_start",
+            "pk",
+        )
         .prefetch_related(
-
             Prefetch(
-
                 "occurrences",
-
-                queryset=future_dates,
-
+                queryset=matching_dates,
                 to_attr="search_dates",
-
             )
-
         )
-
     )
 
-
+    # =====================================================
+    # Pagination
+    # =====================================================
 
     paginator = Paginator(events, 20)
 
     page_obj = paginator.get_page(
-
         request.GET.get("page", 1)
-
     )
 
-
+    # =====================================================
+    # Emoji
+    # =====================================================
 
     for event in page_obj.object_list:
+        event.display_emoji = (
+            get_event_emoji(event)
+        )
 
-        event.display_emoji = get_event_emoji(event)
-
-
+    # =====================================================
+    # Context
+    # =====================================================
 
     context = {
-
         "events": page_obj.object_list,
-
         "page_obj": page_obj,
-
         "result_count": paginator.count,
 
         "regions": regions,
-
         "active_region": region,
 
         "categories": categories,
-
         "active_category": category,
 
         "family_only": family_only,
-
         "query": query,
-
         "preview_mode": preview_mode,
 
+        "date_from": date_from,
+        "date_to": date_to,
     }
 
-
-
     return render(
-
         request,
-
         "outings/search.html",
-
         context,
-
     )
-
 
 
 def event_detail(request, pk):
@@ -1570,7 +1674,80 @@ def my_page(request):
 
     )
 
+# =========================================================
+# Saved events
+# =========================================================
 
+def saved_events(request):
+
+    visitor_id = get_visitor_id(request)
+
+    hearted_events = (
+        Event.objects.filter(
+            hearts__visitor_id=visitor_id,
+            status=Event.Status.PUBLISHED,
+        )
+        .select_related("location", "category")
+        .order_by("-hearts__created_at")
+    )
+
+    response = render(
+        request,
+        "outings/saved_events.html",
+        {
+            "hearted_events": hearted_events,
+        },
+    )
+
+    return set_visitor_cookie(
+        request,
+        response,
+        visitor_id,
+    )
+
+
+# =========================================================
+# My preferences
+# =========================================================
+
+def my_preferences(request):
+
+    visitor_id = get_visitor_id(request)
+
+    preference, created = (
+        OutingsPreference.objects.get_or_create(
+            visitor_id=visitor_id,
+        )
+    )
+
+    regions = [
+        ("ZH", "Zürich"),
+        ("AG", "Aargau"),
+        ("BS", "Basel-Stadt"),
+        ("BL", "Basel-Landschaft"),
+        ("ZG", "Zug"),
+        ("LU", "Luzern"),
+        ("BE", "Bern"),
+        ("SZ", "Schwyz"),
+        ("SO", "Solothurn"),
+        ("NW", "Nidwalden"),
+        ("OW", "Obwalden"),
+    ]
+
+    response = render(
+        request,
+        "outings/my_preferences.html",
+        {
+            "preference": preference,
+            "regions": regions,
+        },
+    )
+
+    return set_visitor_cookie(
+        request,
+        response,
+        visitor_id,
+    )
 
 
 
@@ -1631,9 +1808,7 @@ def save_preferences(request):
 
 
     response = HttpResponseRedirect(
-
-        reverse("outings:my_page")
-
+        reverse("outings:my_preferences")
     )
 
 

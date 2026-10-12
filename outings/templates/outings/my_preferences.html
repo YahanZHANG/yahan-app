@@ -1,0 +1,68 @@
+{% extends "outings/base.html" %}
+
+{% block title %}
+おすすめ設定 | Yapp
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-mypage">
+
+    <form
+        method="post"
+        action="{% url 'outings:save_preferences' %}"
+        class="outings-mypage-settings"
+    >
+
+        {% csrf_token %}
+
+        <h3>
+            <i class="bi bi-geo-alt"></i>
+            お気に入りの地域
+        </h3>
+
+        <p>
+            よくお出かけする地域を選んでください。
+            複数選択できます。
+        </p>
+
+        <div class="outings-region-grid">
+
+            {% for code, name in regions %}
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="regions"
+                        value="{{ code }}"
+                        {% if code in preference.favorite_regions %}
+                            checked
+                        {% endif %}
+                    >
+
+                    {{ name }}
+
+                </label>
+
+            {% endfor %}
+
+        </div>
+
+        <p>
+
+        </p>
+
+        <button
+            type="submit"
+            class="outings-save-button"
+        >
+            <i class="bi bi-check-lg"></i>
+            設定を保存
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -4,19 +4,58 @@
 
 {% block content %}
 <div class="outings-search-page">
-    <div class="section-heading">
-        <div>
-            <h1>🔎 イベントを探す</h1>
-            <p>地域・カテゴリー・キーワードを組み合わせて検索できます。</p>
-        </div>
-    </div>
 
     <form method="get" action="{% url 'outings:search' %}" class="outings-search-form">
         {% if preview_mode %}<input type="hidden" name="preview" value="1">{% endif %}
 
+        <!-- =====================================================
+            日付から探す
+            ===================================================== -->
+
+        <section class="outings-date-filter">
+
+            <div class="outings-date-filter-heading">
+                <h2><i class="bi bi-calendar3"></i> 日付から探す</h2>
+                <span>任意</span>
+            </div>
+
+            <div class="outings-date-shortcuts">
+                <button type="button" class="outings-date-shortcut"
+                        data-date-range="this-weekend">今週末</button>
+                <button type="button" class="outings-date-shortcut"
+                        data-date-range="next-weekend">来週末</button>
+                <button type="button" class="outings-date-shortcut"
+                        data-date-range="clear">指定なし</button>
+            </div>
+
+            <div class="outings-date-filter-inputs">
+
+                <label for="outings-date-from">
+                    <span>開始日</span>
+                    <input type="date"
+                        id="outings-date-from"
+                        name="date_from"
+                        lang="ja"
+                        value="{{ date_from|default:'' }}">
+                </label>
+
+                <span class="outings-date-separator">〜</span>
+
+                <label for="outings-date-to">
+                    <span>終了日</span>
+                    <input type="date"
+                        id="outings-date-to"
+                        name="date_to"
+                        lang="ja"
+                        value="{{ date_to|default:'' }}">
+                </label>
+
+            </div>
+
+        </section>
+
         <section class="outings-region-section">
             <h2>📍 地域から探す</h2>
-            <p>お住まいの地域やおでかけ先を選択</p>
             <div class="outings-region-list">
                 <label class="outings-region-chip {% if not active_region %}selected{% endif %}">
                     <input type="radio" name="region" value="" {% if not active_region %}checked{% endif %}>
@@ -48,7 +87,10 @@
         </section>
 
         <div class="outings-search-options">
-            <label><input type="checkbox" name="tag" value="family" {% if family_only %}checked{% endif %}> 👶 子連れ</label>
+            <label class="outings-family-choice">
+                <input type="checkbox" name="tag" value="family" {% if family_only %}checked{% endif %}>
+                <span>👶 子どもと一緒に楽しむ <span class="outings-family-description">（子連れ向けだけを表示）</span></span>
+            </label>
             <label for="outings-q">キーワード</label>
             <input id="outings-q" type="search" name="q" value="{{ query }}" placeholder="イベント名・紹介文・都市名">
         </div>
@@ -104,4 +146,94 @@
         });
     });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const startInput = document.getElementById("outings-date-from");
+    const endInput = document.getElementById("outings-date-to");
+
+    const buttons = document.querySelectorAll(
+        ".outings-date-shortcut"
+    );
+
+    if (!startInput || !endInput) return;
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+
+    function getSaturday(weekOffset = 0) {
+        const today = new Date();
+        today.setHours(12, 0, 0, 0);
+
+        const weekday = today.getDay();
+        const daysUntilSaturday = (6 - weekday + 7) % 7;
+
+        today.setDate(
+            today.getDate() + daysUntilSaturday + weekOffset * 7
+        );
+
+        return today;
+    }
+
+    function refreshSelected() {
+        buttons.forEach(button => {
+            const range = button.dataset.dateRange;
+            let selected = false;
+
+            if (range === "clear") {
+                selected = !startInput.value && !endInput.value;
+            } else {
+                const saturday = getSaturday(
+                    range === "next-weekend" ? 1 : 0
+                );
+
+                const sunday = new Date(saturday);
+                sunday.setDate(saturday.getDate() + 1);
+
+                selected =
+                    startInput.value === formatDate(saturday) &&
+                    endInput.value === formatDate(sunday);
+            }
+
+            button.classList.toggle("is-selected", selected);
+        });
+    }
+
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+
+            const range = button.dataset.dateRange;
+
+            if (range === "clear") {
+                startInput.value = "";
+                endInput.value = "";
+            } else {
+                const saturday = getSaturday(
+                    range === "next-weekend" ? 1 : 0
+                );
+
+                const sunday = new Date(saturday);
+                sunday.setDate(saturday.getDate() + 1);
+
+                startInput.value = formatDate(saturday);
+                endInput.value = formatDate(sunday);
+            }
+
+            refreshSelected();
+        });
+    });
+
+    startInput.addEventListener("change", refreshSelected);
+    endInput.addEventListener("change", refreshSelected);
+
+    refreshSelected();
+});
+</script>
+
 {% endblock %}

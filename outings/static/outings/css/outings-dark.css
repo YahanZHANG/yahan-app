@@ -1,0 +1,101 @@
+/* Yapp Outings dark mode: load AFTER outings.css. */
+html[data-outings-theme="dark"] {
+    color-scheme: dark;
+    --outings-bg: #121b25;
+    --outings-surface: #1c2935;
+    --outings-text: #eef4f7;
+    --outings-muted: #b3c0ca;
+    --outings-border: #354653;
+    --outings-accent: #7dcbd0;
+    --outings-accent-soft: #283f45;
+    --outings-peach: #47352f;
+    --outings-blue-soft: #24384c;
+    --outings-green-soft: #253c32;
+}
+html[data-outings-theme="dark"] body,
+html[data-outings-theme="dark"] .outings-app { background: var(--outings-bg); color: var(--outings-text); }
+html[data-outings-theme="dark"] :is(
+    .outings-header, .outings-mypage-menu, .outings-mypage-settings,
+    .outings-tier-card, .outings-search-form, .detail-panel,
+    .outings-comments, .outings-notifications-list, .outings-my-posts-list,
+    .outings-my-comments-list, .outings-create-form, .outings-delete-card,
+    .outings-comment-edit-form, .outings-comment-management > form,
+    .outings-compact-list, .outings-bottom-nav, .event-card,
+    .outings-search-page .outings-category-grid .outings-category-card
+) {
+    background: var(--outings-surface);
+    border-color: var(--outings-border);
+    color: var(--outings-text);
+}
+html[data-outings-theme="dark"] :is(
+    .outings-mypage-item, .outings-theme-toggle,
+    .outings-mypage-item-content strong, .outings-tier-body h3,
+    .outings-search-page h1, .outings-search-page h2,
+    .outings-date-filter-heading h2, .outings-comment-body
+) { color: var(--outings-text); }
+html[data-outings-theme="dark"] :is(
+    .outings-tier-nav, .outings-curated-intro, .hero,
+    .outings-search-form .outings-date-filter, .outings-comment,
+    .outings-filter-status, .outings-mypage-item.is-upcoming,
+    .outings-compact-list > a:hover
+) { background: var(--outings-accent-soft); color: var(--outings-text); }
+html[data-outings-theme="dark"] .outings-tier-nav {
+    background: rgba(18,27,37,.96);
+}
+html[data-outings-theme="dark"] :is(.outings-tier-nav > a, .outings-tier-grid > a) {
+    background: var(--outings-surface);
+    color: var(--outings-text);
+    border-color: var(--outings-border);
+}
+html[data-outings-theme="dark"] .outings-tier-nav .outings-section-nav-card.is-active-section,
+html[data-outings-theme="dark"] .outings-tier-nav .outings-section-nav-card.is-active-section:hover {
+    background: #347d83;
+    color: #fff;
+    border-color: #347d83;
+}
+html[data-outings-theme="dark"] .outings-tier-nav .outings-section-nav-card.is-active-section :is(i,span) { color: #fff; }
+html[data-outings-theme="dark"] .outings-theme-toggle { background: transparent; }
+html[data-outings-theme="dark"] :is(.outings-mypage-item:hover, .outings-theme-toggle:hover) {
+    background: var(--outings-accent-soft);
+}
+html[data-outings-theme="dark"] :is(
+    .outings-search-options input[type="search"],
+    .outings-date-filter-inputs input[type="date"],
+    .outings-form-field input:not([type="checkbox"]),
+    .outings-form-field select, .outings-form-field textarea,
+    .outings-comment-compose textarea,
+    .outings-reply-details textarea,
+    .outings-comment-management textarea
+) {
+    background: #15222d;
+    color: var(--outings-text);
+    border-color: var(--outings-border);
+    color-scheme: dark;
+}
+html[data-outings-theme="dark"] .outings-date-filter-inputs label { color: var(--outings-muted); }
+html[data-outings-theme="dark"] :is(
+    .outings-date-shortcut, .outings-region-chip,
+    .outings-discovery-links a, .filter-chip,
+    .outings-heart-button, .outings-collapse-button,
+    .outings-delete-cancel
+) {
+    background: var(--outings-surface);
+    color: var(--outings-text);
+    border-color: var(--outings-border);
+}
+html[data-outings-theme="dark"] :is(
+    .outings-date-shortcut.is-selected, .outings-region-chip.selected,
+    .outings-heart-button.hearted
+) {
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+    border-color: var(--outings-accent);
+}
+html[data-outings-theme="dark"] .outings-save-button,
+html[data-outings-theme="dark"] .outings-search-submit,
+html[data-outings-theme="dark"] .official-link { background: #277f86; color: #fff; }
+html[data-outings-theme="dark"] .empty-state,
+html[data-outings-theme="dark"] .outings-mypage-empty { background: var(--outings-surface); color: var(--outings-muted); }
+html[data-outings-theme="dark"] .outings-preview-banner { background: #40362b; color: #f9d59e; border-color: #735839; }
+html[data-outings-theme="dark"] .outings-tier-featured { background: #493c24; color: #f7d691; }
+html[data-outings-theme="dark"] .outings-tier-community { background: #254737; color: #a1e8ba; }

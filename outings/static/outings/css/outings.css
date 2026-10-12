@@ -12,9 +12,15 @@
 
     --outings-border: #e5eaee;
 
-    --outings-accent: #287b83;
+    --outings-accent: #237b83;
 
-    --outings-accent-soft: #e7f4f3;
+    --outings-peach: #fff0e1;
+
+    --outings-blue-soft: #eaf3fd;
+
+    --outings-green-soft: #e7f6ed;
+
+    --outings-accent-soft: #e6f5f3;
 
 }
 
@@ -5287,7 +5293,7 @@ a.outings-mypage-item:hover {
 }
 /* The HOME page uses the same horizontal padding as other content,
    while reducing the space ABOVE the navigation. */
-.outings-main:has(.outings-curated-home) { padding-top: 8px; }
+.outings-main:has(.outings-curated-home) { padding-top: 12px; }
 
 .outings-tier-section { margin: 30px 0; }
 .outings-tier-heading {
@@ -5301,7 +5307,7 @@ a.outings-mypage-item:hover {
 .outings-tier-heading p { font-size: 12px; color: var(--outings-muted); margin: 0; }
 .outings-featured-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .outings-tier-card { display: block; overflow: hidden; background: #fff; border: 1px solid var(--outings-border); border-radius: 13px; }
-.outings-tier-card.featured { border-color: #e9d9a5; }
+.outings-tier-card.featured { border-color: var(--outings-border); }
 .outings-tier-visual { height: 170px; background: var(--outings-accent-soft); }
 .outings-tier-visual img, .outings-tier-visual .outings-emoji-image { width: 100%; height: 100%; object-fit: cover; }
 .outings-tier-body { padding: 14px; }
@@ -5391,55 +5397,417 @@ a.outings-mypage-item:hover {
 }
 
 
-/* =========================================================
-   Outings - Featured event cards
-   ========================================================= */
+/* Yapp Outings UI polish v1 — narrow, additive overrides */
 
-.outings-featured-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+
+/* Category choices: chips instead of large cards (search only) */
+.outings-search-page .outings-category-section { margin-top: 22px; margin-bottom: 22px; }
+.outings-search-page .outings-category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 12px;
+}
+.outings-search-page .outings-category-grid .outings-category-card {
+    width: auto;
+    min-height: 38px;
+    min-width: 0;
+    display: inline-flex;
+    flex-direction: row;
+    gap: 0;
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+    background: #fff;
+    border: 1px solid var(--outings-border);
+    box-shadow: none;
+    transform: none;
+    cursor: pointer;
+}
+.outings-search-page .outings-category-grid .outings-category-card > i { display: none; }
+.outings-search-page .outings-category-grid .outings-category-card.selected,
+.outings-search-page .outings-category-grid .outings-category-card:has(input:checked) {
+    background: var(--outings-accent-soft);
+    border-color: var(--outings-accent);
+    color: #185961;
+}
+.outings-search-page .outings-category-grid .outings-category-card:focus-within {
+    outline: 2px solid var(--outings-accent);
+    outline-offset: 2px;
 }
 
-.outings-tier-card {
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
+/* Family-friendly toggle, using the existing tag=family backend */
+.outings-family-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #d3e5d9;
+    border-radius: 12px;
+    background: var(--outings-green-soft);
+    color: #275a41;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
 }
+.outings-family-choice input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    accent-color: #2a805c;
+}
+.outings-family-choice:has(input:checked) {
+    border-color: #2a805c;
+    box-shadow: inset 0 0 0 1px #2a805c;
+    background: #d8f0e2;
+}
+.outings-family-choice .outings-family-description { font-size: 11px; color: #62766a; font-weight: 400; }
 
-@media (hover: hover) and (pointer: fine) {
-    .outings-tier-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 28px rgba(30, 60, 70, 0.13);
-        border-color: var(--outings-accent);
+/* Slightly more personality without changing core identity */
+.outings-search-page .outings-region-section h2 { color: #256c85; }
+.outings-search-page .outings-category-section h2 { color: #a45f27; }
+.outings-search-page .outings-category-section { border-top: 1px solid var(--outings-border); padding-top: 18px; }
+.outings-search-form { border-top: 3px solid #e8b37d; }
+.outings-search-submit { background: var(--outings-accent); }
+.outings-search-submit:hover { background: #1c626b; }
+
+.outings-tier-section#community .outings-tier-heading h2 { color: #2a7654; }
+.outings-tier-section#featured .outings-tier-heading h2 { color: #976016; }
+.outings-tier-section#standard .outings-tier-heading h2 { color: #236e83; }
+.outings-tier-section#compact .outings-tier-heading h2 { color: #566f93; }
+
+/* Desktop: header and secondary four-section navigation both sticky */
+@media (min-width: 900px) {
+    .outings-header {
+        position: sticky;
+        top: 0;
+        z-index: 150;
+        background: var(--outings-surface);
+        box-shadow: 0 2px 10px rgba(26, 48, 57, .055);
+    }
+    .outings-tier-nav {
+        position: sticky;
+        top: var(--outings-desktop-header-height, 70px);
+        z-index: 120;
+        background: rgba(248, 250, 251, .97);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    #featured, #standard, #compact, #community { scroll-margin-top: 180px; }
+}
+@media (max-width: 600px) {
+    .outings-search-page .outings-category-grid { gap: 7px; }
+    .outings-search-page .outings-category-grid .outings-category-card {
+        padding: 8px 11px;
+        font-size: 11px;
+        min-height: 35px;
     }
 }
 
-.outings-tier-card:focus-visible {
+
+/* =========================================================
+   FINAL - HOME featured cards and scroll-aware navigation
+   ========================================================= */
+.outings-tier-card {
+    position: relative;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.outings-tier-card.featured { border: 1px solid var(--outings-border); background: var(--outings-surface); }
+@media (hover: hover) and (pointer: fine) {
+    .outings-tier-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 14px 30px rgba(30, 60, 70, .14);
+        border-color: var(--outings-accent);
+    }
+}
+.outings-tier-card:focus-visible { outline: 2px solid var(--outings-accent); outline-offset: 3px; }
+.outings-featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (min-width: 900px) {
+    .outings-featured-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+}
+@media (max-width: 600px) {
+    .outings-featured-grid { grid-template-columns: 1fr; }
+}
+.outings-tier-nav .outings-section-nav-card {
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.outings-tier-nav .outings-section-nav-card.is-active-section,
+.outings-tier-nav .outings-section-nav-card.is-active-section:hover {
+    background: var(--outings-accent);
+    color: #fff;
+    border-color: var(--outings-accent);
+    box-shadow: 0 2px 8px rgba(30,90,95,.16);
+}
+.outings-tier-nav .outings-section-nav-card.is-active-section i,
+.outings-tier-nav .outings-section-nav-card.is-active-section span { color: #fff; }
+.outings-section-nav-card:focus-visible { outline: 2px solid var(--outings-accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+    .outings-tier-card, .outings-tier-nav .outings-section-nav-card { transition: none; }
+    .outings-tier-card:hover { transform: none; }
+}
+
+/* =========================================================
+   FINAL - Search date picker (keeps native date input)
+   ========================================================= */
+.outings-search-form .outings-date-filter {
+    margin: 0 0 26px; padding: 18px;
+    border: 1px solid #e1e9e8; border-radius: 15px;
+    background: #f8fbfa;
+}
+.outings-date-filter-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.outings-date-filter-heading h2 { margin: 0; color: var(--outings-text); font-size: 16px; font-weight: 750; }
+.outings-date-filter-heading h2 i { color: var(--outings-accent); margin-right: 6px; }
+.outings-date-filter-heading > span { color: var(--outings-muted); font-size: 11px; }
+.outings-date-shortcuts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.outings-date-shortcut {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 36px; padding: 8px 14px;
+    border: 1px solid #d8e6e3; border-radius: 999px;
+    background: #fff; color: #47615c;
+    font: inherit; font-size: 12px; font-weight: 650; cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.outings-date-shortcut:hover, .outings-date-shortcut.is-selected {
+    border-color: var(--outings-accent); background: var(--outings-accent-soft); color: var(--outings-accent);
+}
+.outings-date-shortcut:focus-visible { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
+.outings-date-filter-inputs {
+    display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+    align-items: end; gap: 10px;
+}
+.outings-date-filter-inputs label {
+    display: flex; flex-direction: column; gap: 7px;
+    min-width: 0; color: #536963; font-size: 12px; font-weight: 650;
+}
+.outings-date-filter-inputs input[type="date"] {
+    display: block; width: 100%; min-width: 0; height: 44px;
+    padding: 8px 11px; border: 1px solid #d7e2df; border-radius: 10px;
+    background: #fff; color: #263d38; font-family: inherit; font-size: 13px;
+    font-weight: 500; color-scheme: light;
+}
+.outings-date-filter-inputs input[type="date"]:focus {
+    outline: 2px solid var(--outings-accent-soft); border-color: var(--outings-accent);
+}
+.outings-date-separator { padding-bottom: 12px; color: #899a95; text-align: center; font-size: 14px; }
+@media (max-width: 480px) {
+    .outings-search-form .outings-date-filter { padding: 14px; }
+    .outings-date-filter-inputs { grid-template-columns: minmax(0, 1fr) 12px minmax(0, 1fr); gap: 5px; }
+    .outings-date-filter-inputs input[type="date"] { padding: 7px 4px; font-size: 12px; }
+}
+
+/* =========================================================
+   FINAL - My Page settings and theme switch
+   ========================================================= */
+.outings-mypage-section { scroll-margin-top: 110px; }
+.outings-mypage-section h2 i { margin-right: 7px; color: var(--outings-accent); }
+.outings-mypage-settings h3 { margin: 0 0 12px; font-size: 15px; }
+.outings-mypage-settings h3:not(:first-child) { margin-top: 25px; }
+.outings-region-grid input, .outings-personalization input { accent-color: var(--outings-accent); }
+.outings-theme-toggle { width: 100%; border: 0; background: transparent; font: inherit; cursor: pointer; text-align: left; }
+.outings-theme-toggle:hover { background: var(--outings-accent-soft); }
+.outings-theme-switch {
+    position: relative; flex-shrink: 0; width: 43px; height: 25px;
+    border-radius: 20px; background: #ccd5d9; transition: background-color .2s ease;
+}
+.outings-theme-switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px;
+    border-radius: 50%; background: #fff; transition: transform .2s ease;
+}
+.outings-theme-toggle[aria-pressed="true"] .outings-theme-switch { background: var(--outings-accent); }
+.outings-theme-toggle[aria-pressed="true"] .outings-theme-switch::after { transform: translateX(18px); }
+
+/* =========================================================
+   My Page - Reduce top spacing
+   ========================================================= */
+
+/* My Page only: reduce space below header/navigation */
+.outings-main:has(.outings-my-page) {
+    padding-top: 8px;
+}
+
+/* Remove extra margin before the first section */
+.outings-my-page > .outings-mypage-section:first-child {
+    margin-top: 0;
+}
+
+/* Keep heading close to its menu */
+.outings-my-page .outings-mypage-section h2 {
+    margin-bottom: 10px;
+}
+
+/* =========================================================
+   HOME - Heart buttons on event cards
+   ========================================================= */
+
+/* Card wrapper */
+
+.outings-card-with-heart {
+    position: relative;
+    min-width: 0;
+}
+
+.outings-card-with-heart > .outings-tier-card {
+    height: 100%;
+}
+
+/* Heart form */
+
+.outings-card-with-heart > .outings-card-heart-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
+}
+
+.outings-card-heart-form {
+    margin: 0;
+}
+
+/* Heart button */
+
+.outings-card-heart-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    border: 1px solid rgba(45, 65, 75, 0.12);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.96);
+    color: #697982;
+
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.10);
+
+    font: inherit;
+    font-size: 19px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.outings-card-heart-button:hover {
+    color: #cf4364;
+    background: #fff1f4;
+    transform: scale(1.07);
+}
+
+.outings-card-heart-button.is-hearted {
+    color: #cf4364;
+    background: #fff1f4;
+    border-color: #f3b7c4;
+}
+
+.outings-card-heart-button:focus-visible {
     outline: 2px solid var(--outings-accent);
     outline-offset: 3px;
 }
 
-@media (min-width: 900px) {
-    .outings-featured-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-    }
+.outings-card-heart-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+/* =========================================================
+   Compact rows with independent heart buttons
+   ========================================================= */
+
+.outings-compact-heart-row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    border-bottom: 1px solid var(--outings-border);
+}
+
+.outings-compact-heart-row:last-child {
+    border-bottom: 0;
+}
+
+.outings-compact-heart-row > a {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    gap: 12px;
+    padding: 12px 8px 12px 14px;
+}
+
+.outings-compact-heart-row > .outings-card-heart-form {
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+.outings-compact-heart-row .outings-card-heart-button {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+    box-shadow: none;
 }
 
 @media (max-width: 600px) {
-    .outings-featured-grid {
-        grid-template-columns: 1fr;
+
+    .outings-card-with-heart > .outings-card-heart-form {
+        top: 8px;
+        right: 8px;
+    }
+
+    .outings-card-heart-button {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+
+    .outings-compact-heart-row > a {
+        gap: 8px;
+        padding-left: 11px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .outings-tier-card {
+
+    .outings-card-heart-button {
         transition: none;
     }
 
-    .outings-tier-card:hover {
+    .outings-card-heart-button:hover {
         transform: none;
     }
+}
+
+/* =========================================================
+   Mobile - Larger heart buttons
+   ========================================================= */
+
+@media (max-width: 899px) {
+
+    .outings-card-heart-button {
+        width: 46px;
+        height: 46px;
+        font-size: 24px;
+    }
+
+    .outings-compact-heart-row .outings-card-heart-button {
+        width: 42px;
+        height: 42px;
+        font-size: 22px;
+    }
+
+    .outings-card-with-heart > .outings-card-heart-form {
+        top: 10px;
+        right: 10px;
+    }
+
 }

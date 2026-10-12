@@ -32,6 +32,27 @@ def _long_running(event, occurrences):
             return True
     return False
 
+def _recurring_event(occurrences):
+    """
+    Detect weekly or biweekly recurring events.
+
+    Two different occurrence dates exactly 7 or 14 days
+    apart are treated as a recurring schedule.
+    """
+
+    dates = sorted({
+        dt.date()
+        for occurrence in occurrences
+        if (dt := _parse(occurrence.get("start")))
+    })
+
+    return any(
+        (next_date - current_date).days in (7, 14)
+        for current_date, next_date in zip(
+            dates,
+            dates[1:],
+        )
+    )
 
 def _normal(text):
     text = unicodedata.normalize('NFKC', str(text or '')).casefold()
@@ -107,13 +128,34 @@ def select(evaluated, *, target=100, now=None, days=45):
         first_start = min(_parse(o['start']) for o in occurrences)
         delta = (first_start - now).total_seconds() / 86400
         band = 0 if delta <= 7 else 1 if delta <= 14 else 2 if delta <= 30 else 3
-        event['is_long_running'] = _long_running(event, occurrences)
+        event["is_long_running"] = _long_running(
+            event,
+            occurrences,
+        )
+
+        event["is_recurring"] = _recurring_event(
+            event.get("occurrences") or []
+        )
         tags = [tag for tag in ai.get('tags', []) if tag not in ('weekend', 'free', 'indoor', 'outdoor', 'low-language-barrier')]
         if any(_parse(o['start']).weekday() >= 5 for o in occurrences):
             tags.append('weekend')
         event['ai']['tags'] = list(dict.fromkeys(tags))
-        event['listing_tier'] = _tier(event, ai, score)
-        event['show_summary_on_listing'] = event['listing_tier'] in ('featured', 'standard')
+        event["listing_tier"] = _tier(event, ai, score)
+
+        # Long-running and regularly recurring events
+        # must not appear in Featured.
+        if (
+            event["listing_tier"] == "featured"
+            and (
+                event["is_long_running"]
+                or event["is_recurring"]
+            )
+        ):
+            event["listing_tier"] = "standard"
+
+        event["show_summary_on_listing"] = (
+            event["listing_tier"] in ("featured", "standard")
+        )
         event['first_upcoming_at'] = first_start.isoformat()
         event['occurrences'] = sorted(event['occurrences'], key=lambda o: o.get('start', ''))
         buckets[band].append(event)
