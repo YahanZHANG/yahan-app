@@ -1,470 +1,940 @@
 
+
 {% extends "outings/base.html" %}
 
+
+
 {% block title %}
+
 {{ event.title }} | おでかけ
+
 {% endblock %}
+
+
 
 {% block content %}
 
+
+
 <div class="detail-page">
 
+
+
     {% if event.image_url %}
+
         <img
+
             src="{{ event.image_url }}"
+
             alt=""
+
             class="detail-image"
+
         >
+
     {% endif %}
+
+
 
     {% if event.status == "draft" %}
+
         <div class="alert alert-warning">
+
             <i class="bi bi-eye"></i>
+
             管理者プレビュー：このイベントはまだ一般公開されていません。
+
         </div>
+
     {% endif %}
 
+
+
+    <span class="outings-tier-label outings-tier-{{ event.listing_tier }}">{{ event.get_listing_tier_display }}</span>
     <h1>{{ event.title }}</h1>
 
-        
+
+
+
+
     <form
+
         method="post"
+
         action="{% url 'outings:toggle_heart' event.pk %}"
+
         class="outings-heart-form"
+
     >
+
         {% csrf_token %}
 
+
+
         <button
+
             type="submit"
+
             class="outings-heart-button {% if is_hearted %}hearted{% endif %}"
+
         >
+
             {% if is_hearted %}
+
                 <i class="bi bi-heart-fill"></i>
+
             {% else %}
+
                 <i class="bi bi-heart"></i>
+
             {% endif %}
 
+
+
             <span>{{ heart_count }}</span>
+
         </button>
+
     </form>
 
 
+
+
+
     {% if event.title_original %}
+
         <p class="original-title">
+
             {{ event.title_original }}
+
         </p>
+
     {% endif %}
+
+
 
     <div class="detail-tags">
 
+
+
         {% if event.category %}
+
             <span>{{ event.category.name }}</span>
+
         {% endif %}
+
+
 
         {% if event.is_free %}
+
             <span>無料</span>
+
         {% endif %}
 
+
+
         <span>{{ event.get_event_type_display }}</span>
+
         <span>{{ event.get_language_barrier_display }}</span>
 
+
+
         {% for tag in event.tags.all %}
+
             <span>{{ tag.name }}</span>
+
         {% endfor %}
 
+
+
     </div>
+
+
+
 
 
     <div class="detail-panel">
 
+
+
         <h2>開催日時</h2>
+
+
 
         {% with occurrences=event.occurrences.all %}
 
+
+
             {% if occurrences|length > 5 %}
 
+
+
                 <div class="outings-date-summary">
+
                     <i class="bi bi-calendar3"></i>
+
                     開催日程：全{{ occurrences|length }}件
+
                 </div>
 
+
+
                 <details class="outings-date-details">
+
                     <summary>
+
                         全日程を見る
+
                     </summary>
+
+
 
                     <div class="outings-date-list">
 
+
+
                         {% for occurrence in occurrences %}
+
+
 
                             {% if not occurrence.is_cancelled %}
 
+
+
                                 <p>
+
                                     <i class="bi bi-calendar3"></i>
+
+
 
                                     {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
 
+
+
                                     {% if occurrence.end_at %}
+
                                         〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
+
                                     {% endif %}
+
                                 </p>
 
+
+
                             {% endif %}
+
+
 
                         {% endfor %}
 
+
+
                     </div>
+
                 </details>
+
+
 
             {% else %}
 
+
+
                 {% for occurrence in occurrences %}
+
+
 
                     {% if not occurrence.is_cancelled %}
 
+
+
                         <p>
+
                             <i class="bi bi-calendar3"></i>
+
+
 
                             {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
 
+
+
                             {% if occurrence.end_at %}
+
                                 〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
+
                             {% endif %}
+
                         </p>
+
+
 
                     {% endif %}
 
+
+
                 {% empty %}
+
+
 
                     <p>開催日時は未登録</p>
 
+
+
                 {% endfor %}
+
+
 
             {% endif %}
 
+
+
         {% endwith %}
 
+
+
     </div>
+
+
+
 
 
     {% if event.location %}
 
+
+
         <div class="detail-panel">
+
+
 
             <h2>場所</h2>
 
+
+
             <p>
+
                 <i class="bi bi-geo-alt"></i>
+
                 {{ event.location.name }}
+
             </p>
 
+
+
             <p>{{ event.location.address }}</p>
+
             <p>{{ event.location.city }}</p>
 
+
+
         </div>
+
+
 
     {% endif %}
 
 
+
+
+
     <div class="detail-panel">
+
+
 
         <h2>イベントについて</h2>
 
+
+
         <div class="description">
+
             {{ event.summary_ja|linebreaks }}
+
         </div>
 
+
+
     </div>
+
+
+
 
 
     <div class="detail-panel">
 
+
+
         <h2>料金</h2>
 
+
+
         {% if event.is_free %}
+
             <p>無料</p>
+
         {% elif event.price_text %}
+
             <p>{{ event.price_text }}</p>
+
         {% else %}
+
             <p>公式サイトで確認</p>
+
         {% endif %}
 
+
+
     </div>
+
+
+
 
 
     {% if event.original_url %}
 
+
+
         <a
+
             href="{{ event.original_url }}"
+
             target="_blank"
+
             rel="noopener noreferrer"
+
             class="official-link"
+
         >
+
             公式サイトで詳しく見る
+
             <i class="bi bi-box-arrow-up-right"></i>
+
         </a>
+
+
 
     {% endif %}
 
 
 
+
+
+
+
     <!-- =====================================================
+
         Comments
+
         ===================================================== -->
+
+
 
     <section id="comments" class="outings-comments">
 
+
+
         <header class="outings-comments-heading">
+
             <h2>
+
                 <i class="bi bi-chat-left-text"></i>
+
                 コメント・質問
+
             </h2>
 
+
+
             <span>{{ comment_count }}件</span>
+
         </header>
 
+
+
         {% if messages %}
+
             {% for message in messages %}
+
                 <div class="outings-comment-message">
+
                     {{ message }}
+
                 </div>
+
             {% endfor %}
+
         {% endif %}
+
+
 
         <div class="outings-comments-list">
 
+
+
             {% for comment in comments %}
 
+
+
                 <article
+
                     id="comment-{{ comment.pk }}"
+
                     class="outings-comment"
+
                 >
+
+
 
                     {% if comment.is_deleted %}
 
+
+
                         <p class="outings-comment-deleted">
+
                             <i class="bi bi-chat-square-dots"></i>
+
                             このコメントは削除されました
+
                         </p>
+
+
 
                     {% else %}
 
+
+
                         <div class="outings-comment-header">
 
+
+
                             <strong>
+
                                 {% if comment.author_id == event.created_by_id %}
+
                                     イベント投稿者
+
                                 {% else %}
+
                                     ユーザー
+
                                 {% endif %}
+
                             </strong>
 
+
+
                             <time datetime="{{ comment.created_at|date:'c' }}">
+
                                 {{ comment.created_at|date:"n月j日 H:i" }}
+
                             </time>
 
+
+
                         </div>
 
+
+
                         <div class="outings-comment-body">
+
                             {{ comment.body|linebreaksbr }}
+
                         </div>
+
+
 
                         <div class="outings-comment-actions">
 
+
+
                             {% if request.user.is_authenticated %}
+
                                 <a href="#reply-{{ comment.pk }}">
+
                                     返信
+
                                 </a>
+
                             {% endif %}
+
+
 
                             {% if comment.can_edit %}
+
                                 <a href="{% url 'outings:comment_edit' comment.pk %}">
+
                                     編集
+
                                 </a>
+
                             {% endif %}
 
+
+
                             {% if comment.can_delete %}
+
                                 <a
+
                                     href="{% url 'outings:comment_delete' comment.pk %}"
+
                                     class="is-delete"
+
                                 >
+
                                     削除
+
                                 </a>
+
                             {% endif %}
+
+
 
                         </div>
 
+
+
                         {% if request.user.is_authenticated %}
 
+
+
                             <details
+
                                 id="reply-{{ comment.pk }}"
+
                                 class="outings-reply-details"
+
                             >
+
+
 
                                 <summary>返信を書く</summary>
 
+
+
                                 <form
+
                                     method="post"
+
                                     action="{% url 'outings:comment_create' event.pk %}"
+
                                 >
+
+
 
                                     {% csrf_token %}
 
+
+
                                     <input
+
                                         type="hidden"
+
                                         name="parent"
+
                                         value="{{ comment.pk }}"
+
                                     >
 
+
+
                                     <textarea
+
                                         name="body"
+
                                         rows="3"
+
                                         maxlength="500"
+
                                         required
+
                                         placeholder="返信を入力…"
+
                                     ></textarea>
 
+
+
                                     <button type="submit">
+
                                         返信する
+
                                     </button>
+
+
 
                                 </form>
 
+
+
                             </details>
 
+
+
                         {% endif %}
+
+
 
                     {% endif %}
 
 
+
+
+
                     <!-- Replies -->
+
+
 
                     {% for reply in comment.replies.all %}
 
+
+
                         <div
+
                             id="comment-{{ reply.pk }}"
+
                             class="outings-comment-reply"
+
                         >
+
+
 
                             {% if reply.is_deleted %}
 
+
+
                                 <p class="outings-comment-deleted">
+
                                     この返信は削除されました
+
                                 </p>
+
+
 
                             {% else %}
 
+
+
                                 <div class="outings-comment-header">
 
+
+
                                     <strong>
+
                                         {% if reply.author_id == event.created_by_id %}
+
                                             イベント投稿者
+
                                         {% else %}
+
                                             ユーザー
+
                                         {% endif %}
+
                                     </strong>
 
+
+
                                     <time datetime="{{ reply.created_at|date:'c' }}">
+
                                         {{ reply.created_at|date:"n月j日 H:i" }}
+
                                     </time>
 
+
+
                                 </div>
 
+
+
                                 <div class="outings-comment-body">
+
                                     {{ reply.body|linebreaksbr }}
+
                                 </div>
+
+
 
                                 <div class="outings-comment-actions">
 
+
+
                                     {% if reply.can_edit %}
+
                                         <a href="{% url 'outings:comment_edit' reply.pk %}">
+
                                             編集
+
                                         </a>
+
                                     {% endif %}
 
+
+
                                     {% if reply.can_delete %}
+
                                         <a
+
                                             href="{% url 'outings:comment_delete' reply.pk %}"
+
                                             class="is-delete"
+
                                         >
+
                                             削除
+
                                         </a>
+
                                     {% endif %}
+
+
 
                                 </div>
 
+
+
                             {% endif %}
+
+
 
                         </div>
 
+
+
                     {% endfor %}
+
+
 
                 </article>
 
+
+
             {% empty %}
 
+
+
                 <div class="outings-comments-empty">
+
                     まだコメントはない。最初の質問や感想を投稿してみよう。
+
                 </div>
+
+
 
             {% endfor %}
 
+
+
         </div>
+
+
+
 
 
         <!-- New comment -->
 
+
+
         <div class="outings-comment-compose">
+
+
 
             <h3>コメントする</h3>
 
+
+
             {% if request.user.is_authenticated %}
 
+
+
                 <form
+
                     method="post"
+
                     action="{% url 'outings:comment_create' event.pk %}"
+
                 >
+
+
 
                     {% csrf_token %}
 
+
+
                     {{ comment_form.body }}
 
+
+
                     {% for error in comment_form.body.errors %}
+
                         <p class="outings-field-error">{{ error }}</p>
+
                     {% endfor %}
+
+
 
                     <div class="outings-comment-compose-bottom">
 
+
+
                         <span>最大500文字</span>
 
+
+
                         <button type="submit">
+
                             投稿する
+
                         </button>
+
+
 
                     </div>
 
+
+
                 </form>
+
+
 
             {% else %}
 
+
+
                 <p>
+
                     コメントするにはログインが必要。
+
                 </p>
 
+
+
                 <a
+
                     class="outings-comment-login"
+
                     href="{% url 'login' %}?next={{ request.path|urlencode }}"
+
                 >
+
                     ログインしてコメントする
+
                 </a>
+
+
 
             {% endif %}
 
+
+
         </div>
+
+
 
     </section>
 
-    
+
+
+
+
 </div>
+
+
 
 {% endblock %}

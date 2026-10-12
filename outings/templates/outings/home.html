@@ -1,362 +1,82 @@
-
 {% extends "outings/base.html" %}
-
-{% block title %}
-おでかけ | Yapp
-{% endblock %}
-
+{% block title %}おでかけ | Yapp{% endblock %}
 {% block content %}
+<div class="outings-home outings-curated-home">
+  {% if preview_mode %}
+    <div class="outings-preview-banner"><strong>管理者プレビュー</strong> 下書きの外部イベントも表示中（{{ draft_count }}件） <a href="{% url 'outings:home' %}">通常表示</a></div>
+  {% endif %}
 
-<div class="outings-home">
+<!-- =====================================================
+     掲載タイプ別ナビゲーション
+     ===================================================== -->
 
-    
-{% if preview_mode %}
-    <div class="outings-preview-banner">
-        <i class="bi bi-eye"></i>
-        <strong>管理者プレビュー</strong>
-        <span>
-            公開前の下書きイベントも表示しています。
-            現在 {{ draft_count }} 件の下書きが一覧対象です。
-        </span>
-        <a href="{% url 'outings:home' %}">
-            通常表示に戻る
-        </a>
-    </div>
-{% endif %}
+<nav class="outings-tier-nav" aria-label="掲載タイプ別メニュー">
 
+    <div class="outings-tier-grid">
 
-<!-- =================================================
-     Recommended events
-     ================================================= -->
-
-<section class="event-section outings-recommended-section">
-
-    <div class="section-heading">
-
-        <div>
-            <h2>💚 おすすめイベント</h2>
-            <p>気になるおでかけ先を見つけよう</p>
-        </div>
-
-    </div>
-
-    {% for event in recommended_events %}
-
-        <a
-            href="{% url 'outings:event_detail' event.pk %}"
-            class="event-card"
-        >
-
-            {% if event.image_url %}
-                <img
-                    src="{{ event.image_url }}"
-                    alt=""
-                    class="event-image"
-                    loading="lazy"
-                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
-                >
-                <div class="event-image outings-emoji-image" hidden>
-                    {{ event.display_emoji }}
-                </div>
-            {% else %}
-                <div class="event-image outings-emoji-image">
-                    {{ event.display_emoji }}
-                </div>
-            {% endif %}
-
-            <div class="event-info">
-            <h3>{{ event.title }}</h3>
-
-            {% if preview_mode and event.status == "draft" %}
-                <span class="outings-draft-label">
-                    <i class="bi bi-lock"></i>
-                    下書き
-                </span>
-            {% endif %}
-
-                {% with occurrence=event.upcoming_dates.0 %}
-
-                    <p>
-                        <i class="bi bi-calendar3"></i>
-                        {{ occurrence.start_at|date:"n月j日 H:i" }}
-                    </p>
-
-                {% endwith %}
-                                
-                {% if event.location %}
-                    <p>
-                        <i class="bi bi-geo-alt"></i>
-
-                        {% if event.location.city %}
-                            {{ event.location.city }}
-                        {% else %}
-                            {{ event.location.get_canton_display }}
-                        {% endif %}
-
-                        {% if event.location.name %}
-                            ・{{ event.location.name }}
-                        {% endif %}
-                    </p>
-                {% endif %}
-
-                {% if event.summary_ja %}
-                    <p class="outings-card-summary">
-                        {{ event.summary_ja|truncatechars:95 }}
-                    </p>
-                {% endif %}
-
-                <div class="event-tags">
-
-                    {% if event.category %}
-                        <span>{{ event.category.name }}</span>
-                    {% endif %}
-
-                    {% if event.is_free %}
-                        <span>無料</span>
-                    {% endif %}
-
-                </div>
-
-            </div>
-
+        <a href="#featured" class="outings-tier-link">
+            <i class="bi bi-star-fill"></i>
+            <span>おすすめ</span>
         </a>
 
-    {% empty %}
-
-        <div class="empty-state">
-            おすすめイベントを準備中。
-        </div>
-
-    {% endfor %}
-
-</section>
-
-
-    <!-- =================================================
-         Weekend recommendations
-         ================================================= -->
-
-    <section class="event-section outings-weekend-section">
-
-        <div class="section-heading">
-
-            <div>
-                <h2>✨ 今後7日以内のイベント</h2>
-                <p>これから1週間以内に開催されるイベントを紹介</p>
-            </div>
-
-        </div>
-
-        {% for event in weekend_events %}
-
-            <a
-                href="{% url 'outings:event_detail' event.pk %}"
-                class="event-card"
-            >
-
-            {% if event.image_url %}
-                <img
-                    src="{{ event.image_url }}"
-                    alt=""
-                    class="event-image"
-                    loading="lazy"
-                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
-                >
-                <div class="event-image outings-emoji-image" hidden>
-                    {{ event.display_emoji }}
-                </div>
-            {% else %}
-                <div class="event-image outings-emoji-image">
-                    {{ event.display_emoji }}
-                </div>
-            {% endif %}
-
-                <div class="event-info">
-                <h3>{{ event.title }}</h3>
-
-                    {% if preview_mode and event.status == "draft" %}
-                        <span class="outings-draft-label">
-                            <i class="bi bi-lock"></i>
-                            下書き
-                        </span>
-                    {% endif %}
-
-                    {% with occurrence=event.weekend_dates.0 %}
-
-                        <p>
-                            <i class="bi bi-calendar3"></i>
-                            {{ occurrence.start_at|date:"n月j日 H:i" }}
-                        </p>
-
-                    {% endwith %}
-
-                                        
-                    {% if event.location %}
-                        <p>
-                            <i class="bi bi-geo-alt"></i>
-
-                            {% if event.location.city %}
-                                {{ event.location.city }}
-                            {% else %}
-                                {{ event.location.get_canton_display }}
-                            {% endif %}
-
-                            {% if event.location.name %}
-                                ・{{ event.location.name }}
-                            {% endif %}
-                        </p>
-                    {% endif %}
-
-                    {% if event.summary_ja %}
-                        <p class="outings-card-summary">
-                            {{ event.summary_ja|truncatechars:95 }}
-                        </p>
-                    {% endif %}
-
-
-                    <div class="event-tags">
-
-                        {% if event.category %}
-                            <span>{{ event.category.name }}</span>
-                        {% endif %}
-
-                        {% if event.is_free %}
-                            <span>無料</span>
-                        {% endif %}
-
-                        {% if event.language_barrier != "unknown" %}
-                            <span>
-                                {{ event.get_language_barrier_display }}
-                            </span>
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        {% empty %}
-
-            <div class="empty-state">
-                今後7日以内の対象イベントはまだ登録されていません。
-            </div>
-
-        {% endfor %}
-
-    </section>
-
-        <!-- =================================================
-         Upcoming events
-         ================================================= -->
-
-    <section class="event-section outings-upcoming-section">
-
-        <div class="section-heading">
-
-            <div>
-                <h2>📅 これからのイベント</h2>
-                <p>開催日が近い順に表示</p>
-            </div>
-
-        </div>
-
-        {% for event in upcoming_events %}
-
-            <a
-                href="{% url 'outings:event_detail' event.pk %}"
-                class="event-card"
-            >
-
-            {% if event.image_url %}
-                <img
-                    src="{{ event.image_url }}"
-                    alt=""
-                    class="event-image"
-                    loading="lazy"
-                    onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
-                >
-                <div class="event-image outings-emoji-image" hidden>
-                    {{ event.display_emoji }}
-                </div>
-            {% else %}
-                <div class="event-image outings-emoji-image">
-                    {{ event.display_emoji }}
-                </div>
-            {% endif %}
-
-                <div class="event-info">
-                <h3>{{ event.title }}</h3>
-
-                    {% if preview_mode and event.status == "draft" %}
-                        <span class="outings-draft-label">
-                            <i class="bi bi-lock"></i>
-                            下書き
-                        </span>
-                    {% endif %}
-
-                    {% with occurrence=event.upcoming_dates.0 %}
-
-                        <p>
-                            <i class="bi bi-calendar3"></i>
-                            {{ occurrence.start_at|date:"n月j日 H:i" }}
-                        </p>
-
-                    {% endwith %}
-
-
-                    {% if event.location %}
-                        <p>
-                            <i class="bi bi-geo-alt"></i>
-
-                            {% if event.location.city %}
-                                {{ event.location.city }}
-                            {% else %}
-                                {{ event.location.get_canton_display }}
-                            {% endif %}
-
-                            {% if event.location.name %}
-                                ・{{ event.location.name }}
-                            {% endif %}
-                        </p>
-                    {% endif %}
-
-                    {% if event.summary_ja %}
-                        <p class="outings-card-summary">
-                            {{ event.summary_ja|truncatechars:95 }}
-                        </p>
-                    {% endif %}
-
-
-                    <div class="event-tags">
-
-                        {% if event.category %}
-                            <span>{{ event.category.name }}</span>
-                        {% endif %}
-
-                        {% if event.is_free %}
-                            <span>無料</span>
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        {% empty %}
-
-            <div class="empty-state">
-                現在、表示できるイベントはない。
-            </div>
-
-        {% endfor %}
-
-    </section>
-
-
-
-
+        <a href="#standard" class="outings-tier-link">
+            <i class="bi bi-calendar-event"></i>
+            <span>イベント情報</span>
+        </a>
+
+        <a href="#compact" class="outings-tier-link">
+            <i class="bi bi-list-ul"></i>
+            <span>その他のイベント</span>
+        </a>
+
+        <a href="#community" class="outings-tier-link">
+            <i class="bi bi-people-fill"></i>
+            <span>みんなの投稿</span>
+        </a>
+
+    </div>
+
+</nav>
+
+  {% if active_region or active_category or active_tag %}<div class="outings-preview-banner">絞り込み中 <a href="{% url 'outings:home' %}">解除</a></div>{% endif %}
+  <section id="featured" class="outings-tier-section">
+    <div class="outings-tier-heading"><div><h2><i class="bi bi-star-fill"></i> おすすめ</h2><p>Yappが選んだ、注目のおでかけ情報</p></div></div>
+    <div class="outings-featured-grid">
+      {% for event in featured_events %}
+        <a class="outings-tier-card featured" href="{% url 'outings:event_detail' event.pk %}">
+          <div class="outings-tier-visual">
+            {% if event.image_url %}<img src="{{ event.image_url }}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="outings-emoji-image" hidden>{{ event.display_emoji }}</span>{% else %}<span class="outings-emoji-image">{{ event.display_emoji }}</span>{% endif %}
+          </div>
+          <div class="outings-tier-body"><span class="outings-tier-label outings-tier-featured">おすすめ</span><h3>{{ event.title }}</h3>
+          {% with event.upcoming_dates.0 as o %}<p class="outings-event-meta">{{ o.start_at|date:"n月j日 H:i" }} {% if event.location %} · {{ event.location.city }}{% endif %}</p>{% endwith %}
+          {% if event.summary_ja %}<p class="outings-tier-summary">{{ event.summary_ja|truncatechars:105 }}</p>{% endif %}</div>
+        </a>
+      {% empty %}<p class="empty-state">おすすめイベントを準備中です。</p>{% endfor %}
+    </div>
+  </section>
+  <section id="standard" class="outings-tier-section">
+    <div class="outings-tier-heading"><div><h2><i class="bi bi-calendar-event"></i> イベント情報</h2><p>気になる催しを日本語でチェック</p></div></div>
+    <div class="outings-standard-list">
+      {% for event in standard_events %}<a class="outings-tier-card standard" href="{% url 'outings:event_detail' event.pk %}">
+        <div class="outings-tier-body"><h3>{{ event.title }}</h3>{% with event.upcoming_dates.0 as o %}<p class="outings-event-meta">{{ o.start_at|date:"n月j日 H:i" }} {% if event.location %} · {{ event.location.city }}{% endif %}</p>{% endwith %}
+        {% if event.summary_ja %}<p class="outings-tier-summary">{{ event.summary_ja|truncatechars:90 }}</p>{% endif %}</div></a>
+      {% empty %}<p class="empty-state">イベント情報を準備中です。</p>{% endfor %}
+    </div>
+  </section>
+  <section id="compact" class="outings-tier-section">
+    <div class="outings-tier-heading"><div><h2><i class="bi bi-list-ul"></i> その他のイベント</h2>
+      <p>タイトル・日時・場所から探す（AIによるおすすめ度が低いイベント）</p></div></div>
+    <div class="outings-compact-list">
+      {% for event in compact_events %}<a href="{% url 'outings:event_detail' event.pk %}"><span class="outings-compact-date">{% with event.upcoming_dates.0 as o %}{{ o.start_at|date:"n/j" }}{% endwith %}</span><span class="outings-compact-title">{{ event.title }}<small>{% if event.location %}{{ event.location.city }}{% endif %}</small></span><i class="bi bi-chevron-right"></i></a>
+      {% empty %}<p class="empty-state">イベントを準備中です。</p>{% endfor %}
+    </div>
+  </section>
+  <section id="community" class="outings-tier-section">
+    <div class="outings-tier-heading"><div><h2><i class="bi bi-people"></i> みんなの投稿</h2><p>会員が紹介する身近なイベント</p></div><a class="outings-post-cta" href="{% url 'outings:event_create' %}">＋ 投稿する</a></div>
+    <div class="outings-standard-list">
+      {% for event in community_events %}<a class="outings-tier-card community" href="{% url 'outings:event_detail' event.pk %}"><div class="outings-tier-body"><span class="outings-tier-label outings-tier-community">会員投稿</span><h3>{{ event.title }}</h3>{% with event.upcoming_dates.0 as o %}<p class="outings-event-meta">{{ o.start_at|date:"n月j日 H:i" }}{% if event.location %} · {{ event.location.city }}{% endif %}</p>{% endwith %}{% if event.summary_ja %}<p class="outings-tier-summary">{{ event.summary_ja|truncatechars:90 }}</p>{% endif %}</div></a>
+      {% empty %}<p class="empty-state">まだ公開中の会員投稿はありません。最初のイベントを投稿してみませんか？</p>{% endfor %}
+    </div>
+  </section>
 </div>
-
 {% endblock %}
