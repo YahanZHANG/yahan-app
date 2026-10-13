@@ -871,9 +871,46 @@ def home(request):
         ).values_list("event_id", flat=True)
     )
 
+    # =====================================================
+    # HOME: Show at most 6 featured events
+    # Keep remaining events visible in standard section
+    # =====================================================
+
+    FEATURED_LIMIT = 6
+
+    featured_overflow = featured_events[FEATURED_LIMIT:]
+    featured_events = featured_events[:FEATURED_LIMIT]
+
+    featured_ids = {
+        event.pk
+        for event in featured_events
+    }
+
+    standard_ids = {
+        event.pk
+        for event in standard_events
+    }
+
+    for event in featured_overflow:
+
+        if (
+            event.pk not in featured_ids
+            and event.pk not in standard_ids
+        ):
+            standard_events.append(event)
+            standard_ids.add(event.pk)
+
+    standard_events.sort(
+        key=lambda event: (
+            event.upcoming_dates[0].start_at
+            if event.upcoming_dates
+            else timezone.now()
+        )
+    )
+
     context = {
-        "featured_events": featured_events[:24],
-        "standard_events": standard_events[:40],
+        "featured_events": featured_events,
+        "standard_events": standard_events[:80],
         "compact_events": compact_events[:60],
         "community_events": community_events[:30],
         "weekend_events": weekend_events,

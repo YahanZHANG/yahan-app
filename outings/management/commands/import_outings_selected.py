@@ -1,5 +1,6 @@
 """Import curated Eventfrog events as published; dry-run by default."""
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -55,6 +56,31 @@ class Command(BaseCommand):
             valid_dates = [(o, dt) for o, dt in starts if dt and (not as_datetime(o.get('end')) or as_datetime(o.get('end')) >= dt)]
             url = str(item.get('url') or '')
             parsed = urlparse(url)
+            
+            # Reject mismatched Eventfrog URLs.
+            # A wrong article URL must never be saved.
+
+            url_event_id = re.search(
+                r"-(\d+)\.html$",
+                parsed.path,
+            )
+
+            allowed_ids = {
+                eid,
+                *(
+                    str(o.get("id"))
+                    for o in item.get("occurrences", [])
+                    if isinstance(o, dict) and o.get("id")
+                ),
+            }
+
+            if (
+                not url_event_id
+                or url_event_id.group(1) not in allowed_ids
+            ):
+                raise CommandError(
+                    f"Row {index}: Eventfrog URL does not match event ID {eid}"
+                )
             if not eid or eid in seen_ids or tier not in TIERS or not valid_dates or not ai.get('title_ja') or not item.get('region') or not item.get('city') or not item.get('venue') or parsed.scheme != 'https' or parsed.hostname not in ('eventfrog.ch', 'www.eventfrog.ch'):
                 raise CommandError(f'Row {index}: incomplete or duplicate entry: {eid}')
             seen_ids.add(eid)
