@@ -190,11 +190,24 @@
                 <div class="outings-card-with-heart">
 
                     <a
-                        class="outings-tier-card standard"
-                        href="{% url 'outings:event_detail' event.pk %}"
-                    >
+                      class="outings-tier-card standard {% if event.image_url %}has-thumbnail{% endif %}"
+                      href="{% url 'outings:event_detail' event.pk %}"
+                  >
 
-                        <div class="outings-tier-body">
+                      {% if event.image_url %}
+
+                          <div class="outings-standard-thumbnail">
+                              <img
+                                  src="{{ event.image_url }}"
+                                  alt=""
+                                  loading="lazy"
+                                  onerror="this.parentElement.style.display='none';"
+                              >
+                          </div>
+
+                      {% endif %}
+
+                      <div class="outings-tier-body">
 
                             <h3>{{ event.title }}</h3>
 

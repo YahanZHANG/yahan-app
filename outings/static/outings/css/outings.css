@@ -5811,3 +5811,51 @@ a.outings-mypage-item:hover {
     }
 
 }
+
+/* =========================================================
+   Standard Event Cards - Small Thumbnails
+   ========================================================= */
+
+.outings-tier-card.standard.has-thumbnail {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.outings-standard-thumbnail {
+    width: 76px;
+    height: 76px;
+    flex: 0 0 76px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f2f3f4;
+}
+
+.outings-standard-thumbnail img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.outings-tier-card.standard.has-thumbnail .outings-tier-body {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .outings-tier-card.standard.has-thumbnail {
+        gap: 10px;
+    }
+
+    .outings-standard-thumbnail {
+        width: 60px;
+        height: 60px;
+        flex-basis: 60px;
+        border-radius: 8px;
+    }
+
+}
