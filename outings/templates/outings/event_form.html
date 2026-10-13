@@ -11,6 +11,7 @@
 
     <form
         method="post"
+        enctype="multipart/form-data"
         class="outings-create-form"
     >
 
@@ -22,61 +23,90 @@
             </div>
         {% endif %}
 
-
         <div class="outings-form-grid">
 
-                    
-        {% for field in form %}
+            {% for field in form %}
 
-            <div
-                class="outings-form-field"
-                {% if field.name == "price_text" %}
-                    id="outings-price-detail-field"
-                    {% if form.price_type.value != "paid" %}hidden{% endif %}
-                {% endif %}
-            >
-
-                <label for="{{ field.id_for_label }}">
+                <div
+                    class="outings-form-field"
                     {% if field.name == "price_text" %}
-                        料金の詳細
+                        id="outings-price-detail-field"
+                        {% if form.price_type.value != "paid" %}hidden{% endif %}
+                    {% endif %}
+                >
+
+                    <label for="{{ field.id_for_label }}">
+
+                        {% if field.name == "price_text" %}
+                            料金の詳細
+                        {% else %}
+                            {{ field.label }}
+                        {% endif %}
+
+                        {% if field.field.required or field.name == "price_text" %}
+                            <span class="outings-required">必須</span>
+                        {% endif %}
+
+                    </label>
+
+                    {% if field.name == "event_photo" %}
+
+                        {% if is_edit and event.image_url %}
+
+                            <div class="outings-current-photo">
+                                <img
+                                    src="{{ event.image_url }}"
+                                    alt="現在のイベント写真"
+                                    loading="lazy"
+                                >
+                                <small>現在の写真</small>
+                            </div>
+
+                        {% endif %}
+
+                        {{ field }}
+
+                        <small>
+                            写真は1枚まで（任意）。
+                            JPG・PNG・WebP、最大5MB。
+                            長辺1600px以内に自動縮小します。
+                            ご自身が撮影した写真や、
+                            掲載許可のある画像をご利用ください。
+                        </small>
+
                     {% else %}
-                        {{ field.label }}
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+
                     {% endif %}
 
-                    {% if field.field.required or field.name == "price_text" %}
-                        <span class="outings-required">必須</span>
-                    {% endif %}
-                </label>
+                    {% for error in field.errors %}
+                        <p class="outings-field-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
 
-                {{ field }}
+                </div>
 
-                {% if field.help_text %}
-                    <small>{{ field.help_text }}</small>
-                {% endif %}
-
-                {% for error in field.errors %}
-                    <p class="outings-field-error">{{ error }}</p>
-                {% endfor %}
-
-            </div>
-
-        {% endfor %}
-
+            {% endfor %}
 
         </div>
-
 
         <div class="outings-submit-notice">
 
             <i class="bi bi-info-circle"></i>
 
             <p>
-                投稿後は「承認待ち」となる。
-                管理者が内容を確認してから公開される。
+                投稿後は「承認待ち」となります。
+                管理者が内容を確認してから公開されます。
+                写真も確認対象です。
             </p>
 
         </div>
-
 
         <div class="outings-form-actions">
 
@@ -97,7 +127,6 @@
     </form>
 
 </div>
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -140,6 +169,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-
 
 {% endblock %}

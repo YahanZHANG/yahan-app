@@ -1,0 +1,201 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+お気に入り | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-saved-page">
+
+    <header class="outings-saved-header">
+
+        <h1>
+            <i class="bi bi-heart-fill"></i>
+            お気に入り
+        </h1>
+
+        <p>
+            ハートを押したイベントや旅行を
+            まとめて確認できます。
+        </p>
+
+    </header>
+
+
+    <!-- =========================================
+         Filter tabs
+         ========================================= -->
+
+    <nav
+        class="outings-saved-tabs"
+        aria-label="お気に入りの種類"
+    >
+
+        <a
+            href="{% url 'outings:saved_all' %}"
+            class="{% if selected_type == 'all' %}active{% endif %}"
+        >
+            すべて
+            <span>{{ total_count }}</span>
+        </a>
+
+        <a
+            href="{% url 'outings:saved_all' %}?type=event"
+            class="{% if selected_type == 'event' %}active{% endif %}"
+        >
+            イベント
+            <span>{{ event_count }}</span>
+        </a>
+
+        <a
+            href="{% url 'outings:saved_all' %}?type=trip"
+            class="{% if selected_type == 'trip' %}active{% endif %}"
+        >
+            旅行
+            <span>{{ trip_count }}</span>
+        </a>
+
+    </nav>
+
+
+    <!-- =========================================
+         Saved cards
+         ========================================= -->
+
+    {% if cards %}
+
+        <div class="outings-saved-grid">
+
+            {% for card in cards %}
+
+                <article class="outings-saved-card">
+
+                    {% if card.kind == "event" %}
+
+                        <a
+                            href="{% url 'outings:event_detail' card.id %}"
+                            class="outings-saved-card-link"
+                        >
+
+                    {% else %}
+
+                        <a
+                            href="{% url 'outings:tourist_spot_detail' card.id %}"
+                            class="outings-saved-card-link"
+                        >
+
+                    {% endif %}
+
+                        <!-- Image -->
+
+                        {% if card.image_url %}
+
+                            <img
+                                src="{{ card.image_url }}"
+                                alt=""
+                                loading="lazy"
+                            >
+
+                        {% else %}
+
+                            <div class="outings-saved-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+
+                        {% endif %}
+
+                        <div class="outings-saved-body">
+
+                            <span class="outings-saved-kind">
+
+                                {% if card.kind == "event" %}
+                                    イベント
+                                {% else %}
+                                    旅行
+                                {% endif %}
+
+                            </span>
+
+                            <h2>{{ card.title }}</h2>
+
+                            {% if card.summary %}
+
+                                <p>
+                                    {{ card.summary|truncatechars:100 }}
+                                </p>
+
+                            {% endif %}
+
+                            <span class="outings-saved-more">
+                                詳細を見る
+                                <i class="bi bi-arrow-right"></i>
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                    {% if card.image_source_url and card.image_credit %}
+
+                        <div class="outings-saved-credit">
+
+                            写真：
+
+                            <a
+                                href="{{ card.image_source_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {{ card.image_credit }}
+                            </a>
+
+                            {% if card.image_license_url %}
+
+                                ·
+
+                                <a
+                                    href="{{ card.image_license_url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    ライセンス
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="outings-saved-empty">
+
+            <i class="bi bi-heart"></i>
+
+            <h2>まだお気に入りがありません</h2>
+
+            <p>
+                気になるイベントや旅行の
+                ハートを押して保存してみましょう。
+            </p>
+
+            <a href="{% url 'outings:home' %}">
+                おでかけを探す
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

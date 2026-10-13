@@ -1,0 +1,737 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+日帰り・プチ旅行 | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<style>
+.trip-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 6px 16px 60px;
+}
+
+.trip-heading {
+    margin-bottom: 20px;
+}
+
+.trip-heading h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 750;
+    margin-bottom: 8px;
+}
+
+.trip-heading p {
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.trip-search {
+    display: flex;
+    gap: 10px;
+    margin: 4px 0 16px;
+}
+
+.trip-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #dbe2e8;
+    border-radius: 12px;
+}
+
+.trip-search button {
+    padding: 11px 18px;
+    background: #126b70;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   Trip categories - Show all
+   ========================================================= */
+
+.trip-categories {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    overflow: visible;
+    padding: 0;
+    margin-bottom: 18px;
+}
+
+.trip-category {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 7px 13px;
+    border: 1px solid #dbe2e8;
+    border-radius: 999px;
+    white-space: nowrap;
+    text-decoration: none;
+    color: #334155;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.trip-category.active {
+    background: #126b70;
+    border-color: #126b70;
+    color: #fff;
+}
+
+@media (max-width: 550px) {
+    .trip-categories {
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+
+    .trip-category {
+        min-height: 31px;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+
+.trip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.trip-card {
+    display: flex;
+    flex-direction: column;
+    padding: 19px;
+    border: 1px solid #e4e9ee;
+    border-radius: 16px;
+    background: white;
+    text-decoration: none;
+    color: inherit;
+    transition: transform .15s, box-shadow .15s;
+}
+
+.trip-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .07);
+    color: inherit;
+}
+
+.trip-card-type {
+    color: #126b70;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.trip-card h2 {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.trip-card p {
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    overflow-wrap: anywhere;
+}
+
+.trip-card-bottom {
+    margin-top: auto;
+    color: #126b70;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.trip-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.trip-pagination a {
+    color: #126b70;
+    text-decoration: none;
+}
+
+.trip-empty {
+    padding: 48px 15px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (max-width: 850px) {
+    .trip-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 550px) {
+    .trip-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trip-search button {
+        padding: 11px 14px;
+    }
+}
+
+
+/* =========================================================
+   Trip list toolbar
+   ========================================================= */
+
+.trip-list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 0 0 20px;
+}
+
+.trip-result-count {
+    color: #64748b;
+    font-size: .9rem;
+}
+
+.trip-list-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.trip-show-all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #dbe2e8;
+    border-radius: 10px;
+    background: #fff;
+    color: #334155;
+    font-size: .85rem;
+    text-decoration: none;
+}
+
+.trip-show-all:hover {
+    color: #126b70;
+    border-color: #126b70;
+}
+
+.trip-sort-form {
+    margin: 0;
+}
+
+.trip-sort-form select {
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #dbe2e8;
+    border-radius: 10px;
+    color: #334155;
+    background: #fff;
+    font-size: .85rem;
+}
+
+@media (max-width: 550px) {
+    .trip-list-toolbar {
+        align-items: flex-start;
+    }
+
+    .trip-list-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+
+/* =========================================================
+   Trip card photos
+   ========================================================= */
+
+.trip-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.trip-card-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 0 19px 19px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.trip-card-main:hover {
+    color: inherit;
+}
+
+.trip-card-image {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    background: #e8eff1;
+}
+
+.trip-card-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 190px;
+    background: #eef3f4;
+    color: #82969c;
+}
+
+.trip-card-placeholder i {
+    font-size: 34px;
+}
+
+.trip-card-type {
+    margin-top: 16px;
+}
+
+.trip-card-credit {
+    margin: auto 19px 0;
+    padding: 11px 0 12px;
+    border-top: 1px solid #e4e9ee;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.trip-card-credit a {
+    color: #126b70;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.trip-card-credit a:hover {
+    color: #094c51;
+}
+
+@media (max-width: 550px) {
+    .trip-card-image,
+    .trip-card-placeholder {
+        height: 205px;
+    }
+}
+
+
+/* =========================================================
+   Trip list heart buttons
+   ========================================================= */
+
+.trip-card {
+    position: relative;
+}
+
+.trip-card-heart-form {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    z-index: 5;
+    margin: 0;
+}
+
+.trip-card-heart-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 39px;
+    height: 39px;
+    padding: 0;
+
+    border: 1px solid rgba(0, 0, 0, .10);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .96);
+    color: #64748b;
+
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .12);
+
+    font-size: 19px;
+    cursor: pointer;
+
+    transition:
+        color .15s,
+        background .15s,
+        transform .15s;
+}
+
+.trip-card-heart-button:hover {
+    transform: scale(1.07);
+    color: #d23c62;
+}
+
+.trip-card-heart-button.is-hearted {
+    color: #dc456c;
+    background: #fff3f6;
+}
+
+.trip-card-heart-button:focus-visible {
+    outline: 3px solid #126b70;
+    outline-offset: 2px;
+}
+
+
+</style>
+
+<div class="trip-page">
+
+    <form method="get" class="trip-search">
+
+        {% if selected_category != "all" %}
+            <input
+                type="hidden"
+                name="category"
+                value="{{ selected_category }}"
+            >
+        {% endif %}
+
+        <input
+            type="search"
+            name="q"
+            value="{{ query }}"
+            placeholder="地名・観光スポットを検索"
+            aria-label="観光情報を検索"
+        >
+
+        <button type="submit">
+            検索
+        </button>
+    </form>
+
+    <div class="trip-categories">
+
+        {% for key, label in categories.items %}
+
+            <a
+                href="{% url 'outings:tourist_spot_list' %}?category={{ key }}{% if query %}&q={{ query|urlencode }}{% endif %}"
+                class="trip-category {% if selected_category == key %}active{% endif %}"
+            >
+                {{ label }}
+            </a>
+
+        {% endfor %}
+
+    </div>
+
+        
+    <div class="trip-list-toolbar">
+
+        <span class="trip-result-count">
+            {{ result_count }}件の観光情報
+        </span>
+
+        <div class="trip-list-actions">
+
+            <a
+                class="trip-show-all {% if show_all %}active{% endif %}"
+                href="?category={{ selected_category }}&q={{ query|urlencode }}&sort={{ sort }}&all={% if show_all %}0{% else %}1{% endif %}"
+            >
+                {% if show_all %}
+                    おすすめ中心に戻す
+                {% else %}
+                    すべて表示
+                {% endif %}
+            </a>
+
+            <form method="get" class="trip-sort-form">
+
+                <input
+                    type="hidden"
+                    name="category"
+                    value="{{ selected_category }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="q"
+                    value="{{ query }}"
+                >
+
+                {% if show_all %}
+                    <input
+                        type="hidden"
+                        name="all"
+                        value="1"
+                    >
+                {% endif %}
+
+                <select
+                    name="sort"
+                    aria-label="並べ替え"
+                    onchange="this.form.submit()"
+                >
+                    <option
+                        value="recommended"
+                        {% if sort == "recommended" %}selected{% endif %}
+                    >
+                        おすすめ順
+                    </option>
+
+                    <option
+                        value="updated"
+                        {% if sort == "updated" %}selected{% endif %}
+                    >
+                        更新順
+                    </option>
+
+                    <option
+                        value="name"
+                        {% if sort == "name" %}selected{% endif %}
+                    >
+                        名前順
+                    </option>
+                </select>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    {% if page_obj.object_list %}
+
+
+    <div class="trip-grid">
+
+        {% for spot in page_obj %}
+
+            {% with photo=spot.details.approved_image %}
+
+            <article class="trip-card">
+
+                                
+                <!-- Favorite heart -->
+
+                <form
+                    method="post"
+                    action="{% url 'outings:toggle_tourist_heart' spot.pk %}"
+                    class="trip-card-heart-form"
+                >
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="next"
+                        value="{{ request.get_full_path }}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="trip-card-heart-button {% if spot.is_hearted %}is-hearted{% endif %}"
+                        aria-label="{% if spot.is_hearted %}お気に入りから解除{% else %}お気に入りに追加{% endif %}"
+                        title="{% if spot.is_hearted %}お気に入りから解除{% else %}お気に入りに追加{% endif %}"
+                        aria-pressed="{% if spot.is_hearted %}true{% else %}false{% endif %}"
+                    >
+
+                        {% if spot.is_hearted %}
+                            <i class="bi bi-heart-fill"></i>
+                        {% else %}
+                            <i class="bi bi-heart"></i>
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+
+                <a
+                    href="{% url 'outings:tourist_spot_detail' spot.pk %}"
+                    class="trip-card-main"
+                >
+
+                    <!-- =====================================
+                        Photo
+                        ===================================== -->
+
+                    {% if photo.url %}
+
+                        <img
+                            src="{{ photo.url }}"
+                            alt="{{ spot.title_ja|default:spot.title_original }}"
+                            class="trip-card-image"
+                            loading="lazy"
+                        >
+
+                    {% else %}
+
+                        <div class="trip-card-placeholder">
+                            <i class="bi bi-image"></i>
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- =====================================
+                        Category
+                        ===================================== -->
+
+                    <div class="trip-card-type">
+                        {{ spot.get_spot_type_display }}
+                    </div>
+
+
+                    <!-- =====================================
+                        Title
+                        ===================================== -->
+
+                    <h2>
+                        {{ spot.title_ja|default:spot.title_original }}
+                    </h2>
+
+
+                    <!-- =====================================
+                        Description
+                        ===================================== -->
+
+                    <p>
+
+                        {% if spot.summary_ja %}
+
+                            {{ spot.summary_ja|truncatechars:125 }}
+
+                        {% elif spot.summary_original %}
+
+                            {{ spot.summary_original|truncatechars:125 }}
+
+                        {% elif spot.description_original %}
+
+                            {{ spot.description_original|truncatechars:125 }}
+
+                        {% else %}
+
+                            詳細は公式サイトで確認できます。
+
+                        {% endif %}
+
+                    </p>
+
+
+                    <!-- =====================================
+                        Footer
+                        ===================================== -->
+
+                    <div class="trip-card-bottom">
+                        詳細を見る →
+                    </div>
+
+                </a>
+
+
+                <!-- =========================================
+                    Photo attribution
+                    ========================================= -->
+
+                {% if photo.url and photo.source_url %}
+
+                    <div class="trip-card-credit">
+
+                        <i class="bi bi-camera"></i>
+
+                        写真：
+
+                        <a
+                            href="{{ photo.source_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {{ photo.credit|default:"Wikimedia Commons" }}
+                        </a>
+
+                        {% if photo.license_url %}
+
+                            ·
+
+                            <a
+                                href="{{ photo.license_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                ライセンス
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </article>
+
+            {% endwith %}
+
+        {% endfor %}
+
+    </div>
+
+
+                
+        <nav class="trip-pagination">
+
+            {% if page_obj.has_previous %}
+                <a
+                    href="?category={{ selected_category }}&q={{ query|urlencode }}&sort={{ sort }}&all={% if show_all %}1{% else %}0{% endif %}&page={{ page_obj.previous_page_number }}"
+                >
+                    ← 前へ
+                </a>
+            {% endif %}
+
+            <span>
+                {{ page_obj.number }} /
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a
+                    href="?category={{ selected_category }}&q={{ query|urlencode }}&sort={{ sort }}&all={% if show_all %}1{% else %}0{% endif %}&page={{ page_obj.next_page_number }}"
+                >
+                    次へ →
+                </a>
+            {% endif %}
+
+        </nav>
+
+
+    {% else %}
+
+        <div class="trip-empty">
+            該当する観光情報はありません。
+        </div>
+
+    {% endif %}
+
+    <p class="small text-muted mt-4">
+        出典：Switzerland Tourism OpenData。
+        現地の営業時間、料金、交通状況は
+        訪問前に公式情報をご確認ください。
+    </p>
+
+</div>
+
+{% endblock %}

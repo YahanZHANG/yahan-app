@@ -3,6 +3,9 @@ from django import forms
 from django.utils import timezone
 from .models import Event, EventCategory, OutingsComment
 
+from django.core.exceptions import ValidationError
+from .services.user_event_images import process_user_event_image
+
 
 CANTON_CHOICES = [
     ("", "州を選択"),
@@ -199,7 +202,36 @@ class EventSubmissionForm(forms.ModelForm):
             "price_text",
             "venue_type",
             "original_url",
+            "event_photo",
+            "remove_photo",
         ])
+
+
+    # =====================================================
+    # Validate uploaded photo
+    # =====================================================
+
+    def clean_event_photo(self):
+
+        uploaded_file = self.cleaned_data.get(
+            "event_photo"
+        )
+
+        if not uploaded_file:
+            return None
+
+        try:
+            self.processed_event_photo = (
+                process_user_event_image(
+                    uploaded_file
+                )
+            )
+
+        except ValidationError:
+            raise
+
+        return uploaded_file
+
 
     def clean(self):
         cleaned_data = super().clean()
@@ -252,6 +284,25 @@ class EventSubmissionForm(forms.ModelForm):
 
         return event
 
+
+    # =====================================================
+    # Event photo
+    # =====================================================
+
+    event_photo = forms.FileField(
+        label="イベントの写真",
+        required=False,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
+    remove_photo = forms.BooleanField(
+        label="現在の写真を削除する",
+        required=False,
+    )
 
 
 # =========================================================

@@ -29,6 +29,12 @@
         rel="stylesheet"
         href="{% static 'outings/css/outings-dark.css' %}"
     >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'outings/css/outings-discovery.css' %}"
+    >
+
 </head>
 
 <body>
@@ -48,7 +54,17 @@
                     <small>スイスの週末をもっと楽しく</small>
                 </span>
             </a>
+                        
+            <a
+                href="{% url 'outings:search' %}"
+                class="outings-mobile-search"
+                aria-label="イベントと旅行を検索"
+                title="探す"
+            >
+                <i class="bi bi-search"></i>
+            </a>
 
+                        
                         
             <nav class="outings-desktop-nav" aria-label="PCメニュー">
 
@@ -61,22 +77,29 @@
                 </a>
 
                 <a
-                    href="{% url 'outings:saved_events' %}"
-                    class="{% if request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
+                    href="{% url 'outings:event_home' %}"
+                    class="{% if request.resolver_match.url_name == 'event_home' or request.resolver_match.url_name == 'event_detail' or request.resolver_match.url_name == 'search' %}active{% endif %}"
                 >
-                    <i class="bi bi-heart"></i>
-                    <span>お気に入り</span>
+                    <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                    イベント
                 </a>
 
                 <a
-                    href="{% url 'outings:event_create' %}"
-                    class="{% if request.resolver_match.url_name == 'event_create' %}active{% endif %}"
+                    href="{% url 'outings:tourist_spot_list' %}"
+                    class="{% if request.resolver_match.url_name == 'tourist_spot_list' or request.resolver_match.url_name == 'tourist_spot_detail' %}active{% endif %}"
                 >
-                    <i class="bi bi-plus-circle"></i>
-                    投稿
+                    <i class="bi bi-compass" aria-hidden="true"></i>
+                    旅行
                 </a>
 
-                                
+                <a
+                    href="{% url 'outings:saved_all' %}"
+                    class="{% if request.resolver_match.url_name == 'saved_all' or request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
+                >
+                    <i class="bi bi-heart"></i>
+                    お気に入り
+                </a>
+
                 <a
                     href="{% url 'outings:my_page' %}"
                     class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
@@ -90,15 +113,18 @@
                         </span>
                     {% endif %}
                 </a>
-
-
-                <a href="{% url 'outings:search' %}"
-                    class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}">
+                                
+                <a
+                    href="{% url 'outings:search' %}"
+                    class="outings-search-nav {% if request.resolver_match.url_name == 'search' %}active{% endif %}"
+                >
                     <i class="bi bi-search"></i>
                     <span>探す</span>
                 </a>
 
+
             </nav>
+
 
 
         </div>
@@ -110,29 +136,41 @@
         {% block content %}{% endblock %}
     </main>
 
+        
     <nav class="outings-bottom-nav" aria-label="メインメニュー">
 
-        <a href="{% url 'outings:home' %}"
-           class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <a
+            href="{% url 'outings:home' %}"
+            class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+        >
             <i class="bi bi-house"></i>
             <span>HOME</span>
         </a>
 
-        <a href="{% url 'outings:search' %}"
-            class="{% if request.resolver_match.url_name == 'search' %}active{% endif %}">
-            <i class="bi bi-search"></i>
-            <span>探す</span>
+        <a
+            href="{% url 'outings:event_home' %}"
+            class="{% if request.resolver_match.url_name == 'event_home' or request.resolver_match.url_name == 'event_detail' or request.resolver_match.url_name == 'search' %}active{% endif %}"
+        >
+            <i class="bi bi-calendar-event"></i>
+            <span>イベント</span>
         </a>
 
         <a
-            href="{% url 'outings:saved_events' %}"
-            class="{% if request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
+            href="{% url 'outings:tourist_spot_list' %}"
+            class="{% if request.resolver_match.url_name == 'tourist_spot_list' or request.resolver_match.url_name == 'tourist_spot_detail' %}active{% endif %}"
+        >
+            <i class="bi bi-compass" aria-hidden="true"></i>
+            <span>旅行</span>
+        </a>
+
+        <a
+            href="{% url 'outings:saved_all' %}"
+            class="{% if request.resolver_match.url_name == 'saved_all' or request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
         >
             <i class="bi bi-heart"></i>
             <span>お気に入り</span>
         </a>
 
-                
         <a
             href="{% url 'outings:my_page' %}"
             class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
@@ -146,26 +184,80 @@
                     </span>
                 {% endif %}
             </span>
-
             <span>マイページ</span>
         </a>
 
-
     </nav>
+
 
 </div>
 
+
 <script>
 (function () {
-    const storageKey = "yapp-outings-theme";
+    "use strict";
 
-    function applyTheme(theme) {
+    // =====================================================
+    // Theme settings
+    // =====================================================
+
+    const STORAGE_KEY = "yapp-outings-theme";
+
+    const THEME_ATTRIBUTE = "data-outings-theme";
+
+    const DEFAULT_THEME = "light";
+
+
+    // =====================================================
+    // Read saved theme
+    // =====================================================
+
+    function getSavedTheme() {
+
+        try {
+
+            const saved = localStorage.getItem(
+                STORAGE_KEY
+            );
+
+            if (saved === "dark" || saved === "light") {
+                return saved;
+            }
+
+        } catch (error) {
+            // localStorage may be unavailable.
+        }
+
+        return DEFAULT_THEME;
+    }
+
+
+    // =====================================================
+    // Save theme
+    // =====================================================
+
+    function saveTheme(theme) {
+
+        try {
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                theme
+            );
+
+        } catch (error) {
+            // Theme still works without localStorage.
+        }
+    }
+
+
+    // =====================================================
+    // Update toggle UI
+    // =====================================================
+
+    function updateToggle(theme) {
+
         const isDark = theme === "dark";
-
-        document.documentElement.setAttribute(
-            "data-outings-theme",
-            isDark ? "dark" : "light"
-        );
 
         const toggle = document.getElementById(
             "outings-theme-toggle"
@@ -176,53 +268,121 @@
         );
 
         if (toggle) {
+
             toggle.setAttribute(
                 "aria-pressed",
                 String(isDark)
             );
+
+            toggle.setAttribute(
+                "aria-label",
+                isDark
+                    ? "ダークモードをオフにする"
+                    : "ダークモードをオンにする"
+            );
+
         }
 
         if (description) {
+
             description.textContent = isDark
                 ? "ダークモードが有効です"
                 : "ライトモードが有効です";
+
         }
     }
 
-    let savedTheme = "light";
 
-    try {
-        savedTheme =
-            localStorage.getItem(storageKey) || "light";
-    } catch (error) {
-        // Storage unavailable: keep light mode.
+    // =====================================================
+    // Apply theme
+    // =====================================================
+
+    function applyTheme(theme, persist = false) {
+
+        const normalizedTheme = (
+            theme === "dark"
+                ? "dark"
+                : "light"
+        );
+
+        document.documentElement.setAttribute(
+            THEME_ATTRIBUTE,
+            normalizedTheme
+        );
+
+        updateToggle(normalizedTheme);
+
+        if (persist) {
+            saveTheme(normalizedTheme);
+        }
     }
 
-    applyTheme(savedTheme);
+
+    // =====================================================
+    // Initial theme
+    // =====================================================
+
+    applyTheme(
+        getSavedTheme()
+    );
+
+
+    // =====================================================
+    // Toggle button
+    // =====================================================
 
     const toggle = document.getElementById(
         "outings-theme-toggle"
     );
 
     if (toggle) {
-        toggle.addEventListener("click", () => {
-            const current =
-                document.documentElement.getAttribute(
-                    "data-outings-theme"
+
+        toggle.addEventListener(
+            "click",
+            function () {
+
+                const currentTheme = (
+                    document.documentElement.getAttribute(
+                        THEME_ATTRIBUTE
+                    )
                 );
 
-            const next =
-                current === "dark" ? "light" : "dark";
+                const nextTheme = (
+                    currentTheme === "dark"
+                        ? "light"
+                        : "dark"
+                );
 
-            applyTheme(next);
+                applyTheme(
+                    nextTheme,
+                    true
+                );
 
-            try {
-                localStorage.setItem(storageKey, next);
-            } catch (error) {
-                // Theme still works for this page.
             }
-        });
+        );
+
     }
+
+
+    // =====================================================
+    // Sync theme when returning from another tab
+    // =====================================================
+
+    window.addEventListener(
+        "storage",
+        function (event) {
+
+            if (event.key !== STORAGE_KEY) {
+                return;
+            }
+
+            applyTheme(
+                getSavedTheme()
+            );
+
+        }
+    );
+
 })();
 </script>
 

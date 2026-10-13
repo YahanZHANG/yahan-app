@@ -1,0 +1,114 @@
+
+<div class="discovery-card">
+
+    <a
+        class="discovery-card-main"
+        href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}"
+    >
+
+        <div class="discovery-card-visual">
+
+            {% if card.has_image %}
+
+                <img
+                    src="{{ card.image_url }}"
+                    alt=""
+                    loading="lazy"
+                    onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
+                >
+
+                <div
+                    class="discovery-card-placeholder"
+                    hidden
+                >
+                    {% if card.kind == 'event' %}
+                        <i class="bi bi-calendar-event"></i>
+                    {% else %}
+                        <i class="bi bi-mountains"></i>
+                    {% endif %}
+                </div>
+
+            {% else %}
+
+                <div class="discovery-card-placeholder">
+                    {% if card.kind == 'event' %}
+                        <i class="bi bi-calendar-event"></i>
+                    {% else %}
+                        <i class="bi bi-mountains"></i>
+                    {% endif %}
+                </div>
+
+            {% endif %}
+
+            <span class="discovery-card-kind">
+                {% if card.kind == 'event' %}
+                    イベント
+                {% else %}
+                    旅行
+                {% endif %}
+            </span>
+
+            {% if card.image_is_ai %}
+                <span class="discovery-card-ai-label">
+                    <i class="bi bi-stars"></i>
+                    AI生成イメージ
+                </span>
+            {% endif %}
+
+        </div>
+
+        <div class="discovery-card-content">
+
+            <small class="discovery-card-category">
+                {{ card.label }}
+            </small>
+
+            <h3>{{ card.title }}</h3>
+
+            {% if card.date %}
+                <p class="discovery-card-meta">
+                    <i class="bi bi-calendar3"></i>
+                    {{ card.date|date:"n月j日 H:i" }}
+                    {% if card.location %}
+                        · {{ card.location }}
+                    {% endif %}
+                </p>
+            {% elif card.location %}
+                <p class="discovery-card-meta">
+                    {{ card.location }}
+                </p>
+            {% endif %}
+
+            {% if card.summary %}
+                <p class="discovery-card-summary">
+                    {{ card.summary|truncatechars:95 }}
+                </p>
+            {% endif %}
+
+        </div>
+
+    </a>
+
+
+    <form
+        method="post"
+        action="{% if card.kind == 'event' %}{% url 'outings:toggle_heart' card.id %}{% else %}{% url 'outings:toggle_tourist_heart' card.id %}{% endif %}"
+        class="discovery-card-heart-form"
+        data-heart-key="{{ card.kind }}-{{ card.id }}"
+    >
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="discovery-card-heart {% if card.hearted %}is-hearted{% endif %}"
+            aria-label="{{ card.title }}をお気に入りに登録または解除"
+            aria-pressed="{% if card.hearted %}true{% else %}false{% endif %}"
+            title="お気に入り"
+        >
+            <i class="bi {% if card.hearted %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+        </button>
+
+    </form>
+
+
+</div>

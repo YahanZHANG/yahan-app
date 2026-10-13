@@ -1,0 +1,650 @@
+
+/* =========================================================
+   Yapp Outings - Unified Discovery HOME
+   ========================================================= */
+
+.outings-discovery-home {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.discovery-hero {
+    padding: 30px;
+    border-radius: 20px;
+    background: var(--outings-accent-soft);
+    margin-bottom: 34px;
+}
+
+.discovery-eyebrow {
+    display: inline-block;
+    color: var(--outings-accent);
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.discovery-hero h1 {
+    margin: 0 0 12px;
+    font-size: clamp(22px, 3.2vw, 32px);
+    line-height: 1.4;
+}
+
+.discovery-hero p {
+    margin: 0;
+    color: var(--outings-muted);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.discovery-shortcuts {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.discovery-shortcuts a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 1px solid var(--outings-border);
+    border-radius: 11px;
+    background: var(--outings-surface);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.discovery-shortcuts a:hover {
+    color: var(--outings-accent);
+    border-color: var(--outings-accent);
+}
+
+.discovery-section {
+    margin: 34px 0 44px;
+}
+
+.discovery-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.discovery-section-heading h2 {
+    margin: 0 0 6px;
+    font-size: 21px;
+}
+
+.discovery-section-heading h2 i {
+    color: var(--outings-accent);
+}
+
+.discovery-section-heading p {
+    color: var(--outings-muted);
+    font-size: 12px;
+    margin: 0;
+}
+
+.discovery-expand-button {
+    flex-shrink: 0;
+    padding: 9px 12px;
+    border: 1px solid var(--outings-border);
+    border-radius: 10px;
+    color: var(--outings-accent);
+    background: var(--outings-surface);
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.discovery-card-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.discovery-card-track > .discovery-card:nth-child(n+7) {
+    display: none;
+}
+
+.is-expanded .discovery-card-track > .discovery-card {
+    display: block;
+}
+
+.discovery-card {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--outings-border);
+    border-radius: 16px;
+    background: var(--outings-surface);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.discovery-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .06);
+}
+
+.discovery-card-main {
+    display: block;
+    color: inherit;
+}
+
+.discovery-card-visual {
+    position: relative;
+    height: 160px;
+    background: var(--outings-accent-soft);
+}
+
+.discovery-card-visual > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.discovery-card-placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e5f4ef, #e7f0f9);
+    color: var(--outings-accent);
+    font-size: 43px;
+}
+
+.discovery-card-placeholder[hidden] {
+    display: none;
+}
+
+.discovery-card-kind {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.94);
+    color: #315965;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.discovery-card-content {
+    padding: 16px;
+}
+
+.discovery-card-category {
+    color: var(--outings-accent);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.discovery-card-content h3 {
+    margin: 8px 0 10px;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.discovery-card-meta {
+    margin: 0 0 8px;
+    color: var(--outings-muted);
+    font-size: 12px;
+}
+
+.discovery-card-summary {
+    margin: 0;
+    color: var(--outings-muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.discovery-card-heart-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    margin: 0;
+}
+
+.discovery-card-heart {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 50%;
+    background: rgba(255,255,255,.96);
+    color: #59636c;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.discovery-card-heart.is-hearted {
+    color: #d34b66;
+}
+
+.discovery-card-heart:focus-visible,
+.discovery-expand-button:focus-visible {
+    outline: 2px solid var(--outings-accent);
+    outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+    .discovery-hero {
+        padding: 22px 18px;
+        margin-bottom: 28px;
+    }
+
+    .discovery-shortcuts a {
+        flex: 1;
+        justify-content: center;
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+
+    .discovery-section {
+        margin: 26px 0 35px;
+    }
+
+    .discovery-section-heading h2 {
+        font-size: 19px;
+    }
+
+    .discovery-card-track {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 2px 2px 14px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .discovery-card-track > .discovery-card {
+        flex: 0 0 min(77vw, 285px);
+        scroll-snap-align: start;
+    }
+
+    .discovery-card-track > .discovery-card:nth-child(n+7) {
+        display: block;
+    }
+
+    .is-expanded .discovery-card-track {
+        display: grid;
+        grid-template-columns: 1fr;
+        overflow: visible;
+        scroll-snap-type: none;
+    }
+
+    .is-expanded .discovery-card {
+        width: 100%;
+    }
+
+    .discovery-card-visual {
+        height: 160px;
+    }
+
+    .outings-bottom-nav a {
+        min-width: 0;
+        gap: 4px;
+        font-size: 9px;
+    }
+
+    .outings-bottom-nav i {
+        font-size: 21px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .discovery-card {
+        transition: none;
+    }
+
+    .discovery-card:hover {
+        transform: none;
+    }
+}
+
+
+/* =========================================================
+   Compact HOME introduction
+   ========================================================= */
+
+.discovery-intro {
+    margin-bottom: 26px;
+}
+
+.discovery-intro-text h1 {
+    margin: 0 0 5px;
+    font-size: clamp(18px, 2.6vw, 24px);
+    line-height: 1.45;
+    font-weight: 800;
+}
+
+.discovery-intro-text p {
+    margin: 0;
+    color: var(--outings-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.discovery-intro .discovery-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.discovery-intro .discovery-shortcuts a {
+    min-width: 0;
+    min-height: 49px;
+    padding: 10px 13px;
+    justify-content: flex-start;
+}
+
+.discovery-intro .discovery-shortcuts a span {
+    flex: 1;
+}
+
+.discovery-intro .discovery-shortcuts a .bi-chevron-right {
+    font-size: 11px;
+    color: var(--outings-muted);
+}
+
+/* =========================================================
+   Search in mobile header
+   ========================================================= */
+
+.outings-mobile-search {
+    display: none;
+}
+
+@media (max-width: 899px) {
+
+    .outings-header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .outings-header-inner .outings-brand {
+        margin: 0;
+        min-width: 0;
+    }
+
+    .outings-mobile-search {
+        display: grid;
+        place-items: center;
+        flex: 0 0 43px;
+        width: 43px;
+        height: 43px;
+        border: 1px solid var(--outings-border);
+        border-radius: 12px;
+        background: var(--outings-surface);
+        color: var(--outings-accent);
+        font-size: 20px;
+    }
+
+    .discovery-intro {
+        margin-bottom: 22px;
+    }
+
+    .discovery-intro .discovery-shortcuts {
+        gap: 8px;
+        margin-top: 13px;
+    }
+
+    .discovery-intro .discovery-shortcuts a {
+        min-height: 46px;
+        gap: 7px;
+        padding: 9px;
+        font-size: 11px;
+    }
+}
+
+@media (min-width: 900px) {
+
+    .outings-desktop-nav {
+        gap: 16px;
+    }
+
+    .outings-desktop-nav a.outings-search-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border-radius: 10px;
+        background: var(--outings-accent);
+        color: #fff;
+        font-weight: 750;
+    }
+}
+
+
+/* =========================================================
+   AI-generated image label
+   ========================================================= */
+
+.discovery-card-ai-label {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(21, 35, 45, .78);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+    pointer-events: none;
+}
+
+.discovery-card-ai-label i {
+    font-size: 11px;
+}
+
+@media (max-width: 700px) {
+    .discovery-card-ai-label {
+        font-size: 9px;
+        padding: 4px 7px;
+    }
+}
+
+
+/* =========================================================
+   About Outings
+   ========================================================= */
+
+.outings-about-page {
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.outings-about-header {
+    margin-bottom: 28px;
+}
+
+.outings-about-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 24px;
+    color: var(--outings-accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.outings-about-header-icon {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+    font-size: 25px;
+}
+
+.outings-about-header h1 {
+    margin: 0 0 9px;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.outings-about-header p {
+    margin: 0;
+    color: var(--outings-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.outings-about-section {
+    padding: 24px;
+    margin-bottom: 15px;
+    border: 1px solid var(--outings-border);
+    border-radius: 15px;
+    background: var(--outings-surface);
+}
+
+.outings-about-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 17px;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.outings-about-section h2 i {
+    color: var(--outings-accent);
+    font-size: 19px;
+}
+
+.outings-about-section > p {
+    margin: 0 0 13px;
+    color: var(--outings-text);
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.outings-about-section > p:last-child {
+    margin-bottom: 0;
+}
+
+.outings-about-feature-list {
+    display: grid;
+    gap: 15px;
+    margin: 18px 0;
+}
+
+.outings-about-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.outings-about-feature > i {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+    font-size: 18px;
+}
+
+.outings-about-feature strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.outings-about-feature p {
+    margin: 0;
+    color: var(--outings-muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.outings-about-note {
+    color: var(--outings-muted) !important;
+    font-size: 12px !important;
+}
+
+.outings-about-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    margin: 18px 0;
+    border-radius: 12px;
+    background: var(--outings-accent-soft);
+}
+
+.outings-about-notice > i {
+    color: var(--outings-accent);
+    font-size: 18px;
+}
+
+.outings-about-notice p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.outings-about-footer {
+    padding: 30px 10px;
+    text-align: center;
+}
+
+.outings-about-footer p {
+    margin: 0 0 17px;
+    color: var(--outings-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.outings-about-footer a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 43px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    background: var(--outings-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+@media (max-width: 600px) {
+
+    .outings-about-header h1 {
+        font-size: 23px;
+    }
+
+    .outings-about-section {
+        padding: 18px 16px;
+        margin-bottom: 12px;
+    }
+
+    .outings-about-section h2 {
+        font-size: 16px;
+    }
+
+    .outings-about-back {
+        margin-bottom: 18px;
+    }
+}

@@ -1,6 +1,8 @@
 
 from django.contrib import admin
 from django.utils import timezone
+from outings.models import TouristSpot
+
 
 from .models import (
     Event,
@@ -279,3 +281,102 @@ class OutingsCommentAdmin(admin.ModelAdmin):
             deleted_by=None,
             deleted_reason="",
         )
+
+
+# =========================================================
+# Switzerland Tourism Admin
+# =========================================================
+
+
+@admin.register(TouristSpot)
+class TouristSpotAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "title_original",
+        "spot_type",
+        "status",
+        "source_name",
+        "updated_at",
+    )
+
+    list_filter = (
+        "spot_type",
+        "status",
+        "source_name",
+    )
+
+    search_fields = (
+        "title_original",
+        "title_ja",
+        "external_id",
+    )
+
+    readonly_fields = (
+        "source_name",
+        "external_id",
+        "spot_type",
+        "title_original",
+        "summary_original",
+        "description_original",
+        "official_url",
+        "latitude",
+        "longitude",
+        "classifications",
+        "details",
+        "image_metadata",
+        "source_license",
+        "raw_data",
+        "imported_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        (
+            "基本情報",
+            {
+                "fields": (
+                    "source_name",
+                    "external_id",
+                    "spot_type",
+                    "status",
+                    "official_url",
+                ),
+            },
+        ),
+        (
+            "日本語",
+            {
+                "fields": (
+                    "title_ja",
+                    "summary_ja",
+                ),
+            },
+        ),
+        (
+            "元データ",
+            {
+                "fields": (
+                    "title_original",
+                    "summary_original",
+                    "description_original",
+                ),
+            },
+        ),
+        (
+            "追加情報",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "latitude",
+                    "longitude",
+                    "classifications",
+                    "details",
+                    "image_metadata",
+                    "source_license",
+                    "raw_data",
+                    "imported_at",
+                    "updated_at",
+                ),
+            },
+        ),
+    )

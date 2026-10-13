@@ -19,8 +19,9 @@
 
         <div class="outings-mypage-menu">
 
+
             <a
-                href="{% url 'outings:saved_events' %}"
+                href="{% url 'outings:saved_all' %}"
                 class="outings-mypage-item"
             >
 
@@ -29,17 +30,16 @@
                 </span>
 
                 <span class="outings-mypage-item-content">
-                    <strong>ハートを押したイベント</strong>
-                    <small>気になるイベントをまとめて確認</small>
-                </span>
-
-                <span class="outings-mypage-count">
-                    {{ heart_count }}件
+                    <strong>お気に入りのイベント・旅行</strong>
+                    <small>
+                        保存したおでかけ情報をまとめて確認
+                    </small>
                 </span>
 
                 <i class="bi bi-chevron-right"></i>
 
             </a>
+
 
         </div>
 
@@ -192,7 +192,7 @@
 
     <section class="outings-mypage-section">
 
-        <h2>その他の設定</h2>
+        <h2>その他</h2>
 
         <div class="outings-mypage-menu">
 
@@ -223,6 +223,32 @@
                 ></span>
 
             </button>
+
+
+            <!-- About Outings -->
+
+            <a
+                href="{% url 'outings:about_outings' %}"
+                class="outings-mypage-item"
+            >
+
+                <span class="outings-mypage-icon">
+                    <i class="bi bi-info-circle"></i>
+                </span>
+
+                <span class="outings-mypage-item-content">
+
+                    <strong>おでかけについて</strong>
+
+                    <small>
+                        AIの利用・掲載情報・写真について
+                    </small>
+
+                </span>
+
+                <i class="bi bi-chevron-right"></i>
+
+            </a>
 
         </div>
 

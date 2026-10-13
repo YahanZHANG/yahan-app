@@ -5,568 +5,276 @@
 
 {% block content %}
 
-<div class="outings-home outings-curated-home">
+<div class="outings-discovery-home">
 
-    {% if preview_mode %}
-        <div class="outings-preview-banner">
-            <strong>管理者プレビュー</strong>
-            下書きの外部イベントも表示中（{{ draft_count }}件）
-            <a href="{% url 'outings:home' %}">通常表示</a>
-        </div>
-    {% endif %}
+    <section class="discovery-intro">
 
+        <div class="discovery-shortcuts">
 
-    <!-- =====================================================
-         Section navigation
-         ===================================================== -->
-
-    <nav
-        class="outings-tier-nav"
-        id="outings-section-nav"
-        aria-label="掲載タイプ別メニュー"
-    >
-        <div class="outings-tier-grid">
-
-            <a href="#featured" class="outings-section-nav-card">
-                <i class="bi bi-star-fill"></i>
-                <span>AIのおすすめ</span>
-            </a>
-
-            <a href="#standard" class="outings-section-nav-card">
+            <a href="{% url 'outings:event_home' %}">
                 <i class="bi bi-calendar-event"></i>
-                <span>イベント情報</span>
+                <span>イベントを見る</span>
+                <i class="bi bi-chevron-right"></i>
             </a>
 
-            <a href="#compact" class="outings-section-nav-card">
-                <i class="bi bi-list-ul"></i>
-                <span>その他のイベント</span>
-            </a>
-
-            <a href="#community" class="outings-section-nav-card">
-                <i class="bi bi-people"></i>
-                <span>みんなの投稿</span>
+            <a href="{% url 'outings:tourist_spot_list' %}">
+                <i class="bi bi-compass" aria-hidden="true"></i>
+                <span>旅行</span>
             </a>
 
         </div>
-    </nav>
+
+    </section>
 
 
-    {% if active_region or active_category or active_tag %}
-        <div class="outings-preview-banner">
-            絞り込み中
-            <a href="{% url 'outings:home' %}">解除</a>
-        </div>
-    {% endif %}
+    <section
+        class="discovery-section"
+        data-discovery-section
+    >
+        <div class="discovery-section-heading">
 
-
-    <!-- =====================================================
-         Featured events
-         ===================================================== -->
-
-    <section id="featured" class="outings-tier-section">
-
-        <div class="outings-tier-heading">
             <div>
                 <h2>
-                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-stars"></i>
+                    新着
+                </h2>
+
+                <p>最近追加されたイベントと旅行</p>
+            </div>
+
+            <button
+                type="button"
+                class="discovery-expand-button"
+                data-discovery-toggle
+                aria-expanded="false"
+            >
+                一覧を見る
+                <i class="bi bi-chevron-down"></i>
+            </button>
+
+        </div>
+
+        <div class="discovery-card-track" data-discovery-track>
+
+            {% for card in fresh_cards %}
+
+                {% include "outings/includes/discovery_card.html" %}
+
+            {% empty %}
+
+                <p class="empty-state">
+                    新しい情報を準備中です。
+                </p>
+
+            {% endfor %}
+
+        </div>
+    </section>
+
+    <section
+        class="discovery-section"
+        data-discovery-section
+    >
+        <div class="discovery-section-heading">
+
+            <div>
+                <h2>
+                    <i class="bi bi-award"></i>
                     おすすめ
                 </h2>
-                <p>AIのおすすめ度：高</p>
-            </div>
-        </div>
 
-        <div class="outings-featured-grid">
-
-            {% for event in featured_events %}
-
-                <div class="outings-card-with-heart">
-
-                    <a
-                        class="outings-tier-card featured"
-                        href="{% url 'outings:event_detail' event.pk %}"
-                    >
-
-                        <div class="outings-tier-visual">
-
-                            {% if event.image_url %}
-                                <img
-                                    src="{{ event.image_url }}"
-                                    alt=""
-                                    loading="lazy"
-                                    onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
-                                >
-                                <span class="outings-emoji-image" hidden>
-                                    {{ event.display_emoji }}
-                                </span>
-                            {% else %}
-                                <span class="outings-emoji-image">
-                                    {{ event.display_emoji }}
-                                </span>
-                            {% endif %}
-
-                        </div>
-
-                        <div class="outings-tier-body">
-
-                            <span class="outings-tier-label outings-tier-featured">
-                                おすすめ
-                            </span>
-
-                            <h3>{{ event.title }}</h3>
-
-                            {% with event.upcoming_dates.0 as o %}
-                                <p class="outings-event-meta">
-                                    {{ o.start_at|date:"n月j日 H:i" }}
-                                    {% if event.location %}
-                                        · {{ event.location.city }}
-                                    {% endif %}
-                                </p>
-                            {% endwith %}
-
-                            {% if event.summary_ja %}
-                                <p class="outings-tier-summary">
-                                    {{ event.summary_ja|truncatechars:105 }}
-                                </p>
-                            {% endif %}
-
-                        </div>
-
-                    </a>
-
-                    <form
-                        class="outings-card-heart-form"
-                        method="post"
-                        action="{% url 'outings:toggle_heart' event.pk %}"
-                        data-event-id="{{ event.pk }}"
-                    >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="outings-card-heart-button {% if event.pk in hearted_ids %}is-hearted{% endif %}"
-                            aria-label="{{ event.title }}をお気に入りに登録または解除"
-                            aria-pressed="{% if event.pk in hearted_ids %}true{% else %}false{% endif %}"
-                            title="お気に入り"
-                        >
-                            <i class="bi {% if event.pk in hearted_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                        </button>
-                    </form>
-
-                </div>
-
-            {% empty %}
-
-                <p class="empty-state">
-                    おすすめイベントを準備中です。
+                <p>
+                    注目のイベントと魅力的な旅行先
                 </p>
-
-            {% endfor %}
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         Standard events
-         ===================================================== -->
-
-    <section id="standard" class="outings-tier-section">
-
-        <div class="outings-tier-heading">
-            <div>
-                <h2>
-                    <i class="bi bi-calendar-event"></i>
-                    イベント情報
-                </h2>
-                <p>AIのおすすめ度：中</p>
-            </div>
-        </div>
-
-        <div class="outings-standard-list">
-
-            {% for event in standard_events %}
-
-                <div class="outings-card-with-heart">
-
-                    <a
-                      class="outings-tier-card standard {% if event.image_url %}has-thumbnail{% endif %}"
-                      href="{% url 'outings:event_detail' event.pk %}"
-                  >
-
-                      {% if event.image_url %}
-
-                          <div class="outings-standard-thumbnail">
-                              <img
-                                  src="{{ event.image_url }}"
-                                  alt=""
-                                  loading="lazy"
-                                  onerror="this.parentElement.style.display='none';"
-                              >
-                          </div>
-
-                      {% endif %}
-
-                      <div class="outings-tier-body">
-
-                            <h3>{{ event.title }}</h3>
-
-                            {% with event.upcoming_dates.0 as o %}
-                                <p class="outings-event-meta">
-                                    {{ o.start_at|date:"n月j日 H:i" }}
-                                    {% if event.location %}
-                                        · {{ event.location.city }}
-                                    {% endif %}
-                                </p>
-                            {% endwith %}
-
-                            {% if event.summary_ja %}
-                                <p class="outings-tier-summary">
-                                    {{ event.summary_ja|truncatechars:90 }}
-                                </p>
-                            {% endif %}
-
-                        </div>
-
-                    </a>
-
-                    <form
-                        class="outings-card-heart-form"
-                        method="post"
-                        action="{% url 'outings:toggle_heart' event.pk %}"
-                        data-event-id="{{ event.pk }}"
-                    >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="outings-card-heart-button {% if event.pk in hearted_ids %}is-hearted{% endif %}"
-                            aria-label="{{ event.title }}をお気に入りに登録または解除"
-                            aria-pressed="{% if event.pk in hearted_ids %}true{% else %}false{% endif %}"
-                            title="お気に入り"
-                        >
-                            <i class="bi {% if event.pk in hearted_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                        </button>
-                    </form>
-
-                </div>
-
-            {% empty %}
-
-                <p class="empty-state">
-                    イベント情報を準備中です。
-                </p>
-
-            {% endfor %}
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         Compact events
-         ===================================================== -->
-
-    <section id="compact" class="outings-tier-section">
-
-        <div class="outings-tier-heading">
-            <div>
-                <h2>
-                    <i class="bi bi-list-ul"></i>
-                    その他のイベント
-                </h2>
-                <p>AIのおすすめ度：低</p>
-            </div>
-        </div>
-
-        <div class="outings-compact-list">
-
-            {% for event in compact_events %}
-
-                <div class="outings-compact-heart-row">
-
-                    <a href="{% url 'outings:event_detail' event.pk %}">
-
-                        <span class="outings-compact-date">
-                            {% with event.upcoming_dates.0 as o %}
-                                {{ o.start_at|date:"n/j" }}
-                            {% endwith %}
-                        </span>
-
-                        <span class="outings-compact-title">
-                            {{ event.title }}
-
-                            <small>
-                                {% if event.location %}
-                                    {{ event.location.city }}
-                                {% endif %}
-                            </small>
-                        </span>
-
-                        <i class="bi bi-chevron-right"></i>
-
-                    </a>
-
-                    <form
-                        class="outings-card-heart-form"
-                        method="post"
-                        action="{% url 'outings:toggle_heart' event.pk %}"
-                        data-event-id="{{ event.pk }}"
-                    >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="outings-card-heart-button {% if event.pk in hearted_ids %}is-hearted{% endif %}"
-                            aria-label="{{ event.title }}をお気に入りに登録または解除"
-                            aria-pressed="{% if event.pk in hearted_ids %}true{% else %}false{% endif %}"
-                            title="お気に入り"
-                        >
-                            <i class="bi {% if event.pk in hearted_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                        </button>
-                    </form>
-
-                </div>
-
-            {% empty %}
-
-                <p class="empty-state">
-                    イベントを準備中です。
-                </p>
-
-            {% endfor %}
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         Community events
-         ===================================================== -->
-
-    <section id="community" class="outings-tier-section">
-
-        <div class="outings-tier-heading">
-
-            <div>
-                <h2>
-                    <i class="bi bi-people"></i>
-                    みんなの投稿
-                </h2>
-                <p>会員が紹介する身近なイベント</p>
             </div>
 
-            <a
-                class="outings-post-cta"
-                href="{% url 'outings:event_create' %}"
+            <button
+                type="button"
+                class="discovery-expand-button"
+                data-discovery-toggle
+                aria-expanded="false"
             >
-                ＋ 投稿する
-            </a>
+                一覧を見る
+                <i class="bi bi-chevron-down"></i>
+            </button>
 
         </div>
 
-        <div class="outings-standard-list">
+        <div class="discovery-card-track" data-discovery-track>
 
-            {% for event in community_events %}
+            {% for card in recommended_cards %}
 
-                <div class="outings-card-with-heart">
-
-                    <a
-                        class="outings-tier-card community"
-                        href="{% url 'outings:event_detail' event.pk %}"
-                    >
-
-                        <div class="outings-tier-body">
-
-                            <span class="outings-tier-label outings-tier-community">
-                                会員投稿
-                            </span>
-
-                            <h3>{{ event.title }}</h3>
-
-                            {% with event.upcoming_dates.0 as o %}
-                                <p class="outings-event-meta">
-                                    {{ o.start_at|date:"n月j日 H:i" }}
-                                    {% if event.location %}
-                                        · {{ event.location.city }}
-                                    {% endif %}
-                                </p>
-                            {% endwith %}
-
-                            {% if event.summary_ja %}
-                                <p class="outings-tier-summary">
-                                    {{ event.summary_ja|truncatechars:90 }}
-                                </p>
-                            {% endif %}
-
-                        </div>
-
-                    </a>
-
-                    <form
-                        class="outings-card-heart-form"
-                        method="post"
-                        action="{% url 'outings:toggle_heart' event.pk %}"
-                        data-event-id="{{ event.pk }}"
-                    >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="outings-card-heart-button {% if event.pk in hearted_ids %}is-hearted{% endif %}"
-                            aria-label="{{ event.title }}をお気に入りに登録または解除"
-                            aria-pressed="{% if event.pk in hearted_ids %}true{% else %}false{% endif %}"
-                            title="お気に入り"
-                        >
-                            <i class="bi {% if event.pk in hearted_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                        </button>
-                    </form>
-
-                </div>
+                {% include "outings/includes/discovery_card.html" %}
 
             {% empty %}
 
                 <p class="empty-state">
-                    まだ公開中の会員投稿はありません。
-                    最初のイベントを投稿してみませんか？
+                    おすすめを準備中です。
                 </p>
 
             {% endfor %}
 
         </div>
-
     </section>
 
 </div>
 
-
-<!-- =====================================================
-     Scroll-linked navigation
-     ===================================================== -->
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    const sectionIds = [
-        "featured",
-        "standard",
-        "compact",
-        "community"
-    ];
-
-    const navigation = document.getElementById(
-        "outings-section-nav"
+    const sections = document.querySelectorAll(
+        "[data-discovery-section]"
     );
 
-    if (!navigation) return;
+    sections.forEach(section => {
 
-    const sections = sectionIds
-        .map(id => document.getElementById(id))
-        .filter(Boolean);
+        const button = section.querySelector(
+            "[data-discovery-toggle]"
+        );
 
-    const links = Array.from(
-        navigation.querySelectorAll('a[href^="#"]')
-    );
+        if (!button) return;
 
-    if (!sections.length || !links.length) return;
+        button.addEventListener("click", () => {
 
-    function updateActiveSection() {
-
-        const navBottom =
-            navigation.getBoundingClientRect().bottom;
-
-        const activationLine = navBottom + 24;
-
-        let activeId = sections[0].id;
-
-        for (const section of sections) {
-            if (
-                section.getBoundingClientRect().top <=
-                activationLine
-            ) {
-                activeId = section.id;
-            }
-        }
-
-        for (const link of links) {
-
-            const targetId =
-                link.getAttribute("href").slice(1);
-
-            const active = targetId === activeId;
-
-            link.classList.toggle(
-                "is-active-section",
-                active
+            const expanded = section.classList.toggle(
+                "is-expanded"
             );
 
-            if (active) {
-                link.setAttribute(
-                    "aria-current",
-                    "location"
+            button.setAttribute(
+                "aria-expanded",
+                String(expanded)
+            );
+
+            button.innerHTML = expanded
+                ? '閉じる <i class="bi bi-chevron-up"></i>'
+                : '一覧を見る <i class="bi bi-chevron-down"></i>';
+
+        });
+    });
+
+    const tracks = document.querySelectorAll(
+        "[data-discovery-track]"
+    );
+
+    const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const isMobile = window.matchMedia(
+        "(max-width: 700px)"
+    );
+
+    if (!reduceMotion) {
+
+        tracks.forEach(track => {
+
+            let touched = false;
+
+            track.addEventListener(
+                "pointerdown",
+                () => {
+                    touched = true;
+                },
+                { passive: true }
+            );
+
+            track.addEventListener(
+                "focusin",
+                () => {
+                    touched = true;
+                }
+            );
+
+            track.addEventListener(
+                "wheel",
+                () => {
+                    touched = true;
+                },
+                { passive: true }
+            );
+
+            setInterval(() => {
+
+                if (!isMobile.matches) return;
+
+                if (touched) return;
+
+                if (document.hidden) return;
+
+                const section = track.closest(
+                    "[data-discovery-section]"
                 );
-            } else {
-                link.removeAttribute("aria-current");
-            }
-        }
+
+                if (section?.classList.contains(
+                    "is-expanded"
+                )) return;
+
+                if (
+                    !track.isConnected
+                    || track.scrollWidth <= track.clientWidth
+                ) return;
+
+                const bounds = track.getBoundingClientRect();
+
+                if (
+                    bounds.bottom <= 0
+                    || bounds.top >= window.innerHeight
+                ) return;
+
+                const firstCard = track.querySelector(
+                    ".discovery-card"
+                );
+
+                if (!firstCard) return;
+
+                const step = firstCard.getBoundingClientRect().width + 12;
+
+                const maximum = (
+                    track.scrollWidth - track.clientWidth
+                );
+
+                const next = (
+                    track.scrollLeft + step >= maximum - 5
+                )
+                    ? 0
+                    : track.scrollLeft + step;
+
+                track.scrollTo({
+                    left: next,
+                    behavior: "smooth",
+                });
+
+            }, 6000);
+
+        });
     }
 
-    let ticking = false;
-
-    window.addEventListener("scroll", () => {
-
-        if (ticking) return;
-
-        ticking = true;
-
-        requestAnimationFrame(() => {
-            updateActiveSection();
-            ticking = false;
-        });
-
-    }, { passive: true });
-
-    window.addEventListener(
-        "resize",
-        updateActiveSection
-    );
-
-    window.addEventListener(
-        "hashchange",
-        updateActiveSection
-    );
-
-    updateActiveSection();
 });
 </script>
 
-
-<!-- =====================================================
-     Heart toggle without leaving HOME
-     ===================================================== -->
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
     const forms = document.querySelectorAll(
-        ".outings-card-heart-form"
+        ".discovery-card-heart-form"
     );
 
-    function updateHeart(eventId, hearted) {
+    function updateHearts(key, hearted) {
 
-        // Update all copies of the same event on HOME.
         forms.forEach(form => {
 
-            if (form.dataset.eventId !== eventId) return;
+            if (form.dataset.heartKey !== key) return;
 
             const button = form.querySelector("button");
             const icon = button?.querySelector("i");
 
             if (!button || !icon) return;
 
-            button.classList.toggle("is-hearted", hearted);
+            button.classList.toggle(
+                "is-hearted",
+                hearted
+            );
 
             button.setAttribute(
                 "aria-pressed",
@@ -592,24 +300,21 @@ document.addEventListener("DOMContentLoaded", () => {
             event.preventDefault();
 
             const button = form.querySelector("button");
+
             if (!button || button.disabled) return;
 
-            const eventId = form.dataset.eventId;
-            const wasHearted =
-                button.classList.contains("is-hearted");
+            const key = form.dataset.heartKey;
 
-            const csrfToken = form.querySelector(
-                'input[name="csrfmiddlewaretoken"]'
-            )?.value;
-
-            // Prevent duplicate submissions for one event.
-            const relatedForms = Array.from(forms).filter(
-                item => item.dataset.eventId === eventId
+            const wasHearted = button.classList.contains(
+                "is-hearted"
             );
 
-            relatedForms.forEach(item => {
-                const relatedButton = item.querySelector("button");
-                if (relatedButton) relatedButton.disabled = true;
+            const related = Array.from(forms).filter(
+                item => item.dataset.heartKey === key
+            );
+
+            related.forEach(item => {
+                item.querySelector("button").disabled = true;
             });
 
             try {
@@ -617,39 +322,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = await fetch(form.action, {
                     method: "POST",
                     credentials: "same-origin",
-                    headers: {
-                        "X-CSRFToken": csrfToken,
-                    },
                     body: new FormData(form),
+                    redirect: "manual",
                 });
 
-                if (!response.ok) {
+                if (
+                    response.status !== 0
+                    && !response.ok
+                    && response.type !== "opaqueredirect"
+                ) {
                     throw new Error(
-                        `Heart request failed: ${response.status}`
+                        "Heart update failed"
                     );
                 }
 
-                updateHeart(eventId, !wasHearted);
+                updateHearts(key, !wasHearted);
 
             } catch (error) {
 
                 console.error(error);
-
                 alert(
-                    "ハートを更新できませんでした。もう一度お試しください。"
+                    "お気に入りを更新できませんでした。"
                 );
 
             } finally {
 
-                relatedForms.forEach(item => {
-                    const relatedButton = item.querySelector("button");
-                    if (relatedButton) relatedButton.disabled = false;
+                related.forEach(item => {
+                    item.querySelector("button").disabled = false;
                 });
-
             }
+
         });
+
     });
+
 });
 </script>
+
 
 {% endblock %}

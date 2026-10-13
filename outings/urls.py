@@ -1,7 +1,6 @@
 
 from django.urls import path
-
-from . import views
+from . import views, discovery_views
 
 
 app_name = "outings"
@@ -15,10 +14,25 @@ urlpatterns = [
 
     path(
         "",
-        views.home,
+        discovery_views.home,
         name="home",
     ),
+    path(
+        "events/",
+        views.event_home,
+        name="event_home",
+    ),
+    path(
+        "about/",
+        views.about_outings,
+        name="about_outings",
+    ),
 
+    path(
+        "my/saved/all/",
+        discovery_views.saved_all,
+        name="saved_all",
+    ),
     path(
         "search/",
         views.search,
@@ -157,4 +171,14 @@ urlpatterns = [
         name="my_comments",
     ),
 
+
+]
+
+from django.urls import include
+
+urlpatterns += [
+    path(
+        "trips/",
+        include("outings.tourist_urls"),
+    ),
 ]

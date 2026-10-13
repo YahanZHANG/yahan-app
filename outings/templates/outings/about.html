@@ -1,0 +1,255 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+おでかけについて | Yapp
+{% endblock %}
+
+{% block content %}
+
+<div class="outings-about-page">
+
+    <!-- =========================================
+         Header
+         ========================================= -->
+
+    <header class="outings-about-header">
+
+        <a
+            href="{% url 'outings:my_page' %}"
+            class="outings-about-back"
+        >
+            <i class="bi bi-chevron-left"></i>
+            マイページに戻る
+        </a>
+
+        <h1>おでかけについて</h1>
+
+        <p>
+            スイスのイベントや旅行情報を、日本語でもっと身近に。
+        </p>
+
+    </header>
+
+
+    <!-- =========================================
+         Introduction
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-balloon"></i>
+            このサービスについて
+        </h2>
+
+        <p>
+            Yappの「おでかけ」は、スイスで開催されるイベントや、スイス国内の観光地・体験などを日本語で探せるサービスです。
+        </p>
+
+        <p>
+            現地の情報をより簡単に見つけ、週末のおでかけや旅行の参考にしていただくことを目的としています。
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         Information sources
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-globe-europe-africa"></i>
+            情報の取得元
+        </h2>
+
+        <p>
+            イベントや旅行の情報は、外部の情報提供サイトや公開データなどをもとに掲載しています。
+        </p>
+
+        <p>
+            また、利用者が投稿したイベント情報を掲載する場合もあります。
+        </p>
+
+        <p>
+            できる限り情報を更新するよう努めていますが、掲載情報が常に最新・正確であることを保証するものではありません。
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         AI
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-stars"></i>
+            AI技術の利用について
+        </h2>
+
+        <p>
+            このサービスでは、情報の整理や日本語での紹介を支援するためにAIを利用しています。
+        </p>
+
+        <div class="outings-about-feature-list">
+
+            <div class="outings-about-feature">
+
+                <i class="bi bi-translate"></i>
+
+                <div>
+                    <strong>日本語での紹介</strong>
+                    <p>
+                        外国語のタイトルや説明をAIが日本語に翻訳・要約しています。
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="outings-about-feature">
+
+                <i class="bi bi-star"></i>
+
+                <div>
+                    <strong>おすすめ情報の選定</strong>
+                    <p>
+                        観光地の特徴や魅力などをもとに、AIによる評価をおすすめ表示の参考にしています。
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="outings-about-feature">
+
+                <i class="bi bi-image"></i>
+
+                <div>
+                    <strong>画像の選定・生成</strong>
+                    <p>
+                        写真の候補検索や選定に自動処理を利用しています。また、一部の記事ではAI生成画像を使用する場合があります。
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <p class="outings-about-note">
+            AIが生成した文章や評価には、誤りや不正確な表現が含まれる可能性があります。
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         Images
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-camera"></i>
+            掲載写真について
+        </h2>
+
+        <p>
+            掲載画像には、外部サイトで公開されている写真やAIによる生成画像が含まれます。
+        </p>
+
+        <p>
+            写真は記事の内容に関連するものを自動的に選定する場合があります。そのため、必ずしも紹介している施設・体験・観光地そのものを撮影した写真とは限りません。
+        </p>
+
+        <div class="outings-about-notice">
+
+            <i class="bi bi-info-circle"></i>
+
+            <p>
+                <strong>写真はイメージの場合があります。</strong>
+                現地の景観や施設の様子は、公式サイト等でご確認ください。
+            </p>
+
+        </div>
+
+        <p>
+            外部写真については、必要に応じて撮影者やライセンス、出典へのリンクを表示しています。
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         Accuracy
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-exclamation-circle"></i>
+            ご利用にあたっての注意
+        </h2>
+
+        <p>
+            イベントの開催日時、料金、チケットの販売状況、施設の営業時間、交通状況などは変更されることがあります。
+        </p>
+
+        <p>
+            また、ハイキングコースや屋外施設では、季節、天候、積雪、工事などによって利用できない場合があります。
+        </p>
+
+        <p>
+            <strong>
+                お出かけ前には、必ず主催者や施設の公式サイトで最新情報をご確認ください。
+            </strong>
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         Recommendations
+         ========================================= -->
+
+    <section class="outings-about-section">
+
+        <h2>
+            <i class="bi bi-heart"></i>
+            おすすめについて
+        </h2>
+
+        <p>
+            「おすすめ」は、掲載情報やAIによる評価、サービス内の設定などを参考に表示しています。
+        </p>
+
+        <p>
+            おすすめ度は観光地やイベントの絶対的な評価ではありません。また、実際の営業状況、安全性、当日の天候などを保証するものではありません。
+        </p>
+
+        <p>
+            ご自身の興味や予定に合わせて、おでかけ先を選ぶ際の参考としてご利用ください。
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         Footer
+         ========================================= -->
+
+    <div class="outings-about-footer">
+
+
+        <a href="{% url 'outings:home' %}">
+            <i class="bi bi-house"></i>
+            おでかけHOMEへ
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

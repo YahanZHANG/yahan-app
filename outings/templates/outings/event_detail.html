@@ -1,6 +1,7 @@
 
 
 {% extends "outings/base.html" %}
+{% load outings_names %}
 
 
 
@@ -506,17 +507,7 @@
 
 
                             <strong>
-
-                                {% if comment.author_id == event.created_by_id %}
-
-                                    イベント投稿者
-
-                                {% else %}
-
-                                    ユーザー
-
-                                {% endif %}
-
+                                {{ comment.author|outings_display_name }}
                             </strong>
 
 
@@ -716,17 +707,7 @@
 
 
                                     <strong>
-
-                                        {% if reply.author_id == event.created_by_id %}
-
-                                            イベント投稿者
-
-                                        {% else %}
-
-                                            ユーザー
-
-                                        {% endif %}
-
+                                        {{ reply.author|outings_display_name }}
                                     </strong>
 
 

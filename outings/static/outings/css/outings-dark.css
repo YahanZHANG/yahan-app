@@ -99,3 +99,323 @@ html[data-outings-theme="dark"] .outings-mypage-empty { background: var(--outing
 html[data-outings-theme="dark"] .outings-preview-banner { background: #40362b; color: #f9d59e; border-color: #735839; }
 html[data-outings-theme="dark"] .outings-tier-featured { background: #493c24; color: #f7d691; }
 html[data-outings-theme="dark"] .outings-tier-community { background: #254737; color: #a1e8ba; }
+
+
+/* =========================================================
+   Trip list + Unified favorites - Dark mode
+   ========================================================= */
+
+html[data-outings-theme="dark"] {
+    --trip-dark-surface: #1c2935;
+    --trip-dark-border: #354653;
+    --trip-dark-text: #eef4f7;
+    --trip-dark-muted: #b3c0ca;
+    --trip-dark-accent: #7dcbd0;
+    --trip-dark-input: #15222d;
+}
+
+/* =========================================================
+   Trip search and filters
+   ========================================================= */
+
+html[data-outings-theme="dark"] .trip-page {
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .trip-search input,
+html[data-outings-theme="dark"] .trip-category,
+html[data-outings-theme="dark"] .trip-show-all,
+html[data-outings-theme="dark"] .trip-sort-form select {
+    background: var(--trip-dark-surface);
+    color: var(--trip-dark-text);
+    border-color: var(--trip-dark-border);
+}
+
+html[data-outings-theme="dark"] .trip-search input {
+    background: var(--trip-dark-input);
+}
+
+html[data-outings-theme="dark"] .trip-search input::placeholder {
+    color: var(--trip-dark-muted);
+}
+
+html[data-outings-theme="dark"] .trip-category.active {
+    background: #277f86;
+    border-color: #277f86;
+    color: #fff;
+}
+
+html[data-outings-theme="dark"] .trip-search button {
+    background: #277f86;
+    color: #fff;
+}
+
+html[data-outings-theme="dark"] .trip-heading h1 {
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .trip-heading p,
+html[data-outings-theme="dark"] .trip-result-count {
+    color: var(--trip-dark-muted);
+}
+
+/* =========================================================
+   Trip cards
+   ========================================================= */
+
+html[data-outings-theme="dark"] .trip-card {
+    background: var(--trip-dark-surface);
+    color: var(--trip-dark-text);
+    border-color: var(--trip-dark-border);
+}
+
+html[data-outings-theme="dark"] .trip-card-main,
+html[data-outings-theme="dark"] .trip-card-main:hover,
+html[data-outings-theme="dark"] .trip-card h2 {
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .trip-card p {
+    color: var(--trip-dark-muted);
+}
+
+html[data-outings-theme="dark"] .trip-card-type,
+html[data-outings-theme="dark"] .trip-card-bottom,
+html[data-outings-theme="dark"] .trip-card-credit a {
+    color: var(--trip-dark-accent);
+}
+
+html[data-outings-theme="dark"] .trip-card-placeholder {
+    background: #283947;
+    color: var(--trip-dark-muted);
+}
+
+html[data-outings-theme="dark"] .trip-card-credit {
+    color: var(--trip-dark-muted);
+    border-top-color: var(--trip-dark-border);
+}
+
+html[data-outings-theme="dark"] .trip-pagination,
+html[data-outings-theme="dark"] .trip-empty {
+    color: var(--trip-dark-muted);
+}
+
+html[data-outings-theme="dark"] .trip-pagination a {
+    color: var(--trip-dark-accent);
+}
+
+/* =========================================================
+   Unified favorites
+   ========================================================= */
+
+html[data-outings-theme="dark"] .outings-saved-page {
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .outings-saved-card,
+html[data-outings-theme="dark"] .outings-saved-tabs a {
+    background: var(--trip-dark-surface);
+    border-color: var(--trip-dark-border);
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .outings-saved-tabs a.active {
+    background: #277f86;
+    border-color: #277f86;
+    color: #fff;
+}
+
+html[data-outings-theme="dark"] .outings-saved-header h1,
+html[data-outings-theme="dark"] .outings-saved-body h2,
+html[data-outings-theme="dark"] .outings-saved-card-link,
+html[data-outings-theme="dark"] .outings-saved-card-link:hover,
+html[data-outings-theme="dark"] .outings-saved-empty h2 {
+    color: var(--trip-dark-text);
+}
+
+html[data-outings-theme="dark"] .outings-saved-header p,
+html[data-outings-theme="dark"] .outings-saved-body p,
+html[data-outings-theme="dark"] .outings-saved-credit,
+html[data-outings-theme="dark"] .outings-saved-empty {
+    color: var(--trip-dark-muted);
+}
+
+html[data-outings-theme="dark"] .outings-saved-kind,
+html[data-outings-theme="dark"] .outings-saved-more,
+html[data-outings-theme="dark"] .outings-saved-credit a {
+    color: var(--trip-dark-accent);
+}
+
+html[data-outings-theme="dark"] .outings-saved-placeholder {
+    background: #283947;
+    color: var(--trip-dark-muted);
+}
+
+
+/* =========================================================
+   Travel pages - Dark mode readability fix
+   Uses Yapp's actual data-outings-theme attribute
+   ========================================================= */
+
+html[data-outings-theme="dark"] .trip-page,
+html[data-outings-theme="dark"] .outings-saved-page {
+    color: var(--outings-text);
+}
+
+/* Search, category, sorting */
+
+html[data-outings-theme="dark"] :is(
+    .trip-search input,
+    .trip-category,
+    .trip-show-all,
+    .trip-sort-form select,
+    .outings-saved-tabs a
+) {
+    background-color: var(--outings-surface);
+    border-color: var(--outings-border);
+    color: var(--outings-text);
+    color-scheme: dark;
+}
+
+html[data-outings-theme="dark"] .trip-search input::placeholder {
+    color: var(--outings-muted);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-category.active,
+    .outings-saved-tabs a.active
+) {
+    background: #347d83;
+    border-color: #347d83;
+    color: #ffffff;
+}
+
+html[data-outings-theme="dark"] .trip-search button {
+    background: #347d83;
+    color: #ffffff;
+}
+
+/* Travel cards and saved cards */
+
+html[data-outings-theme="dark"] :is(
+    .trip-card,
+    .outings-saved-card
+) {
+    background-color: var(--outings-surface);
+    border-color: var(--outings-border);
+    color: var(--outings-text);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-card-main,
+    .trip-card-main:hover,
+    .trip-card h2,
+    .outings-saved-card-link,
+    .outings-saved-card-link:hover,
+    .outings-saved-body h2,
+    .outings-saved-header h1,
+    .outings-saved-empty h2
+) {
+    color: var(--outings-text);
+}
+
+/* Muted text, descriptions and metadata */
+
+html[data-outings-theme="dark"] :is(
+    .trip-heading p,
+    .trip-card p,
+    .trip-result-count,
+    .trip-card-credit,
+    .trip-empty,
+    .trip-pagination,
+    .outings-saved-header p,
+    .outings-saved-body p,
+    .outings-saved-credit,
+    .outings-saved-empty
+) {
+    color: var(--outings-muted);
+}
+
+/* Highlights and links */
+
+html[data-outings-theme="dark"] :is(
+    .trip-card-type,
+    .trip-card-bottom,
+    .trip-pagination a,
+    .trip-card-credit a,
+    .outings-saved-kind,
+    .outings-saved-more,
+    .outings-saved-credit a
+) {
+    color: var(--outings-accent);
+}
+
+/* Image placeholders */
+
+html[data-outings-theme="dark"] :is(
+    .trip-card-placeholder,
+    .outings-saved-placeholder
+) {
+    background: #273947;
+    color: var(--outings-muted);
+}
+
+/* Borders */
+
+html[data-outings-theme="dark"] .trip-card-credit {
+    border-top-color: var(--outings-border);
+}
+
+/* Tourist spot detail:
+   common text, tables, panels and links */
+
+html[data-outings-theme="dark"] :is(
+    .trip-detail,
+    .tourist-spot-detail,
+    .tourist-detail
+) {
+    color: var(--outings-text);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-detail,
+    .tourist-spot-detail,
+    .tourist-detail
+) :is(
+    h1, h2, h3, h4, strong
+) {
+    color: var(--outings-text);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-detail,
+    .tourist-spot-detail,
+    .tourist-detail
+) :is(
+    p, li, small, dd, dt
+) {
+    color: var(--outings-muted);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-detail,
+    .tourist-spot-detail,
+    .tourist-detail
+) :is(
+    a:not(.btn),
+    .text-primary
+) {
+    color: var(--outings-accent);
+}
+
+html[data-outings-theme="dark"] :is(
+    .trip-detail,
+    .tourist-spot-detail,
+    .tourist-detail
+) :is(
+    .card, .detail-panel, .info-panel
+) {
+    background: var(--outings-surface);
+    border-color: var(--outings-border);
+    color: var(--outings-text);
+}

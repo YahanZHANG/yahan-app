@@ -878,3 +878,266 @@ class EventfrogOccurrenceLink(models.Model):
     def __str__(self):
 
         return self.eventfrog_id
+
+
+
+# =========================================================
+# Switzerland Tourism
+# =========================================================
+
+class TouristSpot(models.Model):
+
+    class SpotType(models.TextChoices):
+        ATTRACTION = "attractions", "観光・体験"
+        TOUR = "tours", "散策・ハイキング"
+        DESTINATION = "destinations", "旅行先・地域"
+        OFFER = "offers", "体験・ツアー"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "確認待ち"
+        PUBLISHED = "published", "公開"
+        HIDDEN = "hidden", "非公開"
+
+    source_name = models.CharField(
+        max_length=100,
+        default="Switzerland Tourism",
+    )
+
+    external_id = models.CharField(
+        max_length=100,
+    )
+
+    spot_type = models.CharField(
+        max_length=20,
+        choices=SpotType.choices,
+    )
+
+    title_original = models.CharField(
+        max_length=300,
+    )
+
+    title_ja = models.CharField(
+        max_length=300,
+        blank=True,
+    )
+
+    summary_original = models.TextField(
+        blank=True,
+    )
+
+    description_original = models.TextField(
+        blank=True,
+    )
+
+    summary_ja = models.TextField(
+        blank=True,
+    )
+
+    # AI recommendation evaluation
+    ai_quality_score = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    ai_recommendation_reason = models.TextField(
+        blank=True,
+    )
+
+    ai_reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    official_url = models.URLField(
+        max_length=1000,
+    )
+
+    latitude = models.FloatField(
+        null=True,
+        blank=True,
+    )
+
+    longitude = models.FloatField(
+        null=True,
+        blank=True,
+    )
+
+    # Classification and useful structured data
+    classifications = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    details = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # Store image metadata, but do not automatically
+    # display or upload externally owned images.
+    image_metadata = models.JSONField(
+        default=list,
+        blank=True,
+    )
+
+    source_license = models.CharField(
+        max_length=300,
+        blank=True,
+    )
+
+    # Keep a copy of the source record for later
+    # processing and troubleshooting.
+    raw_data = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PUBLISHED,
+        db_index=True,
+    )
+
+    imported_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["-updated_at", "pk"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "source_name",
+                    "spot_type",
+                    "external_id",
+                ],
+                name="unique_tourist_spot_source_id",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["status", "spot_type"],
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            self.title_ja
+            or self.title_original
+        )
+
+
+# =========================================================
+# Tourist Spot Hearts
+# =========================================================
+
+class TouristSpotHeart(models.Model):
+
+    spot = models.ForeignKey(
+        TouristSpot,
+        on_delete=models.CASCADE,
+        related_name="hearts",
+    )
+
+    visitor_id = models.UUIDField(
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["spot", "visitor_id"],
+                name="unique_outings_tourist_heart",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Heart: tourist spot {self.spot_id}"
+
+
+# =========================================================
+# Tourist Spot Comments
+# =========================================================
+
+class TouristSpotComment(models.Model):
+
+    spot = models.ForeignKey(
+        TouristSpot,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="outings_tourist_comments",
+    )
+
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="replies",
+    )
+
+    body = models.TextField(
+        max_length=500,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    is_deleted = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="outings_deleted_tourist_comments",
+    )
+
+    deleted_reason = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+        indexes = [
+            models.Index(
+                fields=["spot", "created_at"],
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"Tourist comment {self.pk} "
+            f"on spot {self.spot_id}"
+        )

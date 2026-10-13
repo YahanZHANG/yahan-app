@@ -1,0 +1,418 @@
+
+{% extends "outings/base.html" %}
+
+{% block title %}
+{{ spot.title_ja|default:spot.title_original }} | おでかけ
+{% endblock %}
+
+{% block content %}
+
+<style>
+.trip-detail {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 24px 16px 70px;
+}
+
+.trip-back {
+    display: inline-block;
+    color: #126b70;
+    text-decoration: none;
+    margin-bottom: 24px;
+}
+
+.trip-detail-type {
+    display: inline-block;
+    background: #e5f4f3;
+    color: #126b70;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+}
+
+.trip-detail h1 {
+    font-size: clamp(1.65rem, 4vw, 2.4rem);
+    line-height: 1.4;
+    font-weight: 750;
+    margin-bottom: 22px;
+}
+
+.trip-detail-section {
+    margin: 28px 0;
+}
+
+.trip-detail-section h2 {
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.trip-description {
+    white-space: pre-line;
+    line-height: 1.9;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+.trip-info {
+    background: #f7f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 24px 0;
+    line-height: 1.9;
+}
+
+.trip-warning {
+    border: 1px solid #eccf7b;
+    background: #fff9e9;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 24px 0;
+}
+
+.trip-warning p {
+    margin-bottom: 0;
+    white-space: pre-line;
+}
+
+.trip-official {
+    display: inline-block;
+    background: #126b70;
+    color: white;
+    text-decoration: none;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.trip-official:hover {
+    color: white;
+    background: #0b555a;
+}
+
+.trip-source {
+    font-size: .83rem;
+    line-height: 1.8;
+    color: #64748b;
+    margin-top: 30px;
+}
+
+.trip-source a {
+    color: #126b70;
+}
+
+
+/* =========================================================
+   Tourist spot detail - Dark mode
+   ========================================================= */
+
+html[data-outings-theme="dark"] .trip-detail {
+    color: #eef4f7;
+}
+
+html[data-outings-theme="dark"] .trip-detail h1,
+html[data-outings-theme="dark"] .trip-detail-section h2 {
+    color: #eef4f7;
+}
+
+/* Back link */
+
+html[data-outings-theme="dark"] .trip-back {
+    color: #7dcbd0;
+}
+
+/* Category badge */
+
+html[data-outings-theme="dark"] .trip-detail-type {
+    background: #283f45;
+    color: #9cdee0;
+}
+
+/* Description */
+
+html[data-outings-theme="dark"] .trip-description {
+    color: #d4e0e8;
+}
+
+/* General information panels */
+
+html[data-outings-theme="dark"] .trip-info {
+    background: #1c2935;
+    border: 1px solid #354653;
+    color: #eef4f7;
+}
+
+html[data-outings-theme="dark"] .trip-info strong {
+    color: #ffffff;
+}
+
+html[data-outings-theme="dark"] .trip-info small {
+    color: #b3c0ca;
+}
+
+/* Route warning */
+
+html[data-outings-theme="dark"] .trip-warning {
+    background: #403626;
+    border-color: #876b3e;
+    color: #f8e5ba;
+}
+
+html[data-outings-theme="dark"] .trip-warning strong,
+html[data-outings-theme="dark"] .trip-warning p {
+    color: #f8e5ba;
+}
+
+html[data-outings-theme="dark"] .trip-warning a {
+    color: #ffdc91;
+}
+
+/* Location and general links */
+
+html[data-outings-theme="dark"] .trip-detail-section a:not(.trip-official) {
+    color: #7dcbd0;
+}
+
+html[data-outings-theme="dark"] .trip-detail-section p {
+    color: #d4e0e8;
+}
+
+/* Official website */
+
+html[data-outings-theme="dark"] .trip-official {
+    background: #347d83;
+    color: #ffffff;
+}
+
+html[data-outings-theme="dark"] .trip-official:hover {
+    background: #42969c;
+    color: #ffffff;
+}
+
+/* Information source */
+
+html[data-outings-theme="dark"] .trip-source {
+    color: #b3c0ca;
+}
+
+html[data-outings-theme="dark"] .trip-source a {
+    color: #7dcbd0;
+}
+
+</style>
+
+<div class="trip-detail">
+
+    <a
+        href="{% url 'outings:tourist_spot_list' %}"
+        class="trip-back"
+    >
+        ← 日帰り・プチ旅行へ戻る
+    </a>
+
+    <div>
+        <span class="trip-detail-type">
+            {{ category_label }}
+        </span>
+    </div>
+
+    <h1>
+        {{ spot.title_ja|default:spot.title_original }}
+    </h1>
+
+    {% if warnings %}
+        <div class="trip-warning">
+
+            <strong>
+                ルートの注意情報
+            </strong>
+
+            {% if warnings.title %}
+                <p>{{ warnings.title }}</p>
+            {% endif %}
+
+            {% if warnings.text %}
+                <p>{{ warnings.text }}</p>
+            {% endif %}
+
+            {% if warnings.url %}
+                <a
+                    href="{{ warnings.url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    最新のルート情報を確認
+                </a>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+    <section class="trip-detail-section">
+
+        <h2>スポット紹介</h2>
+
+        <div class="trip-description">
+
+            {% if spot.summary_ja %}
+                {{ spot.summary_ja }}
+            {% elif spot.summary_original %}
+                {{ spot.summary_original }}
+            {% elif spot.description_original %}
+                {{ spot.description_original }}
+            {% else %}
+                公式サイトで詳細をご確認ください。
+            {% endif %}
+
+        </div>
+
+    </section>
+
+    {% if details.specs %}
+
+        <div class="trip-info">
+
+            <strong>コース情報</strong>
+
+            {% if details.specs.distance != None %}
+                <div>
+                    距離：
+                    {{ details.specs.distance }} km
+                </div>
+            {% endif %}
+
+            {% if details.specs.duration != None %}
+                <div>
+                    所要時間：
+                    {{ details.specs.duration }} 分
+                </div>
+            {% endif %}
+
+            {% if details.specs.ascent != None %}
+                <div>
+                    登り：
+                    {{ details.specs.ascent }} m
+                </div>
+            {% endif %}
+
+            {% if details.specs.descent != None %}
+                <div>
+                    下り：
+                    {{ details.specs.descent }} m
+                </div>
+            {% endif %}
+
+            {% if details.specs.season %}
+                <div>
+                    推奨シーズン：
+                    {{ details.specs.season }}
+                </div>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+    {% if price %}
+
+        <div class="trip-info">
+
+            <strong>体験・ツアー</strong>
+
+            {% if price.minPrice != None %}
+                <div>
+                    参考価格：
+                    {{ price.minPrice }}
+                    {{ price.priceCurrency }}
+                    〜
+                </div>
+            {% endif %}
+
+            {% if details.validThrough %}
+                <div>
+                    掲載されている有効期限：
+                    {{ details.validThrough }}
+                </div>
+            {% endif %}
+
+            <small>
+                実際の予約可否や価格は
+                公式サイトで確認してください。
+            </small>
+
+        </div>
+
+    {% endif %}
+
+    {% if spot.latitude != None and spot.longitude != None %}
+
+        <section class="trip-detail-section">
+
+            <h2>場所</h2>
+
+            <p>
+                緯度：{{ spot.latitude }}
+                / 経度：{{ spot.longitude }}
+            </p>
+
+            <a
+                href="https://www.google.com/maps/search/?api=1&query={{ spot.latitude }},{{ spot.longitude }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Google Mapsで場所を確認 →
+            </a>
+
+        </section>
+
+    {% endif %}
+
+    <section class="trip-detail-section">
+
+        <a
+            href="{{ spot.official_url }}"
+            class="trip-official"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            公式サイトで詳細を見る ↗
+        </a>
+
+    </section>
+
+    <div class="trip-source">
+
+        情報提供：
+        <a
+            href="{{ spot.official_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Switzerland Tourism
+        </a>
+
+        {% if spot.source_license %}
+            <div>
+                原文データのライセンス：
+                <a
+                    href="{{ spot.source_license }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    CC BY-SA
+                </a>
+            </div>
+        {% endif %}
+
+        <div>
+            現地の営業日、運行・通行状況、
+            料金などは変更される場合があります。
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

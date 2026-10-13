@@ -14,6 +14,12 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
+from django.core.exceptions import ValidationError
+
+from .services.user_event_cloudinary import (
+    upload_user_event_photo,
+)
+
 from .forms import EventSubmissionForm, OutingsCommentForm
 
 from .models import (
@@ -186,7 +192,7 @@ def get_event_emoji(event):
 
 
 
-def home(request):
+def event_home(request):
 
 
 
@@ -940,7 +946,7 @@ def home(request):
 
         request,
 
-        "outings/home.html",
+        "outings/event_home.html",
 
         context,
 
@@ -2009,109 +2015,86 @@ def notification_open(request, pk):
 
 
 # =========================================================
-
 # Submit Event
-
 # =========================================================
 
-
-
 @login_required
-
 def event_create(request):
 
-
-
     form = EventSubmissionForm(
-
-        request.POST if request.method == "POST" else None
-
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
     )
-
-
 
     if request.method == "POST" and form.is_valid():
 
+        # =================================================
+        # Upload photo before database transaction
+        # =================================================
 
+        image_url = ""
 
-        with transaction.atomic():
+        if form.cleaned_data.get("event_photo"):
 
+            try:
+                image_url = upload_user_event_photo(
+                    form.processed_event_photo
+                )
 
+            except ValidationError as error:
+                form.add_error(
+                    "event_photo",
+                    error,
+                )
 
-            location = EventLocation.objects.create(
+        # =================================================
+        # Save only when there are no upload errors
+        # =================================================
 
-                name=form.cleaned_data["venue_name"],
+        if not form.errors:
 
-                address=form.cleaned_data["address"],
+            with transaction.atomic():
 
-                city=form.cleaned_data["city"],
+                location = EventLocation.objects.create(
+                    name=form.cleaned_data["venue_name"],
+                    address=form.cleaned_data["address"],
+                    city=form.cleaned_data["city"],
+                    canton=form.cleaned_data["canton"],
+                )
 
-                canton=form.cleaned_data["canton"],
+                event = form.save(commit=False)
 
-            )
+                event.location = location
+                event.created_by = request.user
 
+                # Member posts require approval.
+                event.status = Event.Status.PENDING
 
+                # Distinguish from imported events.
+                event.source = None
+                event.external_id = ""
 
-            event = form.save(commit=False)
+                if image_url:
+                    event.image_url = image_url
 
+                event.save()
+                form.save_m2m()
 
+                EventOccurrence.objects.create(
+                    event=event,
+                    start_at=form.cleaned_data["start_at"],
+                    end_at=form.cleaned_data["end_at"],
+                )
 
-            event.location = location
-
-            event.created_by = request.user
-
-
-
-            # 投稿者が公開状態を変更することはできない
-
-            event.status = Event.Status.PENDING
-
-
-
-            # ユーザー投稿は外部API収集と区別する
-
-            event.source = None
-
-            event.external_id = ""
-
-
-
-            event.save()
-
-            form.save_m2m()
-
-
-
-            EventOccurrence.objects.create(
-
-                event=event,
-
-                start_at=form.cleaned_data["start_at"],
-
-                end_at=form.cleaned_data["end_at"],
-
-            )
-
-
-
-        return redirect("outings:my_posts")
-
-
+            return redirect("outings:my_posts")
 
     return render(
-
         request,
-
         "outings/event_form.html",
-
         {
-
             "form": form,
-
         },
-
     )
-
 
 
 
@@ -2185,144 +2168,120 @@ def my_posts(request):
 
 
 # =========================================================
-
 # Edit own event
-
 # =========================================================
 
-
-
 @login_required
-
 def event_edit(request, pk):
 
-
-
     event = get_object_or_404(
-
         Event,
-
         pk=pk,
-
         created_by=request.user,
-
     )
-
-
-
-    # 現段階では1開催日時の投稿だけ編集対象
 
     if event.occurrences.count() != 1:
 
         return render(
-
             request,
-
             "outings/event_edit_unavailable.html",
-
             {"event": event},
-
         )
 
-
-
     form = EventSubmissionForm(
-
         request.POST if request.method == "POST" else None,
-
+        request.FILES if request.method == "POST" else None,
         instance=event,
-
     )
-
-
 
     if request.method == "POST" and form.is_valid():
 
+        image_url = None
 
+        # =================================================
+        # New photo
+        # =================================================
 
-        with transaction.atomic():
+        if form.cleaned_data.get("event_photo"):
 
+            try:
+                image_url = upload_user_event_photo(
+                    form.processed_event_photo
+                )
 
+            except ValidationError as error:
+                form.add_error(
+                    "event_photo",
+                    error,
+                )
 
-            # 会場は新規作成して、他イベントとの
+        # =================================================
+        # Save event
+        # =================================================
 
-            # 共有データを誤って変更しない
+        if not form.errors:
 
-            location = EventLocation.objects.create(
+            with transaction.atomic():
 
-                name=form.cleaned_data["venue_name"],
+                location = EventLocation.objects.create(
+                    name=form.cleaned_data["venue_name"],
+                    address=form.cleaned_data["address"],
+                    city=form.cleaned_data["city"],
+                    canton=form.cleaned_data["canton"],
+                )
 
-                address=form.cleaned_data["address"],
+                updated_event = form.save(
+                    commit=False
+                )
 
-                city=form.cleaned_data["city"],
+                updated_event.location = location
+                updated_event.created_by = request.user
 
-                canton=form.cleaned_data["canton"],
+                # Editing requires re-approval.
+                updated_event.status = Event.Status.PENDING
 
-            )
+                if image_url:
 
+                    # Replace existing photo.
+                    updated_event.image_url = image_url
 
+                elif form.cleaned_data.get(
+                    "remove_photo"
+                ):
 
-            updated_event = form.save(commit=False)
+                    # Remove existing photo.
+                    updated_event.image_url = ""
 
+                # Otherwise preserve existing image_url.
 
+                updated_event.save()
+                form.save_m2m()
 
-            updated_event.location = location
+                occurrence = (
+                    updated_event.occurrences.get()
+                )
 
+                occurrence.start_at = (
+                    form.cleaned_data["start_at"]
+                )
 
+                occurrence.end_at = (
+                    form.cleaned_data["end_at"]
+                )
 
-            # 投稿者や外部イベント情報は変更しない
+                occurrence.save()
 
-            updated_event.created_by = request.user
-
-
-
-            # 再審査を必須にする
-
-            updated_event.status = Event.Status.PENDING
-
-
-
-            updated_event.save()
-
-            form.save_m2m()
-
-
-
-            occurrence = updated_event.occurrences.get()
-
-
-
-            occurrence.start_at = form.cleaned_data["start_at"]
-
-            occurrence.end_at = form.cleaned_data["end_at"]
-
-            occurrence.save()
-
-
-
-        return redirect("outings:my_posts")
-
-
+            return redirect("outings:my_posts")
 
     return render(
-
         request,
-
         "outings/event_form.html",
-
         {
-
             "form": form,
-
             "is_edit": True,
-
             "event": event,
-
         },
-
     )
-
-
 
 
 
@@ -2892,4 +2851,16 @@ def my_comments(request):
 
         },
 
+    )
+
+
+# =========================================================
+# About Outings
+# =========================================================
+
+def about_outings(request):
+
+    return render(
+        request,
+        "outings/about.html",
     )
