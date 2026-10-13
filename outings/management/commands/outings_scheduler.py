@@ -21,7 +21,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 
-RUN_HOUR_UTC = 5
+RUN_HOUR_UTC = 1
 RUN_WINDOW_MINUTES = 10
 CHECK_INTERVAL_SECONDS = 30
 
