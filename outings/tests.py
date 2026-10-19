@@ -634,3 +634,13 @@ class TripPhotoTests(TestCase):
         self.run_command(commons, "--retry")
         spot.refresh_from_db()
         self.assertEqual(spot.details["approved_image"]["file_title"], "File:Zug Altstadt.jpg")
+
+
+class PublicUserAccessTests(PageTestCase):
+    def test_signed_up_public_users_can_open_outings(self):
+        from django.contrib.auth.models import Group, User
+        user = User.objects.create_user("friend", password="pw-12345")
+        user.groups.add(Group.objects.get_or_create(name="public_users")[0])
+        self.client.force_login(user)
+        for name in ("outings:home", "outings:search", "outings:about_outings"):
+            self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)

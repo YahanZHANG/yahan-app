@@ -34,6 +34,7 @@ REQUESTABLE_APPS = {
 ALLOWED_NAMESPACES = {
     "portal",
     "news",
+    "outings",
     "recipes",
     "colorcheck",
     "event_scheduler",
