@@ -425,10 +425,13 @@ from django.db import models as django_models
 
 class NewsPushSubscription(django_models.Model):
 
+    # 未ログインの端末も登録できるよう null を許可
     user = django_models.ForeignKey(
         django_settings.AUTH_USER_MODEL,
         on_delete=django_models.CASCADE,
         related_name="news_push_subscriptions",
+        null=True,
+        blank=True,
     )
 
     endpoint = django_models.TextField(
@@ -455,8 +458,14 @@ class NewsPushSubscription(django_models.Model):
 
     def __str__(self):
 
+        owner = (
+            self.user.username
+            if self.user
+            else "anonymous"
+        )
+
         return (
-            f"{self.user.username} - "
+            f"{owner} - "
             f"Push subscription {self.pk}"
         )
 

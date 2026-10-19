@@ -8,6 +8,10 @@ from config.services.openai_client import (
 
 from news.models import Topic
 
+from news.services.article_text import (
+    article_input_text,
+)
+
 from news.services.japanese_classifier import (
     get_other_topic,
 )
@@ -184,9 +188,8 @@ def enrich_article(article):
 
     client = get_openai_client()
 
-    article_text = (
-        article.summary_original
-        or ""
+    article_text = article_input_text(
+        article
     )[:MAX_INPUT_CHARS]
 
     input_text = f"""

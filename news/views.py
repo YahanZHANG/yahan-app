@@ -6,6 +6,7 @@ from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from datetime import timedelta
 from io import BytesIO
 
 import qrcode
@@ -27,6 +28,10 @@ from .forms import (
     SupportContactForm,
 )
 
+from .services.deduplicator import (
+    with_source_count,
+)
+
 from .models import (
     Article,
     Favorite,
@@ -37,6 +42,14 @@ from .models import (
     SupportRequest,
     Topic,
 )
+
+
+# 注目ニュース: 直近24時間で3媒体以上が報じた話題
+FEATURED_MIN_SOURCES = 3
+
+FEATURED_WINDOW = timedelta(hours=24)
+
+FEATURED_LIMIT = 3
 
 
 # =========================================================
@@ -470,6 +483,32 @@ def _safe_redirect(
         default
     )
 
+def _featured_articles(queryset):
+    """
+    直近に複数の媒体が報じた話題。
+    """
+
+    since = (
+        timezone.now()
+        - FEATURED_WINDOW
+    )
+
+    return list(
+        with_source_count(
+            queryset.filter(
+                published_at__gte=since,
+            )
+        )
+        .filter(
+            source_count__gte=FEATURED_MIN_SOURCES,
+        )
+        .order_by(
+            "-source_count",
+            "-published_at",
+        )[:FEATURED_LIMIT]
+    )
+
+
 def home(request):
 
     preference = None
@@ -487,9 +526,6 @@ def home(request):
                 request.user,
                 preference,
             )
-            .order_by(
-                "-published_at"
-            )[:100]
         )
 
         favorite_count = (
@@ -519,12 +555,22 @@ def home(request):
             )
         )
 
-        articles = (
-            articles
-            .order_by(
-                "-published_at"
-            )[:100]
+    featured_articles = _featured_articles(
+        articles
+    )
+
+    articles = (
+        articles
+        .exclude(
+            id__in=[
+                article.id
+                for article in featured_articles
+            ]
         )
+        .order_by(
+            "-published_at"
+        )[:100]
+    )
 
     latest_digest = (
         NewsDigest.objects
@@ -539,6 +585,7 @@ def home(request):
         "news/home.html",
         {
             "articles": articles,
+            "featured_articles": featured_articles,
             "preference": preference,
             "public_settings": public_settings,
             "favorite_count": favorite_count,

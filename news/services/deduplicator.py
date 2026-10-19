@@ -2,7 +2,7 @@ import json
 import math
 from datetime import timedelta
 
-from django.db.models import Q
+from django.db.models import Count, F, Q
 
 from config.services.openai_client import (
     get_openai_client,
@@ -283,3 +283,22 @@ def find_duplicate_root(
             return root, score
 
     return None, None
+
+
+def with_source_count(queryset):
+    """
+    代表記事ごとに、報じた媒体数を source_count として付ける。
+    """
+
+    return queryset.annotate(
+        source_count=(
+            Count(
+                "duplicates__source",
+                filter=~Q(
+                    duplicates__source=F("source")
+                ),
+                distinct=True,
+            )
+            + 1
+        )
+    )

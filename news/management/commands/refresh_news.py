@@ -1,15 +1,22 @@
-import os
-
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from news.models import Article
 from news.push_sender import (
     send_news_push_for_batch,
 )
+from news.services.alerts import (
+    send_admin_alert,
+)
 from news.services.deduplicator import (
     ready_articles,
+    with_source_count,
 )
+
+# この件数以上の翻訳失敗があれば管理者に知らせる
+UNTRANSLATED_ALERT_COUNT = 5
+
 
 class Command(BaseCommand):
     help = (
@@ -112,6 +119,8 @@ class Command(BaseCommand):
         # =====================================================
 
         started_at = timezone.now()
+
+        self.failures = []
 
         self.stdout.write(
             ""
@@ -287,20 +296,11 @@ class Command(BaseCommand):
         # Push notification
         #
         # 定時更新（periodあり）のときだけ送る。
-        # 環境変数 NEWS_PUSH_ENABLED=true で有効化。
+        # 通知を許可した端末にだけ届く。
         # ========================================
-
-        push_enabled = (
-            os.environ.get(
-                "NEWS_PUSH_ENABLED",
-                "",
-            ).lower()
-            == "true"
-        )
 
         if (
             options["period"]
-            and push_enabled
             and not options["skip_push"]
         ):
 
@@ -308,6 +308,16 @@ class Command(BaseCommand):
                 options["period"],
                 started_at,
             )
+
+
+        # ========================================
+        # 異常があれば管理者にメール
+        # ========================================
+
+        self._check_health(
+            started_at,
+            options["period"],
+        )
 
 
         # ========================================
@@ -365,6 +375,10 @@ class Command(BaseCommand):
 
         except Exception as exc:
 
+            self.failures.append(
+                f"{label}: {exc}"
+            )
+
             self.stdout.write(
                 self.style.ERROR(
                     f"{command_name} failed: {exc}"
@@ -396,13 +410,34 @@ class Command(BaseCommand):
 
         try:
 
-            new_articles_count = (
+            new_articles = (
                 ready_articles()
                 .filter(
                     fetched_at__gte=started_at,
                     duplicate_of__isnull=True,
                 )
-                .count()
+            )
+
+            new_articles_count = (
+                new_articles.count()
+            )
+
+            # 一番多くの媒体が報じた新着を見出しにする
+            top_article = (
+                with_source_count(
+                    new_articles
+                )
+                .order_by(
+                    "-source_count",
+                    "-published_at",
+                )
+                .first()
+            )
+
+            headline = (
+                top_article.title_ja
+                if top_article
+                else ""
             )
 
             batch_key = (
@@ -413,6 +448,7 @@ class Command(BaseCommand):
             result = send_news_push_for_batch(
                 batch_key=batch_key,
                 new_articles_count=new_articles_count,
+                headline=headline,
             )
 
             self.stdout.write(
@@ -421,8 +457,88 @@ class Command(BaseCommand):
 
         except Exception as exc:
 
+            self.failures.append(
+                f"Push通知: {exc}"
+            )
+
             self.stdout.write(
                 self.style.ERROR(
                     f"Push failed: {exc}"
                 )
             )
+
+
+    def _check_health(
+        self,
+        started_at,
+        period,
+    ):
+
+        problems = list(
+            self.failures
+        )
+
+        fetched = Article.objects.filter(
+            fetched_at__gte=started_at,
+        )
+
+        if not fetched.exists():
+
+            problems.append(
+                "新しい記事が1件も取得できませんでした。"
+                "ニュースソースのURLやRSSが変わった可能性があります。"
+            )
+
+        untranslated = (
+            fetched
+            .exclude(
+                original_language="ja",
+            )
+            .filter(
+                ai_processed_at__isnull=True,
+            )
+        )
+
+        untranslated_count = untranslated.count()
+
+        if untranslated_count >= UNTRANSLATED_ALERT_COUNT:
+
+            sample_error = (
+                untranslated
+                .exclude(
+                    ai_error="",
+                )
+                .values_list(
+                    "ai_error",
+                    flat=True,
+                )
+                .first()
+            )
+
+            problems.append(
+                f"{untranslated_count}件の記事を翻訳できませんでした。"
+                f"エラー例: {sample_error or '不明'}"
+            )
+
+        if not problems:
+            return
+
+        message = (
+            f"ニュース更新（{period or '手動'}）で問題がありました。\n\n"
+            + "\n".join(
+                f"- {problem}"
+                for problem in problems
+            )
+            + "\n\n詳細はサーバーのログ（news_refresh.log）を確認してください。"
+        )
+
+        self.stdout.write(
+            self.style.WARNING(
+                message
+            )
+        )
+
+        send_admin_alert(
+            "ニュース更新で問題が発生しました",
+            message,
+        )

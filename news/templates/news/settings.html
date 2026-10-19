@@ -11,6 +11,58 @@
 
 <div class="news-settings-page">
 
+    <!-- =====================================================
+         Push通知（この端末）
+    ====================================================== -->
+
+    <section class="news-settings-card news-push-inline">
+
+        <h3>
+            通知
+        </h3>
+
+        <button
+            type="button"
+            id="news-push-toggle"
+            class="news-push-toggle-row"
+            aria-pressed="false"
+            disabled
+        >
+
+            <span class="news-push-toggle-icon" aria-hidden="true">
+                🔔
+            </span>
+
+            <span class="news-push-toggle-copy">
+
+                <strong>
+                    新着ニュースのPush通知
+                </strong>
+
+                <small>
+                    1日4回の更新で新着があるときにお知らせします
+                </small>
+
+            </span>
+
+            <span
+                id="news-push-toggle-state"
+                class="news-push-toggle-state"
+            >
+                …
+            </span>
+
+        </button>
+
+        <p
+            id="news-push-status"
+            class="news-push-inline-status"
+            aria-live="polite"
+        ></p>
+
+    </section>
+
+
     <form
         method="post"
         action="{% url 'news:settings' %}"

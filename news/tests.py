@@ -251,3 +251,212 @@ class EnrichTests(NewsTestCase):
         self.assertEqual(enrich.call_count, 3)
         self.assertEqual(article.ai_attempts, 3)
         self.assertEqual(article.ai_error, "boom")
+
+
+class FeaturedAndDayHeadingTests(NewsTestCase):
+
+    def test_story_from_three_sources_is_featured(self):
+
+        swi = NewsSource.objects.create(
+            name="SWI",
+            website_url="https://www.swissinfo.ch",
+            language="en",
+        )
+
+        main = self.make_article(self.srf, "big")
+        self.make_article(self.rts, "big2", duplicate_of=main)
+        self.make_article(swi, "big3", duplicate_of=main)
+        self.make_article(self.srf, "small")
+
+        response = self.client.get(
+            reverse("news:home")
+        )
+
+        featured = response.context["featured_articles"]
+
+        self.assertEqual(
+            [article.id for article in featured],
+            [main.id],
+        )
+        self.assertContains(response, "注目ニュース")
+        self.assertNotIn(
+            main,
+            list(response.context["articles"]),
+        )
+
+    def test_day_headings(self):
+
+        self.make_article(self.srf, "today")
+        self.make_article(
+            self.srf,
+            "yesterday",
+            published_at=timezone.now() - timedelta(days=1),
+        )
+
+        response = self.client.get(
+            reverse("news:home")
+        )
+
+        self.assertContains(response, "今日")
+        self.assertContains(response, "昨日")
+
+
+class PushTests(NewsTestCase):
+
+    def test_anonymous_user_can_subscribe_and_unsubscribe(self):
+
+        from news.models import NewsPushSubscription
+
+        endpoint = "https://fcm.googleapis.com/fcm/send/abc"
+
+        response = self.client.post(
+            reverse("news_push_subscribe"),
+            data={
+                "endpoint": endpoint,
+                "keys": {
+                    "p256dh": "key",
+                    "auth": "auth",
+                },
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            NewsPushSubscription.objects.filter(
+                endpoint=endpoint,
+                user__isnull=True,
+            ).exists()
+        )
+
+        response = self.client.post(
+            reverse("news_push_unsubscribe"),
+            data={
+                "endpoint": endpoint,
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            NewsPushSubscription.objects.exists()
+        )
+
+    @override_settings(
+        VAPID_PUBLIC_KEY="pub",
+        VAPID_PRIVATE_KEY="priv",
+        VAPID_CONTACT_EMAIL="a@example.com",
+    )
+    def test_push_is_sent_to_anonymous_subscribers_once(self):
+
+        from news.models import NewsPushSubscription
+        from news.push_sender import send_news_push_for_batch
+
+        NewsPushSubscription.objects.create(
+            endpoint="https://fcm.googleapis.com/fcm/send/x",
+            p256dh="key",
+            auth="auth",
+        )
+
+        with mock.patch(
+            "news.push_sender.webpush"
+        ) as webpush:
+
+            first = send_news_push_for_batch(
+                batch_key="2026-10-19-morning",
+                new_articles_count=5,
+                headline="見出し",
+            )
+
+            second = send_news_push_for_batch(
+                batch_key="2026-10-19-morning",
+                new_articles_count=5,
+            )
+
+        self.assertEqual(first["sent"], 1)
+        self.assertEqual(second["sent"], 0)
+        self.assertIn(
+            "ほか4件",
+            webpush.call_args.kwargs["data"],
+        )
+
+
+class ArticleTextTests(NewsTestCase):
+
+    def test_body_is_added_when_summary_is_short(self):
+
+        from news.services.article_text import article_input_text
+
+        article = self.make_article(
+            self.srf,
+            "short",
+            processed=False,
+            summary_original="Kurzer Teaser.",
+        )
+
+        html = (
+            "<html><body><nav><p>Menu menu menu menu menu menu menu menu</p></nav>"
+            "<article><p>Der Bundesrat hat heute entschieden, die Praemien zu senken.</p>"
+            "<p>kurz</p>"
+            "<p>Die Massnahme gilt ab Januar 2027 fuer alle Kantone der Schweiz.</p>"
+            "</article></body></html>"
+        )
+
+        response = mock.Mock(text=html)
+        response.raise_for_status = mock.Mock()
+
+        with mock.patch(
+            "news.services.article_text.requests.get",
+            return_value=response,
+        ):
+            text = article_input_text(article)
+
+        self.assertIn("Kurzer Teaser.", text)
+        self.assertIn("Bundesrat hat heute", text)
+        self.assertIn("Januar 2027", text)
+        self.assertNotIn("Menu", text)
+        self.assertNotIn("kurz\n", text)
+
+
+@override_settings(
+    ADMIN_NOTIFICATION_EMAIL="admin@example.com",
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+)
+class AlertTests(NewsTestCase):
+
+    def test_refresh_without_new_articles_sends_alert(self):
+
+        from django.core import mail
+
+        steps = [
+            "fetch_news",
+            "fetch_web_news",
+            "fetch_admin_news",
+            "cleanup_non_news",
+            "cleanup_news",
+            "classify_japanese_news",
+            "enrich_news",
+            "dedupe_news",
+            "assign_news_regions",
+            "generate_news_digest",
+        ]
+
+        def fake_call_command(name, **kwargs):
+            self.assertIn(name, steps)
+
+            if name == "fetch_web_news":
+                raise RuntimeError("site changed")
+
+        with mock.patch(
+            "news.management.commands.refresh_news.call_command",
+            side_effect=fake_call_command,
+        ):
+            call_command(
+                "refresh_news",
+                skip_push=True,
+                stdout=mock.MagicMock(),
+            )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("site changed", mail.outbox[0].body)
+        self.assertIn("1件も取得できません", mail.outbox[0].body)

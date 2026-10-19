@@ -1,4 +1,5 @@
 {% extends "news/base.html" %}
+{% load news_extras %}
 
 {% block title %}
 {{ region.name }} | Swiss News
@@ -40,6 +41,12 @@
 <div class="news-list">
 
     {% for article in articles %}
+
+        {% ifchanged article.published_at|day_label %}
+            <h2 class="news-day-heading">
+                {{ article.published_at|day_label }}
+            </h2>
+        {% endifchanged %}
 
         {% include "news/_article_card.html" %}
 

@@ -3,6 +3,8 @@ import logging
 
 from django.conf import settings
 
+from django.db.models import Q
+
 from django.utils import timezone
 
 from pywebpush import (
@@ -28,6 +30,7 @@ def send_news_push_for_batch(
     new_articles_count,
     user_id=None,
     is_test=False,
+    headline="",
 ):
     """
     ニュース更新完了後にPushを送信する。
@@ -85,7 +88,8 @@ def send_news_push_for_batch(
 
         NewsPushSubscription.objects
         .filter(
-            user__is_active=True
+            Q(user__isnull=True)
+            | Q(user__is_active=True)
         )
 
     )
@@ -151,10 +155,23 @@ def send_news_push_for_batch(
             "🇨🇭 スイスニュースが更新されたよ！"
         )
 
-        body = (
-            f"新しいニュースが"
-            f"{new_articles_count}件届いたよ 📰"
-        )
+        if headline and new_articles_count > 1:
+
+            body = (
+                f"{headline}\n"
+                f"ほか{new_articles_count - 1}件の新着ニュース"
+            )
+
+        elif headline:
+
+            body = headline
+
+        else:
+
+            body = (
+                f"新しいニュースが"
+                f"{new_articles_count}件届いたよ 📰"
+            )
 
     payload = json.dumps(
 

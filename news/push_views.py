@@ -172,12 +172,11 @@ def parse_subscription(request):
 # Subscribe
 # =========================================================
 
-@login_required
 @require_POST
 def subscribe(request):
     """
-    ログイン中のユーザーの端末を
-    Push通知の送信先として登録する。
+    端末をPush通知の送信先として登録する。
+    未ログインのユーザーも登録できる。
     """
 
     data = parse_subscription(
@@ -203,7 +202,11 @@ def subscribe(request):
 
         defaults={
 
-            "user": request.user,
+            "user": (
+                request.user
+                if request.user.is_authenticated
+                else None
+            ),
 
             "p256dh": data["p256dh"],
 
@@ -225,12 +228,12 @@ def subscribe(request):
 # Unsubscribe
 # =========================================================
 
-@login_required
 @require_POST
 def unsubscribe(request):
     """
-    ログイン中のユーザーの
     指定された端末の登録を解除する。
+    endpoint は端末ごとに推測できないURLなので、
+    それ自体を解除の鍵として扱う。
     """
 
     try:
@@ -290,8 +293,6 @@ def unsubscribe(request):
 
 
     NewsPushSubscription.objects.filter(
-
-        user=request.user,
 
         endpoint=endpoint,
 

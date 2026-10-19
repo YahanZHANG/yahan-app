@@ -1,6 +1,6 @@
 
 {% extends "base.html" %}
-{% load static %}
+{% load static news_extras %}
 
 
 {% block main_class %}
@@ -301,6 +301,25 @@ page-content news-site-container
     </nav>
 
 </div>
+
+
+
+<!-- =========================================================
+     Push notifications
+     ========================================================= -->
+
+<div
+    id="news-push-config"
+    hidden
+    data-public-key="{% vapid_public_key %}"
+    data-csrf-token="{{ csrf_token }}"
+    data-subscribe-url="{% url 'news_push_subscribe' %}"
+    data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+></div>
+
+<script src="{% static 'news/push_client.js' %}"></script>
+<script src="{% static 'news/push_toggle.js' %}" defer></script>
+<script src="{% static 'news/push_prompt.js' %}" defer></script>
 
 
 
