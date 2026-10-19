@@ -72,70 +72,83 @@
 
                 <article class="outings-saved-card">
 
-                    {% if card.kind == "event" %}
-
+                    {% if card.kind == "event" and card.is_over %}
+                        <div class="outings-saved-card-link is-over">
+                    {% elif card.kind == "event" %}
                         <a
                             href="{% url 'outings:event_detail' card.id %}"
                             class="outings-saved-card-link"
                         >
-
                     {% else %}
-
                         <a
                             href="{% url 'outings:tourist_spot_detail' card.id %}"
                             class="outings-saved-card-link"
                         >
-
                     {% endif %}
 
-                        <!-- Image -->
-
                         {% if card.image_url %}
-
                             <img
                                 src="{{ card.image_url }}"
                                 alt=""
                                 loading="lazy"
                             >
-
                         {% else %}
-
                             <div class="outings-saved-placeholder">
                                 <i class="bi bi-image"></i>
                             </div>
-
                         {% endif %}
 
                         <div class="outings-saved-body">
-
                             <span class="outings-saved-kind">
-
                                 {% if card.kind == "event" %}
                                     イベント
                                 {% else %}
                                     旅行
                                 {% endif %}
-
                             </span>
+
+                            {% if card.is_over %}
+                                <span class="outings-saved-over">終了しました</span>
+                            {% elif card.date_label %}
+                                <span class="outings-saved-date">
+                                    <i class="bi bi-calendar3"></i>
+                                    {{ card.date_label }}
+                                </span>
+                            {% endif %}
 
                             <h2>{{ card.title }}</h2>
 
                             {% if card.summary %}
-
                                 <p>
                                     {{ card.summary|truncatechars:100 }}
                                 </p>
-
                             {% endif %}
 
-                            <span class="outings-saved-more">
-                                詳細を見る
-                                <i class="bi bi-arrow-right"></i>
-                            </span>
-
+                            {% if not card.is_over %}
+                                <span class="outings-saved-more">
+                                    詳細を見る
+                                    <i class="bi bi-arrow-right"></i>
+                                </span>
+                            {% endif %}
                         </div>
 
-                    </a>
+                    {% if card.is_over %}
+                        </div>
+                        <form
+                            method="post"
+                            action="{% url 'outings:toggle_heart' card.id %}"
+                            class="outings-saved-remove"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit">
+                                <i class="bi bi-x-lg"></i>
+                                お気に入りから外す
+                            </button>
+                        </form>
+                    {% else %}
+                        </a>
+                    {% endif %}
 
                     {% if card.image_source_url and card.image_credit %}
 

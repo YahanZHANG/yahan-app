@@ -5,21 +5,10 @@ from .models import Event, EventCategory, OutingsComment
 
 from django.core.exceptions import ValidationError
 from .services.user_event_images import process_user_event_image
+from .regions import REGION_CHOICES
 
 
-CANTON_CHOICES = [
-    ("", "州を選択"),
-    ("ZH", "Zürich"),
-    ("BS", "Basel-Stadt"),
-    ("BL", "Basel-Landschaft"),
-    ("ZG", "Zug"),
-    ("LU", "Luzern"),
-    ("AG", "Aargau"),
-    ("SZ", "Schwyz"),
-    ("SO", "Solothurn"),
-    ("NW", "Nidwalden"),
-    ("OW", "Obwalden"),
-]
+CANTON_CHOICES = [("", "州を選択"), *REGION_CHOICES]
 
 
 class EventSubmissionForm(forms.ModelForm):

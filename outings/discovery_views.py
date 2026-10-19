@@ -19,6 +19,8 @@ from .models import (
     TouristSpotHeart,
 )
 
+from .services import schedule
+from .tourist_views import tourist_spot_queryset
 from .visitor import (
     get_visitor_id,
     set_visitor_cookie,
@@ -84,19 +86,8 @@ def available_events():
 # =========================================================
 
 def available_trips():
-
-    today = timezone.localdate().isoformat()
-
-    return (
-        TouristSpot.objects
-        .filter(
-            status=TouristSpot.Status.PUBLISHED,
-        )
-        .exclude(
-            spot_type=TouristSpot.SpotType.OFFER,
-            details__validThrough__lt=today,
-        )
-    )
+    # Same rules as the trips page (offers without an end date stay visible).
+    return tourist_spot_queryset()
 
 
 # =========================================================
@@ -105,18 +96,15 @@ def available_trips():
 
 def make_event_card(event):
 
-    next_date = (
-        event.upcoming_dates[0].start_at
-        if event.upcoming_dates
-        else None
-    )
+    now = timezone.now()
+    dates = schedule.upcoming(event.upcoming_dates, now)
 
     return {
         "kind": "event",
         "id": event.pk,
 
         "title": event.title,
-        "summary": event.summary_ja,
+        "summary": event.highlight_ja or event.summary_ja,
 
         "image_url": event.image_url,
         "image_credit": "",
@@ -127,7 +115,12 @@ def make_event_card(event):
 
         "label": "イベント",
 
-        "date": next_date,
+        "date": None,
+        "date_label": (
+            schedule.occurrence_label(dates[0], now)
+            if dates
+            else ""
+        ),
         "created_at": event.created_at,
 
         "location": (
@@ -248,6 +241,7 @@ def make_trip_card(spot):
         "label": spot.get_spot_type_display(),
 
         "date": None,
+        "date_label": "",
         "created_at": spot.imported_at,
         "location": "",
 
@@ -326,25 +320,21 @@ def home(request):
     # イベントの個人設定を考慮したおすすめは
     # 今後統合予定。
 
-    recommended_events = list(
-        events
-        .filter(
-            listing_tier=Event.ListingTier.FEATURED,
-        )
-        .annotate(
-            next_start=Min(
-                "occurrences__start_at",
-                filter=Q(
-                    occurrences__is_cancelled=False,
-                    occurrences__start_at__gte=now,
-                ),
+    # Featured events, without long runs or weekly repeats
+    # (the same rule the event list uses).
+    recommended_events = sorted(
+        (
+            event
+            for event in events.filter(
+                listing_tier=Event.ListingTier.FEATURED,
             )
-        )
-        .order_by(
-            "next_start",
-            "pk",
-        )[:12]
-    )
+            if event.upcoming_dates
+            and not schedule.is_long_running(event.upcoming_dates)
+            and not schedule.is_recurring(event.upcoming_dates)
+        ),
+        key=lambda event: event.upcoming_dates[0].start_at,
+    )[:12]
+
 
     # =====================================================
     # Trips
@@ -537,6 +527,8 @@ def saved_all(request):
         ).select_related(
             "location",
             "category",
+        ).prefetch_related(
+            "occurrences",
         )
     }
 
@@ -574,20 +566,28 @@ def saved_all(request):
     # Cards
     # =====================================================
 
+    now = timezone.now()
     event_cards = []
-
     for event in saved_events:
-
-        card = {
+        dates = schedule.upcoming(event.occurrences.all(), now)
+        is_over = event.status != Event.Status.PUBLISHED or not dates
+        event_cards.append({
             "kind": "event",
             "id": event.pk,
             "title": event.title,
-            "summary": event.summary_ja or "",
+            "summary": event.highlight_ja or event.summary_ja or "",
             "image_url": event.image_url or "",
             "image_credit": "",
-        }
+            "date_label": (
+                schedule.occurrence_label(dates[0], now)
+                if dates
+                else ""
+            ),
+            "is_over": is_over,
+        })
+    # Ended events stay listed (so they can be removed) but go last.
+    event_cards.sort(key=lambda card: card["is_over"])
 
-        event_cards.append(card)
 
     trip_cards = []
 

@@ -1,419 +1,171 @@
-
-
 {% extends "outings/base.html" %}
 {% load outings_names %}
 
-
-
-{% block title %}
-
-{{ event.title }} | おでかけ
-
-{% endblock %}
-
-
+{% block title %}{{ event.title }} | おでかけ{% endblock %}
 
 {% block content %}
-
-
-
-<div class="detail-page">
-
-
+<div class="detail-page ev-detail">
 
     {% if event.image_url %}
-
-        <img
-
-            src="{{ event.image_url }}"
-
-            alt=""
-
-            class="detail-image"
-
-        >
-
+        <img src="{{ event.image_url }}" alt="" class="detail-image" onerror="this.remove();">
     {% endif %}
-
-
 
     {% if event.status == "draft" %}
-
-        <div class="alert alert-warning">
-
+        <div class="ev-notice">
             <i class="bi bi-eye"></i>
-
             管理者プレビュー：このイベントはまだ一般公開されていません。
-
         </div>
-
+    {% elif event.status == "pending" %}
+        <div class="ev-notice">
+            <i class="bi bi-hourglass"></i>
+            承認待ちです。承認されると一覧に表示されます。
+        </div>
     {% endif %}
 
-
-
-    <span class="outings-tier-label outings-tier-{{ event.listing_tier }}">{{ event.get_listing_tier_display }}</span>
-    <h1>{{ event.title }}</h1>
-
-
-
-
-
-    <form
-
-        method="post"
-
-        action="{% url 'outings:toggle_heart' event.pk %}"
-
-        class="outings-heart-form"
-
-    >
-
-        {% csrf_token %}
-
-
-
-        <button
-
-            type="submit"
-
-            class="outings-heart-button {% if is_hearted %}hearted{% endif %}"
-
-        >
-
-            {% if is_hearted %}
-
-                <i class="bi bi-heart-fill"></i>
-
-            {% else %}
-
-                <i class="bi bi-heart"></i>
-
-            {% endif %}
-
-
-
-            <span>{{ heart_count }}</span>
-
-        </button>
-
-    </form>
-
-
-
-
-
-    {% if event.title_original %}
-
-        <p class="original-title">
-
-            {{ event.title_original }}
-
+    <div class="ev-detail__head">
+        <p class="ev-detail__category">
+            {{ event.display_emoji }}
+            {% if event.category %}{{ event.category.name }}{% endif %}
+            {% if event.location %}・{{ event.location.city }}{% endif %}
         </p>
+        <h1>{{ event.title }}</h1>
+        {% if event.title_original and event.title_original != event.title %}
+            <p class="original-title">{{ event.title_original }}</p>
+        {% endif %}
+        {% if event.highlight_ja %}
+            <p class="ev-detail__highlight">
+                <i class="bi bi-stars" aria-hidden="true"></i>{{ event.highlight_ja }}
+            </p>
+        {% endif %}
+        {% if event.badges %}
+            <ul class="ev-badges">
+                {% for label, kind in event.badges %}
+                    <li class="ev-badge ev-badge--{{ kind }}">{{ label }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
 
+    <!-- Next date and actions -->
+    <div class="ev-detail__next">
+        {% if is_over %}
+            <p class="ev-detail__when is-over">このイベントは終了しました。</p>
+        {% else %}
+            <p class="ev-detail__when">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                <span>
+                    <small>{% if event.more_dates %}次回{% else %}日時{% endif %}</small>
+                    {{ event.date_label }}
+                </span>
+            </p>
+        {% endif %}
+        <div class="ev-actions">
+            <form
+                method="post"
+                action="{% url 'outings:toggle_heart' event.pk %}"
+                data-heart-key="event-{{ event.pk }}"
+            >
+                {% csrf_token %}
+                <button type="submit" class="ev-action ev-heart-action{% if is_hearted %} is-hearted{% endif %}" aria-pressed="{% if is_hearted %}true{% else %}false{% endif %}">
+                    <i class="bi {% if is_hearted %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    お気に入り <span data-heart-count>{{ heart_count }}</span>
+                </button>
+            </form>
+            {% if not is_over %}
+                <a class="ev-action" href="{% url 'outings:event_calendar' event.pk %}">
+                    <i class="bi bi-calendar-plus"></i>カレンダーに追加
+                </a>
+            {% endif %}
+            {% if map_url %}
+                <a class="ev-action" href="{{ map_url }}" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-map"></i>地図
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if event.summary_ja %}
+        <div class="detail-panel">
+            <h2>イベントについて</h2>
+            <div class="description">{{ event.summary_ja|linebreaks }}</div>
+        </div>
     {% endif %}
 
-
-
-    <div class="detail-tags">
-
-
-
-        {% if event.category %}
-
-            <span>{{ event.category.name }}</span>
-
-        {% endif %}
-
-
-
-        {% if event.is_free %}
-
-            <span>無料</span>
-
-        {% endif %}
-
-
-
-        <span>{{ event.get_event_type_display }}</span>
-
-        <span>{{ event.get_language_barrier_display }}</span>
-
-
-
-        {% for tag in event.tags.all %}
-
-            <span>{{ tag.name }}</span>
-
-        {% endfor %}
-
-
-
-    </div>
-
-
-
-
-
+    <!-- Practical information -->
     <div class="detail-panel">
-
-
-
-        <h2>開催日時</h2>
-
-
-
-        {% with occurrences=event.occurrences.all %}
-
-
-
-            {% if occurrences|length > 5 %}
-
-
-
-                <div class="outings-date-summary">
-
-                    <i class="bi bi-calendar3"></i>
-
-                    開催日程：全{{ occurrences|length }}件
-
-                </div>
-
-
-
-                <details class="outings-date-details">
-
-                    <summary>
-
-                        全日程を見る
-
-                    </summary>
-
-
-
-                    <div class="outings-date-list">
-
-
-
-                        {% for occurrence in occurrences %}
-
-
-
-                            {% if not occurrence.is_cancelled %}
-
-
-
-                                <p>
-
-                                    <i class="bi bi-calendar3"></i>
-
-
-
-                                    {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
-
-
-
-                                    {% if occurrence.end_at %}
-
-                                        〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
-
-                                    {% endif %}
-
-                                </p>
-
-
-
-                            {% endif %}
-
-
-
-                        {% endfor %}
-
-
-
-                    </div>
-
-                </details>
-
-
-
-            {% else %}
-
-
-
-                {% for occurrence in occurrences %}
-
-
-
-                    {% if not occurrence.is_cancelled %}
-
-
-
-                        <p>
-
-                            <i class="bi bi-calendar3"></i>
-
-
-
-                            {{ occurrence.start_at|date:"Y年n月j日（D）H:i" }}
-
-
-
-                            {% if occurrence.end_at %}
-
-                                〜 {{ occurrence.end_at|date:"n月j日 H:i" }}
-
-                            {% endif %}
-
-                        </p>
-
-
-
-                    {% endif %}
-
-
-
-                {% empty %}
-
-
-
-                    <p>開催日時は未登録</p>
-
-
-
-                {% endfor %}
-
-
-
+        <h2>参加の目安</h2>
+        <dl class="ev-facts">
+            <dt>料金</dt>
+            <dd>
+                {% if event.is_free %}無料
+                {% elif event.price_text %}{{ event.price_text }}
+                {% else %}公式サイトで確認してください
+                {% endif %}
+            </dd>
+            <dt>言語</dt>
+            <dd>{{ event.get_language_barrier_display }}</dd>
+            {% if age_note %}
+                <dt>年齢</dt>
+                <dd>{{ age_note }}</dd>
             {% endif %}
-
-
-
-        {% endwith %}
-
-
-
+            {% if booking == "required" %}
+                <dt>予約</dt><dd>必要</dd>
+            {% elif booking == "recommended" %}
+                <dt>予約</dt><dd>おすすめ</dd>
+            {% elif booking == "not_needed" %}
+                <dt>予約</dt><dd>不要</dd>
+            {% endif %}
+            {% if event.is_indoor or event.is_outdoor %}
+                <dt>場所</dt>
+                <dd>{% if event.is_indoor and event.is_outdoor %}屋内・屋外{% elif event.is_indoor %}屋内{% else %}屋外{% endif %}</dd>
+            {% endif %}
+        </dl>
+        {% if event.source_id %}
+            <p class="ev-facts__note">料金や時間はAIが元の案内から読み取ったものです。お出かけ前に公式サイトで確認してください。</p>
+        {% endif %}
     </div>
 
-
-
-
+    <!-- All dates -->
+    {% if date_rows %}
+        <div class="detail-panel">
+            <h2>開催日程{% if date_rows|length > 1 %}（{{ date_rows|length }}回）{% endif %}</h2>
+            {% if date_rows|length > 6 %}
+                <details class="outings-date-details">
+                    <summary>すべての日程を見る</summary>
+            {% endif %}
+            <ul class="ev-dates">
+                {% for row in date_rows %}
+                    <li class="{% if row.cancelled %}is-cancelled{% endif %}">
+                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                        {{ row.label }}
+                        {% if row.cancelled %}<span class="ev-badge ev-badge--warn">中止</span>{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if date_rows|length > 6 %}
+                </details>
+            {% endif %}
+        </div>
+    {% endif %}
 
     {% if event.location %}
-
-
-
         <div class="detail-panel">
-
-
-
             <h2>場所</h2>
-
-
-
-            <p>
-
-                <i class="bi bi-geo-alt"></i>
-
-                {{ event.location.name }}
-
-            </p>
-
-
-
-            <p>{{ event.location.address }}</p>
-
+            <p><i class="bi bi-geo-alt"></i> {{ event.location.name }}</p>
+            {% if event.location.address %}<p>{{ event.location.address }}</p>{% endif %}
             <p>{{ event.location.city }}</p>
-
-
-
+            {% if map_url %}
+                <a href="{{ map_url }}" target="_blank" rel="noopener noreferrer">Google マップで開く <i class="bi bi-box-arrow-up-right"></i></a>
+            {% endif %}
         </div>
-
-
-
     {% endif %}
-
-
-
-
-
-    <div class="detail-panel">
-
-
-
-        <h2>イベントについて</h2>
-
-
-
-        <div class="description">
-
-            {{ event.summary_ja|linebreaks }}
-
-        </div>
-
-
-
-    </div>
-
-
-
-
-
-    <div class="detail-panel">
-
-
-
-        <h2>料金</h2>
-
-
-
-        {% if event.is_free %}
-
-            <p>無料</p>
-
-        {% elif event.price_text %}
-
-            <p>{{ event.price_text }}</p>
-
-        {% else %}
-
-            <p>公式サイトで確認</p>
-
-        {% endif %}
-
-
-
-    </div>
-
-
-
-
 
     {% if event.original_url %}
-
-
-
-        <a
-
-            href="{{ event.original_url }}"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-            class="official-link"
-
-        >
-
-            公式サイトで詳しく見る
-
+        <a href="{{ event.original_url }}" target="_blank" rel="noopener noreferrer" class="official-link">
+            公式サイトで詳しく見る・チケット
             <i class="bi bi-box-arrow-up-right"></i>
-
         </a>
-
-
-
     {% endif %}
-
 
 
 

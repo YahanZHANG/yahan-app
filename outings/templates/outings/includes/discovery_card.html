@@ -65,10 +65,10 @@
 
             <h3>{{ card.title }}</h3>
 
-            {% if card.date %}
+            {% if card.date_label %}
                 <p class="discovery-card-meta">
                     <i class="bi bi-calendar3"></i>
-                    {{ card.date|date:"n月j日 H:i" }}
+                    {{ card.date_label }}
                     {% if card.location %}
                         · {{ card.location }}
                     {% endif %}
