@@ -92,7 +92,7 @@
                 <span>👶 子どもと一緒に楽しむ <span class="outings-family-description">（子連れ向けだけを表示）</span></span>
             </label>
             <label for="outings-q">キーワード</label>
-            <input id="outings-q" type="search" name="q" value="{{ query }}" placeholder="イベント名・紹介文・都市名">
+            <input id="outings-q" type="search" name="q" value="{{ query }}" placeholder="例：クリスマスマーケット、バーゼル、Konzert">
         </div>
 
         <div class="outings-search-actions">
@@ -107,35 +107,25 @@
             <p>{{ result_count }}件のイベントが見つかりました</p>
         </div></div>
 
-        {% for event in events %}
-        <a href="{% url 'outings:event_detail' event.pk %}" class="event-card">
-            {% if event.image_url %}
-            <img src="{{ event.image_url }}" alt="" loading="lazy" class="event-image">
-            {% endif %}
-            <div class="event-info">
-                <h3>{{ event.title }}</h3>
-                {% with occurrence=event.search_dates.0 %}
-                {% if occurrence %}<p><i class="bi bi-calendar3"></i> {{ occurrence.start_at|date:"Y年n月j日 H:i" }}</p>{% endif %}
-                {% endwith %}
-                {% if event.location %}<p><i class="bi bi-geo-alt"></i> {{ event.location.city }}{% if event.location.name %}・{{ event.location.name }}{% endif %}</p>{% endif %}
-                {% if event.summary_ja %}<p class="outings-card-summary">{{ event.summary_ja|truncatechars:100 }}</p>{% endif %}
-            </div>
-        </a>
-        {% empty %}
-        <div class="empty-state">条件に一致するイベントがありません。条件を減らして再検索してみてください。</div>
-        {% endfor %}
+        <div class="ev-list">
+            {% for event in events %}
+                {% include "outings/includes/event_card.html" %}
+            {% empty %}
+                <div class="empty-state">条件に一致するイベントがありません。条件を減らして再検索してみてください。</div>
+            {% endfor %}
+        </div>
     </section>
 
     {% if page_obj.has_other_pages %}
-    <nav class="outings-search-pagination" aria-label="検索結果のページ切り替え">
-        {% if page_obj.has_previous %}
-        <a href="?region={{ active_region|urlencode }}&amp;category={{ active_category|urlencode }}{% if family_only %}&amp;tag=family{% endif %}&amp;q={{ query|urlencode }}&amp;page={{ page_obj.previous_page_number }}{% if preview_mode %}&amp;preview=1{% endif %}">前へ</a>
-        {% endif %}
-        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-        <a href="?region={{ active_region|urlencode }}&amp;category={{ active_category|urlencode }}{% if family_only %}&amp;tag=family{% endif %}&amp;q={{ query|urlencode }}&amp;page={{ page_obj.next_page_number }}{% if preview_mode %}&amp;preview=1{% endif %}">次へ</a>
-        {% endif %}
-    </nav>
+        <nav class="ev-pager" aria-label="検索結果のページ切り替え">
+            {% if page_obj.has_previous %}
+                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left"></i>前へ</a>
+            {% endif %}
+            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right"></i></a>
+            {% endif %}
+        </nav>
     {% endif %}
 </div>
 <script>

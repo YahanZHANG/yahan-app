@@ -1,0 +1,65 @@
+{% comment %}
+An event card. Expects `event` decorated by outings.cards.decorate.
+Compact-tier events get a slimmer card without the summary.
+{% endcomment %}
+<article class="ev-card ev-card--{{ event.listing_tier }}{% if event.image_url %} has-image{% endif %}">
+    <a class="ev-card__link" href="{% url 'outings:event_detail' event.pk %}">
+        <div class="ev-card__visual" aria-hidden="true">
+            {% if event.image_url %}
+                <img
+                    src="{{ event.image_url }}"
+                    alt=""
+                    loading="lazy"
+                    onerror="this.remove();"
+                >
+            {% endif %}
+            <span class="ev-card__emoji">{{ event.display_emoji }}</span>
+        </div>
+        <div class="ev-card__body">
+            <p class="ev-card__when">
+                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                {{ event.date_label }}
+                {% if event.more_dates %}
+                    <span class="ev-card__more">ほか{{ event.more_dates }}回</span>
+                {% endif %}
+                {% if event.location %}
+                    <span class="ev-card__where">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ event.location.city }}
+                    </span>
+                {% endif %}
+            </p>
+            <h3 class="ev-card__title">{{ event.title }}</h3>
+            {% if event.listing_tier != "compact" %}
+                {% if event.highlight_ja %}
+                    <p class="ev-card__highlight">{{ event.highlight_ja }}</p>
+                {% elif event.summary_ja %}
+                    <p class="ev-card__summary">{{ event.summary_ja|truncatechars:80 }}</p>
+                {% endif %}
+            {% endif %}
+            {% if event.badges %}
+                <ul class="ev-badges">
+                    {% for label, kind in event.badges %}
+                        <li class="ev-badge ev-badge--{{ kind }}">{{ label }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </a>
+    <form
+        method="post"
+        action="{% url 'outings:toggle_heart' event.pk %}"
+        class="ev-card__heart-form"
+        data-heart-key="event-{{ event.pk }}"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button
+            type="submit"
+            class="ev-heart{% if event.is_hearted %} is-hearted{% endif %}"
+            aria-pressed="{% if event.is_hearted %}true{% else %}false{% endif %}"
+            aria-label="{{ event.title }}をお気に入りに登録または解除"
+        >
+            <i class="bi {% if event.is_hearted %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+        </button>
+    </form>
+</article>

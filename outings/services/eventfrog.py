@@ -19,6 +19,8 @@ from bs4 import BeautifulSoup
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from outings.regions import EVENTFROG_REGIONS
+
 
 # =========================================================
 # API configuration
@@ -29,7 +31,7 @@ LOCATION_URL = "https://api.eventfrog.net/public/v1/locations"
 
 TZ = ZoneInfo("Europe/Zurich")
 
-REGIONS = {"ZH", "AG", "BE", "BS", "BL", "LU", "ZG"}
+REGIONS = set(EVENTFROG_REGIONS)
 
 REGION_NAMES = {
     "ZÜRICH": "ZH",
@@ -254,13 +256,25 @@ def extract_image(event):
 # Collect events
 # =========================================================
 
-def collect(
+def collect(**kwargs):
+    """Normalized, bookable events only (see collect_snapshot)."""
+    events, _cancelled = collect_snapshot(**kwargs)
+    return events
+
+
+def collect_snapshot(
     *,
     pages=40,
     per_page=1000,
     days=45,
     raw_events=None,
 ):
+    """Return (events, cancelled_ids).
+
+    events include runs that already opened and are still on (exhibitions),
+    so they can be discovered after their first day.
+    cancelled_ids are Eventfrog IDs explicitly flagged as cancelled.
+    """
     now = timezone.now()
     horizon = now + timedelta(days=days)
 
@@ -341,6 +355,10 @@ def collect(
 
         ext_id = str(item.get("id") or "").strip()
 
+        if ext_id and is_true(item.get("cancelled")):
+            cancelled.add(ext_id)
+            continue
+
         start = dt(item.get("begin"))
         end = dt(item.get("end"))
 
@@ -349,12 +367,9 @@ def collect(
             or not start
             or not end
             or end <= start
-            or not now <= start <= horizon
+            or end <= now
+            or start > horizon
         ):
-            continue
-
-        if is_true(item.get("cancelled")):
-            cancelled.add(ext_id)
             continue
 
         if (
@@ -420,7 +435,7 @@ def collect(
         flush=True,
     )
 
-    return list(result.values())
+    return list(result.values()), cancelled
 
 
 # =========================================================

@@ -350,6 +350,30 @@ class Event(models.Model):
     )
 
 
+    # AI screening total (0-100); orders events inside a day.
+
+    ai_score = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+
+    # One-line "ここがポイント" written by the AI.
+
+    highlight_ja = models.CharField(
+        max_length=120,
+        blank=True,
+    )
+
+
+    # Facts the AI extracted (age_note, booking, setting, versions).
+
+    ai_details = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+
 
     created_at = models.DateTimeField(auto_now_add=True)
 

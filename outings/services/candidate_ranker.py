@@ -9,7 +9,7 @@ from datetime import datetime
 
 from django.utils import timezone
 
-REGION_ORDER = ("ZH", "AG", "BS", "BL", "ZG", "LU", "BE")
+from outings.regions import EVENTFROG_REGIONS as REGION_ORDER
 
 # High-confidence administrative-only or private package offers.
 REJECT_TITLE_PATTERNS = (
@@ -41,7 +41,14 @@ def _bucket(event, now):
     except (ValueError, TypeError, KeyError):
         return None
     if delta_days < 0:
-        return None
+        # Already open (an exhibition): still listable while it runs.
+        try:
+            end = datetime.fromisoformat(str(event.get("end")).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            return None
+        if timezone.is_naive(end) or end <= now:
+            return None
+        delta_days = 0
     return 0 if delta_days < 7 else 1 if delta_days < 14 else 2 if delta_days < 21 else 3
 
 

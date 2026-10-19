@@ -1,10 +1,16 @@
-"""Curate events with conservative listing tiers, deduplication and long-run limits."""
+"""Pick which screened Eventfrog candidates to publish, with deduplication and variety."""
 import re
 import unicodedata
 from datetime import datetime, timedelta
+
 from django.utils import timezone
 
-FEATURED_IDS = {'7511400660694248416', '7483163462182417413'}
+MIN_SCORE = 60
+FEATURED_SCORE = 80
+STANDARD_SCORE = 68
+
+# Share of each run per first-date band: this week, next week, weeks 3-4, later.
+BAND_SHARES = (30, 25, 25, 20)
 
 
 def _parse(value):
@@ -15,44 +21,34 @@ def _parse(value):
         return None
 
 
-def _future_occurrences(event, now, horizon):
-    return [o for o in event.get('occurrences', []) if isinstance(o, dict)
-            and (dt := _parse(o.get('start'))) and now <= dt <= horizon]
+def _live_occurrences(event, now, horizon):
+    """Occurrences not over yet and starting inside the horizon (ongoing runs included)."""
+    result = []
+    for o in event.get('occurrences', []):
+        if not isinstance(o, dict):
+            continue
+        start, end = _parse(o.get('start')), _parse(o.get('end'))
+        if not start or start > horizon:
+            continue
+        if (end or start) <= now:
+            continue
+        result.append(o)
+    return result
 
 
 def _long_running(event, occurrences):
-    start, end = _parse(event.get('start')), _parse(event.get('end'))
-    if start and end and end - start >= timedelta(days=14):
-        return True
-    days = sorted({_parse(o['start']).date() for o in occurrences if _parse(o.get('start'))})
-    streak = 1
-    for a, b in zip(days, days[1:]):
-        streak = streak + 1 if (b - a).days == 1 else 1
-        if streak >= 14:
+    for o in occurrences:
+        start, end = _parse(o.get('start')), _parse(o.get('end'))
+        if start and end and end - start >= timedelta(days=14):
             return True
-    return False
+    days = sorted({_parse(o['start']).date() for o in occurrences if _parse(o.get('start'))})
+    return len(days) > 1 and (days[-1] - days[0]).days >= 14
 
-def _recurring_event(occurrences):
-    """
-    Detect weekly or biweekly recurring events.
 
-    Two different occurrence dates exactly 7 or 14 days
-    apart are treated as a recurring schedule.
-    """
+def _recurring(occurrences):
+    days = sorted({dt.date() for o in occurrences if (dt := _parse(o.get('start')))})
+    return any((b - a).days in (7, 14) for a, b in zip(days, days[1:]))
 
-    dates = sorted({
-        dt.date()
-        for occurrence in occurrences
-        if (dt := _parse(occurrence.get("start")))
-    })
-
-    return any(
-        (next_date - current_date).days in (7, 14)
-        for current_date, next_date in zip(
-            dates,
-            dates[1:],
-        )
-    )
 
 def _normal(text):
     text = unicodedata.normalize('NFKC', str(text or '')).casefold()
@@ -67,17 +63,16 @@ def _identity(event):
     region = _normal(event.get('region'))
     group = str(event.get('group_id') or '').strip()
     if title and venue and (city or region):
-        # Repeated performances of the same programme at the same place.
         return ('title-place', title, venue, city, region)
     if group not in ('', '0', 'None') and title:
         return ('group-title', group, title, region)
     return ('id', str(event.get('id')))
 
 
-def _merge_duplicates(evaluated):
-    """Deduplicate before quotas; union performances, retain strongest assessment."""
+def _merge_duplicates(screened):
+    """Union performances of the same programme; keep the best screening."""
     merged = {}
-    for item in evaluated:
+    for item in screened:
         identity = _identity(item)
         if identity not in merged:
             merged[identity] = {**item, 'occurrences': list(item.get('occurrences') or [])}
@@ -85,114 +80,88 @@ def _merge_duplicates(evaluated):
         current = merged[identity]
         known = {(str(o.get('id')), str(o.get('start'))) for o in current['occurrences']}
         for occurrence in item.get('occurrences') or []:
-            identity_o = (str(occurrence.get('id')), str(occurrence.get('start')))
-            if identity_o not in known:
+            key = (str(occurrence.get('id')), str(occurrence.get('start')))
+            if key not in known:
                 current['occurrences'].append(occurrence)
-                known.add(identity_o)
-        ai_old, ai_new = current.get('ai') or {}, item.get('ai') or {}
-        old_rank = (ai_old.get('decision') == 'yes', ai_old.get('score', 0))
-        new_rank = (ai_new.get('decision') == 'yes', ai_new.get('score', 0))
-        if new_rank > old_rank:
-            current['ai'] = ai_new
-        if str(item.get('id')) in FEATURED_IDS:
-            current['editorial_featured'] = True
+                known.add(key)
+        if (item.get('screen') or {}).get('score', 0) > (current.get('screen') or {}).get('score', 0):
+            current['screen'] = item['screen']
     return list(merged.values())
 
 
-def _tier(item, ai, score):
-    if item.get('editorial_featured') or str(item.get('id')) in FEATURED_IDS or score >= 85:
+def eligible(screen):
+    score = screen.get('score')
+    if not isinstance(score, int) or isinstance(score, bool) or score < MIN_SCORE:
+        return False
+    participation = screen.get('participation')
+    return participation == 'drop_in' or (participation == 'unknown' and score >= 70)
+
+
+def listing_tier(score, *, long_running, recurring):
+    if score >= FEATURED_SCORE and not long_running and not recurring:
         return 'featured'
-    # A worthwhile but less universally accessible event belongs in a title-led list.
-    # Do not exclude it just because it requires a local language.
-    if score < 75 or (score < 80 and ai.get('language_barrier') in ('german_required', 'french_required')):
-        return 'compact'
-    return 'standard'
+    if score >= STANDARD_SCORE:
+        return 'standard'
+    return 'compact'
 
 
-def select(evaluated, *, target=100, now=None, days=45):
+def select(screened, *, target=15, now=None, days=30):
+    """Return up to `target` candidates in priority order (best first)."""
     now = now or timezone.now()
     horizon = now + timedelta(days=days)
-    budgets = [round(target * x / 100) for x in (25, 25, 30, 20)]
-    buckets = [[], [], [], []]
-    for item in _merge_duplicates(evaluated):
-        ai = item.get('ai') or {}
-        score = ai.get('score', 0)
-        if ai.get('decision') != 'yes' or type(score) is not int or score < 60:
+    bands = [[], [], [], []]
+    for item in _merge_duplicates(screened):
+        screen = item.get('screen') or {}
+        if not eligible(screen):
             continue
-        if ai.get('participation_type') in ('series_course', 'restricted'):
-            continue
-        occurrences = _future_occurrences(item, now, horizon)
+        occurrences = _live_occurrences(item, now, horizon)
         if not occurrences:
             continue
-        event = {**item, 'ai': dict(ai)}
-        first_start = min(_parse(o['start']) for o in occurrences)
-        delta = (first_start - now).total_seconds() / 86400
-        band = 0 if delta <= 7 else 1 if delta <= 14 else 2 if delta <= 30 else 3
-        event["is_long_running"] = _long_running(
-            event,
-            occurrences,
-        )
-
-        event["is_recurring"] = _recurring_event(
-            event.get("occurrences") or []
-        )
-        tags = [tag for tag in ai.get('tags', []) if tag not in ('weekend', 'free', 'indoor', 'outdoor', 'low-language-barrier')]
-        if any(_parse(o['start']).weekday() >= 5 for o in occurrences):
-            tags.append('weekend')
-        event['ai']['tags'] = list(dict.fromkeys(tags))
-        event["listing_tier"] = _tier(event, ai, score)
-
-        # Long-running and regularly recurring events
-        # must not appear in Featured.
-        if (
-            event["listing_tier"] == "featured"
-            and (
-                event["is_long_running"]
-                or event["is_recurring"]
-            )
-        ):
-            event["listing_tier"] = "standard"
-
-        event["show_summary_on_listing"] = (
-            event["listing_tier"] in ("featured", "standard")
-        )
-        event['first_upcoming_at'] = first_start.isoformat()
-        event['occurrences'] = sorted(event['occurrences'], key=lambda o: o.get('start', ''))
-        buckets[band].append(event)
+        occurrences.sort(key=lambda o: o.get('start', ''))
+        first_start = _parse(occurrences[0]['start'])
+        long_running = _long_running(item, occurrences)
+        recurring = _recurring(occurrences)
+        event = {
+            **item,
+            'occurrences': occurrences,
+            'is_long_running': long_running,
+            'is_recurring': recurring,
+            'first_upcoming_at': first_start.isoformat(),
+            'listing_tier': listing_tier(screen['score'], long_running=long_running, recurring=recurring),
+        }
+        delta = max(0.0, (first_start - now).total_seconds() / 86400)
+        band = 0 if delta <= 7 else 1 if delta <= 14 else 2 if delta <= 28 else 3
+        bands[band].append(event)
 
     selected = []
-    counts_region, counts_category = {}, {}
+    region_counts, category_counts = {}, {}
+    long_cap = max(1, round(target * .2))
     long_count = 0
-    long_cap = max(1, round(target * .15))
 
     def rank(x):
-        ai = x['ai']
-        return (-(ai['score'] - 3 * counts_region.get(x.get('region'), 0)
-                  - 2 * counts_category.get(ai.get('category'), 0)), x['first_upcoming_at'])
+        screen = x['screen']
+        penalty = 4 * region_counts.get(x.get('region'), 0) + 3 * category_counts.get(screen.get('category'), 0)
+        return (-(screen['score'] - penalty), x['first_upcoming_at'], str(x.get('id')))
 
-    def add(x):
+    def take(pool):
         nonlocal long_count
-        selected.append(x)
-        counts_region[x.get('region')] = counts_region.get(x.get('region'), 0) + 1
-        category = x['ai'].get('category')
-        counts_category[category] = counts_category.get(category, 0) + 1
-        long_count += int(x['is_long_running'])
-
-    for band, budget in enumerate(budgets):
-        while buckets[band] and len(selected) < target and budget > 0:
-            options = [x for x in buckets[band] if not x['is_long_running'] or long_count < long_cap]
-            if not options:
-                break
-            winner = min(options, key=rank)
-            buckets[band].remove(winner)
-            add(winner)
-            budget -= 1
-    remaining = [x for bucket in buckets for x in bucket]
-    while remaining and len(selected) < target:
-        options = [x for x in remaining if not x['is_long_running'] or long_count < long_cap]
+        options = [x for x in pool if not x['is_long_running'] or long_count < long_cap]
         if not options:
-            break
+            return False
         winner = min(options, key=rank)
-        remaining.remove(winner)
-        add(winner)
-    return sorted(selected, key=lambda x: x['first_upcoming_at'])
+        pool.remove(winner)
+        selected.append(winner)
+        region_counts[winner.get('region')] = region_counts.get(winner.get('region'), 0) + 1
+        category = winner['screen'].get('category')
+        category_counts[category] = category_counts.get(category, 0) + 1
+        long_count += int(winner['is_long_running'])
+        return True
+
+    for pool, share in zip(bands, BAND_SHARES):
+        budget = round(target * share / 100)
+        while pool and budget > 0 and len(selected) < target and take(pool):
+            budget -= 1
+    remaining = [x for pool in bands for x in pool]
+    while remaining and len(selected) < target and take(remaining):
+        pass
+    return selected

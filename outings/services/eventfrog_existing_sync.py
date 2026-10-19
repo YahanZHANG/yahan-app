@@ -54,3 +54,31 @@ def sync_existing(events, *, commit=False):
                     link.last_source_start_at = new_start
                     link.save(update_fields=['last_source_start_at', 'last_seen_at'])
     return stats
+
+
+def apply_cancellations(cancelled_ids, *, commit=False):
+    """Mark linked occurrences cancelled when Eventfrog explicitly flags them.
+
+    Only an explicit `cancelled` flag counts; an ID missing from the snapshot
+    is never treated as a cancellation.
+    """
+    links = (
+        EventfrogOccurrenceLink.objects
+        .select_related('event', 'event__source', 'occurrence')
+        .filter(eventfrog_id__in=[str(i) for i in cancelled_ids], occurrence__is_cancelled=False)
+    )
+    stats = {'cancelled': 0, 'skipped': 0}
+    for link in links:
+        event = link.event
+        if (
+            link.occurrence_id is None
+            or event.source_id is None
+            or event.source.name.lower() != 'eventfrog'
+            or event.status not in (Event.Status.PUBLISHED, Event.Status.DRAFT)
+        ):
+            stats['skipped'] += 1
+            continue
+        stats['cancelled'] += 1
+        if commit:
+            EventOccurrence.objects.filter(pk=link.occurrence_id).update(is_cancelled=True)
+    return stats

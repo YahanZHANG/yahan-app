@@ -35,6 +35,27 @@
         href="{% static 'outings/css/outings-discovery.css' %}"
     >
 
+    <script>
+    // Apply the saved theme before the page paints (no white flash).
+    (function () {
+        var theme = "light";
+        try {
+            var saved = localStorage.getItem("yapp-outings-theme");
+            if (saved === "dark" || saved === "light") {
+                theme = saved;
+            } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                theme = "dark";
+            }
+        } catch (error) {}
+        document.documentElement.setAttribute("data-outings-theme", theme);
+    })();
+    </script>
+    <link
+        rel="stylesheet"
+        href="{% static 'outings/css/outings-v2.css' %}"
+    >
+    <meta name="theme-color" content="#237b83">
+    <meta name="description" content="スイスに住む日本語話者のための、週末のおでかけ・イベント情報">
 </head>
 
 <body>
@@ -58,7 +79,7 @@
             <a
                 href="{% url 'outings:search' %}"
                 class="outings-mobile-search"
-                aria-label="イベントと旅行を検索"
+                aria-label="イベントを検索"
                 title="探す"
             >
                 <i class="bi bi-search"></i>
@@ -193,6 +214,8 @@
 </div>
 
 
+<script src="{% static 'outings/js/hearts.js' %}" defer></script>
+
 <script>
 (function () {
     "use strict";
@@ -228,7 +251,10 @@
             // localStorage may be unavailable.
         }
 
-        return DEFAULT_THEME;
+        return (
+            document.documentElement.getAttribute(THEME_ATTRIBUTE)
+            || DEFAULT_THEME
+        );
     }
 
 
@@ -385,6 +411,5 @@
 
 })();
 </script>
-
 </body>
 </html>
