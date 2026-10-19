@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import support_views, views
 
 app_name = "portal"
 
@@ -33,6 +33,16 @@ urlpatterns = [
         "",
         views.home,
         name="home",
+    ),
+    path(
+        "support/",
+        support_views.support,
+        name="support",
+    ),
+    path(
+        "support/<str:method>/",
+        support_views.support_contact,
+        name="support_contact",
     ),
 
     path(

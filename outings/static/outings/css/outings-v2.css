@@ -737,8 +737,7 @@ html[data-outings-theme="dark"] .home-fresh__kind--trip {
 
 .home-about,
 .about-yapp-links a,
-.about-support__methods > a,
-.about-support__bitcoin > summary {
+.about-support-link {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -760,8 +759,7 @@ html[data-outings-theme="dark"] .home-fresh__kind--trip {
 
 .home-about__text,
 .about-yapp-links a > span:nth-child(2),
-.about-support__methods > a > span:nth-child(2),
-.about-support__bitcoin > summary > span:nth-child(2) {
+.about-support-link > span:nth-child(2) {
     flex: 1;
     min-width: 0;
 }
@@ -770,14 +768,14 @@ html[data-outings-theme="dark"] .home-fresh__kind--trip {
 .home-about small,
 .about-yapp-links strong,
 .about-yapp-links small,
-.about-support__methods strong,
-.about-support__methods small {
+.about-support-link strong,
+.about-support-link small {
     display: block;
 }
 
 .home-about small,
 .about-yapp-links small,
-.about-support__methods small {
+.about-support-link small {
     color: var(--outings-muted);
     font-size: .75rem;
 }
@@ -810,43 +808,8 @@ html[data-outings-theme="dark"] .about-share-button {
     color: var(--outings-muted);
 }
 
-.about-support {
-    margin-top: 8px;
-}
-
-.about-support > summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--outings-accent);
-}
-
-.about-support__note {
-    font-size: .8125rem;
-    color: var(--outings-muted);
-}
-
-.about-support__methods {
-    display: grid;
-    gap: 8px;
-}
-
-.about-support__bitcoin > summary {
-    cursor: pointer;
-    list-style: none;
-}
-
-.about-support__bitcoin > summary::-webkit-details-marker {
-    display: none;
-}
-
-.about-support__bitcoin code {
-    display: block;
-    margin: 8px 0 0;
-    padding: 10px;
-    border-radius: 10px;
-    background: var(--outings-bg);
-    font-size: .75rem;
-    word-break: break-all;
+.about-support-link {
+    margin-top: 14px;
 }
 
 /* ---------- Cards without a photo: colour by category + large emoji ---------- */
@@ -1426,4 +1389,37 @@ html[data-outings-theme="dark"] .card-tone.card-tone--trip { --tone-a: #1f3542; 
 .ev-weather__day b {
     margin-right: 2px;
     font-weight: 700;
+}
+
+@media (min-width: 900px) {
+    .nav-search {
+        flex-basis: 340px;
+        padding-right: 4px;
+    }
+
+    .nav-search__more {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 5px;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--outings-accent-soft);
+        color: var(--outings-accent);
+        font-size: .75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .nav-search__more:hover {
+        background: var(--outings-accent);
+        color: #fff;
+    }
+}
+
+@media (min-width: 900px) and (max-width: 1050px) {
+    .nav-search__more span {
+        display: none;
+    }
 }

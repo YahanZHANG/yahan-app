@@ -317,12 +317,23 @@ class PageTests(PageTestCase):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 200, name)
 
 
-    def test_about_shows_yapp_and_support(self):
-        with self.settings(SWISS_NEWS_TWINT_URL="https://pay.example/twint"):
-            response = self.client.get(reverse("outings:about_outings"))
+    def test_about_shows_yapp_and_links_to_the_shared_support_page(self):
+        response = self.client.get(reverse("outings:about_outings"))
         self.assertContains(response, 'id="support"')
+        self.assertContains(response, reverse("portal:support") + "?from=outings")
+
+    def test_shared_support_page_and_contact_form(self):
+        from news.models import SupportRequest
+        with self.settings(SWISS_NEWS_TWINT_URL="https://pay.example/twint"):
+            response = self.client.get(reverse("portal:support"), {"from": "outings"})
         self.assertContains(response, "https://pay.example/twint")
-        self.assertContains(response, reverse("news:support_contact", args=["bank"]))
+        self.assertContains(response, "おでかけにもどる")
+        self.assertContains(response, reverse("portal:support_contact", args=["bank"]) + "?from=outings")
+        url = reverse("portal:support_contact", args=["bank"])
+        response = self.client.post(url + "?from=outings", {"from": "outings", "bank_country": "ch", "email": "a@example.com"})
+        self.assertRedirects(response, reverse("portal:support") + "?sent=1&from=outings", fetch_redirect_response=False)
+        self.assertEqual(SupportRequest.objects.get().bank_country, "ch")
+        self.assertEqual(self.client.get(reverse("portal:support_contact", args=["nope"])).status_code, 302)
 
     def test_home_lists_recommended_before_new(self):
         make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)

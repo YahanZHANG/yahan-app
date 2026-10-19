@@ -93,6 +93,10 @@
                 <form class="nav-search" action="{% url 'outings:search' %}" method="get" role="search">
                     <i class="bi bi-search" aria-hidden="true"></i>
                     <input type="search" name="q" placeholder="イベント・旅行先を探す" aria-label="イベント・旅行先を探す" enterkeyhint="search">
+                    <a href="{% url 'outings:search' %}" class="nav-search__more" title="日付・地域・ジャンルで探す">
+                        <i class="bi bi-sliders" aria-hidden="true"></i>
+                        <span>詳しく探す</span>
+                    </a>
                 </form>
             {% endif %}
 

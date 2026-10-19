@@ -1,6 +1,5 @@
 from datetime import datetime, time, timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -1298,14 +1297,12 @@ def about_outings(request):
             request.session["outings_feedback_sent_at"] = timezone.now().timestamp()
             return redirect(f"{url}?sent=1#feedback")
 
-    # Support methods are shared with Swiss News.
+    # Money support lives on the Yapp-wide page (portal:support).
     return render(
         request,
         "outings/about.html",
         {
             "feedback_form": form,
             "feedback_sent": request.GET.get("sent", ""),
-            "twint_url": getattr(settings, "SWISS_NEWS_TWINT_URL", ""),
-            "bitcoin_address": getattr(settings, "SWISS_NEWS_BITCOIN_ADDRESS", ""),
         },
     )

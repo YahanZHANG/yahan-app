@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Yappを応援する | Yapp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal/public_home.css' %}">
+<link rel="stylesheet" href="{% static 'portal/theme.css' %}">
+<link rel="stylesheet" href="{% static 'portal/support.css' %}">
+{% endblock %}
+
+{% block main_class %}yapp-public-home{% endblock %}
+
+{% block content %}
+<div class="yapp-public-page yapp-support">
+
+    {% include "portal/includes/support_header.html" %}
+
+    <section class="yapp-support__intro">
+        <p class="yapp-public-eyebrow">SUPPORT YAPP</p>
+        <h1>Yappを応援する</h1>
+        <p>
+            Yappは、スイス在住の個人が企画・開発・運営しているサービスです。Swiss Newsやおでかけなど、どのサービスも無料で使えるように続けています。
+        </p>
+        <p>
+            気に入っていただけたら、ご家族やお友達に紹介していただけるのがいちばんの応援です。任意でご支援いただいた分は、サーバー費用やAIの利用料、サービスの改善に使います。
+        </p>
+    </section>
+
+    {% if sent %}
+        <p class="yapp-support__done" role="status">
+            ありがとうございます！内容を受け付けました。必要に応じてメールでご連絡します。
+        </p>
+    {% endif %}
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">💬</span> 友人に紹介する</h2>
+        <p>リンクを送るだけでも大きな励みになります。</p>
+        <button
+            type="button"
+            class="yapp-support__share"
+            data-share-url="{% if origin %}{{ request.scheme }}://{{ request.get_host }}{{ origin.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% url 'portal:home' %}{% endif %}"
+            data-share-title="{% if origin %}{{ origin.name }} | Yapp{% else %}Yapp{% endif %}"
+        >
+            <i class="bi bi-share" aria-hidden="true"></i>
+            {% if origin %}{{ origin.name }}を紹介する{% else %}Yappを紹介する{% endif %}
+        </button>
+        <p class="yapp-support__share-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">🤝</span> 金銭的に応援する</h2>
+        <p>ご無理のない範囲で、ご都合のよい方法をお選びください。</p>
+        <div class="yapp-support__methods">
+            {% if twint_url %}
+                <a href="{{ twint_url }}" class="yapp-support__method" target="_blank" rel="noopener noreferrer">
+                    <span class="yapp-support__icon" aria-hidden="true">📱</span>
+                    <span><strong>TWINTで応援する</strong><small>Stripeの安全な決済画面を利用します</small></span>
+                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                </a>
+            {% endif %}
+            <a href="{% url 'portal:support_contact' 'bank' %}{% if origin %}?from={{ origin.key }}{% endif %}" class="yapp-support__method">
+                <span class="yapp-support__icon" aria-hidden="true">🏦</span>
+                <span><strong>銀行口座で応援する</strong><small>スイス・日本の振込先をメールでご案内します</small></span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+            {% if bitcoin_address %}
+                <details class="yapp-support__method yapp-support__bitcoin">
+                    <summary>
+                        <span class="yapp-support__icon" aria-hidden="true">₿</span>
+                        <span><strong>Bitcoinで応援する</strong><small>アドレスとQRコードを表示します</small></span>
+                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </summary>
+                    <div class="yapp-support__bitcoin-body">
+                        <img src="{% url 'news:bitcoin_qr' %}" alt="BitcoinアドレスのQRコード" width="160" height="160" loading="lazy">
+                        <code>{{ bitcoin_address }}</code>
+                    </div>
+                </details>
+            {% endif %}
+            <a href="{% url 'portal:support_contact' 'other' %}{% if origin %}?from={{ origin.key }}{% endif %}" class="yapp-support__method">
+                <span class="yapp-support__icon" aria-hidden="true">✉️</span>
+                <span><strong>その他の方法で応援する</strong><small>ご希望の方法をお知らせください</small></span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+
+    <nav class="yapp-support__back">
+        {% if origin %}
+            <a href="{{ origin.url }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> {{ origin.name }}にもどる</a>
+        {% endif %}
+        <a href="{% url 'portal:home' %}">Yappのサービス一覧</a>
+    </nav>
+</div>
+
+<script>
+document.querySelectorAll(".yapp-support__share").forEach((button) => {
+    const status = button.parentElement.querySelector(".yapp-support__share-status");
+    button.addEventListener("click", async () => {
+        const data = { title: button.dataset.shareTitle, url: button.dataset.shareUrl };
+        try {
+            if (navigator.share) {
+                await navigator.share(data);
+                return;
+            }
+            await navigator.clipboard.writeText(data.url);
+            if (status) status.textContent = "リンクをコピーしました。";
+        } catch (error) {
+            if (error && error.name === "AbortError") return;
+            if (status) status.textContent = data.url;
+        }
+    });
+});
+</script>
+{% endblock %}
