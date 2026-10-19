@@ -12,6 +12,7 @@ from .models import (
     EventSource,
     EventTag,
     OutingsComment,
+    OutingsFeedback,
     OutingsNotification,
 )
 
@@ -380,3 +381,12 @@ class TouristSpotAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+
+@admin.register(OutingsFeedback)
+class OutingsFeedbackAdmin(admin.ModelAdmin):
+    list_display = ("message", "created_at", "is_read")
+    list_editable = ("is_read",)
+    list_filter = ("is_read",)
+    search_fields = ("message",)
+    readonly_fields = ("message", "created_at")

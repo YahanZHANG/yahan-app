@@ -1,7 +1,7 @@
 
 from django import forms
 from django.utils import timezone
-from .models import Event, EventCategory, OutingsComment
+from .models import Event, EventCategory, OutingsComment, OutingsFeedback
 
 from django.core.exceptions import ValidationError
 from .services.user_event_images import process_user_event_image
@@ -333,3 +333,29 @@ class OutingsCommentForm(forms.ModelForm):
             )
 
         return body
+
+
+class OutingsFeedbackForm(forms.ModelForm):
+    # Left empty by people; bots that fill every field are ignored.
+    website = forms.CharField(required=False, widget=forms.TextInput(attrs={
+        "tabindex": "-1", "autocomplete": "off", "class": "about-feedback__trap", "aria-hidden": "true",
+    }))
+
+    class Meta:
+        model = OutingsFeedback
+        fields = ["message"]
+        widgets = {
+            "message": forms.Textarea(attrs={
+                "rows": 5,
+                "maxlength": 1000,
+                "placeholder": "ご自由にお書きください（1000文字まで）",
+                "class": "about-feedback__text",
+            }),
+        }
+        labels = {"message": "ご意見・ご要望"}
+
+    def clean_message(self):
+        message = self.cleaned_data["message"].strip()
+        if not message:
+            raise ValidationError("内容を入力してください。")
+        return message

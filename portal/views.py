@@ -1177,6 +1177,16 @@ def home(request):
             "card_class": "portal-news-card",
         },
         {
+            "name": "おでかけ",
+            "label": "OUTINGS",
+            "icon": "🎈",
+            "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
+            "url": reverse("outings:home"),
+            "status": "ログイン不要",
+            "coming_soon": False,
+            "card_class": "portal-outings-card",
+        },
+        {
             "name": "ミニゲーム",
             "label": "MINI GAMES",
             "icon": "🎮",

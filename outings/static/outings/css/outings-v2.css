@@ -1325,3 +1325,70 @@ html[data-outings-theme="dark"] .card-tone.card-tone--trip { --tone-a: #1f3542; 
         display: none;
     }
 }
+
+/* ---------- About: feedback ---------- */
+
+.about-feedback {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.about-feedback__text {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px 14px;
+    border: 1px solid var(--outings-border);
+    border-radius: 12px;
+    background: var(--outings-bg);
+    color: var(--outings-text);
+    font: inherit;
+    resize: vertical;
+}
+
+.about-feedback__text:focus {
+    outline: 0;
+    border-color: var(--outings-accent);
+}
+
+.about-feedback__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+}
+
+.about-feedback__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.about-feedback__footer small {
+    flex: 1 1 220px;
+    color: var(--outings-muted);
+}
+
+.about-feedback__submit {
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--outings-accent);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.about-feedback__done {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--outings-green-soft);
+}
+
+.about-feedback__error {
+    margin: 0;
+    color: #c53c58;
+    font-size: .875rem;
+}

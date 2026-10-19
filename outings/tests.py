@@ -332,6 +332,26 @@ class PageTests(PageTestCase):
 
 
 
+class FeedbackTests(PageTestCase):
+
+    def test_feedback_is_saved_once_per_minute_and_bots_are_ignored(self):
+        from outings.models import OutingsFeedback
+        url = reverse("outings:about_outings")
+        response = self.client.post(url, {"message": "地図があるとうれしいです"})
+        self.assertRedirects(response, url + "?sent=1#feedback", fetch_redirect_response=False)
+        self.assertEqual(OutingsFeedback.objects.get().message, "地図があるとうれしいです")
+        response = self.client.post(url, {"message": "もう一通"})
+        self.assertRedirects(response, url + "?sent=wait#feedback", fetch_redirect_response=False)
+        self.assertEqual(OutingsFeedback.objects.count(), 1)
+        other = self.client_class()
+        other.post(url, {"message": "spam", "website": "http://spam.example"})
+        self.assertEqual(OutingsFeedback.objects.count(), 1)
+        self.assertContains(self.client.get(url + "?sent=1"), "送信しました")
+
+    def test_yapp_home_links_to_outings(self):
+        self.assertContains(self.client.get(reverse("portal:home")), reverse("outings:home"))
+
+
 class SearchTests(PageTestCase):
     """Search page: every word must match, ranked by where it matched."""
 

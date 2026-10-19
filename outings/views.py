@@ -21,7 +21,8 @@ from .services.user_event_cloudinary import (
     upload_user_event_photo,
 )
 
-from .forms import EventSubmissionForm, OutingsCommentForm
+from .forms import EventSubmissionForm, OutingsCommentForm, OutingsFeedbackForm
+from .services.alerts import send_admin_alert
 
 from .models import (
     Event,
@@ -1275,14 +1276,35 @@ def my_comments(request):
 # About Outings
 # =========================================================
 
+FEEDBACK_INTERVAL_SECONDS = 60
+
+
 def about_outings(request):
+    form = OutingsFeedbackForm()
+    if request.method == "POST":
+        form = OutingsFeedbackForm(request.POST)
+        last_sent = request.session.get("outings_feedback_sent_at", 0)
+        url = reverse("outings:about_outings")
+        if timezone.now().timestamp() - last_sent < FEEDBACK_INTERVAL_SECONDS:
+            return redirect(f"{url}?sent=wait#feedback")
+        if form.is_valid():
+            if not form.cleaned_data.get("website"):
+                feedback = form.save()
+                send_admin_alert(
+                    "新しいご意見・ご要望",
+                    f"{feedback.message}\n\n"
+                    + request.build_absolute_uri(reverse("admin:outings_outingsfeedback_changelist")),
+                )
+            request.session["outings_feedback_sent_at"] = timezone.now().timestamp()
+            return redirect(f"{url}?sent=1#feedback")
 
     # Support methods are shared with Swiss News.
-
     return render(
         request,
         "outings/about.html",
         {
+            "feedback_form": form,
+            "feedback_sent": request.GET.get("sent", ""),
             "twint_url": getattr(settings, "SWISS_NEWS_TWINT_URL", ""),
             "bitcoin_address": getattr(settings, "SWISS_NEWS_BITCOIN_ADDRESS", ""),
         },

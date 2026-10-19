@@ -264,6 +264,14 @@
             スイスに住む日本語話者の暮らしに役立つものを少しずつ作っています。おでかけのほかに、スイスのニュースを日本語で読める「Swiss News」もあります。
         </p>
         <div class="about-yapp-links">
+            <a href="{% url 'portal:home' %}">
+                <span aria-hidden="true">🏠</span>
+                <span>
+                    <strong>Yapp</strong>
+                    <small>ほかのサービスも見てみる</small>
+                </span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
             <a href="{% url 'news:home' %}">
                 <span aria-hidden="true">📰</span>
                 <span>
@@ -273,6 +281,37 @@
                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </a>
         </div>
+    </section>
+
+    <!-- =========================================
+         Feedback
+         ========================================= -->
+    <section class="outings-about-section" id="feedback">
+        <h2>
+            <i class="bi bi-chat-heart"></i>
+            ご意見・ご要望
+        </h2>
+        <p>
+            「こんなイベントを載せてほしい」「ここが使いにくい」「情報がまちがっている」など、気軽にお知らせください。いただいた声をもとに改善していきます。
+        </p>
+        {% if feedback_sent == "1" %}
+            <p class="about-feedback__done" role="status">ありがとうございます。送信しました。</p>
+        {% elif feedback_sent == "wait" %}
+            <p class="about-feedback__error" role="alert">続けて送信されました。少し時間をあけてからもう一度お試しください。</p>
+        {% endif %}
+        <form method="post" action="{% url 'outings:about_outings' %}#feedback" class="about-feedback">
+            {% csrf_token %}
+            <label for="{{ feedback_form.message.id_for_label }}" class="visually-hidden">ご意見・ご要望</label>
+            {{ feedback_form.message }}
+            {% for error in feedback_form.message.errors %}
+                <p class="about-feedback__error">{{ error }}</p>
+            {% endfor %}
+            {{ feedback_form.website }}
+            <div class="about-feedback__footer">
+                <small>匿名で送信されます。返信をご希望の場合は、お名前と連絡先もお書きください。</small>
+                <button type="submit" class="about-feedback__submit">送信する</button>
+            </div>
+        </form>
     </section>
 
     <!-- =========================================
