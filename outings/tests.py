@@ -359,8 +359,10 @@ class FeedbackTests(PageTestCase):
         self.assertEqual(OutingsFeedback.objects.count(), 1)
         self.assertContains(self.client.get(url + "?sent=1"), "送信しました")
 
-    def test_yapp_home_links_to_outings(self):
-        self.assertContains(self.client.get(reverse("portal:home")), reverse("outings:home"))
+    def test_yapp_home_hides_outings_unless_switched_on(self):
+        self.assertNotContains(self.client.get(reverse("portal:home")), "portal-outings-card")
+        with mock.patch.dict(os.environ, {"SHOW_OUTINGS_ON_PORTAL": "true"}):
+            self.assertContains(self.client.get(reverse("portal:home")), reverse("outings:home"))
 
 
 class SearchTests(PageTestCase):

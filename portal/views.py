@@ -1,4 +1,5 @@
 from datetime import timedelta
+import os
 
 from django.conf import settings
 from django.contrib import messages
@@ -1240,6 +1241,11 @@ def home(request):
             "card_class": "portal-travel-card",
         },
     ]
+
+    # Outings is hidden from the portal while known bugs are fixed.
+    # Set SHOW_OUTINGS_ON_PORTAL=true on Render to show it again.
+    if os.environ.get("SHOW_OUTINGS_ON_PORTAL", "").lower() != "true":
+        apps = [app for app in apps if app["card_class"] != "portal-outings-card"]
 
     return render(
         request,
