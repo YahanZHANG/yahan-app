@@ -38,6 +38,23 @@ CATEGORY_EMOJI = {
 }
 
 
+# Colour family for cards without a photo (see .card-tone--* in outings-v2.css).
+CATEGORY_TONE = {
+    "music": "stage", "theater": "stage", "comedy": "stage", "film": "stage",
+    "art": "art", "museum": "art",
+    "festival": "fest", "market": "fest", "seasonal": "fest", "food": "fest",
+    "family": "family",
+    "tour": "nature", "nature": "nature", "sports": "nature", "outdoor": "nature",
+    "workshop": "craft",
+}
+
+
+def event_tone(event):
+    if event.category_id and event.category:
+        return CATEGORY_TONE.get(event.category.slug, "default")
+    return "default"
+
+
 def event_emoji(event):
     text = f"{event.title or ''} {event.title_original or ''}".lower()
     for words, emoji in EMOJI_KEYWORDS:

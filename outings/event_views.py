@@ -9,7 +9,6 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -17,13 +16,12 @@ from .cards import decorate
 from .forms import OutingsCommentForm
 from .models import (
     Event,
-    EventCategory,
     EventHeart,
     EventOccurrence,
     OutingsComment,
     OutingsPreference,
 )
-from .regions import REGION_CHOICES, REGION_NAMES, clean_region, clean_regions, search_variants
+from .regions import REGION_CHOICES, REGION_NAMES, clean_regions
 from .services import schedule, weather
 from .visitor import get_visitor_id, set_visitor_cookie
 
@@ -316,97 +314,6 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
             "qs": querystring(params, category="" if c.slug == category else c.slug, page=""),
         })
     return chips
-
-
-# =========================================================
-# Search
-# =========================================================
-
-def search(request):
-    now = timezone.now()
-    statuses = _visible_statuses(request)
-    region = clean_region(request.GET.get("region"))
-    categories = EventCategory.objects.filter(is_active=True).order_by("sort_order", "name")
-    category = request.GET.get("category", "").strip()
-    if category not in set(categories.values_list("slug", flat=True)):
-        category = ""
-    family_only = request.GET.get("tag") == "family"
-    query = request.GET.get("q", "").strip()[:100]
-
-    date_from = request.GET.get("date_from", "").strip()
-    date_to = request.GET.get("date_to", "").strip()
-    start_date = parse_date(date_from) if date_from else None
-    end_date = parse_date(date_to) if date_to else None
-    if start_date is None:
-        date_from = ""
-    if end_date is None:
-        date_to = ""
-    if start_date and end_date and start_date > end_date:
-        start_date, end_date = end_date, start_date
-        date_from, date_to = start_date.isoformat(), end_date.isoformat()
-    tz = timezone.get_current_timezone()
-    range_start = timezone.make_aware(datetime.combine(start_date, time.min), tz) if start_date else now
-    range_end = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), time.min), tz) if end_date else None
-
-    events = live_events(now, statuses)
-    if region:
-        events = events.filter(location__canton=region)
-    if category:
-        events = events.filter(category__slug=category)
-    if family_only:
-        events = events.filter(tags__slug__in=["family", "children", "baby"])
-    if query:
-        text = Q()
-        for variant in search_variants(query):
-            text |= (
-                Q(title__icontains=variant)
-                | Q(title_original__icontains=variant)
-                | Q(summary_ja__icontains=variant)
-                | Q(highlight_ja__icontains=variant)
-                | Q(location__city__icontains=variant)
-                | Q(location__name__icontains=variant)
-                | Q(category__name__icontains=variant)
-            )
-        events = events.filter(text)
-
-    results = []
-    for event in events.distinct():
-        occurrence = first_in_range(event.upcoming_dates, max(now, range_start), range_end)
-        if occurrence is None:
-            continue
-        event.list_occurrence = occurrence
-        results.append(event)
-    results.sort(key=lambda e: (e.list_occurrence.start_at, e.pk))
-
-    page_obj = Paginator(results, 20).get_page(request.GET.get("page", 1))
-    visitor_id = get_visitor_id(request)
-    hearted = hearted_ids_for(visitor_id, page_obj.object_list)
-    for event in page_obj.object_list:
-        decorate(event, now, hearted)
-        event.date_label = schedule.occurrence_label(event.list_occurrence, now)
-
-    params = {
-        "q": query, "region": region, "category": category,
-        "tag": "family" if family_only else "", "date_from": date_from, "date_to": date_to,
-        "preview": "1" if Event.Status.DRAFT in statuses else "",
-    }
-    response = render(request, "outings/search.html", {
-        "events": page_obj.object_list,
-        "page_obj": page_obj,
-        "result_count": len(results),
-        "regions": REGION_CHOICES,
-        "active_region": region,
-        "categories": categories,
-        "active_category": category,
-        "family_only": family_only,
-        "query": query,
-        "preview_mode": Event.Status.DRAFT in statuses,
-        "date_from": date_from,
-        "date_to": date_to,
-        "page_qs_prev": querystring(params, page=page_obj.previous_page_number()) if page_obj.has_previous() else "",
-        "page_qs_next": querystring(params, page=page_obj.next_page_number()) if page_obj.has_next() else "",
-    })
-    return set_visitor_cookie(request, response, visitor_id)
 
 
 # =========================================================

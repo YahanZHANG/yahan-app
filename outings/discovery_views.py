@@ -19,7 +19,7 @@ from .models import (
     TouristSpotHeart,
 )
 
-from .cards import decorate
+from .cards import decorate, event_emoji, event_tone
 from .services import schedule, weather
 from .tourist_views import tourist_spot_queryset
 from .visitor import (
@@ -114,7 +114,14 @@ def make_event_card(event):
         "image_is_ai": False,
         "has_image": bool(event.image_url),
 
-        "label": "イベント",
+        "label": (
+            event.category.name
+            if event.category_id and event.category and event.category.slug != "other"
+            else "イベント"
+        ),
+        # Shown instead of a photo.
+        "emoji": event_emoji(event),
+        "tone": event_tone(event),
 
         "date": None,
         "date_label": (
@@ -241,6 +248,8 @@ def make_trip_card(spot):
 
         # Spot information
         "label": spot.get_spot_type_display(),
+        "emoji": "🥾" if spot.spot_type == TouristSpot.SpotType.TOUR else "🏔️",
+        "tone": "trip",
 
         "date": None,
         "date_label": "",
@@ -334,7 +343,8 @@ def home(request):
             and not schedule.is_long_running(event.upcoming_dates)
             and not schedule.is_recurring(event.upcoming_dates)
         ),
-        key=lambda event: event.upcoming_dates[0].start_at,
+        # Events with a photo first: they lead the HOME carousel.
+        key=lambda event: (not event.image_url, event.upcoming_dates[0].start_at),
     )[:12]
 
     # Weather for the date and place of each recommended event.
@@ -397,10 +407,11 @@ def home(request):
             make_event_card(event)
             for event in recommended_events
         ],
-        [
-            make_trip_card(spot)
-            for spot in recommended_trips
-        ],
+        # Trips with a photo first, keeping the score order otherwise.
+        sorted(
+            (make_trip_card(spot) for spot in recommended_trips),
+            key=lambda card: not card["has_image"],
+        ),
     )
 
     # =====================================================

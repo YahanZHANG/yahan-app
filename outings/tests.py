@@ -226,7 +226,7 @@ class SchedulerTests(TestCase):
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     },
 )
-class PageTests(TestCase):
+class PageTestCase(TestCase):
 
     def setUp(self):
         self.now = timezone.now()
@@ -235,6 +235,9 @@ class PageTests(TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         cache.clear()
+
+
+class PageTests(PageTestCase):
 
     def test_preferences_keep_bern(self):
         self.client.post(reverse("outings:save_preferences"), {"regions": ["BE", "ZH", "XX"], "personalization": "on"})
@@ -327,6 +330,96 @@ class PageTests(TestCase):
         self.assertLess(html.index("おすすめ"), html.index("新着"))
 
 
+
+
+class SearchTests(PageTestCase):
+    """Search page: every word must match, ranked by where it matched."""
+
+    def search(self, **params):
+        return self.client.get(reverse("outings:search"), params)
+
+    def test_all_words_must_match_and_synonyms_count(self):
+        make_event("バーゼルのジャズ", start=self.now + timedelta(days=2), canton="BS", city="Basel")
+        make_event("チューリッヒのジャズ", start=self.now + timedelta(days=2))
+        response = self.search(q="Basel jazz")
+        self.assertContains(response, "バーゼルのジャズ")
+        self.assertNotContains(response, "チューリッヒのジャズ")
+        # A German word finds the Japanese one; hiragana finds katakana.
+        make_event("夜のコンサート", start=self.now + timedelta(days=2))
+        self.assertContains(self.search(q="Konzert"), "夜のコンサート")
+        make_event("こどもの工作", start=self.now + timedelta(days=2))
+        self.assertContains(self.search(q="コドモ"), "こどもの工作")
+
+    def test_title_match_ranks_above_description_match(self):
+        make_event("市場の話", start=self.now + timedelta(days=1), summary_ja="クリスマスの話もします")
+        make_event("クリスマスマーケット", start=self.now + timedelta(days=5))
+        html = self.search(q="クリスマス").content.decode()
+        self.assertLess(html.index("クリスマスマーケット"), html.index("市場の話"))
+        html = self.search(q="クリスマス", sort="date").content.decode()
+        self.assertLess(html.index("市場の話"), html.index("クリスマスマーケット"))
+
+    def test_partial_match_when_no_event_has_every_word(self):
+        make_event("ベルンの朝市", start=self.now + timedelta(days=2), canton="BE", city="Bern")
+        response = self.search(q="Bern 花火")
+        self.assertContains(response, "ベルンの朝市")
+        self.assertContains(response, "一部の言葉に一致")
+
+    def test_no_results_suggests_which_condition_to_drop(self):
+        make_event("有料の公演", start=self.now + timedelta(days=2))
+        response = self.search(free="1")
+        self.assertContains(response, "見つかりませんでした")
+        self.assertContains(response, "無料を外す")
+
+    def test_next_weekend_and_regions(self):
+        today = timezone.localdate(self.now)
+        saturday = today + timedelta(days=(5 - today.weekday()) % 7 or 7)
+        if today.weekday() == 6:
+            saturday = today + timedelta(days=6)
+        noon = timezone.make_aware(datetime.combine(saturday + timedelta(days=7), datetime.min.time())) + timedelta(hours=12)
+        make_event("来週末の祭り", start=noon, canton="BE", city="Bern")
+        make_event("明日の講演", start=self.now + timedelta(days=1))
+        response = self.search(when="next_weekend")
+        self.assertContains(response, "来週末の祭り")
+        self.assertNotContains(response, "明日の講演")
+        response = self.search(region=["BE", "ZH"])
+        self.assertContains(response, "来週末の祭り")
+        self.assertContains(response, "明日の講演")
+
+    def test_keyword_also_finds_trips(self):
+        from outings.models import TouristSpot
+        TouristSpot.objects.create(
+            external_id="t1", spot_type=TouristSpot.SpotType.DESTINATION, title_original="Arosa",
+            title_ja="アローザ", summary_ja="山あいのリゾート", official_url="https://example.com",
+            status=TouristSpot.Status.PUBLISHED,
+        )
+        response = self.search(q="あろーざ")
+        self.assertContains(response, "旅行先")
+        self.assertContains(response, "アローザ")
+
+    def test_old_family_parameter_still_works(self):
+        make_event("親子の会", start=self.now + timedelta(days=2), tags=["family"])
+        make_event("大人の会", start=self.now + timedelta(days=2))
+        response = self.search(tag="family")
+        self.assertContains(response, "親子の会")
+        self.assertNotContains(response, "大人の会")
+
+
+class NavigationTests(PageTestCase):
+
+    def test_search_is_in_the_phone_tab_bar_and_marked_active(self):
+        html = self.client.get(reverse("outings:search")).content.decode()
+        tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
+        self.assertIn("tabbar__search active", tabbar)
+        # The events tab is no longer highlighted on the search page.
+        self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
+
+    def test_recommended_events_with_photo_come_first(self):
+        make_event("写真なし", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+        make_event("写真あり", start=self.now + timedelta(days=3), tier=Event.ListingTier.FEATURED,
+                   image_url="https://example.com/a.jpg")
+        html = self.client.get(reverse("outings:home")).content.decode()
+        self.assertLess(html.index("写真あり"), html.index("写真なし"))
+        self.assertIn("card-tone--", html)
 
 
 class ScheduleLabelTests(TestCase):

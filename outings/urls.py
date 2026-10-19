@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import views, discovery_views, event_views
+from . import views, discovery_views, event_views, search_views
 
 
 app_name = "outings"
@@ -35,7 +35,7 @@ urlpatterns = [
     ),
     path(
         "search/",
-        event_views.search,
+        search_views.search,
         name="search",
     ),
 

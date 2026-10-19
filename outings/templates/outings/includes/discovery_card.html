@@ -17,25 +17,14 @@
                     onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
                 >
 
-                <div
-                    class="discovery-card-placeholder"
-                    hidden
-                >
-                    {% if card.kind == 'event' %}
-                        <i class="bi bi-calendar-event"></i>
-                    {% else %}
-                        <i class="bi bi-mountains"></i>
-                    {% endif %}
+                <div class="discovery-card-placeholder card-tone card-tone--{{ card.tone|default:'default' }}" hidden>
+                    <span class="card-tone__emoji" aria-hidden="true">{{ card.emoji|default:"🎈" }}</span>
                 </div>
 
             {% else %}
 
-                <div class="discovery-card-placeholder">
-                    {% if card.kind == 'event' %}
-                        <i class="bi bi-calendar-event"></i>
-                    {% else %}
-                        <i class="bi bi-mountains"></i>
-                    {% endif %}
+                <div class="discovery-card-placeholder card-tone card-tone--{{ card.tone|default:'default' }}">
+                    <span class="card-tone__emoji" aria-hidden="true">{{ card.emoji|default:"🎈" }}</span>
                 </div>
 
             {% endif %}
