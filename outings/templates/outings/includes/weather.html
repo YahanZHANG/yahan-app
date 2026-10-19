@@ -1,0 +1,6 @@
+<p class="ev-weather" title="開催日・開催地の天気予報（Open-Meteo）">
+    <span aria-hidden="true">{{ weather.emoji }}</span>
+    <span>{{ weather.label }}</span>
+    {% if weather.temp %}<span>{{ weather.temp }}</span>{% endif %}
+    {% if weather.rain %}<span class="ev-weather__rain"><i class="bi bi-umbrella" aria-hidden="true"></i>{{ weather.rain }}</span>{% endif %}
+</p>

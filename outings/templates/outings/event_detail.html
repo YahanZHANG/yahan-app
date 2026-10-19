@@ -58,6 +58,9 @@
                     {{ event.date_label }}
                 </span>
             </p>
+            {% if event.weather %}
+                {% include "outings/includes/weather.html" with weather=event.weather %}
+            {% endif %}
         {% endif %}
         <div class="ev-actions">
             <form

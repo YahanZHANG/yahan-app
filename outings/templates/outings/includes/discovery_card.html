@@ -79,6 +79,10 @@
                 </p>
             {% endif %}
 
+            {% if card.weather %}
+                {% include "outings/includes/weather.html" with weather=card.weather %}
+            {% endif %}
+
             {% if card.summary %}
                 <p class="discovery-card-summary">
                     {{ card.summary|truncatechars:95 }}

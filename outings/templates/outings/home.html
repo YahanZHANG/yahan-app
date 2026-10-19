@@ -1,93 +1,34 @@
-
 {% extends "outings/base.html" %}
 
 {% block title %}おでかけ | Yapp{% endblock %}
 
 {% block content %}
-
 <div class="outings-discovery-home">
 
     <section class="discovery-intro">
-
         <div class="discovery-shortcuts">
-
-            <a href="{% url 'outings:event_home' %}">
-                <i class="bi bi-calendar-event"></i>
-                <span>イベントを見る</span>
-                <i class="bi bi-chevron-right"></i>
+            <a href="{% url 'outings:event_home' %}?when=weekend">
+                <i class="bi bi-calendar-heart" aria-hidden="true"></i>
+                <span>今週末のイベント</span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </a>
-
             <a href="{% url 'outings:tourist_spot_list' %}">
                 <i class="bi bi-compass" aria-hidden="true"></i>
                 <span>旅行</span>
             </a>
-
-        </div>
-
-    </section>
-
-
-    <section
-        class="discovery-section"
-        data-discovery-section
-    >
-        <div class="discovery-section-heading">
-
-            <div>
-                <h2>
-                    <i class="bi bi-stars"></i>
-                    新着
-                </h2>
-
-                <p>最近追加されたイベントと旅行</p>
-            </div>
-
-            <button
-                type="button"
-                class="discovery-expand-button"
-                data-discovery-toggle
-                aria-expanded="false"
-            >
-                一覧を見る
-                <i class="bi bi-chevron-down"></i>
-            </button>
-
-        </div>
-
-        <div class="discovery-card-track" data-discovery-track>
-
-            {% for card in fresh_cards %}
-
-                {% include "outings/includes/discovery_card.html" %}
-
-            {% empty %}
-
-                <p class="empty-state">
-                    新しい情報を準備中です。
-                </p>
-
-            {% endfor %}
-
         </div>
     </section>
 
-    <section
-        class="discovery-section"
-        data-discovery-section
-    >
+    <!-- Recommended first: the main reason to open the app. -->
+    <section class="discovery-section" data-discovery-section>
         <div class="discovery-section-heading">
-
             <div>
                 <h2>
-                    <i class="bi bi-award"></i>
+                    <i class="bi bi-award" aria-hidden="true"></i>
                     おすすめ
                 </h2>
-
-                <p>
-                    注目のイベントと魅力的な旅行先
-                </p>
+                <p>注目のイベントと魅力的な旅行先</p>
             </div>
-
             <button
                 type="button"
                 class="discovery-expand-button"
@@ -97,26 +38,62 @@
                 一覧を見る
                 <i class="bi bi-chevron-down"></i>
             </button>
-
         </div>
-
         <div class="discovery-card-track" data-discovery-track>
-
             {% for card in recommended_cards %}
-
                 {% include "outings/includes/discovery_card.html" %}
-
             {% empty %}
-
-                <p class="empty-state">
-                    おすすめを準備中です。
-                </p>
-
+                <p class="empty-state">おすすめを準備中です。</p>
             {% endfor %}
-
         </div>
     </section>
 
+    <!-- New: a compact list. -->
+    <section class="discovery-section home-fresh">
+        <div class="discovery-section-heading">
+            <div>
+                <h2>
+                    <i class="bi bi-stars" aria-hidden="true"></i>
+                    新着
+                </h2>
+                <p>最近追加されたイベントと旅行</p>
+            </div>
+        </div>
+        <ul class="home-fresh__list">
+            {% for card in fresh_cards|slice:":8" %}
+                <li>
+                    <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
+                        <span class="home-fresh__kind home-fresh__kind--{{ card.kind }}">
+                            {% if card.kind == 'event' %}イベント{% else %}旅行{% endif %}
+                        </span>
+                        <span class="home-fresh__text">
+                            <strong>{{ card.title }}</strong>
+                            {% if card.date_label or card.location %}
+                                <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
+                            {% endif %}
+                        </span>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </a>
+                </li>
+            {% empty %}
+                <li class="empty-state">新しい情報を準備中です。</li>
+            {% endfor %}
+        </ul>
+        <div class="home-fresh__more">
+            <a href="{% url 'outings:event_home' %}">イベントをすべて見る</a>
+            <a href="{% url 'outings:tourist_spot_list' %}">旅行先をすべて見る</a>
+        </div>
+    </section>
+
+    <!-- About Yapp and support -->
+    <a class="home-about" href="{% url 'outings:about_outings' %}#yapp">
+        <span class="home-about__icon" aria-hidden="true">🎈</span>
+        <span class="home-about__text">
+            <strong>Yappについて・応援する</strong>
+            <small>スイス在住の個人が作っているサービスです</small>
+        </span>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    </a>
 </div>
 
 <script>
@@ -134,6 +111,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 </script>
-
-
 {% endblock %}

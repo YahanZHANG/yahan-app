@@ -19,7 +19,8 @@ from .models import (
     TouristSpotHeart,
 )
 
-from .services import schedule
+from .cards import decorate
+from .services import schedule, weather
 from .tourist_views import tourist_spot_queryset
 from .visitor import (
     get_visitor_id,
@@ -130,6 +131,7 @@ def make_event_card(event):
         ),
 
         "score": 0,
+        "weather": getattr(event, "weather", None),
     }
 
 
@@ -334,6 +336,11 @@ def home(request):
         ),
         key=lambda event: event.upcoming_dates[0].start_at,
     )[:12]
+
+    # Weather for the date and place of each recommended event.
+    for event in recommended_events:
+        decorate(event, now)
+    weather.attach(recommended_events, now)
 
 
     # =====================================================

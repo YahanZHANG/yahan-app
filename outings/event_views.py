@@ -24,7 +24,7 @@ from .models import (
     OutingsPreference,
 )
 from .regions import REGION_CHOICES, REGION_NAMES, clean_region, clean_regions, search_variants
-from .services import schedule
+from .services import schedule, weather
 from .visitor import get_visitor_id, set_visitor_cookie
 
 
@@ -444,6 +444,7 @@ def event_detail(request, pk):
     cancelled = [o for o in all_dates if o.is_cancelled and o.start_at >= now]
     event.upcoming_dates = upcoming
     decorate(event, now, hearted_ids_for(visitor_id, [event]))
+    weather.attach([event], now)
     date_rows = [
         {"label": schedule.occurrence_label(o, now), "ongoing": schedule.is_ongoing(o, now), "cancelled": False, "start": o.start_at}
         for o in upcoming

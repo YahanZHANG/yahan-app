@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from pathlib import Path
 from unittest import mock
 
+from django.core.cache import cache
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -14,7 +15,7 @@ from outings.models import (
     Event, EventCategory, EventHeart, EventLocation, EventOccurrence, EventSource,
     EventTag, EventfrogOccurrenceLink, OutingsPreference,
 )
-from outings.services import ai_editor, schedule
+from outings.services import ai_editor, schedule, weather
 from outings.services.eventfrog_existing_sync import apply_cancellations
 from outings.services.importer import import_items
 from outings.services.selector import select
@@ -229,6 +230,11 @@ class PageTests(TestCase):
 
     def setUp(self):
         self.now = timezone.now()
+        # Never reach the weather API from tests.
+        patcher = mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("offline"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        cache.clear()
 
     def test_preferences_keep_bern(self):
         self.client.post(reverse("outings:save_preferences"), {"regions": ["BE", "ZH", "XX"], "personalization": "on"})
@@ -308,6 +314,21 @@ class PageTests(TestCase):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 200, name)
 
 
+    def test_about_shows_yapp_and_support(self):
+        with self.settings(SWISS_NEWS_TWINT_URL="https://pay.example/twint"):
+            response = self.client.get(reverse("outings:about_outings"))
+        self.assertContains(response, 'id="support"')
+        self.assertContains(response, "https://pay.example/twint")
+        self.assertContains(response, reverse("news:support_contact", args=["bank"]))
+
+    def test_home_lists_recommended_before_new(self):
+        make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+        html = self.client.get(reverse("outings:home")).content.decode()
+        self.assertLess(html.index("おすすめ"), html.index("新着"))
+
+
+
+
 class ScheduleLabelTests(TestCase):
 
     def test_ongoing_label(self):
@@ -319,3 +340,54 @@ class ScheduleLabelTests(TestCase):
         start = timezone.make_aware(datetime(2026, 11, 7, 0, 0))
         label = schedule.occurrence_label(EventOccurrence(start_at=start, end_at=None), start - timedelta(days=1))
         self.assertEqual(label, "11/7（土）")
+
+
+class FakeResponse:
+    def __init__(self, data):
+        self.data = data
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self.data
+
+
+class WeatherTests(TestCase):
+
+    def setUp(self):
+        cache.clear()
+
+    def test_attaches_forecast_for_the_event_day(self):
+        now = timezone.now()
+        event = make_event("屋外フェス", start=now + timedelta(days=2), city="Bern", canton="BE")
+        event.next_occurrence = event.occurrences.get()
+        day = timezone.localdate(event.next_occurrence.start_at).isoformat()
+        responses = {
+            weather.GEOCODE_URL: {"results": [
+                {"country_code": "CH", "admin1": "Bern", "latitude": 46.948, "longitude": 7.447},
+            ]},
+            weather.FORECAST_URL: {"daily": {
+                "time": [day], "weather_code": [61], "temperature_2m_max": [14.4],
+                "temperature_2m_min": [6.2], "precipitation_probability_max": [70],
+            }},
+        }
+        with mock.patch("outings.services.weather.requests.get", side_effect=lambda url, **kw: FakeResponse(responses[url])) as get:
+            weather.attach([event], now)
+            self.assertEqual(event.weather, {"emoji": "🌧️", "label": "小雨", "temp": "14° / 6°", "rain": "70%"})
+            # Coordinates are stored and the forecast is cached.
+            event.location.refresh_from_db()
+            self.assertIsNotNone(event.location.latitude)
+            weather.attach([event], now)
+            self.assertEqual(get.call_count, 2)
+
+    def test_far_future_and_failures_show_nothing(self):
+        now = timezone.now()
+        far = make_event("来月", start=now + timedelta(days=20))
+        far.next_occurrence = far.occurrences.get()
+        soon = make_event("明日", start=now + timedelta(days=1))
+        soon.next_occurrence = soon.occurrences.get()
+        with mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            weather.attach([far, soon], now)
+        self.assertIsNone(far.weather)
+        self.assertIsNone(soon.weather)

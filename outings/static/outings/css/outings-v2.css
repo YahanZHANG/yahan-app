@@ -634,3 +634,217 @@ html[data-outings-theme="dark"] .ev-badge--warn { color: #f2c29b; }
 html[data-outings-theme="dark"] .ev-card--featured .ev-heart {
     background: var(--outings-surface);
 }
+
+/* ---------- Weather ---------- */
+
+.ev-weather {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 6px 0 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--outings-blue-soft);
+    font-size: .8125rem;
+}
+
+.ev-weather__rain i {
+    margin-right: 2px;
+}
+
+.ev-detail__next .ev-weather {
+    margin: -4px 0 12px;
+}
+
+/* ---------- HOME: compact new list ---------- */
+
+.home-fresh__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--outings-border);
+    border-radius: 14px;
+    background: var(--outings-surface);
+    overflow: hidden;
+}
+
+.home-fresh__list li + li {
+    border-top: 1px solid var(--outings-border);
+}
+
+.home-fresh__list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    color: inherit;
+}
+
+.home-fresh__list .bi-chevron-right {
+    color: var(--outings-muted);
+}
+
+.home-fresh__kind {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: .6875rem;
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+}
+
+.home-fresh__kind--trip {
+    background: var(--outings-green-soft);
+    color: #2c7a4b;
+}
+
+html[data-outings-theme="dark"] .home-fresh__kind--trip {
+    color: #9fe0b8;
+}
+
+.home-fresh__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.home-fresh__text strong {
+    display: block;
+    overflow: hidden;
+    font-size: .9375rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.home-fresh__text small {
+    color: var(--outings-muted);
+    font-size: .75rem;
+}
+
+.home-fresh__more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: .875rem;
+}
+
+.home-fresh__more a {
+    color: var(--outings-accent);
+}
+
+/* ---------- HOME: about Yapp ---------- */
+
+.home-about,
+.about-yapp-links a,
+.about-support__methods > a,
+.about-support__bitcoin > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--outings-border);
+    border-radius: 14px;
+    background: var(--outings-surface);
+    color: inherit;
+}
+
+.home-about {
+    margin: 24px 0 0;
+    background: var(--outings-accent-soft);
+}
+
+.home-about__icon {
+    font-size: 1.6rem;
+}
+
+.home-about__text,
+.about-yapp-links a > span:nth-child(2),
+.about-support__methods > a > span:nth-child(2),
+.about-support__bitcoin > summary > span:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+}
+
+.home-about strong,
+.home-about small,
+.about-yapp-links strong,
+.about-yapp-links small,
+.about-support__methods strong,
+.about-support__methods small {
+    display: block;
+}
+
+.home-about small,
+.about-yapp-links small,
+.about-support__methods small {
+    color: var(--outings-muted);
+    font-size: .75rem;
+}
+
+/* ---------- About: support ---------- */
+
+.about-yapp-links {
+    margin-top: 12px;
+}
+
+.about-share-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--outings-accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+html[data-outings-theme="dark"] .about-share-button {
+    color: #10232a;
+}
+
+.about-share-feedback {
+    min-height: 1em;
+    font-size: .8125rem;
+    color: var(--outings-muted);
+}
+
+.about-support {
+    margin-top: 8px;
+}
+
+.about-support > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--outings-accent);
+}
+
+.about-support__note {
+    font-size: .8125rem;
+    color: var(--outings-muted);
+}
+
+.about-support__methods {
+    display: grid;
+    gap: 8px;
+}
+
+.about-support__bitcoin > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.about-support__bitcoin > summary::-webkit-details-marker {
+    display: none;
+}
+
+.about-support__bitcoin code {
+    display: block;
+    margin: 8px 0 0;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--outings-bg);
+    font-size: .75rem;
+    word-break: break-all;
+}

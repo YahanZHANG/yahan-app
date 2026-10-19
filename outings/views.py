@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -1276,7 +1277,13 @@ def my_comments(request):
 
 def about_outings(request):
 
+    # Support methods are shared with Swiss News.
+
     return render(
         request,
         "outings/about.html",
+        {
+            "twint_url": getattr(settings, "SWISS_NEWS_TWINT_URL", ""),
+            "bitcoin_address": getattr(settings, "SWISS_NEWS_BITCOIN_ADDRESS", ""),
+        },
     )

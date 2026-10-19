@@ -237,6 +237,98 @@
 
 
     <!-- =========================================
+         Weather
+         ========================================= -->
+    <section class="outings-about-section">
+        <h2>
+            <i class="bi bi-cloud-sun"></i>
+            天気予報について
+        </h2>
+        <p>
+            7日以内に開催されるイベントには、開催日・開催地の天気予報を表示しています。予報は <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> のデータを利用しており、都市単位のおおよその予報です。
+        </p>
+    </section>
+
+    <!-- =========================================
+         About Yapp
+         ========================================= -->
+    <section class="outings-about-section" id="yapp">
+        <h2>
+            <i class="bi bi-balloon-heart"></i>
+            Yappについて
+        </h2>
+        <p>
+            日常をちょっと便利に、楽しく。Yappは、スイス在住の個人が企画・開発・運営しているWebサービスです。
+        </p>
+        <p>
+            スイスに住む日本語話者の暮らしに役立つものを少しずつ作っています。おでかけのほかに、スイスのニュースを日本語で読める「Swiss News」もあります。
+        </p>
+        <div class="about-yapp-links">
+            <a href="{% url 'news:home' %}">
+                <span aria-hidden="true">📰</span>
+                <span>
+                    <strong>Swiss News</strong>
+                    <small>スイスのニュースを日本語で</small>
+                </span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- =========================================
+         Support
+         ========================================= -->
+    <section class="outings-about-section" id="support">
+        <h2>
+            <i class="bi bi-heart-fill"></i>
+            Yappを応援する
+        </h2>
+        <p>
+            Yappは個人で開発・運営しています。気に入っていただけたら、ご家族やお友達に紹介していただけるとうれしいです。
+        </p>
+        <button type="button" class="about-share-button" data-share-button>
+            <i class="bi bi-share" aria-hidden="true"></i>
+            友人に紹介する
+        </button>
+        <p class="about-share-feedback" data-share-feedback role="status" aria-live="polite"></p>
+
+        <details class="about-support">
+            <summary>金銭的に応援する</summary>
+            <p class="about-support__note">
+                任意でご支援いただける方には、以下の方法をご案内しています。いただいたサポートは、サーバー費用やサービスの改善、新しい機能の開発に使います。
+            </p>
+            <div class="about-support__methods">
+                {% if twint_url %}
+                    <a href="{{ twint_url }}" target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true">📱</span>
+                        <span><strong>TWINTで応援する</strong><small>Stripeの安全な決済画面を使います</small></span>
+                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+                {% endif %}
+                <a href="{% url 'news:support_contact' 'bank' %}">
+                    <span aria-hidden="true">🏦</span>
+                    <span><strong>銀行口座で応援する</strong><small>振込先をメールでご案内します</small></span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                {% if bitcoin_address %}
+                    <details class="about-support__bitcoin">
+                        <summary>
+                            <span aria-hidden="true">₿</span>
+                            <span><strong>Bitcoinで応援する</strong><small>アドレスを表示します</small></span>
+                        </summary>
+                        <code>{{ bitcoin_address }}</code>
+                    </details>
+                {% endif %}
+                <a href="{% url 'news:support_contact' 'other' %}">
+                    <span aria-hidden="true">💬</span>
+                    <span><strong>その他の方法で応援する</strong><small>ご希望の方法を教えてください</small></span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </details>
+    </section>
+
+    <!-- =========================================
          Footer
          ========================================= -->
 
@@ -252,4 +344,25 @@
 
 </div>
 
+<script>
+(function () {
+    var button = document.querySelector("[data-share-button]");
+    var feedback = document.querySelector("[data-share-feedback]");
+    if (!button) return;
+    button.addEventListener("click", function () {
+        var data = {
+            title: "おでかけ | Yapp",
+            text: "スイスのイベントや旅行先を日本語で探せるサービスです。",
+            url: window.location.origin + "{% url 'outings:home' %}",
+        };
+        if (navigator.share) {
+            navigator.share(data).catch(function () {});
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(data.url).then(function () {
+                feedback.textContent = "リンクをコピーしました。";
+            });
+        }
+    });
+})();
+</script>
 {% endblock %}
