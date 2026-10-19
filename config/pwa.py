@@ -21,6 +21,53 @@ from django.views.decorators.http import (
 
 
 # =========================================================
+# アプリごとのアイコンと名前
+# (ここにないアプリは Yapp のアイコンを使う)
+# =========================================================
+
+APP_ICONS = {
+
+    "news": {
+        "name": "Swiss News",
+        "folder": "pwa/news",
+        "theme_color": "#C81E28",
+    },
+
+    "outings": {
+        "name": "おでかけ",
+        "folder": "pwa/outings",
+        "theme_color": "#237B83",
+    },
+
+}
+
+DEFAULT_ICONS = {
+    "name": "Yapp",
+    "folder": "pwa",
+    "theme_color": "#6577B6",
+}
+
+
+def icons_for_path(path):
+
+    first = path.lstrip("/").split("/", 1)[0]
+
+    return APP_ICONS.get(first, DEFAULT_ICONS)
+
+
+def app_icons(request):
+
+    """
+    context processor: いま開いているアプリのアイコン設定を
+    templates/includes/app_icons.html に渡す。
+    """
+
+    return {
+        "pwa_icons": icons_for_path(request.path),
+    }
+
+
+# =========================================================
 # PWA Manifest
 # =========================================================
 
@@ -58,13 +105,17 @@ def manifest(request):
 
     start_url = _start_url(request)
 
+    icons = icons_for_path(start_url)
+
+    folder = icons["folder"]
+
     data = {
 
         "id": start_url,
 
-        "name": "Yapp",
+        "name": icons["name"],
 
-        "short_name": "Yapp",
+        "short_name": icons["name"],
 
         "description": (
             "暮らしをよりよくするための情報やサービスをまとめたYapp"
@@ -78,7 +129,7 @@ def manifest(request):
 
         "background_color": "#F7F9FC",
 
-        "theme_color": "#6577B6",
+        "theme_color": icons["theme_color"],
 
         "lang": "ja",
 
@@ -86,7 +137,7 @@ def manifest(request):
 
             {
                 "src": staticfiles_storage.url(
-                    "pwa/icon-192.png"
+                    f"{folder}/icon-192.png"
                 ),
 
                 "sizes": "192x192",
@@ -98,7 +149,7 @@ def manifest(request):
 
             {
                 "src": staticfiles_storage.url(
-                    "pwa/icon-512.png"
+                    f"{folder}/icon-512.png"
                 ),
 
                 "sizes": "512x512",
@@ -110,7 +161,7 @@ def manifest(request):
 
             {
                 "src": staticfiles_storage.url(
-                    "pwa/icon-maskable.png"
+                    f"{folder}/icon-maskable.png"
                 ),
 
                 "sizes": "512x512",

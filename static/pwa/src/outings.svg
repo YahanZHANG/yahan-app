@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#3FC1C0"/>
+      <stop offset="1" stop-color="#1B6E7A"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE27A"/>
+      <stop offset="1" stop-color="#FF8A3D"/>
+    </linearGradient>
+    <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D6ECF3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="690" cy="330" r="120" fill="url(#sun)"/>
+  <!-- back mountain -->
+  <path d="M120 820 L420 380 Q440 352 460 380 L760 820 Z" fill="#FFFFFF" opacity="0.55"/>
+  <!-- front mountain -->
+  <path d="M300 840 L600 420 Q620 392 640 420 L940 840 Z" fill="url(#mtn)"/>
+  <path d="M552 487 L600 420 Q620 392 640 420 L688 487 L650 470 L620 500 L590 470 Z" fill="#fff"/>
+  <!-- meadow -->
+  <path d="M0 760 C 240 690, 560 700, 1024 800 L1024 1024 L0 1024 Z" fill="#0F5560"/>
+  <!-- pin -->
+  <path d="M300 520 c-70 0 -122 52 -122 120 c0 92 122 210 122 210 s122 -118 122 -210 c0 -68 -52 -120 -122 -120 z" fill="url(#sun)"/>
+  <circle cx="300" cy="640" r="46" fill="#fff"/>
+</svg>

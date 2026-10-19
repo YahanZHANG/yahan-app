@@ -1,13 +1,20 @@
 """
-Yapp のアイコン (static/portal/yapp-icon.png) から
+Yapp のアイコン (static/portal/yapp-icon.png) と
+アプリ別のアイコン (static/pwa/src/*.svg) から
 favicon・ホーム画面用アイコンを作り直すスクリプト。
 
+    pip install cairosvg   # アプリ別アイコンを作るときだけ必要
     python make_pwa_icons.py
 """
 
+import io
+
 from pathlib import Path
 
-from PIL import Image
+from PIL import (
+    Image,
+    ImageDraw,
+)
 
 
 SOURCE = Path(
@@ -107,6 +114,64 @@ opaque(180, scale=1.06).save(OUTPUT_DIR / "apple-touch-icon.png")
 
 # Android の maskable 用 (中央 80% の円に Y が収まるよう縮小)
 opaque(512, scale=0.78).save(OUTPUT_DIR / "icon-maskable.png")
+
+
+# =========================================================
+# アプリ別アイコン (static/pwa/src/<app>.svg -> static/pwa/<app>/)
+# SVG は角丸なしの正方形で描く
+# =========================================================
+
+def render_svg(svg_path, size):
+
+    import cairosvg
+
+    png = cairosvg.svg2png(
+        url=str(svg_path),
+        output_width=size,
+        output_height=size,
+    )
+
+    return Image.open(io.BytesIO(png)).convert("RGBA")
+
+
+def rounded(image):
+
+    mask = Image.new("L", image.size, 0)
+
+    ImageDraw.Draw(mask).rounded_rectangle(
+        (0, 0, image.width - 1, image.height - 1),
+        radius=round(image.width * 0.22),
+        fill=255,
+    )
+
+    result = image.copy()
+    result.putalpha(mask)
+
+    return result
+
+
+for svg_path in sorted((OUTPUT_DIR / "src").glob("*.svg")):
+
+    app_dir = OUTPUT_DIR / svg_path.stem
+    app_dir.mkdir(exist_ok=True)
+
+    rounded(render_svg(svg_path, 32)).save(app_dir / "favicon-32.png")
+
+    rounded(render_svg(svg_path, 256)).save(
+        app_dir / "favicon.ico",
+        sizes=[(16, 16), (32, 32), (48, 48)],
+    )
+
+    rounded(render_svg(svg_path, 192)).save(app_dir / "icon-192.png")
+    rounded(render_svg(svg_path, 512)).save(app_dir / "icon-512.png")
+
+    render_svg(svg_path, 180).convert("RGB").save(
+        app_dir / "apple-touch-icon.png"
+    )
+
+    render_svg(svg_path, 512).convert("RGB").save(
+        app_dir / "icon-maskable.png"
+    )
 
 
 print(

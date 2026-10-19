@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0444A"/>
+      <stop offset="1" stop-color="#A3121B"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E9EEF7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <path d="M0 640 C 260 560, 520 600, 1024 760 L1024 1024 L0 1024 Z" fill="#000" opacity="0.12"/>
+  <!-- newspaper -->
+  <rect x="214" y="250" width="520" height="560" rx="56" fill="url(#paper)"/>
+  <path d="M734 400 h56 a20 20 0 0 1 20 20 v330 a60 60 0 0 1 -60 60 h-16 z" fill="#FFFFFF" opacity="0.85"/>
+  <!-- swiss cross badge -->
+  <rect x="270" y="310" width="170" height="170" rx="34" fill="#E3262E"/>
+  <rect x="337" y="337" width="36" height="116" rx="6" fill="#fff"/>
+  <rect x="297" y="377" width="116" height="36" rx="6" fill="#fff"/>
+  <!-- headline lines -->
+  <rect x="476" y="322" width="200" height="34" rx="17" fill="#2A3550"/>
+  <rect x="476" y="390" width="200" height="26" rx="13" fill="#9AA6BF"/>
+  <rect x="476" y="446" width="150" height="26" rx="13" fill="#9AA6BF"/>
+  <rect x="270" y="540" width="406" height="26" rx="13" fill="#9AA6BF"/>
+  <rect x="270" y="600" width="406" height="26" rx="13" fill="#9AA6BF"/>
+  <rect x="270" y="660" width="300" height="26" rx="13" fill="#9AA6BF"/>
+  <rect x="270" y="720" width="360" height="26" rx="13" fill="#C7CFDF"/>
+</svg>
