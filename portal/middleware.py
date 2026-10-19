@@ -58,6 +58,7 @@ ALLOWED_VIEW_NAMES = {
 
     "pwa_manifest",
     "pwa_service_worker",
+    "favicon",
 
     "news_push_settings",
     "news_push_subscribe",

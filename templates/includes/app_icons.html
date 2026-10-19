@@ -1,0 +1,50 @@
+{% load static %}
+{# Yapp のアイコン・ホーム画面追加の設定。各アプリの base.html の <head> で読み込む。 #}
+
+<link
+    rel="icon"
+    href="{% static 'pwa/favicon.ico' %}"
+    sizes="any"
+>
+
+<link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href="{% static 'pwa/favicon-32.png' %}"
+>
+
+<link
+    rel="manifest"
+    href="{% url 'pwa_manifest' %}?start={{ request.path|urlencode }}"
+>
+
+<link
+    rel="apple-touch-icon"
+    href="{% static 'pwa/apple-touch-icon.png' %}"
+>
+
+<meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+>
+
+<meta
+    name="mobile-web-app-capable"
+    content="yes"
+>
+
+<meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+>
+
+<meta
+    name="apple-mobile-web-app-title"
+    content="Yapp"
+>
+
+<meta
+    name="application-name"
+    content="Yapp"
+>

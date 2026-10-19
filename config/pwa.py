@@ -9,8 +9,14 @@ from django.http import (
     JsonResponse,
 )
 
+from django.urls import (
+    Resolver404,
+    resolve,
+)
+
 from django.views.decorators.http import (
     require_GET,
+    require_safe,
 )
 
 
@@ -18,12 +24,43 @@ from django.views.decorators.http import (
 # PWA Manifest
 # =========================================================
 
+def _start_url(request):
+
+    """
+    ホーム画面に追加したとき、追加したアプリ (例: /news/) から
+    開くようにする。?start= の先頭のパスだけを使う。
+    """
+
+    path = request.GET.get("start", "")
+
+    if not path.startswith("/") or path.startswith("//"):
+        return "/"
+
+    first = path.lstrip("/").split("/", 1)[0]
+
+    if not first or not first.replace("-", "").replace("_", "").isalnum():
+        return "/"
+
+    # /accounts/ のようにトップページがないパスはポータルから開く
+    if first in ("accounts", "password", "admin"):
+        return "/"
+
+    try:
+        resolve(f"/{first}/")
+    except Resolver404:
+        return "/"
+
+    return f"/{first}/"
+
+
 @require_GET
 def manifest(request):
 
+    start_url = _start_url(request)
+
     data = {
 
-        "id": "/",
+        "id": start_url,
 
         "name": "Yapp",
 
@@ -33,7 +70,7 @@ def manifest(request):
             "暮らしをよりよくするための情報やサービスをまとめたYapp"
         ),
 
-        "start_url": "/",
+        "start_url": start_url,
 
         "scope": "/",
 
@@ -104,6 +141,29 @@ def manifest(request):
     response["Cache-Control"] = (
         "no-cache"
     )
+
+    return response
+
+
+# =========================================================
+# Favicon (/favicon.ico を直接取りに来るブラウザ向け)
+# =========================================================
+
+@require_safe
+def favicon(request):
+
+    response = FileResponse(
+
+        open(
+            settings.BASE_DIR / "static" / "pwa" / "favicon.ico",
+            "rb",
+        ),
+
+        content_type="image/x-icon",
+
+    )
+
+    response["Cache-Control"] = "public, max-age=86400"
 
     return response
 
