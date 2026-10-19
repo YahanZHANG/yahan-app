@@ -5088,9 +5088,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 0 4px 18px;
-    color: #6f7c76;
-    font-size: .78rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 18px;
+    padding: 5px 8px 5px 12px;
+    border: 1px solid rgba(111, 124, 118, .14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .55);
+    color: #98a39e;
+    font-size: .7rem;
     line-height: 1.5;
 }
 
@@ -5098,31 +5104,38 @@
     display: none;
 }
 
+/* 「お知らせ」の小さな印 */
 .news-announcement-label {
+    display: flex;
     flex-shrink: 0;
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: #e8efeb;
-    color: #4f6b5e;
-    font-size: .7rem;
-    font-weight: 800;
+    align-items: center;
+    gap: 5px;
+    color: #7f9a8c;
+    font-weight: 700;
+}
+
+.news-announcement-label::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #8fb5a2;
 }
 
 .news-announcement-text {
-    flex: 1;
     min-width: 0;
 }
 
 .news-announcement-close {
     flex-shrink: 0;
-    padding: 0 4px;
+    padding: 0 2px;
     border: 0;
     background: none;
     color: inherit;
-    font-size: 1rem;
+    font-size: .85rem;
     line-height: 1;
     cursor: pointer;
-    opacity: .6;
+    opacity: .5;
 }
 
 .news-announcement-close:hover {

@@ -713,10 +713,11 @@
 
 
 .news-dark .news-announcement {
-    color: #9aa8a1;
+    border-color: rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .03);
+    color: #7f8b85;
 }
 
 .news-dark .news-announcement-label {
-    background: #24302b;
-    color: #b7cbc1;
+    color: #93ab9f;
 }
