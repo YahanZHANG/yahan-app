@@ -3,7 +3,7 @@
 
 <link
     rel="icon"
-    href="{% static 'pwa/favicon.ico' %}"
+    href="{% static pwa_icons.folder|add:'/favicon.ico' %}"
     sizes="any"
 >
 
@@ -11,7 +11,7 @@
     rel="icon"
     type="image/png"
     sizes="32x32"
-    href="{% static 'pwa/favicon-32.png' %}"
+    href="{% static pwa_icons.folder|add:'/favicon-32.png' %}"
 >
 
 <link
@@ -21,7 +21,7 @@
 
 <link
     rel="apple-touch-icon"
-    href="{% static 'pwa/apple-touch-icon.png' %}"
+    href="{% static pwa_icons.folder|add:'/apple-touch-icon.png' %}"
 >
 
 <meta
@@ -41,10 +41,10 @@
 
 <meta
     name="apple-mobile-web-app-title"
-    content="Yapp"
+    content="{{ pwa_icons.name }}"
 >
 
 <meta
     name="application-name"
-    content="Yapp"
+    content="{{ pwa_icons.name }}"
 >

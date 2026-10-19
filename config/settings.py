@@ -146,6 +146,8 @@ TEMPLATES = [
                 "recipes.context_processors.recipe_ui_settings",
                 "swiss_board.context_processors.notification_count",
                 "outings.context_processors.outings_notifications",
+
+                "config.pwa.app_icons",
             ],
         },
     },
