@@ -13,6 +13,10 @@
 
     <meta charset="UTF-8">
 
+    {% if is_staging %}
+        <meta name="robots" content="noindex, nofollow">
+    {% endif %}
+
         
     <!-- =====================================================
         Yapp global theme
@@ -194,6 +198,14 @@
 
 
 <body>
+
+{% if is_staging %}
+    <div
+        style="position: sticky; top: 0; z-index: 2000; padding: 4px 8px; background: #d9534f; color: #fff; font-size: 12px; font-weight: 700; text-align: center;"
+    >
+        テスト環境（一般公開されていません）
+    </div>
+{% endif %}
 
     <main class="{% block main_class %}container app-container page-content{% endblock %}">
 

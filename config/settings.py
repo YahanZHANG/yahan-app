@@ -89,6 +89,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    # テスト環境（APP_ENV=staging）のアクセス制限
+    "config.staging.StagingMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -139,6 +142,7 @@ TEMPLATES = [
                 ),
 
                 "portal.context_processors.admin_attention_counts",
+                "config.staging.staging_context",
                 "portal.theme_context.yapp_theme",
 
                 "travel.context_processors.current_travel_group",
