@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from pathlib import Path
 from unittest import mock
 
+from django.core.cache import cache
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -14,7 +15,7 @@ from outings.models import (
     Event, EventCategory, EventHeart, EventLocation, EventOccurrence, EventSource,
     EventTag, EventfrogOccurrenceLink, OutingsPreference,
 )
-from outings.services import ai_editor, schedule
+from outings.services import ai_editor, schedule, weather
 from outings.services.eventfrog_existing_sync import apply_cancellations
 from outings.services.importer import import_items
 from outings.services.selector import select
@@ -225,10 +226,18 @@ class SchedulerTests(TestCase):
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     },
 )
-class PageTests(TestCase):
+class PageTestCase(TestCase):
 
     def setUp(self):
         self.now = timezone.now()
+        # Never reach the weather API from tests.
+        patcher = mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("offline"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        cache.clear()
+
+
+class PageTests(PageTestCase):
 
     def test_preferences_keep_bern(self):
         self.client.post(reverse("outings:save_preferences"), {"regions": ["BE", "ZH", "XX"], "personalization": "on"})
@@ -308,6 +317,150 @@ class PageTests(TestCase):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 200, name)
 
 
+    def test_about_shows_yapp_and_links_to_the_shared_support_page(self):
+        response = self.client.get(reverse("outings:about_outings"))
+        self.assertContains(response, 'id="support"')
+        self.assertContains(response, reverse("portal:support") + "?from=outings")
+
+    def test_shared_support_page_and_contact_form(self):
+        from news.models import SupportRequest
+        with self.settings(SWISS_NEWS_TWINT_URL="https://pay.example/twint"):
+            response = self.client.get(reverse("portal:support"), {"from": "outings"})
+        self.assertContains(response, "https://pay.example/twint")
+        self.assertContains(response, "おでかけにもどる")
+        self.assertContains(response, reverse("portal:support_contact", args=["bank"]) + "?from=outings")
+        url = reverse("portal:support_contact", args=["bank"])
+        response = self.client.post(url + "?from=outings", {"from": "outings", "bank_country": "ch", "email": "a@example.com"})
+        self.assertRedirects(response, reverse("portal:support") + "?sent=1&from=outings", fetch_redirect_response=False)
+        self.assertEqual(SupportRequest.objects.get().bank_country, "ch")
+        self.assertEqual(self.client.get(reverse("portal:support_contact", args=["nope"])).status_code, 302)
+
+    def test_home_lists_recommended_before_new(self):
+        make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+        html = self.client.get(reverse("outings:home")).content.decode()
+        self.assertLess(html.index("おすすめ"), html.index("新着"))
+
+
+
+
+class FeedbackTests(PageTestCase):
+
+    def test_feedback_is_saved_once_per_minute_and_bots_are_ignored(self):
+        from outings.models import OutingsFeedback
+        url = reverse("outings:about_outings")
+        response = self.client.post(url, {"message": "地図があるとうれしいです"})
+        self.assertRedirects(response, url + "?sent=1#feedback", fetch_redirect_response=False)
+        self.assertEqual(OutingsFeedback.objects.get().message, "地図があるとうれしいです")
+        response = self.client.post(url, {"message": "もう一通"})
+        self.assertRedirects(response, url + "?sent=wait#feedback", fetch_redirect_response=False)
+        self.assertEqual(OutingsFeedback.objects.count(), 1)
+        other = self.client_class()
+        other.post(url, {"message": "spam", "website": "http://spam.example"})
+        self.assertEqual(OutingsFeedback.objects.count(), 1)
+        self.assertContains(self.client.get(url + "?sent=1"), "送信しました")
+
+    def test_yapp_home_links_to_outings(self):
+        self.assertContains(self.client.get(reverse("portal:home")), reverse("outings:home"))
+
+
+class SearchTests(PageTestCase):
+    """Search page: every word must match, ranked by where it matched."""
+
+    def search(self, **params):
+        return self.client.get(reverse("outings:search"), params)
+
+    def test_all_words_must_match_and_synonyms_count(self):
+        make_event("バーゼルのジャズ", start=self.now + timedelta(days=2), canton="BS", city="Basel")
+        make_event("チューリッヒのジャズ", start=self.now + timedelta(days=2))
+        response = self.search(q="Basel jazz")
+        self.assertContains(response, "バーゼルのジャズ")
+        self.assertNotContains(response, "チューリッヒのジャズ")
+        # A German word finds the Japanese one; hiragana finds katakana.
+        make_event("夜のコンサート", start=self.now + timedelta(days=2))
+        self.assertContains(self.search(q="Konzert"), "夜のコンサート")
+        make_event("こどもの工作", start=self.now + timedelta(days=2))
+        self.assertContains(self.search(q="コドモ"), "こどもの工作")
+
+    def test_title_match_ranks_above_description_match(self):
+        make_event("市場の話", start=self.now + timedelta(days=1), summary_ja="クリスマスの話もします")
+        make_event("クリスマスマーケット", start=self.now + timedelta(days=5))
+        html = self.search(q="クリスマス").content.decode()
+        self.assertLess(html.index("クリスマスマーケット"), html.index("市場の話"))
+        html = self.search(q="クリスマス", sort="date").content.decode()
+        self.assertLess(html.index("市場の話"), html.index("クリスマスマーケット"))
+
+    def test_partial_match_when_no_event_has_every_word(self):
+        make_event("ベルンの朝市", start=self.now + timedelta(days=2), canton="BE", city="Bern")
+        response = self.search(q="Bern 花火")
+        self.assertContains(response, "ベルンの朝市")
+        self.assertContains(response, "一部の言葉に一致")
+
+    def test_no_results_suggests_which_condition_to_drop(self):
+        make_event("有料の公演", start=self.now + timedelta(days=2))
+        response = self.search(free="1")
+        self.assertContains(response, "見つかりませんでした")
+        self.assertContains(response, "無料を外す")
+
+    def test_next_weekend_and_regions(self):
+        today = timezone.localdate(self.now)
+        saturday = today + timedelta(days=(5 - today.weekday()) % 7 or 7)
+        if today.weekday() == 6:
+            saturday = today + timedelta(days=6)
+        noon = timezone.make_aware(datetime.combine(saturday + timedelta(days=7), datetime.min.time())) + timedelta(hours=12)
+        make_event("来週末の祭り", start=noon, canton="BE", city="Bern")
+        make_event("明日の講演", start=self.now + timedelta(days=1))
+        response = self.search(when="next_weekend")
+        self.assertContains(response, "来週末の祭り")
+        self.assertNotContains(response, "明日の講演")
+        response = self.search(region=["BE", "ZH"])
+        self.assertContains(response, "来週末の祭り")
+        self.assertContains(response, "明日の講演")
+
+    def test_keyword_also_finds_trips(self):
+        from outings.models import TouristSpot
+        TouristSpot.objects.create(
+            external_id="t1", spot_type=TouristSpot.SpotType.DESTINATION, title_original="Arosa",
+            title_ja="アローザ", summary_ja="山あいのリゾート", official_url="https://example.com",
+            status=TouristSpot.Status.PUBLISHED,
+        )
+        response = self.search(q="あろーざ")
+        self.assertContains(response, "旅行先")
+        self.assertContains(response, "アローザ")
+
+    def test_old_family_parameter_still_works(self):
+        make_event("親子の会", start=self.now + timedelta(days=2), tags=["family"])
+        make_event("大人の会", start=self.now + timedelta(days=2))
+        response = self.search(tag="family")
+        self.assertContains(response, "親子の会")
+        self.assertNotContains(response, "大人の会")
+
+
+class NavigationTests(PageTestCase):
+
+    def test_search_is_in_the_phone_tab_bar_and_marked_active(self):
+        html = self.client.get(reverse("outings:search")).content.decode()
+        tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
+        self.assertIn("tabbar__search active", tabbar)
+        # The events tab is no longer highlighted on the search page.
+        self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
+
+    def test_home_shows_three_recommended_events_without_a_toggle(self):
+        for i in range(5):
+            make_event(f"注目{i}", start=self.now + timedelta(days=i + 1), tier=Event.ListingTier.FEATURED)
+        html = self.client.get(reverse("outings:home")).content.decode()
+        picks = html[html.index("home-picks"):html.index("home-fresh")]
+        self.assertEqual(picks.count('class="discovery-card"'), 3)
+        self.assertNotIn("data-discovery-toggle", html)
+
+    def test_recommended_events_with_photo_come_first(self):
+        make_event("写真なし", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+        make_event("写真あり", start=self.now + timedelta(days=3), tier=Event.ListingTier.FEATURED,
+                   image_url="https://example.com/a.jpg")
+        html = self.client.get(reverse("outings:home")).content.decode()
+        self.assertLess(html.index("写真あり"), html.index("写真なし"))
+        self.assertIn("card-tone--", html)
+
+
 class ScheduleLabelTests(TestCase):
 
     def test_ongoing_label(self):
@@ -319,3 +472,74 @@ class ScheduleLabelTests(TestCase):
         start = timezone.make_aware(datetime(2026, 11, 7, 0, 0))
         label = schedule.occurrence_label(EventOccurrence(start_at=start, end_at=None), start - timedelta(days=1))
         self.assertEqual(label, "11/7（土）")
+
+
+class FakeResponse:
+    def __init__(self, data):
+        self.data = data
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self.data
+
+
+class WeatherTests(TestCase):
+
+    def setUp(self):
+        cache.clear()
+
+    def test_attaches_forecast_for_the_event_day(self):
+        now = timezone.now()
+        event = make_event("屋外フェス", start=now + timedelta(days=2), city="Bern", canton="BE")
+        event.next_occurrence = event.occurrences.get()
+        day = timezone.localdate(event.next_occurrence.start_at).isoformat()
+        responses = {
+            weather.GEOCODE_URL: {"results": [
+                {"country_code": "CH", "admin1": "Bern", "latitude": 46.948, "longitude": 7.447},
+            ]},
+            weather.FORECAST_URL: {"daily": {
+                "time": [day], "weather_code": [61], "temperature_2m_max": [14.4],
+                "temperature_2m_min": [6.2], "precipitation_probability_max": [70],
+            }},
+        }
+        with mock.patch("outings.services.weather.requests.get", side_effect=lambda url, **kw: FakeResponse(responses[url])) as get:
+            weather.attach([event], now)
+            self.assertEqual(event.weather, {"emoji": "🌧️", "label": "小雨", "temp": "14° / 6°", "rain": "70%"})
+            # Coordinates are stored and the forecast is cached.
+            event.location.refresh_from_db()
+            self.assertIsNotNone(event.location.latitude)
+            weather.attach([event], now)
+            self.assertEqual(get.call_count, 2)
+
+    def test_far_future_and_failures_show_nothing(self):
+        now = timezone.now()
+        far = make_event("来月", start=now + timedelta(days=20))
+        far.next_occurrence = far.occurrences.get()
+        soon = make_event("明日", start=now + timedelta(days=1))
+        soon.next_occurrence = soon.occurrences.get()
+        with mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            weather.attach([far, soon], now)
+        self.assertIsNone(far.weather)
+        self.assertIsNone(soon.weather)
+
+    def test_weekend_weather_for_trips(self):
+        from types import SimpleNamespace
+        # Wednesday: this weekend is Saturday and Sunday.
+        wednesday = timezone.make_aware(datetime(2026, 10, 21, 12, 0))
+        self.assertEqual([d.isoformat() for d in weather.weekend_days(wednesday)], ["2026-10-24", "2026-10-25"])
+        sunday = timezone.make_aware(datetime(2026, 10, 25, 9, 0))
+        self.assertEqual([d.isoformat() for d in weather.weekend_days(sunday)], ["2026-10-25"])
+        spot = SimpleNamespace(latitude=46.8, longitude=9.7)
+        no_coords = SimpleNamespace(latitude=None, longitude=None)
+        forecast = {"daily": {
+            "time": ["2026-10-24", "2026-10-25"], "weather_code": [0, 71],
+            "temperature_2m_max": [12, 3], "temperature_2m_min": [2, -4],
+            "precipitation_probability_max": [0, 80],
+        }}
+        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
+            weather.attach_weekend([spot, no_coords], wednesday)
+        self.assertEqual([(d["day"], d["emoji"], d["temp"]) for d in spot.weekend_weather],
+                         [("土", "☀️", "12° / 2°"), ("日", "🌨️", "3° / -4°")])
+        self.assertIsNone(no_coords.weekend_weather)

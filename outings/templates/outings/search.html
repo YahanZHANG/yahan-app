@@ -1,229 +1,192 @@
 {% extends "outings/base.html" %}
 
-{% block title %}イベントを探す | Yapp{% endblock %}
+{% block title %}{% if query %}「{{ query }}」の検索結果{% else %}探す{% endif %} | おでかけ{% endblock %}
 
 {% block content %}
-<div class="outings-search-page">
+<div class="ev-page sx-page">
 
-    <form method="get" action="{% url 'outings:search' %}" class="outings-search-form">
-        {% if preview_mode %}<input type="hidden" name="preview" value="1">{% endif %}
-
-        <!-- =====================================================
-            日付から探す
-            ===================================================== -->
-
-        <section class="outings-date-filter">
-
-            <div class="outings-date-filter-heading">
-                <h2><i class="bi bi-calendar3"></i> 日付から探す</h2>
-                <span>任意</span>
-            </div>
-
-            <div class="outings-date-shortcuts">
-                <button type="button" class="outings-date-shortcut"
-                        data-date-range="this-weekend">今週末</button>
-                <button type="button" class="outings-date-shortcut"
-                        data-date-range="next-weekend">来週末</button>
-                <button type="button" class="outings-date-shortcut"
-                        data-date-range="clear">指定なし</button>
-            </div>
-
-            <div class="outings-date-filter-inputs">
-
-                <label for="outings-date-from">
-                    <span>開始日</span>
-                    <input type="date"
-                        id="outings-date-from"
-                        name="date_from"
-                        lang="ja"
-                        value="{{ date_from|default:'' }}">
-                </label>
-
-                <span class="outings-date-separator">〜</span>
-
-                <label for="outings-date-to">
-                    <span>終了日</span>
-                    <input type="date"
-                        id="outings-date-to"
-                        name="date_to"
-                        lang="ja"
-                        value="{{ date_to|default:'' }}">
-                </label>
-
-            </div>
-
-        </section>
-
-        <section class="outings-region-section">
-            <h2>📍 地域から探す</h2>
-            <div class="outings-region-list">
-                <label class="outings-region-chip {% if not active_region %}selected{% endif %}">
-                    <input type="radio" name="region" value="" {% if not active_region %}checked{% endif %}>
-                    すべて
-                </label>
-                {% for code, name in regions %}
-                <label class="outings-region-chip {% if active_region == code %}selected{% endif %}">
-                    <input type="radio" name="region" value="{{ code }}" {% if active_region == code %}checked{% endif %}>
-                    {{ name }}
-                </label>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section class="outings-category-section">
-            <h2>🎈 カテゴリーから探す</h2>
-            <div class="outings-category-grid">
-                <label class="outings-category-card {% if not active_category %}selected{% endif %}">
-                    <input type="radio" name="category" value="" {% if not active_category %}checked{% endif %}>
-                    <i class="bi bi-grid"></i><span>すべて</span>
-                </label>
-                {% for category in categories %}
-                <label class="outings-category-card {% if active_category == category.slug %}selected{% endif %}">
-                    <input type="radio" name="category" value="{{ category.slug }}" {% if active_category == category.slug %}checked{% endif %}>
-                    <i class="bi bi-grid"></i><span>{{ category.name }}</span>
-                </label>
-                {% endfor %}
-            </div>
-        </section>
-
-        <div class="outings-search-options">
-            <label class="outings-family-choice">
-                <input type="checkbox" name="tag" value="family" {% if family_only %}checked{% endif %}>
-                <span>👶 子どもと一緒に楽しむ <span class="outings-family-description">（子連れ向けだけを表示）</span></span>
-            </label>
-            <label for="outings-q">キーワード</label>
-            <input id="outings-q" type="search" name="q" value="{{ query }}" placeholder="例：クリスマスマーケット、バーゼル、Konzert">
+    {% if preview_mode %}
+        <div class="ev-notice">
+            <strong>管理者プレビュー</strong>：下書きのイベントも表示中
         </div>
+    {% endif %}
 
-        <div class="outings-search-actions">
-            <button type="submit" class="outings-search-submit">この条件で探す</button>
-            <a href="{% url 'outings:search' %}">条件をクリア</a>
-        </div>
+    <!-- Keyword -->
+    <form method="get" action="{% url 'outings:search' %}" class="sx-bar" role="search">
+        {% for key, value in keyword_hidden %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+        <label class="sx-bar__field">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <span class="visually-hidden">キーワード</span>
+            <input
+                type="search"
+                name="q"
+                value="{{ query }}"
+                placeholder="イベント名・街・ジャンル（例：Basel コンサート）"
+                autocomplete="off"
+                enterkeyhint="search"
+                {% if not query %}autofocus{% endif %}
+            >
+        </label>
+        <button type="submit" class="sx-bar__submit">検索</button>
     </form>
 
-    <section class="event-section outings-search-results">
-        <div class="section-heading"><div>
-            <h2>検索結果</h2>
-            <p>{{ result_count }}件のイベントが見つかりました</p>
-        </div></div>
-
-        <div class="ev-list">
-            {% for event in events %}
-                {% include "outings/includes/event_card.html" %}
-            {% empty %}
-                <div class="empty-state">条件に一致するイベントがありません。条件を減らして再検索してみてください。</div>
+    {% if not query %}
+        <div class="sx-suggest" aria-label="よく使われるキーワード">
+            {% for word in suggested_words %}
+                <a href="?q={{ word|urlencode }}" class="sx-suggest__word">{{ word }}</a>
             {% endfor %}
         </div>
-    </section>
+    {% endif %}
+
+    <!-- When -->
+    <nav class="ev-chips ev-chips--period sx-periods" aria-label="期間">
+        {% for chip in chips.periods %}
+            <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <details class="sx-dates"{% if has_dates %} open{% endif %}>
+        <summary>
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            日付を指定する
+        </summary>
+        <form method="get" action="{% url 'outings:search' %}" class="sx-dates__form">
+            {% for key, value in date_hidden %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+            <label>
+                <span>から</span>
+                <input type="date" name="date_from" value="{{ date_from }}">
+            </label>
+            <label>
+                <span>まで</span>
+                <input type="date" name="date_to" value="{{ date_to }}">
+            </label>
+            <button type="submit" class="sx-dates__submit">この日付で探す</button>
+        </form>
+    </details>
+
+    <!-- Region, genre, conditions -->
+    <details class="ev-filters"{% if filters_open %} open{% endif %}>
+        <summary>
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+            地域・ジャンル・条件
+        </summary>
+        <div class="ev-filters__group">
+            <h2>地域</h2>
+            <div class="ev-chips">
+                {% for chip in chips.regions %}
+                    <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
+                        {{ chip.label }}{% if chip.count %} <small>{{ chip.count }}</small>{% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="ev-filters__group">
+            <h2>ジャンル</h2>
+            <div class="ev-chips">
+                {% for chip in chips.categories %}
+                    <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
+                        <span aria-hidden="true">{{ chip.emoji }}</span>{{ chip.label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="ev-filters__group">
+            <h2>条件</h2>
+            <div class="ev-chips">
+                {% for chip in chips.toggles %}
+                    <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
+                        <i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </details>
+
+    <!-- Results -->
+    <div class="sx-summary">
+        <p class="sx-summary__count">
+            {% if query %}「{{ query }}」{% endif %}
+            <strong>{{ result_count }}件</strong>のイベント
+        </p>
+        {% if query and result_count > 1 %}
+            <div class="sx-sort" aria-label="並び順">
+                <a href="?{{ sort_relevance_qs }}" class="{% if not sort %}is-active{% endif %}">関連度順</a>
+                <a href="?{{ sort_date_qs }}" class="{% if sort == 'date' %}is-active{% endif %}">日付順</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if active %}
+        <div class="sx-active" aria-label="指定中の条件">
+            {% for item in active %}
+                <a href="?{{ item.qs }}" class="sx-active__chip" aria-label="{{ item.label }}の条件を外す">
+                    {{ item.label }}<i class="bi bi-x" aria-hidden="true"></i>
+                </a>
+            {% endfor %}
+            <a href="?{{ clear_qs }}" class="sx-active__clear">条件をすべて外す</a>
+        </div>
+    {% endif %}
+
+    {% if partial %}
+        <p class="sx-note">すべての言葉に一致するイベントがなかったため、一部の言葉に一致するものを表示しています。</p>
+    {% endif %}
+
+    {% if trip_cards %}
+        <section class="sx-trips">
+            <h2><i class="bi bi-compass" aria-hidden="true"></i> 旅行先</h2>
+            <ul class="home-fresh__list">
+                {% for card in trip_cards %}
+                    <li>
+                        <a href="{% url 'outings:tourist_spot_detail' card.id %}">
+                            <span class="home-fresh__kind home-fresh__kind--trip">{{ card.label }}</span>
+                            <span class="home-fresh__text">
+                                <strong>{{ card.title }}</strong>
+                                {% if card.summary %}<small>{{ card.summary|truncatechars:50 }}</small>{% endif %}
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    <div class="ev-list sx-results">
+        {% for event in events %}
+            {% include "outings/includes/event_card.html" %}
+        {% empty %}
+            <div class="ev-empty sx-empty">
+                <p class="sx-empty__title">条件に合うイベントが見つかりませんでした。</p>
+                {% if relax %}
+                    <p>次の条件を外すと見つかります。</p>
+                    <ul class="sx-empty__relax">
+                        {% for item in relax %}
+                            <li><a href="?{{ item.qs }}">{{ item.label }}を外す<small>{{ item.count }}件</small></a></li>
+                        {% endfor %}
+                    </ul>
+                {% elif query %}
+                    <p>別の言葉や、ドイツ語・英語でも試してみてください。</p>
+                {% endif %}
+                <a href="{% url 'outings:event_home' %}" class="sx-empty__all">すべてのイベントを見る</a>
+            </div>
+        {% endfor %}
+    </div>
 
     {% if page_obj.has_other_pages %}
         <nav class="ev-pager" aria-label="検索結果のページ切り替え">
             {% if page_obj.has_previous %}
-                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left"></i>前へ</a>
+                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left" aria-hidden="true"></i>前へ</a>
             {% endif %}
             <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right"></i></a>
+                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
             {% endif %}
         </nav>
     {% endif %}
+
 </div>
-<script>
-    document.querySelectorAll('.outings-search-form input[type="radio"]').forEach((input) => {
-        input.addEventListener('change', () => {
-            document.querySelectorAll('.outings-search-form label.selected').forEach((label) => label.classList.remove('selected'));
-            document.querySelectorAll('.outings-search-form input[type="radio"]:checked').forEach((checked) => checked.closest('label').classList.add('selected'));
-        });
-    });
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    const startInput = document.getElementById("outings-date-from");
-    const endInput = document.getElementById("outings-date-to");
-
-    const buttons = document.querySelectorAll(
-        ".outings-date-shortcut"
-    );
-
-    if (!startInput || !endInput) return;
-
-    function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-
-        return `${year}-${month}-${day}`;
-    }
-
-    function getSaturday(weekOffset = 0) {
-        const today = new Date();
-        today.setHours(12, 0, 0, 0);
-
-        const weekday = today.getDay();
-        const daysUntilSaturday = (6 - weekday + 7) % 7;
-
-        today.setDate(
-            today.getDate() + daysUntilSaturday + weekOffset * 7
-        );
-
-        return today;
-    }
-
-    function refreshSelected() {
-        buttons.forEach(button => {
-            const range = button.dataset.dateRange;
-            let selected = false;
-
-            if (range === "clear") {
-                selected = !startInput.value && !endInput.value;
-            } else {
-                const saturday = getSaturday(
-                    range === "next-weekend" ? 1 : 0
-                );
-
-                const sunday = new Date(saturday);
-                sunday.setDate(saturday.getDate() + 1);
-
-                selected =
-                    startInput.value === formatDate(saturday) &&
-                    endInput.value === formatDate(sunday);
-            }
-
-            button.classList.toggle("is-selected", selected);
-        });
-    }
-
-    buttons.forEach(button => {
-        button.addEventListener("click", () => {
-
-            const range = button.dataset.dateRange;
-
-            if (range === "clear") {
-                startInput.value = "";
-                endInput.value = "";
-            } else {
-                const saturday = getSaturday(
-                    range === "next-weekend" ? 1 : 0
-                );
-
-                const sunday = new Date(saturday);
-                sunday.setDate(saturday.getDate() + 1);
-
-                startInput.value = formatDate(saturday);
-                endInput.value = formatDate(sunday);
-            }
-
-            refreshSelected();
-        });
-    });
-
-    startInput.addEventListener("change", refreshSelected);
-    endInput.addEventListener("change", refreshSelected);
-
-    refreshSelected();
-});
-</script>
-
 {% endblock %}

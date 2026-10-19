@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ config.title }} | Yapp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal/public_home.css' %}">
+<link rel="stylesheet" href="{% static 'portal/theme.css' %}">
+<link rel="stylesheet" href="{% static 'portal/support.css' %}">
+{% endblock %}
+
+{% block main_class %}yapp-public-home{% endblock %}
+
+{% block content %}
+<div class="yapp-public-page yapp-support">
+
+    {% include "portal/includes/support_header.html" %}
+
+    <section class="yapp-support__intro">
+        <a class="yapp-support__crumb" href="{% url 'portal:support' %}{% if origin %}?from={{ origin.key }}{% endif %}">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Yappを応援する
+        </a>
+        <h1>{{ config.title }}</h1>
+        <p>{{ config.description }}</p>
+    </section>
+
+    <form method="post" class="yapp-support__card yapp-support__form">
+        {% csrf_token %}
+        {% if origin %}<input type="hidden" name="from" value="{{ origin.key }}">{% endif %}
+
+        {% for error in form.non_field_errors %}
+            <p class="yapp-support__error">{{ error }}</p>
+        {% endfor %}
+
+        {% if method == "bank" %}
+            <fieldset class="yapp-support__field">
+                <legend>どちらの銀行口座をご希望ですか？</legend>
+                <div class="yapp-support__banks">
+                    {% for choice in form.bank_country %}
+                        <label class="yapp-support__bank">
+                            {{ choice.tag }}
+                            <span aria-hidden="true">{% if choice.data.value == "ch" %}🇨🇭{% else %}🇯🇵{% endif %}</span>
+                            <span>
+                                <strong>{{ choice.choice_label }}</strong>
+                                <small>{% if choice.data.value == "ch" %}CHFでのお振込み{% else %}日本円でのお振込み{% endif %}</small>
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% for error in form.bank_country.errors %}<p class="yapp-support__error">{{ error }}</p>{% endfor %}
+            </fieldset>
+        {% endif %}
+
+        <div class="yapp-support__field">
+            <label for="{{ form.name.id_for_label }}">お名前 <small>（任意）</small></label>
+            {{ form.name }}
+            {% for error in form.name.errors %}<p class="yapp-support__error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="yapp-support__field">
+            <label for="{{ form.email.id_for_label }}">メールアドレス</label>
+            {{ form.email }}
+            {% for error in form.email.errors %}<p class="yapp-support__error">{{ error }}</p>{% endfor %}
+        </div>
+
+        {% if method == "other" %}
+            <div class="yapp-support__field">
+                <label for="{{ form.message.id_for_label }}">応援方法・メッセージ <small>（任意）</small></label>
+                {{ form.message }}
+                {% for error in form.message.errors %}<p class="yapp-support__error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <p class="yapp-support__note">いただいたメールアドレスは、このお問い合わせへのご連絡にだけ使います。</p>
+        <button type="submit" class="yapp-support__submit">送信する</button>
+    </form>
+</div>
+{% endblock %}

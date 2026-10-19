@@ -1165,3 +1165,23 @@ class TouristSpotComment(models.Model):
             f"Tourist comment {self.pk} "
             f"on spot {self.spot_id}"
         )
+
+
+# =========================================================
+# Feedback
+# =========================================================
+
+class OutingsFeedback(models.Model):
+    """Anonymous ideas and requests sent from the About page."""
+
+    message = models.TextField("ご意見・ご要望", max_length=1000)
+    created_at = models.DateTimeField("送信日時", auto_now_add=True)
+    is_read = models.BooleanField("確認済み", default=False)
+
+    class Meta:
+        verbose_name = "おでかけ ご意見"
+        verbose_name_plural = "おでかけ ご意見"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message[:50]

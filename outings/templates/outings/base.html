@@ -63,152 +63,88 @@
 <div class="outings-app">
 
         
+    {% with name=request.resolver_match.url_name %}
     <header class="outings-header">
-
         <div class="outings-header-inner">
-
             <a href="{% url 'outings:home' %}" class="outings-brand">
                 <span class="brand-icon">🎈</span>
-
                 <span>
                     <strong>おでかけ</strong>
                     <small>スイスの週末をもっと楽しく</small>
                 </span>
             </a>
-                        
-            <a
-                href="{% url 'outings:search' %}"
-                class="outings-mobile-search"
-                aria-label="イベントを検索"
-                title="探す"
-            >
-                <i class="bi bi-search"></i>
-            </a>
 
-                        
-                        
             <nav class="outings-desktop-nav" aria-label="PCメニュー">
-
-                <a
-                    href="{% url 'outings:home' %}"
-                    class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-                >
-                    <i class="bi bi-house"></i>
-                    HOME
+                <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}">
+                    <i class="bi bi-house" aria-hidden="true"></i>HOME
                 </a>
-
-                <a
-                    href="{% url 'outings:event_home' %}"
-                    class="{% if request.resolver_match.url_name == 'event_home' or request.resolver_match.url_name == 'event_detail' or request.resolver_match.url_name == 'search' %}active{% endif %}"
-                >
-                    <i class="bi bi-calendar-event" aria-hidden="true"></i>
-                    イベント
+                <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
+                    <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
                 </a>
-
-                <a
-                    href="{% url 'outings:tourist_spot_list' %}"
-                    class="{% if request.resolver_match.url_name == 'tourist_spot_list' or request.resolver_match.url_name == 'tourist_spot_detail' %}active{% endif %}"
-                >
-                    <i class="bi bi-compass" aria-hidden="true"></i>
-                    旅行
+                <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
+                    <i class="bi bi-compass" aria-hidden="true"></i>旅行
                 </a>
-
-                <a
-                    href="{% url 'outings:saved_all' %}"
-                    class="{% if request.resolver_match.url_name == 'saved_all' or request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
-                >
-                    <i class="bi bi-heart"></i>
-                    お気に入り
+                <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
+                    <i class="bi bi-heart" aria-hidden="true"></i>お気に入り
                 </a>
-
-                <a
-                    href="{% url 'outings:my_page' %}"
-                    class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
-                >
-                    <i class="bi bi-person"></i>
-                    マイページ
-
-                    {% if outings_unread_count > 0 %}
-                        <span class="outings-nav-badge">
-                            {{ outings_unread_count }}
-                        </span>
-                    {% endif %}
-                </a>
-                                
-                <a
-                    href="{% url 'outings:search' %}"
-                    class="outings-search-nav {% if request.resolver_match.url_name == 'search' %}active{% endif %}"
-                >
-                    <i class="bi bi-search"></i>
-                    <span>探す</span>
-                </a>
-
-
             </nav>
 
+            {% if name != 'search' %}
+                <form class="nav-search" action="{% url 'outings:search' %}" method="get" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" name="q" placeholder="イベント・旅行先を探す" aria-label="イベント・旅行先を探す" enterkeyhint="search">
+                    <a href="{% url 'outings:search' %}" class="nav-search__more" title="日付・地域・ジャンルで探す">
+                        <i class="bi bi-sliders" aria-hidden="true"></i>
+                        <span>詳しく探す</span>
+                    </a>
+                </form>
+            {% endif %}
 
-
+            <a
+                href="{% url 'outings:my_page' %}"
+                class="nav-me{% if name == 'my_page' or name == 'my_notifications' or name == 'my_preferences' or name == 'about_outings' %} active{% endif %}"
+                aria-label="マイページ{% if outings_unread_count > 0 %}（未読{{ outings_unread_count }}件）{% endif %}"
+            >
+                <span class="nav-me__icon">
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    {% if outings_unread_count > 0 %}
+                        <span class="nav-badge">{{ outings_unread_count }}</span>
+                    {% endif %}
+                </span>
+                <span class="nav-me__label">マイページ</span>
+            </a>
         </div>
-
     </header>
-
 
     <main class="outings-main">
         {% block content %}{% endblock %}
     </main>
 
         
-    <nav class="outings-bottom-nav" aria-label="メインメニュー">
-
-        <a
-            href="{% url 'outings:home' %}"
-            class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-        >
-            <i class="bi bi-house"></i>
+    <!-- Phone: the five places people go most, search in the middle. -->
+    <nav class="outings-bottom-nav tabbar" aria-label="メインメニュー">
+        <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}"{% if name == 'home' %} aria-current="page"{% endif %}>
+            <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>HOME</span>
         </a>
-
-        <a
-            href="{% url 'outings:event_home' %}"
-            class="{% if request.resolver_match.url_name == 'event_home' or request.resolver_match.url_name == 'event_detail' or request.resolver_match.url_name == 'search' %}active{% endif %}"
-        >
-            <i class="bi bi-calendar-event"></i>
+        <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
+            <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>イベント</span>
         </a>
-
-        <a
-            href="{% url 'outings:tourist_spot_list' %}"
-            class="{% if request.resolver_match.url_name == 'tourist_spot_list' or request.resolver_match.url_name == 'tourist_spot_detail' %}active{% endif %}"
-        >
-            <i class="bi bi-compass" aria-hidden="true"></i>
+        <a href="{% url 'outings:search' %}" class="tabbar__search{% if name == 'search' %} active{% endif %}">
+            <span class="tabbar__search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+            <span>探す</span>
+        </a>
+        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
+            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>旅行</span>
         </a>
-
-        <a
-            href="{% url 'outings:saved_all' %}"
-            class="{% if request.resolver_match.url_name == 'saved_all' or request.resolver_match.url_name == 'saved_events' %}active{% endif %}"
-        >
-            <i class="bi bi-heart"></i>
+        <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
+            <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>お気に入り</span>
         </a>
-
-        <a
-            href="{% url 'outings:my_page' %}"
-            class="{% if request.resolver_match.url_name == 'my_page' or request.resolver_match.url_name == 'my_notifications' %}active{% endif %}"
-        >
-            <span class="outings-nav-icon-wrap">
-                <i class="bi bi-person"></i>
-
-                {% if outings_unread_count > 0 %}
-                    <span class="outings-nav-badge">
-                        {{ outings_unread_count }}
-                    </span>
-                {% endif %}
-            </span>
-            <span>マイページ</span>
-        </a>
-
     </nav>
+    {% endwith %}
 
 
 </div>

@@ -17,25 +17,14 @@
                     onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
                 >
 
-                <div
-                    class="discovery-card-placeholder"
-                    hidden
-                >
-                    {% if card.kind == 'event' %}
-                        <i class="bi bi-calendar-event"></i>
-                    {% else %}
-                        <i class="bi bi-mountains"></i>
-                    {% endif %}
+                <div class="discovery-card-placeholder card-tone card-tone--{{ card.tone|default:'default' }}" hidden>
+                    <span class="card-tone__emoji" aria-hidden="true">{{ card.emoji|default:"🎈" }}</span>
                 </div>
 
             {% else %}
 
-                <div class="discovery-card-placeholder">
-                    {% if card.kind == 'event' %}
-                        <i class="bi bi-calendar-event"></i>
-                    {% else %}
-                        <i class="bi bi-mountains"></i>
-                    {% endif %}
+                <div class="discovery-card-placeholder card-tone card-tone--{{ card.tone|default:'default' }}">
+                    <span class="card-tone__emoji" aria-hidden="true">{{ card.emoji|default:"🎈" }}</span>
                 </div>
 
             {% endif %}
@@ -76,6 +65,22 @@
             {% elif card.location %}
                 <p class="discovery-card-meta">
                     {{ card.location }}
+                </p>
+            {% endif %}
+
+            {% if card.weather %}
+                {% include "outings/includes/weather.html" with weather=card.weather %}
+            {% elif card.weekend_weather %}
+                <p class="ev-weather ev-weather--weekend">
+                    <span class="ev-weather__title">週末の天気</span>
+                    {% for day in card.weekend_weather %}
+                        <span class="ev-weather__day">
+                            <b>{{ day.day }}</b>
+                            <span aria-hidden="true">{{ day.emoji }}</span>
+                            <span class="visually-hidden">{{ day.label }}</span>
+                            {% if day.temp %}{{ day.temp }}{% endif %}
+                        </span>
+                    {% endfor %}
                 </p>
             {% endif %}
 
