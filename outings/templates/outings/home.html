@@ -69,30 +69,55 @@
                 <p>最近追加されたイベントと旅行</p>
             </div>
         </div>
-        <ul class="home-fresh__list">
-            {% for card in fresh_cards|slice:":8" %}
-                <li>
-                    <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
-                        <span class="home-fresh__kind home-fresh__kind--{{ card.kind }}">
-                            {% if card.kind == 'event' %}イベント{% else %}旅行{% endif %}
-                        </span>
-                        <span class="home-fresh__text">
-                            <strong>{{ card.title }}</strong>
-                            {% if card.date_label or card.location %}
-                                <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
-                            {% endif %}
-                        </span>
-                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                    </a>
-                </li>
-            {% empty %}
-                <li class="empty-state">新しい情報を準備中です。</li>
-            {% endfor %}
-        </ul>
-        <div class="home-fresh__more">
-            <a href="{% url 'outings:event_home' %}">イベントをすべて見る</a>
-            <a href="{% url 'outings:tourist_spot_list' %}">旅行先をすべて見る</a>
-        </div>
+        {% if fresh_event_cards %}
+            <h3 class="home-picks__label">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
+                <a href="{% url 'outings:event_home' %}">すべて見る</a>
+            </h3>
+            <ul class="home-fresh__list">
+                {% for card in fresh_event_cards %}
+                    <li>
+                        <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
+                            <span class="home-fresh__text">
+                                <strong>{{ card.title }}</strong>
+                                {% if card.date_label or card.location %}
+                                    <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
+                                {% elif card.label %}
+                                    <small>{{ card.label }}</small>
+                                {% endif %}
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if fresh_trip_cards %}
+            <h3 class="home-picks__label">
+                <i class="bi bi-compass" aria-hidden="true"></i>旅行
+                <a href="{% url 'outings:tourist_spot_list' %}">すべて見る</a>
+            </h3>
+            <ul class="home-fresh__list">
+                {% for card in fresh_trip_cards %}
+                    <li>
+                        <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
+                            <span class="home-fresh__text">
+                                <strong>{{ card.title }}</strong>
+                                {% if card.date_label or card.location %}
+                                    <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
+                                {% elif card.label %}
+                                    <small>{{ card.label }}</small>
+                                {% endif %}
+                            </span>
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if not fresh_event_cards and not fresh_trip_cards %}
+            <p class="empty-state">新しい情報を準備中です。</p>
+        {% endif %}
     </section>
 
     <!-- About Yapp and support -->

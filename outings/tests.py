@@ -460,6 +460,19 @@ class NavigationTests(PageTestCase):
         self.assertLess(html.index("写真あり"), html.index("写真なし"))
         self.assertIn("card-tone--", html)
 
+    def test_new_items_are_grouped_into_events_and_trips(self):
+        make_event("新しいイベント", start=self.now + timedelta(days=2))
+        TouristSpot.objects.create(
+            external_id="t1", spot_type=TouristSpot.SpotType.DESTINATION, title_original="Arosa",
+            title_ja="新しい旅行先", official_url="https://example.com", status=TouristSpot.Status.PUBLISHED,
+        )
+        html = self.client.get(reverse("outings:home")).content.decode()
+        fresh = html[html.index('home-fresh"'):html.index("home-about")]
+        self.assertEqual(fresh.count('class="home-fresh__list"'), 2)
+        self.assertLess(fresh.index("bi-calendar-event"), fresh.index("新しいイベント"))
+        self.assertLess(fresh.index("新しいイベント"), fresh.index("bi-compass"))
+        self.assertLess(fresh.index("bi-compass"), fresh.index("新しい旅行先"))
+
 
 class ScheduleLabelTests(TestCase):
 
