@@ -70,6 +70,18 @@
 
             {% if card.weather %}
                 {% include "outings/includes/weather.html" with weather=card.weather %}
+            {% elif card.weekend_weather %}
+                <p class="ev-weather ev-weather--weekend">
+                    <span class="ev-weather__title">週末の天気</span>
+                    {% for day in card.weekend_weather %}
+                        <span class="ev-weather__day">
+                            <b>{{ day.day }}</b>
+                            <span aria-hidden="true">{{ day.emoji }}</span>
+                            <span class="visually-hidden">{{ day.label }}</span>
+                            {% if day.temp %}{{ day.temp }}{% endif %}
+                        </span>
+                    {% endfor %}
+                </p>
             {% endif %}
 
             {% if card.summary %}

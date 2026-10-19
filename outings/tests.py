@@ -433,6 +433,14 @@ class NavigationTests(PageTestCase):
         # The events tab is no longer highlighted on the search page.
         self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
 
+    def test_home_shows_three_recommended_events_without_a_toggle(self):
+        for i in range(5):
+            make_event(f"注目{i}", start=self.now + timedelta(days=i + 1), tier=Event.ListingTier.FEATURED)
+        html = self.client.get(reverse("outings:home")).content.decode()
+        picks = html[html.index("home-picks"):html.index("home-fresh")]
+        self.assertEqual(picks.count('class="discovery-card"'), 3)
+        self.assertNotIn("data-discovery-toggle", html)
+
     def test_recommended_events_with_photo_come_first(self):
         make_event("写真なし", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
         make_event("写真あり", start=self.now + timedelta(days=3), tier=Event.ListingTier.FEATURED,
@@ -504,3 +512,23 @@ class WeatherTests(TestCase):
             weather.attach([far, soon], now)
         self.assertIsNone(far.weather)
         self.assertIsNone(soon.weather)
+
+    def test_weekend_weather_for_trips(self):
+        from types import SimpleNamespace
+        # Wednesday: this weekend is Saturday and Sunday.
+        wednesday = timezone.make_aware(datetime(2026, 10, 21, 12, 0))
+        self.assertEqual([d.isoformat() for d in weather.weekend_days(wednesday)], ["2026-10-24", "2026-10-25"])
+        sunday = timezone.make_aware(datetime(2026, 10, 25, 9, 0))
+        self.assertEqual([d.isoformat() for d in weather.weekend_days(sunday)], ["2026-10-25"])
+        spot = SimpleNamespace(latitude=46.8, longitude=9.7)
+        no_coords = SimpleNamespace(latitude=None, longitude=None)
+        forecast = {"daily": {
+            "time": ["2026-10-24", "2026-10-25"], "weather_code": [0, 71],
+            "temperature_2m_max": [12, 3], "temperature_2m_min": [2, -4],
+            "precipitation_probability_max": [0, 80],
+        }}
+        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
+            weather.attach_weekend([spot, no_coords], wednesday)
+        self.assertEqual([(d["day"], d["emoji"], d["temp"]) for d in spot.weekend_weather],
+                         [("土", "☀️", "12° / 2°"), ("日", "🌨️", "3° / -4°")])
+        self.assertIsNone(no_coords.weekend_weather)

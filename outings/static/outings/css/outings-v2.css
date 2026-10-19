@@ -1392,3 +1392,38 @@ html[data-outings-theme="dark"] .card-tone.card-tone--trip { --tone-a: #1f3542; 
     color: #c53c58;
     font-size: .875rem;
 }
+
+/* ---------- HOME: recommended rows ---------- */
+
+.home-picks__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 10px;
+    font-size: .9375rem;
+}
+
+.home-picks__label a {
+    margin-left: auto;
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--outings-accent);
+}
+
+.home-picks .discovery-card-track + .home-picks__label {
+    margin-top: 22px;
+}
+
+.ev-weather--weekend {
+    gap: 4px 10px;
+}
+
+.ev-weather__title {
+    color: var(--outings-muted);
+    font-size: .75rem;
+}
+
+.ev-weather__day b {
+    margin-right: 2px;
+    font-weight: 700;
+}

@@ -19,8 +19,9 @@
         </div>
     </section>
 
-    <!-- Recommended first: the main reason to open the app. -->
-    <section class="discovery-section" data-discovery-section>
+    <!-- Recommended first: the main reason to open the app.
+         One row of events, one row of trips. -->
+    <section class="discovery-section home-picks">
         <div class="discovery-section-heading">
             <div>
                 <h2>
@@ -29,23 +30,32 @@
                 </h2>
                 <p>注目のイベントと魅力的な旅行先</p>
             </div>
-            <button
-                type="button"
-                class="discovery-expand-button"
-                data-discovery-toggle
-                aria-expanded="false"
-            >
-                一覧を見る
-                <i class="bi bi-chevron-down"></i>
-            </button>
         </div>
-        <div class="discovery-card-track" data-discovery-track>
-            {% for card in recommended_cards %}
-                {% include "outings/includes/discovery_card.html" %}
-            {% empty %}
-                <p class="empty-state">おすすめを準備中です。</p>
-            {% endfor %}
-        </div>
+        {% if recommended_event_cards %}
+            <h3 class="home-picks__label">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
+                <a href="{% url 'outings:event_home' %}">すべて見る</a>
+            </h3>
+            <div class="discovery-card-track">
+                {% for card in recommended_event_cards %}
+                    {% include "outings/includes/discovery_card.html" %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if recommended_trip_cards %}
+            <h3 class="home-picks__label">
+                <i class="bi bi-compass" aria-hidden="true"></i>旅行
+                <a href="{% url 'outings:tourist_spot_list' %}">すべて見る</a>
+            </h3>
+            <div class="discovery-card-track">
+                {% for card in recommended_trip_cards %}
+                    {% include "outings/includes/discovery_card.html" %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if not recommended_event_cards and not recommended_trip_cards %}
+            <p class="empty-state">おすすめを準備中です。</p>
+        {% endif %}
     </section>
 
     <!-- New: a compact list. -->
@@ -96,19 +106,4 @@
     </a>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("[data-discovery-section]").forEach(section => {
-        const button = section.querySelector("[data-discovery-toggle]");
-        if (!button) return;
-        button.addEventListener("click", () => {
-            const expanded = section.classList.toggle("is-expanded");
-            button.setAttribute("aria-expanded", String(expanded));
-            button.innerHTML = expanded
-                ? '閉じる <i class="bi bi-chevron-up"></i>'
-                : '一覧を見る <i class="bi bi-chevron-down"></i>';
-        });
-    });
-});
-</script>
 {% endblock %}

@@ -175,8 +175,28 @@ def attach(events, now=None):
     if not wanted:
         return events
 
+    forecasts = _forecasts(point for _, point, _ in wanted)
+    for event, point, day in wanted:
+        event.weather = describe(forecasts.get(point, {}).get(day))
+    return events
+
+
+WEEKDAYS_JA = "月火水木金土日"
+
+
+def weekend_days(now=None):
+    """This week's Saturday and Sunday (only Sunday when today is Sunday)."""
+    today = timezone.localdate(now or timezone.now())
+    if today.weekday() == 6:
+        return [today]
+    saturday = today + timedelta(days=(5 - today.weekday()) % 7)
+    return [saturday, saturday + timedelta(days=1)]
+
+
+def _forecasts(points):
+    """Cached daily forecasts for (lat, lon) points, fetching the missing ones together."""
     forecasts, missing = {}, []
-    for point in dict.fromkeys(point for _, point, _ in wanted):
+    for point in dict.fromkeys(points):
         hit = cache.get(f"outings-wx:{point[0]}:{point[1]}")
         if hit is None:
             missing.append(point)
@@ -186,6 +206,26 @@ def attach(events, now=None):
         for point, days in _fetch(missing).items():
             cache.set(f"outings-wx:{point[0]}:{point[1]}", days, CACHE_SECONDS)
             forecasts[point] = days
-    for event, point, day in wanted:
-        event.weather = describe(forecasts.get(point, {}).get(day))
-    return events
+    return forecasts
+
+
+def attach_weekend(spots, now=None):
+    """Set `spot.weekend_weather` to [{day, emoji, label, temp, rain}, ...] for trips with coordinates."""
+    days = weekend_days(now)
+    wanted = []
+    for spot in spots:
+        spot.weekend_weather = None
+        if spot.latitude is None or spot.longitude is None:
+            continue
+        wanted.append((spot, (_round(spot.latitude), _round(spot.longitude))))
+    if not wanted:
+        return spots
+    forecasts = _forecasts(point for _, point in wanted)
+    for spot, point in wanted:
+        rows = []
+        for day in days:
+            text = describe(forecasts.get(point, {}).get(day.isoformat()))
+            if text:
+                rows.append({"day": WEEKDAYS_JA[day.weekday()], **text})
+        spot.weekend_weather = rows or None
+    return spots

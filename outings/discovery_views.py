@@ -28,6 +28,9 @@ from .visitor import (
 )
 
 
+RECOMMENDED_PER_KIND = 3
+
+
 # =========================================================
 # Available events
 # =========================================================
@@ -345,7 +348,7 @@ def home(request):
         ),
         # Events with a photo first: they lead the HOME carousel.
         key=lambda event: (not event.image_url, event.upcoming_dates[0].start_at),
-    )[:12]
+    )[:RECOMMENDED_PER_KIND]
 
     # Weather for the date and place of each recommended event.
     for event in recommended_events:
@@ -402,17 +405,22 @@ def home(request):
         ],
     )
 
-    recommended_cards = interleave_cards(
-        [
-            make_event_card(event)
-            for event in recommended_events
-        ],
-        # Trips with a photo first, keeping the score order otherwise.
-        sorted(
-            (make_trip_card(spot) for spot in recommended_trips),
-            key=lambda card: not card["has_image"],
-        ),
-    )
+    # One row of events, one row of trips; trips with a photo first.
+    recommended_event_cards = [
+        make_event_card(event)
+        for event in recommended_events
+    ]
+    chosen_trips = sorted(
+        ((make_trip_card(spot), spot) for spot in recommended_trips),
+        key=lambda pair: not pair[0]["has_image"],
+    )[:RECOMMENDED_PER_KIND]
+    # This weekend's weather at each recommended trip.
+    weather.attach_weekend([spot for _, spot in chosen_trips], now)
+    recommended_trip_cards = []
+    for card, spot in chosen_trips:
+        card["weekend_weather"] = spot.weekend_weather
+        recommended_trip_cards.append(card)
+    recommended_cards = recommended_event_cards + recommended_trip_cards
 
     # =====================================================
     # Collect displayed IDs
@@ -497,9 +505,8 @@ def home(request):
         "outings/home.html",
         {
             "fresh_cards": fresh_cards,
-            "recommended_cards": recommended_cards,
-            "fresh_preview_count": 6,
-            "recommended_preview_count": 6,
+            "recommended_event_cards": recommended_event_cards,
+            "recommended_trip_cards": recommended_trip_cards,
         },
     )
 
