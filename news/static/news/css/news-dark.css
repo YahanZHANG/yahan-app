@@ -173,6 +173,10 @@
     color: var(--news-dark-accent);
 }
 
+.news-dark .news-source-label {
+    color: var(--news-dark-body);
+}
+
 .news-dark .news-card-footer {
     border-color: var(--news-dark-border-soft);
 }

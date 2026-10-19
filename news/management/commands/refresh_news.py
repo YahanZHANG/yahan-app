@@ -1,5 +1,15 @@
+import os
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.utils import timezone
+
+from news.push_sender import (
+    send_news_push_for_batch,
+)
+from news.services.deduplicator import (
+    ready_articles,
+)
 
 class Command(BaseCommand):
     help = (
@@ -70,6 +80,15 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--skip-push",
+            action="store_true",
+            help=(
+                "Do not send push notifications "
+                "after the refresh."
+            ),
+        )
+
+        parser.add_argument(
             "--skip-digest",
             action="store_true",
             help=(
@@ -88,10 +107,11 @@ class Command(BaseCommand):
         # =====================================================
         # Refresh start time
         #
-        # Region classification will only process articles
-        # fetched after this timestamp.
+        # Push通知の新着件数はこの時刻以降に
+        # 取得された記事で数える。
         # =====================================================
 
+        started_at = timezone.now()
 
         self.stdout.write(
             ""
@@ -121,7 +141,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "1/9 Fetch RSS news",
+            "1/10 Fetch RSS news",
             "fetch_news",
             limit=options["feed_limit"],
         )
@@ -136,7 +156,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "2/9 Fetch webpage news",
+            "2/10 Fetch webpage news",
             "fetch_web_news",
             limit=options["web_limit"],
         )
@@ -147,7 +167,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "3/9 Fetch admin.ch news",
+            "3/10 Fetch admin.ch news",
             "fetch_admin_news",
             limit=options["admin_limit"],
         )
@@ -158,7 +178,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "4/9 Remove non-news content",
+            "4/10 Remove non-news content",
             "cleanup_non_news",
         )
 
@@ -170,7 +190,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "5/9 Remove old articles",
+            "5/10 Remove old articles",
             "cleanup_news",
         )
 
@@ -182,7 +202,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "6/9 Classify Japanese news",
+            "6/10 Classify Japanese news",
             "classify_japanese_news",
         )
 
@@ -195,14 +215,26 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "7/9 Translate and classify news",
+            "7/10 Translate and classify news",
             "enrich_news",
             limit=options["ai_limit"],
         )
 
 
         # ========================================
-        # 8. Region classification
+        # 8. Merge duplicates
+        #
+        # 同じ出来事を扱う記事を1つにまとめる。
+        # ========================================
+
+        self._run_step(
+            "8/10 Merge duplicate news",
+            "dedupe_news",
+        )
+
+
+        # ========================================
+        # 9. Region classification
         #
         # このrefresh開始後に取得された
         # 新しい記事のみ地域分類する。
@@ -211,13 +243,13 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "8/9 Classify news regions",
+            "9/10 Classify news regions",
             "assign_news_regions",
         )
 
 
         # ========================================
-        # 9. Digest
+        # 10. Digest
         # ========================================
 
         if options["skip_digest"]:
@@ -228,7 +260,7 @@ class Command(BaseCommand):
 
             self.stdout.write(
                 self.style.WARNING(
-                    "9/9 News digest skipped."
+                    "10/10 News digest skipped."
                 )
             )
 
@@ -245,9 +277,36 @@ class Command(BaseCommand):
 
 
             self._run_step(
-                "9/9 Generate news digest",
+                "10/10 Generate news digest",
                 "generate_news_digest",
                 **digest_options,
+            )
+
+
+        # ========================================
+        # Push notification
+        #
+        # 定時更新（periodあり）のときだけ送る。
+        # 環境変数 NEWS_PUSH_ENABLED=true で有効化。
+        # ========================================
+
+        push_enabled = (
+            os.environ.get(
+                "NEWS_PUSH_ENABLED",
+                "",
+            ).lower()
+            == "true"
+        )
+
+        if (
+            options["period"]
+            and push_enabled
+            and not options["skip_push"]
+        ):
+
+            self._send_push(
+                options["period"],
+                started_at,
             )
 
 
@@ -315,5 +374,55 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.WARNING(
                     "Continuing with next step."
+                )
+            )
+
+
+    def _send_push(
+        self,
+        period,
+        started_at,
+    ):
+
+        self.stdout.write(
+            ""
+        )
+
+        self.stdout.write(
+            self.style.HTTP_INFO(
+                "--- Send push notifications ---"
+            )
+        )
+
+        try:
+
+            new_articles_count = (
+                ready_articles()
+                .filter(
+                    fetched_at__gte=started_at,
+                    duplicate_of__isnull=True,
+                )
+                .count()
+            )
+
+            batch_key = (
+                f"{timezone.localdate():%Y-%m-%d}"
+                f"-{period}"
+            )
+
+            result = send_news_push_for_batch(
+                batch_key=batch_key,
+                new_articles_count=new_articles_count,
+            )
+
+            self.stdout.write(
+                f"Push result: {result}"
+            )
+
+        except Exception as exc:
+
+            self.stdout.write(
+                self.style.ERROR(
+                    f"Push failed: {exc}"
                 )
             )

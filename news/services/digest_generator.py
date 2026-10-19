@@ -84,9 +84,8 @@ INSTRUCTIONS = """
 目安は4～8文程度です。
 ニュースが少ない場合は無理に長くしないでください。
 
-【Highlights】
-
-重要な話題を最大5件選択してください。
+各記事の SOURCES には、その出来事を報じた
+媒体がすべて列挙されています。
 
 """
 
@@ -184,8 +183,14 @@ def generate_news_digest(
                 ai_processed_at__isnull=False
             )
         )
+        .filter(
+            duplicate_of__isnull=True
+        )
         .select_related(
             "source"
+        )
+        .prefetch_related(
+            "duplicates__source"
         )
         .order_by(
             "-published_at"
@@ -216,12 +221,17 @@ def generate_news_digest(
         )
 
 
+        source_names = ", ".join(
+            source_article.source.name
+            for source_article in article.source_articles
+        )
+
         article_blocks.append(
             f"""
 ARTICLE {index}
 
-SOURCE:
-{article.source.name}
+SOURCES:
+{source_names}
 
 TITLE:
 {title}

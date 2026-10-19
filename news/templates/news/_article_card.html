@@ -3,7 +3,7 @@
     <div class="news-card-meta">
 
         <span class="news-source">
-            {{ article.source.name }}
+            {{ article.source.name }}{% with source_count=article.source_articles|length %}{% if source_count > 1 %} ほか{{ source_count|add:"-1" }}社{% endif %}{% endwith %}
         </span>
 
         <span>
@@ -52,6 +52,10 @@
 
             {{ article.summary_original }}
 
+        {% elif public_settings and public_settings.display_language == "original" %}
+
+            {{ article.summary_original }}
+
         {% else %}
 
             {{ article.summary_ja|default:article.summary_original }}
@@ -63,15 +67,25 @@
 
     <div class="news-card-footer">
 
-        <a
-            href="{% url 'usage_analytics:public_news_article_click' article.id %}?origin={{ request.get_full_path|urlencode }}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="news-source-link"
-        >
-            出典：{{ article.source.name }}
-            ↗
-        </a>
+        <div class="news-source-links">
+
+            <span class="news-source-label">出典：</span>
+
+            {% for source_article in article.source_articles %}
+
+                <a
+                    href="{% url 'usage_analytics:public_news_article_click' source_article.id %}?origin={{ request.get_full_path|urlencode }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="news-source-link"
+                >
+                    {{ source_article.source.name }}
+                    ↗
+                </a>
+
+            {% endfor %}
+
+        </div>
 
 
         {% comment %}

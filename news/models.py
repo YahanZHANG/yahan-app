@@ -185,6 +185,27 @@ class Article(models.Model):
         blank=True,
     )
 
+    ai_attempts = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    # 重複判定用の埋め込みベクトル
+    embedding = models.JSONField(
+        null=True,
+        blank=True,
+    )
+
+    # 同じ出来事を扱う代表記事。
+    # 設定されている記事は一覧に表示せず、
+    # 代表記事の出典として表示する。
+    duplicate_of = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="duplicates",
+    )
+
     class Meta:
         ordering = [
             "-published_at",
@@ -193,6 +214,31 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title_ja or self.title_original
+
+    @property
+    def source_articles(self):
+        """
+        この記事と重複記事を、ソースごとに1件ずつ返す。
+        一覧では duplicates__source を prefetch して使う。
+        """
+
+        result = []
+        seen_source_ids = set()
+
+        for article in [self, *self.duplicates.all()]:
+
+            if article.source_id in seen_source_ids:
+                continue
+
+            seen_source_ids.add(
+                article.source_id
+            )
+
+            result.append(
+                article
+            )
+
+        return result
 
 
 class Favorite(models.Model):

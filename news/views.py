@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings as django_settings
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -238,6 +238,7 @@ def _apply_public_news_settings(
 def _article_queryset(
     user=None,
     preference=None,
+    include_duplicates=False,
 ):
 
     queryset = (
@@ -248,8 +249,38 @@ def _article_queryset(
         .prefetch_related(
             "topics",
             "regions",
+            _duplicates_prefetch(),
         )
     )
+
+
+    # =====================================================
+    # 翻訳済みの記事だけ表示する
+    #
+    # 外国語記事はAI処理が終わるまで（または失敗した場合）
+    # 日本語タイトルがないため一覧に出さない。
+    # =====================================================
+
+    queryset = queryset.filter(
+        Q(
+            original_language="ja"
+        )
+        |
+        Q(
+            ai_processed_at__isnull=False
+        )
+    )
+
+
+    # =====================================================
+    # 重複記事は代表記事の出典としてのみ表示する
+    # =====================================================
+
+    if not include_duplicates:
+
+        queryset = queryset.filter(
+            duplicate_of__isnull=True
+        )
 
 
     # =====================================================
@@ -395,6 +426,21 @@ def _article_queryset(
 
 
     return queryset
+
+def _duplicates_prefetch():
+
+    return Prefetch(
+        "duplicates",
+        queryset=(
+            Article.objects
+            .select_related(
+                "source"
+            )
+            .order_by(
+                "published_at"
+            )
+        ),
+    )
 
 def _safe_redirect(
     request,
@@ -740,6 +786,7 @@ def source_detail(
             _article_queryset(
                 request.user,
                 preference,
+                include_duplicates=True,
             )
             .filter(
                 source=source
@@ -762,7 +809,9 @@ def source_detail(
         )
 
         articles = (
-            _article_queryset()
+            _article_queryset(
+                include_duplicates=True,
+            )
             .filter(
                 source=source
             )
@@ -887,7 +936,8 @@ def favorites(request):
             "source"
         )
         .prefetch_related(
-            "topics"
+            "topics",
+            _duplicates_prefetch(),
         )
         .annotate(
             is_favorite=Exists(
