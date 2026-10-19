@@ -5001,7 +5001,9 @@
 }
 
 .news-day-heading {
-    margin: 22px 4px 4px;
+    /* PCの2列表示でもカード1枚分ではなく、1行全体を使う */
+    grid-column: 1 / -1;
+    margin: 12px 4px 0;
     color: #6f7c76;
     font-size: .8rem;
     font-weight: 800;
