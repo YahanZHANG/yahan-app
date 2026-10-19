@@ -63,6 +63,12 @@ urlpatterns = [
     ),
 
     path(
+        "internal/export/",
+        internal_views.export_news_internal,
+        name="internal_export",
+    ),
+
+    path(
         "digests/",
         views.digest_list,
         name="digest_list",

@@ -7,7 +7,14 @@ from pathlib import Path
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import (
+    require_GET,
+    require_POST,
+)
+
+from news.services.news_sync import (
+    export_payload,
+)
 
 
 @csrf_exempt
@@ -110,4 +117,56 @@ def refresh_news_internal(request):
             "period": period,
         },
         status=202,
+    )
+
+
+@require_GET
+def export_news_internal(request):
+    """
+    ローカル環境へ本番のニュースをコピーするための出力。
+    NEWS_REFRESH_TOKEN を知っている人だけが使える。
+    """
+
+    expected_token = os.environ.get(
+        "NEWS_REFRESH_TOKEN",
+        "",
+    )
+
+    provided_token = request.headers.get(
+        "X-News-Refresh-Token",
+        "",
+    )
+
+    if not expected_token or not hmac.compare_digest(
+        provided_token,
+        expected_token,
+    ):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Unauthorized.",
+            },
+            status=403,
+        )
+
+    try:
+
+        days = int(
+            request.GET.get(
+                "days",
+                "7",
+            )
+        )
+
+    except ValueError:
+
+        days = 7
+
+    return JsonResponse(
+        export_payload(
+            days=days,
+        ),
+        json_dumps_params={
+            "ensure_ascii": False,
+        },
     )
