@@ -29,6 +29,7 @@ from .visitor import (
 
 
 RECOMMENDED_PER_KIND = 3
+FRESH_PER_KIND = 5
 
 
 # =========================================================
@@ -394,16 +395,16 @@ def home(request):
     # Prepare mixed cards
     # =====================================================
 
-    fresh_cards = interleave_cards(
-        [
-            make_event_card(event)
-            for event in new_events
-        ],
-        [
-            make_trip_card(spot)
-            for spot in new_trips
-        ],
-    )
+    # New items, events and trips listed separately.
+    fresh_event_cards = [
+        make_event_card(event)
+        for event in new_events[:FRESH_PER_KIND]
+    ]
+    fresh_trip_cards = [
+        make_trip_card(spot)
+        for spot in new_trips[:FRESH_PER_KIND]
+    ]
+    fresh_cards = fresh_event_cards + fresh_trip_cards
 
     # One row of events, one row of trips; trips with a photo first.
     recommended_event_cards = [
@@ -504,7 +505,8 @@ def home(request):
         request,
         "outings/home.html",
         {
-            "fresh_cards": fresh_cards,
+            "fresh_event_cards": fresh_event_cards,
+            "fresh_trip_cards": fresh_trip_cards,
             "recommended_event_cards": recommended_event_cards,
             "recommended_trip_cards": recommended_trip_cards,
         },
