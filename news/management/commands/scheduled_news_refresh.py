@@ -6,6 +6,10 @@ import requests
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from news.services.alerts import (
+    send_admin_alert,
+)
+
 
 ZURICH_TZ = ZoneInfo(
     "Europe/Zurich"
@@ -228,6 +232,15 @@ class Command(BaseCommand):
                         f"{exc}"
                     )
                 )
+            )
+
+            send_admin_alert(
+                "ニュース更新を開始できませんでした",
+                (
+                    f"定時更新（{period}）のリクエストが失敗しました。"
+                    "Webサービスが停止している可能性があります。\n\n"
+                    f"{exc}"
+                ),
             )
 
             raise

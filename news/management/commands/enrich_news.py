@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from news.models import Article
 
 from news.services.ai_enricher import (
+    MAX_AI_ATTEMPTS,
     enrich_article,
 )
 
@@ -75,7 +76,8 @@ class Command(BaseCommand):
         if not force:
 
             queryset = queryset.filter(
-                ai_processed_at__isnull=True
+                ai_processed_at__isnull=True,
+                ai_attempts__lt=MAX_AI_ATTEMPTS,
             )
 
 
@@ -173,9 +175,12 @@ class Command(BaseCommand):
                     exc
                 )[:2000]
 
+                article.ai_attempts += 1
+
                 article.save(
                     update_fields=[
-                        "ai_error"
+                        "ai_error",
+                        "ai_attempts",
                     ]
                 )
 

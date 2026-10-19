@@ -9,6 +9,10 @@ from django.core.management.base import (
     BaseCommand,
 )
 
+from news.services.alerts import (
+    send_admin_alert,
+)
+
 
 LOCK_PATH = Path(
     os.environ.get(
@@ -128,6 +132,18 @@ class Command(BaseCommand):
                 "refresh_news",
                 period=period,
             )
+
+        except Exception as exc:
+
+            send_admin_alert(
+                "ニュース更新が停止しました",
+                (
+                    f"ニュース更新（{period}）が途中で停止しました。\n\n"
+                    f"{type(exc).__name__}: {exc}"
+                ),
+            )
+
+            raise
 
         finally:
 

@@ -8,6 +8,10 @@ from config.services.openai_client import (
 
 from news.models import Topic
 
+from news.services.article_text import (
+    article_input_text,
+)
+
 from news.services.japanese_classifier import (
     get_other_topic,
 )
@@ -16,6 +20,11 @@ from news.services.japanese_classifier import (
 MODEL = "gpt-5.6-luna"
 
 MAX_INPUT_CHARS = 10000
+
+MAX_OUTPUT_TOKENS = 2000
+
+# 失敗が続く記事を毎回再送しないための上限
+MAX_AI_ATTEMPTS = 3
 
 TOPIC_SLUGS = [
     "politics",
@@ -179,9 +188,8 @@ def enrich_article(article):
 
     client = get_openai_client()
 
-    article_text = (
-        article.summary_original
-        or ""
+    article_text = article_input_text(
+        article
     )[:MAX_INPUT_CHARS]
 
     input_text = f"""
@@ -220,10 +228,24 @@ def enrich_article(article):
             }
         },
 
-        max_output_tokens=500,
+        # 日本語の長い要約（最大10文）でも
+        # 途中で切れないよう余裕を持たせる。
+        max_output_tokens=MAX_OUTPUT_TOKENS,
 
         store=False,
     )
+
+    if response.status == "incomplete":
+
+        reason = getattr(
+            response.incomplete_details,
+            "reason",
+            "unknown",
+        )
+
+        raise RuntimeError(
+            f"OpenAI response incomplete: {reason}"
+        )
 
     result = json.loads(
         response.output_text

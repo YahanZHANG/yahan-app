@@ -185,6 +185,27 @@ class Article(models.Model):
         blank=True,
     )
 
+    ai_attempts = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    # 重複判定用の埋め込みベクトル
+    embedding = models.JSONField(
+        null=True,
+        blank=True,
+    )
+
+    # 同じ出来事を扱う代表記事。
+    # 設定されている記事は一覧に表示せず、
+    # 代表記事の出典として表示する。
+    duplicate_of = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="duplicates",
+    )
+
     class Meta:
         ordering = [
             "-published_at",
@@ -193,6 +214,31 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title_ja or self.title_original
+
+    @property
+    def source_articles(self):
+        """
+        この記事と重複記事を、ソースごとに1件ずつ返す。
+        一覧では duplicates__source を prefetch して使う。
+        """
+
+        result = []
+        seen_source_ids = set()
+
+        for article in [self, *self.duplicates.all()]:
+
+            if article.source_id in seen_source_ids:
+                continue
+
+            seen_source_ids.add(
+                article.source_id
+            )
+
+            result.append(
+                article
+            )
+
+        return result
 
 
 class Favorite(models.Model):
@@ -379,10 +425,13 @@ from django.db import models as django_models
 
 class NewsPushSubscription(django_models.Model):
 
+    # 未ログインの端末も登録できるよう null を許可
     user = django_models.ForeignKey(
         django_settings.AUTH_USER_MODEL,
         on_delete=django_models.CASCADE,
         related_name="news_push_subscriptions",
+        null=True,
+        blank=True,
     )
 
     endpoint = django_models.TextField(
@@ -409,8 +458,14 @@ class NewsPushSubscription(django_models.Model):
 
     def __str__(self):
 
+        owner = (
+            self.user.username
+            if self.user
+            else "anonymous"
+        )
+
         return (
-            f"{self.user.username} - "
+            f"{owner} - "
             f"Push subscription {self.pk}"
         )
 
@@ -556,3 +611,42 @@ class SupportRequest(models.Model):
             f"{self.get_method_display()} "
             f"- {self.email}"
         )
+
+class NewsAnnouncement(models.Model):
+    """
+    ヘッダーと記事の間に控えめに出す「更新のお知らせ」。
+    管理画面から追加する。表示されるのは最新の1件だけ。
+    """
+
+    SHOW_DAYS = 14
+
+    message = models.CharField(
+        "お知らせ",
+        max_length=200,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = [
+            "-created_at",
+        ]
+
+        verbose_name = (
+            "Swiss News 更新のお知らせ"
+        )
+
+        verbose_name_plural = (
+            "Swiss News 更新のお知らせ"
+        )
+
+    def __str__(self):
+
+        return self.message

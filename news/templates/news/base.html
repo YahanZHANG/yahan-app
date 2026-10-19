@@ -1,6 +1,6 @@
 
 {% extends "base.html" %}
-{% load static %}
+{% load static news_extras %}
 
 
 {% block main_class %}
@@ -176,6 +176,52 @@ page-content news-site-container
 
     <main class="news-main">
 
+        {% latest_announcement as announcement %}
+
+        {% if announcement %}
+            <div
+                class="news-announcement"
+                id="news-announcement"
+                data-announcement-id="{{ announcement.id }}"
+            >
+                <span class="news-announcement-label">お知らせ</span>
+                <span class="news-announcement-text">
+                    {{ announcement.message }}
+                </span>
+                <button
+                    type="button"
+                    class="news-announcement-close"
+                    aria-label="お知らせを閉じる"
+                    data-announcement-close
+                >×</button>
+            </div>
+
+            <script>
+                // ×で閉じたお知らせは、この端末では再表示しない
+                (() => {
+                    const box = document.getElementById("news-announcement");
+                    const key = "swiss_news_announcement_closed";
+
+                    try {
+                        if (localStorage.getItem(key) === box.dataset.announcementId) {
+                            box.hidden = true;
+                        }
+                    } catch (error) {}
+
+                    box.querySelector("[data-announcement-close]").addEventListener(
+                        "click",
+                        () => {
+                            box.hidden = true;
+
+                            try {
+                                localStorage.setItem(key, box.dataset.announcementId);
+                            } catch (error) {}
+                        }
+                    );
+                })();
+            </script>
+        {% endif %}
+
         {% block news_content %}
         {% endblock %}
 
@@ -301,6 +347,25 @@ page-content news-site-container
     </nav>
 
 </div>
+
+
+
+<!-- =========================================================
+     Push notifications
+     ========================================================= -->
+
+<div
+    id="news-push-config"
+    hidden
+    data-public-key="{% vapid_public_key %}"
+    data-csrf-token="{{ csrf_token }}"
+    data-subscribe-url="{% url 'news_push_subscribe' %}"
+    data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+></div>
+
+<script src="{% static 'news/push_client.js' %}"></script>
+<script src="{% static 'news/push_toggle.js' %}" defer></script>
+<script src="{% static 'news/push_prompt.js' %}" defer></script>
 
 
 

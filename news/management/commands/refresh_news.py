@@ -1,5 +1,22 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.utils import timezone
+
+from news.models import Article
+from news.push_sender import (
+    send_news_push_for_batch,
+)
+from news.services.alerts import (
+    send_admin_alert,
+)
+from news.services.deduplicator import (
+    ready_articles,
+    with_source_count,
+)
+
+# この件数以上の翻訳失敗があれば管理者に知らせる
+UNTRANSLATED_ALERT_COUNT = 5
+
 
 class Command(BaseCommand):
     help = (
@@ -70,6 +87,15 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--skip-push",
+            action="store_true",
+            help=(
+                "Do not send push notifications "
+                "after the refresh."
+            ),
+        )
+
+        parser.add_argument(
             "--skip-digest",
             action="store_true",
             help=(
@@ -88,10 +114,13 @@ class Command(BaseCommand):
         # =====================================================
         # Refresh start time
         #
-        # Region classification will only process articles
-        # fetched after this timestamp.
+        # Push通知の新着件数はこの時刻以降に
+        # 取得された記事で数える。
         # =====================================================
 
+        started_at = timezone.now()
+
+        self.failures = []
 
         self.stdout.write(
             ""
@@ -121,7 +150,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "1/9 Fetch RSS news",
+            "1/10 Fetch RSS news",
             "fetch_news",
             limit=options["feed_limit"],
         )
@@ -136,7 +165,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "2/9 Fetch webpage news",
+            "2/10 Fetch webpage news",
             "fetch_web_news",
             limit=options["web_limit"],
         )
@@ -147,7 +176,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "3/9 Fetch admin.ch news",
+            "3/10 Fetch admin.ch news",
             "fetch_admin_news",
             limit=options["admin_limit"],
         )
@@ -158,7 +187,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "4/9 Remove non-news content",
+            "4/10 Remove non-news content",
             "cleanup_non_news",
         )
 
@@ -170,7 +199,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "5/9 Remove old articles",
+            "5/10 Remove old articles",
             "cleanup_news",
         )
 
@@ -182,7 +211,7 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "6/9 Classify Japanese news",
+            "6/10 Classify Japanese news",
             "classify_japanese_news",
         )
 
@@ -195,14 +224,26 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "7/9 Translate and classify news",
+            "7/10 Translate and classify news",
             "enrich_news",
             limit=options["ai_limit"],
         )
 
 
         # ========================================
-        # 8. Region classification
+        # 8. Merge duplicates
+        #
+        # 同じ出来事を扱う記事を1つにまとめる。
+        # ========================================
+
+        self._run_step(
+            "8/10 Merge duplicate news",
+            "dedupe_news",
+        )
+
+
+        # ========================================
+        # 9. Region classification
         #
         # このrefresh開始後に取得された
         # 新しい記事のみ地域分類する。
@@ -211,13 +252,13 @@ class Command(BaseCommand):
         # ========================================
 
         self._run_step(
-            "8/9 Classify news regions",
+            "9/10 Classify news regions",
             "assign_news_regions",
         )
 
 
         # ========================================
-        # 9. Digest
+        # 10. Digest
         # ========================================
 
         if options["skip_digest"]:
@@ -228,7 +269,7 @@ class Command(BaseCommand):
 
             self.stdout.write(
                 self.style.WARNING(
-                    "9/9 News digest skipped."
+                    "10/10 News digest skipped."
                 )
             )
 
@@ -245,10 +286,38 @@ class Command(BaseCommand):
 
 
             self._run_step(
-                "9/9 Generate news digest",
+                "10/10 Generate news digest",
                 "generate_news_digest",
                 **digest_options,
             )
+
+
+        # ========================================
+        # Push notification
+        #
+        # 定時更新（periodあり）のときだけ送る。
+        # 通知を許可した端末にだけ届く。
+        # ========================================
+
+        if (
+            options["period"]
+            and not options["skip_push"]
+        ):
+
+            self._send_push(
+                options["period"],
+                started_at,
+            )
+
+
+        # ========================================
+        # 異常があれば管理者にメール
+        # ========================================
+
+        self._check_health(
+            started_at,
+            options["period"],
+        )
 
 
         # ========================================
@@ -306,6 +375,10 @@ class Command(BaseCommand):
 
         except Exception as exc:
 
+            self.failures.append(
+                f"{label}: {exc}"
+            )
+
             self.stdout.write(
                 self.style.ERROR(
                     f"{command_name} failed: {exc}"
@@ -317,3 +390,155 @@ class Command(BaseCommand):
                     "Continuing with next step."
                 )
             )
+
+
+    def _send_push(
+        self,
+        period,
+        started_at,
+    ):
+
+        self.stdout.write(
+            ""
+        )
+
+        self.stdout.write(
+            self.style.HTTP_INFO(
+                "--- Send push notifications ---"
+            )
+        )
+
+        try:
+
+            new_articles = (
+                ready_articles()
+                .filter(
+                    fetched_at__gte=started_at,
+                    duplicate_of__isnull=True,
+                )
+            )
+
+            new_articles_count = (
+                new_articles.count()
+            )
+
+            # 一番多くの媒体が報じた新着を見出しにする
+            top_article = (
+                with_source_count(
+                    new_articles
+                )
+                .order_by(
+                    "-source_count",
+                    "-published_at",
+                )
+                .first()
+            )
+
+            headline = (
+                top_article.title_ja
+                if top_article
+                else ""
+            )
+
+            batch_key = (
+                f"{timezone.localdate():%Y-%m-%d}"
+                f"-{period}"
+            )
+
+            result = send_news_push_for_batch(
+                batch_key=batch_key,
+                new_articles_count=new_articles_count,
+                headline=headline,
+            )
+
+            self.stdout.write(
+                f"Push result: {result}"
+            )
+
+        except Exception as exc:
+
+            self.failures.append(
+                f"Push通知: {exc}"
+            )
+
+            self.stdout.write(
+                self.style.ERROR(
+                    f"Push failed: {exc}"
+                )
+            )
+
+
+    def _check_health(
+        self,
+        started_at,
+        period,
+    ):
+
+        problems = list(
+            self.failures
+        )
+
+        fetched = Article.objects.filter(
+            fetched_at__gte=started_at,
+        )
+
+        if not fetched.exists():
+
+            problems.append(
+                "新しい記事が1件も取得できませんでした。"
+                "ニュースソースのURLやRSSが変わった可能性があります。"
+            )
+
+        untranslated = (
+            fetched
+            .exclude(
+                original_language="ja",
+            )
+            .filter(
+                ai_processed_at__isnull=True,
+            )
+        )
+
+        untranslated_count = untranslated.count()
+
+        if untranslated_count >= UNTRANSLATED_ALERT_COUNT:
+
+            sample_error = (
+                untranslated
+                .exclude(
+                    ai_error="",
+                )
+                .values_list(
+                    "ai_error",
+                    flat=True,
+                )
+                .first()
+            )
+
+            problems.append(
+                f"{untranslated_count}件の記事を翻訳できませんでした。"
+                f"エラー例: {sample_error or '不明'}"
+            )
+
+        if not problems:
+            return
+
+        message = (
+            f"ニュース更新（{period or '手動'}）で問題がありました。\n\n"
+            + "\n".join(
+                f"- {problem}"
+                for problem in problems
+            )
+            + "\n\n詳細はサーバーのログ（news_refresh.log）を確認してください。"
+        )
+
+        self.stdout.write(
+            self.style.WARNING(
+                message
+            )
+        )
+
+        send_admin_alert(
+            "ニュース更新で問題が発生しました",
+            message,
+        )

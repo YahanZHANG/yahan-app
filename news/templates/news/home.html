@@ -1,4 +1,5 @@
 {% extends "news/base.html" %}
+{% load news_extras %}
 
 {% block title %}
 Swiss News
@@ -130,9 +131,46 @@ Swiss News
 {% endif %}
 
 
+{% if featured_articles %}
+
+<section class="news-featured">
+
+    <div class="news-featured-heading">
+
+        <h2>
+            🔥 注目ニュース
+        </h2>
+
+        <p>
+            複数の媒体が報じている話題
+        </p>
+
+    </div>
+
+    <div class="news-list">
+
+        {% for article in featured_articles %}
+
+            {% include "news/_article_card.html" %}
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
 <div class="news-list">
 
     {% for article in articles %}
+
+        {% ifchanged article.published_at|day_label %}
+            <h2 class="news-day-heading">
+                {{ article.published_at|day_label }}
+            </h2>
+        {% endifchanged %}
 
         {% include "news/_article_card.html" %}
 
@@ -156,6 +194,63 @@ Swiss News
         </div>
 
     {% endfor %}
+
+</div>
+
+
+<!-- =========================================================
+     Push通知の確認（push_prompt.js が表示を判断する）
+     ========================================================= -->
+
+<div
+    id="news-push-prompt"
+    class="news-push-prompt"
+    role="dialog"
+    aria-labelledby="news-push-prompt-title"
+    hidden
+>
+
+    <button
+        type="button"
+        class="news-push-prompt-close"
+        aria-label="あとで"
+        data-push-later
+    >
+        ×
+    </button>
+
+    <div class="news-push-prompt-icon" aria-hidden="true">
+        🔔
+    </div>
+
+    <h3 id="news-push-prompt-title">
+        新着ニュースを通知しますか？
+    </h3>
+
+    <p data-push-message>
+        1日4回の更新で新しいニュースがあるときだけお知らせします。
+        設定画面からいつでもOFFにできます。
+    </p>
+
+    <div class="news-push-prompt-actions">
+
+        <button
+            type="button"
+            class="news-push-button news-push-button-primary"
+            data-push-accept
+        >
+            通知を受け取る
+        </button>
+
+        <button
+            type="button"
+            class="news-push-button news-push-button-secondary"
+            data-push-decline
+        >
+            いらない
+        </button>
+
+    </div>
 
 </div>
 

@@ -1,21 +1,19 @@
 /* ==========================================
-   Swiss News - Inline Push Toggle
+   Swiss News - Push ON/OFF (設定画面)
 ========================================== */
 
 (() => {
     "use strict";
 
-    const root = document.getElementById(
-        "news-push-settings"
-    );
-
-    if (!root) {
-        return;
-    }
+    const push = window.SwissNewsPush;
 
     const button = document.getElementById(
         "news-push-toggle"
     );
+
+    if (!push || !button) {
+        return;
+    }
 
     const state = document.getElementById(
         "news-push-toggle-state"
@@ -25,76 +23,6 @@
         "news-push-status"
     );
 
-    const publicKey = root.dataset.publicKey;
-    const csrfToken = root.dataset.csrfToken;
-
-    const subscribeUrl = root.dataset.subscribeUrl;
-    const unsubscribeUrl = root.dataset.unsubscribeUrl;
-
-
-    /* ======================================
-       Helpers
-    ====================================== */
-
-    function toUint8Array(base64String) {
-        const padding = "=".repeat(
-            (4 - base64String.length % 4) % 4
-        );
-
-        const base64 = (
-            base64String
-                .replace(/-/g, "+")
-                .replace(/_/g, "/")
-            + padding
-        );
-
-        return Uint8Array.from(
-            atob(base64),
-            character => character.charCodeAt(0)
-        );
-    }
-
-
-    async function postJson(url, data) {
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            throw new Error(
-                `Push API failed: ${response.status}`
-            );
-        }
-    }
-
-
-    async function getRegistration() {
-        let registration =
-            await navigator.serviceWorker.getRegistration("/");
-
-        if (!registration) {
-            registration =
-                await navigator.serviceWorker.register(
-                    "/service-worker.js",
-                    {
-                        scope: "/",
-                    }
-                );
-        }
-
-        return registration;
-    }
-
-
-    /* ======================================
-       UI
-    ====================================== */
 
     function updateUI(isOn) {
         button.classList.toggle(
@@ -119,31 +47,26 @@
     }
 
 
-    /* ======================================
-       Check current subscription
-    ====================================== */
+    function disable(message) {
+        button.disabled = true;
+        state.textContent = "—";
+        status.textContent = message;
+    }
+
 
     async function refresh() {
-        const registration =
-            await navigator.serviceWorker.getRegistration("/");
-
-        const subscription = registration
-            ? await registration.pushManager.getSubscription()
-            : null;
+        const subscription =
+            await push.getSubscription();
 
         updateUI(Boolean(subscription));
 
-        if (Notification.permission === "denied") {
+        if (push.permission() === "denied") {
             status.textContent =
                 "ブラウザ側で通知がブロックされているよ。"
                 + " 端末の通知設定を確認してね。";
         }
     }
 
-
-    /* ======================================
-       ON / OFF
-    ====================================== */
 
     button.addEventListener(
         "click",
@@ -155,57 +78,21 @@
                 "通知設定を変更中...";
 
             try {
-                const registration =
-                    await navigator.serviceWorker.getRegistration("/");
+                const current =
+                    await push.getSubscription();
 
-                const currentSubscription = registration
-                    ? await registration.pushManager.getSubscription()
-                    : null;
-
-
-                /* ==========================
-                   Turn OFF
-                ========================== */
-
-                if (currentSubscription) {
-                    await postJson(
-                        unsubscribeUrl,
-                        {
-                            endpoint:
-                                currentSubscription.endpoint,
-                        }
-                    );
-
-                    const removed =
-                        await currentSubscription.unsubscribe();
-
-                    if (!removed) {
-                        throw new Error(
-                            "Browser unsubscribe failed."
-                        );
-                    }
-
+                if (current) {
+                    await push.unsubscribe();
+                    push.saveChoice("declined");
                     updateUI(false);
                     return;
                 }
 
+                const result = await push.subscribe();
 
-                /* ==========================
-                   Turn ON
-                ========================== */
+                if (result !== "subscribed") {
+                    updateUI(false);
 
-                // Request permission directly
-                // from the user's click action.
-
-                let permission =
-                    Notification.permission;
-
-                if (permission === "default") {
-                    permission =
-                        await Notification.requestPermission();
-                }
-
-                if (permission !== "granted") {
                     status.textContent =
                         "通知が許可されていないよ。"
                         + " ブラウザや端末の設定を確認してね。";
@@ -213,42 +100,7 @@
                     return;
                 }
 
-                if (!publicKey) {
-                    throw new Error(
-                        "VAPID public key is missing."
-                    );
-                }
-
-                const readyRegistration =
-                    await getRegistration();
-
-                const subscription =
-                    await readyRegistration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey:
-                            toUint8Array(publicKey),
-                    });
-
-                try {
-                    await postJson(
-                        subscribeUrl,
-                        subscription.toJSON()
-                    );
-                } catch (error) {
-                    // Do not leave a browser subscription
-                    // that was not saved in Django.
-                    try {
-                        await subscription.unsubscribe();
-                    } catch (cleanupError) {
-                        console.warn(
-                            "Push cleanup failed:",
-                            cleanupError
-                        );
-                    }
-
-                    throw error;
-                }
-
+                push.saveChoice("accepted");
                 updateUI(true);
 
             } catch (error) {
@@ -278,29 +130,22 @@
     );
 
 
-    /* ======================================
-       Initialize
-    ====================================== */
-
     async function initialize() {
-        if (
-            !("serviceWorker" in navigator)
-            || !("PushManager" in window)
-            || !("Notification" in window)
-        ) {
-            status.textContent =
+        if (!push.isSupported()) {
+            disable(
                 "この環境ではPush通知を利用できないよ。"
-                + " iPhoneの場合はホーム画面から開いてね。";
+                + " iPhoneの場合はSafariの共有メニューから"
+                + "「ホーム画面に追加」して開いてね。"
+            );
 
-            state.textContent = "—";
             return;
         }
 
-        if (!publicKey) {
-            status.textContent =
-                "Push通知のサーバー設定が未完了だよ。";
+        if (!push.isConfigured()) {
+            disable(
+                "Push通知のサーバー設定が未完了だよ。"
+            );
 
-            state.textContent = "—";
             return;
         }
 
@@ -312,10 +157,9 @@
                 error
             );
 
-            status.textContent =
-                "通知の状態を確認できなかったよ。";
-
-            state.textContent = "—";
+            disable(
+                "通知の状態を確認できなかったよ。"
+            );
         }
     }
 

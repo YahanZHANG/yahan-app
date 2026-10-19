@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from .models import (
     Article,
     Favorite,
+    NewsAnnouncement,
     NewsFeedback,
     NewsPreference,
     NewsSource,
@@ -203,3 +204,15 @@ class SupportRequestAdmin(
             "● 未確認"
             "</strong>"
         )
+
+@admin.register(NewsAnnouncement)
+class NewsAnnouncementAdmin(admin.ModelAdmin):
+    list_display = [
+        "message",
+        "is_active",
+        "created_at",
+    ]
+
+    list_editable = [
+        "is_active",
+    ]
