@@ -20,6 +20,29 @@ def vapid_public_key():
     )
 
 
+@register.simple_tag
+def latest_announcement():
+    """
+    表示中の最新のお知らせ（なければ None）。
+    SHOW_DAYS を過ぎたものは自動で出なくなる。
+    """
+
+    from news.models import NewsAnnouncement
+
+    since = timezone.now() - timedelta(
+        days=NewsAnnouncement.SHOW_DAYS,
+    )
+
+    return (
+        NewsAnnouncement.objects
+        .filter(
+            is_active=True,
+            created_at__gte=since,
+        )
+        .first()
+    )
+
+
 @register.filter
 def day_label(value):
     """

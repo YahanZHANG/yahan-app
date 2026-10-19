@@ -176,6 +176,52 @@ page-content news-site-container
 
     <main class="news-main">
 
+        {% latest_announcement as announcement %}
+
+        {% if announcement %}
+            <div
+                class="news-announcement"
+                id="news-announcement"
+                data-announcement-id="{{ announcement.id }}"
+            >
+                <span class="news-announcement-label">更新</span>
+                <span class="news-announcement-text">
+                    {{ announcement.message }}
+                </span>
+                <button
+                    type="button"
+                    class="news-announcement-close"
+                    aria-label="お知らせを閉じる"
+                    data-announcement-close
+                >×</button>
+            </div>
+
+            <script>
+                // ×で閉じたお知らせは、この端末では再表示しない
+                (() => {
+                    const box = document.getElementById("news-announcement");
+                    const key = "swiss_news_announcement_closed";
+
+                    try {
+                        if (localStorage.getItem(key) === box.dataset.announcementId) {
+                            box.hidden = true;
+                        }
+                    } catch (error) {}
+
+                    box.querySelector("[data-announcement-close]").addEventListener(
+                        "click",
+                        () => {
+                            box.hidden = true;
+
+                            try {
+                                localStorage.setItem(key, box.dataset.announcementId);
+                            } catch (error) {}
+                        }
+                    );
+                })();
+            </script>
+        {% endif %}
+
         {% block news_content %}
         {% endblock %}
 

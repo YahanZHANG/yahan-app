@@ -460,3 +460,49 @@ class AlertTests(NewsTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("site changed", mail.outbox[0].body)
         self.assertIn("1件も取得できません", mail.outbox[0].body)
+
+
+class AnnouncementTests(NewsTestCase):
+
+    def test_latest_active_announcement_is_shown(self):
+
+        from news.models import NewsAnnouncement
+
+        NewsAnnouncement.objects.create(
+            message="古いお知らせ",
+        )
+        NewsAnnouncement.objects.create(
+            message="新しいお知らせ",
+        )
+        NewsAnnouncement.objects.create(
+            message="非表示のお知らせ",
+            is_active=False,
+        )
+
+        response = self.client.get(
+            reverse("news:home")
+        )
+
+        self.assertContains(response, "新しいお知らせ")
+        self.assertNotContains(response, "古いお知らせ")
+        self.assertNotContains(response, "非表示のお知らせ")
+
+    def test_old_announcement_is_hidden(self):
+
+        from news.models import NewsAnnouncement
+
+        announcement = NewsAnnouncement.objects.create(
+            message="2週間以上前",
+        )
+
+        NewsAnnouncement.objects.filter(
+            pk=announcement.pk,
+        ).update(
+            created_at=timezone.now() - timedelta(days=15),
+        )
+
+        response = self.client.get(
+            reverse("news:home")
+        )
+
+        self.assertNotContains(response, "2週間以上前")

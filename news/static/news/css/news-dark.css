@@ -710,3 +710,13 @@
     border-color: var(--news-dark-border);
     background: var(--news-dark-surface-alt);
 }
+
+
+.news-dark .news-announcement {
+    color: #9aa8a1;
+}
+
+.news-dark .news-announcement-label {
+    background: #24302b;
+    color: #b7cbc1;
+}

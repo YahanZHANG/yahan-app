@@ -5078,3 +5078,53 @@
 .news-settings-page > .news-push-inline {
     margin: 0 0 14px;
 }
+
+
+/* ---------------------------------------------------------
+ * 更新のお知らせ（ヘッダーと記事の間）
+ * --------------------------------------------------------- */
+
+.news-announcement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 4px 18px;
+    color: #6f7c76;
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+.news-announcement[hidden] {
+    display: none;
+}
+
+.news-announcement-label {
+    flex-shrink: 0;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #e8efeb;
+    color: #4f6b5e;
+    font-size: .7rem;
+    font-weight: 800;
+}
+
+.news-announcement-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.news-announcement-close {
+    flex-shrink: 0;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: .6;
+}
+
+.news-announcement-close:hover {
+    opacity: 1;
+}

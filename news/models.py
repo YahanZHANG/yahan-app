@@ -611,3 +611,42 @@ class SupportRequest(models.Model):
             f"{self.get_method_display()} "
             f"- {self.email}"
         )
+
+class NewsAnnouncement(models.Model):
+    """
+    ヘッダーと記事の間に控えめに出す「更新のお知らせ」。
+    管理画面から追加する。表示されるのは最新の1件だけ。
+    """
+
+    SHOW_DAYS = 14
+
+    message = models.CharField(
+        "お知らせ",
+        max_length=200,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = [
+            "-created_at",
+        ]
+
+        verbose_name = (
+            "Swiss News 更新のお知らせ"
+        )
+
+        verbose_name_plural = (
+            "Swiss News 更新のお知らせ"
+        )
+
+    def __str__(self):
+
+        return self.message
