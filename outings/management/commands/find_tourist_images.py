@@ -90,9 +90,16 @@ def search_commons(session, spot, per_spot):
 
     response.raise_for_status()
 
-    payload = response.json()
+    pages = response.json().get("query", {}).get("pages", [])
 
-    pages = payload.get("query", {}).get("pages", [])
+    return commons_candidates(pages, per_spot)
+
+
+def commons_candidates(pages, per_spot):
+    """
+    Usable photos from a Commons API page list,
+    with license, author and source.
+    """
 
     candidates = []
 
@@ -159,6 +166,9 @@ def search_commons(session, spot, per_spot):
             "author": author,
             "description": description[:400],
             "needs_review": True,
+            "coordinates": (page.get("coordinates") or [None])[0],
+            "width": info.get("width") or 0,
+            "height": info.get("height") or 0,
         })
 
         if len(candidates) >= per_spot:

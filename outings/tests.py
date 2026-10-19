@@ -13,7 +13,7 @@ from django.utils import timezone
 from outings.management.commands import outings_scheduler
 from outings.models import (
     Event, EventCategory, EventHeart, EventLocation, EventOccurrence, EventSource,
-    EventTag, EventfrogOccurrenceLink, OutingsPreference,
+    EventTag, EventfrogOccurrenceLink, OutingsPreference, TouristSpot,
 )
 from outings.services import ai_editor, schedule, weather
 from outings.services.eventfrog_existing_sync import apply_cancellations
@@ -543,3 +543,81 @@ class WeatherTests(TestCase):
         self.assertEqual([(d["day"], d["emoji"], d["temp"]) for d in spot.weekend_weather],
                          [("土", "☀️", "12° / 2°"), ("日", "🌨️", "3° / -4°")])
         self.assertIsNone(no_coords.weekend_weather)
+
+
+def commons_page(title, lat=None, lon=None, width=1200, author="Jane", license_name="CC BY-SA 4.0"):
+    page = {
+        "title": title,
+        "imageinfo": [{
+            "mime": "image/jpeg",
+            "url": f"https://upload.wikimedia.org/{title}",
+            "thumburl": f"https://upload.wikimedia.org/thumb/{title}",
+            "descriptionurl": f"https://commons.wikimedia.org/wiki/{title}",
+            "width": width,
+            "height": 800,
+            "extmetadata": {
+                "LicenseShortName": {"value": license_name},
+                "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0"},
+                "Artist": {"value": author},
+                "ImageDescription": {"value": ""},
+            },
+        }],
+    }
+    if lat is not None:
+        page["coordinates"] = [{"lat": lat, "lon": lon}]
+    return page
+
+
+class FakeCommons:
+    """Answers the name search and the nearby search with fixed pages."""
+
+    def __init__(self, by_name, nearby):
+        self.by_name, self.nearby = by_name, nearby
+        self.headers = {}
+
+    def get(self, url, params, timeout):
+        pages = self.nearby if params.get("generator") == "geosearch" else self.by_name
+        return FakeResponse({"query": {"pages": pages}})
+
+
+class TripPhotoTests(TestCase):
+    def make_spot(self, title, **extra):
+        return TouristSpot.objects.create(
+            external_id=title, spot_type=TouristSpot.SpotType.ATTRACTION, title_original=title,
+            official_url="https://example.com", status=TouristSpot.Status.PUBLISHED, **extra,
+        )
+
+    def run_command(self, commons, *args):
+        with mock.patch("outings.management.commands.auto_assign_tourist_images.requests.Session", return_value=commons), \
+                mock.patch("outings.management.commands.auto_assign_tourist_images.time.sleep"):
+            call_command("auto_assign_tourist_images", "--commit", *args, stdout=open(os.devnull, "w"))
+
+    def test_name_match_is_used_first(self):
+        spot = self.make_spot("Rheinfall", latitude=47.677, longitude=8.615)
+        self.run_command(FakeCommons([commons_page("File:Rheinfall bei Schaffhausen.jpg")], []))
+        spot.refresh_from_db()
+        self.assertEqual(spot.details["approved_image"]["match"], "name")
+
+    def test_closest_geotagged_photo_when_the_name_finds_nothing(self):
+        spot = self.make_spot("Erlebniswelt Muottas Muragl", latitude=46.5, longitude=9.9)
+        nearby = [
+            commons_page("File:Far view.jpg", lat=46.507, lon=9.9),
+            commons_page("File:Wanderkarte Engadin.jpg", lat=46.5, lon=9.9),
+            commons_page("File:Tiny.jpg", lat=46.5, lon=9.9, width=300),
+            commons_page("File:Near view.jpg", lat=46.501, lon=9.9),
+        ]
+        self.run_command(FakeCommons([commons_page("File:Something else.jpg")], nearby))
+        spot.refresh_from_db()
+        image = spot.details["approved_image"]
+        self.assertEqual(image["file_title"], "File:Near view.jpg")
+        self.assertEqual(image["match"], "nearby")
+
+    def test_retry_searches_spots_checked_before(self):
+        spot = self.make_spot("Zug", latitude=47.17, longitude=8.51, details={"commons_search_checked": True})
+        commons = FakeCommons([commons_page("File:Zug Altstadt.jpg")], [])
+        self.run_command(commons)
+        spot.refresh_from_db()
+        self.assertNotIn("approved_image", spot.details)
+        self.run_command(commons, "--retry")
+        spot.refresh_from_db()
+        self.assertEqual(spot.details["approved_image"]["file_title"], "File:Zug Altstadt.jpg")
