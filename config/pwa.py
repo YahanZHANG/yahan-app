@@ -39,6 +39,12 @@ APP_ICONS = {
         "theme_color": "#237B83",
     },
 
+    "analytics": {
+        "name": "Yapp分析",
+        "folder": "pwa/analytics",
+        "theme_color": "#5B45C4",
+    },
+
 }
 
 DEFAULT_ICONS = {
