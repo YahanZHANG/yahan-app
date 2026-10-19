@@ -201,6 +201,12 @@ urlpatterns = [
     ),
 
     path(
+        "favicon.ico",
+        pwa.favicon,
+        name="favicon",
+    ),
+
+    path(
         "service-worker.js",
         pwa.service_worker,
         name="pwa_service_worker",

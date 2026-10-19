@@ -19,6 +19,9 @@
         rel="stylesheet" 
         href="{% static 'feeding/css/style.css' %}"
     >
+
+    {% include "includes/app_icons.html" %}
+
 </head>
 
 <body class="{% if user.is_authenticated %}authenticated{% else %}guest{% endif %}">
