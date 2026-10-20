@@ -621,3 +621,61 @@ class MenuTests(TestCase):
         self.assertNotIn(reverse("washoku:my_page"), tabbar)
         self.assertIn('class="washoku-me', html)
         self.assertNotIn("家庭料理のレシピ集です", html)
+
+
+class AdminAttentionTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.admin = User.objects.create_user("admin", password="x", is_staff=True, is_superuser=True)
+        self.member = User.objects.create_user("hanako", password="x")
+        self.recipe = make_recipe()
+        self.store = Store.objects.create(name="Nishi", kind="japanese", address="Seefeldstrasse 12, 8008 Zürich")
+
+    def attention(self):
+        from portal.context_processors import admin_attention_counts
+
+        request = self.client.get(reverse("washoku:home")).wsgi_request
+        request.user = self.admin
+        return admin_attention_counts(request)["admin_attention"]
+
+    def test_washoku_items_are_counted_by_where_they_came_from(self):
+
+        Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body="a")
+        Comment.objects.create(author=self.member, recipe=self.recipe, kind="question", body="b")
+        Comment.objects.create(author=self.member, store=self.store, kind="tip", body="c")
+        Comment.objects.create(author=self.member, store=self.store, kind="tip", body="d", admin_checked=True)
+        Recipe.objects.create(name="投稿", steps="x", origin="member", submitted_by=self.member)
+        Feedback.objects.create(message="要望")
+
+        attention = self.attention()
+        washoku = next(group for group in attention["groups"] if group["app"] == "スイスで和食")
+        counts = {item["label"]: item["count"] for item in washoku["items"]}
+
+        self.assertEqual(counts, {"投稿レシピ": 1, "レシピへのコメント": 2, "お店の口コミ": 1, "質問箱": 1})
+        self.assertEqual(attention["total"], 5)
+
+    def test_admins_own_comments_are_not_pending(self):
+
+        self.client.force_login(self.admin)
+        self.client.post(
+            reverse("washoku:comment_create", args=["recipe", self.recipe.pk]),
+            {"kind": "tip", "body": "管理者から"},
+        )
+
+        self.assertTrue(Comment.objects.get().admin_checked)
+        self.assertEqual(self.attention()["groups"], [])
+
+    def test_admin_bar_links_to_filtered_list(self):
+
+        Comment.objects.create(author=self.member, store=self.store, kind="tip", body="口コミ")
+
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("admin:index"))
+
+        self.assertContains(response, "お店の口コミ")
+        self.assertContains(response, "admin_checked__exact=0&amp;target=store")
+        self.assertContains(
+            self.client.get(reverse("admin:washoku_comment_changelist") + "?admin_checked__exact=0&target=store"),
+            "お店: Nishi",
+        )

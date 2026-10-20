@@ -245,23 +245,46 @@ class RecipeRatingAdmin(admin.ModelAdmin):
     )
 
 
+class CommentTargetFilter(admin.SimpleListFilter):
+    title = "どこへのコメント"
+    parameter_name = "target"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("recipe", "レシピ"),
+            ("ingredient", "食材"),
+            ("store", "お店"),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() in ("recipe", "ingredient", "store"):
+            return queryset.filter(**{f"{self.value()}__isnull": False})
+        return queryset
+
+
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         "short_body",
-        "author",
-        "target",
+        "target_label",
         "kind",
+        "author",
         "report_count",
         "is_hidden",
-        "is_deleted",
+        "admin_checked",
         "created_at",
     )
 
     list_filter = (
+        "admin_checked",
+        CommentTargetFilter,
         "is_hidden",
         "is_deleted",
         "kind",
+    )
+
+    list_editable = (
+        "admin_checked",
     )
 
     search_fields = (
@@ -277,13 +300,24 @@ class CommentAdmin(admin.ModelAdmin):
     )
 
     actions = [
+        "mark_checked",
         "hide",
         "show",
     ]
 
+    @admin.action(description="選んだコメントを確認済みにする")
+    def mark_checked(self, request, queryset):
+        updated = queryset.update(admin_checked=True)
+        self.message_user(request, f"{updated}件を確認済みにしました。")
+
     @admin.display(description="本文")
     def short_body(self, obj):
-        return obj.body[:40]
+        return obj.body[:40] or "（削除済み）"
+
+    @admin.display(description="どこへ")
+    def target_label(self, obj):
+        kind = "レシピ" if obj.recipe_id else "お店" if obj.store_id else "食材"
+        return f"{kind}: {obj.target.name}"
 
     @admin.display(description="通報")
     def report_count(self, obj):
@@ -291,11 +325,11 @@ class CommentAdmin(admin.ModelAdmin):
 
     @admin.action(description="選んだコメントを非表示にする")
     def hide(self, request, queryset):
-        queryset.update(is_hidden=True)
+        queryset.update(is_hidden=True, admin_checked=True)
 
     @admin.action(description="選んだコメントを表示に戻す")
     def show(self, request, queryset):
-        queryset.update(is_hidden=False)
+        queryset.update(is_hidden=False, admin_checked=True)
 
 
 @admin.register(CommentReport)

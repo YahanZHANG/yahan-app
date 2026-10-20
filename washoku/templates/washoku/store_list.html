@@ -39,7 +39,7 @@
                 <span class="washoku-chip">{{ store.get_kind_display }}</span>
                 {% if store.has_online_shop %}<span class="washoku-chip washoku-chip-shop">ネット通販あり</span>{% endif %}
                 <h3>{{ store.name }}</h3>
-                <p><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ store.area }}{% if store.area %} ・ {% endif %}{{ store.address }}</p>
+                <p><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ store.address }}{% if store.area and store.area not in store.name %} <span class="washoku-store-area">（{{ store.area }}）</span>{% endif %}</p>
                 {% if store.opening_hours %}<p><i class="bi bi-clock" aria-hidden="true"></i> {{ store.opening_hours }}</p>{% endif %}
                 <p><i class="bi bi-chat-dots" aria-hidden="true"></i> 口コミ {{ store.review_count }}件</p>
             </a>

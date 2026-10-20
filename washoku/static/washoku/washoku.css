@@ -1408,3 +1408,59 @@ textarea {
         box-shadow: 0 0 0 0 transparent;
     }
 }
+
+/* ---------- スマホで中途半端に折り返さないための調整 ---------- */
+
+/* 日本語を文節で折り返し (Chrome)、最後の行に1〜2文字だけ残らないようにする */
+h1, h2, h3,
+.washoku-lead,
+.washoku-note,
+.washoku-legend,
+.washoku-empty,
+.washoku-menu-text small,
+.washoku-banner small,
+.washoku-card-text {
+    word-break: auto-phrase;
+    text-wrap: pretty;
+}
+
+.washoku-hero h1 {
+    font-size: clamp(18px, 5.2vw, 28px);
+}
+
+/* 選び方・お店の種類のボタンは横にはみ出さず、折り返して全部見せる */
+.washoku-quick {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin: 0 0 8px;
+    padding: 0;
+}
+
+.washoku-quick a {
+    padding: 7px 12px;
+    font-size: 13px;
+}
+
+.washoku-menu-item {
+    box-sizing: border-box;
+}
+
+.washoku-menu-text {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 「〇〇の代わり」などの小さなラベルは途中で切らない */
+.washoku-substitute,
+.washoku-chip,
+.washoku-chip-link {
+    white-space: nowrap;
+}
+
+.washoku-store-area {
+    color: var(--washoku-muted);
+}
+
+.washoku-store-area {
+    white-space: nowrap;
+}

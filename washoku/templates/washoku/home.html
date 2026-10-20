@@ -7,7 +7,7 @@
     <h1>スイスで買える食材で、日本の味を。</h1>
 
     <form action="{% url 'washoku:recipe_list' %}" method="get" class="washoku-search">
-        <input type="search" name="q" placeholder="料理名や食材（例: 親子丼、鶏もも肉）" aria-label="レシピを検索">
+        <input type="search" name="q" placeholder="料理名や食材で探す" aria-label="レシピを検索">
         <button type="submit">探す</button>
     </form>
 </section>
@@ -42,7 +42,7 @@
 
 <a class="washoku-banner" href="{% url 'washoku:recipe_submit' %}">
     <i class="bi bi-pencil-square" aria-hidden="true"></i>
-    <span><strong>あなたのレシピを投稿する</strong><small>スイスの食材で作れる家庭の味を教えてください</small></span>
+    <span><strong>あなたのレシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
     <i class="bi bi-chevron-right" aria-hidden="true"></i>
 </a>
 

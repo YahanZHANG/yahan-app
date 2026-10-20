@@ -752,6 +752,8 @@ def comment_create(request, target, pk):
 
     comment = form.save(commit=False)
     comment.author = request.user
+    # 管理者自身のコメントは「対応待ち」に出さない
+    comment.admin_checked = request.user.is_staff
     comment.recipe = recipe
     comment.ingredient = ingredient
     comment.store = store

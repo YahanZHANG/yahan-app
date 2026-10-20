@@ -826,6 +826,13 @@ class Comment(models.Model):
         help_text="通報で自動的に、または管理者が非表示にしたもの。",
     )
 
+    admin_checked = models.BooleanField(
+        "管理者確認済み",
+        default=False,
+        db_index=True,
+        help_text="管理画面の「対応待ち」に出さないようにするための印。",
+    )
+
     edited_at = models.DateTimeField(
         "編集日時",
         null=True,

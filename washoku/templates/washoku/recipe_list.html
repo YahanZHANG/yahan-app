@@ -19,7 +19,7 @@
     <input type="search" name="q" value="{{ query }}" placeholder="料理名や食材" aria-label="キーワード">
 
     <select name="category" aria-label="カテゴリー">
-        <option value="">すべてのカテゴリー</option>
+        <option value="">カテゴリー</option>
         {% for value, label in categories %}
             <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
