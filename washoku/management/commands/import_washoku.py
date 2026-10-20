@@ -243,7 +243,6 @@ class Command(BaseCommand):
                 "steps": steps,
                 "swiss_tips": row.get("swiss_tips", ""),
                 "origin": row.get("origin", "manual"),
-                "is_tested": row.get("is_tested", False),
             }
 
             recipe, created = Recipe.objects.update_or_create(

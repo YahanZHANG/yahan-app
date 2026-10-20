@@ -344,12 +344,6 @@ class Recipe(models.Model):
         ),
     )
 
-    is_tested = models.BooleanField(
-        "試作済み",
-        default=False,
-        help_text="実際に作って確かめたレシピ。",
-    )
-
     created_at = models.DateTimeField(
         "登録日時",
         auto_now_add=True,

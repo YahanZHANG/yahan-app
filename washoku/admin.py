@@ -129,7 +129,6 @@ class RecipeAdmin(admin.ModelAdmin):
         "status",
         "origin",
         "submitted_by",
-        "is_tested",
         "shop_rank_label",
         "updated_at",
     )
@@ -138,7 +137,6 @@ class RecipeAdmin(admin.ModelAdmin):
         "status",
         "category",
         "origin",
-        "is_tested",
         "shop_rank",
         "mood_tags",
     )

@@ -11,7 +11,6 @@
         <span class="washoku-chip">{{ recipe.get_category_display }}</span>
         {% for mood in recipe.mood_tags.all %}<a class="washoku-chip-link" href="{% url 'washoku:recipe_list' %}?mood={{ mood.pk }}">{{ mood.name }}</a>{% endfor %}
         {% if recipe.status == "draft" %}<span class="washoku-chip washoku-chip-draft">{% if recipe.submitted_by_id == user.pk and not user.is_staff %}確認待ち（あなたにだけ表示）{% else %}下書き（管理者だけに表示）{% endif %}</span>{% endif %}
-        {% if recipe.is_tested %}<span class="washoku-chip washoku-chip-shop">試作済み</span>{% endif %}
     </p>
 
     <h1>{{ recipe.name }}</h1>
