@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 
 from news.models import Article
@@ -135,10 +136,40 @@ def dashboard(request):
             "page_views": data["page_views_chart"],
             "sources": data["sources_chart"],
         },
-        "is_ignored_browser": bool(request.COOKIES.get(IGNORE_COOKIE)),
+        **live_context(request),
     }
 
     return render(request, "usage_analytics/dashboard.html", context)
+
+
+# =========================================================
+# Live status (いま見ている人)
+# =========================================================
+
+def live_context(request):
+
+    live = stats.live_status(stats.Scope(days=1))
+    names = display_names(live["user_ids"])
+
+    live["users"] = [
+        {"id": user_id, "name": names.get(user_id) or "?"}
+        for user_id in sorted(live["user_ids"], key=lambda user_id: names.get(user_id, ""))
+    ]
+
+    return {
+        "live": live,
+        "is_ignored_browser": bool(request.COOKIES.get(IGNORE_COOKIE)),
+    }
+
+
+@login_required
+@never_cache
+def live_status(request):
+    """解析ページの「いまの状況」を30秒ごとに入れ替える用 (HTMLの一部を返す)。"""
+
+    require_viewer(request)
+
+    return render(request, "usage_analytics/_live.html", live_context(request))
 
 
 # =========================================================

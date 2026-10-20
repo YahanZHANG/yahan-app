@@ -145,3 +145,19 @@ class DashboardTests(TestCase):
         response = self.visit("/analytics/")
 
         self.assertEqual(response.context["data"]["summary"]["visitors"], 0)
+
+
+    def test_live_status_counts_anonymous_visitors(self):
+
+        self.visit("/washoku/")
+        self.client.cookies.clear()
+        self.visit("/outings/")
+        self.client.cookies.clear()
+
+        self.client.force_login(self.admin)
+        response = self.visit("/analytics/live/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["live"]["visitors"], 2)
+        self.assertEqual(response.context["live"]["anonymous"], 2)
+        self.assertContains(response, "見ている人がいます")

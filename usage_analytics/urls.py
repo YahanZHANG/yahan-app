@@ -17,6 +17,8 @@ urlpatterns = [
 
     path("", views.dashboard, name="dashboard"),
 
+    path("live/", views.live_status, name="live_status"),
+
     # =====================================================
     # 1人ずつの足あと
     # =====================================================

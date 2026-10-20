@@ -62,16 +62,9 @@
          Now + insights
          ===================================================== -->
 
-    <div class="ya-online">
-        <span class="ya-pulse{% if not data.online.visitors %} is-idle{% endif %}"></span>
-        {% if data.online.visitors %}
-            いま（{{ data.online.minutes }}分以内）<strong>{{ data.online.visitors }}人</strong>が見ています:
-            {% for app in data.online.apps %}<span class="ya-tag">{{ app.emoji }} {{ app.name }} {{ app.visitors }}</span>{% endfor %}
-        {% else %}
-            いま（{{ data.online.minutes }}分以内）見ている人はいません
-        {% endif %}
-        {% if is_ignored_browser %}<span class="ya-tag">このブラウザは記録していません</span>{% endif %}
-    </div>
+    <section class="ya-card ya-live" id="ya-live" data-url="{% url 'usage_analytics:live_status' %}" aria-live="polite">
+        {% include "usage_analytics/_live.html" %}
+    </section>
 
     <section class="ya-card ya-insights" aria-labelledby="ya-insights-title">
         <h3 id="ya-insights-title">📝 最近の傾向</h3>
@@ -496,4 +489,5 @@
 
 {% block extra_js %}
 <script src="{% static 'usage_analytics/charts.js' %}"></script>
+<script src="{% static 'usage_analytics/live.js' %}"></script>
 {% endblock %}

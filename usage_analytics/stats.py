@@ -453,7 +453,6 @@ def build_dashboard(scope):
         "frequency": frequency,
         "retention": retention,
         "devices": devices,
-        "online": online_now(scope),
         "visits_count": len(visits),
         "recent_visits": recent_visits(visits),
     }
@@ -709,11 +708,24 @@ def frequency_rows(days_per_visitor):
     return rows
 
 
-def online_now(scope):
+def live_status(scope):
+    """
+    いまの状況 (マージ・デプロイのタイミング確認用)。
+    アプリの絞り込みに関係なく、サイト全体・ログインなしの人も含めて数える。
+    """
 
-    recent = scope.app_base().filter(
-        accessed_at__gte=timezone.now() - timedelta(minutes=ONLINE_MINUTES)
-    )
+    now = timezone.now()
+    base = scope.base()
+
+    windows = []
+    for minutes in (ONLINE_MINUTES, 15, 30):
+        recent = base.filter(accessed_at__gte=now - timedelta(minutes=minutes))
+        windows.append({
+            "minutes": minutes,
+            "visitors": recent.values("visitor_id").distinct().count(),
+        })
+
+    recent = base.filter(accessed_at__gte=now - timedelta(minutes=ONLINE_MINUTES))
 
     by_app = (
         recent.values("app_key")
@@ -721,10 +733,28 @@ def online_now(scope):
         .order_by("-n")
     )
 
+    user_ids = set(
+        recent.exclude(user=None).values_list("user_id", flat=True).distinct()
+    )
+
+    last = base.order_by("-accessed_at").values_list("accessed_at", flat=True).first()
+
     return {
-        "visitors": recent.values("visitor_id").distinct().count(),
-        "apps": [{**app_info(row["app_key"]), "visitors": row["n"]} for row in by_app],
+        "visitors": windows[0]["visitors"],
         "minutes": ONLINE_MINUTES,
+        "windows": windows,
+        "apps": [{**app_info(row["app_key"]), "visitors": row["n"]} for row in by_app],
+        "user_ids": user_ids,
+        "signed_in": len(user_ids),
+        "anonymous": (
+            recent.exclude(
+                visitor_id__in=recent.exclude(user=None).values("visitor_id")
+            )
+            .values("visitor_id").distinct().count()
+        ),
+        "last_seen": last,
+        "last_minutes": round((now - last).total_seconds() / 60) if last else None,
+        "checked_at": now,
     }
 
 

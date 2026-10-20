@@ -1,0 +1,51 @@
+{# 解析ページ上の「いまの状況」。/analytics/live/ からも30秒ごとに読み直す #}
+<div class="ya-live-head">
+    <h3>
+        <span class="ya-pulse{% if not live.visitors %} is-idle{% endif %}"></span>
+        いまの状況
+    </h3>
+    <span class="ya-live-time">{{ live.checked_at|date:"H:i:s" }} 時点・30秒ごとに更新</span>
+</div>
+
+<div class="ya-live-main">
+    {% if live.visitors %}
+        <div class="ya-live-number">{{ live.visitors }}<small>人</small></div>
+        <div>
+            <strong>{{ live.minutes }}分以内に見ている人がいます</strong>
+            <span class="ya-sub">ログインなし {{ live.anonymous }}人 ・ ログイン中 {{ live.signed_in }}人</span>
+        </div>
+    {% else %}
+        <div class="ya-live-number">0<small>人</small></div>
+        <div>
+            <strong>🟢 いま見ている人はいません</strong>
+            <span class="ya-sub">
+                マージ（反映）しやすいタイミングです。
+                {% if live.last_minutes is not None %}最後の閲覧は{{ live.last_minutes }}分前。{% endif %}
+            </span>
+        </div>
+    {% endif %}
+</div>
+
+{% if live.apps %}
+    <div class="ya-live-row">
+        {% for app in live.apps %}<span class="ya-tag">{{ app.emoji }} {{ app.name }} {{ app.visitors }}人</span>{% endfor %}
+    </div>
+{% endif %}
+
+{% if live.users %}
+    <div class="ya-live-row">
+        {% for person in live.users %}<a class="ya-tag" href="{% url 'usage_analytics:user_detail' person.id %}">👤 {{ person.name }}</a>{% endfor %}
+    </div>
+{% endif %}
+
+<div class="ya-live-windows">
+    {% for window in live.windows %}
+        <span><b>{{ window.visitors }}人</b> {{ window.minutes }}分以内</span>
+    {% endfor %}
+</div>
+
+<p class="ya-note" style="margin: 8px 0 0">
+    ページを開いた時刻で数えています（1つのページを長く読んでいる人は、開いてから{{ live.minutes }}分で数から外れます）。
+    集計から外したアカウントと、自分の確認用ブラウザは数えません。
+    {% if is_ignored_browser %}このブラウザは記録していません。{% endif %}
+</p>

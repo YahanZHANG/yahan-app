@@ -820,3 +820,69 @@ line.ya-axis {
     .ya-heat { grid-template-columns: 16px repeat(24, minmax(0, 1fr)); gap: 1px; font-size: 9px; }
     .ya-heat-hour:nth-child(odd) { visibility: hidden; }
 }
+
+/* ---------- Live status ---------- */
+
+.ya-live {
+    margin-bottom: 12px;
+}
+
+.ya-live-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 12px;
+}
+
+.ya-live-head h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ya-live-time {
+    color: var(--ya-muted);
+    font-size: 0.75rem;
+}
+
+.ya-live-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.ya-live-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ya-live-number small {
+    margin-left: 2px;
+    color: var(--ya-ink-2);
+    font-size: 0.9rem;
+}
+
+.ya-live-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.ya-live-windows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--ya-grid);
+    color: var(--ya-ink-2);
+    font-size: 0.82rem;
+}
+
+.ya-live-windows b {
+    color: var(--ya-ink);
+}
