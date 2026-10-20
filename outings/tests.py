@@ -359,10 +359,11 @@ class FeedbackTests(PageTestCase):
         self.assertEqual(OutingsFeedback.objects.count(), 1)
         self.assertContains(self.client.get(url + "?sent=1"), "送信しました")
 
-    def test_yapp_home_shows_outings_instead_of_the_travel_teaser(self):
+    def test_yapp_home_teases_outings_instead_of_the_travel_app(self):
         response = self.client.get(reverse("portal:home"))
-        self.assertContains(response, reverse("outings:home"))
+        self.assertContains(response, "おでかけ")
         self.assertNotContains(response, "旅トモ")
+        self.assertNotContains(response, 'href="%s"' % reverse("outings:home"))
 
 
 class SearchTests(PageTestCase):

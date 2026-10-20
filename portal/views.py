@@ -1224,9 +1224,9 @@ def home(request):
             "label": "OUTINGS",
             "icon": "🎈",
             "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
-            "url": reverse("outings:home"),
-            "status": "ログイン不要",
-            "coming_soon": False,
+            "url": None,
+            "status": "COMING SOON",
+            "coming_soon": True,
             "card_class": "portal-outings-card",
         },
     ]
