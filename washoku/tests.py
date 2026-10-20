@@ -102,6 +102,18 @@ class ImportTests(TestCase):
         )
         self.assertTrue(MoodTag.objects.filter(name="がっつり").exists())
 
+    def test_approved_recipes_are_created_published(self):
+
+        self.run_import(recipes=[{**RECIPES[0], "status": "published"}])
+
+        self.assertEqual(Recipe.objects.get(name="照り焼きチキン").status, "published")
+
+    def test_bundled_recipes_are_all_approved(self):
+
+        recipes = json.loads((Path(__file__).parent / "data" / "recipes.json").read_text(encoding="utf-8"))
+
+        self.assertEqual({recipe["status"] for recipe in recipes}, {"published"})
+
     def test_import_creates_recipes_as_drafts(self):
 
         self.run_import()

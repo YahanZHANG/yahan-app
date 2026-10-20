@@ -1074,6 +1074,9 @@ def build():
                 **item,
                 "ingredients": parsed,
                 "origin": "ai",
+                # 2026-10-20 にここまでの料理はすべて承認済み。
+                # これから足す料理は "status": "draft" を付けて、確認してから公開する。
+                "status": item.get("status", "published"),
             }
         )
 

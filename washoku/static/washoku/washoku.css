@@ -1384,3 +1384,27 @@ textarea {
 .washoku-feedback button {
     align-self: flex-end;
 }
+
+/* ページ内リンク (#feedback など) で見出しが上のヘッダーに隠れないように */
+.washoku-main [id] {
+    scroll-margin-top: 84px;
+}
+
+/* 質問箱へのリンクから来たとき、その欄を目立たせる */
+.washoku-about section:target {
+    margin: 28px -12px;
+    padding: 4px 12px 16px;
+    border: 2px solid var(--washoku-accent);
+    border-radius: 16px;
+    background: var(--washoku-accent-soft);
+    animation: washoku-target 1.6s ease-out;
+}
+
+@keyframes washoku-target {
+    from {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
+    }
+    to {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}

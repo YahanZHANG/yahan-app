@@ -86,7 +86,8 @@
    "醤油を加え、じゃがいもが柔らかくなるまでさらに10〜15分煮る。火を止めて少し置くと味がしみる。"
   ],
   "swiss_tips": "じゃがいもは煮崩れしにくい「festkochend」を選ぶ。牛肉は冷凍の Fondue Chinoise 用が薄くて便利。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "豚の生姜焼き",
@@ -169,7 +170,8 @@
    "肉に火が通ったらタレを入れ、絡めながら照りが出るまで煮詰める。キャベツを添える。"
   ],
   "swiss_tips": "豚肉は Fondue Chinoise 用が薄くてちょうどよい。キャベツは硬めなので、できるだけ細く切って水にさらす。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鶏の唐揚げ",
@@ -246,7 +248,8 @@
    "190℃に上げて1分ほど二度揚げし、カリッとさせる。"
   ],
   "swiss_tips": "骨なしの Pouletschenkel を使う。皮なしでも片栗粉を多めにするとカリッと揚がる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "照り焼きチキン",
@@ -304,7 +307,8 @@
    "出た脂をキッチンペーパーで拭き、タレを入れて絡めながら煮詰める。"
   ],
   "swiss_tips": "みりんがなければ砂糖を少し増やし、白ワインを大さじ1足す。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "和風ハンバーグ",
@@ -398,7 +402,8 @@
    "醤油・酢・みりんを合わせたタレと、大根おろしをのせる。"
   ],
   "swiss_tips": "Rettich は日本の大根より辛いので、おろしたら少し置いて辛みを飛ばす。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "豚の角煮",
@@ -469,7 +474,8 @@
    "醤油と茹で卵を加え、落とし蓋をして弱火で40分、煮汁が少なくなるまで煮る。"
   ],
   "swiss_tips": "長ねぎの代わりにリーキの緑の部分で臭みが取れる。圧力鍋なら下茹では20分で済む。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鶏つくね",
@@ -550,7 +556,8 @@
    "醤油・みりん・砂糖を入れて絡め、照りを出す。"
   ],
   "swiss_tips": "鶏ひき肉が見つからないときは、鶏むね肉をフードプロセッサーで挽く。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "とんかつ",
@@ -631,7 +638,8 @@
    "ウスターソースとケチャップを2:1で混ぜてソースにする。千切りキャベツを添える。"
   ],
   "swiss_tips": "パン粉はアジアコーナーの「Panko」を使うと日本のとんかつらしいサクサク感が出る。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "メンチカツ",
@@ -712,7 +720,8 @@
    "170℃の油で5〜6分、じっくり揚げる。"
   ],
   "swiss_tips": "キャベツの代わりに白菜でも水分が出にくく作りやすい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鶏の南蛮漬け",
@@ -794,7 +803,8 @@
    "多めの油で揚げ焼きにし、熱いうちに南蛮酢に漬ける。30分以上置く。"
   ],
   "swiss_tips": "冷蔵庫で3日ほど持つ。むね肉が安いスイスで重宝する一品。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鮭の照り焼き",
@@ -851,7 +861,8 @@
    "醤油・みりん・砂糖を入れて絡める。"
   ],
   "swiss_tips": "スイスの鮭は脂が多めのノルウェー産が多い。脂をキッチンペーパーで拭いてからタレを入れる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鮭のちゃんちゃん焼き",
@@ -933,7 +944,8 @@
    "鮭をほぐしながら野菜と混ぜて食べる。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "鯖の味噌煮",
@@ -996,7 +1008,8 @@
    "味噌を煮汁で溶いて加え、醤油も入れて煮汁をかけながら7〜8分煮る。"
   ],
   "swiss_tips": "生の鯖は見かけにくいので、アジアスーパーの冷凍切り身を使う。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "エビフライ",
@@ -1071,7 +1084,8 @@
    "マヨネーズにみじん切りの玉ねぎと茹で卵（あれば）を混ぜてタルタルソースにする。"
   ],
   "swiss_tips": "冷凍の生エビ（roh）を選ぶ。大きめのものがエビフライ向き。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "白身魚の煮付け",
@@ -1127,7 +1141,8 @@
    "魚を入れて落とし蓋をし、中火で8〜10分煮る。途中で煮汁をかける。"
   ],
   "swiss_tips": "Kabeljau（鱈）がほぐれやすくて煮付け向き。冷凍なら半解凍のまま煮てもよい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ご飯の炊き方（鍋）",
@@ -1153,7 +1168,8 @@
    "火を止めて蓋をしたまま10分蒸らし、さっくり混ぜる。"
   ],
   "swiss_tips": "「Sushi Reis」で炊く。スイスの水は硬水なので、少し多めの水で炊くと柔らかくなる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "親子丼",
@@ -1229,7 +1245,8 @@
    "ご飯にのせ、ねぎを散らす。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "牛丼",
@@ -1304,7 +1321,8 @@
    "ご飯にのせる。"
   ],
   "swiss_tips": "牛肉は冷凍の Fondue Chinoise 用。半解凍で広げると扱いやすい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "カツ丼",
@@ -1390,7 +1408,8 @@
    "ご飯にのせる。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "チキンライス",
@@ -1452,7 +1471,8 @@
    "ご飯を入れて全体を混ぜ、塩こしょうで味を整える。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "オムライス",
@@ -1533,7 +1553,8 @@
    "皿に返して形を整え、ケチャップをかける。もう1人分も同じように作る。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "炊き込みご飯",
@@ -1608,7 +1629,8 @@
    "具をのせて普通に炊く。炊けたら10分蒸らして混ぜる。"
   ],
   "swiss_tips": "しいたけはスイスのスーパーでも生のものが手に入る。マッシュルームでもおいしい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "おにぎり",
@@ -1665,7 +1687,8 @@
    "海苔を巻く。"
   ],
   "swiss_tips": "寿司用の海苔は Coop・Migros にある。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "チャーハン",
@@ -1740,7 +1763,8 @@
    "スープの素・塩こしょうで味を付け、鍋肌から醤油を回し入れ、ねぎを混ぜる。"
   ],
   "swiss_tips": "Hühnerbouillon は塩分が強いので、塩は味見してから。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "カレーライス",
@@ -1804,7 +1828,8 @@
    "火を止めてルーを溶かし、弱火で10分とろみが付くまで煮る。"
   ],
   "swiss_tips": "S&B ゴールデンカレーは Coop・Migros のアジアコーナーにある。鶏もも肉でもおいしい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "焼きそば",
@@ -1885,7 +1910,8 @@
    "ソースを回し入れて全体に絡める。"
   ],
   "swiss_tips": "焼きそばソースがなくても、ウスターソースとケチャップで近い味になる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "焼きうどん",
@@ -1959,7 +1985,8 @@
    "仕上げにバターを溶かし、かつお節をのせる。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "かけうどん",
@@ -2021,7 +2048,8 @@
    "つゆを注ぎ、ねぎ（と甘辛く煮た油揚げ）をのせる。"
   ],
   "swiss_tips": "顆粒だしがなければ、昆布とかつお節でだしを取る。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "冷やし中華",
@@ -2102,7 +2130,8 @@
    "器に麺を盛り、具をのせてタレをかける。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "きのこの和風醤油パスタ",
@@ -2176,7 +2205,8 @@
    "刻み海苔をのせる。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ほうれん草のおひたし",
@@ -2220,7 +2250,8 @@
    "水大さじ2にだしを溶かし、醤油と合わせてかける。かつお節をのせる。"
   ],
   "swiss_tips": "葉の柔らかい「Jungspinat」がおひたし向き。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "きんぴら",
@@ -2289,7 +2320,8 @@
    "汁気がなくなるまで炒め、唐辛子とごまを加える。"
   ],
   "swiss_tips": "パースニップは甘みが強いので、砂糖は少なめから味を見て。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ポテトサラダ",
@@ -2364,7 +2396,8 @@
    "冷めたじゃがいもに全部入れ、マヨネーズ・塩こしょうで和える。"
   ],
   "swiss_tips": "ほくほくの「mehligkochend」のじゃがいもが向いている。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "だし巻き卵",
@@ -2421,7 +2454,8 @@
    "巻きすかラップで形を整えて冷ます。"
   ],
   "swiss_tips": "丸いフライパンでも、両端を内側に折ってから巻くと四角くなる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "切り干し大根の煮物",
@@ -2489,7 +2523,8 @@
    "油で炒め、水200ml・だし・調味料を入れて汁気が少なくなるまで煮る。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ひじきの煮物",
@@ -2557,7 +2592,8 @@
    "油で炒め、水150ml・だし・調味料を入れて汁気がなくなるまで煮る。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "きゅうりの浅漬け",
@@ -2606,7 +2642,8 @@
    "ポリ袋に全部入れてよくもみ、冷蔵庫で30分以上置く。"
   ],
   "swiss_tips": "スイスのきゅうりは水分が多いので、種を取ると水っぽくならない。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "味噌汁",
@@ -2656,7 +2693,8 @@
    "火を弱めて味噌を溶き入れ、沸騰直前で火を止める。ねぎを散らす。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "豚汁",
@@ -2738,7 +2776,8 @@
    "味噌を溶き入れ、小口切りのリーキを入れてひと煮する。"
   ],
   "swiss_tips": "ごぼうの代わりにパースニップを入れると、根菜らしい食感が出る。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "おでん",
@@ -2821,7 +2860,8 @@
    "おでん種を入れ、さらに15分煮る。一度冷ますと味がしみる。"
   ],
   "swiss_tips": "Rettich は細いので斜め切りにして面を大きくするとよい。練り物はアジアスーパーの冷凍の魚のつみれでも。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "すき焼き",
@@ -2914,7 +2954,8 @@
    "野菜と豆腐を入れて煮ながら、溶き卵につけて食べる。"
   ],
   "swiss_tips": "牛肉は Fondue Chinoise 用。生卵が気になる場合は「Freiland」の新鮮な卵を選ぶか、卵なしで。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "しゃぶしゃぶ",
@@ -3013,7 +3054,8 @@
    "野菜と豆腐を煮て、肉をさっとくぐらせてタレで食べる。"
   ],
   "swiss_tips": "スイスでは冬にフォンデュ・シノワーズ用の薄切り肉がたくさん並ぶ。専用の鍋や器具もそのまま使える。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "寄せ鍋",
@@ -3099,7 +3141,8 @@
    "最後はうどんかご飯を入れて締める。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "お好み焼き",
@@ -3192,7 +3235,8 @@
    "ウスターソース・ケチャップ・砂糖を混ぜたソースとマヨネーズをかけ、かつお節と海苔をのせる。"
   ],
   "swiss_tips": "お好み焼きソースはウスターソース・ケチャップ・砂糖で近い味が作れる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "たこ焼き風ボール",
@@ -3279,7 +3323,8 @@
    "縁が固まったら串で回しながら丸く焼く。ソースとマヨネーズをかける。"
   ],
   "swiss_tips": "タコは手に入りにくいので、ウインナー・エビ・チーズなどで。たこ焼き器はアジアスーパーで買えることも。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "どら焼き",
@@ -3341,7 +3386,8 @@
    "冷めたらあんこをはさむ。"
   ],
   "swiss_tips": "あんこはアジアスーパーの缶詰か袋入りを使う。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "麻婆豆腐",
@@ -3447,7 +3493,8 @@
    "水溶き片栗粉でとろみを付け、リーキとごま油を加える。"
   ],
   "swiss_tips": "甜麺醤がなければ味噌と砂糖で代用できる。豆板醤はアジアスーパーで。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "餃子",
@@ -3542,7 +3589,8 @@
    "水分が飛んだらごま油を回しかけ、パリッとするまで焼く。酢醤油で食べる。"
   ],
   "swiss_tips": "餃子の皮はアジアスーパーの冷凍コーナー。ニラがなければキャベツだけでもおいしい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "エビチリ",
@@ -3624,7 +3672,8 @@
    "エビとリーキを戻し入れて絡め、水溶き片栗粉でとろみを付ける。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "回鍋肉",
@@ -3706,7 +3755,8 @@
    "キャベツとピーマンを入れて強火で炒め、合わせ調味料を絡める。"
   ],
   "swiss_tips": "味噌と砂糖で甜麺醤の代わりになるので、普通のスーパーだけでも作れる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "チンジャオロース",
@@ -3775,7 +3825,8 @@
    "牛肉を戻し、オイスターソース・醤油・砂糖で味を付ける。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "酢豚",
@@ -3862,7 +3913,8 @@
    "野菜を炒め、合わせ調味料を入れてとろみが付いたら豚肉を絡める。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "春巻き",
@@ -3943,7 +3995,8 @@
    "170℃の油できつね色に揚げる。"
   ],
   "swiss_tips": "春巻きの皮はアジアスーパーの冷凍。ライスペーパーで揚げてもパリッとする。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "中華風卵スープ",
@@ -4005,7 +4058,8 @@
    "溶き卵を細く回し入れ、ねぎとごま油を加える。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "チャプチェ",
@@ -4098,7 +4152,8 @@
    "春雨と残りのタレを加えて炒め合わせ、ごまをふる。"
   ],
   "swiss_tips": "アジアスーパーの韓国春雨を使うと、もちもちの本場の食感になる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ビビンバ",
@@ -4197,7 +4252,8 @@
    "ご飯にナムルと肉、目玉焼きをのせ、コチュジャンを添えて混ぜて食べる。"
   ],
   "swiss_tips": "コチュジャンは Coop・Migros のアジアコーナーにもある。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "プルコギ",
@@ -4283,7 +4339,8 @@
    "フライパンで牛肉と野菜を一緒に炒める。ごまをふる。"
   ],
   "swiss_tips": "韓国では梨のすりおろしを入れるが、スイスの洋梨（Birne）を少し加えてもおいしい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "スンドゥブチゲ",
@@ -4370,7 +4427,8 @@
    "卵を割り入れ、ねぎを散らす。"
   ],
   "swiss_tips": "絹ごし豆腐がなければ、普通のスーパーの Tofu nature でもおいしく作れる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "チヂミ",
@@ -4457,7 +4515,8 @@
    "醤油・酢・ごま油・唐辛子でタレを作る。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "生春巻き",
@@ -4527,7 +4586,8 @@
    "スイートチリソースで食べる。"
   ],
   "swiss_tips": "ライスペーパーは Coop・Migros にもある。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "フォー",
@@ -4608,7 +4668,8 @@
    "器に麺と鶏肉を入れてスープを注ぎ、もやし・パクチー・ねぎ・ライムを添える。"
   ],
   "swiss_tips": "",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "バインミー",
@@ -4694,7 +4755,8 @@
    "マヨネーズを塗り、ハム・きゅうり・なます・パクチーをはさむ。醤油を数滴たらす。"
   ],
   "swiss_tips": "スイスのパリッとしたバゲット（Pariserbrot）で本場に近い食感になる。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "ガパオライス",
@@ -4787,7 +4849,8 @@
    "火を止めてバジルを混ぜる。ご飯に盛り、目玉焼きをのせる。"
   ],
   "swiss_tips": "タイのホーリーバジルがなくても、普通のバジルで十分おいしい。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "グリーンカレー",
@@ -4874,7 +4937,8 @@
    "野菜を入れて10分煮て、ナンプラーと砂糖で味を整える。バジルをのせる。"
   ],
   "swiss_tips": "カレーペーストもココナッツミルクも Coop・Migros にある。辛さはペーストの量で調整を。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "パッタイ",
@@ -4967,7 +5031,8 @@
    "砕いたピーナッツとライムを添える。"
   ],
   "swiss_tips": "タマリンドの代わりに酢とケチャップで甘酸っぱさを出す。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  },
  {
   "name": "トムヤムクン",
@@ -5042,6 +5107,7 @@
    "火を止めてライム汁を入れ、パクチーをのせる。まろやかにしたいときはココナッツミルクを加える。"
   ],
   "swiss_tips": "トムヤムペーストはアジアスーパー。レモングラスは Coop の野菜売り場にもある。",
-  "origin": "ai"
+  "origin": "ai",
+  "status": "published"
  }
 ]
