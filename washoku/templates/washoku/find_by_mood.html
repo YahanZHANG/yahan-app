@@ -1,0 +1,22 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}気分で選ぶ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>今日はどんな気分？</h1>
+
+<div class="washoku-mood-grid">
+    {% for mood in moods %}
+        <a class="washoku-mood" href="{% url 'washoku:recipe_list' %}?mood={{ mood.pk }}">
+            <strong>{{ mood.name }}</strong>
+            <small>{{ mood.recipe_count }}品</small>
+        </a>
+    {% endfor %}
+</div>
+
+<p class="washoku-more">
+    迷ったら <a href="{% url 'washoku:random_recipe' %}">ランダムで選ぶ</a>
+</p>
+
+{% endblock %}

@@ -1,0 +1,52 @@
+{% load washoku_tags %}
+{# target: "recipe" or "ingredient", target_pk #}
+<section class="washoku-section" id="comments">
+
+    <h2>{{ heading }}</h2>
+    <p class="washoku-note">{{ help_text }}</p>
+
+    {% for thread in threads %}
+        {% with comment=thread.comment %}
+        <article class="washoku-comment" id="comment-{{ comment.pk }}">
+            {% include "washoku/includes/comment_body.html" %}
+
+            {% for reply in thread.replies %}
+                <div class="washoku-reply" id="comment-{{ reply.pk }}">
+                    {% include "washoku/includes/comment_body.html" with comment=reply %}
+                </div>
+            {% endfor %}
+
+            {% if user.is_authenticated and not comment.is_deleted and not comment.is_hidden %}
+                <details class="washoku-reply-form">
+                    <summary>返信する</summary>
+                    <form method="post" action="{% url 'washoku:comment_create' target target_pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent" value="{{ comment.pk }}">
+                        <input type="hidden" name="kind" value="tip">
+                        <textarea name="body" rows="2" maxlength="500" required aria-label="返信"></textarea>
+                        <button type="submit">返信</button>
+                    </form>
+                </details>
+            {% endif %}
+        </article>
+        {% endwith %}
+    {% empty %}
+        <p class="washoku-empty">まだコメントはありません。</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form">
+            {% csrf_token %}
+            <div class="washoku-kind">
+                {% for radio in comment_form.kind %}
+                    <label>{{ radio.tag }} {{ radio.choice_label }}</label>
+                {% endfor %}
+            </div>
+            {{ comment_form.body }}
+            <button type="submit" class="washoku-button">投稿する</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>するとコメントや質問ができます。</p>
+    {% endif %}
+
+</section>

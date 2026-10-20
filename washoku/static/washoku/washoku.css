@@ -47,17 +47,6 @@ a {
     padding: 24px 16px;
 }
 
-.washoku-coming {
-    text-align: center;
-    padding-top: 40px;
-}
-
-.washoku-coming-label {
-    color: var(--washoku-accent);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-}
-
 .washoku-admin-box {
     margin: 24px 0;
     padding: 12px 16px;
@@ -65,4 +54,641 @@ a {
     border-radius: 12px;
     background: var(--washoku-surface);
     color: var(--washoku-muted);
+}
+
+/* ---------- layout ---------- */
+
+.washoku-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 0;
+}
+
+.washoku-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 12px 16px 6px;
+}
+
+.washoku-header-user a {
+    text-decoration: none;
+    position: relative;
+}
+
+.washoku-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+}
+
+.washoku-nav {
+    display: flex;
+    gap: 6px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 16px 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.washoku-nav a {
+    flex: none;
+    padding: 5px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    color: var(--washoku-text);
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.washoku-main {
+    max-width: 960px;
+}
+
+.washoku-footer {
+    padding: 32px 16px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 24px;
+    line-height: 1.4;
+    margin: 8px 0 12px;
+}
+
+h2 {
+    font-size: 18px;
+    margin: 0 0 12px;
+}
+
+h3 {
+    font-size: 16px;
+    margin: 16px 0 8px;
+}
+
+.washoku-section {
+    margin: 32px 0;
+}
+
+.washoku-lead {
+    color: var(--washoku-muted);
+}
+
+.washoku-note,
+.washoku-count {
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-empty {
+    padding: 24px;
+    border: 1px dashed var(--washoku-border);
+    border-radius: 12px;
+    color: var(--washoku-muted);
+    text-align: center;
+}
+
+.washoku-more {
+    text-align: right;
+}
+
+.washoku-message {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    border: 1px solid var(--washoku-border);
+}
+
+.washoku-message-error {
+    border-color: var(--washoku-accent);
+}
+
+/* ---------- forms ---------- */
+
+input[type="search"],
+input[type="text"],
+select,
+textarea {
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+}
+
+textarea {
+    width: 100%;
+}
+
+button,
+.washoku-button {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.washoku-link-button {
+    padding: 0;
+    background: none;
+    color: var(--washoku-muted);
+    font-weight: 400;
+    text-decoration: underline;
+}
+
+.washoku-search {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.washoku-search input {
+    flex: 1;
+    min-width: 0;
+}
+
+.washoku-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.washoku-filter input,
+.washoku-filter select {
+    flex: 1 1 140px;
+    min-width: 0;
+}
+
+/* ---------- home ---------- */
+
+.washoku-hero {
+    padding: 16px 0 0;
+}
+
+.washoku-entry {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.washoku-entry-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-entry-card span {
+    font-size: 28px;
+}
+
+.washoku-entry-card small {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+/* ---------- cards & chips ---------- */
+
+.washoku-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.washoku-card {
+    display: block;
+    padding: 14px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-card h3 {
+    margin: 8px 0 4px;
+    font-size: 17px;
+}
+
+.washoku-card-text {
+    margin: 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-card-meta {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-card-top,
+.washoku-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.washoku-chip,
+.washoku-chip-link {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--washoku-bg);
+    border: 1px solid var(--washoku-border);
+    color: var(--washoku-muted);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.washoku-chip-link {
+    font-size: 14px;
+    padding: 5px 12px;
+    color: var(--washoku-text);
+}
+
+.washoku-chip-link-strong,
+.washoku-chip-shop {
+    border-color: #4E8B5F;
+    color: #3D7A4E;
+}
+
+.washoku-chip-draft,
+.washoku-chip-question {
+    border-color: var(--washoku-accent);
+    color: var(--washoku-accent);
+}
+
+.washoku-stars {
+    color: #D9902F;
+    letter-spacing: 1px;
+}
+
+/* ---------- lists ---------- */
+
+.washoku-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-list small {
+    display: block;
+    color: var(--washoku-muted);
+}
+
+.washoku-list li.is-unread a {
+    font-weight: 700;
+}
+
+.washoku-mood-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.washoku-mood {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-mood small {
+    color: var(--washoku-muted);
+}
+
+.washoku-checks {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+}
+
+.washoku-checks legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.washoku-checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 4px 12px 4px 0;
+    white-space: nowrap;
+}
+
+.washoku-results {
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-results li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-results small {
+    display: block;
+    color: var(--washoku-muted);
+}
+
+.washoku-ok {
+    color: #3D7A4E !important;
+}
+
+.washoku-random {
+    display: block;
+    margin: 16px 0;
+    padding: 24px;
+    border: 2px solid var(--washoku-accent);
+    border-radius: 18px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-random strong {
+    display: block;
+    margin: 10px 0;
+    font-size: 26px;
+}
+
+/* ---------- recipe ---------- */
+
+.washoku-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-ingredients {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-ingredients li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--washoku-border);
+}
+
+.washoku-amount {
+    margin-left: auto;
+}
+
+.washoku-shops {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+}
+
+.washoku-shop {
+    padding: 0 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    background: #E8F1EA;
+    color: #2F6B40;
+}
+
+.washoku-shop-asian {
+    background: #FBEBD8;
+    color: #8A5216;
+}
+
+.washoku-shop-japanese {
+    background: #F7E0E0;
+    color: #9A2E2E;
+}
+
+.washoku-shop-online {
+    background: #E5E7F3;
+    color: #3E4A85;
+}
+
+.washoku-steps {
+    padding-left: 22px;
+}
+
+.washoku-steps li {
+    margin-bottom: 10px;
+}
+
+.washoku-tips {
+    margin: 24px 0;
+    padding: 14px 16px;
+    border-left: 4px solid var(--washoku-accent);
+    border-radius: 8px;
+    background: var(--washoku-surface);
+}
+
+.washoku-tips h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.washoku-tips p {
+    margin: 0;
+}
+
+.washoku-rating {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.washoku-rating button:not(.washoku-link-button) {
+    padding: 6px 12px;
+    border: 1px solid var(--washoku-border);
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-weight: 400;
+}
+
+.washoku-rating button.is-selected {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent);
+    color: #fff;
+}
+
+.washoku-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+}
+
+.washoku-facts dt {
+    color: var(--washoku-muted);
+}
+
+.washoku-facts dd {
+    margin: 0;
+}
+
+.washoku-ingredient-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-ingredient-index li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-ingredient-index small {
+    margin-left: 8px;
+    color: var(--washoku-muted);
+}
+
+.washoku-substitute {
+    color: var(--washoku-accent) !important;
+}
+
+/* ---------- comments ---------- */
+
+.washoku-comment {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+}
+
+.washoku-reply {
+    margin: 10px 0 0 16px;
+    padding: 8px 0 0 12px;
+    border-left: 2px solid var(--washoku-border);
+}
+
+.washoku-comment-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.washoku-comment-head small {
+    color: var(--washoku-muted);
+}
+
+.washoku-comment-text {
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+}
+
+.washoku-comment-gone {
+    color: var(--washoku-muted);
+    font-style: italic;
+}
+
+.washoku-comment-actions {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.washoku-comment-actions form {
+    margin: 0;
+}
+
+.washoku-reply-form summary {
+    color: var(--washoku-accent);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.washoku-reply-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.washoku-reply-form button {
+    align-self: flex-end;
+}
+
+.washoku-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.washoku-comment-form .washoku-button {
+    align-self: flex-end;
+}
+
+.washoku-kind {
+    display: flex;
+    gap: 16px;
+}
+
+.washoku-kind label {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.washoku-kind ul,
+.washoku-kind li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 480px) {
+    .washoku-entry-card small {
+        display: none;
+    }
 }

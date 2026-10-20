@@ -1,0 +1,54 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}家族 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>家族</h1>
+
+<p class="washoku-lead">家族を招待すると、料理ごとにみんなの好みが見られ、ランダムで家族の好きな料理が出やすくなります。</p>
+
+{% for invite in received_invites %}
+    <div class="washoku-admin-box">
+        <p>{{ invite.invited_by|display_name }} さんから家族への招待が届いています。</p>
+        <form method="post" action="{% url 'washoku:family_respond' invite.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="accept" class="washoku-button">参加する</button>
+            <button type="submit" name="action" value="decline" class="washoku-link-button">断る</button>
+        </form>
+    </div>
+{% endfor %}
+
+<section class="washoku-section">
+    <h2>メンバー</h2>
+    <ul class="washoku-list">
+        {% for member in members %}
+            <li>{{ member|display_name }}{% if member == user %}（あなた）{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% for invite in sent_invites %}
+        <p class="washoku-note">{{ invite.invited_user|display_name }} さんを招待中</p>
+    {% endfor %}
+</section>
+
+<section class="washoku-section">
+    <h2>家族を招待する</h2>
+    <form method="post" action="{% url 'washoku:family_invite' %}" class="washoku-search">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Yapp のユーザー名" required aria-label="ユーザー名">
+        <button type="submit">招待</button>
+    </form>
+    <p class="washoku-note">相手がこのページを開くと、招待が表示されます。</p>
+</section>
+
+{% if membership %}
+<section class="washoku-section">
+    <form method="post" action="{% url 'washoku:family_leave' %}" onsubmit="return confirm('家族から抜けますか？');">
+        {% csrf_token %}
+        <button type="submit" class="washoku-link-button">家族から抜ける</button>
+    </form>
+</section>
+{% endif %}
+
+{% endblock %}

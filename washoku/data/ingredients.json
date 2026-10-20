@@ -1,1 +1,1289 @@
-[]
+[
+ {
+  "name": "鶏もも肉",
+  "name_de": "Pouletschenkel ohne Knochen",
+  "category": "meat",
+  "search_group": "鶏肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "骨なしは「Pouletschenkel, ohne Knochen」。皮付きが欲しいときは Coop の肉売り場か、骨付きを買って自分で外す。",
+  "substitutes_for": []
+ },
+ {
+  "name": "鶏むね肉",
+  "name_de": "Pouletbrust",
+  "category": "meat",
+  "search_group": "鶏肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "鶏ひき肉",
+  "name_de": "Hackfleisch Poulet",
+  "category": "meat",
+  "search_group": "ひき肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "置いていない店もある。なければ鶏むね肉をフードプロセッサーで挽く。",
+  "substitutes_for": []
+ },
+ {
+  "name": "豚ひき肉",
+  "name_de": "Hackfleisch Schwein",
+  "category": "meat",
+  "search_group": "ひき肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "合いびき肉",
+  "name_de": "Hackfleisch gemischt",
+  "category": "meat",
+  "search_group": "ひき肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "牛と豚の「gemischt」。なければ牛ひき肉と豚ひき肉を半々で。",
+  "substitutes_for": []
+ },
+ {
+  "name": "牛ひき肉",
+  "name_de": "Hackfleisch Rind",
+  "category": "meat",
+  "search_group": "ひき肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "豚薄切り肉",
+  "name_de": "Schweinefleisch für Fondue Chinoise",
+  "category": "meat",
+  "search_group": "豚肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冷凍の「Fondue Chinoise」用が日本の薄切り肉に一番近い。肉屋で「dünn geschnitten」と頼んでもよい。",
+  "substitutes_for": [
+   {
+    "original_name": "豚こま切れ肉",
+    "tips": "フォンデュ・シノワーズ用を半解凍で食べやすく切る。"
+   }
+  ]
+ },
+ {
+  "name": "豚バラ肉",
+  "name_de": "Schweinebauch",
+  "category": "meat",
+  "search_group": "豚肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "ブロックは普通のスーパー。薄切りはアジアスーパーの冷凍が便利。",
+  "substitutes_for": [
+   {
+    "original_name": "豚バラ薄切り肉",
+    "tips": "ブロックを半冷凍にして包丁で薄く切ると切りやすい。"
+   }
+  ]
+ },
+ {
+  "name": "豚ロース肉（厚切り）",
+  "name_de": "Schweinsplätzli / Schweinskotelett",
+  "category": "meat",
+  "search_group": "豚肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "とんかつ用には厚めの「Schweinsplätzli」か、骨なし「Kotelett」。",
+  "substitutes_for": []
+ },
+ {
+  "name": "牛薄切り肉",
+  "name_de": "Rindfleisch für Fondue Chinoise",
+  "category": "meat",
+  "search_group": "牛肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冷凍の「Fondue Chinoise」用。年末は品数が多く、安くなることもある。",
+  "substitutes_for": [
+   {
+    "original_name": "牛こま切れ肉",
+    "tips": "フォンデュ・シノワーズ用を半解凍で食べやすく切る。"
+   }
+  ]
+ },
+ {
+  "name": "ベーコン",
+  "name_de": "Speckwürfeli / Bratspeck",
+  "category": "meat",
+  "search_group": "ベーコン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ハム",
+  "name_de": "Schinken",
+  "category": "meat",
+  "search_group": "ハム",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ウインナー",
+  "name_de": "Wienerli",
+  "category": "meat",
+  "search_group": "ウインナー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "「Wienerli」が日本のウインナーに近い。",
+  "substitutes_for": []
+ },
+ {
+  "name": "鮭",
+  "name_de": "Lachsfilet",
+  "category": "fish",
+  "search_group": "鮭",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "生の切り身は鮮魚売り場、冷凍の切り身も便利。皮付きのほうが焼き魚らしくなる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "鯖（冷凍）",
+  "name_de": "Makrele, tiefgekühlt",
+  "category": "fish",
+  "search_group": "鯖",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "生の鯖は見かけにくい。アジアスーパーの冷凍切り身（ノルウェー産）が使いやすい。",
+  "substitutes_for": []
+ },
+ {
+  "name": "白身魚",
+  "name_de": "Kabeljau / Seelachs / Dorsch",
+  "category": "fish",
+  "search_group": "白身魚",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "鱈（Kabeljau）や Seelachs の冷凍切り身が安い。",
+  "substitutes_for": [
+   {
+    "original_name": "鱈",
+    "tips": "Kabeljau がほぼ同じ。"
+   }
+  ]
+ },
+ {
+  "name": "むきエビ",
+  "name_de": "Crevetten, roh, geschält",
+  "category": "fish",
+  "search_group": "エビ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冷凍の生（roh）を選ぶ。加熱済み（gekocht）は炒めると硬くなる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ツナ缶",
+  "name_de": "Thon in Wasser",
+  "category": "fish",
+  "search_group": "ツナ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "おでん種",
+  "name_de": "Fischbällchen / Oden-Set",
+  "category": "fish",
+  "search_group": "練り物",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの冷凍コーナーに魚のつみれや練り物がある。日系の店ならおでんセットも。",
+  "substitutes_for": [
+   {
+    "original_name": "ちくわ・はんぺん",
+    "tips": "アジアスーパーの魚のつみれ（Fish ball）で代用できる。"
+   }
+  ]
+ },
+ {
+  "name": "卵",
+  "name_de": "Eier",
+  "category": "egg",
+  "search_group": "卵",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "バター",
+  "name_de": "Butter",
+  "category": "dairy",
+  "search_group": "バター",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "牛乳",
+  "name_de": "Milch",
+  "category": "dairy",
+  "search_group": "牛乳",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "木綿豆腐",
+  "name_de": "Tofu nature",
+  "category": "soy",
+  "search_group": "豆腐",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros の「Tofu nature」は木綿豆腐に近い。水切りは短めでよい。",
+  "substitutes_for": []
+ },
+ {
+  "name": "絹ごし豆腐",
+  "name_de": "Seidentofu",
+  "category": "soy",
+  "search_group": "豆腐",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの紙パックや常温パック（森永など）。",
+  "substitutes_for": []
+ },
+ {
+  "name": "油揚げ",
+  "name_de": "Aburaage (frittierter Tofu)",
+  "category": "soy",
+  "search_group": "油揚げ",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの冷凍コーナー。",
+  "substitutes_for": []
+ },
+ {
+  "name": "あんこ",
+  "name_de": "Rote Bohnenpaste (Anko)",
+  "category": "soy",
+  "search_group": "あんこ",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの缶詰か袋入り。",
+  "substitutes_for": []
+ },
+ {
+  "name": "米",
+  "name_de": "Sushi-Reis",
+  "category": "grain",
+  "search_group": "米",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros の「Sushi Reis」が日本のお米に近い。リゾット米は粘りが違う。",
+  "substitutes_for": [
+   {
+    "original_name": "日本米",
+    "tips": "「Sushi Reis」を選ぶ。研いだあと30分ほど水に浸けるとふっくらする。"
+   }
+  ]
+ },
+ {
+  "name": "薄力粉",
+  "name_de": "Weissmehl",
+  "category": "grain",
+  "search_group": "小麦粉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "片栗粉",
+  "name_de": "Kartoffelstärke",
+  "category": "grain",
+  "search_group": "片栗粉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros にある。とろみ付けならコーンスターチ（Maizena）でも可。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パン粉",
+  "name_de": "Panko / Paniermehl",
+  "category": "grain",
+  "search_group": "パン粉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "細かい「Paniermehl」より、アジアコーナーの「Panko」がサクッと揚がる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "うどん",
+  "name_de": "Udon-Nudeln",
+  "category": "grain",
+  "search_group": "麺",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros のアジアコーナーに真空パック。冷凍の讃岐うどん（アジアスーパー）はコシが強い。",
+  "substitutes_for": []
+ },
+ {
+  "name": "中華麺",
+  "name_de": "Mie-Nudeln / Ramen-Nudeln",
+  "category": "grain",
+  "search_group": "麺",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "乾麺の「Mie」で十分。アジアスーパーには焼きそば用の生麺もある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "スパゲッティ",
+  "name_de": "Spaghetti",
+  "category": "grain",
+  "search_group": "パスタ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "米麺（平麺）",
+  "name_de": "Reisnudeln, flach",
+  "category": "grain",
+  "search_group": "麺",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "フォーやパッタイに。Coop・Migros のアジアコーナーにもある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "春雨",
+  "name_de": "Glasnudeln",
+  "category": "grain",
+  "search_group": "麺",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "チャプチェにはアジアスーパーの韓国春雨（さつまいも春雨）がもちもちでおすすめ。",
+  "substitutes_for": []
+ },
+ {
+  "name": "餃子の皮",
+  "name_de": "Gyoza-Teigblätter",
+  "category": "grain",
+  "search_group": "皮",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの冷凍コーナー。",
+  "substitutes_for": []
+ },
+ {
+  "name": "春巻きの皮",
+  "name_de": "Frühlingsrollen-Teigblätter",
+  "category": "grain",
+  "search_group": "皮",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの冷凍コーナー。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ライスペーパー",
+  "name_de": "Reispapier",
+  "category": "grain",
+  "search_group": "皮",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "バゲット",
+  "name_de": "Baguette / Pariserbrot",
+  "category": "grain",
+  "search_group": "パン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "玉ねぎ",
+  "name_de": "Zwiebeln",
+  "category": "vegetable",
+  "search_group": "玉ねぎ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "リーキ",
+  "name_de": "Lauch",
+  "category": "vegetable",
+  "search_group": "ねぎ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "白い部分は長ねぎとほぼ同じ使い方ができる。緑の部分は硬いので煮込みに。",
+  "substitutes_for": [
+   {
+    "original_name": "長ねぎ",
+    "tips": "白い部分を使う。長ねぎより甘みが強い。"
+   }
+  ]
+ },
+ {
+  "name": "スプリングオニオン",
+  "name_de": "Frühlingszwiebeln",
+  "category": "vegetable",
+  "search_group": "ねぎ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "小ねぎ",
+    "tips": "緑の部分を小口切りにする。"
+   },
+   {
+    "original_name": "青ねぎ",
+    "tips": "緑の部分を使う。"
+   }
+  ]
+ },
+ {
+  "name": "にんじん",
+  "name_de": "Karotten",
+  "category": "vegetable",
+  "search_group": "にんじん",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "じゃがいも",
+  "name_de": "Kartoffeln",
+  "category": "vegetable",
+  "search_group": "じゃがいも",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "煮物には煮崩れしにくい「festkochend」、ポテトサラダにはほくほくの「mehligkochend」。",
+  "substitutes_for": []
+ },
+ {
+  "name": "キャベツ",
+  "name_de": "Weisskabis",
+  "category": "vegetable",
+  "search_group": "キャベツ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "日本のキャベツより葉が硬い。千切りは細くして、少し水にさらすと食べやすい。",
+  "substitutes_for": []
+ },
+ {
+  "name": "白菜",
+  "name_de": "Chinakohl",
+  "category": "vegetable",
+  "search_group": "白菜",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "大根（Rettich）",
+  "name_de": "Rettich",
+  "category": "vegetable",
+  "search_group": "大根",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "白い「Rettich」が大根の代わり。日本の大根より細く、少し辛い。",
+  "substitutes_for": [
+   {
+    "original_name": "大根",
+    "tips": "辛みが強いので、煮物は下茹でを長めにする。"
+   }
+  ]
+ },
+ {
+  "name": "きゅうり",
+  "name_de": "Gurke",
+  "category": "vegetable",
+  "search_group": "きゅうり",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "日本のきゅうりより太くて水分が多い。種の部分をスプーンで取ると水っぽくならない。",
+  "substitutes_for": []
+ },
+ {
+  "name": "なす",
+  "name_de": "Aubergine",
+  "category": "vegetable",
+  "search_group": "なす",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "日本のなすより大きく皮が硬い。皮をところどころむくと味がしみる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ピーマン",
+  "name_de": "Peperoni grün",
+  "category": "vegetable",
+  "search_group": "ピーマン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "緑の「Peperoni」が近い。日本のピーマンより肉厚で苦みが少ない。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パプリカ",
+  "name_de": "Peperoni rot / gelb",
+  "category": "vegetable",
+  "search_group": "ピーマン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ほうれん草",
+  "name_de": "Blattspinat / Jungspinat",
+  "category": "vegetable",
+  "search_group": "ほうれん草",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "おひたしには葉の柔らかい「Jungspinat」。冷凍の「Blattspinat」も使える。",
+  "substitutes_for": []
+ },
+ {
+  "name": "もやし",
+  "name_de": "Sojasprossen",
+  "category": "vegetable",
+  "search_group": "もやし",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros の野菜売り場に小袋がある。アジアスーパーのほうが安い。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ブロッコリー",
+  "name_de": "Broccoli",
+  "category": "vegetable",
+  "search_group": "ブロッコリー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "かぼちゃ",
+  "name_de": "Kürbis (Hokkaido)",
+  "category": "vegetable",
+  "search_group": "かぼちゃ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "オレンジ色の「Hokkaido」が日本のかぼちゃに一番近い。皮ごと食べられる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パースニップ",
+  "name_de": "Pastinaken",
+  "category": "vegetable",
+  "search_group": "パースニップ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冬によく並ぶ白い根菜。ごぼうの代わりになる。",
+  "substitutes_for": [
+   {
+    "original_name": "ごぼう",
+    "tips": "香りは違うが、きんぴらや豚汁の食感が出る。甘めなので砂糖は控えめに。"
+   }
+  ]
+ },
+ {
+  "name": "しいたけ",
+  "name_de": "Shiitake-Pilze",
+  "category": "mushroom",
+  "search_group": "きのこ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "マッシュルーム",
+  "name_de": "Champignons",
+  "category": "mushroom",
+  "search_group": "きのこ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "しめじ",
+    "tips": "ブラウンマッシュルームを薄切りにすると近い。"
+   }
+  ]
+ },
+ {
+  "name": "えのき",
+  "name_de": "Enoki-Pilze",
+  "category": "mushroom",
+  "search_group": "きのこ",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "生姜",
+  "name_de": "Ingwer",
+  "category": "vegetable",
+  "search_group": "生姜",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "にんにく",
+  "name_de": "Knoblauch",
+  "category": "vegetable",
+  "search_group": "にんにく",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "トマト",
+  "name_de": "Tomaten",
+  "category": "vegetable",
+  "search_group": "トマト",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "レタス",
+  "name_de": "Kopfsalat",
+  "category": "vegetable",
+  "search_group": "レタス",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ニラ",
+  "name_de": "Schnittknoblauch (Nira)",
+  "category": "vegetable",
+  "search_group": "ニラ",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの野菜コーナー。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パクチー",
+  "name_de": "Koriander",
+  "category": "vegetable",
+  "search_group": "ハーブ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "バジル",
+  "name_de": "Basilikum",
+  "category": "vegetable",
+  "search_group": "ハーブ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "タイのホーリーバジルはアジアスーパーにあることも。",
+  "substitutes_for": [
+   {
+    "original_name": "ホーリーバジル（ガパオ）",
+    "tips": "普通のバジルで十分おいしい。火を止めてから加える。"
+   }
+  ]
+ },
+ {
+  "name": "たけのこ水煮",
+  "name_de": "Bambussprossen (Dose)",
+  "category": "vegetable",
+  "search_group": "たけのこ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "キムチ",
+  "name_de": "Kimchi",
+  "category": "vegetable",
+  "search_group": "キムチ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros のアジアコーナーにもある。アジアスーパーのほうが種類が多い。",
+  "substitutes_for": []
+ },
+ {
+  "name": "レモン",
+  "name_de": "Zitrone",
+  "category": "fruit",
+  "search_group": "レモン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ライム",
+  "name_de": "Limette",
+  "category": "fruit",
+  "search_group": "ライム",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "レモングラス",
+  "name_de": "Zitronengras",
+  "category": "vegetable",
+  "search_group": "ハーブ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "こんにゃく",
+  "name_de": "Konjak",
+  "category": "other",
+  "search_group": "こんにゃく",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "アジアスーパーの冷蔵コーナー。しらたきもある。",
+  "substitutes_for": [
+   {
+    "original_name": "しらたき",
+    "tips": "アジアスーパーのしらたき（Shirataki）。"
+   }
+  ]
+ },
+ {
+  "name": "昆布",
+  "name_de": "Kombu",
+  "category": "seaweed",
+  "search_group": "出汁",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop のアジアコーナーにあることも。アジアスーパーなら確実。",
+  "substitutes_for": []
+ },
+ {
+  "name": "かつお節",
+  "name_de": "Bonitoflocken (Katsuobushi)",
+  "category": "seaweed",
+  "search_group": "出汁",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "海苔",
+  "name_de": "Nori",
+  "category": "seaweed",
+  "search_group": "海苔",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "寿司用の海苔が Coop・Migros にある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "わかめ（乾燥）",
+  "name_de": "Wakame, getrocknet",
+  "category": "seaweed",
+  "search_group": "わかめ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ひじき",
+  "name_de": "Hijiki",
+  "category": "seaweed",
+  "search_group": "ひじき",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "切り干し大根",
+  "name_de": "Getrockneter Rettich (Kiriboshi Daikon)",
+  "category": "seaweed",
+  "search_group": "切り干し大根",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "醤油",
+  "name_de": "Sojasauce (japanisch)",
+  "category": "seasoning",
+  "search_group": "醤油",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "キッコーマンは Coop・Migros にある。中国の醤油は味が違うので日本のものを。",
+  "substitutes_for": []
+ },
+ {
+  "name": "みりん",
+  "name_de": "Mirin",
+  "category": "seasoning",
+  "search_group": "みりん",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros のアジアコーナーにある。なければ砂糖と白ワインで代用できる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "日本酒",
+  "name_de": "Sake / Kochsake",
+  "category": "seasoning",
+  "search_group": "酒",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "料理酒はアジアスーパー。なければ白ワインでも。",
+  "substitutes_for": [
+   {
+    "original_name": "料理酒",
+    "tips": "辛口の白ワインで代用できる。"
+   }
+  ]
+ },
+ {
+  "name": "砂糖",
+  "name_de": "Zucker",
+  "category": "seasoning",
+  "search_group": "砂糖",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "塩",
+  "name_de": "Salz",
+  "category": "seasoning",
+  "search_group": "塩",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "こしょう",
+  "name_de": "Pfeffer",
+  "category": "seasoning",
+  "search_group": "こしょう",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "酢",
+  "name_de": "Reisessig / Weissweinessig",
+  "category": "seasoning",
+  "search_group": "酢",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "米酢はアジアコーナー。なければ白ワインビネガーを少し控えめに。",
+  "substitutes_for": []
+ },
+ {
+  "name": "味噌",
+  "name_de": "Miso",
+  "category": "seasoning",
+  "search_group": "味噌",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros のアジアコーナーやビオの店（Reformhaus）にある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "顆粒だし",
+  "name_de": "Dashi-Pulver",
+  "category": "seasoning",
+  "search_group": "出汁",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "ほんだしなどはアジアスーパー。なければ昆布とかつお節で。",
+  "substitutes_for": []
+ },
+ {
+  "name": "鶏がらスープの素",
+  "name_de": "Hühnerbouillon",
+  "category": "seasoning",
+  "search_group": "スープの素",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "普通のスーパーの「Hühnerbouillon」で十分。",
+  "substitutes_for": [
+   {
+    "original_name": "鶏ガラスープの素",
+    "tips": "Hühnerbouillon は塩分が強めなので量を控えめに。"
+   }
+  ]
+ },
+ {
+  "name": "ビーフブイヨン",
+  "name_de": "Rindsbouillon",
+  "category": "seasoning",
+  "search_group": "スープの素",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "サラダ油",
+  "name_de": "Rapsöl / Sonnenblumenöl",
+  "category": "seasoning",
+  "search_group": "油",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ごま油",
+  "name_de": "Sesamöl",
+  "category": "seasoning",
+  "search_group": "油",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "白ごま",
+  "name_de": "Sesam",
+  "category": "seasoning",
+  "search_group": "ごま",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "オイスターソース",
+  "name_de": "Austernsauce",
+  "category": "seasoning",
+  "search_group": "オイスターソース",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "豆板醤",
+  "name_de": "Doubanjiang (Chili-Bohnenpaste)",
+  "category": "seasoning",
+  "search_group": "豆板醤",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "甜麺醤",
+  "name_de": "Tianmianjiang (süsse Bohnenpaste)",
+  "category": "seasoning",
+  "search_group": "甜麺醤",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ケチャップ",
+  "name_de": "Ketchup",
+  "category": "seasoning",
+  "search_group": "ケチャップ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ウスターソース",
+  "name_de": "Worcestershiresauce",
+  "category": "seasoning",
+  "search_group": "ソース",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "中濃ソース",
+    "tips": "ウスターソースとケチャップを2:1で混ぜると近い。"
+   },
+   {
+    "original_name": "お好み焼きソース",
+    "tips": "ウスターソース・ケチャップ・砂糖を2:2:1で混ぜる。"
+   }
+  ]
+ },
+ {
+  "name": "マヨネーズ",
+  "name_de": "Mayonnaise",
+  "category": "seasoning",
+  "search_group": "マヨネーズ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "日本のキューピーはアジアスーパー。スイスのマヨネーズは酸味が弱め。",
+  "substitutes_for": []
+ },
+ {
+  "name": "カレールー",
+  "name_de": "Japanische Curry-Würfel",
+  "category": "seasoning",
+  "search_group": "カレールー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "S&B ゴールデンカレーが Coop・Migros のアジアコーナーにある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "コチュジャン",
+  "name_de": "Gochujang",
+  "category": "seasoning",
+  "search_group": "コチュジャン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ナンプラー",
+  "name_de": "Fischsauce",
+  "category": "seasoning",
+  "search_group": "ナンプラー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "スイートチリソース",
+  "name_de": "Sweet-Chili-Sauce",
+  "category": "seasoning",
+  "search_group": "チリソース",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "グリーンカレーペースト",
+  "name_de": "Grüne Currypaste",
+  "category": "seasoning",
+  "search_group": "カレーペースト",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "トムヤムペースト",
+  "name_de": "Tom-Yum-Paste",
+  "category": "seasoning",
+  "search_group": "トムヤムペースト",
+  "shops": [
+   "asian"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ココナッツミルク",
+  "name_de": "Kokosmilch",
+  "category": "seasoning",
+  "search_group": "ココナッツミルク",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "唐辛子",
+  "name_de": "Chili, getrocknet",
+  "category": "seasoning",
+  "search_group": "唐辛子",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "はちみつ",
+  "name_de": "Honig",
+  "category": "seasoning",
+  "search_group": "はちみつ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ベーキングパウダー",
+  "name_de": "Backpulver",
+  "category": "seasoning",
+  "search_group": "ベーキングパウダー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "ピーナッツ",
+  "name_de": "Erdnüsse",
+  "category": "other",
+  "search_group": "ナッツ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ }
+]

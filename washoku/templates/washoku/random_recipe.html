@@ -1,0 +1,45 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}ランダム | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>今日のごはんは…</h1>
+
+{% if recipe %}
+    <a class="washoku-random" href="{% url 'washoku:recipe_detail' recipe.pk %}">
+        <span class="washoku-chip">{{ recipe.get_category_display }}</span>
+        <strong>{{ recipe.name }}</strong>
+        {% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
+        {% if recipe.cooking_time_minutes %}<small>⏱ {{ recipe.cooking_time_minutes }}分</small>{% endif %}
+    </a>
+{% else %}
+    <p class="washoku-empty">条件に合うレシピがありません。</p>
+{% endif %}
+
+<form method="get" class="washoku-filter">
+    <select name="mood" aria-label="気分">
+        <option value="">どんな気分でも</option>
+        {% for item in moods %}
+            <option value="{{ item.pk }}" {% if item.pk|stringformat:"s" == mood %}selected{% endif %}>{{ item.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="shop" aria-label="買い物">
+        <option value="">どの店でも</option>
+        {% for item in shops %}
+            {% if not forloop.last %}
+            <option value="{{ item.rank }}" {% if item.rank|stringformat:"s" == shop %}selected{% endif %}>{{ item.name }}{% if not forloop.first %}まで{% endif %}で作れる</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit">🎲 もう一回</button>
+</form>
+
+{% if user.is_authenticated %}
+    <p class="washoku-note">家族の評価が高い料理ほど出やすく、誰かが「苦手」を付けた料理は出ません。</p>
+{% else %}
+    <p class="washoku-note"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族の好みに合わせて選びます。</p>
+{% endif %}
+
+{% endblock %}

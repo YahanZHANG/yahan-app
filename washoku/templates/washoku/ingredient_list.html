@@ -1,0 +1,36 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}食材と買い方 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>食材と買い方</h1>
+
+<p class="washoku-lead">日本の食材がスイスで何と呼ばれ、どこで買えるか。代わりになる食材もまとめています。</p>
+
+<form method="get" class="washoku-search">
+    <input type="search" name="q" value="{{ query }}" placeholder="日本語・ドイツ語どちらでも（例: 大根、Lauch）" aria-label="食材を検索">
+    <button type="submit">探す</button>
+</form>
+
+{% for category, ingredients in by_category.items %}
+    <section class="washoku-section">
+        <h2>{{ category }}</h2>
+        <ul class="washoku-ingredient-index">
+            {% for ingredient in ingredients %}
+                <li>
+                    <a href="{% url 'washoku:ingredient_detail' ingredient.pk %}">{{ ingredient.name }}</a>
+                    {% if ingredient.name_de %}<small lang="de">{{ ingredient.name_de }}</small>{% endif %}
+                    {% for substitute in ingredient.substitutes_for.all %}<small class="washoku-substitute">{{ substitute.original_name }}の代わり</small>{% endfor %}
+                    <span class="washoku-shops">
+                        {% for shop in ingredient.shops.all %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endfor %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% empty %}
+    <p class="washoku-empty">見つかりませんでした。</p>
+{% endfor %}
+
+{% endblock %}

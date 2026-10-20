@@ -1,0 +1,8 @@
+<li>
+    <a href="{% url 'washoku:ingredient_detail' item.ingredient.pk %}">{{ item.ingredient.name }}</a>
+    {% if item.is_optional %}<small>（なくても可）</small>{% endif %}
+    <span class="washoku-amount">{{ item.amount }}</span>
+    <span class="washoku-shops">
+        {% for shop in item.ingredient.shops.all %}<span class="washoku-shop washoku-shop-{{ shop.code }}" title="{{ shop.name }}">{{ shop.name }}</span>{% endfor %}
+    </span>
+</li>

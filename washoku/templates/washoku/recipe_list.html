@@ -1,0 +1,65 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}レシピ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>レシピ</h1>
+
+<form method="get" class="washoku-filter">
+
+    <input type="search" name="q" value="{{ query }}" placeholder="料理名や食材" aria-label="キーワード">
+
+    <select name="category" aria-label="カテゴリー">
+        <option value="">すべてのカテゴリー</option>
+        {% for value, label in categories %}
+            <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="mood" aria-label="気分">
+        <option value="">気分</option>
+        {% for item in moods %}
+            <option value="{{ item.pk }}" {% if item.pk|stringformat:"s" == mood %}selected{% endif %}>{{ item.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="time" aria-label="調理時間">
+        <option value="">調理時間</option>
+        {% for value, label in time_choices %}
+            <option value="{{ value }}" {% if value|stringformat:"s" == max_time %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="shop" aria-label="買い物">
+        <option value="">どの店でも</option>
+        {% for item in shops %}
+            {% if not forloop.last %}
+            <option value="{{ item.rank }}" {% if item.rank|stringformat:"s" == shop %}selected{% endif %}>{{ item.name }}{% if not forloop.first %}まで{% endif %}で作れる</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+
+    <select name="sort" aria-label="並べ替え">
+        {% for value, label in sort_choices %}
+            <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">絞り込む</button>
+
+</form>
+
+<p class="washoku-count">{{ recipes|length }}品</p>
+
+{% if recipes %}
+    <div class="washoku-grid">
+        {% for recipe in recipes %}
+            {% include "washoku/includes/recipe_card.html" %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="washoku-empty">条件に合うレシピがありません。</p>
+{% endif %}
+
+{% endblock %}

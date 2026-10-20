@@ -1,0 +1,15 @@
+{% load washoku_tags %}
+<a class="washoku-card" href="{% url 'washoku:recipe_detail' recipe.pk %}">
+    <div class="washoku-card-top">
+        <span class="washoku-chip">{{ recipe.get_category_display }}</span>
+        {% if recipe.status == "draft" %}<span class="washoku-chip washoku-chip-draft">下書き</span>{% endif %}
+        {% if recipe.shop_rank == 1 %}<span class="washoku-chip washoku-chip-shop">普通のスーパーで作れる</span>{% endif %}
+    </div>
+    <h3>{{ recipe.name }}</h3>
+    {% if recipe.description %}<p class="washoku-card-text">{{ recipe.description }}</p>{% endif %}
+    <p class="washoku-card-meta">
+        {% if recipe.cooking_time_minutes %}⏱ {{ recipe.cooking_time_minutes }}分{% endif %}
+        {% if recipe.family_average %}<span class="washoku-stars">{{ recipe.family_average|stars }}</span>{% endif %}
+        {% if recipe.comment_count %}💬 {{ recipe.comment_count }}{% endif %}
+    </p>
+</a>

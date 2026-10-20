@@ -3,6 +3,7 @@ washoku/data/ingredients.json と recipes.json を取り込む。
 
     python manage.py import_washoku
     python manage.py import_washoku --dry-run
+    python manage.py import_washoku --new-only   # まだない食材・レシピだけ追加 (start.sh 用)
 
 同じ名前の食材・レシピは上書きする。ただしレシピの公開状態は、
 既にあるレシピでは変えない (管理画面で公開したものを下書きに戻さないため)。
@@ -55,10 +56,34 @@ class Command(BaseCommand):
             help="チェックだけして保存しない",
         )
 
+        parser.add_argument(
+            "--new-only",
+            action="store_true",
+            help="まだない食材・レシピだけ追加し、既にあるもの (管理画面で直したもの) は変えない",
+        )
+
     def handle(self, *args, **options):
 
         ingredients = self.load(options["ingredients"])
         recipes = self.load(options["recipes"])
+
+        if options["new_only"]:
+
+            existing_ingredients = set(
+                Ingredient.objects.values_list("name", flat=True)
+            )
+            existing_recipes = set(
+                Recipe.objects.values_list("name", flat=True)
+            )
+
+            ingredients = [
+                row for row in ingredients
+                if row["name"] not in existing_ingredients
+            ]
+            recipes = [
+                row for row in recipes
+                if row["name"] not in existing_recipes
+            ]
 
         try:
             with transaction.atomic():

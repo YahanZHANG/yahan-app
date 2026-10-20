@@ -1,4 +1,4 @@
-{% load static %}
+{% load static washoku_tags %}
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -28,12 +28,53 @@
 <body>
 
     <header class="washoku-header">
-        <a href="{% url 'washoku:home' %}" class="washoku-brand">スイスで和食</a>
+
+        <div class="washoku-header-inner">
+
+            <a href="{% url 'washoku:home' %}" class="washoku-brand">🍚 スイスで和食</a>
+
+            <div class="washoku-header-user">
+                {% if user.is_authenticated %}
+                    {% unread_notification_count as unread %}
+                    <a href="{% url 'washoku:notification_list' %}" class="washoku-bell" aria-label="通知">
+                        🔔{% if unread %}<span class="washoku-badge">{{ unread }}</span>{% endif %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <nav class="washoku-nav">
+            <a href="{% url 'washoku:recipe_list' %}">レシピ</a>
+            <a href="{% url 'washoku:find_by_ingredients' %}">食材で選ぶ</a>
+            <a href="{% url 'washoku:find_by_mood' %}">気分で選ぶ</a>
+            <a href="{% url 'washoku:random_recipe' %}">ランダム</a>
+            <a href="{% url 'washoku:ingredient_list' %}">食材と買い方</a>
+            <a href="{% url 'washoku:question_list' %}">Q&amp;A</a>
+            <a href="{% url 'washoku:family' %}">家族</a>
+        </nav>
+
     </header>
 
     <main class="washoku-main">
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="washoku-message washoku-message-{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
         {% block content %}{% endblock %}
+
     </main>
+
+    <footer class="washoku-footer">
+        <a href="{% url 'portal:home' %}">Yapp トップ</a>
+        ・
+        <a href="{% url 'portal:support' %}?from=washoku">ご意見・サポート</a>
+    </footer>
 
 </body>
 
