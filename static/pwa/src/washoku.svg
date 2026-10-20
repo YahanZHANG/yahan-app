@@ -11,18 +11,19 @@
   </defs>
   <rect width="1024" height="1024" fill="url(#bg)"/>
   <!-- steam -->
-  <path d="M400 330 c-40 -50 40 -80 0 -140" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" opacity="0.55"/>
-  <path d="M520 310 c-40 -50 40 -80 0 -140" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" opacity="0.55"/>
-  <!-- chopsticks -->
-  <path d="M600 470 L860 210" stroke="#3A2A20" stroke-width="30" stroke-linecap="round"/>
-  <path d="M640 490 L900 260" stroke="#3A2A20" stroke-width="30" stroke-linecap="round"/>
+  <path d="M440 290 c-36 -45 36 -72 0 -126" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
+  <path d="M584 290 c-36 -45 36 -72 0 -126" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
   <!-- rice -->
-  <path d="M230 520 C 250 400, 380 360, 480 380 C 560 350, 720 380, 790 520 Z" fill="#FFFFFF"/>
+  <path d="M262 470 C 282 360, 400 322, 490 340 C 562 312, 712 340, 762 470 Z" fill="#FFFFFF"/>
   <!-- bowl -->
-  <path d="M180 520 L844 520 C 844 700, 700 800, 512 800 C 324 800, 180 700, 180 520 Z" fill="url(#bowl)"/>
-  <rect x="412" y="796" width="200" height="44" rx="16" fill="#F1E4D8"/>
+  <path d="M212 470 L812 470 C 812 632, 682 722, 512 722 C 342 722, 212 632, 212 470 Z" fill="url(#bowl)"/>
+  <rect x="422" y="716" width="180" height="40" rx="14" fill="#F1E4D8"/>
   <!-- swiss cross -->
-  <rect x="452" y="580" width="120" height="120" rx="18" fill="#D52B1E"/>
-  <rect x="497" y="598" width="30" height="84" fill="#FFFFFF"/>
-  <rect x="470" y="625" width="84" height="30" fill="#FFFFFF"/>
+  <rect x="458" y="522" width="108" height="108" rx="16" fill="#D52B1E"/>
+  <rect x="498" y="538" width="28" height="76" fill="#FFFFFF"/>
+  <rect x="474" y="562" width="76" height="28" fill="#FFFFFF"/>
+  <!-- chopsticks laid sideways on a chopstick rest (hashioki), in front of the bowl -->
+  <rect x="604" y="786" width="72" height="76" rx="24" fill="#F1E4D8"/>
+  <path d="M330 806 L720 806" stroke="#3A2A20" stroke-width="20" stroke-linecap="round"/>
+  <path d="M330 842 L720 842" stroke="#3A2A20" stroke-width="20" stroke-linecap="round"/>
 </svg>
