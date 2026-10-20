@@ -679,3 +679,18 @@ class AdminAttentionTests(TestCase):
             self.client.get(reverse("admin:washoku_comment_changelist") + "?admin_checked__exact=0&target=store"),
             "お店: Nishi",
         )
+
+
+class IngredientGermanNameTests(TestCase):
+
+    def test_recipe_ingredients_show_the_german_name(self):
+
+        recipe = make_recipe()
+        Ingredient.objects.filter(name="鶏もも肉").update(name_de="Pouletschenkel")
+        Ingredient.objects.filter(name="醤油").update(name="醤油（Sojasauce）", name_de="Sojasauce")
+
+        response = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+
+        self.assertContains(response, "（Pouletschenkel）")
+        # 名前にもうドイツ語が入っているときは重ねて書かない
+        self.assertNotContains(response, "（Sojasauce）</small>")

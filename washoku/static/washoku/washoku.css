@@ -1526,3 +1526,18 @@ html[data-washoku-theme="dark"] {
     font-size: 13px;
     white-space: nowrap;
 }
+
+/* レシピの材料: 名前 (ドイツ語) は左で折り返し、分量は右にそろえる */
+.washoku-ing-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.washoku-ing-de {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+.washoku-ingredients .washoku-amount {
+    white-space: nowrap;
+}
