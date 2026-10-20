@@ -7,18 +7,23 @@ Run the Outings daily update inside the Render Web Service.
 - A deploy or restart during the night no longer skips the day: the job runs
   as soon as the scheduler is up and the day has no success yet.
 - Each failure is emailed to ADMIN_NOTIFICATION_EMAIL.
+- The update runs in a child process, so the memory it uses (Eventfrog
+  pages, AI replies) is given back when it ends instead of staying in this
+  long-lived process.
 - Linux/Render only (uses fcntl).
 """
 
 import fcntl
+import subprocess
+import sys
 import time
-import traceback
+
+from collections import deque
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from django.conf import settings
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from outings.services.alerts import send_admin_alert
@@ -39,6 +44,31 @@ DAILY_OPTIONS = dict(
     cleanup=True,
     images=True,
 )
+
+
+def daily_command():
+    command = [sys.executable, "-u", str(Path(settings.BASE_DIR) / "manage.py"), "daily_outings"]
+    for name, value in DAILY_OPTIONS.items():
+        flag = "--" + name.replace("_", "-")
+        if value is True:
+            command.append(flag)
+        else:
+            command += [flag, str(value)]
+    return command
+
+
+def run_daily(write):
+    """Run daily_outings in a child process. Returns (ok, last output lines)."""
+    tail = deque(maxlen=60)
+    with subprocess.Popen(
+        daily_command(), cwd=settings.BASE_DIR, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace",
+    ) as process:
+        for line in process.stdout:
+            line = line.rstrip("\n")
+            write(line)
+            tail.append(line)
+    return process.returncode == 0, "\n".join(tail)
 
 
 def attempts(state_dir, day):
@@ -105,9 +135,10 @@ class Command(BaseCommand):
         (state_dir / f"{day}.attempt-{attempt}").write_text(f"Started: {now.isoformat()}\n", encoding="utf-8")
         self.stdout.write(f"Starting daily Outings update: {day} (attempt {attempt}/{MAX_ATTEMPTS})")
         try:
-            call_command("daily_outings", **DAILY_OPTIONS)
-        except Exception:
-            details = traceback.format_exc()
+            ok, details = run_daily(self.stdout.write)
+        except OSError as exc:
+            ok, details = False, f"{type(exc).__name__}: {exc}"
+        if not ok:
             self.stderr.write(f"Daily Outings update FAILED: {day} (attempt {attempt})")
             self.stderr.write(details)
             if attempt < MAX_ATTEMPTS:

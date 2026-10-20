@@ -264,6 +264,10 @@ def _article_queryset(
             "regions",
             _duplicates_prefetch(),
         )
+        # 重複チェック用の大きなデータは一覧では使わない
+        .defer(
+            "embedding"
+        )
     )
 
 
@@ -448,6 +452,9 @@ def _duplicates_prefetch():
             Article.objects
             .select_related(
                 "source"
+            )
+            .defer(
+                "embedding"
             )
             .order_by(
                 "published_at"
@@ -981,6 +988,9 @@ def favorites(request):
         )
         .select_related(
             "source"
+        )
+        .defer(
+            "embedding"
         )
         .prefetch_related(
             "topics",

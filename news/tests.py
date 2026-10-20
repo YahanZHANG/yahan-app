@@ -7,7 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from news.models import Article, NewsSource
+from news.models import Article, NewsDigest, NewsSource
 
 
 @override_settings(
@@ -506,3 +506,33 @@ class AnnouncementTests(NewsTestCase):
         )
 
         self.assertNotContains(response, "2週間以上前")
+
+
+class CleanupTests(NewsTestCase):
+
+    def test_old_articles_and_digests_are_deleted(self):
+
+        old = timezone.now() - timedelta(days=8)
+
+        self.make_article(self.srf, "old", published_at=old)
+        self.make_article(self.srf, "new")
+
+        for day, label in ((old, "old"), (timezone.now(), "new")):
+            NewsDigest.objects.create(
+                digest_date=day.date(),
+                period="morning",
+                summary_ja=label,
+                source_from=day,
+                source_to=day,
+            )
+
+        call_command("cleanup_news", stdout=mock.MagicMock())
+
+        self.assertEqual(
+            list(Article.objects.values_list("source_url", flat=True)),
+            ["https://example.com/new"],
+        )
+        self.assertEqual(
+            list(NewsDigest.objects.values_list("summary_ja", flat=True)),
+            ["new"],
+        )
