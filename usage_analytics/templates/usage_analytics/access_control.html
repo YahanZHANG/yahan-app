@@ -1,157 +1,48 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-    閲覧権限 | Yapp
+{% block title %}閲覧権限 | Yapp分析{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usage_analytics/analytics.css' %}">
 {% endblock %}
 
-
 {% block content %}
+<div class="ya" style="max-width: 760px">
 
-<link
-    rel="stylesheet"
-    href="{% static 'usage_analytics/analytics.css' %}"
->
-
-<div class="analytics-page">
-
-    <header class="analytics-hero">
-
-        <p class="analytics-eyebrow">
-            ACCESS CONTROL
-        </p>
-
-        <h1>
-            🔐 閲覧権限
-        </h1>
-
-        <p>
-            利用状況を確認できるアカウントを設定
-        </p>
-
-        <div class="analytics-actions">
-
-            <a href="{% url 'usage_analytics:dashboard' %}">
-                ← 利用状況に戻る
-            </a>
-
+    <header class="ya-header">
+        <div>
+            <p class="ya-eyebrow">ACCESS CONTROL</p>
+            <h1>🔐 閲覧権限</h1>
+            <p>アクセス解析を見られるアカウントを選びます。管理者 (Superuser) はいつでも見られます。</p>
         </div>
-
+        <nav class="ya-links">
+            <a class="ya-link" href="{% url 'usage_analytics:dashboard' %}">← アクセス解析</a>
+        </nav>
     </header>
 
+    {% if messages %}
+        <div class="ya-messages">
+            {% for message in messages %}<div class="alert alert-success py-2">{{ message }}</div>{% endfor %}
+        </div>
+    {% endif %}
 
-    <main class="analytics-main">
-
-        <section class="analytics-section">
-
-            <div class="analytics-section-heading">
-
-                <p>
-                    ALLOWED USERS
-                </p>
-
-                <h2>
-                    閲覧を許可するユーザー
-                </h2>
-
-            </div>
-
-
-            <p class="analytics-description">
-
-                チェックを入れたアカウントは、
-                管理ダッシュボードと
-                ユーザー別の利用状況を閲覧できる。
-
-                Superuserは常に閲覧可能。
-
-            </p>
-
-
-            {% if messages %}
-
-                {% for message in messages %}
-
-                    <div class="analytics-message">
-
-                        {{ message }}
-
-                    </div>
-
+    <section class="ya-card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="ya-check-list">
+                {% for account in accounts %}
+                    <label class="ya-check">
+                        <input type="checkbox" name="viewer_ids" value="{{ account.id }}" {% if account.is_viewer %}checked{% endif %}>
+                        <span><strong>{{ account.display_name }}</strong> <span class="ya-sub" style="display: inline">@{{ account.username }}</span></span>
+                    </label>
+                {% empty %}
+                    <p class="ya-note">設定できるユーザーはいません。</p>
                 {% endfor %}
-
-            {% endif %}
-
-
-            <form method="post">
-
-                {% csrf_token %}
-
-
-                <div class="analytics-access-list">
-
-                    {% for account in accounts %}
-
-                        <label class="analytics-access-user">
-
-                            <input
-                                type="checkbox"
-
-                                name="viewer_ids"
-
-                                value="{{ account.id }}"
-
-                                {% if account.is_viewer %}
-                                    checked
-                                {% endif %}
-                            >
-
-
-                            <span class="analytics-avatar">
-
-                                {{ account.display_name|first|upper }}
-
-                            </span>
-
-
-                            <span class="analytics-user-name">
-
-                                <strong>
-                                    {{ account.display_name }}
-                                </strong>
-
-                                <span>
-                                    @{{ account.username }}
-                                </span>
-
-                            </span>
-
-                        </label>
-
-                    {% empty %}
-
-                        <p>
-                            設定可能なユーザーはいません。
-                        </p>
-
-                    {% endfor %}
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="analytics-save-button"
-                >
-                    変更を保存
-                </button>
-
-            </form>
-
-        </section>
-
-    </main>
+            </div>
+            <button class="ya-button" type="submit">変更を保存</button>
+        </form>
+    </section>
 
 </div>
-
 {% endblock %}

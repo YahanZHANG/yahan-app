@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -14,101 +15,58 @@ urlpatterns = [
     # Dashboard
     # =====================================================
 
-    path(
-        "",
-        views.dashboard,
-        name="dashboard",
-    ),
-
+    path("", views.dashboard, name="dashboard"),
 
     # =====================================================
-    # Analytics with Graphic
+    # 1人ずつの足あと
     # =====================================================
 
-    path(
-        "apps/news/",
-        views.news_app_detail,
-        name="news_app_detail",
-    ),
+    path("visitors/<uuid:visitor_id>/", views.visitor_detail, name="visitor_detail"),
 
-    path(
-        "apps/news/campaigns/<slug:source>/<slug:medium>/<slug:campaign>/",
-        views.news_campaign_detail,
-        name="news_campaign_detail",
-    ),
+    path("users/<int:user_id>/", views.user_detail, name="user_detail"),
 
     # =====================================================
-    # Public News detail
+    # Settings
     # =====================================================
 
-    path(
-        "public-news/",
-        views.public_news_detail,
-        name="public_news_detail",
-    ),
-    path(
-        "public-news/visitors/<uuid:visitor_id>/",
-        views.public_news_visitor_detail,
-        name="public_news_visitor_detail",
-    ),
+    path("settings/", views.settings_view, name="settings"),
+
+    path("settings/ignore-browser/", views.toggle_ignore_browser, name="toggle_ignore_browser"),
+
+    path("access/", views.access_control, name="access_control"),
+
+    # =====================================================
+    # Swiss News article click (記録してから元記事へ)
+    # =====================================================
+
     path(
         "public-news/articles/<int:article_id>/click/",
         views.public_news_article_click,
         name="public_news_article_click",
     ),
-    path(
-        "users/<int:user_id>/news/",
-        views.user_news_detail,
-        name="user_news_detail",
-    ),
-    # =====================================================
-    # Analytics filters
-    # =====================================================
-
-    path(
-        "filters/",
-        views.filters,
-        name="filters",
-    ),
 
     # =====================================================
-    # User detail
+    # Old URLs (前の解析ページ)
     # =====================================================
 
-    path(
-        "users/<int:user_id>/",
-        views.user_detail,
-        name="user_detail",
-    ),
+    path("apps/news/", views.legacy_redirect),
 
-    # =====================================================
-    # Access control
-    # =====================================================
+    path("apps/news/campaigns/<slug:source>/<slug:medium>/<slug:campaign>/", views.legacy_redirect),
 
-    path(
-        "access/",
-        views.access_control,
-        name="access_control",
-    ),
+    path("public-news/", views.legacy_redirect),
+
+    path("public-news/visitors/<uuid:visitor_id>/", views.legacy_redirect),
+
+    path("users/<int:user_id>/news/", views.legacy_redirect),
+
+    path("filters/", RedirectView.as_view(pattern_name="usage_analytics:settings")),
 
     # =====================================================
     # Heartbeat
     # =====================================================
 
-    path(
-        "heartbeat/",
-        heartbeat_views.heartbeat,
-        name="heartbeat",
-    ),
+    path("heartbeat/", heartbeat_views.heartbeat, name="heartbeat"),
 
-    # =====================================================
-    # Online users
-    # =====================================================
-
-    path(
-        "online/",
-        heartbeat_views.online_users,
-        name="online_users",
-    ),
+    path("online/", heartbeat_views.online_users, name="online_users"),
 
 ]

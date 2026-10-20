@@ -1,4 +1,5 @@
 import logging
+import re
 import uuid
 
 from urllib.parse import urlparse
@@ -7,11 +8,9 @@ from django.conf import settings
 from django.db import DatabaseError
 from django.utils import timezone
 
-from .models import (
-    PublicNewsEvent,
-    UsageEvent,
-    UserNewsEvent,
-)
+from .catalog import app_for_path, should_track_path
+from .models import PageView
+from .sources import classify_source
 
 
 logger = logging.getLogger(__name__)
@@ -21,78 +20,33 @@ logger = logging.getLogger(__name__)
 # Tracking settings
 # =========================================================
 
-
 VISIT_TIMEOUT_SECONDS = 30 * 60
 
+# 名前は以前の Swiss News 用のまま (今までの訪問者IDを引き継ぐため)
+VISITOR_COOKIE = "yahan_news_visitor_id"
 
-SESSION_KEY = "usage_analytics_last_seen"
+VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2
 
+LEGACY_VISITOR_SESSION_KEY = "public_news_visitor_id"
 
-PUBLIC_NEWS_VISITOR_COOKIE = (
-    "yahan_news_visitor_id"
+VISIT_COOKIE = "yapp_visit"
+
+# 解析ページの設定から「このブラウザを集計しない」を選ぶと付く
+IGNORE_COOKIE = "yapp_analytics_ignore"
+
+BOT_PATTERN = re.compile(
+    r"bot|crawl|spider|slurp|scrap|preview|facebookexternalhit|"
+    r"whatsapp/|headless|lighthouse|pagespeed|monitor|uptime|pingdom|"
+    r"curl|wget|python|httpx|aiohttp|go-http|axios|node-fetch|okhttp|"
+    r"java/|libwww|ahrefs|semrush|mj12|petal|bytespider|gptbot|"
+    r"render/health",
+    re.IGNORECASE,
 )
-
-
-PUBLIC_NEWS_VISITOR_COOKIE_MAX_AGE = (
-    60 * 60 * 24 * 365
-)
-
-
-PUBLIC_NEWS_VISIT_ID_SESSION_KEY = (
-    "public_news_visit_id"
-)
-
-
-PUBLIC_NEWS_LAST_SEEN_SESSION_KEY = (
-    "public_news_last_seen"
-)
-
-
-APP_PATHS = {
-
-    "/news": "news",
-
-    "/feeding": "feeding",
-
-    "/vaccination": "vaccination",
-
-    "/recipes": "recipes",
-
-    "/games": "games",
-
-    "/colorcheck": "colorcheck",
-
-}
-
-
-PORTAL_PATHS = {
-    "/",
-    "/apps/manage/",
-}
 
 
 # =========================================================
 # Helpers
 # =========================================================
-
-
-def get_app_key(path):
-
-    if path in PORTAL_PATHS:
-        return "portal"
-
-    for prefix, app_key in APP_PATHS.items():
-
-        if (
-            path == prefix
-            or path.startswith(
-                prefix + "/"
-            )
-        ):
-            return app_key
-
-    return None
-
 
 def normalize_uuid(value):
 
@@ -100,261 +54,61 @@ def normalize_uuid(value):
         return None
 
     try:
-
-        return str(
-            uuid.UUID(
-                str(value)
-            )
-        )
-
-    except (
-        ValueError,
-        TypeError,
-        AttributeError,
-    ):
-
+        return str(uuid.UUID(str(value)))
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
-def get_public_news_visitor(
-    request,
-):
+def is_bot(request):
 
-    # -----------------------------------------------------
-    # New long-term cookie
-    # -----------------------------------------------------
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
 
-    visitor_id = normalize_uuid(
-        request.COOKIES.get(
-            PUBLIC_NEWS_VISITOR_COOKIE
-        )
+    return not user_agent or bool(BOT_PATTERN.search(user_agent))
+
+
+def is_prefetch(request):
+
+    purpose = (
+        request.META.get("HTTP_SEC_PURPOSE", "")
+        or request.META.get("HTTP_PURPOSE", "")
+        or request.META.get("HTTP_X_PURPOSE", "")
     )
 
-    if visitor_id:
-
-        request.session[
-            "public_news_visitor_id"
-        ] = visitor_id
-
-        return (
-            visitor_id,
-            False,
-            False,
-        )
-
-
-    # -----------------------------------------------------
-    # Preserve old visitor IDs already stored in session
-    # -----------------------------------------------------
-
-    legacy_visitor_id = normalize_uuid(
-        request.session.get(
-            "public_news_visitor_id"
-        )
-    )
-
-
-    if legacy_visitor_id:
-
-        visitor_id = legacy_visitor_id
-
-    else:
-
-        visitor_id = str(
-            uuid.uuid4()
-        )
-
-
-    # -----------------------------------------------------
-    # Is this truly the first visit we have ever recorded?
-    # -----------------------------------------------------
-
-    is_new_visitor = not (
-        PublicNewsEvent.objects.filter(
-            visitor_id=visitor_id
-        ).exists()
-    )
-
-
-    request.session[
-        "public_news_visitor_id"
-    ] = visitor_id
-
-
-    return (
-        visitor_id,
-        True,
-        is_new_visitor,
-    )
-
-
-def set_public_news_visitor_cookie(
-    response,
-    visitor_id,
-):
-
-    response.set_cookie(
-
-        key=PUBLIC_NEWS_VISITOR_COOKIE,
-
-        value=str(visitor_id),
-
-        max_age=(
-            PUBLIC_NEWS_VISITOR_COOKIE_MAX_AGE
-        ),
-
-        httponly=True,
-
-        secure=not settings.DEBUG,
-
-        samesite="Lax",
-
-    )
-
-
-def get_public_news_visit(
-    request,
-    now_timestamp=None,
-):
-
-    if now_timestamp is None:
-
-        now_timestamp = (
-            timezone.now().timestamp()
-        )
-
-
-    last_timestamp = request.session.get(
-        PUBLIC_NEWS_LAST_SEEN_SESSION_KEY
-    )
-
-
-    visit_id = normalize_uuid(
-        request.session.get(
-            PUBLIC_NEWS_VISIT_ID_SESSION_KEY
-        )
-    )
-
-
-    is_visit_start = (
-
-        visit_id is None
-
-        or last_timestamp is None
-
-        or (
-            now_timestamp
-            - float(last_timestamp)
-        ) > VISIT_TIMEOUT_SECONDS
-
-    )
-
-
-    if is_visit_start:
-
-        visit_id = str(
-            uuid.uuid4()
-        )
-
-
-    request.session[
-        PUBLIC_NEWS_VISIT_ID_SESSION_KEY
-    ] = visit_id
-
-
-    request.session[
-        PUBLIC_NEWS_LAST_SEEN_SESSION_KEY
-    ] = now_timestamp
-
-
-    return (
-        visit_id,
-        is_visit_start,
-    )
+    return "prefetch" in purpose.lower()
 
 
 def get_device_type(request):
 
-    user_agent = (
-        request.META.get(
-            "HTTP_USER_AGENT",
-            "",
-        )
-        .lower()
-    )
+    user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
 
-
-    tablet_keywords = (
-        "ipad",
-        "tablet",
-        "kindle",
-    )
-
-
-    if any(
-        keyword in user_agent
-        for keyword in tablet_keywords
-    ):
-
+    if any(word in user_agent for word in ("ipad", "tablet", "kindle")):
         return "tablet"
 
-
-    mobile_keywords = (
-        "iphone",
-        "android",
-        "mobile",
-    )
-
-
-    if any(
-        keyword in user_agent
-        for keyword in mobile_keywords
-    ):
-
+    if any(word in user_agent for word in ("iphone", "android", "mobile")):
         return "mobile"
 
-
     if user_agent:
-
         return "desktop"
-
 
     return "other"
 
 
 def get_referrer_host(request):
 
-    referrer = request.META.get(
-        "HTTP_REFERER",
-        "",
-    )
-
+    referrer = request.META.get("HTTP_REFERER", "")
 
     if not referrer:
         return ""
 
-
     try:
-
-        hostname = (
-            urlparse(
-                referrer
-            ).hostname
-            or ""
-        )
-
+        hostname = urlparse(referrer).hostname or ""
     except ValueError:
-
         return ""
-
 
     return hostname[:255]
 
 
-def clean_tracking_value(
-    value,
-    max_length,
-):
+def clean_tracking_value(value, max_length):
 
     if not value:
         return ""
@@ -362,421 +116,178 @@ def clean_tracking_value(
     return str(value)[:max_length]
 
 
+def get_visitor_id(request):
+    """
+    (visitor_id, cookieを新しく付けるか) を返す。
+    """
+
+    visitor_id = normalize_uuid(request.COOKIES.get(VISITOR_COOKIE))
+
+    if visitor_id:
+        return visitor_id, False
+
+    # 以前は session に入れていた
+    visitor_id = normalize_uuid(
+        request.session.get(LEGACY_VISITOR_SESSION_KEY)
+    )
+
+    return visitor_id or str(uuid.uuid4()), True
+
+
+def get_visit(request, now_timestamp):
+    """
+    (visit_id, 新しい訪問か) を返す。cookie に「訪問ID.最後の時刻」を持つ。
+    """
+
+    raw = request.COOKIES.get(VISIT_COOKIE, "")
+    visit_id, _, last_timestamp = raw.partition(".")
+    visit_id = normalize_uuid(visit_id)
+
+    try:
+        last_timestamp = float(last_timestamp)
+    except ValueError:
+        last_timestamp = None
+
+    if (
+        visit_id
+        and last_timestamp is not None
+        and now_timestamp - last_timestamp <= VISIT_TIMEOUT_SECONDS
+    ):
+        return visit_id, False
+
+    return str(uuid.uuid4()), True
+
+
+def visitor_of(request):
+    """記事クリックなど、他の記録から今の訪問者・訪問IDを参照する用。"""
+
+    visitor_id = normalize_uuid(request.COOKIES.get(VISITOR_COOKIE)) or normalize_uuid(
+        request.session.get(LEGACY_VISITOR_SESSION_KEY)
+    )
+
+    visit_id = normalize_uuid(
+        request.COOKIES.get(VISIT_COOKIE, "").partition(".")[0]
+    )
+
+    return visitor_id, visit_id
+
+
+def own_hosts(request):
+
+    return {request.get_host().split(":", 1)[0].lower()}
+
+
 # =========================================================
 # Middleware
 # =========================================================
 
-
 class UsageAnalyticsMiddleware:
+    """
+    全アプリのページ閲覧を PageView に1行ずつ記録する。
 
-    def __init__(
-        self,
-        get_response,
-    ):
+    記録するのは、成功した GET の HTML ページだけ。
+    bot・先読み・解析ページ自身・管理画面は記録しない。
+    """
 
-        self.get_response = (
-            get_response
-        )
+    def __init__(self, get_response):
 
+        self.get_response = get_response
 
-    def __call__(
-        self,
-        request,
-    ):
+    def __call__(self, request):
 
-        response = self.get_response(
-            request
-        )
+        response = self.get_response(request)
 
-
-        # -------------------------------------------------
-        # Only GET
-        # -------------------------------------------------
-
-        if request.method != "GET":
+        if not self._should_track(request, response):
             return response
-
-
-        # -------------------------------------------------
-        # Successful HTML only
-        # -------------------------------------------------
-
-        if not (
-            200
-            <= response.status_code
-            < 300
-        ):
-
-            return response
-
-
-        content_type = response.get(
-            "Content-Type",
-            "",
-        )
-
-
-        if not content_type.startswith(
-            "text/html"
-        ):
-
-            return response
-
-
-        # -------------------------------------------------
-        # Public Swiss News
-        # -------------------------------------------------
-
-        if (
-            not request.user.is_authenticated
-            and (
-                request.path_info == "/news"
-                or request.path_info.startswith(
-                    "/news/"
-                )
-            )
-        ):
-
-            visitor_id = (
-                self._track_public_news(
-                    request
-                )
-            )
-
-
-            if visitor_id:
-
-                set_public_news_visitor_cookie(
-                    response,
-                    visitor_id,
-                )
-
-
-            return response
-
-
-        # -------------------------------------------------
-        # Authenticated only from here
-        # -------------------------------------------------
-
-        if not request.user.is_authenticated:
-            return response
-
-
-        app_key = get_app_key(
-            request.path_info
-        )
-
-
-        if app_key is None:
-            return response
-
 
         now = timezone.now()
+        now_timestamp = now.timestamp()
 
-        now_timestamp = (
-            now.timestamp()
+        visitor_id, is_new_cookie = get_visitor_id(request)
+        visit_id, is_visit_start = get_visit(request, now_timestamp)
+
+        user = request.user if request.user.is_authenticated else None
+
+        page_view = PageView(
+            visitor_id=visitor_id,
+            visit_id=visit_id,
+            user=user,
+            app_key=app_for_path(request.path_info),
+            path=request.path_info[:300],
+            accessed_at=now,
+            is_visit_start=is_visit_start,
+            device_type=get_device_type(request),
         )
 
+        if is_new_cookie:
+            page_view.is_new_visitor = not self._seen_before(visitor_id, user)
 
-        # -------------------------------------------------
-        # Detailed News
-        # -------------------------------------------------
-
-        if app_key == "news":
-
-            self._track_authenticated_news(
-
-                request=request,
-
-                now_timestamp=(
-                    now_timestamp
-                ),
-
+        # 流入元は訪問の最初のページにだけ付ける
+        if is_visit_start:
+            page_view.referrer_host = get_referrer_host(request)
+            page_view.utm_source = clean_tracking_value(request.GET.get("utm_source"), 100)
+            page_view.utm_medium = clean_tracking_value(request.GET.get("utm_medium"), 100)
+            page_view.utm_campaign = clean_tracking_value(request.GET.get("utm_campaign"), 150)
+            page_view.source_type, page_view.source_label = classify_source(
+                page_view.referrer_host,
+                page_view.utm_source,
+                own_hosts(request),
             )
-
-
-        last_seen_map = (
-            request.session.get(
-                SESSION_KEY,
-                {},
-            )
-        )
-
-
-        session_app_key = (
-            f"{request.user.pk}:{app_key}"
-        )
-
-
-        last_timestamp = (
-            last_seen_map.get(
-                session_app_key
-            )
-        )
-
-
-        is_visit_start = (
-
-            last_timestamp is None
-
-            or (
-                now_timestamp
-                - last_timestamp
-            ) > VISIT_TIMEOUT_SECONDS
-
-        )
-
 
         try:
-
-            UsageEvent.objects.create(
-
-                user=request.user,
-
-                app_key=app_key,
-
-                is_visit_start=(
-                    is_visit_start
-                ),
-
-            )
-
+            page_view.save()
         except DatabaseError:
-
-            logger.exception(
-                "Failed to save usage event."
-            )
-
+            logger.exception("Failed to save page view.")
             return response
 
+        secure = not settings.DEBUG
 
-        last_seen_map = dict(
-            last_seen_map
+        if is_new_cookie:
+            response.set_cookie(
+                VISITOR_COOKIE,
+                visitor_id,
+                max_age=VISITOR_COOKIE_MAX_AGE,
+                httponly=True,
+                secure=secure,
+                samesite="Lax",
+            )
+
+        response.set_cookie(
+            VISIT_COOKIE,
+            f"{visit_id}.{int(now_timestamp)}",
+            max_age=VISIT_TIMEOUT_SECONDS,
+            httponly=True,
+            secure=secure,
+            samesite="Lax",
         )
-
-
-        last_seen_map[
-            session_app_key
-        ] = now_timestamp
-
-
-        request.session[
-            SESSION_KEY
-        ] = last_seen_map
-
 
         return response
 
+    def _should_track(self, request, response):
 
-    # =====================================================
-    # Public News
-    # =====================================================
+        if request.method != "GET":
+            return False
 
-    def _track_public_news(
-        self,
-        request,
-    ):
+        if not 200 <= response.status_code < 300:
+            return False
 
-        now = timezone.now()
+        if not response.get("Content-Type", "").startswith("text/html"):
+            return False
 
-        now_timestamp = (
-            now.timestamp()
-        )
+        if not should_track_path(request.path_info):
+            return False
 
+        if request.COOKIES.get(IGNORE_COOKIE):
+            return False
 
-        (
-            visitor_id,
-            should_set_cookie,
-            is_new_visitor,
-        ) = get_public_news_visitor(
-            request
-        )
+        if is_bot(request) or is_prefetch(request):
+            return False
 
+        return True
 
-        (
-            visit_id,
-            is_visit_start,
-        ) = get_public_news_visit(
+    def _seen_before(self, visitor_id, user):
 
-            request,
+        if PageView.objects.filter(visitor_id=visitor_id).exists():
+            return True
 
-            now_timestamp=(
-                now_timestamp
-            ),
-
-        )
-
-
-        referrer_host = ""
-
-        utm_source = ""
-
-        utm_medium = ""
-
-        utm_campaign = ""
-
-
-        # Acquisition information only needs to be attached
-        # to the first page of each visit.
-
-        if is_visit_start:
-
-            referrer_host = (
-                get_referrer_host(
-                    request
-                )
-            )
-
-
-            utm_source = (
-                clean_tracking_value(
-                    request.GET.get(
-                        "utm_source"
-                    ),
-                    100,
-                )
-            )
-
-
-            utm_medium = (
-                clean_tracking_value(
-                    request.GET.get(
-                        "utm_medium"
-                    ),
-                    100,
-                )
-            )
-
-
-            utm_campaign = (
-                clean_tracking_value(
-                    request.GET.get(
-                        "utm_campaign"
-                    ),
-                    150,
-                )
-            )
-
-
-        try:
-
-            PublicNewsEvent.objects.create(
-
-                visitor_id=visitor_id,
-
-                visit_id=visit_id,
-
-                path=request.path_info,
-
-                is_visit_start=(
-                    is_visit_start
-                ),
-
-                is_new_visitor=(
-                    is_new_visitor
-                ),
-
-                referrer_host=(
-                    referrer_host
-                ),
-
-                utm_source=(
-                    utm_source
-                ),
-
-                utm_medium=(
-                    utm_medium
-                ),
-
-                utm_campaign=(
-                    utm_campaign
-                ),
-
-                device_type=(
-                    get_device_type(
-                        request
-                    )
-                ),
-
-            )
-
-        except DatabaseError:
-
-            logger.exception(
-                "Failed to save public news event."
-            )
-
-            return None
-
-
-        if should_set_cookie:
-
-            return visitor_id
-
-
-        return None
-
-
-    # =====================================================
-    # Authenticated News
-    # =====================================================
-
-    def _track_authenticated_news(
-        self,
-        request,
-        now_timestamp,
-    ):
-
-        session_key = (
-            f"authenticated_news_last_seen:"
-            f"{request.user.pk}"
-        )
-
-
-        last_timestamp = (
-            request.session.get(
-                session_key
-            )
-        )
-
-
-        is_visit_start = (
-
-            last_timestamp is None
-
-            or (
-                now_timestamp
-                - last_timestamp
-            ) > VISIT_TIMEOUT_SECONDS
-
-        )
-
-
-        try:
-
-            UserNewsEvent.objects.create(
-
-                user=request.user,
-
-                path=request.path_info,
-
-                is_visit_start=(
-                    is_visit_start
-                ),
-
-            )
-
-        except DatabaseError:
-
-            logger.exception(
-                "Failed to save "
-                "authenticated news event."
-            )
-
-            return
-
-
-        request.session[
-            session_key
-        ] = now_timestamp
+        return user is not None and PageView.objects.filter(user=user).exists()
