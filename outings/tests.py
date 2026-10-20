@@ -194,7 +194,43 @@ class DailyRunTests(TestCase):
         self.assertFalse(Event.objects.filter(external_id="1").exists())
 
 
+class CleanupTests(TestCase):
+
+    def test_past_events_are_deleted_and_just_ended_unpublished(self):
+        now = timezone.now()
+        old = make_event("old", start=now - timedelta(days=3), end=now - timedelta(days=2),
+                         image_url="https://res.cloudinary.com/demo/image/upload/v12/yapp/outings/eventfrog/event-1.jpg")
+        EventHeart.objects.create(event=old, visitor_id="00000000-0000-0000-0000-000000000001")
+        just = make_event("just", start=now - timedelta(hours=5), end=now - timedelta(hours=3))
+        member = make_event("member", start=now - timedelta(days=5), source=False)
+        future = make_event("future", start=now + timedelta(days=2))
+        with mock.patch("outings.management.commands.cleanup_outings.delete_photos", return_value=1) as photos:
+            call_command("cleanup_outings", commit=True, stdout=open(os.devnull, "w"))
+        photos.assert_called_once()
+        self.assertEqual(set(Event.objects.values_list("title", flat=True)), {"just", "future"})
+        self.assertFalse(EventHeart.objects.exists())
+        just.refresh_from_db()
+        future.refresh_from_db()
+        self.assertEqual(just.status, Event.Status.CANCELLED)
+        self.assertEqual(future.status, Event.Status.PUBLISHED)
+        self.assertFalse(Event.objects.filter(pk=member.pk).exists())
+
+    def test_cloudinary_public_id(self):
+        from outings.management.commands.cleanup_outings import cloudinary_public_id
+        self.assertEqual(cloudinary_public_id(
+            "https://res.cloudinary.com/demo/image/upload/v12/yapp/outings/eventfrog/event-1.jpg", "demo"),
+            "yapp/outings/eventfrog/event-1")
+        self.assertIsNone(cloudinary_public_id("https://res.cloudinary.com/other/image/upload/v1/a.jpg", "demo"))
+        self.assertIsNone(cloudinary_public_id("https://eventfrog.ch/a.jpg", "demo"))
+
+
 class SchedulerTests(TestCase):
+
+    def test_daily_run_uses_a_child_process(self):
+        command = outings_scheduler.daily_command()
+        self.assertEqual(command[3], "daily_outings")
+        self.assertIn("--commit", command)
+        self.assertEqual(command[command.index("--max-new") + 1], "15")
 
     def test_retries_after_failure_then_stops(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -3,13 +3,14 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from news.models import Article
+from news.models import Article, NewsDigest
 
 
 class Command(BaseCommand):
     help = (
         "Delete news articles older than 7 days "
-        "unless they are favorited."
+        "unless they are favorited, and digests "
+        "older than 7 days."
     )
 
 
@@ -35,8 +36,17 @@ class Command(BaseCommand):
 
         old_articles.delete()
 
+        digest_count, _ = (
+            NewsDigest.objects
+            .filter(
+                digest_date__lt=cutoff.date()
+            )
+            .delete()
+        )
+
         self.stdout.write(
             self.style.SUCCESS(
-                f"Deleted {count} old articles."
+                f"Deleted {count} old articles "
+                f"and {digest_count} old digests."
             )
         )
