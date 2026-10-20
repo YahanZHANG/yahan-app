@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}スイスで和食 | Yapp{% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'washoku/washoku.css' %}"
+    >
+
+    <meta name="theme-color" content="#B5462E">
+    <meta name="description" content="スイスで買える食材だけで作る、日本人の舌に合うレシピ">
+
+    {% include "includes/app_icons.html" %}
+</head>
+
+<body>
+
+    <header class="washoku-header">
+        <a href="{% url 'washoku:home' %}" class="washoku-brand">スイスで和食</a>
+    </header>
+
+    <main class="washoku-main">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+
+</html>

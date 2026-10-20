@@ -80,6 +80,9 @@ INSTALLED_APPS = [
     
     # スイスおでかけ
     "outings.apps.OutingsConfig",
+
+    # スイスで和食
+    "washoku.apps.WashokuConfig",
 ]
 
 # ------------------------------------------------------------------------------

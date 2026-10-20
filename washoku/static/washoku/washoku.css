@@ -1,0 +1,68 @@
+:root {
+    --washoku-accent: #B5462E;
+    --washoku-text: #2B2522;
+    --washoku-muted: #6F6560;
+    --washoku-bg: #FBF7F2;
+    --washoku-surface: #FFFFFF;
+    --washoku-border: #E8DED4;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --washoku-accent: #E07A5F;
+        --washoku-text: #F2ECE7;
+        --washoku-muted: #B3A9A2;
+        --washoku-bg: #1D1A18;
+        --washoku-surface: #29241F;
+        --washoku-border: #3D3631;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--washoku-bg);
+    color: var(--washoku-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.7;
+}
+
+a {
+    color: var(--washoku-accent);
+}
+
+.washoku-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--washoku-border);
+    background: var(--washoku-surface);
+}
+
+.washoku-brand {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.washoku-main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.washoku-coming {
+    text-align: center;
+    padding-top: 40px;
+}
+
+.washoku-coming-label {
+    color: var(--washoku-accent);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.washoku-admin-box {
+    margin: 24px 0;
+    padding: 12px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    color: var(--washoku-muted);
+}

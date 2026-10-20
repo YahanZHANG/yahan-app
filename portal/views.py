@@ -1207,12 +1207,12 @@ def home(request):
             "card_class": "portal-colorcheck-card",
         },
         {
-            "name": "Japanレシピ",
-            "label": "JAPAN RECIPES",
-            "icon": "🍳",
+            "name": "スイスで和食",
+            "label": "WASHOKU IN SWITZERLAND",
+            "icon": "🍚",
             "description": (
-                "スイスで手に入る食材を使った、"
-                "日本人向けレシピ。"
+                "スイスで買える食材だけで作る、"
+                "日本人の舌に合うレシピ。"
             ),
             "url": None,
             "status": "COMING SOON",

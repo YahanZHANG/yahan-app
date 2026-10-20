@@ -1,0 +1,27 @@
+{% extends "washoku/base.html" %}
+
+{% block content %}
+
+<section class="washoku-coming">
+
+    <p class="washoku-coming-label">COMING SOON</p>
+
+    <h1>スイスで和食</h1>
+
+    <p>
+        スイスのスーパーやアジア・日系の店で買える食材だけで、
+        日本人の舌に合う家庭料理を探せるアプリを準備中です。
+    </p>
+
+    {% if user.is_staff %}
+    <div class="washoku-admin-box">
+        <p>公開中のレシピ {{ published_count }}件 / 下書き {{ draft_count }}件 / 食材 {{ ingredient_count }}件</p>
+        <a href="{% url 'admin:washoku_recipe_changelist' %}">管理画面でレシピを見る</a>
+    </div>
+    {% endif %}
+
+    <p><a href="{% url 'portal:home' %}">Yapp トップへ</a></p>
+
+</section>
+
+{% endblock %}

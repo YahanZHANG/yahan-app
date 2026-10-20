@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#D9643F"/>
+      <stop offset="1" stop-color="#9E3624"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F1E4D8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- steam -->
+  <path d="M400 330 c-40 -50 40 -80 0 -140" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" opacity="0.55"/>
+  <path d="M520 310 c-40 -50 40 -80 0 -140" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" opacity="0.55"/>
+  <!-- chopsticks -->
+  <path d="M600 470 L860 210" stroke="#3A2A20" stroke-width="30" stroke-linecap="round"/>
+  <path d="M640 490 L900 260" stroke="#3A2A20" stroke-width="30" stroke-linecap="round"/>
+  <!-- rice -->
+  <path d="M230 520 C 250 400, 380 360, 480 380 C 560 350, 720 380, 790 520 Z" fill="#FFFFFF"/>
+  <!-- bowl -->
+  <path d="M180 520 L844 520 C 844 700, 700 800, 512 800 C 324 800, 180 700, 180 520 Z" fill="url(#bowl)"/>
+  <rect x="412" y="796" width="200" height="44" rx="16" fill="#F1E4D8"/>
+  <!-- swiss cross -->
+  <rect x="452" y="580" width="120" height="120" rx="18" fill="#D52B1E"/>
+  <rect x="497" y="598" width="30" height="84" fill="#FFFFFF"/>
+  <rect x="470" y="625" width="84" height="30" fill="#FFFFFF"/>
+</svg>
