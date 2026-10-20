@@ -816,6 +816,21 @@ body {
     color: var(--washoku-muted);
 }
 
+.washoku-post-button {
+    display: none;
+}
+
+.washoku-me {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 999px;
+}
+
+.washoku-me.active {
+    color: var(--washoku-accent);
+}
+
 @media (min-width: 800px) {
     body {
         padding-bottom: 0;
@@ -825,14 +840,274 @@ body {
         display: none;
     }
 
+    .washoku-header-inner {
+        max-width: 1120px;
+        min-height: 64px;
+        padding: 0 24px;
+        gap: 28px;
+    }
+
     .washoku-desktop-nav {
         display: flex;
+        align-self: stretch;
+        gap: 4px;
+    }
+
+    .washoku-desktop-nav a {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 14px;
+        border-radius: 0;
+        color: var(--washoku-muted);
+        font-size: 15px;
+        font-weight: 600;
+        transition: color 0.15s;
+    }
+
+    .washoku-desktop-nav a i {
+        font-size: 17px;
+    }
+
+    .washoku-desktop-nav a:hover {
+        background: none;
+        color: var(--washoku-text);
+    }
+
+    .washoku-desktop-nav a.active {
+        background: none;
+        color: var(--washoku-accent-strong);
+    }
+
+    .washoku-desktop-nav a.active::after {
+        position: absolute;
+        right: 10px;
+        bottom: 0;
+        left: 10px;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: var(--washoku-accent);
+        content: "";
+    }
+
+    .washoku-post-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        padding: 9px 16px;
+        border-radius: 999px;
+        background: var(--washoku-accent);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
+    }
+
+    .washoku-post-button:hover {
+        background: var(--washoku-accent-strong);
+    }
+
+    .washoku-me {
+        min-height: 40px;
+        margin-left: 0;
+        padding: 0 14px 0 8px;
+        border: 1px solid var(--washoku-border);
+        background: var(--washoku-surface);
+    }
+
+    .washoku-me:hover,
+    .washoku-me.active {
+        border-color: var(--washoku-accent);
+        color: var(--washoku-accent-strong);
     }
 
     .washoku-me-label {
         display: inline;
         font-size: 14px;
+        font-weight: 600;
     }
+
+    .washoku-me .washoku-me-icon {
+        font-size: 22px;
+    }
+
+    .washoku-main {
+        max-width: 1120px;
+        padding: 24px;
+    }
+}
+
+/* ---------- 投稿・バナー・お店の距離 ---------- */
+
+.washoku-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 4px;
+    padding: 14px 16px;
+    border: 1px dashed var(--washoku-accent);
+    border-radius: 14px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-banner > i:first-child {
+    color: var(--washoku-accent);
+    font-size: 24px;
+}
+
+.washoku-banner span {
+    flex: 1;
+}
+
+.washoku-banner strong,
+.washoku-banner small {
+    display: block;
+}
+
+.washoku-banner small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-credit {
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-form {
+    display: grid;
+    gap: 18px;
+    max-width: 640px;
+}
+
+.washoku-field {
+    display: grid;
+    gap: 6px;
+}
+
+.washoku-field > label,
+.washoku-field legend {
+    font-weight: 700;
+}
+
+.washoku-field legend small {
+    margin-left: 4px;
+    color: var(--washoku-muted);
+    font-weight: 400;
+}
+
+.washoku-field fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.washoku-field > small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-field input[type="text"],
+.washoku-field input[type="number"],
+.washoku-field select {
+    width: 100%;
+}
+
+.washoku-field input[type="number"] {
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+}
+
+.washoku-field.has-error input,
+.washoku-field.has-error textarea,
+.washoku-field.has-error select {
+    border-color: var(--washoku-accent);
+}
+
+.washoku-field-error {
+    margin: 0;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+}
+
+.washoku-required {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-size: 11px;
+}
+
+.washoku-check-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.washoku-check-chips label {
+    position: relative;
+}
+
+.washoku-check-chips input {
+    position: absolute;
+    opacity: 0;
+}
+
+.washoku-check-chips span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    cursor: pointer;
+}
+
+.washoku-check-chips input:checked + span {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+.washoku-check-chips input:focus-visible + span {
+    outline: 2px solid var(--washoku-accent);
+    outline-offset: 2px;
+}
+
+.washoku-button-wide {
+    width: 100%;
+    max-width: 640px;
+    font-size: 16px;
+}
+
+.washoku-store-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 12px 0;
+}
+
+.washoku-distance {
+    float: right;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 /* ---------- phone-friendly touch targets ---------- */

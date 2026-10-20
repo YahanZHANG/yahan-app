@@ -4,6 +4,7 @@ import tempfile
 from datetime import timedelta
 
 from pathlib import Path
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
@@ -90,6 +91,7 @@ class ImportTests(TestCase):
                 ingredients=str(ingredients_path),
                 recipes=str(recipes_path),
                 stdout=open("/dev/null", "w"),
+                no_geocode=True,
                 **options,
             )
 
@@ -405,10 +407,57 @@ class StoreTests(TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stores.json"
             path.write_text(json.dumps(stores), encoding="utf-8")
-            call_command("import_washoku", stores=str(path), stdout=open("/dev/null", "w"))
+            with mock.patch("washoku.geocode.lookup", return_value=(47.36, 8.55)) as lookup:
+                call_command("import_washoku", stores=str(path), stdout=open("/dev/null", "w"))
 
-        self.assertEqual(Store.objects.count(), 1)
-        self.assertEqual(Store.objects.get().opening_hours, "月〜金 10:00–18:30")
+        store = Store.objects.get()
+        self.assertEqual(store.opening_hours, "月〜金 10:00–18:30")
+        self.assertEqual((store.latitude, store.longitude), (47.36, 8.55))
+        lookup.assert_called_once_with("Seefeldstrasse 12, 8008 Zürich")
+
+    def test_moved_store_is_located_again(self):
+
+        self.store.latitude, self.store.longitude = 1.0, 2.0
+        self.store.save()
+
+        stores = [{"name": "Nishi Japan Shop", "kind": "japanese", "address": "Falkenstrasse 26, 8008 Zürich"}]
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stores.json"
+            path.write_text(json.dumps(stores), encoding="utf-8")
+
+            with mock.patch("washoku.geocode.lookup", return_value=(47.37, 8.54)):
+                call_command("import_washoku", stores=str(path), stdout=open("/dev/null", "w"))
+
+        self.store.refresh_from_db()
+        self.assertEqual(self.store.address, "Falkenstrasse 26, 8008 Zürich")
+        self.assertEqual((self.store.latitude, self.store.longitude), (47.37, 8.54))
+
+    def test_geocoder_reads_the_swisstopo_answer(self):
+
+        from io import BytesIO
+
+        from .geocode import clean_address, lookup
+
+        answer = BytesIO(json.dumps({"results": [{"attrs": {"lat": 47.3, "lon": 8.5}}]}).encode())
+
+        with mock.patch("washoku.geocode.urlopen", return_value=answer):
+            self.assertEqual(lookup("Zwinglistrasse 11, 8004 Zürich"), (47.3, 8.5))
+
+        with mock.patch("washoku.geocode.urlopen", side_effect=OSError("offline")):
+            self.assertIsNone(lookup("Zwinglistrasse 11, 8004 Zürich"))
+
+        self.assertEqual(clean_address("Zwinglistrasse 11 (Hinterhof), 8004 Zürich"), "Zwinglistrasse 11 , 8004 Zürich")
+
+    def test_store_list_has_coordinates_for_near_me(self):
+
+        self.store.latitude, self.store.longitude = 47.3601, 8.5512
+        self.store.save()
+
+        response = self.client.get(reverse("washoku:store_list"))
+
+        self.assertContains(response, 'data-lat="47.360100"')
+        self.assertContains(response, "現在地から近い順")
 
     def test_store_review_shows_on_the_store_and_home(self):
 
@@ -476,3 +525,87 @@ class AboutAndMyPageTests(TestCase):
         self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
         self.assertContains(self.client.get(reverse("washoku:my_favorites")), recipe.name)
         self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")
+
+
+class RecipeSubmissionTests(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("hanako", password="x")
+        self.url = reverse("washoku:recipe_submit")
+        make_recipe()  # 鶏もも肉・醤油などの食材を用意する
+
+    def submit(self, **data):
+        self.client.force_login(self.user)
+        return self.client.post(
+            self.url,
+            {
+                "name": "鶏のさっぱり煮",
+                "category": "meat",
+                "description": "お酢でさっぱり",
+                "cooking_time_minutes": "25",
+                "servings": "2",
+                "ingredients_text": "鶏もも肉 300g\n醤油：大さじ2\nりんご酢 大さじ3",
+                "steps": "鶏肉を切る\n\n調味料と煮る",
+                "swiss_tips": "",
+                **data,
+            },
+        )
+
+    def test_visitors_must_log_in(self):
+        self.assertEqual(self.client.get(self.url).status_code, 302)
+
+    def test_submission_is_a_hidden_draft_until_published(self):
+
+        with mock.patch("washoku.views.send_admin_alert") as alert:
+            response = self.submit()
+
+        recipe = Recipe.objects.get(name="鶏のさっぱり煮")
+
+        self.assertRedirects(response, reverse("washoku:recipe_detail", args=[recipe.pk]))
+        self.assertEqual((recipe.status, recipe.origin, recipe.submitted_by), ("draft", "member", self.user))
+        self.assertEqual(recipe.steps, "鶏肉を切る\n調味料と煮る")
+        self.assertIn("りんご酢", recipe.submitted_ingredients)
+        alert.assert_called_once()
+
+        # 食材リストにある材料だけ自動でつながる
+        linked = dict(recipe.recipe_ingredients.values_list("ingredient__name", "amount"))
+        self.assertEqual(linked, {"鶏もも肉": "300g", "醤油": "大さじ2"})
+
+        # 投稿した本人には見えるが、ほかの人には見えない
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])), "確認待ち")
+        self.assertContains(self.client.get(reverse("washoku:my_recipes")), "鶏のさっぱり煮")
+
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])).status_code, 404)
+
+        recipe.status = "published"
+        recipe.save()
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])), "hanako さんのレシピ")
+
+    def test_duplicate_name_is_refused(self):
+
+        response = self.submit(name="照り焼きチキン")
+
+        self.assertContains(response, "同じ名前のレシピがもうあります")
+        self.assertFalse(Recipe.objects.filter(submitted_by=self.user).exists())
+
+    def test_too_many_pending_submissions(self):
+
+        for number in range(5):
+            Recipe.objects.create(name=f"確認待ち{number}", steps="x", submitted_by=self.user)
+
+        self.client.force_login(self.user)
+        self.assertRedirects(self.client.get(self.url), reverse("washoku:my_recipes"))
+
+
+class MenuTests(TestCase):
+
+    def test_phone_tabbar_ends_with_qa_and_header_links_my_page(self):
+
+        html = self.client.get(reverse("washoku:home")).content.decode()
+        tabbar = html[html.index('class="washoku-tabbar"'):]
+
+        self.assertIn(reverse("washoku:question_list"), tabbar)
+        self.assertNotIn(reverse("washoku:my_page"), tabbar)
+        self.assertIn('class="washoku-me', html)
+        self.assertNotIn("家庭料理のレシピ集です", html)

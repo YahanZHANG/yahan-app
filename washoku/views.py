@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
-from .forms import CommentEditForm, CommentForm, FeedbackForm
+from .forms import CommentEditForm, CommentForm, FeedbackForm, RecipeSubmissionForm
 from .models import (
     Comment,
     CommentReport,
@@ -39,6 +39,9 @@ COMMENT_INTERVAL = timedelta(seconds=60)
 
 # 質問箱を続けて送れるまでの間隔 (秒)
 FEEDBACK_INTERVAL_SECONDS = 60
+
+# 確認待ちのまま置いておける投稿レシピの数 (1人あたり)
+MAX_PENDING_SUBMISSIONS = 5
 
 
 # =========================================================
@@ -465,8 +468,14 @@ def random_recipe(request):
 
 def recipe_detail(request, pk):
 
+    recipes = visible_recipes(request.user)
+
+    # 投稿した本人は、確認待ちの自分のレシピも見られる
+    if request.user.is_authenticated:
+        recipes = recipes | Recipe.objects.filter(submitted_by=request.user)
+
     recipe = get_object_or_404(
-        visible_recipes(request.user).prefetch_related(
+        recipes.distinct().prefetch_related(
             "mood_tags",
             Prefetch(
                 "recipe_ingredients",
@@ -1076,11 +1085,14 @@ def store_list(request):
     for store in stores.order_by("city", "area", "name"):
         by_city[store.city].append(store)
 
+    # チューリッヒ市を先に、ほかの町はその後に
+    by_city = dict(sorted(by_city.items(), key=lambda item: (item[0] != "Zürich", item[0])))
+
     return render(
         request,
         "washoku/store_list.html",
         {
-            "by_city": dict(by_city),
+            "by_city": by_city,
             "kind": kind,
             "kinds": Store.KIND_CHOICES,
         },
@@ -1097,6 +1109,97 @@ def store_detail(request, pk):
         {
             "store": store,
             **comment_context(request, store=store),
+        },
+    )
+
+
+# =========================================================
+# 会員のレシピ投稿
+# =========================================================
+
+@login_required
+def recipe_submit(request):
+
+    pending = Recipe.objects.filter(submitted_by=request.user, status="draft").count()
+
+    if pending >= MAX_PENDING_SUBMISSIONS:
+        messages.info(
+            request,
+            f"確認待ちのレシピが{pending}品あります。掲載されてから、また投稿してください。",
+        )
+        return redirect("washoku:my_recipes")
+
+    form = RecipeSubmissionForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+
+        with transaction.atomic():
+
+            recipe = form.save(commit=False)
+            recipe.status = "draft"
+            recipe.origin = "member"
+            recipe.submitted_by = request.user
+            recipe.submitted_ingredients = form.cleaned_data["ingredients_text"]
+            recipe.save()
+            form.save_m2m()
+
+            linked = set()
+
+            for order, (ingredient, _name, amount) in enumerate(form.parsed_ingredients(), start=1):
+
+                if ingredient is None or ingredient.pk in linked:
+                    continue
+
+                linked.add(ingredient.pk)
+
+                RecipeIngredient.objects.create(
+                    recipe=recipe,
+                    ingredient=ingredient,
+                    amount=amount[:100],
+                    is_seasoning=ingredient.category == "seasoning",
+                    display_order=order,
+                )
+
+            recipe.update_shop_rank()
+
+        send_admin_alert(
+            "新しいレシピの投稿",
+            f"{recipe.name}（{request.user.username} さん）\n\n"
+            + request.build_absolute_uri(
+                reverse("admin:washoku_recipe_change", args=[recipe.pk])
+            ),
+        )
+
+        messages.success(
+            request,
+            "投稿ありがとうございます！管理者が確認してから掲載します。",
+        )
+
+        return redirect("washoku:recipe_detail", pk=recipe.pk)
+
+    return render(
+        request,
+        "washoku/recipe_submit.html",
+        {
+            "form": form,
+        },
+    )
+
+
+@login_required
+def my_recipes(request):
+
+    recipes = (
+        Recipe.objects
+        .filter(submitted_by=request.user)
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "washoku/my_recipes.html",
+        {
+            "recipes": recipes,
         },
     )
 
@@ -1164,6 +1267,9 @@ def my_page(request):
                 "comment_count": Comment.objects.filter(
                     author=request.user,
                     is_deleted=False,
+                ).count(),
+                "submitted_count": Recipe.objects.filter(
+                    submitted_by=request.user,
                 ).count(),
                 "family_count": len(family_members(request.user)),
                 "invite_count": HouseholdInvite.objects.filter(

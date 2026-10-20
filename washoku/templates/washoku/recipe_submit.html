@@ -1,0 +1,50 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}レシピを投稿する | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>レシピを投稿する</h1>
+
+<p class="washoku-lead">スイスで手に入る食材で作れる、あなたの家のレシピを教えてください。管理者が確認してから掲載します。</p>
+
+<form method="post" class="washoku-form" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+            <p class="washoku-message washoku-message-error" role="alert">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% for field in form %}
+        <div class="washoku-field{% if field.errors %} has-error{% endif %}">
+            {% if field.name == "mood_tags" %}
+                <fieldset>
+                    <legend>{{ field.label }}<small>（あてはまるものをいくつでも）</small></legend>
+                    <div class="washoku-check-chips">
+                        {% for checkbox in field %}
+                            <label>{{ checkbox.tag }}<span>{{ checkbox.choice_label }}</span></label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            {% else %}
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="washoku-required">必須</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% endif %}
+            {% for error in field.errors %}
+                <p class="washoku-field-error" role="alert">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <p class="washoku-note">材料は、このアプリの<a href="{% url 'washoku:ingredient_list' %}" target="_blank" rel="noopener">食材リスト</a>と同じ名前で書くと、買えるお店が自動でつきます。リストにない材料も、そのまま書いてください。掲載前に管理者が整えます。</p>
+
+    <button type="submit" class="washoku-button washoku-button-wide">投稿する</button>
+</form>
+
+{% endblock %}

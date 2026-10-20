@@ -242,6 +242,7 @@ class Recipe(models.Model):
     ORIGIN_CHOICES = [
         ("ai", "AI下書き"),
         ("manual", "手書き"),
+        ("member", "会員の投稿"),
     ]
 
     name = models.CharField(
@@ -323,6 +324,24 @@ class Recipe(models.Model):
         max_length=20,
         choices=ORIGIN_CHOICES,
         default="manual",
+    )
+
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した会員",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_submitted_recipes",
+    )
+
+    submitted_ingredients = models.TextField(
+        "投稿された材料（原文）",
+        blank=True,
+        help_text=(
+            "会員が書いた材料のメモ。食材リストにない材料は自動でつながらないので、"
+            "必要なら食材を登録してから下の「材料」に追加する。"
+        ),
     )
 
     is_tested = models.BooleanField(
@@ -651,6 +670,19 @@ class Store(models.Model):
     has_online_shop = models.BooleanField(
         "ネット通販あり",
         default=False,
+    )
+
+    latitude = models.FloatField(
+        "緯度",
+        null=True,
+        blank=True,
+        help_text="空なら住所から自動で調べる。",
+    )
+
+    longitude = models.FloatField(
+        "経度",
+        null=True,
+        blank=True,
     )
 
     is_active = models.BooleanField(

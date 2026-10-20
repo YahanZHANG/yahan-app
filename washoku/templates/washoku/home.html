@@ -5,7 +5,6 @@
 
 <section class="washoku-hero">
     <h1>スイスで買える食材で、日本の味を。</h1>
-    <p>スイスのスーパーやアジア・日系の店で手に入る食材だけで作れる、家庭料理のレシピ集です。</p>
 
     <form action="{% url 'washoku:recipe_list' %}" method="get" class="washoku-search">
         <input type="search" name="q" placeholder="料理名や食材（例: 親子丼、鶏もも肉）" aria-label="レシピを検索">
@@ -40,6 +39,12 @@
         <a class="washoku-chip-link washoku-chip-link-strong" href="{% url 'washoku:recipe_list' %}?shop=1">普通のスーパーだけで作れる</a>
     </div>
 </section>
+
+<a class="washoku-banner" href="{% url 'washoku:recipe_submit' %}">
+    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+    <span><strong>あなたのレシピを投稿する</strong><small>スイスの食材で作れる家庭の味を教えてください</small></span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>
 
 <section class="washoku-section">
     <h2>新着レシピ</h2>

@@ -23,6 +23,11 @@
             <span class="washoku-menu-text"><strong>評価したレシピ</strong><small>{% if user.is_authenticated %}好き・大好き {{ favorite_count }}品{% else %}ログインすると記録できる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:my_recipes' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>投稿したレシピ</strong><small>{% if user.is_authenticated %}{{ submitted_count }}品{% else %}自分のレシピを投稿できる{% endif %}</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
         <a class="washoku-menu-item" href="{% url 'washoku:notification_list' %}">
             <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>お知らせ</strong><small>コメントへの返信</small></span>

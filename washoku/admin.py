@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .geocode import geocode_store
 from .models import (
     Comment,
     CommentReport,
@@ -127,6 +128,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "category",
         "status",
         "origin",
+        "submitted_by",
         "is_tested",
         "shop_rank_label",
         "updated_at",
@@ -151,6 +153,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
+        "submitted_by",
         "shop_rank_label",
         "created_at",
         "updated_at",
@@ -324,6 +327,7 @@ class StoreAdmin(admin.ModelAdmin):
         "city",
         "area",
         "address",
+        "has_location",
         "is_active",
     )
 
@@ -338,6 +342,26 @@ class StoreAdmin(admin.ModelAdmin):
         "address",
         "area",
     )
+
+    @admin.display(description="位置", boolean=True)
+    def has_location(self, obj):
+        return obj.latitude is not None
+
+    def save_model(self, request, obj, form, change):
+
+        # 住所を変えたのに緯度・経度を手で直していなければ、住所から調べ直す
+        address_changed = "address" in form.changed_data
+        location_edited = {"latitude", "longitude"} & set(form.changed_data)
+
+        if (address_changed and not location_edited) or obj.latitude is None:
+            if not geocode_store(obj, save=False):
+                self.message_user(
+                    request,
+                    "住所から位置を調べられませんでした。距離順の並び替えでは最後に出ます。",
+                    level="warning",
+                )
+
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Feedback)

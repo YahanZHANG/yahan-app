@@ -1,0 +1,31 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}投稿したレシピ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>投稿したレシピ</h1>
+
+<p><a class="washoku-button" href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> レシピを投稿する</a></p>
+
+{% if recipes %}
+    <ul class="washoku-list">
+        {% for recipe in recipes %}
+            <li>
+                <a href="{% url 'washoku:recipe_detail' recipe.pk %}">{{ recipe.name }}</a>
+                <small>
+                    {% if recipe.status == "published" %}
+                        <span class="washoku-chip washoku-chip-shop">掲載中</span>
+                    {% else %}
+                        <span class="washoku-chip washoku-chip-draft">確認待ち</span>
+                    {% endif %}
+                    {{ recipe.created_at|date:"Y/n/j" }}
+                </small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">まだ投稿したレシピはありません。</p>
+{% endif %}
+
+{% endblock %}

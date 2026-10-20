@@ -4,10 +4,12 @@ washoku/data/ingredients.json・recipes.json・stores.json を取り込む。
     python manage.py import_washoku
     python manage.py import_washoku --dry-run
     python manage.py import_washoku --new-only   # まだない食材・レシピだけ追加 (start.sh 用)
+    python manage.py import_washoku --no-geocode # お店の位置を調べない (ネットがないとき)
 
-同じ名前の食材・レシピは上書きする。ただしレシピの公開状態は、
+同じ名前の食材・レシピ・お店は上書きする。ただしレシピの公開状態は、
 既にあるレシピでは変えない (管理画面で公開したものを下書きに戻さないため)。
 レシピの材料が食材リストにない場合は、何も取り込まずにエラーにする。
+最後に、位置 (緯度・経度) がまだないお店を住所から調べる。
 """
 
 import json
@@ -17,6 +19,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from washoku.geocode import geocode_missing_stores
 from washoku.models import (
     Ingredient,
     MoodTag,
@@ -68,6 +71,12 @@ class Command(BaseCommand):
             help="まだない食材・レシピだけ追加し、既にあるもの (管理画面で直したもの) は変えない",
         )
 
+        parser.add_argument(
+            "--no-geocode",
+            action="store_true",
+            help="お店の位置 (緯度・経度) を調べない",
+        )
+
     def handle(self, *args, **options):
 
         ingredients = self.load(options["ingredients"])
@@ -93,11 +102,11 @@ class Command(BaseCommand):
             ]
 
             existing_stores = set(
-                Store.objects.values_list("name", "address")
+                Store.objects.values_list("name", flat=True)
             )
             stores = [
                 row for row in stores
-                if (row["name"], row["address"]) not in existing_stores
+                if row["name"] not in existing_stores
             ]
 
         try:
@@ -118,6 +127,14 @@ class Command(BaseCommand):
                 f"食材 {ingredient_count}件、レシピ {recipe_count}件、お店 {store_count}件"
             )
         )
+
+        if not options["dry_run"] and not options["no_geocode"]:
+
+            missing = Store.objects.filter(latitude__isnull=True).count()
+
+            if missing:
+                found = geocode_missing_stores()
+                self.stdout.write(f"お店の位置: {missing}件中 {found}件を住所から調べました")
 
     def load(self, path):
 
@@ -180,14 +197,22 @@ class Command(BaseCommand):
     def import_stores(self, rows):
 
         for row in rows:
+
+            defaults = {
+                key: value
+                for key, value in row.items()
+                if key != "name"
+            }
+
+            store = Store.objects.filter(name=row["name"]).first()
+
+            # 住所が変わったら位置を調べ直す
+            if store and store.address != row["address"]:
+                defaults.update(latitude=None, longitude=None)
+
             Store.objects.update_or_create(
                 name=row["name"],
-                address=row["address"],
-                defaults={
-                    key: value
-                    for key, value in row.items()
-                    if key not in ("name", "address")
-                },
+                defaults=defaults,
             )
 
         return len(rows)

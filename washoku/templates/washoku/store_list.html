@@ -15,11 +15,27 @@
     {% endfor %}
 </nav>
 
+<div class="washoku-store-tools">
+    <button type="button" class="washoku-button" data-near-button>
+        <i class="bi bi-crosshair" aria-hidden="true"></i> 現在地から近い順
+    </button>
+    <p class="washoku-note" data-near-status role="status" aria-live="polite"></p>
+</div>
+
+<section class="washoku-section" data-near-list hidden>
+    <h2>近い順</h2>
+</section>
+
 {% for city, stores in by_city.items %}
-    <section class="washoku-section">
+    <section class="washoku-section" data-city-section>
         <h2>{{ city }}</h2>
         {% for store in stores %}
-            <a class="washoku-store" href="{% url 'washoku:store_detail' store.pk %}">
+            <a
+                class="washoku-store"
+                href="{% url 'washoku:store_detail' store.pk %}"
+                {% if store.latitude is not None %}data-lat="{{ store.latitude|stringformat:'f' }}" data-lng="{{ store.longitude|stringformat:'f' }}"{% endif %}
+            >
+                <span class="washoku-distance" data-distance></span>
                 <span class="washoku-chip">{{ store.get_kind_display }}</span>
                 {% if store.has_online_shop %}<span class="washoku-chip washoku-chip-shop">ネット通販あり</span>{% endif %}
                 <h3>{{ store.name }}</h3>
@@ -34,5 +50,60 @@
 {% endfor %}
 
 <p class="washoku-note">営業時間などは変わることがあります。お出かけ前に各店のサイトでご確認ください。載っていないお店は<a href="{% url 'washoku:about' %}#feedback">質問箱</a>から教えてください。</p>
+
+<script>
+(function () {
+    // 現在地から近い順に並べ替える (位置は端末の中だけで使い、サーバーには送らない)
+    var button = document.querySelector("[data-near-button]");
+    var status = document.querySelector("[data-near-status]");
+    var nearList = document.querySelector("[data-near-list]");
+    if (!button || !nearList) return;
+
+    function distanceKm(lat1, lng1, lat2, lng2) {
+        var toRad = Math.PI / 180;
+        var dLat = (lat2 - lat1) * toRad;
+        var dLng = (lng2 - lng1) * toRad;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function label(km) {
+        return km < 1 ? Math.round(km * 1000) + " m" : km.toFixed(km < 10 ? 1 : 0) + " km";
+    }
+
+    function sortBy(lat, lng) {
+        var cards = Array.prototype.slice.call(document.querySelectorAll(".washoku-store"));
+        cards.forEach(function (card) {
+            var hasLocation = card.dataset.lat !== undefined;
+            card._km = hasLocation ? distanceKm(lat, lng, parseFloat(card.dataset.lat), parseFloat(card.dataset.lng)) : Infinity;
+            card.querySelector("[data-distance]").textContent = hasLocation ? label(card._km) : "";
+        });
+        cards.sort(function (a, b) { return a._km - b._km; });
+        cards.forEach(function (card) { nearList.appendChild(card); });
+        nearList.hidden = false;
+        document.querySelectorAll("[data-city-section]").forEach(function (section) { section.hidden = true; });
+        status.textContent = "";
+        button.innerHTML = '<i class="bi bi-crosshair" aria-hidden="true"></i> 現在地を更新';
+    }
+
+    button.addEventListener("click", function () {
+        if (!navigator.geolocation) {
+            status.textContent = "この端末では現在地を使えません。";
+            return;
+        }
+        status.textContent = "現在地を調べています…";
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                sortBy(position.coords.latitude, position.coords.longitude);
+            },
+            function () {
+                status.textContent = "現在地を取得できませんでした。ブラウザの位置情報の許可をご確認ください。";
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+        );
+    });
+})();
+</script>
 
 {% endblock %}

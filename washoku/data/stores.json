@@ -26,18 +26,29 @@
   "kind": "japanese",
   "city": "Zürich",
   "area": "Kreis 4",
-  "address": "Zwinglistrasse 11 (Hinterhof), 8004 Zürich",
+  "address": "Zwinglistrasse 11, 8004 Zürich",
   "website": "https://www.shinwazen.ch/",
   "opening_hours": "木〜土 11:00–18:00",
-  "description": "保存料を使わない日本の食品が中心。米、麺、醤油、味噌、日本酒や器も。",
+  "description": "保存料を使わない日本の食品が中心。米、麺、醤油、味噌、日本酒や器も。入口は中庭側。",
   "has_online_shop": true
+ },
+ {
+  "name": "Lian Hua（Escher Wyss）",
+  "kind": "asian",
+  "city": "Zürich",
+  "area": "Escher Wyss",
+  "address": "Förrlibuckstrasse 30, 8005 Zürich",
+  "website": "",
+  "opening_hours": "9:00–19:00",
+  "description": "中型スーパーほどの広さがある中華系の大型店。乾麺の種類が多く、タイ・日本・韓国の食材も。店内に中華の食堂あり。",
+  "has_online_shop": false
  },
  {
   "name": "Lian Hua（Wiedikon）",
   "kind": "asian",
   "city": "Zürich",
   "area": "Wiedikon",
-  "address": "Birmensdorferstrasse 94, Zürich",
+  "address": "Birmensdorferstrasse 94, 8003 Zürich",
   "website": "",
   "opening_hours": "9:00–19:00",
   "description": "品数の多い中華系アジアスーパー。調理器具もある。",
@@ -48,7 +59,7 @@
   "kind": "asian",
   "city": "Zürich",
   "area": "Oerlikon",
-  "address": "Schaffhauserstrasse 269, Zürich",
+  "address": "Schaffhauserstrasse 269, 8057 Zürich",
   "website": "",
   "opening_hours": "9:00–19:00",
   "description": "Oerlikon の中華系アジアスーパー。生鮮品も扱う。",
@@ -59,10 +70,10 @@
   "kind": "asian",
   "city": "Zürich",
   "area": "Oerlikon",
-  "address": "Hofwiesenstrasse 350, 8050 Zürich（Neumarkt Oerlikon 2階）",
+  "address": "Hofwiesenstrasse 350, 8050 Zürich",
   "website": "https://nihao-asiashop.ch/",
   "opening_hours": "月〜土 9:00–19:00",
-  "description": "Oerlikon 駅から徒歩2分。アジアの野菜やハーブ、冷凍の餃子・点心、100種類以上のラーメン。",
+  "description": "Neumarkt Oerlikon の2階。豆腐が8〜12種類、キムチ、冷凍の餃子・点心、100種類以上のラーメン。味噌・みりん・だしの素もある。",
   "has_online_shop": false
  },
  {
@@ -70,10 +81,10 @@
   "kind": "asian",
   "city": "Zürich",
   "area": "中央駅",
-  "address": "Zürich HB ShopVille 地下1階（Halle Sihlquai）",
+  "address": "Konradstrasse 1, 8005 Zürich",
   "website": "https://www.asia-store.ch/",
   "opening_hours": "月〜土 9:00–20:00、日 9:00–19:30",
-  "description": "中央駅の地下。日曜も開いているので、急に必要になったときに便利。",
+  "description": "中央駅の地下 ShopVille（Halle Sihlquai 側）。日曜も開いているので、急に必要になったときに便利。",
   "has_online_shop": false
  },
  {
@@ -83,8 +94,30 @@
   "area": "Oerlikon",
   "address": "Affolternstrasse 10, 8050 Zürich",
   "website": "https://www.asia-store.ch/",
+  "opening_hours": "月〜金 10:00–19:00、土 9:00–18:00",
+  "description": "Oerlikon 駅の8番線（セクターC）そば。アジアの基本的な食材や麺、調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Asia Store（Dietikon）",
+  "kind": "asian",
+  "city": "Dietikon",
+  "area": "Löwenzentrum 向かい",
+  "address": "Zentralstrasse 2, 8953 Dietikon",
+  "website": "https://www.asia-store.ch/",
+  "opening_hours": "月〜金 10:00–18:30、土 9:30–18:00",
+  "description": "Dietikon 駅近く。アジアの基本的な食材や麺、調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "SKT Lebensmittel",
+  "kind": "asian",
+  "city": "Zürich",
+  "area": "Kreis 5",
+  "address": "Quellenstrasse 1, 8005 Zürich",
+  "website": "",
   "opening_hours": "",
-  "description": "アジアの基本的な食材、東南アジアの野菜、麺、ナンプラーなど。",
+  "description": "Langstrasse 近くのアジア食材店。",
   "has_online_shop": false
  },
  {
@@ -95,7 +128,18 @@
   "address": "Feldstrasse 24, 8004 Zürich",
   "website": "https://www.newasiamarket.ch/",
   "opening_hours": "",
-  "description": "タイ・ベトナムの野菜やハーブが新鮮。冷凍の魚介や蒸し器などの調理器具も。",
+  "description": "タイ・ベトナムの野菜やハーブが新鮮。中華・日本の食材、冷凍の魚介や蒸し器などの調理器具も。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Sala Thai",
+  "kind": "southeast",
+  "city": "Zürich",
+  "area": "Kreis 4",
+  "address": "Zwinglistrasse 32, 8004 Zürich",
+  "website": "https://www.sala-thai.ch/",
+  "opening_hours": "",
+  "description": "タイ食材の専門店。オーガニックの野菜やハーブ、タイから毎週届くカレーペースト。",
   "has_online_shop": false
  },
  {
@@ -104,9 +148,86 @@
   "city": "Zürich",
   "area": "Oerlikon",
   "address": "Schwamendingenstrasse 10, 8050 Zürich",
-  "website": "http://www.asiaway.ch/",
+  "website": "https://asiaway.ch/",
+  "opening_hours": "月〜金 9:00–19:00、土 9:00–18:00",
+  "description": "ベトナム系のお店。タイ・ベトナムから週3回届く野菜や果物、韓国・台湾の食材も。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Pinoy Asian Store",
+  "kind": "southeast",
+  "city": "Zürich",
+  "area": "Oerlikon",
+  "address": "Gubelstrasse 2, 8050 Zürich",
+  "website": "https://pinoyasianstore.ch/",
   "opening_hours": "",
-  "description": "ベトナム系のお店で、レストラン併設。韓国・フィリピン・台湾の食材も。",
+  "description": "フィリピン系の小さなお店。アジアのペーストやお菓子。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Asiaway（Winterthur）",
+  "kind": "southeast",
+  "city": "Winterthur",
+  "area": "Archhöfe",
+  "address": "Archplatz 2, 8400 Winterthur",
+  "website": "https://asiaway.ch/",
+  "opening_hours": "月〜金 9:00–20:00、土 9:00–18:00",
+  "description": "駅前のショッピングモール Archhöfe の中。タイ・ベトナムの野菜や果物、アジアの調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Malai Thai（Wartstrasse）",
+  "kind": "southeast",
+  "city": "Winterthur",
+  "area": "駅北側",
+  "address": "Wartstrasse 14, 8400 Winterthur",
+  "website": "https://www.malaithai.ch/",
+  "opening_hours": "月〜金 9:00–19:00、土 9:00–18:00",
+  "description": "タイ食材のお店。タイの野菜、ハーブ、調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Malai Thai（Technikumstrasse）",
+  "kind": "southeast",
+  "city": "Winterthur",
+  "area": "駅南側",
+  "address": "Technikumstrasse 72, 8400 Winterthur",
+  "website": "https://www.malaithai.ch/",
+  "opening_hours": "月〜金 9:30–18:30、土 9:00–17:00",
+  "description": "タイ食材のお店。タイの野菜、ハーブ、調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Malai Thai（Wetzikon）",
+  "kind": "southeast",
+  "city": "Wetzikon",
+  "area": "駅前",
+  "address": "Bahnhofstrasse 33, 8620 Wetzikon",
+  "website": "https://www.malaithai.ch/",
+  "opening_hours": "月〜金 9:30–18:30、土 9:00–18:00",
+  "description": "タイ食材のお店。タイの野菜、ハーブ、調味料。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Asian Tindahan",
+  "kind": "southeast",
+  "city": "Wädenswil",
+  "area": "",
+  "address": "Zugerstrasse 37, 8820 Wädenswil",
+  "website": "",
+  "opening_hours": "",
+  "description": "フィリピン系のアジア食材店。冷凍食品、アジアの野菜や果物、スパイス。",
+  "has_online_shop": false
+ },
+ {
+  "name": "Asiaway（Zug）",
+  "kind": "southeast",
+  "city": "Zug",
+  "area": "駅近く",
+  "address": "Baarerstrasse 22, 6300 Zug",
+  "website": "https://asiaway.ch/",
+  "opening_hours": "月・火・水・金 8:00–19:00、木 8:00–20:00、土 8:00–17:00",
+  "description": "タイ・ベトナムの野菜や果物、アジアの調味料。",
   "has_online_shop": false
  }
 ]

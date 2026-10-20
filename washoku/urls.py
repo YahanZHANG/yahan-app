@@ -15,6 +15,7 @@ urlpatterns = [
     path("random/", views.random_recipe, name="random_recipe"),
 
     # レシピ
+    path("recipes/new/", views.recipe_submit, name="recipe_submit"),
     path("recipes/<int:pk>/", views.recipe_detail, name="recipe_detail"),
     path("recipes/<int:pk>/rate/", views.rate_recipe, name="rate_recipe"),
 
@@ -37,6 +38,7 @@ urlpatterns = [
     # このアプリについて・マイページ
     path("about/", views.about, name="about"),
     path("me/", views.my_page, name="my_page"),
+    path("me/recipes/", views.my_recipes, name="my_recipes"),
     path("me/favorites/", views.my_favorites, name="my_favorites"),
     path("me/comments/", views.my_comments, name="my_comments"),
 
