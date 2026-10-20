@@ -43,6 +43,9 @@
     <meta name="theme-color" content="#E2572B">
     <meta name="description" content="スイスで買える食材だけで作る、日本人の舌に合うレシピ">
 
+    {% search_engines_allowed as indexable %}
+    {% if not indexable %}<meta name="robots" content="noindex, nofollow">{% endif %}
+
     {% include "includes/app_icons.html" %}
 </head>
 

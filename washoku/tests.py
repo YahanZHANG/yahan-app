@@ -694,3 +694,42 @@ class IngredientGermanNameTests(TestCase):
         self.assertContains(response, "（Pouletschenkel）")
         # 名前にもうドイツ語が入っているときは重ねて書かない
         self.assertNotContains(response, "（Sojasauce）</small>")
+
+
+class TrialAccessTests(TestCase):
+    """
+    一般公開前のテスト運用: URL を知っている人は、ログインしていてもいなくても見られる。
+    """
+
+    def setUp(self):
+        self.recipe = make_recipe()
+        self.urls = [
+            reverse("washoku:home"),
+            reverse("washoku:recipe_detail", args=[self.recipe.pk]),
+            reverse("washoku:store_list"),
+        ]
+
+    def assert_can_view(self):
+        for url in self.urls:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_visitors_without_login(self):
+        self.assert_can_view()
+
+    def test_public_signup_members(self):
+        from django.contrib.auth.models import Group
+
+        from portal.middleware import PUBLIC_USER_GROUP
+
+        user = get_user_model().objects.create_user("friend", password="x")
+        user.groups.add(Group.objects.get_or_create(name=PUBLIC_USER_GROUP)[0])
+        self.client.force_login(user)
+
+        self.assert_can_view()
+
+    def test_hidden_from_search_engines_until_launch(self):
+
+        self.assertContains(self.client.get(self.urls[0]), '<meta name="robots" content="noindex, nofollow">')
+
+        with self.settings(WASHOKU_ALLOW_SEARCH_ENGINES=True):
+            self.assertNotContains(self.client.get(self.urls[0]), 'name="robots"')

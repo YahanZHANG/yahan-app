@@ -1,4 +1,5 @@
 from django import template
+from django.conf import settings
 
 from washoku.models import Notification
 
@@ -44,3 +45,8 @@ def stars(value):
     filled = int(round(float(value)))
 
     return "★" * filled + "☆" * (5 - filled)
+
+
+@register.simple_tag
+def search_engines_allowed():
+    return getattr(settings, "WASHOKU_ALLOW_SEARCH_ENGINES", False)

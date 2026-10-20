@@ -350,6 +350,13 @@ SWISS_NEWS_TWINT_URL = os.getenv(
     "",
 )
 
+# スイスで和食: テスト運用中は検索エンジンに載せない (URL を知っている人だけが見る)。
+# 一般公開するときに Render で WASHOKU_ALLOW_SEARCH_ENGINES=true にする。
+WASHOKU_ALLOW_SEARCH_ENGINES = os.getenv(
+    "WASHOKU_ALLOW_SEARCH_ENGINES",
+    "false",
+).lower() == "true"
+
 # Phone number for TWINT transfers on the support page. Kept out of
 # the (public) repository; set it in the Render environment.
 YAPP_TWINT_PHONE = os.getenv(
