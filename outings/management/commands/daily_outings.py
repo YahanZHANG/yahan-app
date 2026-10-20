@@ -54,7 +54,7 @@ class Command(BaseCommand):
         parser.add_argument('--max-screen', type=int, default=500, help='Maximum NEW candidates screened by AI per run')
         parser.add_argument('--pages', type=int, default=30)
         parser.add_argument('--days', type=int, default=30)
-        parser.add_argument('--cleanup', action='store_true', help='Also unpublish ended Eventfrog events')
+        parser.add_argument('--cleanup', action='store_true', help='Also unpublish ended Eventfrog events and delete past events')
         parser.add_argument('--images', action='store_true', help='Upload images of new events to Cloudinary')
 
     def handle(self, *args, **opts):

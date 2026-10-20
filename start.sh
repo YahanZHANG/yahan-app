@@ -3,6 +3,10 @@
 
 set -e
 
+# Keep glibc from holding on to freed memory in many arenas
+# (the instance has only 512 MB).
+export MALLOC_ARENA_MAX="${MALLOC_ARENA_MAX:-2}"
+
 # =====================================================
 # Database initialization
 # =====================================================
@@ -25,8 +29,13 @@ SCHEDULER_PID=$!
 # Start Gunicorn
 # =====================================================
 
+# One worker, replaced after a few hundred requests so its memory
+# cannot keep creeping up. WEB_CONCURRENCY can override the count.
 gunicorn config.wsgi:application \
-    --bind "0.0.0.0:${PORT:-10000}" &
+    --bind "0.0.0.0:${PORT:-10000}" \
+    --workers "${WEB_CONCURRENCY:-1}" \
+    --max-requests 500 \
+    --max-requests-jitter 50 &
 
 WEB_PID=$!
 
