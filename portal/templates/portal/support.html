@@ -59,19 +59,33 @@
                     <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
                 </a>
             {% endif %}
+            {% if twint_phone %}
+                <details class="yapp-support__method yapp-support__fold">
+                    <summary>
+                        <span class="yapp-support__icon" aria-hidden="true">📲</span>
+                        <span><strong>TWINTで送金して応援する</strong><small>電話番号を表示します</small></span>
+                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </summary>
+                    <div class="yapp-support__fold-body">
+                        <p>TWINTアプリの「送る」から、この番号あてに送金できます。</p>
+                        <code class="yapp-support__phone">{{ twint_phone }}</code>
+                        <button type="button" class="yapp-support__copy" data-copy="{{ twint_phone }}">番号をコピー</button>
+                    </div>
+                </details>
+            {% endif %}
             <a href="{% url 'portal:support_contact' 'bank' %}{% if origin %}?from={{ origin.key }}{% endif %}" class="yapp-support__method">
                 <span class="yapp-support__icon" aria-hidden="true">🏦</span>
                 <span><strong>銀行口座で応援する</strong><small>スイス・日本の振込先をメールでご案内します</small></span>
                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </a>
             {% if bitcoin_address %}
-                <details class="yapp-support__method yapp-support__bitcoin">
+                <details class="yapp-support__method yapp-support__fold">
                     <summary>
                         <span class="yapp-support__icon" aria-hidden="true">₿</span>
                         <span><strong>Bitcoinで応援する</strong><small>アドレスとQRコードを表示します</small></span>
                         <i class="bi bi-chevron-down" aria-hidden="true"></i>
                     </summary>
-                    <div class="yapp-support__bitcoin-body">
+                    <div class="yapp-support__fold-body">
                         <img src="{% url 'news:bitcoin_qr' %}" alt="BitcoinアドレスのQRコード" width="160" height="160" loading="lazy">
                         <code>{{ bitcoin_address }}</code>
                     </div>
@@ -94,6 +108,17 @@
 </div>
 
 <script>
+document.querySelectorAll(".yapp-support__copy").forEach((button) => {
+    button.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(button.dataset.copy);
+            button.textContent = "コピーしました";
+        } catch (error) {
+            button.textContent = button.dataset.copy;
+        }
+    });
+});
+
 document.querySelectorAll(".yapp-support__share").forEach((button) => {
     const status = button.parentElement.querySelector(".yapp-support__share-status");
     button.addEventListener("click", async () => {
