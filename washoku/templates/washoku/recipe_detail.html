@@ -66,11 +66,15 @@
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'washoku:rate_recipe' recipe.pk %}" class="washoku-rating">
                 {% csrf_token %}
-                <span>あなた:</span>
-                {% for value, label in rating_choices %}
-                    <button type="submit" name="rating" value="{{ value }}" class="{% if my_rating == value %}is-selected{% endif %}">{{ label }}</button>
-                {% endfor %}
-                {% if my_rating %}<button type="submit" name="rating" value="clear" class="washoku-link-button">取り消す</button>{% endif %}
+                <p class="washoku-rating-label">
+                    あなたの評価
+                    {% if my_rating %}<button type="submit" name="rating" value="clear" class="washoku-link-button">取り消す</button>{% endif %}
+                </p>
+                <div class="washoku-rating-buttons">
+                    {% for value, label in rating_choices %}
+                        <button type="submit" name="rating" value="{{ value }}" class="{% if my_rating == value %}is-selected{% endif %}" {% if my_rating == value %}aria-pressed="true"{% endif %}>{{ label }}</button>
+                    {% endfor %}
+                </div>
             </form>
             {% if member_ratings %}
                 <ul class="washoku-list">
