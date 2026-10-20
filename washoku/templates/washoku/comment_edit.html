@@ -1,0 +1,17 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}コメントの編集 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>コメントの編集</h1>
+
+<form method="post" class="washoku-comment-form">
+    {% csrf_token %}
+    {{ form.body.errors }}
+    {{ form.body }}
+    <button type="submit" class="washoku-button">保存する</button>
+    <a href="{{ back_url }}">キャンセル</a>
+</form>
+
+{% endblock %}

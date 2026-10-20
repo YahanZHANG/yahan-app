@@ -1,0 +1,102 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block content %}
+
+<section class="washoku-hero">
+    <h1 class="washoku-visually-hidden">スイスで和食</h1>
+
+    <form action="{% url 'washoku:recipe_list' %}" method="get" class="washoku-search">
+        <input type="search" name="q" placeholder="料理名や食材で探す" aria-label="レシピを検索">
+        <button type="submit">探す</button>
+    </form>
+</section>
+
+<section class="washoku-entry">
+    <a href="{% url 'washoku:find_by_mood' %}" class="washoku-entry-card">
+        <span>😋</span>
+        <strong>気分で選ぶ</strong>
+        <small>さっぱり、がっつり…</small>
+    </a>
+    <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-entry-card">
+        <span>🧺</span>
+        <strong>食材で選ぶ</strong>
+        <small>家にあるもので</small>
+    </a>
+    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-card">
+        <span>🎲</span>
+        <strong>ランダム</strong>
+        <small>今日はこれ！</small>
+    </a>
+</section>
+
+<section class="washoku-section">
+    <h2>カテゴリー</h2>
+    <div class="washoku-chips">
+        {% for value, label in categories %}
+            <a class="washoku-chip-link" href="{% url 'washoku:recipe_list' %}?category={{ value }}">{{ label }}</a>
+        {% endfor %}
+        <a class="washoku-chip-link washoku-chip-link-strong" href="{% url 'washoku:recipe_list' %}?shop=1">普通のスーパーだけで作れる</a>
+    </div>
+</section>
+
+<a class="washoku-banner" href="{% url 'washoku:recipe_submit' %}">
+    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+    <span><strong>あなたのレシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>
+
+<section class="washoku-section">
+    <h2>新着レシピ</h2>
+    {% if latest_recipes %}
+        <div class="washoku-grid">
+            {% for recipe in latest_recipes %}
+                {% include "washoku/includes/recipe_card.html" %}
+            {% endfor %}
+        </div>
+        <p class="washoku-more"><a href="{% url 'washoku:recipe_list' %}">すべてのレシピ（{{ recipe_count }}品）</a></p>
+    {% else %}
+        <p class="washoku-empty">レシピを準備中です。</p>
+    {% endif %}
+</section>
+
+{% if questions %}
+<section class="washoku-section">
+    <h2>答えを待っている質問</h2>
+    <ul class="washoku-list">
+        {% for question in questions %}
+            <li>
+                <a href="{{ question.get_absolute_url }}">
+                    {{ question.body|truncatechars:60 }}
+                </a>
+                <small>{{ question.target.name }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if latest_comments %}
+<section class="washoku-section">
+    <h2>みんなの工夫・新しいコメント</h2>
+    <ul class="washoku-list">
+        {% for comment in latest_comments %}
+            <li>
+                <a href="{{ comment.get_absolute_url }}">
+                    {{ comment.body|truncatechars:60 }}
+                </a>
+                <small>{{ comment.author|display_name }} ・ {{ comment.target.name }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if user.is_staff %}
+<p class="washoku-admin-box">
+    管理者には下書きのレシピも表示されています。
+    <a href="{% url 'admin:washoku_recipe_changelist' %}">管理画面でレシピを公開する</a>
+</p>
+{% endif %}
+
+{% endblock %}

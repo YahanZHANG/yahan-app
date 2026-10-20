@@ -1,0 +1,172 @@
+{% load static washoku_tags %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <title>
+        {% block title %}スイスで和食 | Yapp{% endblock %}
+    </title>
+
+    <script>
+    // 画面が描かれる前にテーマを決める (白く光らないように)
+    (function () {
+        var theme = "light";
+        try {
+            var saved = localStorage.getItem("yapp-washoku-theme");
+            if (saved === "dark" || saved === "light") {
+                theme = saved;
+            } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                theme = "dark";
+            }
+        } catch (error) {}
+        document.documentElement.setAttribute("data-washoku-theme", theme);
+    })();
+    </script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'washoku/washoku.css' %}"
+    >
+
+    <meta name="theme-color" content="#E2572B">
+    <meta name="description" content="スイスで買える食材だけで作る、日本人の舌に合うレシピ">
+
+    {% search_engines_allowed as indexable %}
+    {% if not indexable %}<meta name="robots" content="noindex, nofollow">{% endif %}
+
+    {% include "includes/app_icons.html" %}
+</head>
+
+<body>
+
+{% unread_notification_count as unread %}
+{% with name=request.resolver_match.url_name %}
+
+    <header class="washoku-header">
+
+        <div class="washoku-header-inner">
+
+            <a href="{% url 'washoku:home' %}" class="washoku-brand">
+                <span class="washoku-brand-icon" aria-hidden="true">🍚</span>
+                <span>
+                    <strong>スイスで和食</strong>
+                    <small>スイスの食材で、日本の味を</small>
+                </span>
+            </a>
+
+            <nav class="washoku-desktop-nav" aria-label="PCメニュー">
+                <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
+                <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients random_recipe' %}active{% endif %}"><i class="bi bi-journal-richtext" aria-hidden="true"></i>レシピ</a>
+                <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
+                <a href="{% url 'washoku:store_list' %}" class="{% if name in 'store_list store_detail' %}active{% endif %}"><i class="bi bi-shop" aria-hidden="true"></i>お店</a>
+                <a href="{% url 'washoku:question_list' %}" class="{% if name == 'question_list' %}active{% endif %}"><i class="bi bi-chat-square-text" aria-hidden="true"></i>Q&amp;A</a>
+            </nav>
+
+            <a href="{% url 'washoku:recipe_submit' %}" class="washoku-post-button{% if name == 'recipe_submit' %} active{% endif %}">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>レシピを投稿
+            </a>
+
+            <a
+                href="{% url 'washoku:my_page' %}"
+                class="washoku-me{% if name in 'my_page my_favorites my_comments my_recipes notification_list family about' %} active{% endif %}"
+                aria-label="マイページ{% if unread %}（未読{{ unread }}件）{% endif %}"
+            >
+                <span class="washoku-me-icon">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    {% if unread %}<span class="washoku-badge">{{ unread }}</span>{% endif %}
+                </span>
+                <span class="washoku-me-label">マイページ</span>
+            </a>
+
+        </div>
+
+    </header>
+
+    <main class="washoku-main">
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="washoku-message washoku-message-{{ message.tags }}" role="status">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+    <footer class="washoku-footer">
+        <a href="{% url 'washoku:about' %}">スイスで和食について</a>
+        <a href="{% url 'washoku:about' %}#feedback">質問箱</a>
+        <a href="{% url 'portal:support' %}?from=washoku">Yappを応援する</a>
+        <a href="{% url 'portal:home' %}">Yapp トップ</a>
+    </footer>
+
+    <!-- スマホ: 下のメニューバー -->
+    <nav class="washoku-tabbar" aria-label="メインメニュー">
+        <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}">
+            <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>HOME</span>
+        </a>
+        <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients random_recipe' %}active{% endif %}">
+            <i class="bi bi-journal-richtext" aria-hidden="true"></i>
+            <span>レシピ</span>
+        </a>
+        <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail' %}active{% endif %}">
+            <i class="bi bi-basket{% if name in 'ingredient_list ingredient_detail' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>食材</span>
+        </a>
+        <a href="{% url 'washoku:store_list' %}" class="{% if name in 'store_list store_detail' %}active{% endif %}">
+            <i class="bi bi-shop{% if name in 'store_list store_detail' %}-window{% endif %}" aria-hidden="true"></i>
+            <span>お店</span>
+        </a>
+        <a href="{% url 'washoku:question_list' %}" class="{% if name == 'question_list' %}active{% endif %}">
+            <i class="bi bi-chat-square-text{% if name == 'question_list' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>Q&amp;A</span>
+        </a>
+    </nav>
+
+{% endwith %}
+
+<script>
+(function () {
+    // マイページのダークモード切り替え
+    var KEY = "yapp-washoku-theme";
+    var toggle = document.getElementById("washoku-theme-toggle");
+    if (!toggle) return;
+
+    function current() {
+        return document.documentElement.getAttribute("data-washoku-theme") === "dark" ? "dark" : "light";
+    }
+
+    function show(theme) {
+        toggle.setAttribute("aria-pressed", String(theme === "dark"));
+        var label = document.getElementById("washoku-theme-description");
+        if (label) label.textContent = theme === "dark" ? "ダークモードになっています" : "ライトモードになっています";
+    }
+
+    show(current());
+
+    toggle.addEventListener("click", function () {
+        var theme = current() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-washoku-theme", theme);
+        try { localStorage.setItem(KEY, theme); } catch (error) {}
+        show(theme);
+    });
+})();
+</script>
+
+</body>
+
+</html>

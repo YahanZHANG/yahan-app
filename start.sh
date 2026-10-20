@@ -15,6 +15,9 @@ python manage.py migrate --noinput
 
 python manage.py seed_master_data
 
+# スイスで和食: JSON にあってまだ DB にない食材・レシピを追加 (新しいレシピは下書き)
+python manage.py import_washoku --new-only
+
 
 # =====================================================
 # Start Outings scheduler

@@ -1,0 +1,83 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}マイページ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>マイページ</h1>
+
+{% if user.is_authenticated %}
+    <p class="washoku-lead">{{ user|display_name }} さん</p>
+{% else %}
+    <p class="washoku-lead"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族の評価やコメントが使えます。</p>
+{% endif %}
+
+{% unread_notification_count as unread %}
+
+<section class="washoku-section">
+    <h2>わたしの記録</h2>
+    <div class="washoku-menu">
+        <a class="washoku-menu-item" href="{% url 'washoku:my_favorites' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-star" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>評価したレシピ</strong><small>{% if user.is_authenticated %}好き・大好き {{ favorite_count }}品{% else %}ログインすると記録できる{% endif %}</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:my_recipes' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>投稿したレシピ</strong><small>{% if user.is_authenticated %}{{ submitted_count }}品{% else %}自分のレシピを投稿できる{% endif %}</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:notification_list' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>お知らせ</strong><small>コメントへの返信</small></span>
+            {% if unread %}<span class="washoku-menu-count">{{ unread }}</span>{% endif %}
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:my_comments' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-chat-left-text" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>自分のコメント・口コミ</strong><small>{% if user.is_authenticated %}{{ comment_count }}件{% else %}コメント・質問・口コミの履歴{% endif %}</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:family' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>家族</strong><small>{% if user.is_authenticated %}{{ family_count }}人{% else %}家族を招待して好みを共有{% endif %}</small></span>
+            {% if invite_count %}<span class="washoku-menu-count">招待 {{ invite_count }}</span>{% endif %}
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    </div>
+</section>
+
+<section class="washoku-section">
+    <h2>その他</h2>
+    <div class="washoku-menu">
+        <button type="button" id="washoku-theme-toggle" class="washoku-menu-item" aria-pressed="false">
+            <span class="washoku-menu-icon"><i class="bi bi-moon-stars" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>ダークモード</strong><small id="washoku-theme-description">表示の色を切り替える</small></span>
+            <span class="washoku-switch" aria-hidden="true"></span>
+        </button>
+        <a class="washoku-menu-item" href="{% url 'washoku:question_list' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>Q&amp;A</strong><small>答えを待っている質問</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:about' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-info-circle" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>スイスで和食について</strong><small>AIの利用・質問箱・応援など</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    </div>
+</section>
+
+<section class="washoku-section">
+    <h2>アカウント</h2>
+    <div class="washoku-menu">
+        <a class="washoku-menu-item" href="{% if user.is_authenticated %}{% url 'portal:manage_apps' %}{% else %}{% url 'login' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
+            <span class="washoku-menu-icon"><i class="bi bi-person-gear" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>Yapp My Account</strong><small>{% if user.is_authenticated %}共通アカウントの管理{% else %}ログイン・新規登録{% endif %}</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    </div>
+</section>
+
+{% endblock %}

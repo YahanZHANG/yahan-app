@@ -8,6 +8,13 @@
    Dark theme - Public Portal
    ===================================================== */
 
+/* ページの外側 (main の下の余白など) も暗くして、下端に白い線を出さない */
+html[data-yapp-resolved-theme="dark"],
+html[data-yapp-resolved-theme="dark"] body {
+    background: #141a20;
+    color-scheme: dark;
+}
+
 html[data-yapp-resolved-theme="dark"]
 .yapp-public-home {
     background: #141a20;

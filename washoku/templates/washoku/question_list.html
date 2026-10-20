@@ -1,0 +1,27 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}Q&amp;A | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>答えを待っている質問</h1>
+
+<p class="washoku-lead">わかる人は返信で教えてください。質問は各レシピや食材のページから投稿できます。</p>
+
+{% if questions %}
+    <ul class="washoku-list">
+        {% for question in questions %}
+            <li>
+                <a href="{{ question.get_absolute_url }}">
+                    {{ question.body|truncatechars:80 }}
+                </a>
+                <small>{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">答えを待っている質問はありません。</p>
+{% endif %}
+
+{% endblock %}

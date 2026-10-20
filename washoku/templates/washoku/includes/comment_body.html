@@ -1,0 +1,32 @@
+{% load washoku_tags %}
+{% if comment.is_deleted %}
+    <p class="washoku-comment-gone">このコメントは削除されました。</p>
+{% elif comment.is_hidden and not user.is_staff %}
+    <p class="washoku-comment-gone">このコメントは非表示になりました。</p>
+{% else %}
+    <header class="washoku-comment-head">
+        {% if not comment.parent_id and comment.kind == "question" %}<span class="washoku-chip washoku-chip-question">質問</span>{% endif %}
+        <strong>{{ comment.author|display_name }}</strong>
+        <small>{{ comment.created_at|date:"Y/n/j H:i" }}{% if comment.edited_at %}（編集済み）{% endif %}</small>
+        {% if comment.is_hidden %}<span class="washoku-chip washoku-chip-draft">非表示中</span>{% endif %}
+    </header>
+    <p class="washoku-comment-text">{{ comment.body|linebreaksbr }}</p>
+    {% if user.is_authenticated %}
+    <div class="washoku-comment-actions">
+        {% if comment.author_id == user.pk %}
+            <a href="{% url 'washoku:comment_edit' comment.pk %}">編集</a>
+            <form method="post" action="{% url 'washoku:comment_delete' comment.pk %}" onsubmit="return confirm('このコメントを削除しますか？');">
+                {% csrf_token %}
+                <button type="submit" class="washoku-link-button">削除</button>
+            </form>
+        {% elif comment.pk in reported_ids %}
+            <small>通報済み</small>
+        {% else %}
+            <form method="post" action="{% url 'washoku:comment_report' comment.pk %}" onsubmit="return confirm('このコメントを不適切として通報しますか？');">
+                {% csrf_token %}
+                <button type="submit" class="washoku-link-button">通報</button>
+            </form>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endif %}

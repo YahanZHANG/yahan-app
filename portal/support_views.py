@@ -16,6 +16,7 @@ from news.models import SupportRequest
 APPS = {
     "news": ("Swiss News", "news:home"),
     "outings": ("おでかけ", "outings:home"),
+    "washoku": ("スイスで和食", "washoku:home"),
 }
 
 METHODS = {

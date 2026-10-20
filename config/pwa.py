@@ -45,6 +45,12 @@ APP_ICONS = {
         "theme_color": "#5B45C4",
     },
 
+    "washoku": {
+        "name": "スイスで和食",
+        "folder": "pwa/washoku",
+        "theme_color": "#B5462E",
+    },
+
 }
 
 DEFAULT_ICONS = {

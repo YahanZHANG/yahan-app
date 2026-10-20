@@ -35,6 +35,7 @@ ALLOWED_NAMESPACES = {
     "portal",
     "news",
     "outings",
+    "washoku",
     "recipes",
     "colorcheck",
     "event_scheduler",

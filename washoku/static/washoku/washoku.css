@@ -1,0 +1,1543 @@
+:root,
+:root[data-washoku-theme="light"] {
+    /* 明るいモード: 炊きたてご飯・柿・卵黄・ねぎの色 */
+    --washoku-bg: #FFF7EE;
+    --washoku-surface: #FFFFFF;
+    --washoku-surface-2: #FFEFDC;
+    --washoku-text: #3B2416;
+    --washoku-muted: #85695A;
+    --washoku-border: #F0DFCC;
+    --washoku-accent: #E2572B;
+    --washoku-accent-strong: #C4431C;
+    --washoku-accent-soft: #FDE4D7;
+    --washoku-yolk: #F0A20F;
+    --washoku-green: #4F8A32;
+    --washoku-green-soft: #E6F2DC;
+    --washoku-shadow: 0 2px 10px rgba(120, 60, 20, 0.08);
+    color-scheme: light;
+}
+
+:root[data-washoku-theme="dark"] {
+    --washoku-bg: #1D1A18;
+    --washoku-surface: #29241F;
+    --washoku-surface-2: #332C26;
+    --washoku-text: #F2ECE7;
+    --washoku-muted: #B3A9A2;
+    --washoku-border: #3D3631;
+    --washoku-accent: #E07A5F;
+    --washoku-accent-strong: #F0957C;
+    --washoku-accent-soft: #3D2A22;
+    --washoku-yolk: #E8B04A;
+    --washoku-green: #8CC06A;
+    --washoku-green-soft: #26321F;
+    --washoku-shadow: none;
+    color-scheme: dark;
+}
+
+body {
+    margin: 0;
+    background: var(--washoku-bg);
+    color: var(--washoku-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.7;
+}
+
+a {
+    color: var(--washoku-accent);
+}
+
+
+
+
+
+
+
+.washoku-admin-box {
+    margin: 24px 0;
+    padding: 12px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    color: var(--washoku-muted);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+h1 {
+    font-size: 24px;
+    line-height: 1.4;
+    margin: 8px 0 12px;
+}
+
+h2 {
+    font-size: 18px;
+    margin: 0 0 12px;
+}
+
+h3 {
+    font-size: 16px;
+    margin: 16px 0 8px;
+}
+
+.washoku-section {
+    margin: 32px 0;
+}
+
+.washoku-lead {
+    color: var(--washoku-muted);
+}
+
+.washoku-note,
+.washoku-count {
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-empty {
+    padding: 24px;
+    border: 1px dashed var(--washoku-border);
+    border-radius: 12px;
+    color: var(--washoku-muted);
+    text-align: center;
+}
+
+.washoku-more {
+    text-align: right;
+}
+
+.washoku-message {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    border: 1px solid var(--washoku-border);
+}
+
+.washoku-message-error {
+    border-color: var(--washoku-accent);
+}
+
+/* ---------- forms ---------- */
+
+input[type="search"],
+input[type="text"],
+select,
+textarea {
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+}
+
+textarea {
+    width: 100%;
+}
+
+button,
+.washoku-button {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.washoku-link-button {
+    padding: 0;
+    background: none;
+    color: var(--washoku-muted);
+    font-weight: 400;
+    text-decoration: underline;
+}
+
+.washoku-search {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.washoku-search input {
+    flex: 1;
+    min-width: 0;
+}
+
+.washoku-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.washoku-filter input,
+.washoku-filter select {
+    flex: 1 1 140px;
+    min-width: 0;
+}
+
+/* ---------- home ---------- */
+
+.washoku-hero {
+    padding: 16px 0 0;
+}
+
+.washoku-entry {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.washoku-entry-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-entry-card span {
+    font-size: 28px;
+}
+
+.washoku-entry-card small {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+/* ---------- cards & chips ---------- */
+
+.washoku-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.washoku-card {
+    display: block;
+    padding: 14px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-card h3 {
+    margin: 8px 0 4px;
+    font-size: 17px;
+}
+
+.washoku-card-text {
+    margin: 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-card-meta {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-card-top,
+.washoku-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.washoku-chip,
+.washoku-chip-link {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--washoku-bg);
+    border: 1px solid var(--washoku-border);
+    color: var(--washoku-muted);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.washoku-chip-link {
+    font-size: 14px;
+    padding: 5px 12px;
+    color: var(--washoku-text);
+}
+
+.washoku-chip-link-strong,
+.washoku-chip-shop {
+    border-color: #4E8B5F;
+    color: #3D7A4E;
+}
+
+.washoku-chip-draft,
+.washoku-chip-question {
+    border-color: var(--washoku-accent);
+    color: var(--washoku-accent);
+}
+
+.washoku-stars {
+    color: #D9902F;
+    letter-spacing: 1px;
+}
+
+/* ---------- lists ---------- */
+
+.washoku-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-list small {
+    display: block;
+    color: var(--washoku-muted);
+}
+
+.washoku-list li.is-unread a {
+    font-weight: 700;
+}
+
+.washoku-mood-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.washoku-mood {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-mood small {
+    color: var(--washoku-muted);
+}
+
+.washoku-checks {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+}
+
+.washoku-checks legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.washoku-checks label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 4px 12px 4px 0;
+    white-space: nowrap;
+}
+
+.washoku-results {
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-results li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-results small {
+    display: block;
+    color: var(--washoku-muted);
+}
+
+.washoku-ok {
+    color: #3D7A4E !important;
+}
+
+.washoku-random {
+    display: block;
+    margin: 16px 0;
+    padding: 24px;
+    border: 2px solid var(--washoku-accent);
+    border-radius: 18px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-random strong {
+    display: block;
+    margin: 10px 0;
+    font-size: 26px;
+}
+
+/* ---------- recipe ---------- */
+
+.washoku-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-ingredients {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-ingredients li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--washoku-border);
+}
+
+.washoku-amount {
+    margin-left: auto;
+}
+
+.washoku-shops {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.washoku-shop {
+    padding: 0 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    background: #E8F1EA;
+    color: #2F6B40;
+}
+
+.washoku-shop-asian {
+    background: #FBEBD8;
+    color: #8A5216;
+}
+
+.washoku-shop-japanese {
+    background: #F7E0E0;
+    color: #9A2E2E;
+}
+
+.washoku-shop-online {
+    background: #E5E7F3;
+    color: #3E4A85;
+}
+
+.washoku-steps {
+    padding-left: 22px;
+}
+
+.washoku-steps li {
+    margin-bottom: 10px;
+}
+
+.washoku-tips {
+    margin: 24px 0;
+    padding: 14px 16px;
+    border-left: 4px solid var(--washoku-accent);
+    border-radius: 8px;
+    background: var(--washoku-surface);
+}
+
+.washoku-tips h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.washoku-tips p {
+    margin: 0;
+}
+
+.washoku-rating {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.washoku-rating button:not(.washoku-link-button) {
+    padding: 6px 12px;
+    border: 1px solid var(--washoku-border);
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-weight: 400;
+}
+
+.washoku-rating button.is-selected {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent);
+    color: #fff;
+}
+
+.washoku-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+}
+
+.washoku-facts dt {
+    color: var(--washoku-muted);
+}
+
+.washoku-facts dd {
+    margin: 0;
+}
+
+.washoku-ingredient-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-ingredient-index li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-ingredient-index small {
+    margin-left: 8px;
+    color: var(--washoku-muted);
+}
+
+.washoku-substitute {
+    color: var(--washoku-accent) !important;
+}
+
+/* ---------- comments ---------- */
+
+.washoku-comment {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+}
+
+.washoku-reply {
+    margin: 10px 0 0 16px;
+    padding: 8px 0 0 12px;
+    border-left: 2px solid var(--washoku-border);
+}
+
+.washoku-comment-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.washoku-comment-head small {
+    color: var(--washoku-muted);
+}
+
+.washoku-comment-text {
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+}
+
+.washoku-comment-gone {
+    color: var(--washoku-muted);
+    font-style: italic;
+}
+
+.washoku-comment-actions {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.washoku-comment-actions form {
+    margin: 0;
+}
+
+.washoku-reply-form summary {
+    color: var(--washoku-accent);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.washoku-reply-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.washoku-reply-form button {
+    align-self: flex-end;
+}
+
+.washoku-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.washoku-comment-form .washoku-button {
+    align-self: flex-end;
+}
+
+.washoku-kind {
+    display: flex;
+    gap: 16px;
+}
+
+.washoku-kind label {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.washoku-kind ul,
+.washoku-kind li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 480px) {
+    .washoku-entry-card small {
+        display: none;
+    }
+}
+
+
+/* ---------- header & menu bar ---------- */
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+}
+
+.washoku-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--washoku-surface) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 10px 16px;
+}
+
+.washoku-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-brand-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--washoku-accent-soft);
+    font-size: 20px;
+}
+
+.washoku-brand strong {
+    display: block;
+    font-size: 17px;
+    line-height: 1.2;
+}
+
+.washoku-brand small {
+    display: block;
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-desktop-nav {
+    display: none;
+    gap: 4px;
+}
+
+.washoku-desktop-nav a {
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-desktop-nav a.active {
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+.washoku-me {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-me-icon,
+.washoku-tab-icon {
+    position: relative;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.washoku-me-label {
+    display: none;
+}
+
+.washoku-badge {
+    position: absolute;
+    top: -4px;
+    right: -10px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+}
+
+.washoku-tabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--washoku-border);
+    background: var(--washoku-surface);
+}
+
+.washoku-tabbar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 0;
+    color: var(--washoku-muted);
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.washoku-tabbar a i {
+    font-size: 22px;
+}
+
+.washoku-tabbar .washoku-tab-icon {
+    font-size: 22px;
+}
+
+.washoku-tabbar a.active {
+    color: var(--washoku-accent);
+    font-weight: 700;
+}
+
+.washoku-main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.washoku-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 18px;
+    padding: 24px 16px 32px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-footer a {
+    color: var(--washoku-muted);
+}
+
+.washoku-post-button {
+    display: none;
+}
+
+.washoku-me {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 999px;
+}
+
+.washoku-me.active {
+    color: var(--washoku-accent);
+}
+
+@media (min-width: 800px) {
+    body {
+        padding-bottom: 0;
+    }
+
+    .washoku-tabbar {
+        display: none;
+    }
+
+    .washoku-header-inner {
+        max-width: 1120px;
+        min-height: 64px;
+        padding: 0 24px;
+        gap: 28px;
+    }
+
+    .washoku-desktop-nav {
+        display: flex;
+        align-self: stretch;
+        gap: 4px;
+    }
+
+    .washoku-desktop-nav a {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 14px;
+        border-radius: 0;
+        color: var(--washoku-muted);
+        font-size: 15px;
+        font-weight: 600;
+        transition: color 0.15s;
+    }
+
+    .washoku-desktop-nav a i {
+        font-size: 17px;
+    }
+
+    .washoku-desktop-nav a:hover {
+        background: none;
+        color: var(--washoku-text);
+    }
+
+    .washoku-desktop-nav a.active {
+        background: none;
+        color: var(--washoku-accent-strong);
+    }
+
+    .washoku-desktop-nav a.active::after {
+        position: absolute;
+        right: 10px;
+        bottom: 0;
+        left: 10px;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: var(--washoku-accent);
+        content: "";
+    }
+
+    .washoku-post-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        padding: 9px 16px;
+        border-radius: 999px;
+        background: var(--washoku-accent);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
+    }
+
+    .washoku-post-button:hover {
+        background: var(--washoku-accent-strong);
+    }
+
+    .washoku-me {
+        min-height: 40px;
+        margin-left: 0;
+        padding: 0 14px 0 8px;
+        border: 1px solid var(--washoku-border);
+        background: var(--washoku-surface);
+    }
+
+    .washoku-me:hover,
+    .washoku-me.active {
+        border-color: var(--washoku-accent);
+        color: var(--washoku-accent-strong);
+    }
+
+    .washoku-me-label {
+        display: inline;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .washoku-me .washoku-me-icon {
+        font-size: 22px;
+    }
+
+    .washoku-main {
+        max-width: 1120px;
+        padding: 24px;
+    }
+}
+
+/* ---------- 投稿・バナー・お店の距離 ---------- */
+
+.washoku-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 4px;
+    padding: 14px 16px;
+    border: 1px dashed var(--washoku-accent);
+    border-radius: 14px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-banner > i:first-child {
+    color: var(--washoku-accent);
+    font-size: 24px;
+}
+
+.washoku-banner span {
+    flex: 1;
+}
+
+.washoku-banner strong,
+.washoku-banner small {
+    display: block;
+}
+
+.washoku-banner small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-credit {
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-form {
+    display: grid;
+    gap: 18px;
+    max-width: 640px;
+}
+
+.washoku-field {
+    display: grid;
+    gap: 6px;
+}
+
+.washoku-field > label,
+.washoku-field legend {
+    font-weight: 700;
+}
+
+.washoku-field legend small {
+    margin-left: 4px;
+    color: var(--washoku-muted);
+    font-weight: 400;
+}
+
+.washoku-field fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.washoku-field > small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-field input[type="text"],
+.washoku-field input[type="number"],
+.washoku-field select {
+    width: 100%;
+}
+
+.washoku-field input[type="number"] {
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+}
+
+.washoku-field.has-error input,
+.washoku-field.has-error textarea,
+.washoku-field.has-error select {
+    border-color: var(--washoku-accent);
+}
+
+.washoku-field-error {
+    margin: 0;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+}
+
+.washoku-required {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-size: 11px;
+}
+
+.washoku-check-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.washoku-check-chips label {
+    position: relative;
+}
+
+.washoku-check-chips input {
+    position: absolute;
+    opacity: 0;
+}
+
+.washoku-check-chips span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    cursor: pointer;
+}
+
+.washoku-check-chips input:checked + span {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+.washoku-check-chips input:focus-visible + span {
+    outline: 2px solid var(--washoku-accent);
+    outline-offset: 2px;
+}
+
+.washoku-button-wide {
+    width: 100%;
+    max-width: 640px;
+    font-size: 16px;
+}
+
+.washoku-store-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 12px 0;
+}
+
+.washoku-distance {
+    float: right;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ---------- phone-friendly touch targets ---------- */
+
+button,
+.washoku-button,
+input[type="search"],
+input[type="text"],
+select {
+    min-height: 44px;
+}
+
+input,
+select,
+textarea {
+    font-size: 16px; /* iPhone で入力時に拡大しない */
+}
+
+.washoku-hero {
+    margin: -16px -16px 0;
+    padding: 24px 16px 8px;
+    background: linear-gradient(160deg, var(--washoku-accent-soft), var(--washoku-bg) 70%);
+}
+
+.washoku-hero h1 {
+    font-size: 22px;
+}
+
+.washoku-quick {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 0 -16px 8px;
+    padding: 0 16px 4px;
+    scrollbar-width: none;
+}
+
+.washoku-quick a {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.washoku-card,
+.washoku-entry-card,
+.washoku-mood,
+.washoku-comment,
+.washoku-store {
+    box-shadow: var(--washoku-shadow);
+}
+
+.washoku-card-top .washoku-chip:first-child {
+    background: var(--washoku-accent-soft);
+    border-color: transparent;
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-chip-link-strong,
+.washoku-chip-shop {
+    border-color: var(--washoku-green);
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+}
+
+.washoku-ok {
+    color: var(--washoku-green) !important;
+}
+
+.washoku-stars {
+    color: var(--washoku-yolk);
+}
+
+.washoku-shop {
+    background: var(--washoku-surface-2);
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-shop-japanese {
+    background: var(--washoku-accent-soft);
+}
+
+.washoku-shop-online {
+    background: var(--washoku-surface-2);
+    color: var(--washoku-muted);
+}
+
+.washoku-legend {
+    margin: 4px 0 12px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-tips {
+    background: var(--washoku-surface-2);
+}
+
+/* ---------- stores ---------- */
+
+.washoku-store {
+    display: block;
+    margin: 10px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-store h3 {
+    margin: 6px 0 2px;
+}
+
+.washoku-store p {
+    margin: 2px 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-store-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.washoku-store-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+/* ---------- my page & about ---------- */
+
+.washoku-menu {
+    overflow: hidden;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 60px;
+    padding: 10px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--washoku-border);
+    border-radius: 0;
+    background: none;
+    color: var(--washoku-text);
+    font: inherit;
+    font-weight: 400;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.washoku-menu-item:last-child {
+    border-bottom: 0;
+}
+
+.washoku-menu-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-size: 18px;
+}
+
+.washoku-menu-text {
+    flex: 1;
+}
+
+.washoku-menu-text strong {
+    display: block;
+}
+
+.washoku-menu-text small {
+    color: var(--washoku-muted);
+}
+
+.washoku-menu-count {
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.washoku-switch {
+    position: relative;
+    flex: none;
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    background: var(--washoku-border);
+    transition: background 0.2s;
+}
+
+.washoku-switch::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    content: "";
+    transition: transform 0.2s;
+}
+
+[aria-pressed="true"] .washoku-switch {
+    background: var(--washoku-accent);
+}
+
+[aria-pressed="true"] .washoku-switch::after {
+    transform: translateX(18px);
+}
+
+.washoku-about section {
+    margin: 28px 0;
+}
+
+.washoku-about h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.washoku-about h2 i {
+    color: var(--washoku-accent);
+}
+
+.washoku-done {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+}
+
+.washoku-trap {
+    position: absolute;
+    left: -9999px;
+}
+
+.washoku-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.washoku-feedback button {
+    align-self: flex-end;
+}
+
+/* ページ内リンク (#feedback など) で見出しが上のヘッダーに隠れないように */
+.washoku-main [id] {
+    scroll-margin-top: 84px;
+}
+
+/* 質問箱へのリンクから来たとき、その欄を目立たせる */
+.washoku-about section:target {
+    margin: 28px -12px;
+    padding: 4px 12px 16px;
+    border: 2px solid var(--washoku-accent);
+    border-radius: 16px;
+    background: var(--washoku-accent-soft);
+    animation: washoku-target 1.6s ease-out;
+}
+
+@keyframes washoku-target {
+    from {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
+    }
+    to {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+/* ---------- スマホで中途半端に折り返さないための調整 ---------- */
+
+/* 日本語を文節で折り返し (Chrome)、最後の行に1〜2文字だけ残らないようにする */
+h1, h2, h3,
+.washoku-lead,
+.washoku-note,
+.washoku-legend,
+.washoku-empty,
+.washoku-menu-text small,
+.washoku-banner small,
+.washoku-card-text {
+    word-break: auto-phrase;
+    text-wrap: pretty;
+}
+
+.washoku-hero h1 {
+    font-size: clamp(18px, 5.2vw, 28px);
+}
+
+/* 選び方・お店の種類のボタンは横にはみ出さず、折り返して全部見せる */
+.washoku-quick {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin: 0 0 8px;
+    padding: 0;
+}
+
+.washoku-quick a {
+    padding: 7px 12px;
+    font-size: 13px;
+}
+
+.washoku-menu-item {
+    box-sizing: border-box;
+}
+
+.washoku-menu-text {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 「〇〇の代わり」などの小さなラベルは途中で切らない */
+.washoku-substitute,
+.washoku-chip,
+.washoku-chip-link {
+    white-space: nowrap;
+}
+
+.washoku-store-area {
+    color: var(--washoku-muted);
+}
+
+.washoku-store-area {
+    white-space: nowrap;
+}
+
+/* HOME: 見出しなしで、ヘッダーのすぐ下に検索バー */
+.washoku-hero {
+    margin: 0;
+    padding: 4px 0 16px;
+    background: none;
+}
+
+.washoku-hero .washoku-search {
+    margin: 0;
+}
+
+.washoku-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ページの外側 (いちばん下の余白やスクロールの端) もテーマの色にする */
+html {
+    background: var(--washoku-bg);
+    color-scheme: light;
+}
+
+html[data-washoku-theme="dark"] {
+    color-scheme: dark;
+}
+
+/* 評価ボタン (大好き〜苦手) はスマホでも5つを1行に並べる */
+.washoku-rating {
+    display: block;
+}
+
+.washoku-rating-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 6px;
+    font-weight: 700;
+}
+
+.washoku-rating-label .washoku-link-button {
+    min-height: 0;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.washoku-rating-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 480px;
+}
+
+.washoku-rating-buttons button {
+    padding: 6px 2px !important;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* レシピの材料: 名前 (ドイツ語) は左で折り返し、分量は右にそろえる */
+.washoku-ing-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.washoku-ing-de {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+.washoku-ingredients .washoku-amount {
+    white-space: nowrap;
+}

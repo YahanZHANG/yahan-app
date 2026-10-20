@@ -1,0 +1,25 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}通知 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>通知</h1>
+
+{% if notifications %}
+    <ul class="washoku-list">
+        {% for notification in notifications %}
+            <li class="{% if not notification.is_read %}is-unread{% endif %}">
+                <a href="{{ notification.url }}">
+                    {{ notification.actor|display_name }} さんが返信しました: {{ notification.comment.body|truncatechars:40 }}
+                </a>
+                <small>{{ notification.comment.target.name }} ・ {{ notification.created_at|date:"n/j H:i" }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">通知はありません。</p>
+{% endif %}
+
+{% endblock %}

@@ -1,8 +1,8 @@
-
 from django.db.utils import (
     OperationalError,
     ProgrammingError,
 )
+from django.urls import reverse
 
 from news.models import (
     NewsFeedback,
@@ -17,10 +17,67 @@ from outings.models import (
     Event,
 )
 
+from washoku.models import (
+    Comment as WashokuComment,
+    Feedback as WashokuFeedback,
+    Recipe as WashokuRecipe,
+)
+
 
 # =========================================================
 # Admin Attention Counts
 # =========================================================
+
+def _item(label, count, url_name, query=""):
+    return {
+        "label": label,
+        "count": count,
+        "url": reverse(url_name) + (f"?{query}" if query else ""),
+    }
+
+
+def _washoku_items():
+
+    unchecked = WashokuComment.objects.filter(
+        admin_checked=False,
+        is_deleted=False,
+    )
+
+    comments_url = "admin:washoku_comment_changelist"
+
+    return [
+        _item(
+            "投稿レシピ",
+            WashokuRecipe.objects.filter(origin="member", status="draft").count(),
+            "admin:washoku_recipe_changelist",
+            "origin__exact=member&status__exact=draft",
+        ),
+        _item(
+            "レシピへのコメント",
+            unchecked.filter(recipe__isnull=False).count(),
+            comments_url,
+            "admin_checked__exact=0&target=recipe",
+        ),
+        _item(
+            "食材へのコメント",
+            unchecked.filter(ingredient__isnull=False).count(),
+            comments_url,
+            "admin_checked__exact=0&target=ingredient",
+        ),
+        _item(
+            "お店の口コミ",
+            unchecked.filter(store__isnull=False).count(),
+            comments_url,
+            "admin_checked__exact=0&target=store",
+        ),
+        _item(
+            "質問箱",
+            WashokuFeedback.objects.filter(is_read=False).count(),
+            "admin:washoku_feedback_changelist",
+            "is_read__exact=0",
+        ),
+    ]
+
 
 def admin_attention_counts(request):
 
@@ -33,53 +90,53 @@ def admin_attention_counts(request):
 
     try:
 
-        # =================================================
-        # Swiss News: Feedback
-        # =================================================
-
-        feedback_count = (
-            NewsFeedback.objects
-            .filter(
-                is_read=False
-            )
-            .count()
-        )
-
-        # =================================================
-        # Swiss News: Support requests
-        # =================================================
-
-        support_count = (
-            SupportRequest.objects
-            .filter(
-                is_read=False
-            )
-            .count()
-        )
-
-        # =================================================
-        # Portal: App access requests
-        # =================================================
-
-        access_count = (
-            AppAccessRequest.objects
-            .filter(
-                status=AppAccessRequest.Status.PENDING
-            )
-            .count()
-        )
-
-        # =================================================
-        # Outings: Pending event submissions
-        # =================================================
-
-        outings_count = (
-            Event.objects
-            .filter(
-                status=Event.Status.PENDING
-            )
-            .count()
-        )
+        groups = [
+            {
+                "app": "Swiss News",
+                "items": [
+                    _item(
+                        "ご意見・ご要望",
+                        NewsFeedback.objects.filter(is_read=False).count(),
+                        "admin:news_newsfeedback_changelist",
+                        "is_read__exact=0",
+                    ),
+                    _item(
+                        "応援の問い合わせ",
+                        SupportRequest.objects.filter(is_read=False).count(),
+                        "admin:news_supportrequest_changelist",
+                        "is_read__exact=0",
+                    ),
+                ],
+            },
+            {
+                "app": "おでかけ",
+                "items": [
+                    _item(
+                        "イベント承認",
+                        Event.objects.filter(status=Event.Status.PENDING).count(),
+                        "admin:outings_event_changelist",
+                        "status__exact=pending",
+                    ),
+                ],
+            },
+            {
+                "app": "スイスで和食",
+                "items": _washoku_items(),
+            },
+            {
+                "app": "Yapp",
+                "items": [
+                    _item(
+                        "アプリの利用申請",
+                        AppAccessRequest.objects.filter(
+                            status=AppAccessRequest.Status.PENDING
+                        ).count(),
+                        "admin:portal_appaccessrequest_changelist",
+                        "status__exact=pending",
+                    ),
+                ],
+            },
+        ]
 
     except (
         OperationalError,
@@ -89,23 +146,16 @@ def admin_attention_counts(request):
         # テーブルが存在しない場合に備える
         return {}
 
-    # =====================================================
-    # Total attention count
-    # =====================================================
+    # 件数のある項目だけを出す
+    for group in groups:
+        group["items"] = [item for item in group["items"] if item["count"]]
+        group["total"] = sum(item["count"] for item in group["items"])
 
-    total_count = (
-        feedback_count
-        + support_count
-        + access_count
-        + outings_count
-    )
+    groups = [group for group in groups if group["items"]]
 
     return {
         "admin_attention": {
-            "feedback": feedback_count,
-            "support": support_count,
-            "access": access_count,
-            "outings": outings_count,
-            "total": total_count,
+            "groups": groups,
+            "total": sum(group["total"] for group in groups),
         }
     }

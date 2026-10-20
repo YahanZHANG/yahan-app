@@ -1,0 +1,96 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}{{ recipe.name }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+<article class="washoku-recipe">
+
+    <p class="washoku-chips">
+        <span class="washoku-chip">{{ recipe.get_category_display }}</span>
+        {% for mood in recipe.mood_tags.all %}<a class="washoku-chip-link" href="{% url 'washoku:recipe_list' %}?mood={{ mood.pk }}">{{ mood.name }}</a>{% endfor %}
+        {% if recipe.status == "draft" %}<span class="washoku-chip washoku-chip-draft">{% if recipe.submitted_by_id == user.pk and not user.is_staff %}確認待ち（あなたにだけ表示）{% else %}下書き（管理者だけに表示）{% endif %}</span>{% endif %}
+    </p>
+
+    <h1>{{ recipe.name }}</h1>
+
+    {% if recipe.description %}<p class="washoku-lead">{{ recipe.description }}</p>{% endif %}
+
+    {% if recipe.submitted_by %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ recipe.submitted_by|display_name }} さんのレシピ</p>{% endif %}
+
+    <p class="washoku-meta">
+        {% if recipe.cooking_time_minutes %}<span>⏱ {{ recipe.cooking_time_minutes }}分</span>{% endif %}
+        {% if recipe.servings %}<span>🍽 {{ recipe.servings }}人分</span>{% endif %}
+        {% if shop %}<span>🛒 {% if shop.rank > 1 %}{{ shop.name }}まで行けば材料がそろう{% else %}普通のスーパーで材料がそろう{% endif %}</span>{% endif %}
+    </p>
+
+    <section class="washoku-section">
+        <h2>材料</h2>
+        <p class="washoku-legend">お店の名前がない食材は、Migros・Coop などの普通のスーパーで買えます。</p>
+        <ul class="washoku-ingredients">
+            {% for item in main_items %}
+                {% include "washoku/includes/ingredient_row.html" %}
+            {% endfor %}
+        </ul>
+        {% if seasoning_items %}
+            <h3>調味料</h3>
+            <ul class="washoku-ingredients">
+                {% for item in seasoning_items %}
+                    {% include "washoku/includes/ingredient_row.html" %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <p class="washoku-note">食材名を押すと、ドイツ語名や買える店、みんなの買い方の情報が見られます。</p>
+    </section>
+
+    <section class="washoku-section">
+        <h2>作り方</h2>
+        <ol class="washoku-steps">
+            {% for step in recipe.step_list %}
+                <li>{{ step }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    {% if recipe.swiss_tips %}
+    <section class="washoku-tips">
+        <h2>🇨🇭 スイスで作るときのコツ</h2>
+        <p>{{ recipe.swiss_tips|linebreaksbr }}</p>
+    </section>
+    {% endif %}
+
+    <section class="washoku-section" id="rating">
+        <h2>家族の好み</h2>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'washoku:rate_recipe' recipe.pk %}" class="washoku-rating">
+                {% csrf_token %}
+                <p class="washoku-rating-label">
+                    あなたの評価
+                    {% if my_rating %}<button type="submit" name="rating" value="clear" class="washoku-link-button">取り消す</button>{% endif %}
+                </p>
+                <div class="washoku-rating-buttons">
+                    {% for value, label in rating_choices %}
+                        <button type="submit" name="rating" value="{{ value }}" class="{% if my_rating == value %}is-selected{% endif %}" {% if my_rating == value %}aria-pressed="true"{% endif %}>{{ label }}</button>
+                    {% endfor %}
+                </div>
+            </form>
+            {% if member_ratings %}
+                <ul class="washoku-list">
+                    {% for item in member_ratings %}
+                        <li>{{ item.user|display_name }}: {% if item.rating %}<span class="washoku-stars">{{ item.rating|stars }}</span>{% else %}<small>まだ</small>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、みんなの好みが見られます。</p>
+            {% endif %}
+        {% else %}
+            <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族で好みを記録できます。</p>
+        {% endif %}
+    </section>
+
+    {% include "washoku/includes/comments.html" with target="recipe" target_pk=recipe.pk heading="みんなの工夫・質問" help_text="スイスで作ったときの工夫や、わからないことを書いてください。" %}
+
+</article>
+
+{% endblock %}

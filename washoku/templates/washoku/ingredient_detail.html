@@ -1,0 +1,51 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}{{ ingredient.name }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+<p class="washoku-chips"><span class="washoku-chip">{{ ingredient.get_category_display }}</span></p>
+
+<h1>{{ ingredient.name }}</h1>
+
+<dl class="washoku-facts">
+    {% if ingredient.name_de %}<dt>ドイツ語</dt><dd lang="de">{{ ingredient.name_de }}</dd>{% endif %}
+    {% if ingredient.name_fr %}<dt>フランス語</dt><dd lang="fr">{{ ingredient.name_fr }}</dd>{% endif %}
+    <dt>買える店</dt>
+    <dd>
+        {% for shop in ingredient.shops.all %}
+            <span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>
+        {% empty %}
+            まだ情報がありません
+        {% endfor %}
+    </dd>
+</dl>
+
+{% if ingredient.buying_notes %}
+<section class="washoku-tips">
+    <h2>🛒 買い方のメモ</h2>
+    <p>{{ ingredient.buying_notes|linebreaksbr }}</p>
+</section>
+{% endif %}
+
+{% for substitute in ingredient.substitutes_for.all %}
+<section class="washoku-tips">
+    <h2>「{{ substitute.original_name }}」の代わりに</h2>
+    {% if substitute.tips %}<p>{{ substitute.tips|linebreaksbr }}</p>{% endif %}
+</section>
+{% endfor %}
+
+{% if recipes %}
+<section class="washoku-section">
+    <h2>この食材を使うレシピ</h2>
+    <ul class="washoku-list">
+        {% for recipe in recipes %}
+            <li><a href="{% url 'washoku:recipe_detail' recipe.pk %}">{{ recipe.name }}</a></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% include "washoku/includes/comments.html" with target="ingredient" target_pk=ingredient.pk heading="どこで買える？ 何で代用してる？" help_text="この食材を買った店、代わりに使っているもの、わからないことを共有してください。" %}
+
+{% endblock %}

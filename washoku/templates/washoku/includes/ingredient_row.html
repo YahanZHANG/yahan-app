@@ -1,0 +1,11 @@
+<li>
+    <span class="washoku-ing-name">
+        <a href="{% url 'washoku:ingredient_detail' item.ingredient.pk %}">{{ item.ingredient.name }}</a>
+        {% if item.ingredient.name_de and item.ingredient.name_de not in item.ingredient.name %}<small class="washoku-ing-de" lang="de">（{{ item.ingredient.name_de }}）</small>{% endif %}
+        {% if item.is_optional %}<small>（なくても可）</small>{% endif %}
+    </span>
+    <span class="washoku-amount">{{ item.amount }}</span>
+    <span class="washoku-shops">
+        {% for shop in item.ingredient.shops.all %}{% if forloop.first and shop.code != "supermarket" %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endif %}{% endfor %}
+    </span>
+</li>

@@ -164,6 +164,14 @@ urlpatterns = [
     ),
 
     path(
+        "washoku/",
+        include(
+            "washoku.urls",
+            namespace="washoku",
+        ),
+    ),
+
+    path(
         "news/",
         include(
             "news.urls",
