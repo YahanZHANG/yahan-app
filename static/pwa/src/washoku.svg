@@ -1,29 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
-      <stop offset="0" stop-color="#D9643F"/>
-      <stop offset="1" stop-color="#9E3624"/>
-    </linearGradient>
-    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#F1E4D8"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" fill="url(#bg)"/>
-  <!-- steam -->
-  <path d="M440 290 c-36 -45 36 -72 0 -126" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
-  <path d="M584 290 c-36 -45 36 -72 0 -126" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" opacity="0.55"/>
-  <!-- rice -->
-  <path d="M262 470 C 282 360, 400 322, 490 340 C 562 312, 712 340, 762 470 Z" fill="#FFFFFF"/>
-  <!-- bowl -->
-  <path d="M212 470 L812 470 C 812 632, 682 722, 512 722 C 342 722, 212 632, 212 470 Z" fill="url(#bowl)"/>
-  <rect x="422" y="716" width="180" height="40" rx="14" fill="#F1E4D8"/>
-  <!-- swiss cross -->
-  <rect x="458" y="522" width="108" height="108" rx="16" fill="#D52B1E"/>
-  <rect x="498" y="538" width="28" height="76" fill="#FFFFFF"/>
-  <rect x="474" y="562" width="76" height="28" fill="#FFFFFF"/>
-  <!-- chopsticks laid sideways on a chopstick rest (hashioki), in front of the bowl -->
-  <rect x="604" y="786" width="72" height="76" rx="24" fill="#F1E4D8"/>
-  <path d="M330 806 L720 806" stroke="#3A2A20" stroke-width="20" stroke-linecap="round"/>
-  <path d="M330 842 L720 842" stroke="#3A2A20" stroke-width="20" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><defs><linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#D9643F"/><stop offset="1" stop-color="#9E3624"/></linearGradient><linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F1E4D8"/></linearGradient></defs><rect width="1024" height="1024" fill="url(#bg)"/>
+  <path d="M242 470 C 262 340, 392 296, 492 316 C 572 286, 732 320, 782 470 Z" fill="#FFFFFF"/>
+  <path d="M192 470 L832 470 C 832 650, 692 744, 512 744 C 332 744, 192 650, 192 470 Z" fill="url(#bowl)"/>
+  <path d="M232 540 L792 540" stroke="#B5462E" stroke-width="16" opacity="0.8"/>
+  <rect x="417" y="738" width="190" height="42" rx="14" fill="#F1E4D8"/>
+  <rect x="604" y="808" width="72" height="72" rx="24" fill="#F1E4D8"/>
+  <path d="M330 826 L720 826" stroke="#3A2A20" stroke-width="22" stroke-linecap="round"/>
+  <path d="M330 862 L720 862" stroke="#3A2A20" stroke-width="22" stroke-linecap="round"/>
 </svg>
