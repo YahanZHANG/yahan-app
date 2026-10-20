@@ -1,5 +1,4 @@
 from datetime import timedelta
-import os
 
 from django.conf import settings
 from django.contrib import messages
@@ -1178,16 +1177,6 @@ def home(request):
             "card_class": "portal-news-card",
         },
         {
-            "name": "おでかけ",
-            "label": "OUTINGS",
-            "icon": "🎈",
-            "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
-            "url": reverse("outings:home"),
-            "status": "ログイン不要",
-            "coming_soon": False,
-            "card_class": "portal-outings-card",
-        },
-        {
             "name": "ミニゲーム",
             "label": "MINI GAMES",
             "icon": "🎮",
@@ -1231,21 +1220,16 @@ def home(request):
             "card_class": "portal-recipes-card",
         },
         {
-            "name": "旅トモ",
-            "label": "TRAVEL ASSISTANT",
-            "icon": "✈️",
-            "description": "旅行先での急な病気やケガに備え、病歴を現地の言語で医師に提示。緊急連絡先にもすぐに電話できる。",
-            "url": None,
-            "status": "COMING SOON",
-            "coming_soon": True,
-            "card_class": "portal-travel-card",
+            "name": "おでかけ",
+            "label": "OUTINGS",
+            "icon": "🎈",
+            "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
+            "url": reverse("outings:home"),
+            "status": "ログイン不要",
+            "coming_soon": False,
+            "card_class": "portal-outings-card",
         },
     ]
-
-    # Outings is hidden from the portal while known bugs are fixed.
-    # Set SHOW_OUTINGS_ON_PORTAL=true on Render to show it again.
-    if os.environ.get("SHOW_OUTINGS_ON_PORTAL", "").lower() != "true":
-        apps = [app for app in apps if app["card_class"] != "portal-outings-card"]
 
     return render(
         request,
