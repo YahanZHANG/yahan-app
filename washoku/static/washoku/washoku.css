@@ -1464,3 +1464,33 @@ h1, h2, h3,
 .washoku-store-area {
     white-space: nowrap;
 }
+
+/* HOME: 見出しなしで、ヘッダーのすぐ下に検索バー */
+.washoku-hero {
+    margin: 0;
+    padding: 4px 0 16px;
+    background: none;
+}
+
+.washoku-hero .washoku-search {
+    margin: 0;
+}
+
+.washoku-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ページの外側 (いちばん下の余白やスクロールの端) もテーマの色にする */
+html {
+    background: var(--washoku-bg);
+    color-scheme: light;
+}
+
+html[data-washoku-theme="dark"] {
+    color-scheme: dark;
+}

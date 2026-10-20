@@ -4,7 +4,7 @@
 {% block content %}
 
 <section class="washoku-hero">
-    <h1>スイスで買える食材で、日本の味を。</h1>
+    <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
     <form action="{% url 'washoku:recipe_list' %}" method="get" class="washoku-search">
         <input type="search" name="q" placeholder="料理名や食材で探す" aria-label="レシピを検索">
