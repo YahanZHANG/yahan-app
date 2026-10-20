@@ -1,0 +1,107 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}スイスで和食について | Yapp{% endblock %}
+
+{% block content %}
+
+<div class="washoku-about">
+
+    <h1>スイスで和食について</h1>
+    <p class="washoku-lead">スイスで買える食材で、日本の家庭の味を。</p>
+
+    <section>
+        <h2><i class="bi bi-egg-fried" aria-hidden="true"></i>このアプリについて</h2>
+        <p>「スイスで和食」は、スイスのスーパーやアジア・日本食材のお店で買える食材だけで作れる、日本人の舌に合う家庭料理のレシピ集です。</p>
+        <p>日本の食材がスイスで何と呼ばれ、どこで買えるか、代わりに何を使えばいいかもまとめています。スイスで料理するときの工夫や、食材・お店の情報を、みんなで共有する場にしたいと思っています。</p>
+    </section>
+
+    <section>
+        <h2><i class="bi bi-stars" aria-hidden="true"></i>レシピとAIの利用について</h2>
+        <p>レシピと食材の情報は、AIが下書きしたものを運営者が確認して掲載しています。実際に作って確かめたレシピには「試作済み」の印を付けています。</p>
+        <p>分量や加熱時間は目安です。味見をしながら、ご家庭に合わせて調整してください。</p>
+    </section>
+
+    <section>
+        <h2><i class="bi bi-shop" aria-hidden="true"></i>食材とお店の情報について</h2>
+        <p>お店の品ぞろえ、営業時間、商品名は変わることがあります。お出かけ前に各店のサイトでご確認ください。</p>
+        <p>まちがいや新しい情報に気づいたら、各ページのコメントや下の質問箱で教えてください。</p>
+    </section>
+
+    <section id="yapp">
+        <h2><i class="bi bi-balloon-heart" aria-hidden="true"></i>Yappについて</h2>
+        <p>日常をちょっと便利に、楽しく。Yappは、スイス在住の個人が企画・開発・運営しているWebサービスです。</p>
+        <p>スイスに住む日本語話者の暮らしに役立つものを少しずつ作っています。</p>
+        <div class="washoku-menu">
+            <a class="washoku-menu-item" href="{% url 'portal:home' %}">
+                <span class="washoku-menu-icon" aria-hidden="true">🏠</span>
+                <span class="washoku-menu-text"><strong>Yapp</strong><small>ほかのサービスも見てみる</small></span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+            <a class="washoku-menu-item" href="{% url 'news:home' %}">
+                <span class="washoku-menu-icon" aria-hidden="true">📰</span>
+                <span class="washoku-menu-text"><strong>Swiss News</strong><small>スイスのニュースを日本語で</small></span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+
+    <section id="feedback">
+        <h2><i class="bi bi-chat-heart" aria-hidden="true"></i>質問箱（ご意見・ご要望）</h2>
+        <p>「こんなレシピがほしい」「この食材はここで買える」「ここが使いにくい」など、気軽にお知らせください。</p>
+        {% if feedback_sent == "1" %}
+            <p class="washoku-done" role="status">ありがとうございます。送信しました。</p>
+        {% elif feedback_sent == "wait" %}
+            <p class="washoku-message washoku-message-error" role="alert">続けて送信されました。少し時間をあけてからもう一度お試しください。</p>
+        {% endif %}
+        <form method="post" action="{% url 'washoku:about' %}#feedback" class="washoku-feedback">
+            {% csrf_token %}
+            <label for="{{ feedback_form.message.id_for_label }}" class="washoku-trap">ご意見・ご要望</label>
+            {{ feedback_form.message }}
+            {% for error in feedback_form.message.errors %}
+                <p class="washoku-message washoku-message-error">{{ error }}</p>
+            {% endfor %}
+            {{ feedback_form.website }}
+            <small class="washoku-note">匿名で送信されます。返信をご希望の場合は、お名前と連絡先もお書きください。</small>
+            <button type="submit" class="washoku-button">送信する</button>
+        </form>
+    </section>
+
+    <section id="support">
+        <h2><i class="bi bi-heart-fill" aria-hidden="true"></i>Yappを応援する</h2>
+        <p>Yappは個人で開発・運営しています。気に入っていただけたら、ご家族やお友達に紹介していただけるとうれしいです。</p>
+        <p><button type="button" class="washoku-button" data-share-button><i class="bi bi-share" aria-hidden="true"></i> 友人に紹介する</button></p>
+        <p class="washoku-note" data-share-feedback role="status" aria-live="polite"></p>
+        <div class="washoku-menu">
+            <a class="washoku-menu-item" href="{% url 'portal:support' %}?from=washoku">
+                <span class="washoku-menu-icon" aria-hidden="true">🤝</span>
+                <span class="washoku-menu-text"><strong>金銭的に応援する</strong><small>TWINT・銀行振込・Bitcoinなど（Yapp共通の応援ページ）</small></span>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </section>
+
+</div>
+
+<script>
+(function () {
+    var button = document.querySelector("[data-share-button]");
+    var feedback = document.querySelector("[data-share-feedback]");
+    if (!button) return;
+    button.addEventListener("click", function () {
+        var data = {
+            title: "スイスで和食 | Yapp",
+            text: "スイスで買える食材で作れる、日本の家庭料理のレシピ集です。",
+            url: window.location.origin + "{% url 'washoku:home' %}",
+        };
+        if (navigator.share) {
+            navigator.share(data).catch(function () {});
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(data.url).then(function () {
+                feedback.textContent = "リンクをコピーしました。";
+            });
+        }
+    });
+})();
+</script>
+
+{% endblock %}

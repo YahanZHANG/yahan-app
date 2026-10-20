@@ -22,6 +22,10 @@ urlpatterns = [
     path("ingredients/", views.ingredient_list, name="ingredient_list"),
     path("ingredients/<int:pk>/", views.ingredient_detail, name="ingredient_detail"),
 
+    # お店
+    path("stores/", views.store_list, name="store_list"),
+    path("stores/<int:pk>/", views.store_detail, name="store_detail"),
+
     # コメント・Q&A
     path("<str:target>/<int:pk>/comment/", views.comment_create, name="comment_create"),
     path("comments/<int:pk>/edit/", views.comment_edit, name="comment_edit"),
@@ -29,6 +33,12 @@ urlpatterns = [
     path("comments/<int:pk>/report/", views.comment_report, name="comment_report"),
     path("questions/", views.question_list, name="question_list"),
     path("notifications/", views.notification_list, name="notification_list"),
+
+    # このアプリについて・マイページ
+    path("about/", views.about, name="about"),
+    path("me/", views.my_page, name="my_page"),
+    path("me/favorites/", views.my_favorites, name="my_favorites"),
+    path("me/comments/", views.my_comments, name="my_comments"),
 
     # 家族
     path("family/", views.family, name="family"),

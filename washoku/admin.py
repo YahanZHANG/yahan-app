@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     Comment,
     CommentReport,
+    Feedback,
     Household,
     HouseholdInvite,
     HouseholdMember,
@@ -13,6 +14,7 @@ from .models import (
     RecipeIngredient,
     RecipeRating,
     ShopType,
+    Store,
     Substitute,
 )
 
@@ -267,6 +269,7 @@ class CommentAdmin(admin.ModelAdmin):
     raw_id_fields = (
         "recipe",
         "ingredient",
+        "store",
         "parent",
     )
 
@@ -310,4 +313,45 @@ class NotificationAdmin(admin.ModelAdmin):
         "comment",
         "is_read",
         "created_at",
+    )
+
+
+@admin.register(Store)
+class StoreAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "kind",
+        "city",
+        "area",
+        "address",
+        "is_active",
+    )
+
+    list_filter = (
+        "kind",
+        "city",
+        "is_active",
+    )
+
+    search_fields = (
+        "name",
+        "address",
+        "area",
+    )
+
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = (
+        "message",
+        "created_at",
+        "is_read",
+    )
+
+    list_filter = (
+        "is_read",
+    )
+
+    list_editable = (
+        "is_read",
     )

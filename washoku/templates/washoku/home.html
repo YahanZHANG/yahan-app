@@ -61,7 +61,7 @@
     <ul class="washoku-list">
         {% for question in questions %}
             <li>
-                <a href="{% if question.recipe_id %}{% url 'washoku:recipe_detail' question.recipe_id %}{% else %}{% url 'washoku:ingredient_detail' question.ingredient_id %}{% endif %}#comment-{{ question.pk }}">
+                <a href="{{ question.get_absolute_url }}">
                     {{ question.body|truncatechars:60 }}
                 </a>
                 <small>{{ question.target.name }}</small>
@@ -77,7 +77,7 @@
     <ul class="washoku-list">
         {% for comment in latest_comments %}
             <li>
-                <a href="{% if comment.recipe_id %}{% url 'washoku:recipe_detail' comment.recipe_id %}{% else %}{% url 'washoku:ingredient_detail' comment.ingredient_id %}{% endif %}#comment-{{ comment.pk }}">
+                <a href="{{ comment.get_absolute_url }}">
                     {{ comment.body|truncatechars:60 }}
                 </a>
                 <small>{{ comment.author|display_name }} ・ {{ comment.target.name }}</small>

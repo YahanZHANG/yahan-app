@@ -1,21 +1,37 @@
-:root {
-    --washoku-accent: #B5462E;
-    --washoku-text: #2B2522;
-    --washoku-muted: #6F6560;
-    --washoku-bg: #FBF7F2;
+:root,
+:root[data-washoku-theme="light"] {
+    /* 明るいモード: 炊きたてご飯・柿・卵黄・ねぎの色 */
+    --washoku-bg: #FFF7EE;
     --washoku-surface: #FFFFFF;
-    --washoku-border: #E8DED4;
+    --washoku-surface-2: #FFEFDC;
+    --washoku-text: #3B2416;
+    --washoku-muted: #85695A;
+    --washoku-border: #F0DFCC;
+    --washoku-accent: #E2572B;
+    --washoku-accent-strong: #C4431C;
+    --washoku-accent-soft: #FDE4D7;
+    --washoku-yolk: #F0A20F;
+    --washoku-green: #4F8A32;
+    --washoku-green-soft: #E6F2DC;
+    --washoku-shadow: 0 2px 10px rgba(120, 60, 20, 0.08);
+    color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --washoku-accent: #E07A5F;
-        --washoku-text: #F2ECE7;
-        --washoku-muted: #B3A9A2;
-        --washoku-bg: #1D1A18;
-        --washoku-surface: #29241F;
-        --washoku-border: #3D3631;
-    }
+:root[data-washoku-theme="dark"] {
+    --washoku-bg: #1D1A18;
+    --washoku-surface: #29241F;
+    --washoku-surface-2: #332C26;
+    --washoku-text: #F2ECE7;
+    --washoku-muted: #B3A9A2;
+    --washoku-border: #3D3631;
+    --washoku-accent: #E07A5F;
+    --washoku-accent-strong: #F0957C;
+    --washoku-accent-soft: #3D2A22;
+    --washoku-yolk: #E8B04A;
+    --washoku-green: #8CC06A;
+    --washoku-green-soft: #26321F;
+    --washoku-shadow: none;
+    color-scheme: dark;
 }
 
 body {
@@ -30,22 +46,11 @@ a {
     color: var(--washoku-accent);
 }
 
-.washoku-header {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--washoku-border);
-    background: var(--washoku-surface);
-}
 
-.washoku-brand {
-    font-weight: 700;
-    text-decoration: none;
-}
 
-.washoku-main {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px 16px;
-}
+
+
+
 
 .washoku-admin-box {
     margin: 24px 0;
@@ -56,74 +61,23 @@ a {
     color: var(--washoku-muted);
 }
 
-/* ---------- layout ---------- */
 
-.washoku-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    padding: 0;
-}
 
-.washoku-header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 12px 16px 6px;
-}
 
-.washoku-header-user a {
-    text-decoration: none;
-    position: relative;
-}
 
-.washoku-badge {
-    position: absolute;
-    top: -6px;
-    right: -10px;
-    min-width: 18px;
-    padding: 0 5px;
-    border-radius: 9px;
-    background: var(--washoku-accent);
-    color: #fff;
-    font-size: 11px;
-    line-height: 18px;
-    text-align: center;
-}
 
-.washoku-nav {
-    display: flex;
-    gap: 6px;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 16px 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
 
-.washoku-nav a {
-    flex: none;
-    padding: 5px 12px;
-    border: 1px solid var(--washoku-border);
-    border-radius: 999px;
-    color: var(--washoku-text);
-    font-size: 14px;
-    text-decoration: none;
-    white-space: nowrap;
-}
 
-.washoku-main {
-    max-width: 960px;
-}
 
-.washoku-footer {
-    padding: 32px 16px;
-    color: var(--washoku-muted);
-    font-size: 14px;
-    text-align: center;
-}
+
+
+
+
+
+
+
+
+
 
 h1 {
     font-size: 24px;
@@ -488,7 +442,6 @@ button,
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
-    width: 100%;
 }
 
 .washoku-shop {
@@ -691,4 +644,468 @@ button,
     .washoku-entry-card small {
         display: none;
     }
+}
+
+
+/* ---------- header & menu bar ---------- */
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+}
+
+.washoku-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--washoku-surface) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 10px 16px;
+}
+
+.washoku-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-brand-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--washoku-accent-soft);
+    font-size: 20px;
+}
+
+.washoku-brand strong {
+    display: block;
+    font-size: 17px;
+    line-height: 1.2;
+}
+
+.washoku-brand small {
+    display: block;
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-desktop-nav {
+    display: none;
+    gap: 4px;
+}
+
+.washoku-desktop-nav a {
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-desktop-nav a.active {
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+.washoku-me {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-me-icon,
+.washoku-tab-icon {
+    position: relative;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.washoku-me-label {
+    display: none;
+}
+
+.washoku-badge {
+    position: absolute;
+    top: -4px;
+    right: -10px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+}
+
+.washoku-tabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--washoku-border);
+    background: var(--washoku-surface);
+}
+
+.washoku-tabbar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 0;
+    color: var(--washoku-muted);
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.washoku-tabbar a i {
+    font-size: 22px;
+}
+
+.washoku-tabbar .washoku-tab-icon {
+    font-size: 22px;
+}
+
+.washoku-tabbar a.active {
+    color: var(--washoku-accent);
+    font-weight: 700;
+}
+
+.washoku-main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.washoku-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 18px;
+    padding: 24px 16px 32px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-footer a {
+    color: var(--washoku-muted);
+}
+
+@media (min-width: 800px) {
+    body {
+        padding-bottom: 0;
+    }
+
+    .washoku-tabbar {
+        display: none;
+    }
+
+    .washoku-desktop-nav {
+        display: flex;
+    }
+
+    .washoku-me-label {
+        display: inline;
+        font-size: 14px;
+    }
+}
+
+/* ---------- phone-friendly touch targets ---------- */
+
+button,
+.washoku-button,
+input[type="search"],
+input[type="text"],
+select {
+    min-height: 44px;
+}
+
+input,
+select,
+textarea {
+    font-size: 16px; /* iPhone で入力時に拡大しない */
+}
+
+.washoku-hero {
+    margin: -16px -16px 0;
+    padding: 24px 16px 8px;
+    background: linear-gradient(160deg, var(--washoku-accent-soft), var(--washoku-bg) 70%);
+}
+
+.washoku-hero h1 {
+    font-size: 22px;
+}
+
+.washoku-quick {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 0 -16px 8px;
+    padding: 0 16px 4px;
+    scrollbar-width: none;
+}
+
+.washoku-quick a {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.washoku-card,
+.washoku-entry-card,
+.washoku-mood,
+.washoku-comment,
+.washoku-store {
+    box-shadow: var(--washoku-shadow);
+}
+
+.washoku-card-top .washoku-chip:first-child {
+    background: var(--washoku-accent-soft);
+    border-color: transparent;
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-chip-link-strong,
+.washoku-chip-shop {
+    border-color: var(--washoku-green);
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+}
+
+.washoku-ok {
+    color: var(--washoku-green) !important;
+}
+
+.washoku-stars {
+    color: var(--washoku-yolk);
+}
+
+.washoku-shop {
+    background: var(--washoku-surface-2);
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-shop-japanese {
+    background: var(--washoku-accent-soft);
+}
+
+.washoku-shop-online {
+    background: var(--washoku-surface-2);
+    color: var(--washoku-muted);
+}
+
+.washoku-legend {
+    margin: 4px 0 12px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-tips {
+    background: var(--washoku-surface-2);
+}
+
+/* ---------- stores ---------- */
+
+.washoku-store {
+    display: block;
+    margin: 10px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-store h3 {
+    margin: 6px 0 2px;
+}
+
+.washoku-store p {
+    margin: 2px 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-store-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.washoku-store-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+/* ---------- my page & about ---------- */
+
+.washoku-menu {
+    overflow: hidden;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 60px;
+    padding: 10px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--washoku-border);
+    border-radius: 0;
+    background: none;
+    color: var(--washoku-text);
+    font: inherit;
+    font-weight: 400;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.washoku-menu-item:last-child {
+    border-bottom: 0;
+}
+
+.washoku-menu-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font-size: 18px;
+}
+
+.washoku-menu-text {
+    flex: 1;
+}
+
+.washoku-menu-text strong {
+    display: block;
+}
+
+.washoku-menu-text small {
+    color: var(--washoku-muted);
+}
+
+.washoku-menu-count {
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.washoku-switch {
+    position: relative;
+    flex: none;
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    background: var(--washoku-border);
+    transition: background 0.2s;
+}
+
+.washoku-switch::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    content: "";
+    transition: transform 0.2s;
+}
+
+[aria-pressed="true"] .washoku-switch {
+    background: var(--washoku-accent);
+}
+
+[aria-pressed="true"] .washoku-switch::after {
+    transform: translateX(18px);
+}
+
+.washoku-about section {
+    margin: 28px 0;
+}
+
+.washoku-about h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.washoku-about h2 i {
+    color: var(--washoku-accent);
+}
+
+.washoku-done {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+}
+
+.washoku-trap {
+    position: absolute;
+    left: -9999px;
+}
+
+.washoku-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.washoku-feedback button {
+    align-self: flex-end;
 }

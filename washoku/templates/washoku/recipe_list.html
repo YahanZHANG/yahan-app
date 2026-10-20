@@ -6,6 +6,13 @@
 
 <h1>レシピ</h1>
 
+<nav class="washoku-quick" aria-label="選び方">
+    <a href="{% url 'washoku:find_by_ingredients' %}"><i class="bi bi-basket" aria-hidden="true"></i>食材で選ぶ</a>
+    <a href="{% url 'washoku:find_by_mood' %}"><i class="bi bi-emoji-smile" aria-hidden="true"></i>気分で選ぶ</a>
+    <a href="{% url 'washoku:random_recipe' %}"><i class="bi bi-shuffle" aria-hidden="true"></i>ランダム</a>
+    <a href="{% url 'washoku:recipe_list' %}?shop=1"><i class="bi bi-cart" aria-hidden="true"></i>普通のスーパーだけ</a>
+</nav>
+
 <form method="get" class="washoku-filter">
 
     <input type="search" name="q" value="{{ query }}" placeholder="料理名や食材" aria-label="キーワード">

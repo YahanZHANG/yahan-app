@@ -13,7 +13,7 @@
     <ul class="washoku-list">
         {% for question in questions %}
             <li>
-                <a href="{% if question.recipe_id %}{% url 'washoku:recipe_detail' question.recipe_id %}{% else %}{% url 'washoku:ingredient_detail' question.ingredient_id %}{% endif %}#comment-{{ question.pk }}">
+                <a href="{{ question.get_absolute_url }}">
                     {{ question.body|truncatechars:80 }}
                 </a>
                 <small>{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>

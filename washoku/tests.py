@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from .models import (
     Comment,
+    Feedback,
     HouseholdInvite,
     Ingredient,
     MoodTag,
@@ -23,6 +24,7 @@ from .models import (
     RecipeIngredient,
     RecipeRating,
     ShopType,
+    Store,
     Substitute,
 )
 
@@ -206,6 +208,9 @@ class PageTests(TestCase):
             reverse("washoku:ingredient_list"),
             reverse("washoku:ingredient_detail", args=[self.recipe.ingredients.first().pk]),
             reverse("washoku:question_list"),
+            reverse("washoku:store_list"),
+            reverse("washoku:store_list") + "?kind=japanese",
+            reverse("washoku:about"),
         ]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
@@ -376,3 +381,98 @@ class CommentViewTests(TestCase):
         self.client.post(self.url, {"kind": "tip", "body": "test"})
 
         self.assertFalse(Comment.objects.exists())
+
+
+class StoreTests(TestCase):
+
+    def setUp(self):
+        self.store = Store.objects.create(
+            name="Nishi Japan Shop",
+            kind="japanese",
+            address="Seefeldstrasse 12, 8008 Zürich",
+        )
+        self.user = get_user_model().objects.create_user("taro", password="x")
+
+    def test_import_stores_updates_instead_of_duplicating(self):
+
+        stores = [{
+            "name": "Nishi Japan Shop",
+            "kind": "japanese",
+            "address": "Seefeldstrasse 12, 8008 Zürich",
+            "opening_hours": "月〜金 10:00–18:30",
+        }]
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stores.json"
+            path.write_text(json.dumps(stores), encoding="utf-8")
+            call_command("import_washoku", stores=str(path), stdout=open("/dev/null", "w"))
+
+        self.assertEqual(Store.objects.count(), 1)
+        self.assertEqual(Store.objects.get().opening_hours, "月〜金 10:00–18:30")
+
+    def test_store_review_shows_on_the_store_and_home(self):
+
+        self.client.force_login(self.user)
+        self.client.post(
+            reverse("washoku:comment_create", args=["store", self.store.pk]),
+            {"kind": "tip", "body": "納豆の品ぞろえが多い"},
+        )
+
+        comment = Comment.objects.get()
+        self.assertEqual(comment.store, self.store)
+        self.assertEqual(
+            comment.get_absolute_url(),
+            reverse("washoku:store_detail", args=[self.store.pk]) + f"#comment-{comment.pk}",
+        )
+
+        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])), "納豆の品ぞろえ")
+        self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 1件")
+        self.assertContains(self.client.get(reverse("washoku:home")), comment.get_absolute_url())
+
+    def test_hidden_stores_are_not_shown(self):
+
+        self.store.is_active = False
+        self.store.save()
+
+        self.assertNotContains(self.client.get(reverse("washoku:store_list")), "Nishi Japan Shop")
+        self.assertEqual(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])).status_code, 404)
+
+
+class AboutAndMyPageTests(TestCase):
+
+    def test_feedback_is_saved_once_per_minute(self):
+
+        url = reverse("washoku:about")
+
+        self.client.post(url, {"message": "納豆のレシピがほしい"})
+        self.client.post(url, {"message": "もう一通"})
+
+        self.assertEqual(list(Feedback.objects.values_list("message", flat=True)), ["納豆のレシピがほしい"])
+
+    def test_bots_filling_the_hidden_field_are_ignored(self):
+
+        self.client.post(reverse("washoku:about"), {"message": "spam", "website": "http://spam.example"})
+
+        self.assertFalse(Feedback.objects.exists())
+
+    def test_visitors_see_my_page_but_lists_need_login(self):
+
+        # マイページはテーマ切り替えとログイン案内のため誰でも開ける
+        self.assertContains(self.client.get(reverse("washoku:my_page")), "washoku-theme-toggle")
+
+        for name in ["my_favorites", "my_comments"]:
+            response = self.client.get(reverse(f"washoku:{name}"))
+            self.assertEqual(response.status_code, 302, name)
+
+    def test_my_pages_list_favorites_and_comments(self):
+
+        user = get_user_model().objects.create_user("taro", password="x")
+        recipe = make_recipe()
+        RecipeRating.objects.create(user=user, recipe=recipe, rating=5)
+        Comment.objects.create(author=user, recipe=recipe, kind="tip", body="みりんは少なめが好き")
+
+        self.client.force_login(user)
+
+        self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
+        self.assertContains(self.client.get(reverse("washoku:my_favorites")), recipe.name)
+        self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")

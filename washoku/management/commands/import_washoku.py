@@ -1,5 +1,5 @@
 """
-washoku/data/ingredients.json と recipes.json を取り込む。
+washoku/data/ingredients.json・recipes.json・stores.json を取り込む。
 
     python manage.py import_washoku
     python manage.py import_washoku --dry-run
@@ -23,6 +23,7 @@ from washoku.models import (
     Recipe,
     RecipeIngredient,
     ShopType,
+    Store,
     Substitute,
 )
 
@@ -51,6 +52,11 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--stores",
+            default=str(DATA_DIR / "stores.json"),
+        )
+
+        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="チェックだけして保存しない",
@@ -66,6 +72,7 @@ class Command(BaseCommand):
 
         ingredients = self.load(options["ingredients"])
         recipes = self.load(options["recipes"])
+        stores = self.load(options["stores"])
 
         if options["new_only"]:
 
@@ -85,11 +92,20 @@ class Command(BaseCommand):
                 if row["name"] not in existing_recipes
             ]
 
+            existing_stores = set(
+                Store.objects.values_list("name", "address")
+            )
+            stores = [
+                row for row in stores
+                if (row["name"], row["address"]) not in existing_stores
+            ]
+
         try:
             with transaction.atomic():
 
                 ingredient_count = self.import_ingredients(ingredients)
                 recipe_count = self.import_recipes(recipes)
+                store_count = self.import_stores(stores)
 
                 if options["dry_run"]:
                     raise DryRun
@@ -99,7 +115,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"食材 {ingredient_count}件、レシピ {recipe_count}件"
+                f"食材 {ingredient_count}件、レシピ {recipe_count}件、お店 {store_count}件"
             )
         )
 
@@ -154,6 +170,25 @@ class Command(BaseCommand):
                         "tips": substitute.get("tips", ""),
                     },
                 )
+
+        return len(rows)
+
+    # -----------------------------------------------------
+    # お店
+    # -----------------------------------------------------
+
+    def import_stores(self, rows):
+
+        for row in rows:
+            Store.objects.update_or_create(
+                name=row["name"],
+                address=row["address"],
+                defaults={
+                    key: value
+                    for key, value in row.items()
+                    if key not in ("name", "address")
+                },
+            )
 
         return len(rows)
 

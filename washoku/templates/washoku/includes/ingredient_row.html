@@ -3,6 +3,6 @@
     {% if item.is_optional %}<small>（なくても可）</small>{% endif %}
     <span class="washoku-amount">{{ item.amount }}</span>
     <span class="washoku-shops">
-        {% for shop in item.ingredient.shops.all %}<span class="washoku-shop washoku-shop-{{ shop.code }}" title="{{ shop.name }}">{{ shop.name }}</span>{% endfor %}
+        {% for shop in item.ingredient.shops.all %}{% if forloop.first and shop.code != "supermarket" %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endif %}{% endfor %}
     </span>
 </li>

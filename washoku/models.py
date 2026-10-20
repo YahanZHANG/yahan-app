@@ -4,6 +4,7 @@ from django.core.validators import (
     MinValueValidator,
 )
 from django.db import models
+from django.urls import reverse
 
 
 # =========================================================
@@ -588,12 +589,140 @@ class RecipeRating(models.Model):
 
 
 # =========================================================
+# お店
+# =========================================================
+
+class Store(models.Model):
+    """
+    アジア・日本食材のお店。みんなが口コミを書ける。
+    """
+
+    KIND_CHOICES = [
+        ("japanese", "日本・韓国食材店"),
+        ("asian", "アジア・中華食材店"),
+        ("southeast", "東南アジア食材店"),
+    ]
+
+    name = models.CharField(
+        "店名",
+        max_length=100,
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+    )
+
+    city = models.CharField(
+        "都市",
+        max_length=50,
+        default="Zürich",
+    )
+
+    area = models.CharField(
+        "地区",
+        max_length=50,
+        blank=True,
+        help_text="例: Oerlikon、Seefeld、中央駅",
+    )
+
+    address = models.CharField(
+        "住所",
+        max_length=200,
+    )
+
+    website = models.URLField(
+        "ウェブサイト",
+        blank=True,
+    )
+
+    opening_hours = models.CharField(
+        "営業時間",
+        max_length=200,
+        blank=True,
+    )
+
+    description = models.TextField(
+        "紹介",
+        blank=True,
+    )
+
+    has_online_shop = models.BooleanField(
+        "ネット通販あり",
+        default=False,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "お店"
+        verbose_name_plural = "お店"
+        ordering = ["city", "kind", "name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "address"],
+                name="washoku_unique_store",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name}（{self.area or self.city}）"
+
+    @property
+    def map_url(self):
+        from urllib.parse import quote_plus
+
+        return (
+            "https://www.google.com/maps/search/?api=1&query="
+            + quote_plus(f"{self.name} {self.address}")
+        )
+
+
+class Feedback(models.Model):
+    """
+    「このアプリについて」の質問箱から届いたご意見・ご要望 (匿名)。
+    """
+
+    message = models.TextField(
+        "ご意見・ご要望",
+        max_length=1000,
+    )
+
+    is_read = models.BooleanField(
+        "確認済み",
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        "送信日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "ご意見"
+        verbose_name_plural = "ご意見"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message[:50]
+
+
+# =========================================================
 # コメント・Q&A
 # =========================================================
 
 class Comment(models.Model):
     """
-    レシピか食材のどちらか一方に付くコメント。
+    レシピ・食材・お店のどれか1つに付くコメント。
     返信は1段だけ (parent は返信先のスレッドの先頭コメント)。
     """
 
@@ -612,6 +741,14 @@ class Comment(models.Model):
 
     ingredient = models.ForeignKey(
         Ingredient,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comments",
+    )
+
+    store = models.ForeignKey(
+        Store,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -675,8 +812,9 @@ class Comment(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(recipe__isnull=False, ingredient__isnull=True)
-                    | models.Q(recipe__isnull=True, ingredient__isnull=False)
+                    models.Q(recipe__isnull=False, ingredient__isnull=True, store__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=False, store__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=False)
                 ),
                 name="washoku_comment_has_one_target",
             )
@@ -687,7 +825,18 @@ class Comment(models.Model):
 
     @property
     def target(self):
-        return self.recipe or self.ingredient
+        return self.recipe or self.ingredient or self.store
+
+    def get_absolute_url(self):
+
+        if self.recipe_id:
+            url = reverse("washoku:recipe_detail", args=[self.recipe_id])
+        elif self.store_id:
+            url = reverse("washoku:store_detail", args=[self.store_id])
+        else:
+            url = reverse("washoku:ingredient_detail", args=[self.ingredient_id])
+
+        return f"{url}#comment-{self.pk}"
 
 
 class CommentReport(models.Model):

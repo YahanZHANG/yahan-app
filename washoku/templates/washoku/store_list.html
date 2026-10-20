@@ -1,0 +1,38 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}お店 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>アジア・日本食材のお店</h1>
+
+<p class="washoku-lead">チューリッヒ周辺で日本・アジアの食材が買えるお店です。行ったことのある人は、口コミで教えてください。</p>
+
+<nav class="washoku-quick" aria-label="お店の種類">
+    <a href="{% url 'washoku:store_list' %}" {% if not kind %}aria-current="page"{% endif %}>すべて</a>
+    {% for value, label in kinds %}
+        <a href="?kind={{ value }}" {% if value == kind %}aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+</nav>
+
+{% for city, stores in by_city.items %}
+    <section class="washoku-section">
+        <h2>{{ city }}</h2>
+        {% for store in stores %}
+            <a class="washoku-store" href="{% url 'washoku:store_detail' store.pk %}">
+                <span class="washoku-chip">{{ store.get_kind_display }}</span>
+                {% if store.has_online_shop %}<span class="washoku-chip washoku-chip-shop">ネット通販あり</span>{% endif %}
+                <h3>{{ store.name }}</h3>
+                <p><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ store.area }}{% if store.area %} ・ {% endif %}{{ store.address }}</p>
+                {% if store.opening_hours %}<p><i class="bi bi-clock" aria-hidden="true"></i> {{ store.opening_hours }}</p>{% endif %}
+                <p><i class="bi bi-chat-dots" aria-hidden="true"></i> 口コミ {{ store.review_count }}件</p>
+            </a>
+        {% endfor %}
+    </section>
+{% empty %}
+    <p class="washoku-empty">お店の情報を準備中です。</p>
+{% endfor %}
+
+<p class="washoku-note">営業時間などは変わることがあります。お出かけ前に各店のサイトでご確認ください。載っていないお店は<a href="{% url 'washoku:about' %}#feedback">質問箱</a>から教えてください。</p>
+
+{% endblock %}

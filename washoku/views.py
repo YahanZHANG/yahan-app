@@ -14,10 +14,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .forms import CommentEditForm, CommentForm
+from .alerts import send_admin_alert
+from .forms import CommentEditForm, CommentForm, FeedbackForm
 from .models import (
     Comment,
     CommentReport,
+    Feedback,
     Household,
     HouseholdInvite,
     HouseholdMember,
@@ -28,11 +30,15 @@ from .models import (
     RecipeIngredient,
     RecipeRating,
     ShopType,
+    Store,
 )
 
 
 # 同じ人が続けてコメントできるまでの間隔
 COMMENT_INTERVAL = timedelta(seconds=60)
+
+# 質問箱を続けて送れるまでの間隔 (秒)
+FEEDBACK_INTERVAL_SECONDS = 60
 
 
 # =========================================================
@@ -152,11 +158,11 @@ def open_questions():
             is_deleted=False,
         )
         .filter(
-            Q(recipe__status="published") | Q(ingredient__isnull=False)
+            Q(recipe__status="published") | Q(recipe__isnull=True)
         )
         .annotate(has_answer=Exists(answered))
         .filter(has_answer=False)
-        .select_related("recipe", "ingredient", "author")
+        .select_related("recipe", "ingredient", "store", "author")
         .order_by("-created_at")
     )
 
@@ -180,9 +186,9 @@ def home(request):
             is_deleted=False,
         )
         .filter(
-            Q(recipe__status="published") | Q(ingredient__isnull=False)
+            Q(recipe__status="published") | Q(recipe__isnull=True)
         )
-        .select_related("recipe", "ingredient", "author")
+        .select_related("recipe", "ingredient", "store", "author")
         .order_by("-created_at")[:5]
     )
 
@@ -653,11 +659,11 @@ def comment_threads(comments, user):
     return threads
 
 
-def comment_context(request, recipe=None, ingredient=None):
+def comment_context(request, recipe=None, ingredient=None, store=None):
 
     comments = (
         Comment.objects
-        .filter(recipe=recipe, ingredient=ingredient)
+        .filter(recipe=recipe, ingredient=ingredient, store=store)
         .select_related("author")
         .order_by("created_at", "pk")
     )
@@ -680,13 +686,7 @@ def comment_context(request, recipe=None, ingredient=None):
 
 
 def comment_target_url(comment):
-
-    if comment.recipe_id:
-        url = reverse("washoku:recipe_detail", args=[comment.recipe_id])
-    else:
-        url = reverse("washoku:ingredient_detail", args=[comment.ingredient_id])
-
-    return f"{url}#comment-{comment.pk}"
+    return comment.get_absolute_url()
 
 
 def posted_too_recently(user):
@@ -700,14 +700,17 @@ def posted_too_recently(user):
 @require_POST
 def comment_create(request, target, pk):
 
+    recipe = ingredient = store = None
+
     if target == "recipe":
         recipe = get_object_or_404(visible_recipes(request.user), pk=pk)
-        ingredient = None
         back = reverse("washoku:recipe_detail", args=[pk])
     elif target == "ingredient":
-        recipe = None
         ingredient = get_object_or_404(Ingredient, pk=pk)
         back = reverse("washoku:ingredient_detail", args=[pk])
+    elif target == "store":
+        store = get_object_or_404(Store, pk=pk, is_active=True)
+        back = reverse("washoku:store_detail", args=[pk])
     else:
         raise Http404
 
@@ -731,6 +734,7 @@ def comment_create(request, target, pk):
             pk=parent_id,
             recipe=recipe,
             ingredient=ingredient,
+            store=store,
         )
 
         # 返信は1段だけ: 返信への返信は同じスレッドの末尾に付ける
@@ -741,6 +745,7 @@ def comment_create(request, target, pk):
     comment.author = request.user
     comment.recipe = recipe
     comment.ingredient = ingredient
+    comment.store = store
     comment.parent = parent
 
     if parent:
@@ -885,7 +890,7 @@ def notification_list(request):
     notifications = list(
         Notification.objects
         .filter(recipient=request.user)
-        .select_related("actor", "comment", "comment__recipe", "comment__ingredient")[:50]
+        .select_related("actor", "comment", "comment__recipe", "comment__ingredient", "comment__store")[:50]
     )
 
     for notification in notifications:
@@ -1046,3 +1051,174 @@ def family_leave(request):
         messages.success(request, "家族から抜けました。")
 
     return redirect("washoku:family")
+
+
+# =========================================================
+# お店
+# =========================================================
+
+def store_list(request):
+
+    kind = request.GET.get("kind", "")
+
+    stores = Store.objects.filter(is_active=True).annotate(
+        review_count=Count(
+            "comments",
+            filter=Q(comments__is_hidden=False, comments__is_deleted=False),
+        )
+    )
+
+    if kind in dict(Store.KIND_CHOICES):
+        stores = stores.filter(kind=kind)
+
+    by_city = defaultdict(list)
+
+    for store in stores.order_by("city", "area", "name"):
+        by_city[store.city].append(store)
+
+    return render(
+        request,
+        "washoku/store_list.html",
+        {
+            "by_city": dict(by_city),
+            "kind": kind,
+            "kinds": Store.KIND_CHOICES,
+        },
+    )
+
+
+def store_detail(request, pk):
+
+    store = get_object_or_404(Store, pk=pk, is_active=True)
+
+    return render(
+        request,
+        "washoku/store_detail.html",
+        {
+            "store": store,
+            **comment_context(request, store=store),
+        },
+    )
+
+
+# =========================================================
+# このアプリについて・マイページ
+# =========================================================
+
+def about(request):
+
+    form = FeedbackForm()
+
+    url = reverse("washoku:about")
+
+    if request.method == "POST":
+
+        form = FeedbackForm(request.POST)
+
+        last_sent = request.session.get("washoku_feedback_sent_at", 0)
+
+        if timezone.now().timestamp() - last_sent < FEEDBACK_INTERVAL_SECONDS:
+            return redirect(f"{url}?sent=wait#feedback")
+
+        if form.is_valid():
+
+            # 隠し項目 (website) が埋まっているのはボットなので保存しない
+            if not form.cleaned_data.get("website"):
+
+                feedback = form.save()
+
+                send_admin_alert(
+                    "新しいご意見・ご要望",
+                    f"{feedback.message}\n\n"
+                    + request.build_absolute_uri(
+                        reverse("admin:washoku_feedback_changelist")
+                    ),
+                )
+
+            request.session["washoku_feedback_sent_at"] = timezone.now().timestamp()
+
+            return redirect(f"{url}?sent=1#feedback")
+
+    return render(
+        request,
+        "washoku/about.html",
+        {
+            "feedback_form": form,
+            "feedback_sent": request.GET.get("sent", ""),
+        },
+    )
+
+
+def my_page(request):
+
+    context = {}
+
+    if request.user.is_authenticated:
+        context.update(
+            {
+                "favorite_count": RecipeRating.objects.filter(
+                    user=request.user,
+                    rating__gte=4,
+                    recipe__in=visible_recipes(request.user),
+                ).count(),
+                "comment_count": Comment.objects.filter(
+                    author=request.user,
+                    is_deleted=False,
+                ).count(),
+                "family_count": len(family_members(request.user)),
+                "invite_count": HouseholdInvite.objects.filter(
+                    invited_user=request.user,
+                    status="pending",
+                ).count(),
+            }
+        )
+
+    return render(
+        request,
+        "washoku/my_page.html",
+        context,
+    )
+
+
+@login_required
+def my_favorites(request):
+
+    ratings = (
+        RecipeRating.objects
+        .filter(
+            user=request.user,
+            recipe__in=visible_recipes(request.user),
+        )
+        .select_related("recipe")
+        .order_by("-rating", "recipe__name")
+    )
+
+    return render(
+        request,
+        "washoku/my_favorites.html",
+        {
+            "ratings": ratings,
+        },
+    )
+
+
+@login_required
+def my_comments(request):
+
+    comments = list(
+        Comment.objects
+        .filter(author=request.user, is_deleted=False)
+        .select_related("recipe", "ingredient", "store")
+        .order_by("-created_at")[:100]
+    )
+
+    for comment in comments:
+        comment.url = comment_target_url(comment)
+
+    return render(
+        request,
+        "washoku/my_comments.html",
+        {
+            "comments": comments,
+        },
+    )

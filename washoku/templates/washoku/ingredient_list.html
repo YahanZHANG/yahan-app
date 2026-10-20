@@ -13,6 +13,8 @@
     <button type="submit">探す</button>
 </form>
 
+<p class="washoku-legend">お店の名前がない食材は、Migros・Coop などの普通のスーパーで買えます。</p>
+
 {% for category, ingredients in by_category.items %}
     <section class="washoku-section">
         <h2>{{ category }}</h2>
@@ -23,7 +25,7 @@
                     {% if ingredient.name_de %}<small lang="de">{{ ingredient.name_de }}</small>{% endif %}
                     {% for substitute in ingredient.substitutes_for.all %}<small class="washoku-substitute">{{ substitute.original_name }}の代わり</small>{% endfor %}
                     <span class="washoku-shops">
-                        {% for shop in ingredient.shops.all %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endfor %}
+                        {% for shop in ingredient.shops.all %}{% if forloop.first and shop.code != "supermarket" %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endif %}{% endfor %}
                     </span>
                 </li>
             {% endfor %}

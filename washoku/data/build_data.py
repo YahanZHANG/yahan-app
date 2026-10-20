@@ -898,6 +898,66 @@ RECIPES = [
 
 
 # =========================================================
+# お店 (2026年10月に各店の公式サイトなどで確認)
+# (店名, 種類, 都市, 地区, 住所, ウェブサイト, 営業時間, 紹介, ネット通販あり)
+# 種類: japanese = 日本・韓国食材店, asian = アジア・中華食材店, southeast = 東南アジア食材店
+# =========================================================
+
+STORES = [
+    ("Nishi Japan Shop", "japanese", "Zürich", "Seefeld",
+     "Seefeldstrasse 12, 8008 Zürich", "https://nishijapan.com/",
+     "月〜金 10:00–18:30、土 10:00–17:00",
+     "1980年創業の日本食材店。調味料・米・冷凍食品から食器まで、日本の商品がそろう。",
+     True),
+    ("YumiHana", "japanese", "Zürich", "中央駅",
+     "Bahnhofquai 9, 8001 Zürich", "https://www.yumihana.ch/",
+     "月〜土 9:00–19:00",
+     "中央駅すぐの日本・韓国食材店。2フロアに調味料、麺、冷凍食品、キムチや豆腐、お弁当も。ベルンとバーゼルにも店がある。",
+     True),
+    ("SHINWAZEN", "japanese", "Zürich", "Kreis 4",
+     "Zwinglistrasse 11 (Hinterhof), 8004 Zürich", "https://www.shinwazen.ch/",
+     "木〜土 11:00–18:00",
+     "保存料を使わない日本の食品が中心。米、麺、醤油、味噌、日本酒や器も。",
+     True),
+    ("Lian Hua（Wiedikon）", "asian", "Zürich", "Wiedikon",
+     "Birmensdorferstrasse 94, Zürich", "",
+     "9:00–19:00",
+     "品数の多い中華系アジアスーパー。調理器具もある。",
+     False),
+    ("Lian Hua（Oerlikon）", "asian", "Zürich", "Oerlikon",
+     "Schaffhauserstrasse 269, Zürich", "",
+     "9:00–19:00",
+     "Oerlikon の中華系アジアスーパー。生鮮品も扱う。",
+     False),
+    ("Nihao Asiashop", "asian", "Zürich", "Oerlikon",
+     "Hofwiesenstrasse 350, 8050 Zürich（Neumarkt Oerlikon 2階）", "https://nihao-asiashop.ch/",
+     "月〜土 9:00–19:00",
+     "Oerlikon 駅から徒歩2分。アジアの野菜やハーブ、冷凍の餃子・点心、100種類以上のラーメン。",
+     False),
+    ("Asia Store（中央駅）", "asian", "Zürich", "中央駅",
+     "Zürich HB ShopVille 地下1階（Halle Sihlquai）", "https://www.asia-store.ch/",
+     "月〜土 9:00–20:00、日 9:00–19:30",
+     "中央駅の地下。日曜も開いているので、急に必要になったときに便利。",
+     False),
+    ("Asia Store（Oerlikon）", "asian", "Zürich", "Oerlikon",
+     "Affolternstrasse 10, 8050 Zürich", "https://www.asia-store.ch/",
+     "",
+     "アジアの基本的な食材、東南アジアの野菜、麺、ナンプラーなど。",
+     False),
+    ("New Asia Market", "southeast", "Zürich", "Kreis 4",
+     "Feldstrasse 24, 8004 Zürich", "https://www.newasiamarket.ch/",
+     "",
+     "タイ・ベトナムの野菜やハーブが新鮮。冷凍の魚介や蒸し器などの調理器具も。",
+     False),
+    ("Asiaway", "southeast", "Zürich", "Oerlikon",
+     "Schwamendingenstrasse 10, 8050 Zürich", "http://www.asiaway.ch/",
+     "",
+     "ベトナム系のお店で、レストラン併設。韓国・フィリピン・台湾の食材も。",
+     False),
+]
+
+
+# =========================================================
 # JSON に書き出す
 # =========================================================
 
@@ -956,22 +1016,38 @@ def build():
             }
         )
 
-    return ingredients, recipes
+    stores = [
+        {
+            "name": name,
+            "kind": kind,
+            "city": city,
+            "area": area,
+            "address": address,
+            "website": website,
+            "opening_hours": hours,
+            "description": description,
+            "has_online_shop": online,
+        }
+        for name, kind, city, area, address, website, hours, description, online in STORES
+    ]
+
+    return ingredients, recipes, stores
 
 
 if __name__ == "__main__":
 
-    ingredients, recipes = build()
+    ingredients, recipes, stores = build()
 
     data_dir = Path(__file__).resolve().parent
 
     for filename, rows in (
         ("ingredients.json", ingredients),
         ("recipes.json", recipes),
+        ("stores.json", stores),
     ):
         (data_dir / filename).write_text(
             json.dumps(rows, ensure_ascii=False, indent=1) + "\n",
             encoding="utf-8",
         )
 
-    print(f"食材 {len(ingredients)}件、レシピ {len(recipes)}件")
+    print(f"食材 {len(ingredients)}件、レシピ {len(recipes)}件、お店 {len(stores)}件")

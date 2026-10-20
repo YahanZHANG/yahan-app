@@ -1,5 +1,5 @@
 {% load washoku_tags %}
-{# target: "recipe" or "ingredient", target_pk #}
+{# target: "recipe" / "ingredient" / "store", target_pk, heading, help_text, tip_label #}
 <section class="washoku-section" id="comments">
 
     <h2>{{ heading }}</h2>
@@ -38,9 +38,8 @@
         <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form">
             {% csrf_token %}
             <div class="washoku-kind">
-                {% for radio in comment_form.kind %}
-                    <label>{{ radio.tag }} {{ radio.choice_label }}</label>
-                {% endfor %}
+                <label><input type="radio" name="kind" value="tip" checked> {{ tip_label|default:"工夫・コツ" }}</label>
+                <label><input type="radio" name="kind" value="question"> 質問</label>
             </div>
             {{ comment_form.body }}
             <button type="submit" class="washoku-button">投稿する</button>

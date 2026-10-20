@@ -1,0 +1,30 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}{{ store.name }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+<p class="washoku-chips">
+    <span class="washoku-chip">{{ store.get_kind_display }}</span>
+    {% if store.has_online_shop %}<span class="washoku-chip washoku-chip-shop">ネット通販あり</span>{% endif %}
+</p>
+
+<h1>{{ store.name }}</h1>
+
+{% if store.description %}<p class="washoku-lead">{{ store.description }}</p>{% endif %}
+
+<dl class="washoku-facts">
+    <dt>住所</dt><dd>{{ store.address }}</dd>
+    {% if store.opening_hours %}<dt>営業時間</dt><dd>{{ store.opening_hours }}</dd>{% endif %}
+</dl>
+
+<div class="washoku-store-actions">
+    <a href="{{ store.map_url }}" target="_blank" rel="noopener"><i class="bi bi-map" aria-hidden="true"></i>地図で見る</a>
+    {% if store.website %}<a href="{{ store.website }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>お店のサイト</a>{% endif %}
+</div>
+
+<p class="washoku-note">営業時間などは変わることがあります。お出かけ前にお店のサイトでご確認ください。</p>
+
+{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="みんなの口コミ" help_text="おすすめの商品、品ぞろえ、値段、混み具合など、気づいたことを共有してください。" tip_label="口コミ" %}
+
+{% endblock %}
