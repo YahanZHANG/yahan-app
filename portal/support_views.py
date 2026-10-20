@@ -42,6 +42,7 @@ def support(request):
     return render(request, "portal/support.html", {
         "origin": _origin(request),
         "twint_url": getattr(settings, "SWISS_NEWS_TWINT_URL", ""),
+        "twint_phone": getattr(settings, "YAPP_TWINT_PHONE", ""),
         "bitcoin_address": getattr(settings, "SWISS_NEWS_BITCOIN_ADDRESS", ""),
         "sent": request.GET.get("sent") == "1",
     })

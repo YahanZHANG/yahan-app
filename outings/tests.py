@@ -335,6 +335,13 @@ class PageTests(PageTestCase):
         self.assertEqual(SupportRequest.objects.get().bank_country, "ch")
         self.assertEqual(self.client.get(reverse("portal:support_contact", args=["nope"])).status_code, 302)
 
+    def test_support_page_shows_the_twint_phone_only_when_set(self):
+        self.assertNotContains(self.client.get(reverse("portal:support")), "TWINTで送金")
+        with self.settings(YAPP_TWINT_PHONE="+41 79 000 00 00"):
+            response = self.client.get(reverse("portal:support"))
+        self.assertContains(response, "TWINTで送金")
+        self.assertContains(response, "+41 79 000 00 00")
+
     def test_home_lists_recommended_before_new(self):
         make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
         html = self.client.get(reverse("outings:home")).content.decode()

@@ -105,7 +105,7 @@ html[data-yapp-resolved-theme="dark"] .yapp-support__submit {
 }
 
 .yapp-support__method,
-.yapp-support__bitcoin > summary {
+.yapp-support__fold > summary {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -124,7 +124,7 @@ html[data-yapp-resolved-theme="dark"] .yapp-support__submit {
 }
 
 .yapp-support__method > span:nth-child(2),
-.yapp-support__bitcoin > summary > span:nth-child(2) {
+.yapp-support__fold > summary > span:nth-child(2) {
     display: grid;
     flex: 1;
     gap: 2px;
@@ -147,32 +147,32 @@ html[data-yapp-resolved-theme="dark"] .yapp-support__submit {
     font-weight: 700;
 }
 
-.yapp-support__bitcoin {
+.yapp-support__fold {
     display: block;
 }
 
-.yapp-support__bitcoin > summary {
+.yapp-support__fold > summary {
     cursor: pointer;
     list-style: none;
 }
 
-.yapp-support__bitcoin > summary::-webkit-details-marker {
+.yapp-support__fold > summary::-webkit-details-marker {
     display: none;
 }
 
-.yapp-support__bitcoin-body {
+.yapp-support__fold-body {
     display: grid;
     justify-items: center;
     gap: 10px;
     padding-top: 14px;
 }
 
-.yapp-support__bitcoin-body img {
+.yapp-support__fold-body img {
     border-radius: 8px;
     background: #fff;
 }
 
-.yapp-support__bitcoin-body code {
+.yapp-support__fold-body code {
     max-width: 100%;
     padding: 6px 10px;
     border-radius: 8px;
@@ -280,4 +280,25 @@ html[data-yapp-resolved-theme="dark"] .yapp-support__submit {
     color: #fff;
     font-weight: 700;
     cursor: pointer;
+}
+
+.yapp-support__fold-body .yapp-support__phone {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.yapp-support__copy {
+    padding: 6px 14px;
+    border: 1px solid var(--s-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--s-text);
+    font: inherit;
+    font-size: .8125rem;
+    cursor: pointer;
+}
+
+.yapp-support__copy:hover {
+    border-color: var(--s-accent);
 }

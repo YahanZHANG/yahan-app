@@ -347,6 +347,13 @@ SWISS_NEWS_TWINT_URL = os.getenv(
     "",
 )
 
+# Phone number for TWINT transfers on the support page. Kept out of
+# the (public) repository; set it in the Render environment.
+YAPP_TWINT_PHONE = os.getenv(
+    "YAPP_TWINT_PHONE",
+    "",
+).strip()
+
 SWISS_NEWS_BITCOIN_ADDRESS = (
     "bc1qcf3akr70r0rsjkqphsm6aldgqk9r32e9c475xc"
 )
