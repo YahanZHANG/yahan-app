@@ -1,0 +1,36 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}家族の好きな料理 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>{% if has_family %}家族の好きな料理{% else %}評価した料理{% endif %}</h1>
+
+<p class="washoku-lead">{% if has_family %}家族みんなの評価の平均が高い順です。{% else %}あなたの評価が高い順です。{% endif %}評価は、あなたと家族のメンバーにだけ見えます。</p>
+
+{% if not has_family %}
+    <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、家族みんなの評価で並べられます。</p>
+{% endif %}
+
+{% if rows %}
+    <ol class="washoku-ranking">
+        {% for row in rows %}
+            <li>
+                <a href="{% url 'washoku:recipe_detail' row.recipe.pk %}">
+                    <span class="washoku-ranking-name">{{ row.recipe.name }}{% if row.is_favorite %} <span class="washoku-heart" aria-label="お気に入り">♥</span>{% endif %}</span>
+                    <span class="washoku-stars">{{ row.average|stars }}</span>
+                </a>
+                {% if has_family %}
+                    <small>
+                        {% for member in row.members %}{{ member.user|display_name }} {% if member.rating %}{{ member.rating|stars }}{% else %}未評価{% endif %}{% if not forloop.last %} ・ {% endif %}{% endfor %}
+                    </small>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+{% else %}
+    <p class="washoku-empty">まだ評価した料理はありません。レシピのページで「大好き」「好き」などを押すと、ここに並びます。</p>
+{% endif %}
+
+{% endblock %}

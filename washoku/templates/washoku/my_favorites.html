@@ -1,23 +1,27 @@
 {% extends "washoku/base.html" %}
 {% load washoku_tags %}
 
-{% block title %}評価したレシピ | スイスで和食{% endblock %}
+{% block title %}お気に入り | スイスで和食{% endblock %}
 
 {% block content %}
 
-<h1>評価したレシピ</h1>
+<h1>お気に入り</h1>
 
-{% if ratings %}
-    <ul class="washoku-list">
-        {% for item in ratings %}
-            <li>
-                <a href="{% url 'washoku:recipe_detail' item.recipe.pk %}">{{ item.recipe.name }}</a>
-                <small><span class="washoku-stars">{{ item.rating|stars }}</span></small>
-            </li>
+<p class="washoku-lead">レシピのページで「♡ お気に入り」を押すと、ここに保存されます。あなたにだけ見えます。</p>
+
+<p class="washoku-quick">
+    {% for value, label in sorts %}<a href="?sort={{ value }}"{% if sort == value %} aria-current="true" class="is-current"{% endif %}>{{ label }}</a>{% endfor %}
+    <a href="{% url 'washoku:family_favorites' %}"><i class="bi bi-star" aria-hidden="true"></i> 家族の好きな料理</a>
+</p>
+
+{% if recipes %}
+    <div class="washoku-grid">
+        {% for recipe in recipes %}
+            {% include "washoku/includes/recipe_card.html" %}
         {% endfor %}
-    </ul>
+    </div>
 {% else %}
-    <p class="washoku-empty">まだ評価したレシピはありません。レシピのページで「好き」「苦手」などを押すと、ここに並びます。</p>
+    <p class="washoku-empty">まだお気に入りはありません。</p>
 {% endif %}
 
 {% endblock %}

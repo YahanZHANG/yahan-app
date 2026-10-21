@@ -717,6 +717,83 @@ class RecipeRating(models.Model):
         return f"{self.user} - {self.recipe.name}: {self.rating}"
 
 
+class RecipeFavorite(models.Model):
+    """
+    お気に入りに保存したレシピ (本人だけが見られる)。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_favorites",
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="favorites",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "お気に入り"
+        verbose_name_plural = "お気に入り"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="washoku_unique_favorite",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe.name}"
+
+
+class RecipeNote(models.Model):
+    """
+    レシピごとの自分だけのメモ。ほかの人 (家族も) には見えない。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_notes",
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+
+    body = models.TextField(
+        "メモ",
+        max_length=2000,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "レシピのメモ"
+        verbose_name_plural = "レシピのメモ"
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="washoku_unique_note",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe.name}"
+
+
 # =========================================================
 # お店
 # =========================================================
@@ -1157,10 +1234,61 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
+class CommentReaction(models.Model):
+    """
+    コメントへの「いいね」「ありがとう」。1人1種類につき1回。
+    """
+
+    KIND_CHOICES = [
+        ("like", "いいね"),
+        ("thanks", "ありがとう"),
+    ]
+
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name="reactions",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_reactions",
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "いいね・ありがとう"
+        verbose_name_plural = "いいね・ありがとう"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["comment", "user", "kind"],
+                name="washoku_unique_reaction",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} {self.get_kind_display()} → {self.comment_id}"
+
+
 class Notification(models.Model):
     """
-    自分のコメントに返信が付いたことを知らせる。
+    自分のコメントに返信や「ありがとう」が付いたことを知らせる。
     """
+
+    KIND_CHOICES = [
+        ("reply", "返信"),
+        ("thanks", "ありがとう"),
+    ]
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -1178,6 +1306,13 @@ class Notification(models.Model):
         Comment,
         on_delete=models.CASCADE,
         related_name="notifications",
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+        default="reply",
     )
 
     is_read = models.BooleanField(

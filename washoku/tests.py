@@ -21,9 +21,12 @@ from .models import (
     Ingredient,
     MoodTag,
     Notification,
+    CommentReaction,
     Post,
     Recipe,
+    RecipeFavorite,
     RecipeIngredient,
+    RecipeNote,
     RecipeRating,
     ShopType,
     Store,
@@ -597,7 +600,7 @@ class AboutAndMyPageTests(TestCase):
         # マイページはテーマ切り替えとログイン案内のため誰でも開ける
         self.assertContains(self.client.get(reverse("washoku:my_page")), "washoku-theme-toggle")
 
-        for name in ["my_favorites", "my_comments"]:
+        for name in ["my_favorites", "family_favorites", "my_notes", "my_comments"]:
             response = self.client.get(reverse(f"washoku:{name}"))
             self.assertEqual(response.status_code, 302, name)
 
@@ -611,7 +614,7 @@ class AboutAndMyPageTests(TestCase):
         self.client.force_login(user)
 
         self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
-        self.assertContains(self.client.get(reverse("washoku:my_favorites")), recipe.name)
+        self.assertContains(self.client.get(reverse("washoku:family_favorites")), recipe.name)
         self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")
 
 
@@ -1163,3 +1166,108 @@ class PushTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Comment.objects.count(), 2)
+
+
+class FavoriteNoteReactionTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.me = User.objects.create_user("hanako", password="x")
+        self.child = User.objects.create_user("ken", password="x")
+        self.stranger = User.objects.create_user("other", password="x")
+        self.recipe = make_recipe(energy_kcal=340, protein_g=28, fat_g=20, carbs_g=12, salt_g=2.6)
+        self.other_recipe = make_recipe("肉じゃが", energy_kcal=330, protein_g=14, fat_g=12, carbs_g=40, salt_g=1.5)
+
+    def test_favorite_toggle_and_sort_by_family_rating(self):
+
+        self.client.force_login(self.me)
+
+        for recipe in (self.recipe, self.other_recipe):
+            self.client.post(reverse("washoku:favorite_toggle", args=[recipe.pk]))
+
+        RecipeRating.objects.create(user=self.me, recipe=self.other_recipe, rating=5)
+
+        html = self.client.get(reverse("washoku:my_favorites") + "?sort=family").content.decode()
+        self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "保存済み")
+        self.client.post(reverse("washoku:favorite_toggle", args=[self.recipe.pk]))
+        self.assertEqual(list(RecipeFavorite.objects.values_list("recipe__name", flat=True)), ["肉じゃが"])
+
+    def test_family_favorites_rank_by_family_average_and_stay_private(self):
+
+        from .models import Household, HouseholdMember
+
+        household = Household.objects.create(created_by=self.me)
+        HouseholdMember.objects.create(household=household, user=self.me)
+        HouseholdMember.objects.create(household=household, user=self.child)
+
+        RecipeRating.objects.create(user=self.me, recipe=self.recipe, rating=3)
+        RecipeRating.objects.create(user=self.child, recipe=self.recipe, rating=3)
+        RecipeRating.objects.create(user=self.child, recipe=self.other_recipe, rating=5)
+        RecipeRating.objects.create(user=self.stranger, recipe=self.recipe, rating=5)
+
+        self.client.force_login(self.me)
+        html = self.client.get(reverse("washoku:family_favorites")).content.decode()
+
+        self.assertIn("家族の好きな料理", html)
+        self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+        self.assertNotIn("other", html)
+
+        self.assertContains(
+            self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])),
+            "評価は、あなたと家族のメンバーにだけ見えます",
+        )
+
+    def test_private_note(self):
+
+        self.client.force_login(self.me)
+        url = reverse("washoku:note_save", args=[self.recipe.pk])
+
+        self.client.post(url, {"body": "みりん多めがよい"})
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "みりん多めがよい")
+        self.assertContains(self.client.get(reverse("washoku:my_notes")), "みりん多めがよい")
+
+        self.client.force_login(self.child)
+        self.assertNotContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "みりん多めがよい")
+
+        self.client.force_login(self.me)
+        self.client.post(url, {"body": "  "})
+        self.assertFalse(RecipeNote.objects.exists())
+
+    def test_like_and_thanks_on_comments(self):
+
+        answer = Comment.objects.create(author=self.child, recipe=self.recipe, kind="tip", body="白ワインで代用できます")
+        url = reverse("washoku:comment_react", args=[answer.pk])
+
+        self.client.force_login(self.me)
+        self.client.post(url, {"kind": "thanks"})
+        self.client.post(url, {"kind": "like"})
+
+        self.assertEqual(CommentReaction.objects.count(), 2)
+        self.assertTrue(Notification.objects.filter(recipient=self.child, kind="thanks").exists())
+
+        page = self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk]))
+        self.assertContains(page, "🙏 ありがとう <b>1</b>")
+
+        # もう一度押すと取り消し
+        self.client.post(url, {"kind": "like"})
+        self.assertEqual(CommentReaction.objects.count(), 1)
+
+        # 自分のコメントには押せない
+        self.client.force_login(self.child)
+        self.client.post(url, {"kind": "like"})
+        self.assertEqual(CommentReaction.objects.count(), 1)
+        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「ありがとう」を送りました")
+
+    def test_filter_recipes_by_nutrition(self):
+
+        url = reverse("washoku:recipe_list")
+
+        high_protein = self.client.get(url + "?n=protein")
+        self.assertContains(high_protein, "照り焼きチキン")
+        self.assertNotContains(high_protein, "肉じゃが</h3>")
+
+        low_salt = self.client.get(url + "?n=lowsalt&n=light")
+        self.assertContains(low_salt, "肉じゃが")
+        self.assertNotContains(low_salt, "照り焼きチキン</h3>")

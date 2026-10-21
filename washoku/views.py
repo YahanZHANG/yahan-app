@@ -28,6 +28,7 @@ from .forms import (
 from .models import (
     Announcement,
     Comment,
+    CommentReaction,
     CommentReport,
     Feedback,
     Household,
@@ -39,7 +40,9 @@ from .models import (
     Post,
     PushSubscription,
     Recipe,
+    RecipeFavorite,
     RecipeIngredient,
+    RecipeNote,
     RecipeRating,
     ShopType,
     Store,
@@ -235,6 +238,15 @@ def home(request):
 # 一覧・検索
 # =========================================================
 
+# 栄養で絞り込む条件 (1人分)
+NUTRITION_FILTERS = [
+    ("light", "400kcal以下", Q(energy_kcal__lte=400)),
+    ("protein", "たんぱく質20g以上", Q(protein_g__gte=20)),
+    ("lowfat", "脂質15g以下", Q(fat_g__lte=15)),
+    ("lowcarb", "炭水化物30g以下", Q(carbs_g__lte=30)),
+    ("lowsalt", "塩分2g以下", Q(salt_g__lte=2)),
+]
+
 SORT_CHOICES = [
     ("name", "名前順"),
     ("new", "新しい順"),
@@ -254,6 +266,10 @@ def recipe_list(request):
     max_time = request.GET.get("time", "")
     shop = request.GET.get("shop", "")
     sort = request.GET.get("sort", "name")
+    nutrition = [
+        value for value in request.GET.getlist("n")
+        if value in {key for key, _label, _q in NUTRITION_FILTERS}
+    ]
 
     if query:
         recipes = recipes.filter(
@@ -274,6 +290,10 @@ def recipe_list(request):
 
     if shop.isdigit():
         recipes = recipes.filter(shop_rank__lte=int(shop))
+
+    for key, _label, condition in NUTRITION_FILTERS:
+        if key in nutrition:
+            recipes = recipes.filter(condition)
 
     if sort == "new":
         recipes = recipes.order_by("-created_at")
@@ -313,6 +333,8 @@ def recipe_list(request):
             "moods": MoodTag.objects.all(),
             "shops": shop_choices(),
             "sort_choices": SORT_CHOICES,
+            "nutrition": nutrition,
+            "nutrition_choices": [(key, label) for key, label, _q in NUTRITION_FILTERS],
             "time_choices": [(15, "15分以内"), (30, "30分以内"), (60, "1時間以内")],
         },
     )
@@ -530,8 +552,13 @@ def recipe_detail(request, pk):
 
     my_rating = None
     member_ratings = []
+    is_favorite = False
+    note = None
 
     if request.user.is_authenticated:
+
+        is_favorite = RecipeFavorite.objects.filter(user=request.user, recipe=recipe).exists()
+        note = RecipeNote.objects.filter(user=request.user, recipe=recipe).first()
 
         members = family_members(request.user)
 
@@ -575,6 +602,8 @@ def recipe_detail(request, pk):
             ),
             "my_rating": my_rating,
             "member_ratings": member_ratings,
+            "is_favorite": is_favorite,
+            "note": note,
             "rating_choices": RATING_CHOICES,
             **comment_context(request, recipe=recipe),
         },
@@ -609,6 +638,38 @@ def rate_recipe(request, pk):
         )
 
     return redirect(reverse("washoku:recipe_detail", args=[recipe.pk]) + "#rating")
+
+
+@login_required
+@require_POST
+def favorite_toggle(request, pk):
+
+    recipe = get_object_or_404(visible_recipes(request.user), pk=pk)
+
+    favorite, created = RecipeFavorite.objects.get_or_create(user=request.user, recipe=recipe)
+
+    if not created:
+        favorite.delete()
+
+    return redirect(reverse("washoku:recipe_detail", args=[recipe.pk]))
+
+
+@login_required
+@require_POST
+def note_save(request, pk):
+
+    recipe = get_object_or_404(visible_recipes(request.user), pk=pk)
+
+    body = request.POST.get("body", "").strip()[:2000]
+
+    if body:
+        RecipeNote.objects.update_or_create(user=request.user, recipe=recipe, defaults={"body": body})
+        messages.success(request, "メモを保存しました。")
+    else:
+        RecipeNote.objects.filter(user=request.user, recipe=recipe).delete()
+        messages.success(request, "メモを消しました。")
+
+    return redirect(reverse("washoku:recipe_detail", args=[recipe.pk]) + "#note")
 
 
 # =========================================================
@@ -742,11 +803,72 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
             ).values_list("comment_id", flat=True)
         )
 
+    comments = list(comments)
+
+    attach_reactions(comments, request.user)
+
     return {
         "threads": comment_threads(comments, request.user),
         "comment_form": CommentForm(),
         "reported_ids": reported_ids,
     }
+
+
+def attach_reactions(comments, user):
+    """
+    各コメントに like_count・thanks_count と、自分が押したかどうかを付ける。
+    """
+
+    counts = defaultdict(int)
+    mine = set()
+
+    for comment_id, user_id, kind in CommentReaction.objects.filter(
+        comment__in=[comment.pk for comment in comments]
+    ).values_list("comment_id", "user_id", "kind"):
+        counts[comment_id, kind] += 1
+        if user.is_authenticated and user_id == user.pk:
+            mine.add((comment_id, kind))
+
+    for comment in comments:
+        comment.like_count = counts[comment.pk, "like"]
+        comment.thanks_count = counts[comment.pk, "thanks"]
+        comment.i_liked = (comment.pk, "like") in mine
+        comment.i_thanked = (comment.pk, "thanks") in mine
+
+
+@login_required
+@require_POST
+def comment_react(request, pk):
+
+    comment = get_object_or_404(
+        Comment.objects.filter(is_hidden=False, is_deleted=False),
+        pk=pk,
+    )
+
+    kind = request.POST.get("kind", "")
+
+    # 自分のコメントには押せない
+    if kind not in dict(CommentReaction.KIND_CHOICES) or comment.author_id == request.user.pk:
+        return redirect(comment_target_url(comment))
+
+    reaction, created = CommentReaction.objects.get_or_create(
+        comment=comment,
+        user=request.user,
+        kind=kind,
+    )
+
+    if not created:
+        reaction.delete()
+
+    elif kind == "thanks":
+        Notification.objects.create(
+            recipient_id=comment.author_id,
+            actor=request.user,
+            comment=comment,
+            kind="thanks",
+        )
+
+    return redirect(comment_target_url(comment))
 
 
 def comment_target_url(comment):
@@ -1327,11 +1449,15 @@ def my_page(request):
     if request.user.is_authenticated:
         context.update(
             {
-                "favorite_count": RecipeRating.objects.filter(
+                "favorite_count": RecipeFavorite.objects.filter(
                     user=request.user,
-                    rating__gte=4,
                     recipe__in=visible_recipes(request.user),
                 ).count(),
+                "rated_count": RecipeRating.objects.filter(
+                    user__in=family_members(request.user),
+                    recipe__in=visible_recipes(request.user),
+                ).values("recipe").distinct().count(),
+                "note_count": RecipeNote.objects.filter(user=request.user).count(),
                 "comment_count": Comment.objects.filter(
                     author=request.user,
                     is_deleted=False,
@@ -1357,24 +1483,114 @@ def my_page(request):
     )
 
 
+FAVORITE_SORTS = [
+    ("new", "保存した順"),
+    ("family", "家族の評価順"),
+]
+
+
 @login_required
 def my_favorites(request):
+    """
+    お気に入りに保存したレシピ。家族の評価順にも並べられる。
+    """
 
-    ratings = (
-        RecipeRating.objects
-        .filter(
-            user=request.user,
-            recipe__in=visible_recipes(request.user),
-        )
+    sort = request.GET.get("sort", "new")
+
+    favorites = list(
+        RecipeFavorite.objects
+        .filter(user=request.user, recipe__in=visible_recipes(request.user))
         .select_related("recipe")
-        .order_by("-rating", "recipe__name")
     )
+
+    recipes = attach_family_rating([favorite.recipe for favorite in favorites], request.user)
+
+    if sort == "family":
+        recipes.sort(
+            key=lambda recipe: (recipe.family_average is None, -(recipe.family_average or 0), recipe.name)
+        )
 
     return render(
         request,
         "washoku/my_favorites.html",
         {
-            "ratings": ratings,
+            "recipes": recipes,
+            "sort": sort,
+            "sorts": FAVORITE_SORTS,
+        },
+    )
+
+
+@login_required
+def family_favorites(request):
+    """
+    家族の好きな料理を、家族の平均評価が高い順に。
+    評価は自分と家族のメンバーにしか見えない。
+    """
+
+    members = family_members(request.user)
+
+    ratings = (
+        RecipeRating.objects
+        .filter(user__in=members, recipe__in=visible_recipes(request.user))
+        .select_related("recipe")
+    )
+
+    by_recipe = {}
+
+    for rating in ratings:
+        entry = by_recipe.setdefault(rating.recipe_id, {"recipe": rating.recipe, "ratings": {}})
+        entry["ratings"][rating.user_id] = rating.rating
+
+    favorite_ids = set(
+        RecipeFavorite.objects.filter(user=request.user).values_list("recipe_id", flat=True)
+    )
+
+    rows = []
+
+    for entry in by_recipe.values():
+
+        values = list(entry["ratings"].values())
+
+        rows.append(
+            {
+                "recipe": entry["recipe"],
+                "average": sum(values) / len(values),
+                "rated": len(values),
+                "members": [
+                    {"user": member, "rating": entry["ratings"].get(member.pk)}
+                    for member in members
+                ],
+                "is_favorite": entry["recipe"].pk in favorite_ids,
+            }
+        )
+
+    rows.sort(key=lambda row: (-row["average"], -row["rated"], row["recipe"].name))
+
+    return render(
+        request,
+        "washoku/family_favorites.html",
+        {
+            "rows": rows,
+            "has_family": len(members) > 1,
+        },
+    )
+
+
+@login_required
+def my_notes(request):
+
+    notes = (
+        RecipeNote.objects
+        .filter(user=request.user)
+        .select_related("recipe")
+    )
+
+    return render(
+        request,
+        "washoku/my_notes.html",
+        {
+            "notes": notes,
         },
     )
 

@@ -2085,3 +2085,169 @@ html[data-washoku-theme="dark"] {
         font-size: 9px;
     }
 }
+
+/* レシピ: タイトルとお気に入り */
+.washoku-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.washoku-title-row h1 {
+    margin-bottom: 4px;
+}
+
+.washoku-title-row form {
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+.washoku-favorite {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px !important;
+    border: 1px solid var(--washoku-accent) !important;
+    border-radius: 999px;
+    background: var(--washoku-surface) !important;
+    color: var(--washoku-accent-strong) !important;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.washoku-favorite span {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.washoku-favorite.is-on {
+    background: var(--washoku-accent) !important;
+    color: #fff !important;
+}
+
+.washoku-heart {
+    color: var(--washoku-accent);
+}
+
+/* 自分だけのメモ */
+.washoku-note-box textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.washoku-note-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.washoku-note-text {
+    margin: 4px 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* 栄養で絞る */
+.washoku-nutrition-filter {
+    flex: 1 1 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    scroll-margin-top: 84px;
+}
+
+.washoku-nutrition-filter legend {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.washoku-nutrition-filter legend small {
+    color: var(--washoku-muted);
+    font-weight: 400;
+}
+
+/* 家族の好きな料理 */
+.washoku-ranking {
+    margin: 0;
+    padding-left: 28px;
+}
+
+.washoku-ranking li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-ranking a {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-ranking-name {
+    font-weight: 700;
+}
+
+.washoku-ranking small {
+    display: block;
+    margin-top: 2px;
+    color: var(--washoku-muted);
+}
+
+.washoku-quick a.is-current {
+    border-color: var(--washoku-accent);
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+/* コメントの いいね・ありがとう */
+.washoku-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 2px;
+}
+
+.washoku-reactions:empty {
+    display: none;
+}
+
+.washoku-reactions form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.washoku-reaction,
+.washoku-reaction-count {
+    padding: 3px 10px !important;
+    border: 1px solid var(--washoku-border) !important;
+    border-radius: 999px;
+    background: var(--washoku-surface) !important;
+    color: var(--washoku-muted) !important;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.washoku-reaction {
+    cursor: pointer;
+}
+
+.washoku-reaction.is-on {
+    border-color: var(--washoku-accent) !important;
+    background: var(--washoku-accent-soft) !important;
+    color: var(--washoku-accent-strong) !important;
+}
+
+.washoku-reaction b {
+    margin-left: 2px;
+}

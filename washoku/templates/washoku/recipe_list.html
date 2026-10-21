@@ -11,6 +11,7 @@
     <a href="{% url 'washoku:find_by_mood' %}"><i class="bi bi-emoji-smile" aria-hidden="true"></i>気分で選ぶ</a>
     <a href="{% url 'washoku:random_recipe' %}"><i class="bi bi-shuffle" aria-hidden="true"></i>ランダム</a>
     <a href="{% url 'washoku:recipe_list' %}?shop=1"><i class="bi bi-cart" aria-hidden="true"></i>普通のスーパーだけ</a>
+    <a href="{% url 'washoku:recipe_list' %}?sort=light#nutrition"><i class="bi bi-heart-pulse" aria-hidden="true"></i>栄養で選ぶ</a>
     <a href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i>レシピを投稿</a>
 </nav>
 
@@ -53,6 +54,15 @@
             <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
     </select>
+
+    <fieldset class="washoku-nutrition-filter" id="nutrition">
+        <legend>栄養で絞る<small>（1人分）</small></legend>
+        <div class="washoku-check-chips">
+            {% for value, label in nutrition_choices %}
+                <label><input type="checkbox" name="n" value="{{ value }}" {% if value in nutrition %}checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
 
     <button type="submit">絞り込む</button>
 

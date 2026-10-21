@@ -85,7 +85,7 @@
 
             <a
                 href="{% url 'washoku:my_page' %}"
-                class="washoku-me{% if name in 'my_page my_favorites my_comments my_recipes my_posts notification_list family about' %} active{% endif %}"
+                class="washoku-me{% if name in 'my_page my_favorites family_favorites my_notes my_comments my_recipes my_posts notification_list family about' %} active{% endif %}"
                 aria-label="マイページ{% if unread %}（未読{{ unread }}件）{% endif %}"
             >
                 <span class="washoku-me-icon">
