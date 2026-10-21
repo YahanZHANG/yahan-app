@@ -3785,7 +3785,7 @@
   ],
   "swiss_tips": "Backpulver の1袋（約15g）は粉500g用。この量なら小さじ2で足りる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 470,
    "protein_g": 15,
@@ -3856,7 +3856,7 @@
   ],
   "swiss_tips": "「Kochschokolade」は板のまま刻んで使える。型はスイスの「Springform」18cmがちょうどよい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 250,
    "protein_g": 4,
@@ -3910,7 +3910,7 @@
   ],
   "swiss_tips": "オーブンなら150℃で湯せん焼き30分。スイスの「Caramelköpfli」に似ているので、子どもにも通じやすい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 190,
    "protein_g": 7,
@@ -3975,7 +3975,7 @@
   ],
   "swiss_tips": "普通のスーパーのオレンジ色のさつまいもは水分が多いので、アジアスーパーの赤紫の皮のものがほくほくする。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 290,
    "protein_g": 2,
@@ -4051,7 +4051,7 @@
   ],
   "swiss_tips": "マフィン用の紙カップは Coop・Migros の製菓コーナーにある。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 190,
    "protein_g": 5,
@@ -4117,7 +4117,7 @@
   ],
   "swiss_tips": "型は「Cakeform」（パウンド型）の長いもので焼ける。オーブンの発酵機能がなければ、40℃に温めて火を消した中で発酵させる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 185,
    "protein_g": 6,
@@ -4200,7 +4200,7 @@
   ],
   "swiss_tips": "強力粉は「Zopfmehl」で焼ける。クッキー生地はラップではさんでのばすとくっつかない。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 280,
    "protein_g": 6,
@@ -4283,7 +4283,7 @@
   ],
   "swiss_tips": "カスタードは前の日に作って冷やしておくと包みやすい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 240,
    "protein_g": 8,
@@ -4354,7 +4354,7 @@
   ],
   "swiss_tips": "殻に色がついた卵はゆで卵なので、そのまま使えて便利。日本の味に近づけるならマヨネーズはキューピーで。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 480,
    "protein_g": 16,
@@ -4417,7 +4417,7 @@
   ],
   "swiss_tips": "ハムは「Hinterschinken」が日本のハムに一番近い。きゅうりは種を取ると水っぽくならない。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 280,
    "protein_g": 15,
@@ -4500,7 +4500,7 @@
   ],
   "swiss_tips": "肉味噌は冷蔵で4〜5日もつ。持ち寄りでは肉味噌とクラッカーを別に持って行き、その場でのせるとしけらない。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 190,
    "protein_g": 8,
@@ -4583,7 +4583,7 @@
   ],
   "swiss_tips": "にんじんは細めの「Bundkarotten」が甘くて生でもおいしい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 120,
    "protein_g": 2,
@@ -4642,7 +4642,7 @@
   ],
   "swiss_tips": "丸いパイシートは Coop・Migros の冷蔵コーナー。パン屋の Schinkengipfeli と同じ味になる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 220,
    "protein_g": 8,
@@ -4714,7 +4714,7 @@
   ],
   "swiss_tips": "短い串や「Apéro-Spiessli」は Coop・Migros のパーティー用品の売り場にある。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 300,
    "protein_g": 20,
@@ -4779,7 +4779,7 @@
   ],
   "swiss_tips": "さや付きの冷凍枝豆は Coop・Migros にある。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 130,
    "protein_g": 9,

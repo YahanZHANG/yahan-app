@@ -119,7 +119,7 @@
 {% endif %}
 
 <section class="washoku-section">
-    <h2>みんなの新着</h2>
+    <h2>みんなの投稿・コメント</h2>
     {% if latest_activity %}
         <ul class="washoku-activity">
             {% for entry in latest_activity %}
@@ -129,7 +129,7 @@
     {% else %}
         <p class="washoku-empty">まだ投稿はありません。レシピや食材のページから、工夫や質問を書いてみてください。</p>
     {% endif %}
-    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">新着をすべて見る</a></p>
+    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">投稿・コメントをすべて見る</a></p>
 </section>
 
 {% if user.is_staff %}
