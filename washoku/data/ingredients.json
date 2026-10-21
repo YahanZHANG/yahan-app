@@ -267,6 +267,33 @@
   "substitutes_for": []
  },
  {
+  "name": "生クリーム",
+  "name_de": "Vollrahm",
+  "category": "dairy",
+  "search_group": "生クリーム",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "「Vollrahm」が生クリーム。泡立てるなら脂肪分35%の「Rahm」。料理用の「Saucenhalbrahm」でも作れる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ピザ用チーズ",
+  "name_de": "Reibkäse / Mozzarella gerieben",
+  "category": "dairy",
+  "search_group": "チーズ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "グラタンには袋入りの「Reibkäse」（グリュイエールやエメンタール）。伸びを出したいときはおろしたモッツァレラ。",
+  "substitutes_for": [
+   {
+    "original_name": "とろけるチーズ",
+    "tips": "Gruyère と Emmentaler を混ぜたグラタン用の袋が近い。"
+   }
+  ]
+ },
+ {
   "name": "木綿豆腐",
   "name_de": "Tofu nature",
   "category": "soy",
@@ -390,6 +417,17 @@
    "supermarket"
   ],
   "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "マカロニ",
+  "name_de": "Hörnli",
+  "category": "grain",
+  "search_group": "パスタ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "スイスの「Hörnli」がマカロニそのもの。グラタンやマカロニサラダに。",
   "substitutes_for": []
  },
  {
@@ -845,6 +883,281 @@
   "substitutes_for": []
  },
  {
+  "name": "コールラビ",
+  "name_de": "Kohlrabi",
+  "category": "vegetable",
+  "search_group": "かぶ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "皮が硬いので厚めにむく。生でもシャキシャキ食べられる。",
+  "substitutes_for": [
+   {
+    "original_name": "かぶ",
+    "tips": "薄めに切れば、煮物・浅漬け・味噌汁にそのまま使える。かぶより少し硬く、煮崩れしにくい。"
+   }
+  ]
+ },
+ {
+  "name": "白かぶ",
+  "name_de": "Weisse Rüben / Mairübli",
+  "category": "vegetable",
+  "search_group": "かぶ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "春は小さな「Mairübli」、秋から冬は大きめの「Herbstrüben」が並ぶ。",
+  "substitutes_for": [
+   {
+    "original_name": "かぶ",
+    "tips": "日本のかぶとほぼ同じ使い方ができる。大きいものは少し辛みがあるので、下茹でしてから煮る。"
+   }
+  ]
+ },
+ {
+  "name": "ラディッシュ",
+  "name_de": "Radiesli",
+  "category": "vegetable",
+  "search_group": "ラディッシュ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "小かぶ",
+    "tips": "甘酢漬けや浅漬けに。赤い皮の色が漬け汁にうつってきれい。"
+   }
+  ]
+ },
+ {
+  "name": "スイスチャード",
+  "name_de": "Krautstiel / Mangold",
+  "category": "vegetable",
+  "search_group": "青菜",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "葉の大きい「Mangold」と、白い茎の太い「Krautstiel」がある。",
+  "substitutes_for": [
+   {
+    "original_name": "小松菜",
+    "tips": "茎と葉を分け、茎を先に火に通す。おひたし、煮びたし、炒め物に。"
+   }
+  ]
+ },
+ {
+  "name": "チンゲン菜",
+  "name_de": "Pak Choi",
+  "category": "vegetable",
+  "search_group": "青菜",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros にもある。小さな「Baby Pak Choi」は丸ごと使える。",
+  "substitutes_for": [
+   {
+    "original_name": "小松菜",
+    "tips": "炒め物や味噌汁、煮びたしに。アクが少なく下茹でいらず。"
+   }
+  ]
+ },
+ {
+  "name": "とんがりキャベツ",
+  "name_de": "Spitzkabis",
+  "category": "vegetable",
+  "search_group": "キャベツ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "先のとがったキャベツ。普通の Weisskabis より葉が柔らかくて甘い。",
+  "substitutes_for": [
+   {
+    "original_name": "春キャベツ",
+    "tips": "千切り、サラダ、浅漬け、回鍋肉に。日本のキャベツの食感に一番近い。"
+   }
+  ]
+ },
+ {
+  "name": "ちりめんキャベツ",
+  "name_de": "Wirz",
+  "category": "vegetable",
+  "search_group": "キャベツ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "葉が縮れたキャベツ。茹でるとしなやかになり、破れにくい。",
+  "substitutes_for": [
+   {
+    "original_name": "ロールキャベツ用のキャベツ",
+    "tips": "葉を1枚ずつはがして茹でると巻きやすい。芯の厚い部分はそぎ落とす。"
+   }
+  ]
+ },
+ {
+  "name": "黒ごぼう",
+  "name_de": "Schwarzwurzeln",
+  "category": "vegetable",
+  "search_group": "ごぼう",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冬の野菜。皮をむくとアクで手が黒くなるので、手袋をしてむく。",
+  "substitutes_for": [
+   {
+    "original_name": "ごぼう",
+    "tips": "むいたらすぐ酢水につける。きんぴら、豚汁、炊き込みご飯に。ごぼうより柔らかめ。"
+   }
+  ]
+ },
+ {
+  "name": "絹さや",
+  "name_de": "Kefen",
+  "category": "vegetable",
+  "search_group": "豆",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "スイスでは「Kefen」。日本の絹さやとほぼ同じ。",
+  "substitutes_for": [
+   {
+    "original_name": "さやえんどう",
+    "tips": "「Kefen」がそのまま使える。筋を取ってさっと茹でる。"
+   },
+   {
+    "original_name": "スナップえんどう",
+    "tips": "実の太い「Zuckerschoten」が近い。"
+   }
+  ]
+ },
+ {
+  "name": "いんげん",
+  "name_de": "Bohnen, grün",
+  "category": "vegetable",
+  "search_group": "豆",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "さやいんげん",
+    "tips": "細い「Fine Bohnen」を選ぶと、ごま和えや煮物で日本のいんげんに近い。"
+   }
+  ]
+ },
+ {
+  "name": "枝豆",
+  "name_de": "Edamame, tiefgekühlt",
+  "category": "vegetable",
+  "search_group": "豆",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros の冷凍コーナー。さや付きとむき身がある。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パドロン",
+  "name_de": "Pimientos de Padrón",
+  "category": "vegetable",
+  "search_group": "ピーマン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "夏に Coop・Migros に並ぶ、小さな緑のとうがらし。",
+  "substitutes_for": [
+   {
+    "original_name": "ししとう",
+    "tips": "焼いて醤油とかつお節で。ときどき辛いものが混じるのも同じ。"
+   }
+  ]
+ },
+ {
+  "name": "クレス",
+  "name_de": "Kresse",
+  "category": "vegetable",
+  "search_group": "ハーブ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "小さな箱に入って売られている。",
+  "substitutes_for": [
+   {
+    "original_name": "かいわれ大根",
+    "tips": "ピリッとした辛みがそっくり。サラダ、冷奴、手巻き寿司に。"
+   }
+  ]
+ },
+ {
+  "name": "ベアラウフ",
+  "name_de": "Bärlauch",
+  "category": "vegetable",
+  "search_group": "ニラ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "春（3〜4月）だけ出回る、にんにくの香りの葉。",
+  "substitutes_for": [
+   {
+    "original_name": "ニラ",
+    "tips": "餃子、ニラ玉、チヂミに。香りが強いので少なめから。"
+   },
+   {
+    "original_name": "行者にんにく",
+    "tips": "近い仲間。醤油漬けにもできる。"
+   }
+  ]
+ },
+ {
+  "name": "さつまいも",
+  "name_de": "Süsskartoffeln",
+  "category": "vegetable",
+  "search_group": "さつまいも",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "普通のスーパーのものはオレンジ色の身で水分が多く、甘さ控えめ。",
+  "substitutes_for": [
+   {
+    "original_name": "さつまいも",
+    "tips": "天ぷらや大学いもには、アジアスーパーにある赤紫の皮・黄色い身のものがほくほくする。"
+   }
+  ]
+ },
+ {
+  "name": "エリンギ",
+  "name_de": "Kräuterseitlinge",
+  "category": "mushroom",
+  "search_group": "きのこ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "エリンギ",
+    "tips": "「Kräuterseitlinge」がエリンギそのもの。"
+   }
+  ]
+ },
+ {
+  "name": "ひらたけ",
+  "name_de": "Austernpilze",
+  "category": "mushroom",
+  "search_group": "きのこ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": [
+   {
+    "original_name": "まいたけ・ひらたけ",
+    "tips": "炒め物、炊き込みご飯、鍋に。手で裂いて使う。"
+   }
+  ]
+ },
+ {
   "name": "こんにゃく",
   "name_de": "Konjak",
   "category": "other",
@@ -1051,6 +1364,44 @@
   "name_de": "Rindsbouillon",
   "category": "seasoning",
   "search_group": "スープの素",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "コンソメ",
+  "name_de": "Gemüsebouillon",
+  "category": "seasoning",
+  "search_group": "スープの素",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "野菜の「Gemüsebouillon」が日本のコンソメ（顆粒）に近い。",
+  "substitutes_for": [
+   {
+    "original_name": "コンソメ",
+    "tips": "顆粒の Gemüsebouillon を同じ量で。塩分が強めなので塩は味見してから。"
+   }
+  ]
+ },
+ {
+  "name": "赤ワイン",
+  "name_de": "Rotwein",
+  "category": "seasoning",
+  "search_group": "酒",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "トマト缶",
+  "name_de": "Pelati / gehackte Tomaten",
+  "category": "seasoning",
+  "search_group": "トマト缶",
   "shops": [
    "supermarket"
   ],

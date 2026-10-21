@@ -5,23 +5,47 @@
 
 {% block content %}
 
-<h1>答えを待っている質問</h1>
+{% include "washoku/includes/community_tabs.html" %}
 
-<p class="washoku-lead">わかる人は返信で教えてください。質問は各レシピや食材のページから投稿できます。</p>
+<h1 class="washoku-visually-hidden">Q&amp;A</h1>
 
-{% if questions %}
-    <ul class="washoku-list">
-        {% for question in questions %}
-            <li>
-                <a href="{{ question.get_absolute_url }}">
-                    {{ question.body|truncatechars:80 }}
-                </a>
-                <small>{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="washoku-empty">答えを待っている質問はありません。</p>
-{% endif %}
+<section class="washoku-qa-open">
+    <h2><i class="bi bi-question-circle" aria-hidden="true"></i> 答えを待っている質問<small class="washoku-count">{{ questions|length }}</small></h2>
+    {% if questions %}
+        <p class="washoku-note">わかる人は返信で教えてください。</p>
+        <ul class="washoku-list">
+            {% for question in questions %}
+                <li>
+                    <a href="{{ question.get_absolute_url }}">
+                        {{ question.body|truncatechars:80 }}
+                    </a>
+                    <small>{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-note">いまは、答えを待っている質問はありません。</p>
+    {% endif %}
+</section>
+
+<section class="washoku-section">
+    <h2>答えが出た質問<small class="washoku-count">{{ answered|length }}</small></h2>
+    {% if answered %}
+        <ul class="washoku-list">
+            {% for question in answered %}
+                <li>
+                    <a href="{{ question.get_absolute_url }}">
+                        {{ question.body|truncatechars:80 }}
+                    </a>
+                    <small>{{ question.target.name }} ・ 返信 {{ question.answer_count }}件 ・ {{ question.created_at|date:"n/j" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-empty">まだありません。</p>
+    {% endif %}
+</section>
+
+<p class="washoku-note">質問は、各レシピや食材のページから書けます。</p>
 
 {% endblock %}

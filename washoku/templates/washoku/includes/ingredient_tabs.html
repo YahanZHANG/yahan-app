@@ -1,0 +1,6 @@
+{% with name=request.resolver_match.url_name %}
+<nav class="washoku-subtabs" aria-label="食材のページ">
+    <a href="{% url 'washoku:ingredient_list' %}" class="{% if name == 'ingredient_list' %}active{% endif %}">食材と買い方</a>
+    <a href="{% url 'washoku:substitute_list' %}" class="{% if name == 'substitute_list' or name == 'substitute_submit' %}active{% endif %}">日本の食材の代わり</a>
+</nav>
+{% endwith %}

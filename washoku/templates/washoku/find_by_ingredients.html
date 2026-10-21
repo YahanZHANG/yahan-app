@@ -6,18 +6,24 @@
 
 <h1>家にある食材で選ぶ</h1>
 
-<p class="washoku-lead">家にある食材にチェックを入れてください。調味料は数えません。</p>
+<p class="washoku-lead">家にある食材にチェックを入れてください。賞味期限が近いなど、<strong>絶対に使いたい食材</strong>は横の「必ず使う」も押すと、それを使うレシピだけに絞れます。調味料は数えません。</p>
 
-<form method="get">
+<form method="get" action="#results" class="washoku-find-form">
 
     {% for category, names in options_by_category.items %}
         <fieldset class="washoku-checks">
             <legend>{{ category }}</legend>
             {% for name in names %}
-                <label>
-                    <input type="checkbox" name="g" value="{{ name }}" {% if name in selected %}checked{% endif %}>
-                    {{ name }}
-                </label>
+                <span class="washoku-pick">
+                    <label>
+                        <input type="checkbox" name="g" value="{{ name }}" {% if name in selected %}checked{% endif %}>
+                        {{ name }}
+                    </label>
+                    <label class="washoku-must">
+                        <input type="checkbox" name="m" value="{{ name }}" {% if name in must %}checked{% endif %}>
+                        <span>必ず使う</span>
+                    </label>
+                </span>
             {% endfor %}
         </fieldset>
     {% endfor %}
@@ -29,6 +35,8 @@
 {% if searched %}
 <section class="washoku-section" id="results">
     <h2>見つかったレシピ</h2>
+
+    {% if must %}<p class="washoku-note">必ず使う: <strong>{{ must|join:"、" }}</strong></p>{% endif %}
 
     {% if results %}
         <ul class="washoku-results">
@@ -43,10 +51,24 @@
                 </li>
             {% endfor %}
         </ul>
+    {% elif must %}
+        <p class="washoku-empty">「必ず使う」にした食材を全部使うレシピが見つかりませんでした。「必ず使う」を減らしてみてください。</p>
     {% else %}
         <p class="washoku-empty">選んだ食材を使うレシピが見つかりませんでした。</p>
     {% endif %}
 </section>
 {% endif %}
+
+<script>
+(function () {
+    // 「必ず使う」を押したら「ある」にも、「ある」を外したら「必ず使う」も外す
+    document.querySelectorAll(".washoku-pick").forEach(function (pick) {
+        var have = pick.querySelector('input[name="g"]');
+        var must = pick.querySelector('input[name="m"]');
+        must.addEventListener("change", function () { if (must.checked) have.checked = true; });
+        have.addEventListener("change", function () { if (!have.checked) must.checked = false; });
+    });
+})();
+</script>
 
 {% endblock %}

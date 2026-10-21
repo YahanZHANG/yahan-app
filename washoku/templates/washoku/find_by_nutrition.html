@@ -1,0 +1,67 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}栄養で選ぶ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>栄養で選ぶ</h1>
+
+<nav class="washoku-quick" aria-label="よく使う条件">
+    {% for label, params in presets %}<a href="?{{ params }}">{{ label }}</a>{% endfor %}
+</nav>
+
+<form method="get" action="#results" class="washoku-nutrition-form">
+
+    <div class="washoku-nutrition-fields">
+        {% for limit in limits %}
+            <label>
+                <span>{{ limit.label }}</span>
+                <select name="{{ limit.key }}">
+                    <option value="">指定なし</option>
+                    {% for value, text in limit.options %}
+                        <option value="{{ value }}" {% if value == limit.value %}selected{% endif %}>{{ text }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        {% endfor %}
+
+        <label>
+            <span>カテゴリー</span>
+            <select name="category">
+                <option value="">すべて</option>
+                {% for value, label in categories %}
+                    <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="washoku-nutrition-sort">
+            <span>並べ替え</span>
+            <select name="sort">
+                {% for value, label in sort_choices %}
+                    <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div class="washoku-nutrition-actions">
+        <button type="submit" class="washoku-button">この条件で探す</button>
+        {% if has_condition %}<a href="{% url 'washoku:find_by_nutrition' %}">条件をクリア</a>{% endif %}
+    </div>
+
+</form>
+
+<p class="washoku-count" id="results">{{ recipes|length }}品<small>（1人分の目安）</small></p>
+
+{% if recipes %}
+    <div class="washoku-grid">
+        {% for recipe in recipes %}
+            {% include "washoku/includes/recipe_card.html" with show_nutrition=True %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="washoku-empty">条件に合うレシピがありません。条件を少しゆるめてみてください。</p>
+{% endif %}
+
+{% endblock %}

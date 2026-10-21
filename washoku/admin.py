@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .geocode import geocode_store
 from .models import (
+    Announcement,
     Comment,
     CommentReport,
     Feedback,
@@ -11,6 +12,8 @@ from .models import (
     Ingredient,
     MoodTag,
     Notification,
+    Post,
+    PushSubscription,
     Recipe,
     RecipeIngredient,
     RecipeRating,
@@ -87,17 +90,74 @@ class IngredientAdmin(admin.ModelAdmin):
 class SubstituteAdmin(admin.ModelAdmin):
     list_display = (
         "original_name",
-        "substitute",
+        "display_name",
+        "status",
+        "submitted_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
     )
 
     search_fields = (
         "original_name",
         "substitute__name",
+        "substitute_name",
     )
 
     autocomplete_fields = (
         "substitute",
     )
+
+    readonly_fields = (
+        "submitted_by",
+        "created_at",
+    )
+
+    actions = [
+        "publish",
+    ]
+
+    @admin.display(description="スイスでの代用品")
+    def display_name(self, obj):
+        return obj.display_name
+
+    @admin.action(description="選んだ代用品を公開する")
+    def publish(self, request, queryset):
+        queryset.update(status="published")
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = (
+        "message",
+        "is_active",
+        "created_at",
+    )
+
+    list_editable = (
+        "is_active",
+    )
+
+
+@admin.register(PushSubscription)
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "created_at",
+    )
+
+    readonly_fields = (
+        "user",
+        "endpoint",
+        "p256dh",
+        "auth",
+        "created_at",
+    )
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(MoodTag)
@@ -252,12 +312,66 @@ class CommentTargetFilter(admin.SimpleListFilter):
             ("recipe", "レシピ"),
             ("ingredient", "食材"),
             ("store", "お店"),
+            ("post", "コラム・商品"),
         ]
 
     def queryset(self, request, queryset):
-        if self.value() in ("recipe", "ingredient", "store"):
+        if self.value() in ("recipe", "ingredient", "store", "post"):
             return queryset.filter(**{f"{self.value()}__isnull": False})
         return queryset
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "kind",
+        "status",
+        "shop_names",
+        "author",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "kind",
+        "section",
+    )
+
+    search_fields = (
+        "title",
+        "body",
+    )
+
+    @admin.display(description="買えるお店")
+    def shop_names(self, obj):
+        return "、".join(obj.shop_labels())
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    actions = [
+        "publish",
+        "unpublish",
+    ]
+
+    def save_model(self, request, obj, form, change):
+
+        # 管理者が書いたものは author を自分にする
+        if not change and obj.author_id is None:
+            obj.author = request.user
+
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="選んだ投稿を公開する")
+    def publish(self, request, queryset):
+        queryset.update(status="published")
+
+    @admin.action(description="選んだ投稿を確認待ちに戻す")
+    def unpublish(self, request, queryset):
+        queryset.update(status="draft")
 
 
 @admin.register(Comment)
@@ -314,7 +428,14 @@ class CommentAdmin(admin.ModelAdmin):
 
     @admin.display(description="どこへ")
     def target_label(self, obj):
-        kind = "レシピ" if obj.recipe_id else "お店" if obj.store_id else "食材"
+        if obj.recipe_id:
+            kind = "レシピ"
+        elif obj.store_id:
+            kind = "お店"
+        elif obj.post_id:
+            kind = obj.post.get_kind_display()
+        else:
+            kind = "食材"
         return f"{kind}: {obj.target.name}"
 
     @admin.display(description="通報")

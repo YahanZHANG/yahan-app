@@ -9,7 +9,11 @@
     {% if recipe.description %}<p class="washoku-card-text">{{ recipe.description }}</p>{% endif %}
     <p class="washoku-card-meta">
         {% if recipe.cooking_time_minutes %}⏱ {{ recipe.cooking_time_minutes }}分{% endif %}
+        {% if recipe.energy_kcal %}<span>{{ recipe.energy_kcal }}kcal</span>{% endif %}
         {% if recipe.family_average %}<span class="washoku-stars">{{ recipe.family_average|stars }}</span>{% endif %}
         {% if recipe.comment_count %}💬 {{ recipe.comment_count }}{% endif %}
     </p>
+    {% if show_nutrition and recipe.has_nutrition %}
+        <p class="washoku-card-nutrition">P {{ recipe.protein_g|floatformat:"-1" }}g ・ F {{ recipe.fat_g|floatformat:"-1" }}g ・ C {{ recipe.carbs_g|floatformat:"-1" }}g{% if recipe.salt_g is not None %} ・ 塩分 {{ recipe.salt_g|floatformat:"-1" }}g{% endif %}</p>
+    {% endif %}
 </a>

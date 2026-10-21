@@ -152,7 +152,15 @@ class Substitute(models.Model):
     """
     日本の食材 → スイスで代わりに使える食材。
     例: 大根 → Rettich
+
+    会員も投稿できる。食材リストにないものは substitute_name に書き、
+    管理者が確認して公開する (必要なら食材を登録してつなぐ)。
     """
+
+    STATUS_CHOICES = [
+        ("draft", "確認待ち"),
+        ("published", "公開"),
+    ]
 
     original_name = models.CharField(
         "日本の食材",
@@ -164,13 +172,45 @@ class Substitute(models.Model):
         Ingredient,
         verbose_name="スイスでの代用品",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="substitutes_for",
+    )
+
+    substitute_name = models.CharField(
+        "スイスでの代用品（食材リストにないとき）",
+        max_length=100,
+        blank=True,
+        help_text="例: Kohlrabi。上の「スイスでの代用品」を選んだときは空欄でよい。",
     )
 
     tips = models.TextField(
         "使うときのコツ",
         blank=True,
         help_text="例: 少し辛いので下茹でを長めに。",
+    )
+
+    status = models.CharField(
+        "公開状態",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="published",
+        db_index=True,
+    )
+
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した会員",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_substitutes",
+    )
+
+    created_at = models.DateTimeField(
+        "登録日時",
+        auto_now_add=True,
+        null=True,
     )
 
     class Meta:
@@ -185,7 +225,11 @@ class Substitute(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.original_name} → {self.substitute.name}"
+        return f"{self.original_name} → {self.display_name}"
+
+    @property
+    def display_name(self):
+        return self.substitute.name if self.substitute_id else self.substitute_name
 
 
 # =========================================================
@@ -227,6 +271,7 @@ class Recipe(models.Model):
         ("side", "副菜"),
         ("soup", "汁物・鍋"),
         ("flour", "粉もの・おやつ"),
+        ("yoshoku", "洋食"),
         ("chinese", "中華"),
         ("korean", "韓国"),
         ("vietnamese", "ベトナム"),
@@ -299,6 +344,46 @@ class Recipe(models.Model):
         related_name="recipes",
     )
 
+    # 1人分の栄養の目安 (材料からの概算)
+    energy_kcal = models.PositiveIntegerField(
+        "エネルギー（kcal）",
+        null=True,
+        blank=True,
+        help_text="1人分の目安。",
+    )
+
+    protein_g = models.DecimalField(
+        "たんぱく質（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    fat_g = models.DecimalField(
+        "脂質（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    carbs_g = models.DecimalField(
+        "炭水化物（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    salt_g = models.DecimalField(
+        "食塩相当量（g）",
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
     shop_rank = models.PositiveSmallIntegerField(
         "必要な店",
         null=True,
@@ -361,6 +446,37 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def has_nutrition(self):
+        return None not in (self.energy_kcal, self.protein_g, self.fat_g, self.carbs_g)
+
+    def pfc_ratio(self):
+        """
+        エネルギーに占めるたんぱく質・脂質・炭水化物の割合 (%)。
+        """
+
+        if not self.has_nutrition:
+            return None
+
+        parts = [
+            float(self.protein_g) * 4,
+            float(self.fat_g) * 9,
+            float(self.carbs_g) * 4,
+        ]
+
+        total = sum(parts)
+
+        if not total:
+            return None
+
+        protein, fat = (round(part * 100 / total) for part in parts[:2])
+
+        return {
+            "protein": protein,
+            "fat": fat,
+            "carbs": 100 - protein - fat,
+        }
 
     def step_list(self):
         return [
@@ -601,6 +717,83 @@ class RecipeRating(models.Model):
         return f"{self.user} - {self.recipe.name}: {self.rating}"
 
 
+class RecipeFavorite(models.Model):
+    """
+    お気に入りに保存したレシピ (本人だけが見られる)。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_favorites",
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="favorites",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "お気に入り"
+        verbose_name_plural = "お気に入り"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="washoku_unique_favorite",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe.name}"
+
+
+class RecipeNote(models.Model):
+    """
+    レシピごとの自分だけのメモ。ほかの人 (家族も) には見えない。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_notes",
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+
+    body = models.TextField(
+        "メモ",
+        max_length=2000,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "レシピのメモ"
+        verbose_name_plural = "レシピのメモ"
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="washoku_unique_note",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe.name}"
+
+
 # =========================================================
 # お店
 # =========================================================
@@ -611,9 +804,9 @@ class Store(models.Model):
     """
 
     KIND_CHOICES = [
-        ("japanese", "日本・韓国食材店"),
-        ("asian", "アジア・中華食材店"),
-        ("southeast", "東南アジア食材店"),
+        ("japanese", "日韓食材店"),
+        ("asian", "中華食材店"),
+        ("southeast", "その他のアジア食材店"),
     ]
 
     name = models.CharField(
@@ -743,12 +936,152 @@ class Feedback(models.Model):
 
 
 # =========================================================
+# みんなの投稿 (コラム・おすすめ商品)
+# =========================================================
+
+class Post(models.Model):
+    """
+    会員が書くコラム・体験談、スーパーで買えるおすすめ商品、外部サイトの参考リンク。
+    管理者が公開するまでは、書いた本人と管理者にだけ見える。
+    参考リンクは、記事を写さずに要点だけを自分の言葉で書き、出典とリンクを載せる。
+    """
+
+    KIND_CHOICES = [
+        ("column", "コラム"),
+        ("product", "おすすめ商品"),
+        ("link", "参考リンク"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "確認待ち"),
+        ("published", "公開"),
+    ]
+
+    SHOP_CHOICES = [
+        ("migros", "Migros"),
+        ("coop", "Coop"),
+        ("denner", "Denner"),
+        ("aldi", "Aldi"),
+        ("lidl", "Lidl"),
+        ("asian", "アジア・日系の店"),
+        ("other", "その他"),
+    ]
+
+    SECTION_CHOICES = [
+        ("frozen", "冷凍"),
+        ("chilled", "冷蔵・チルド"),
+        ("pantry", "常温"),
+    ]
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+        db_index=True,
+    )
+
+    title = models.CharField(
+        "タイトル・商品名",
+        max_length=100,
+    )
+
+    body = models.TextField(
+        "本文",
+        max_length=4000,
+    )
+
+    # 買えるお店は複数選べる。SHOP_CHOICES のコードをカンマでつなげて入れる (例: "migros,coop")
+    shop = models.CharField(
+        "買えるお店",
+        max_length=200,
+        blank=True,
+        help_text="SHOP_CHOICES のコードをカンマ区切りで (例: migros,coop)",
+    )
+
+    section = models.CharField(
+        "売り場",
+        max_length=20,
+        choices=SECTION_CHOICES,
+        blank=True,
+    )
+
+    resembles = models.CharField(
+        "日本の何に近い？",
+        max_length=100,
+        blank=True,
+        help_text="例: 冷凍餃子、ちくわ",
+    )
+
+    url = models.URLField(
+        "記事のURL",
+        max_length=500,
+        blank=True,
+    )
+
+    source = models.CharField(
+        "出典",
+        max_length=200,
+        blank=True,
+        help_text="サイト名・書いた人・公開日など",
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した会員",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_posts",
+    )
+
+    status = models.CharField(
+        "公開状態",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField(
+        "投稿日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "みんなの投稿"
+        verbose_name_plural = "みんなの投稿"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def name(self):
+        return self.title
+
+    def shop_codes(self):
+        return [code for code in self.shop.split(",") if code]
+
+    def shop_labels(self):
+        labels = dict(self.SHOP_CHOICES)
+        return [labels.get(code, code) for code in self.shop_codes()]
+
+    def get_absolute_url(self):
+        return reverse("washoku:post_detail", args=[self.pk])
+
+
+# =========================================================
 # コメント・Q&A
 # =========================================================
 
 class Comment(models.Model):
     """
-    レシピ・食材・お店のどれか1つに付くコメント。
+    レシピ・食材・お店・みんなの投稿のどれか1つに付くコメント。
     返信は1段だけ (parent は返信先のスレッドの先頭コメント)。
     """
 
@@ -775,6 +1108,14 @@ class Comment(models.Model):
 
     store = models.ForeignKey(
         Store,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comments",
+    )
+
+    post = models.ForeignKey(
+        Post,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -845,9 +1186,10 @@ class Comment(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(recipe__isnull=False, ingredient__isnull=True, store__isnull=True)
-                    | models.Q(recipe__isnull=True, ingredient__isnull=False, store__isnull=True)
-                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=False)
+                    models.Q(recipe__isnull=False, ingredient__isnull=True, store__isnull=True, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=False, store__isnull=True, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=False, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=True, post__isnull=False)
                 ),
                 name="washoku_comment_has_one_target",
             )
@@ -858,12 +1200,14 @@ class Comment(models.Model):
 
     @property
     def target(self):
-        return self.recipe or self.ingredient or self.store
+        return self.recipe or self.ingredient or self.store or self.post
 
     def get_absolute_url(self):
 
         if self.recipe_id:
             url = reverse("washoku:recipe_detail", args=[self.recipe_id])
+        elif self.post_id:
+            url = reverse("washoku:post_detail", args=[self.post_id])
         elif self.store_id:
             url = reverse("washoku:store_detail", args=[self.store_id])
         else:
@@ -913,10 +1257,61 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
+class CommentReaction(models.Model):
+    """
+    コメントへの「いいね」「ありがとう」。1人1種類につき1回。
+    """
+
+    KIND_CHOICES = [
+        ("like", "いいね"),
+        ("thanks", "ありがとう"),
+    ]
+
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name="reactions",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_reactions",
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "いいね・ありがとう"
+        verbose_name_plural = "いいね・ありがとう"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["comment", "user", "kind"],
+                name="washoku_unique_reaction",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} {self.get_kind_display()} → {self.comment_id}"
+
+
 class Notification(models.Model):
     """
-    自分のコメントに返信が付いたことを知らせる。
+    自分のコメントに返信や「ありがとう」が付いたことを知らせる。
     """
+
+    KIND_CHOICES = [
+        ("reply", "返信"),
+        ("thanks", "ありがとう"),
+    ]
 
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -936,6 +1331,13 @@ class Notification(models.Model):
         related_name="notifications",
     )
 
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+        default="reply",
+    )
+
     is_read = models.BooleanField(
         "既読",
         default=False,
@@ -952,3 +1354,80 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
+
+
+# =========================================================
+# 更新のお知らせ・プッシュ通知
+# =========================================================
+
+class Announcement(models.Model):
+    """
+    HOME の一番上に出す「更新のお知らせ」。管理画面から追加する。
+    表示されるのは最新の1件だけで、×で閉じるとその端末では出なくなる。
+    """
+
+    SHOW_DAYS = 14
+
+    message = models.CharField(
+        "お知らせ",
+        max_length=200,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "更新のお知らせ"
+        verbose_name_plural = "更新のお知らせ"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message
+
+    @classmethod
+    def latest(cls):
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
+
+        return cls.objects.filter(is_active=True, created_at__gte=since).first()
+
+
+class PushSubscription(models.Model):
+    """
+    返信が来たことをプッシュ通知で知らせる端末 (ログインした会員だけ)。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_push_subscriptions",
+    )
+
+    endpoint = models.TextField(
+        unique=True,
+    )
+
+    p256dh = models.TextField()
+
+    auth = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "プッシュ通知の登録"
+        verbose_name_plural = "プッシュ通知の登録"
+
+    def __str__(self):
+        return f"{self.user} - {self.pk}"

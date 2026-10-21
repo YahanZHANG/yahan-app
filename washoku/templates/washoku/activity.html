@@ -1,0 +1,28 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}みんなの新着 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>みんなの新着</h1>
+
+{% if page.object_list %}
+    <ul class="washoku-activity">
+        {% for entry in page.object_list %}
+            {% include "washoku/includes/activity_item.html" %}
+        {% endfor %}
+    </ul>
+
+    {% if page.has_other_pages %}
+        <nav class="washoku-pager" aria-label="ページ">
+            {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">← 新しい</a>{% else %}<span></span>{% endif %}
+            <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a href="?page={{ page.next_page_number }}">古い →</a>{% else %}<span></span>{% endif %}
+        </nav>
+    {% endif %}
+{% else %}
+    <p class="washoku-empty">まだ投稿はありません。</p>
+{% endif %}
+
+{% endblock %}

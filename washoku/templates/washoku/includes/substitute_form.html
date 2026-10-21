@@ -1,0 +1,19 @@
+<form method="post" action="{% url 'washoku:substitute_submit' %}" class="washoku-form" novalidate>
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}
+        <p class="washoku-message washoku-message-error" role="alert">{{ error }}</p>
+    {% endfor %}
+    {% for field in form %}
+        <div class="washoku-field{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<span class="washoku-required">必須</span>{% endif %}
+            </label>
+            {{ field }}
+            {% for error in field.errors %}
+                <p class="washoku-field-error" role="alert">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="washoku-button washoku-button-wide">送る</button>
+</form>

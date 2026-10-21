@@ -87,7 +87,14 @@
   ],
   "swiss_tips": "じゃがいもは煮崩れしにくい「festkochend」を選ぶ。牛肉は冷凍の Fondue Chinoise 用が薄くて便利。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 14,
+   "fat_g": 12,
+   "carbs_g": 40,
+   "salt_g": 2.3
+  }
  },
  {
   "name": "豚の生姜焼き",
@@ -171,7 +178,14 @@
   ],
   "swiss_tips": "豚肉は Fondue Chinoise 用が薄くてちょうどよい。キャベツは硬めなので、できるだけ細く切って水にさらす。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 24,
+   "fat_g": 26,
+   "carbs_g": 18,
+   "salt_g": 2.2
+  }
  },
  {
   "name": "鶏の唐揚げ",
@@ -249,7 +263,14 @@
   ],
   "swiss_tips": "骨なしの Pouletschenkel を使う。皮なしでも片栗粉を多めにするとカリッと揚がる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 450,
+   "protein_g": 28,
+   "fat_g": 28,
+   "carbs_g": 18,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "照り焼きチキン",
@@ -308,11 +329,18 @@
   ],
   "swiss_tips": "みりんがなければ砂糖を少し増やし、白ワインを大さじ1足す。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 340,
+   "protein_g": 28,
+   "fat_g": 20,
+   "carbs_g": 12,
+   "salt_g": 2.6
+  }
  },
  {
   "name": "和風ハンバーグ",
-  "category": "meat",
+  "category": "yoshoku",
   "cooking_time_minutes": 35,
   "servings": 4,
   "description": "大根おろしとポン酢風のタレでさっぱり。",
@@ -403,7 +431,14 @@
   ],
   "swiss_tips": "Rettich は日本の大根より辛いので、おろしたら少し置いて辛みを飛ばす。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 22,
+   "fat_g": 25,
+   "carbs_g": 18,
+   "salt_g": 2.3
+  }
  },
  {
   "name": "豚の角煮",
@@ -475,7 +510,14 @@
   ],
   "swiss_tips": "長ねぎの代わりにリーキの緑の部分で臭みが取れる。圧力鍋なら下茹では20分で済む。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 600,
+   "protein_g": 26,
+   "fat_g": 46,
+   "carbs_g": 16,
+   "salt_g": 3.0
+  }
  },
  {
   "name": "鶏つくね",
@@ -557,7 +599,14 @@
   ],
   "swiss_tips": "鶏ひき肉が見つからないときは、鶏むね肉をフードプロセッサーで挽く。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 22,
+   "fat_g": 15,
+   "carbs_g": 12,
+   "salt_g": 1.9
+  }
  },
  {
   "name": "とんかつ",
@@ -639,11 +688,18 @@
   ],
   "swiss_tips": "パン粉はアジアコーナーの「Panko」を使うと日本のとんかつらしいサクサク感が出る。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 600,
+   "protein_g": 30,
+   "fat_g": 38,
+   "carbs_g": 30,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "メンチカツ",
-  "category": "meat",
+  "category": "yoshoku",
   "cooking_time_minutes": 40,
   "servings": 4,
   "description": "肉汁あふれる揚げたてを。",
@@ -721,7 +777,14 @@
   ],
   "swiss_tips": "キャベツの代わりに白菜でも水分が出にくく作りやすい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 480,
+   "protein_g": 18,
+   "fat_g": 32,
+   "carbs_g": 28,
+   "salt_g": 1.5
+  }
  },
  {
   "name": "鶏の南蛮漬け",
@@ -804,7 +867,14 @@
   ],
   "swiss_tips": "冷蔵庫で3日ほど持つ。むね肉が安いスイスで重宝する一品。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 20,
+   "fat_g": 16,
+   "carbs_g": 22,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "鮭の照り焼き",
@@ -862,7 +932,14 @@
   ],
   "swiss_tips": "スイスの鮭は脂が多めのノルウェー産が多い。脂をキッチンペーパーで拭いてからタレを入れる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 250,
+   "protein_g": 23,
+   "fat_g": 12,
+   "carbs_g": 9,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "鮭のちゃんちゃん焼き",
@@ -945,7 +1022,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 25,
+   "fat_g": 17,
+   "carbs_g": 18,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "鯖の味噌煮",
@@ -1009,11 +1093,18 @@
   ],
   "swiss_tips": "生の鯖は見かけにくいので、アジアスーパーの冷凍切り身を使う。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 21,
+   "fat_g": 18,
+   "carbs_g": 16,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "エビフライ",
-  "category": "fish",
+  "category": "yoshoku",
   "cooking_time_minutes": 30,
   "servings": 3,
   "description": "タルタルソースを添えて。",
@@ -1085,7 +1176,14 @@
   ],
   "swiss_tips": "冷凍の生エビ（roh）を選ぶ。大きめのものがエビフライ向き。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 20,
+   "fat_g": 22,
+   "carbs_g": 25,
+   "salt_g": 1.2
+  }
  },
  {
   "name": "白身魚の煮付け",
@@ -1142,7 +1240,14 @@
   ],
   "swiss_tips": "Kabeljau（鱈）がほぐれやすくて煮付け向き。冷凍なら半解凍のまま煮てもよい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 170,
+   "protein_g": 20,
+   "fat_g": 1,
+   "carbs_g": 15,
+   "salt_g": 2.2
+  }
  },
  {
   "name": "ご飯の炊き方（鍋）",
@@ -1169,7 +1274,14 @@
   ],
   "swiss_tips": "「Sushi Reis」で炊く。スイスの水は硬水なので、少し多めの水で炊くと柔らかくなる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 260,
+   "protein_g": 4,
+   "fat_g": 0.5,
+   "carbs_g": 61,
+   "salt_g": 0
+  }
  },
  {
   "name": "親子丼",
@@ -1246,7 +1358,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 650,
+   "protein_g": 30,
+   "fat_g": 15,
+   "carbs_g": 92,
+   "salt_g": 2.8
+  }
  },
  {
   "name": "牛丼",
@@ -1322,7 +1441,14 @@
   ],
   "swiss_tips": "牛肉は冷凍の Fondue Chinoise 用。半解凍で広げると扱いやすい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 720,
+   "protein_g": 22,
+   "fat_g": 25,
+   "carbs_g": 95,
+   "salt_g": 2.8
+  }
  },
  {
   "name": "カツ丼",
@@ -1409,11 +1535,18 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 900,
+   "protein_g": 38,
+   "fat_g": 35,
+   "carbs_g": 105,
+   "salt_g": 3.2
+  }
  },
  {
   "name": "チキンライス",
-  "category": "rice",
+  "category": "yoshoku",
   "cooking_time_minutes": 25,
   "servings": 2,
   "description": "ケチャップ味のなつかしい洋食。",
@@ -1472,11 +1605,18 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 600,
+   "protein_g": 20,
+   "fat_g": 16,
+   "carbs_g": 90,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "オムライス",
-  "category": "rice",
+  "category": "yoshoku",
   "cooking_time_minutes": 30,
   "servings": 2,
   "description": "ふんわり卵でチキンライスを包んで。",
@@ -1554,7 +1694,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 750,
+   "protein_g": 26,
+   "fat_g": 30,
+   "carbs_g": 92,
+   "salt_g": 2.8
+  }
  },
  {
   "name": "炊き込みご飯",
@@ -1630,7 +1777,14 @@
   ],
   "swiss_tips": "しいたけはスイスのスーパーでも生のものが手に入る。マッシュルームでもおいしい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 360,
+   "protein_g": 12,
+   "fat_g": 6,
+   "carbs_g": 62,
+   "salt_g": 1.6
+  }
  },
  {
   "name": "おにぎり",
@@ -1688,7 +1842,14 @@
   ],
   "swiss_tips": "寿司用の海苔は Coop・Migros にある。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 320,
+   "protein_g": 14,
+   "fat_g": 3,
+   "carbs_g": 57,
+   "salt_g": 1.6
+  }
  },
  {
   "name": "チャーハン",
@@ -1764,11 +1925,18 @@
   ],
   "swiss_tips": "Hühnerbouillon は塩分が強いので、塩は味見してから。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 620,
+   "protein_g": 18,
+   "fat_g": 22,
+   "carbs_g": 86,
+   "salt_g": 2.5
+  }
  },
  {
   "name": "カレーライス",
-  "category": "rice",
+  "category": "yoshoku",
   "cooking_time_minutes": 45,
   "servings": 5,
   "description": "日本のカレールーで作る、みんなの好きなカレー。",
@@ -1829,7 +1997,14 @@
   ],
   "swiss_tips": "S&B ゴールデンカレーは Coop・Migros のアジアコーナーにある。鶏もも肉でもおいしい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 780,
+   "protein_g": 22,
+   "fat_g": 30,
+   "carbs_g": 105,
+   "salt_g": 3.0
+  }
  },
  {
   "name": "焼きそば",
@@ -1911,7 +2086,14 @@
   ],
   "swiss_tips": "焼きそばソースがなくても、ウスターソースとケチャップで近い味になる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 560,
+   "protein_g": 20,
+   "fat_g": 22,
+   "carbs_g": 70,
+   "salt_g": 3.5
+  }
  },
  {
   "name": "焼きうどん",
@@ -1986,7 +2168,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 480,
+   "protein_g": 18,
+   "fat_g": 14,
+   "carbs_g": 66,
+   "salt_g": 3.0
+  }
  },
  {
   "name": "かけうどん",
@@ -2049,7 +2238,14 @@
   ],
   "swiss_tips": "顆粒だしがなければ、昆布とかつお節でだしを取る。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 10,
+   "fat_g": 2,
+   "carbs_g": 66,
+   "salt_g": 4.5
+  }
  },
  {
   "name": "冷やし中華",
@@ -2131,11 +2327,18 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 520,
+   "protein_g": 22,
+   "fat_g": 12,
+   "carbs_g": 80,
+   "salt_g": 4.0
+  }
  },
  {
   "name": "きのこの和風醤油パスタ",
-  "category": "noodle",
+  "category": "yoshoku",
   "cooking_time_minutes": 20,
   "servings": 2,
   "description": "バター醤油の香りがたまらない。",
@@ -2206,7 +2409,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 520,
+   "protein_g": 16,
+   "fat_g": 18,
+   "carbs_g": 74,
+   "salt_g": 2.5
+  }
  },
  {
   "name": "ほうれん草のおひたし",
@@ -2251,7 +2461,14 @@
   ],
   "swiss_tips": "葉の柔らかい「Jungspinat」がおひたし向き。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 30,
+   "protein_g": 3,
+   "fat_g": 0.5,
+   "carbs_g": 4,
+   "salt_g": 0.6
+  }
  },
  {
   "name": "きんぴら",
@@ -2321,7 +2538,14 @@
   ],
   "swiss_tips": "パースニップは甘みが強いので、砂糖は少なめから味を見て。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 110,
+   "protein_g": 1.5,
+   "fat_g": 5,
+   "carbs_g": 15,
+   "salt_g": 1.0
+  }
  },
  {
   "name": "ポテトサラダ",
@@ -2397,7 +2621,14 @@
   ],
   "swiss_tips": "ほくほくの「mehligkochend」のじゃがいもが向いている。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 200,
+   "protein_g": 4,
+   "fat_g": 12,
+   "carbs_g": 18,
+   "salt_g": 0.8
+  }
  },
  {
   "name": "だし巻き卵",
@@ -2455,7 +2686,14 @@
   ],
   "swiss_tips": "丸いフライパンでも、両端を内側に折ってから巻くと四角くなる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 130,
+   "protein_g": 8,
+   "fat_g": 9,
+   "carbs_g": 3,
+   "salt_g": 0.8
+  }
  },
  {
   "name": "切り干し大根の煮物",
@@ -2524,7 +2762,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 100,
+   "protein_g": 3,
+   "fat_g": 4,
+   "carbs_g": 14,
+   "salt_g": 1.2
+  }
  },
  {
   "name": "ひじきの煮物",
@@ -2593,7 +2838,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 110,
+   "protein_g": 4,
+   "fat_g": 5,
+   "carbs_g": 12,
+   "salt_g": 1.3
+  }
  },
  {
   "name": "きゅうりの浅漬け",
@@ -2643,7 +2895,14 @@
   ],
   "swiss_tips": "スイスのきゅうりは水分が多いので、種を取ると水っぽくならない。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 15,
+   "protein_g": 1,
+   "fat_g": 0,
+   "carbs_g": 3,
+   "salt_g": 0.8
+  }
  },
  {
   "name": "味噌汁",
@@ -2694,7 +2953,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 50,
+   "protein_g": 4,
+   "fat_g": 2,
+   "carbs_g": 4,
+   "salt_g": 1.6
+  }
  },
  {
   "name": "豚汁",
@@ -2777,7 +3043,14 @@
   ],
   "swiss_tips": "ごぼうの代わりにパースニップを入れると、根菜らしい食感が出る。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 180,
+   "protein_g": 9,
+   "fat_g": 10,
+   "carbs_g": 12,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "おでん",
@@ -2861,7 +3134,14 @@
   ],
   "swiss_tips": "Rettich は細いので斜め切りにして面を大きくするとよい。練り物はアジアスーパーの冷凍の魚のつみれでも。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 300,
+   "protein_g": 20,
+   "fat_g": 10,
+   "carbs_g": 30,
+   "salt_g": 4.0
+  }
  },
  {
   "name": "すき焼き",
@@ -2955,7 +3235,14 @@
   ],
   "swiss_tips": "牛肉は Fondue Chinoise 用。生卵が気になる場合は「Freiland」の新鮮な卵を選ぶか、卵なしで。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 700,
+   "protein_g": 32,
+   "fat_g": 40,
+   "carbs_g": 40,
+   "salt_g": 4.0
+  }
  },
  {
   "name": "しゃぶしゃぶ",
@@ -3055,7 +3342,14 @@
   ],
   "swiss_tips": "スイスでは冬にフォンデュ・シノワーズ用の薄切り肉がたくさん並ぶ。専用の鍋や器具もそのまま使える。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 450,
+   "protein_g": 30,
+   "fat_g": 26,
+   "carbs_g": 15,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "寄せ鍋",
@@ -3142,7 +3436,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 25,
+   "fat_g": 8,
+   "carbs_g": 22,
+   "salt_g": 4.0
+  }
  },
  {
   "name": "お好み焼き",
@@ -3236,7 +3537,14 @@
   ],
   "swiss_tips": "お好み焼きソースはウスターソース・ケチャップ・砂糖で近い味が作れる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 550,
+   "protein_g": 20,
+   "fat_g": 26,
+   "carbs_g": 55,
+   "salt_g": 2.6
+  }
  },
  {
   "name": "たこ焼き風ボール",
@@ -3324,7 +3632,14 @@
   ],
   "swiss_tips": "タコは手に入りにくいので、ウインナー・エビ・チーズなどで。たこ焼き器はアジアスーパーで買えることも。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 15,
+   "fat_g": 18,
+   "carbs_g": 42,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "どら焼き",
@@ -3387,7 +3702,1029 @@
   ],
   "swiss_tips": "あんこはアジアスーパーの缶詰か袋入りを使う。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 200,
+   "protein_g": 5,
+   "fat_g": 3,
+   "carbs_g": 38,
+   "salt_g": 0.2
+  }
+ },
+ {
+  "name": "ナポリタン",
+  "category": "yoshoku",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "description": "喫茶店の味。ケチャップを炒めて甘みを出すのがコツ。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "スパゲッティ",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ウインナー",
+    "amount": "4本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ピーマン",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ6",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "10g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "スパゲッティは袋の表示より1〜2分長く、柔らかめに茹でる。",
+   "玉ねぎは薄切り、ピーマンは細切り、ウインナーは斜め切り、マッシュルームは薄切りにする。",
+   "フライパンに油を熱し、ウインナーと野菜を炒める。",
+   "具を端に寄せ、空いたところでケチャップを1分ほど炒めて酸味を飛ばす。",
+   "スパゲッティ・ウスターソース・砂糖・バターを加えて全体を絡め、塩こしょうで味をととのえる。"
+  ],
+  "swiss_tips": "ウインナーは「Wienerli」が日本のものに近い。粉チーズ（Parmesan）とタバスコをかけると喫茶店の味に。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 620,
+   "protein_g": 18,
+   "fat_g": 22,
+   "carbs_g": 86,
+   "salt_g": 3.0
+  }
+ },
+ {
+  "name": "煮込みハンバーグ",
+  "category": "yoshoku",
+  "cooking_time_minutes": 40,
+  "servings": 4,
+  "description": "ケチャップとソースで作る、日本の洋食屋さんのデミ風ソース。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "合いびき肉",
+    "amount": "400g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "1/2カップ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "大さじ3",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "6個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ4",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "赤ワイン",
+    "amount": "100ml",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "10g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "玉ねぎはみじん切りにして炒め、冷ましておく。パン粉は牛乳に浸す。",
+   "ひき肉に塩こしょうを入れて粘りが出るまで練り、玉ねぎ・パン粉・卵を混ぜて4つの小判形にする。",
+   "フライパンで両面に焼き色を付けて取り出す。",
+   "同じフライパンで薄切りのマッシュルームを炒め、赤ワイン（なければ水）100ml、水100ml、ケチャップ・ウスターソース・砂糖を入れて煮立てる。",
+   "ハンバーグを戻し、蓋をして弱火で10分煮る。最後にバターを溶かしてソースにつやを出す。"
+  ],
+  "swiss_tips": "赤ワインは料理用の安いもので十分。ひき肉は牛と豚の「Hackfleisch gemischt」。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 450,
+   "protein_g": 23,
+   "fat_g": 28,
+   "carbs_g": 22,
+   "salt_g": 2.4
+  }
+ },
+ {
+  "name": "クリームシチュー",
+  "category": "yoshoku",
+  "cooking_time_minutes": 45,
+  "servings": 4,
+  "description": "ルーを使わず、バターと小麦粉で作るやさしい味。",
+  "mood_tags": [
+   "あったまりたい",
+   "子どもが喜ぶ",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "鶏もも肉",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "じゃがいも",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんじん",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ブロッコリー",
+    "amount": "1/2株",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "30g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ4",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "500ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "鶏肉・じゃがいも・にんじんは一口大、玉ねぎはくし切り、ブロッコリーは小房に分けて下茹でする。",
+   "鍋にバターを溶かし、鶏肉と玉ねぎを炒める。",
+   "薄力粉を振り入れ、粉っぽさがなくなるまで弱火で炒める。",
+   "水300mlを少しずつ加えて溶きのばし、じゃがいも・にんじん・コンソメを入れて15分煮る。",
+   "牛乳を加えて弱火で5分温め（沸騰させない）、ブロッコリーを入れて塩こしょうで味をととのえる。"
+  ],
+  "swiss_tips": "日本のシチュールーはアジアスーパーにもあるが、この作り方なら普通のスーパーの材料だけで作れる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 22,
+   "fat_g": 22,
+   "carbs_g": 32,
+   "salt_g": 1.8
+  }
+ },
+ {
+  "name": "ハヤシライス",
+  "category": "yoshoku",
+  "cooking_time_minutes": 35,
+  "servings": 4,
+  "description": "甘酸っぱいソースの、子どもも大人も好きな洋食。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "牛薄切り肉",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "6個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "赤ワイン",
+    "amount": "100ml",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "トマト缶",
+    "amount": "1/2缶",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ4",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ビーフブイヨン",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "米",
+    "amount": "4膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "玉ねぎは薄切り、マッシュルームも薄切りにする。牛肉は食べやすく切って薄力粉をまぶす。",
+   "鍋にバターを溶かし、玉ねぎをしんなり茶色くなるまで10分ほど炒める。",
+   "牛肉とマッシュルームを加えて炒め、赤ワインを入れて半分くらいまで煮詰める。",
+   "トマト缶・水200ml・ケチャップ・ウスターソース・ブイヨン・砂糖を入れ、とろみが出るまで15分煮る。",
+   "塩で味をととのえ、ご飯にかける。"
+  ],
+  "swiss_tips": "牛肉は冷凍の Fondue Chinoise 用が薄くて便利。トマト缶は「Pelati」でも「gehackte Tomaten」でもよい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 680,
+   "protein_g": 22,
+   "fat_g": 22,
+   "carbs_g": 96,
+   "salt_g": 2.6
+  }
+ },
+ {
+  "name": "マカロニグラタン",
+  "category": "yoshoku",
+  "cooking_time_minutes": 40,
+  "servings": 3,
+  "description": "ホワイトソースから作る、熱々の日本のグラタン。",
+  "mood_tags": [
+   "あったまりたい",
+   "子どもが喜ぶ",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "マカロニ",
+    "amount": "120g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "鶏もも肉",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "30g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ3",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "400ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ピザ用チーズ",
+    "amount": "60g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "マカロニは表示どおりに茹でる。鶏肉は小さめの一口大、玉ねぎとマッシュルームは薄切りにする。",
+   "フライパンにバターを溶かし、鶏肉と玉ねぎ、マッシュルームを炒める。",
+   "薄力粉を振り入れて弱火で炒め、牛乳を少しずつ加えてそのつど混ぜ、とろみを付ける。",
+   "コンソメとマカロニを入れて塩こしょうし、耐熱皿に移す。",
+   "チーズとパン粉をのせ、220℃のオーブンで10〜12分、焼き色が付くまで焼く。"
+  ],
+  "swiss_tips": "マカロニはスイスの「Hörnli」で。チーズはグラタン用の「Reibkäse」が手軽。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 560,
+   "protein_g": 28,
+   "fat_g": 26,
+   "carbs_g": 52,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "えびドリア",
+  "category": "yoshoku",
+  "cooking_time_minutes": 35,
+  "servings": 2,
+  "description": "ケチャップライスにホワイトソースとチーズをのせて焼く。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "あったまりたい"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "むきエビ",
+    "amount": "8尾",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "30g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "300ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ピザ用チーズ",
+    "amount": "50g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "玉ねぎとマッシュルームは薄切りにする。",
+   "フライパンにバター10gを溶かして玉ねぎ半量を炒め、ご飯とケチャップを入れて炒め合わせ、耐熱皿に敷く。",
+   "残りのバターでエビ・残りの玉ねぎ・マッシュルームを炒め、薄力粉を振り入れて炒める。",
+   "牛乳を少しずつ加えてとろみを付け、コンソメと塩こしょうで味をつけてご飯にかける。",
+   "チーズをのせ、220℃のオーブンで10分焼く。"
+  ],
+  "swiss_tips": "エビは冷凍の生（roh）を解凍して使う。残りご飯で作れる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 680,
+   "protein_g": 24,
+   "fat_g": 26,
+   "carbs_g": 86,
+   "salt_g": 2.2
+  }
+ },
+ {
+  "name": "コロッケ",
+  "category": "yoshoku",
+  "cooking_time_minutes": 50,
+  "servings": 4,
+  "description": "ほくほくのじゃがいもとひき肉。揚げたてにソースをかけて。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "和の定番が恋しい"
+  ],
+  "ingredients": [
+   {
+    "name": "じゃがいも",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "合いびき肉",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "キャベツ",
+    "amount": "1/8個",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "じゃがいもは皮をむいて茹で、熱いうちにつぶす。",
+   "玉ねぎのみじん切りとひき肉を炒め、砂糖・醤油・塩こしょうで味をつける。",
+   "じゃがいもと混ぜて8等分し、小判形にして冷ます。",
+   "小麦粉・溶き卵・パン粉の順に衣を付ける。",
+   "180℃の油で、きつね色になるまで2〜3分揚げる。千切りキャベツとソースを添える。"
+  ],
+  "swiss_tips": "じゃがいもは粉質の「mehligkochend」がほくほくに仕上がる。パン粉はアジアコーナーの「Panko」がサクサク。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 13,
+   "fat_g": 24,
+   "carbs_g": 38,
+   "salt_g": 1.2
+  }
+ },
+ {
+  "name": "ロールキャベツ",
+  "category": "yoshoku",
+  "cooking_time_minutes": 50,
+  "servings": 4,
+  "description": "コンソメでことこと煮た、やさしい味。",
+  "mood_tags": [
+   "あったまりたい",
+   "野菜たっぷり",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "ちりめんキャベツ",
+    "amount": "8枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "合いびき肉",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "大さじ4",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ベーコン",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "トマト缶",
+    "amount": "1缶",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "キャベツの葉を1枚ずつはがし、しんなりするまで茹でる。芯の厚い部分はそぎ落とす。",
+   "ひき肉・玉ねぎのみじん切り・パン粉・卵・塩こしょうを練って8等分する。",
+   "キャベツで肉だねを包み、巻き終わりを下にして鍋にすき間なく並べる。ベーコンをのせる。",
+   "水500mlとコンソメを入れ、落とし蓋をして弱火で30分煮る。",
+   "塩こしょうで味をととのえる。トマト味にしたいときは、水の半分をトマト缶にする。"
+  ],
+  "swiss_tips": "スイスの普通のキャベツは葉が硬くて巻きにくい。縮れた「Wirz」は柔らかく、破れにくい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 300,
+   "protein_g": 18,
+   "fat_g": 18,
+   "carbs_g": 14,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "ポークチャップ",
+  "category": "yoshoku",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "description": "ケチャップ味の甘辛い豚肉。ご飯にもパンにも。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "豚ロース肉（厚切り）",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "薄力粉",
+    "amount": "少々",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "10g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "豚肉は筋に切り込みを入れ、塩こしょうをして小麦粉を薄くまぶす。",
+   "玉ねぎとマッシュルームは薄切りにする。",
+   "フライパンに油を熱し、豚肉を両面焼いて取り出す。",
+   "同じフライパンにバターを溶かして玉ねぎとマッシュルームを炒め、ケチャップ・ソース・醤油・砂糖・水大さじ2を入れる。",
+   "豚肉を戻して、ソースを絡めながら2分煮る。"
+  ],
+  "swiss_tips": "豚肉は「Schweinsplätzli」で。厚いときは包丁の背でたたいてのばす。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 28,
+   "fat_g": 24,
+   "carbs_g": 20,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "ツナと大根おろしの和風スパゲッティ",
+  "category": "yoshoku",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "description": "醤油とバターの香り。大根おろしでさっぱり。",
+  "mood_tags": [
+   "さっぱり",
+   "和の定番が恋しい"
+  ],
+  "ingredients": [
+   {
+    "name": "スパゲッティ",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ツナ缶",
+    "amount": "1缶",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "8cm",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "2本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "海苔",
+    "amount": "1枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "10g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "スパゲッティを表示どおりに茹でる。茹で汁を大さじ3取っておく。",
+   "大根はすりおろして軽く水気を切る。スプリングオニオンは小口切りにする。",
+   "フライパンに油と薄切りのにんにくを入れて弱火で香りを出し、ツナを加えて炒める。",
+   "スパゲッティ・茹で汁・醤油・バターを入れて手早く絡める。",
+   "器に盛り、大根おろし・スプリングオニオン・ちぎった海苔をのせる。"
+  ],
+  "swiss_tips": "Rettich は辛みが強いので、おろしてから5分ほど置くと和らぐ。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 560,
+   "protein_g": 24,
+   "fat_g": 16,
+   "carbs_g": 76,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "麻婆豆腐",
@@ -3494,7 +4831,14 @@
   ],
   "swiss_tips": "甜麺醤がなければ味噌と砂糖で代用できる。豆板醤はアジアスーパーで。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 320,
+   "protein_g": 18,
+   "fat_g": 22,
+   "carbs_g": 10,
+   "salt_g": 2.5
+  }
  },
  {
   "name": "餃子",
@@ -3590,7 +4934,14 @@
   ],
   "swiss_tips": "餃子の皮はアジアスーパーの冷凍コーナー。ニラがなければキャベツだけでもおいしい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 16,
+   "fat_g": 22,
+   "carbs_g": 34,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "エビチリ",
@@ -3673,7 +5024,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 230,
+   "protein_g": 18,
+   "fat_g": 9,
+   "carbs_g": 16,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "回鍋肉",
@@ -3756,7 +5114,14 @@
   ],
   "swiss_tips": "味噌と砂糖で甜麺醤の代わりになるので、普通のスーパーだけでも作れる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 15,
+   "fat_g": 32,
+   "carbs_g": 12,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "チンジャオロース",
@@ -3826,7 +5191,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 18,
+   "fat_g": 22,
+   "carbs_g": 12,
+   "salt_g": 2.2
+  }
  },
  {
   "name": "酢豚",
@@ -3914,7 +5286,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 480,
+   "protein_g": 20,
+   "fat_g": 26,
+   "carbs_g": 40,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "春巻き",
@@ -3996,7 +5375,14 @@
   ],
   "swiss_tips": "春巻きの皮はアジアスーパーの冷凍。ライスペーパーで揚げてもパリッとする。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 12,
+   "fat_g": 26,
+   "carbs_g": 26,
+   "salt_g": 1.4
+  }
  },
  {
   "name": "中華風卵スープ",
@@ -4059,7 +5445,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 70,
+   "protein_g": 5,
+   "fat_g": 4,
+   "carbs_g": 3,
+   "salt_g": 1.4
+  }
  },
  {
   "name": "チャプチェ",
@@ -4153,7 +5546,14 @@
   ],
   "swiss_tips": "アジアスーパーの韓国春雨を使うと、もちもちの本場の食感になる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 320,
+   "protein_g": 12,
+   "fat_g": 14,
+   "carbs_g": 36,
+   "salt_g": 2.0
+  }
  },
  {
   "name": "ビビンバ",
@@ -4253,7 +5653,14 @@
   ],
   "swiss_tips": "コチュジャンは Coop・Migros のアジアコーナーにもある。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 650,
+   "protein_g": 22,
+   "fat_g": 22,
+   "carbs_g": 88,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "プルコギ",
@@ -4340,7 +5747,14 @@
   ],
   "swiss_tips": "韓国では梨のすりおろしを入れるが、スイスの洋梨（Birne）を少し加えてもおいしい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 24,
+   "fat_g": 20,
+   "carbs_g": 22,
+   "salt_g": 2.4
+  }
  },
  {
   "name": "スンドゥブチゲ",
@@ -4428,7 +5842,14 @@
   ],
   "swiss_tips": "絹ごし豆腐がなければ、普通のスーパーの Tofu nature でもおいしく作れる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 20,
+   "fat_g": 18,
+   "carbs_g": 10,
+   "salt_g": 3.0
+  }
  },
  {
   "name": "チヂミ",
@@ -4516,7 +5937,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 12,
+   "fat_g": 18,
+   "carbs_g": 42,
+   "salt_g": 1.8
+  }
  },
  {
   "name": "生春巻き",
@@ -4587,7 +6015,14 @@
   ],
   "swiss_tips": "ライスペーパーは Coop・Migros にもある。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 200,
+   "protein_g": 12,
+   "fat_g": 3,
+   "carbs_g": 30,
+   "salt_g": 1.2
+  }
  },
  {
   "name": "フォー",
@@ -4669,7 +6104,14 @@
   ],
   "swiss_tips": "",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 450,
+   "protein_g": 26,
+   "fat_g": 8,
+   "carbs_g": 66,
+   "salt_g": 4.0
+  }
  },
  {
   "name": "バインミー",
@@ -4756,7 +6198,14 @@
   ],
   "swiss_tips": "スイスのパリッとしたバゲット（Pariserbrot）で本場に近い食感になる。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 520,
+   "protein_g": 22,
+   "fat_g": 20,
+   "carbs_g": 60,
+   "salt_g": 2.6
+  }
  },
  {
   "name": "ガパオライス",
@@ -4850,7 +6299,14 @@
   ],
   "swiss_tips": "タイのホーリーバジルがなくても、普通のバジルで十分おいしい。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 680,
+   "protein_g": 28,
+   "fat_g": 26,
+   "carbs_g": 80,
+   "salt_g": 2.8
+  }
  },
  {
   "name": "グリーンカレー",
@@ -4938,7 +6394,14 @@
   ],
   "swiss_tips": "カレーペーストもココナッツミルクも Coop・Migros にある。辛さはペーストの量で調整を。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 700,
+   "protein_g": 26,
+   "fat_g": 36,
+   "carbs_g": 70,
+   "salt_g": 2.6
+  }
  },
  {
   "name": "パッタイ",
@@ -5032,7 +6495,14 @@
   ],
   "swiss_tips": "タマリンドの代わりに酢とケチャップで甘酸っぱさを出す。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 600,
+   "protein_g": 22,
+   "fat_g": 22,
+   "carbs_g": 78,
+   "salt_g": 3.0
+  }
  },
  {
   "name": "トムヤムクン",
@@ -5108,6 +6578,13 @@
   ],
   "swiss_tips": "トムヤムペーストはアジアスーパー。レモングラスは Coop の野菜売り場にもある。",
   "origin": "ai",
-  "status": "published"
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 150,
+   "protein_g": 15,
+   "fat_g": 6,
+   "carbs_g": 8,
+   "salt_g": 3.0
+  }
  }
 ]

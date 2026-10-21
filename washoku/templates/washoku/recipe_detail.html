@@ -13,7 +13,21 @@
         {% if recipe.status == "draft" %}<span class="washoku-chip washoku-chip-draft">{% if recipe.submitted_by_id == user.pk and not user.is_staff %}確認待ち（あなたにだけ表示）{% else %}下書き（管理者だけに表示）{% endif %}</span>{% endif %}
     </p>
 
-    <h1>{{ recipe.name }}</h1>
+    <div class="washoku-title-row">
+        <h1>{{ recipe.name }}</h1>
+        {% if user.is_authenticated and recipe.status == "published" %}
+            <form method="post" action="{% url 'washoku:favorite_toggle' recipe.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="washoku-favorite{% if is_favorite %} is-on{% endif %}" aria-pressed="{% if is_favorite %}true{% else %}false{% endif %}">
+                    <span aria-hidden="true">{% if is_favorite %}♥{% else %}♡{% endif %}</span>
+                    {% if is_favorite %}保存済み{% else %}お気に入り{% endif %}
+                </button>
+            </form>
+        {% elif not user.is_authenticated and recipe.status == "published" %}
+            {# 押すとログイン画面へ (会員登録へのリンクもある) #}
+            <a class="washoku-favorite" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}"><span aria-hidden="true">♡</span> お気に入り</a>
+        {% endif %}
+    </div>
 
     {% if recipe.description %}<p class="washoku-lead">{{ recipe.description }}</p>{% endif %}
 
@@ -24,6 +38,28 @@
         {% if recipe.servings %}<span>🍽 {{ recipe.servings }}人分</span>{% endif %}
         {% if shop %}<span>🛒 {% if shop.rank > 1 %}{{ shop.name }}まで行けば材料がそろう{% else %}普通のスーパーで材料がそろう{% endif %}</span>{% endif %}
     </p>
+
+    {% if recipe.has_nutrition %}
+    {% with pfc=recipe.pfc_ratio %}
+    <section class="washoku-nutrition" aria-labelledby="nutrition-heading">
+        <h2 id="nutrition-heading">1人分の栄養<small>（目安）</small></h2>
+        <dl class="washoku-nutrition-grid">
+            <div class="washoku-nutrition-energy"><dt>エネルギー</dt><dd>{{ recipe.energy_kcal }}<small>kcal</small></dd></div>
+            <div class="washoku-nutrition-p"><dt>たんぱく質</dt><dd>{{ recipe.protein_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div class="washoku-nutrition-f"><dt>脂質</dt><dd>{{ recipe.fat_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div class="washoku-nutrition-c"><dt>炭水化物</dt><dd>{{ recipe.carbs_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div><dt>塩分</dt><dd>{% if recipe.salt_g is not None %}{{ recipe.salt_g|floatformat:1 }}<small>g</small>{% else %}-{% endif %}</dd></div>
+        </dl>
+        {% if pfc %}
+            <div class="washoku-pfc" role="img" aria-label="PFCバランス たんぱく質{{ pfc.protein }}% 脂質{{ pfc.fat }}% 炭水化物{{ pfc.carbs }}%">
+                <span class="washoku-pfc-p" style="width: {{ pfc.protein }}%"></span><span class="washoku-pfc-f" style="width: {{ pfc.fat }}%"></span><span class="washoku-pfc-c" style="width: {{ pfc.carbs }}%"></span>
+            </div>
+            <p class="washoku-pfc-legend">PFCバランス: P {{ pfc.protein }}% ・ F {{ pfc.fat }}% ・ C {{ pfc.carbs }}%</p>
+        {% endif %}
+        <p class="washoku-note">材料と分量からの概算です。{% if includes_rice %}ご飯1膳（150g）を含みます。{% endif %}</p>
+    </section>
+    {% endwith %}
+    {% endif %}
 
     <section class="washoku-section">
         <h2>材料</h2>
@@ -62,6 +98,7 @@
 
     <section class="washoku-section" id="rating">
         <h2>家族の好み</h2>
+        <p class="washoku-note"><i class="bi bi-lock" aria-hidden="true"></i> 評価は、あなたと家族のメンバーにだけ見えます。</p>
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'washoku:rate_recipe' recipe.pk %}" class="washoku-rating">
                 {% csrf_token %}
@@ -85,11 +122,24 @@
                 <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、みんなの好みが見られます。</p>
             {% endif %}
         {% else %}
-            <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族で好みを記録できます。</p>
+            {% include "washoku/includes/join_prompt.html" with reason="家族で好みを記録する機能" %}
         {% endif %}
     </section>
 
-    {% include "washoku/includes/comments.html" with target="recipe" target_pk=recipe.pk heading="みんなの工夫・質問" help_text="スイスで作ったときの工夫や、わからないことを書いてください。" %}
+    {% if user.is_authenticated %}
+    <section class="washoku-section washoku-note-box" id="note">
+        <h2>自分だけのメモ</h2>
+        <p class="washoku-note"><i class="bi bi-lock" aria-hidden="true"></i> あなたにだけ見えます（家族にも見えません）。</p>
+        <form method="post" action="{% url 'washoku:note_save' recipe.pk %}" class="washoku-form">
+            {% csrf_token %}
+            <textarea name="body" rows="3" maxlength="2000" aria-label="自分だけのメモ" placeholder="例: 砂糖は半分でちょうどよかった。次は豚肉で。">{{ note.body }}</textarea>
+            <button type="submit" class="washoku-button">メモを保存</button>
+            {% if note %}<small class="washoku-note">{{ note.updated_at|date:"Y/n/j H:i" }} に保存</small>{% endif %}
+        </form>
+    </section>
+    {% endif %}
+
+    {% include "washoku/includes/comments.html" with target="recipe" target_pk=recipe.pk heading="みんなの工夫・質問" %}
 
 </article>
 

@@ -1,0 +1,25 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}レシピのメモ | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>レシピのメモ</h1>
+
+<p class="washoku-lead">レシピごとに書いた、自分だけのメモです。ほかの人（家族も）には見えません。</p>
+
+{% if notes %}
+    <ul class="washoku-list">
+        {% for note in notes %}
+            <li>
+                <a href="{% url 'washoku:recipe_detail' note.recipe.pk %}#note">{{ note.recipe.name }}</a>
+                <p class="washoku-note-text">{{ note.body|linebreaksbr }}</p>
+                <small>{{ note.updated_at|date:"Y/n/j" }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">まだメモはありません。レシピのページの「自分だけのメモ」に書くと、ここに並びます。</p>
+{% endif %}
+
+{% endblock %}

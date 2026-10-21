@@ -1,0 +1,5 @@
+{# ログインしていない人に、会員登録をすすめる一文。reason に「コメントや質問」などを渡す #}
+<p class="washoku-join">
+    <i class="bi bi-person-plus" aria-hidden="true"></i>
+    <span>{{ reason }}は、<a href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">無料の会員登録</a>で使えます。<small>会員の方は<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a></small></span>
+</p>

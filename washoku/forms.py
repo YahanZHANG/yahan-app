@@ -1,8 +1,10 @@
 import re
 
+from urllib.parse import urlparse
+
 from django import forms
 
-from .models import Comment, Feedback, Ingredient, MoodTag, Recipe
+from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe, Substitute
 
 
 class CommentForm(forms.ModelForm):
@@ -73,6 +75,196 @@ class FeedbackForm(forms.ModelForm):
             raise forms.ValidationError("内容を入力してください。")
 
         return message
+
+
+class PostForm(forms.ModelForm):
+    """
+    みんなの投稿 (コラム・おすすめ商品・参考リンク) のフォーム。
+    商品のときだけ、お店・売り場・日本の何に近いかを聞く。
+    参考リンクのときだけ、URL と出典を聞く (必須は URL だけ)。
+    """
+
+    # 同じ商品が Migros でも Coop でも買えることがあるので、お店は複数選べる
+    shops = forms.MultipleChoiceField(
+        label="買えるお店",
+        choices=Post.SHOP_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        help_text="買えるお店をすべて選んでください。",
+    )
+
+    class Meta:
+        model = Post
+        fields = ["url", "title", "source", "section", "resembles", "body"]
+        widgets = {
+            "title": forms.TextInput(attrs={"maxlength": 100}),
+            "resembles": forms.TextInput(attrs={"placeholder": "例: 冷凍餃子、ちくわ"}),
+            "body": forms.Textarea(attrs={"rows": 10, "maxlength": 4000}),
+        }
+
+    def __init__(self, *args, kind="column", **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.kind = kind
+
+        if kind == "product":
+
+            self.fields["title"].label = "商品名"
+            self.fields["title"].widget.attrs["placeholder"] = "例: Migros の冷凍ギョーザ"
+            self.fields["resembles"].help_text = ""
+            self.fields["shops"].required = True
+            self.order_fields(["title", "shops", "section", "resembles", "body"])
+            self.fields["section"].choices = [("", "わからない")] + Post.SECTION_CHOICES
+            self.fields["body"].label = "おすすめのポイント"
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "味の感想、日本のものとの違い、おいしい食べ方、値段など"
+            )
+
+            for name in ("url", "source"):
+                del self.fields[name]
+
+        elif kind == "link":
+
+            for name in ("shops", "section", "resembles"):
+                del self.fields[name]
+
+            self.fields["url"].required = True
+            self.fields["url"].widget.attrs["placeholder"] = "https://"
+            self.fields["title"].label = "記事のタイトル"
+            self.fields["title"].required = False
+            self.fields["source"].widget.attrs["placeholder"] = "例: スイス暮らしのブログ、2025年7月"
+            self.fields["body"].label = "どんなことが書いてある？"
+            self.fields["body"].required = False
+            self.fields["body"].help_text = "記事の文章は写さずに、自分の言葉で短く。"
+            self.fields["body"].widget.attrs["rows"] = 6
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "例: Coop で買える日本の食材と、スイスの食材を使った和食のアレンジが載っています。"
+            )
+
+        else:
+
+            for name in ("url", "source", "shops", "section", "resembles"):
+                del self.fields[name]
+
+            self.fields["title"].label = "タイトル"
+            self.fields["title"].widget.attrs["placeholder"] = "例: 肉屋さんで薄切り肉を頼むコツ"
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "スイスでの買い物や料理で、知っていると助かる経験を書いてください。"
+            )
+
+    def clean_title(self):
+
+        title = self.cleaned_data["title"].strip()
+
+        if not title and self.kind != "link":
+            raise forms.ValidationError("入力してください。")
+
+        return title
+
+    def clean_body(self):
+
+        body = self.cleaned_data["body"].strip()
+
+        # 参考リンクは URL だけでよい (管理者があとでまとめる)
+        if self.kind == "link" and not body:
+            return body
+
+        if len(body) < 10:
+            raise forms.ValidationError("もう少し詳しく書いてください（10文字以上）。")
+
+        return body
+
+    def save(self, commit=True):
+
+        post = super().save(commit=False)
+
+        if "shops" in self.fields:
+            post.shop = ",".join(self.cleaned_data["shops"])
+
+        # タイトルがない参考リンクは、ひとまずサイト名を入れておく
+        if self.kind == "link" and not post.title:
+            post.title = urlparse(post.url).netloc or post.url[:100]
+
+        if commit:
+            post.save()
+
+        return post
+
+
+class SubstituteForm(forms.ModelForm):
+    """
+    会員が「日本の食材 → スイスで代わりに使えるもの」を教えるフォーム。
+    スイスの食材は自由に書いてもらい、食材リストにある名前ならつなげる。
+    """
+
+    swiss_name = forms.CharField(
+        label="スイスで買えるもの",
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "例: Kohlrabi（コールラビ）"}),
+    )
+
+    class Meta:
+        model = Substitute
+        fields = ["original_name", "tips"]
+        labels = {
+            "original_name": "日本の食材",
+            "tips": "使い方・コツ",
+        }
+        widgets = {
+            "original_name": forms.TextInput(attrs={"placeholder": "例: かぶ"}),
+            "tips": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "maxlength": 500,
+                    "placeholder": "例: 薄めに切れば煮物や浅漬けにそのまま使える。",
+                }
+            ),
+        }
+
+    field_order = ["original_name", "swiss_name", "tips"]
+
+    def clean_original_name(self):
+
+        name = self.cleaned_data["original_name"].strip()
+
+        if not name:
+            raise forms.ValidationError("入力してください。")
+
+        return name
+
+    def clean(self):
+
+        cleaned = super().clean()
+
+        swiss_name = (cleaned.get("swiss_name") or "").strip()
+
+        if not swiss_name:
+            return cleaned
+
+        # 食材リストの日本語名・ドイツ語名と同じなら、その食材につなぐ
+        key = swiss_name.casefold()
+
+        for ingredient in Ingredient.objects.all():
+            names = [ingredient.name, *split_lines(ingredient.name_de.replace("/", "\n"))]
+            if key in {name.strip().casefold() for name in names if name.strip()}:
+                self.instance.substitute = ingredient
+                self.instance.substitute_name = ""
+                break
+        else:
+            self.instance.substitute = None
+            self.instance.substitute_name = swiss_name
+
+        original = cleaned.get("original_name")
+
+        if original and Substitute.objects.filter(
+            original_name=original,
+            substitute=self.instance.substitute,
+            substitute_name=self.instance.substitute_name,
+        ).exists():
+            raise forms.ValidationError("この組み合わせは、もう登録されています。")
+
+        return cleaned
 
 
 class RecipeSubmissionForm(forms.ModelForm):
