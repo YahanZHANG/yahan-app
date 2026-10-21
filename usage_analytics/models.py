@@ -646,6 +646,9 @@ class PageView(models.Model):
 
     device_type = models.CharField("デバイス", max_length=20, default="other")
 
+    # LINE内・Safari など (browsers.py)。以前のデータは空
+    browser = models.CharField("開いた場所", max_length=20, blank=True, default="")
+
     class Meta:
 
         verbose_name = "ページ閲覧"
