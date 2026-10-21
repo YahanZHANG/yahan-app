@@ -2406,31 +2406,43 @@ html[data-washoku-theme="dark"] {
     }
 }
 
-/* HOME: ランダムは、ほかの3枚と違う帯の形にする */
+/* HOME: ランダムは、3枚のカードの下の真ん中に丸いサイコロボタン */
 .washoku-entry-random {
     grid-column: 1 / -1;
+    justify-self: center;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border: 1px dashed var(--washoku-accent);
-    border-radius: 999px;
-    background: var(--washoku-accent-soft);
-    color: var(--washoku-accent-strong);
+    gap: 4px;
+    margin-top: 4px;
+    color: var(--washoku-text);
     text-decoration: none;
 }
 
-.washoku-entry-random span {
-    font-size: 22px;
+.washoku-entry-dice {
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--washoku-accent);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    font-size: 30px;
+    transition: transform 0.2s;
 }
 
 .washoku-entry-random strong {
-    flex: 1;
-    font-size: 15px;
+    font-size: 13px;
 }
 
-.washoku-entry-random:hover {
-    border-style: solid;
+.washoku-entry-random:hover .washoku-entry-dice {
+    transform: rotate(-12deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .washoku-entry-dice {
+        transition: none;
+    }
 }
 
 /* 代わり: スイスで買えるもののドイツ語名を、その名前のすぐ後ろに */
