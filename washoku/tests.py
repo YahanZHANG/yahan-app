@@ -698,7 +698,7 @@ class MenuTests(TestCase):
         html = self.client.get(reverse("washoku:home")).content.decode()
         tabbar = html[html.index('class="washoku-tabbar"'):]
 
-        self.assertIn(reverse("washoku:question_list"), tabbar)
+        self.assertIn(reverse("washoku:activity"), tabbar)
         self.assertNotIn(reverse("washoku:my_page"), tabbar)
         self.assertIn('class="washoku-me', html)
         self.assertNotIn("家庭料理のレシピ集です", html)

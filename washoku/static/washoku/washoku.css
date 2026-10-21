@@ -2634,3 +2634,29 @@ a.washoku-favorite {
     line-height: 1;
     text-decoration: none;
 }
+
+/* みんなのタブ: 5つを携帯でも1行に */
+.washoku-subtabs-5 {
+    gap: 2px;
+    padding: 3px;
+}
+
+.washoku-subtabs-5 a {
+    padding: 7px 2px;
+    font-size: min(14px, 3.7vw);
+}
+
+.washoku-theme-auto {
+    margin: -4px 0 4px;
+    text-align: right;
+}
+
+.washoku-theme-auto button {
+    min-height: 36px;
+    border: 0;
+    background: transparent;
+    color: var(--washoku-accent-strong);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+}

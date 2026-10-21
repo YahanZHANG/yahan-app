@@ -5,9 +5,9 @@
 
 {% block content %}
 
-<h1>みんなの新着</h1>
+{% include "washoku/includes/community_tabs.html" %}
 
-<p class="washoku-lead">コメント、質問、コラム、おすすめ商品を新しい順にすべて見られます。</p>
+<h1 class="washoku-visually-hidden">みんなの新着</h1>
 
 {% if page.object_list %}
     <ul class="washoku-activity">
