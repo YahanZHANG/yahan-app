@@ -8,6 +8,8 @@
 
 <p class="washoku-lead">日本の食材がスイスで何と呼ばれ、どこで買えるか。代わりになる食材もまとめています。</p>
 
+<p class="washoku-quick"><a href="{% url 'washoku:substitute_list' %}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> 日本の野菜・食材の代わり一覧</a></p>
+
 <form method="get" class="washoku-search">
     <input type="search" name="q" value="{{ query }}" placeholder="例: 大根、Lauch（独語もOK）" aria-label="食材を検索">
     <button type="submit">探す</button>

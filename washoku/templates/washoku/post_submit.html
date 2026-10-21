@@ -1,0 +1,35 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}{{ text.new_label }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>{{ text.new_label }}</h1>
+
+{% if kind == "product" %}
+    <p class="washoku-lead">普通のスーパーやアジアの店で見つけた、日本の味に近い商品を教えてください。管理者が確認してから掲載します。</p>
+{% else %}
+    <p class="washoku-lead">お肉の買い方、代わりの食材、お店での頼み方など、みんなの役に立つ経験を書いてください。管理者が確認してから掲載します。</p>
+{% endif %}
+
+<form method="post" class="washoku-form" novalidate>
+    {% csrf_token %}
+
+    {% for field in form %}
+        <div class="washoku-field{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<span class="washoku-required">必須</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}
+                <p class="washoku-field-error" role="alert">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="washoku-button washoku-button-wide">投稿する</button>
+</form>
+
+{% endblock %}

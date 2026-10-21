@@ -1,0 +1,41 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}{{ post.title }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+{% include "washoku/includes/community_tabs.html" with kind=post.kind %}
+
+<article class="washoku-post">
+
+    <p class="washoku-chips">
+        <span class="washoku-chip">{{ post.get_kind_display }}</span>
+        {% if post.kind == "product" %}
+            <span class="washoku-chip">{{ post.get_shop_display }}</span>
+            {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
+        {% endif %}
+        {% if post.status == "draft" %}<span class="washoku-chip washoku-chip-draft">{% if post.author_id == user.pk and not user.is_staff %}確認待ち（あなたにだけ表示）{% else %}確認待ち（管理者だけに表示）{% endif %}</span>{% endif %}
+    </p>
+
+    <h1>{{ post.title }}</h1>
+
+    {% if post.resembles %}<p class="washoku-lead">日本の「{{ post.resembles }}」に近い</p>{% endif %}
+
+    <p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>
+
+    <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+
+</article>
+
+{% if post.status == "published" %}
+    {% if post.kind == "product" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" help_text="食べてみた感想や、おいしい食べ方を教えてください。" tip_label="感想" %}
+    {% else %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" help_text="同じ経験や、ほかのやり方があれば教えてください。" %}
+    {% endif %}
+{% endif %}
+
+<p><a href="{% url text.url_name %}">← {{ text.heading }}にもどる</a></p>
+
+{% endblock %}

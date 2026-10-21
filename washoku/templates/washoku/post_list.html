@@ -1,0 +1,53 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}{{ text.heading }} | スイスで和食{% endblock %}
+
+{% block content %}
+
+{% include "washoku/includes/community_tabs.html" %}
+
+<h1>{{ text.heading }}</h1>
+
+<p class="washoku-lead">{{ text.lead }}</p>
+
+<p><a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+
+{% if kind == "product" %}
+<form method="get" class="washoku-filter">
+    <select name="shop" aria-label="お店" onchange="this.form.submit()">
+        <option value="">すべてのお店</option>
+        {% for value, label in shops %}<option value="{{ value }}" {% if shop == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select name="section" aria-label="売り場" onchange="this.form.submit()">
+        <option value="">すべての売り場</option>
+        {% for value, label in sections %}<option value="{{ value }}" {% if section == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <noscript><button type="submit">絞り込む</button></noscript>
+</form>
+{% endif %}
+
+{% if posts %}
+    <ul class="washoku-posts">
+        {% for post in posts %}
+            <li>
+                <a href="{{ post.get_absolute_url }}">
+                    {% if kind == "product" %}
+                        <span class="washoku-chips">
+                            <span class="washoku-chip">{{ post.get_shop_display }}</span>
+                            {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
+                            {% if post.resembles %}<span class="washoku-chip washoku-chip-shop">{{ post.resembles }}に近い</span>{% endif %}
+                        </span>
+                    {% endif %}
+                    <strong>{{ post.title }}</strong>
+                    <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>
+                    <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">{% if shop or section %}この条件の投稿はまだありません。{% else %}まだ投稿はありません。最初の1件を書いてみませんか？{% endif %}</p>
+{% endif %}
+
+{% endblock %}

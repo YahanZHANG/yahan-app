@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef, Prefetch, Q
+from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -15,7 +15,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
-from .forms import CommentEditForm, CommentForm, FeedbackForm, RecipeSubmissionForm
+from .forms import (
+    CommentEditForm,
+    CommentForm,
+    FeedbackForm,
+    PostForm,
+    RecipeSubmissionForm,
+)
 from .models import (
     Comment,
     CommentReport,
@@ -26,11 +32,13 @@ from .models import (
     Ingredient,
     MoodTag,
     Notification,
+    Post,
     Recipe,
     RecipeIngredient,
     RecipeRating,
     ShopType,
     Store,
+    Substitute,
 )
 
 
@@ -40,7 +48,7 @@ COMMENT_INTERVAL = timedelta(seconds=60)
 # 質問箱を続けて送れるまでの間隔 (秒)
 FEEDBACK_INTERVAL_SECONDS = 60
 
-# 確認待ちのまま置いておける投稿レシピの数 (1人あたり)
+# 確認待ちのまま置いておける投稿レシピ・コラム・商品の数 (1人あたり、種類ごと)
 MAX_PENDING_SUBMISSIONS = 5
 
 
@@ -141,6 +149,17 @@ def recipe_card_queryset(queryset):
     )
 
 
+def public_comment_targets():
+    """
+    公開中のレシピ・投稿か、食材・お店に付いたコメントだけを選ぶ条件。
+    """
+
+    return (
+        (Q(recipe__isnull=True) | Q(recipe__status="published"))
+        & (Q(post__isnull=True) | Q(post__status="published"))
+    )
+
+
 def open_questions():
     """
     返信がまだない質問 (新しい順)。
@@ -160,12 +179,10 @@ def open_questions():
             is_hidden=False,
             is_deleted=False,
         )
-        .filter(
-            Q(recipe__status="published") | Q(recipe__isnull=True)
-        )
+        .filter(public_comment_targets())
         .annotate(has_answer=Exists(answered))
         .filter(has_answer=False)
-        .select_related("recipe", "ingredient", "store", "author")
+        .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-created_at")
     )
 
@@ -188,10 +205,8 @@ def home(request):
             is_hidden=False,
             is_deleted=False,
         )
-        .filter(
-            Q(recipe__status="published") | Q(recipe__isnull=True)
-        )
-        .select_related("recipe", "ingredient", "store", "author")
+        .filter(public_comment_targets())
+        .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-created_at")[:5]
     )
 
@@ -202,6 +217,7 @@ def home(request):
             "latest_recipes": attach_family_rating(latest, request.user),
             "latest_comments": latest_comments,
             "questions": open_questions()[:5],
+            "latest_posts": Post.objects.filter(status="published").select_related("author")[:3],
             "moods": MoodTag.objects.all(),
             "categories": Recipe.CATEGORY_CHOICES[:-1],
             "recipe_count": recipes.count(),
@@ -217,6 +233,7 @@ SORT_CHOICES = [
     ("name", "名前順"),
     ("new", "新しい順"),
     ("time", "早くできる順"),
+    ("light", "カロリー控えめ順"),
     ("family", "家族の評価順"),
 ]
 
@@ -256,6 +273,8 @@ def recipe_list(request):
         recipes = recipes.order_by("-created_at")
     elif sort == "time":
         recipes = recipes.order_by("cooking_time_minutes", "name")
+    elif sort == "light":
+        recipes = recipes.order_by(F("energy_kcal").asc(nulls_last=True), "name")
     else:
         recipes = recipes.order_by("name")
 
@@ -318,6 +337,8 @@ def find_by_ingredients(request):
     """
     家にある食材を選ぶと、足りない材料が少ない順にレシピを出す。
     調味料と「なくてもよい」材料は数えない。
+    「必ず使う」にした食材 (賞味期限が近いものなど) は、
+    それを全部使うレシピだけに絞る。
     """
 
     groups = (
@@ -342,29 +363,41 @@ def find_by_ingredients(request):
     ):
         options_by_category[ingredient.get_category_display()].append(name)
 
-    selected = request.GET.getlist("g")
-    selected_set = set(selected)
+    must_set = set(request.GET.getlist("m"))
+
+    # 「必ず使う」にした食材は「家にある」にも入れる
+    selected_set = set(request.GET.getlist("g")) | must_set
 
     results = []
 
     if selected_set:
 
-        main_items = RecipeIngredient.objects.filter(
+        items = RecipeIngredient.objects.filter(
             is_seasoning=False,
-            is_optional=False,
         ).select_related("ingredient")
 
         recipes = visible_recipes(request.user).prefetch_related(
-            Prefetch("recipe_ingredients", queryset=main_items, to_attr="main_items")
+            Prefetch("recipe_ingredients", queryset=items, to_attr="all_items")
         )
 
         for recipe in recipes:
+
+            recipe.main_items = [
+                item for item in recipe.all_items
+                if not item.is_optional
+            ]
+
+            # 必ず使う食材は「なくてもよい」材料として入っていても使えるので数える
+            used = {item.ingredient.group_name for item in recipe.all_items}
+
+            if not must_set <= used:
+                continue
 
             names = [item.ingredient.group_name for item in recipe.main_items]
 
             have = [name for name in names if name in selected_set]
 
-            if not have:
+            if not have and not must_set:
                 continue
 
             missing = [
@@ -378,6 +411,7 @@ def find_by_ingredients(request):
                     "recipe": recipe,
                     "have": have,
                     "missing": missing,
+                    "uses": sorted(must_set),
                 }
             )
 
@@ -395,6 +429,7 @@ def find_by_ingredients(request):
         {
             "options_by_category": dict(options_by_category),
             "selected": selected_set,
+            "must": must_set,
             "results": results[:30],
             "searched": bool(selected_set),
         },
@@ -528,6 +563,10 @@ def recipe_detail(request, pk):
                 item for item in recipe.recipe_ingredients.all()
                 if item.is_seasoning
             ],
+            "includes_rice": any(
+                item.ingredient.name == "米" and "膳" in item.amount
+                for item in recipe.recipe_ingredients.all()
+            ),
             "my_rating": my_rating,
             "member_ratings": member_ratings,
             "rating_choices": RATING_CHOICES,
@@ -668,11 +707,11 @@ def comment_threads(comments, user):
     return threads
 
 
-def comment_context(request, recipe=None, ingredient=None, store=None):
+def comment_context(request, recipe=None, ingredient=None, store=None, post=None):
 
     comments = (
         Comment.objects
-        .filter(recipe=recipe, ingredient=ingredient, store=store)
+        .filter(recipe=recipe, ingredient=ingredient, store=store, post=post)
         .select_related("author")
         .order_by("created_at", "pk")
     )
@@ -709,7 +748,7 @@ def posted_too_recently(user):
 @require_POST
 def comment_create(request, target, pk):
 
-    recipe = ingredient = store = None
+    recipe = ingredient = store = post = None
 
     if target == "recipe":
         recipe = get_object_or_404(visible_recipes(request.user), pk=pk)
@@ -720,6 +759,9 @@ def comment_create(request, target, pk):
     elif target == "store":
         store = get_object_or_404(Store, pk=pk, is_active=True)
         back = reverse("washoku:store_detail", args=[pk])
+    elif target == "post":
+        post = get_object_or_404(Post, pk=pk, status="published")
+        back = reverse("washoku:post_detail", args=[pk])
     else:
         raise Http404
 
@@ -744,6 +786,7 @@ def comment_create(request, target, pk):
             recipe=recipe,
             ingredient=ingredient,
             store=store,
+            post=post,
         )
 
         # 返信は1段だけ: 返信への返信は同じスレッドの末尾に付ける
@@ -757,6 +800,7 @@ def comment_create(request, target, pk):
     comment.recipe = recipe
     comment.ingredient = ingredient
     comment.store = store
+    comment.post = post
     comment.parent = parent
 
     if parent:
@@ -901,7 +945,7 @@ def notification_list(request):
     notifications = list(
         Notification.objects
         .filter(recipient=request.user)
-        .select_related("actor", "comment", "comment__recipe", "comment__ingredient", "comment__store")[:50]
+        .select_related("actor", "comment", "comment__recipe", "comment__ingredient", "comment__store", "comment__post")[:50]
     )
 
     for notification in notifications:
@@ -1273,6 +1317,9 @@ def my_page(request):
                 "submitted_count": Recipe.objects.filter(
                     submitted_by=request.user,
                 ).count(),
+                "post_count": Post.objects.filter(
+                    author=request.user,
+                ).count(),
                 "family_count": len(family_members(request.user)),
                 "invite_count": HouseholdInvite.objects.filter(
                     invited_user=request.user,
@@ -1316,7 +1363,7 @@ def my_comments(request):
     comments = list(
         Comment.objects
         .filter(author=request.user, is_deleted=False)
-        .select_related("recipe", "ingredient", "store")
+        .select_related("recipe", "ingredient", "store", "post")
         .order_by("-created_at")[:100]
     )
 
@@ -1328,5 +1375,209 @@ def my_comments(request):
         "washoku/my_comments.html",
         {
             "comments": comments,
+        },
+    )
+
+
+# =========================================================
+# 日本の食材の代わり
+# =========================================================
+
+def substitute_list(request):
+    """
+    日本の食材 → スイスで代わりに使えるもの、の一覧。
+    """
+
+    substitutes = Substitute.objects.select_related("substitute").order_by(
+        "substitute__category",
+        "original_name",
+    )
+
+    by_category = defaultdict(list)
+
+    for item in substitutes:
+        by_category[item.substitute.get_category_display()].append(item)
+
+    # 野菜を先に
+    by_category = dict(
+        sorted(by_category.items(), key=lambda item: item[0] != "野菜")
+    )
+
+    return render(
+        request,
+        "washoku/substitute_list.html",
+        {
+            "by_category": by_category,
+        },
+    )
+
+
+# =========================================================
+# みんなの投稿 (コラム・おすすめ商品)
+# =========================================================
+
+POST_KIND_TEXT = {
+    "column": {
+        "url_name": "washoku:column_list",
+        "heading": "みんなのコラム",
+        "lead": "スイスでの買い物や料理の工夫、失敗談など、みんなの経験をまとめて読めます。",
+        "new_label": "コラムを書く",
+    },
+    "product": {
+        "url_name": "washoku:product_list",
+        "heading": "スーパーのおすすめ商品",
+        "lead": "普通のスーパーやアジアの店で買える、日本の味に近い冷凍・チルド食品などを紹介し合う場所です。",
+        "new_label": "商品を紹介する",
+    },
+}
+
+
+def visible_posts(user):
+
+    posts = Post.objects.all()
+
+    if user.is_staff:
+        return posts
+
+    if user.is_authenticated:
+        return posts.filter(Q(status="published") | Q(author=user))
+
+    return posts.filter(status="published")
+
+
+def post_list(request, kind):
+
+    posts = (
+        Post.objects
+        .filter(kind=kind, status="published")
+        .select_related("author")
+        .annotate(
+            comment_count=Count(
+                "comments",
+                filter=Q(comments__is_hidden=False, comments__is_deleted=False),
+            )
+        )
+    )
+
+    shop = request.GET.get("shop", "")
+    section = request.GET.get("section", "")
+
+    if kind == "product":
+
+        if shop in dict(Post.SHOP_CHOICES):
+            posts = posts.filter(shop=shop)
+
+        if section in dict(Post.SECTION_CHOICES):
+            posts = posts.filter(section=section)
+
+    return render(
+        request,
+        "washoku/post_list.html",
+        {
+            "kind": kind,
+            "text": POST_KIND_TEXT[kind],
+            "posts": posts,
+            "shop": shop,
+            "section": section,
+            "shops": Post.SHOP_CHOICES,
+            "sections": Post.SECTION_CHOICES,
+        },
+    )
+
+
+def column_list(request):
+    return post_list(request, "column")
+
+
+def product_list(request):
+    return post_list(request, "product")
+
+
+def post_detail(request, pk):
+
+    post = get_object_or_404(
+        visible_posts(request.user).select_related("author"),
+        pk=pk,
+    )
+
+    return render(
+        request,
+        "washoku/post_detail.html",
+        {
+            "post": post,
+            "text": POST_KIND_TEXT[post.kind],
+            **comment_context(request, post=post),
+        },
+    )
+
+
+@login_required
+def post_submit(request, kind):
+
+    if kind not in POST_KIND_TEXT:
+        raise Http404
+
+    pending = Post.objects.filter(author=request.user, kind=kind, status="draft").count()
+
+    if pending >= MAX_PENDING_SUBMISSIONS:
+        messages.info(
+            request,
+            f"確認待ちの投稿が{pending}件あります。掲載されてから、また投稿してください。",
+        )
+        return redirect("washoku:my_posts")
+
+    form = PostForm(request.POST or None, kind=kind)
+
+    if request.method == "POST" and form.is_valid():
+
+        post = form.save(commit=False)
+        post.kind = kind
+        post.author = request.user
+        # 管理者の投稿はそのまま公開する
+        post.status = "published" if request.user.is_staff else "draft"
+        post.save()
+
+        if post.status == "draft":
+
+            send_admin_alert(
+                f"新しい{post.get_kind_display()}の投稿",
+                f"{post.title}（{request.user.username} さん）\n\n"
+                + request.build_absolute_uri(
+                    reverse("admin:washoku_post_change", args=[post.pk])
+                ),
+            )
+
+            messages.success(
+                request,
+                "投稿ありがとうございます！管理者が確認してから掲載します。",
+            )
+
+        return redirect(post.get_absolute_url())
+
+    return render(
+        request,
+        "washoku/post_submit.html",
+        {
+            "form": form,
+            "kind": kind,
+            "text": POST_KIND_TEXT[kind],
+        },
+    )
+
+
+@login_required
+def my_posts(request):
+
+    posts = (
+        Post.objects
+        .filter(author=request.user)
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "washoku/my_posts.html",
+        {
+            "posts": posts,
         },
     )

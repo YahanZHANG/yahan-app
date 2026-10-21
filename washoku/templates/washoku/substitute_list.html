@@ -1,0 +1,31 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}日本の食材の代わり | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>日本の食材の代わり</h1>
+
+<p class="washoku-lead">日本の野菜や食材が見つからないときに、スイスのスーパーで代わりに使えるものです。</p>
+
+{% for category, items in by_category.items %}
+    <section class="washoku-section">
+        <h2>{{ category }}</h2>
+        <ul class="washoku-substitutes">
+            {% for item in items %}
+                <li>
+                    <p class="washoku-substitute-pair">
+                        <span class="washoku-substitute-from">{{ item.original_name }}</span>
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <a href="{% url 'washoku:ingredient_detail' item.substitute.pk %}">{{ item.substitute.name }}{% if item.substitute.name_de %} <small>（{{ item.substitute.name_de }}）</small>{% endif %}</a>
+                    </p>
+                    {% if item.tips %}<p class="washoku-substitute-tips">{{ item.tips }}</p>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endfor %}
+
+<p class="washoku-note">ほかにも代わりになる食材を知っていたら、食材のページのコメントや<a href="{% url 'washoku:column_list' %}">コラム</a>で教えてください。</p>
+
+{% endblock %}

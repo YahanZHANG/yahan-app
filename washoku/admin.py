@@ -11,6 +11,7 @@ from .models import (
     Ingredient,
     MoodTag,
     Notification,
+    Post,
     Recipe,
     RecipeIngredient,
     RecipeRating,
@@ -252,12 +253,63 @@ class CommentTargetFilter(admin.SimpleListFilter):
             ("recipe", "レシピ"),
             ("ingredient", "食材"),
             ("store", "お店"),
+            ("post", "コラム・商品"),
         ]
 
     def queryset(self, request, queryset):
-        if self.value() in ("recipe", "ingredient", "store"):
+        if self.value() in ("recipe", "ingredient", "store", "post"):
             return queryset.filter(**{f"{self.value()}__isnull": False})
         return queryset
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "kind",
+        "status",
+        "shop",
+        "author",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "kind",
+        "shop",
+        "section",
+    )
+
+    search_fields = (
+        "title",
+        "body",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    actions = [
+        "publish",
+        "unpublish",
+    ]
+
+    def save_model(self, request, obj, form, change):
+
+        # 管理者が書いたものは author を自分にする
+        if not change and obj.author_id is None:
+            obj.author = request.user
+
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="選んだ投稿を公開する")
+    def publish(self, request, queryset):
+        queryset.update(status="published")
+
+    @admin.action(description="選んだ投稿を確認待ちに戻す")
+    def unpublish(self, request, queryset):
+        queryset.update(status="draft")
 
 
 @admin.register(Comment)
@@ -314,7 +366,14 @@ class CommentAdmin(admin.ModelAdmin):
 
     @admin.display(description="どこへ")
     def target_label(self, obj):
-        kind = "レシピ" if obj.recipe_id else "お店" if obj.store_id else "食材"
+        if obj.recipe_id:
+            kind = "レシピ"
+        elif obj.store_id:
+            kind = "お店"
+        elif obj.post_id:
+            kind = obj.post.get_kind_display()
+        else:
+            kind = "食材"
         return f"{kind}: {obj.target.name}"
 
     @admin.display(description="通報")

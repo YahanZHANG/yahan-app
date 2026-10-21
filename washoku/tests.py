@@ -21,6 +21,7 @@ from .models import (
     Ingredient,
     MoodTag,
     Notification,
+    Post,
     Recipe,
     RecipeIngredient,
     RecipeRating,
@@ -108,11 +109,62 @@ class ImportTests(TestCase):
 
         self.assertEqual(Recipe.objects.get(name="照り焼きチキン").status, "published")
 
-    def test_bundled_recipes_are_all_approved(self):
+    def test_bundled_recipes_are_approved_except_new_drafts(self):
+
+        from .data.build_data import DRAFT_RECIPES
 
         recipes = json.loads((Path(__file__).parent / "data" / "recipes.json").read_text(encoding="utf-8"))
 
-        self.assertEqual({recipe["status"] for recipe in recipes}, {"published"})
+        drafts = {recipe["name"] for recipe in recipes if recipe["status"] == "draft"}
+
+        self.assertEqual(drafts, DRAFT_RECIPES)
+        self.assertGreaterEqual(len([r for r in recipes if r["category"] == "yoshoku"]), 15)
+
+    def test_bundled_recipes_all_have_nutrition(self):
+
+        recipes = json.loads((Path(__file__).parent / "data" / "recipes.json").read_text(encoding="utf-8"))
+
+        for recipe in recipes:
+            with self.subTest(recipe=recipe["name"]):
+                nutrition = recipe["nutrition"]
+                self.assertGreater(nutrition["energy_kcal"], 0)
+                # エネルギーと PFC の合計がだいたい合っているか (±25%)
+                from_pfc = nutrition["protein_g"] * 4 + nutrition["fat_g"] * 9 + nutrition["carbs_g"] * 4
+                self.assertLess(abs(from_pfc - nutrition["energy_kcal"]) / nutrition["energy_kcal"], 0.25)
+
+    def test_new_only_fills_missing_nutrition_and_substitutes_without_overwriting(self):
+
+        self.run_import()
+
+        recipe = Recipe.objects.get(name="照り焼きチキン")
+        self.assertIsNone(recipe.energy_kcal)
+
+        nutrition = {"energy_kcal": 340, "protein_g": 28, "fat_g": 20, "carbs_g": 12, "salt_g": 2.6}
+        ingredients = [
+            *INGREDIENTS[:3],
+            {
+                **INGREDIENTS[3],
+                "substitutes_for": [
+                    {"original_name": "大根", "tips": "新しい説明"},
+                    {"original_name": "かぶ", "tips": "薄く切る"},
+                ],
+            },
+        ]
+
+        self.run_import(ingredients=ingredients, recipes=[{**RECIPES[0], "nutrition": nutrition}], new_only=True)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.energy_kcal, 340)
+        self.assertEqual(
+            dict(Substitute.objects.values_list("original_name", "tips")),
+            {"大根": "少し辛いので下茹でを長めに。", "かぶ": "薄く切る"},
+        )
+
+        # 管理画面で直した値は上書きしない
+        Recipe.objects.filter(pk=recipe.pk).update(energy_kcal=300)
+        self.run_import(recipes=[{**RECIPES[0], "nutrition": nutrition}], new_only=True)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.energy_kcal, 300)
 
     def test_import_creates_recipes_as_drafts(self):
 
@@ -225,6 +277,9 @@ class PageTests(TestCase):
             reverse("washoku:store_list"),
             reverse("washoku:store_list") + "?kind=japanese",
             reverse("washoku:about"),
+            reverse("washoku:substitute_list"),
+            reverse("washoku:column_list"),
+            reverse("washoku:product_list") + "?shop=migros&section=frozen",
         ]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
@@ -246,6 +301,27 @@ class PageTests(TestCase):
         response = self.client.get(reverse("washoku:recipe_list") + "?q=鶏肉&shop=1")
 
         self.assertContains(response, "照り焼きチキン")
+
+    def test_find_by_ingredients_must_use_filters_recipes(self):
+
+        egg = Ingredient.objects.create(name="卵", category="egg")
+        omelet = make_recipe("卵焼き")
+        omelet.recipe_ingredients.filter(ingredient__name="鶏もも肉").delete()
+        RecipeIngredient.objects.create(recipe=omelet, ingredient=egg, amount="2個")
+
+        url = reverse("washoku:find_by_ingredients")
+
+        both = self.client.get(url + "?g=鶏肉&g=卵")
+        self.assertContains(both, "照り焼きチキン")
+        self.assertContains(both, "卵焼き")
+
+        must = self.client.get(url + "?g=鶏肉&g=卵&m=卵")
+        self.assertNotContains(must, "照り焼きチキン</strong>")
+        self.assertContains(must, "卵焼き")
+        self.assertContains(must, "必ず使う: <strong>卵</strong>")
+
+        # 「必ず使う」だけでも「ある」として扱う
+        self.assertContains(self.client.get(url + "?m=卵"), "卵焼き")
 
     def test_find_by_ingredients_lists_missing_items(self):
 
@@ -612,7 +688,7 @@ class RecipeSubmissionTests(TestCase):
 
 class MenuTests(TestCase):
 
-    def test_phone_tabbar_ends_with_qa_and_header_links_my_page(self):
+    def test_phone_tabbar_ends_with_community_and_header_links_my_page(self):
 
         html = self.client.get(reverse("washoku:home")).content.decode()
         tabbar = html[html.index('class="washoku-tabbar"'):]
@@ -654,6 +730,16 @@ class AdminAttentionTests(TestCase):
 
         self.assertEqual(counts, {"投稿レシピ": 1, "レシピへのコメント": 2, "お店の口コミ": 1, "質問箱": 1})
         self.assertEqual(attention["total"], 5)
+
+        Post.objects.create(kind="column", title="薄切り肉", body="x" * 20, author=self.member)
+        published = Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published")
+        Comment.objects.create(author=self.member, post=published, kind="tip", body="おいしい")
+
+        washoku = next(group for group in self.attention()["groups"] if group["app"] == "スイスで和食")
+        counts = {item["label"]: item["count"] for item in washoku["items"]}
+
+        self.assertEqual(counts["コラム・商品の投稿"], 1)
+        self.assertEqual(counts["コラム・商品へのコメント"], 1)
 
     def test_admins_own_comments_are_not_pending(self):
 
@@ -733,3 +819,162 @@ class TrialAccessTests(TestCase):
 
         with self.settings(WASHOKU_ALLOW_SEARCH_ENGINES=True):
             self.assertNotContains(self.client.get(self.urls[0]), 'name="robots"')
+
+
+class NutritionTests(TestCase):
+
+    def test_recipe_shows_nutrition_and_pfc_balance(self):
+
+        recipe = make_recipe(energy_kcal=340, protein_g=28, fat_g=20, carbs_g=12, salt_g=2.6)
+
+        self.assertEqual(recipe.pfc_ratio(), {"protein": 33, "fat": 53, "carbs": 14})
+
+        response = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+
+        self.assertContains(response, "1人分の栄養")
+        self.assertContains(response, "340<small>kcal</small>")
+        self.assertContains(response, "P 33% ・ F 53% ・ C 14%")
+
+    def test_recipe_without_nutrition_hides_the_box(self):
+
+        recipe = make_recipe()
+
+        self.assertIsNone(recipe.pfc_ratio())
+        self.assertNotContains(
+            self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])),
+            "1人分の栄養",
+        )
+
+    def test_recipes_can_be_sorted_by_energy(self):
+
+        make_recipe("重い料理", energy_kcal=900, protein_g=1, fat_g=1, carbs_g=1)
+        make_recipe("軽い料理", energy_kcal=100, protein_g=1, fat_g=1, carbs_g=1)
+        make_recipe("不明な料理")
+
+        html = self.client.get(reverse("washoku:recipe_list") + "?sort=light").content.decode()
+
+        self.assertLess(html.index("軽い料理"), html.index("重い料理"))
+        self.assertLess(html.index("重い料理"), html.index("不明な料理"))
+
+
+class PostTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.other = User.objects.create_user("taro", password="x")
+        self.admin = User.objects.create_user("admin", password="x", is_staff=True)
+
+    def test_member_column_waits_for_approval(self):
+
+        self.client.force_login(self.member)
+
+        with mock.patch("washoku.views.send_admin_alert") as alert:
+            response = self.client.post(
+                reverse("washoku:post_submit", args=["column"]),
+                {"title": "肉屋さんで薄切り肉を頼むコツ", "body": "「dünn geschnitten, bitte」と言うと切ってくれます。"},
+            )
+
+        post = Post.objects.get()
+
+        self.assertRedirects(response, post.get_absolute_url())
+        self.assertEqual((post.kind, post.status, post.author), ("column", "draft", self.member))
+        alert.assert_called_once()
+
+        # 本人には見える、ほかの人と一覧には出ない
+        self.assertContains(self.client.get(post.get_absolute_url()), "確認待ち（あなたにだけ表示）")
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(post.get_absolute_url()).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
+
+        post.status = "published"
+        post.save()
+
+        self.assertContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
+        self.assertContains(self.client.get(reverse("washoku:home")), "薄切り肉")
+
+    def test_product_needs_a_shop_and_can_be_filtered(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:post_submit", args=["product"])
+
+        response = self.client.post(url, {"title": "冷凍ギョーザ", "body": "日本の味にかなり近いです。"})
+        self.assertContains(response, "このフィールドは必須です")
+
+        self.client.post(
+            url,
+            {"title": "冷凍ギョーザ", "shop": "migros", "section": "frozen", "resembles": "冷凍餃子", "body": "日本の味にかなり近いです。"},
+        )
+        Post.objects.update(status="published")
+
+        list_url = reverse("washoku:product_list")
+        self.assertContains(self.client.get(list_url + "?shop=migros"), "冷凍ギョーザ")
+        self.assertContains(self.client.get(list_url + "?shop=migros"), "冷凍餃子に近い")
+        self.assertNotContains(self.client.get(list_url + "?shop=coop"), "冷凍ギョーザ")
+        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "冷凍ギョーザ")
+
+    def test_staff_posts_are_published_at_once(self):
+
+        self.client.force_login(self.admin)
+        self.client.post(
+            reverse("washoku:post_submit", args=["column"]),
+            {"title": "お知らせ", "body": "コラムを書いてみてください。"},
+        )
+
+        self.assertEqual(Post.objects.get().status, "published")
+
+    def test_comments_on_published_posts_only(self):
+
+        draft = Post.objects.create(kind="column", title="下書き", body="x" * 20, author=self.member)
+        post = Post.objects.create(kind="column", title="公開", body="x" * 20, author=self.member, status="published")
+
+        self.client.force_login(self.other)
+
+        self.assertEqual(
+            self.client.post(reverse("washoku:comment_create", args=["post", draft.pk]), {"kind": "tip", "body": "a"}).status_code,
+            404,
+        )
+
+        response = self.client.post(reverse("washoku:comment_create", args=["post", post.pk]), {"kind": "question", "body": "どこの肉屋ですか？"})
+        comment = Comment.objects.get()
+
+        self.assertRedirects(response, comment.get_absolute_url())
+        self.assertEqual(comment.post, post)
+        self.assertContains(self.client.get(reverse("washoku:question_list")), "どこの肉屋ですか？")
+
+    def test_post_by_deleted_member_still_renders(self):
+
+        post = Post.objects.create(kind="column", title="古い記事", body="x" * 20, author=self.member, status="published")
+        self.member.delete()
+
+        self.assertContains(self.client.get(Post.objects.get(pk=post.pk).get_absolute_url()), "退会した会員")
+
+    def test_pending_limit(self):
+
+        for number in range(5):
+            Post.objects.create(kind="column", title=f"下書き{number}", body="x" * 20, author=self.member)
+
+        self.client.force_login(self.member)
+
+        self.assertRedirects(
+            self.client.get(reverse("washoku:post_submit", args=["column"])),
+            reverse("washoku:my_posts"),
+        )
+        self.assertEqual(
+            self.client.get(reverse("washoku:post_submit", args=["product"])).status_code,
+            200,
+        )
+
+
+class SubstituteListTests(TestCase):
+
+    def test_lists_japanese_vegetables_and_their_swiss_substitutes(self):
+
+        kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
+        Substitute.objects.create(original_name="かぶ", substitute=kohlrabi, tips="薄めに切る。")
+
+        response = self.client.get(reverse("washoku:substitute_list"))
+
+        self.assertContains(response, "かぶ")
+        self.assertContains(response, "コールラビ <small>（Kohlrabi）</small>")
+        self.assertContains(response, "薄めに切る。")

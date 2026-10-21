@@ -25,6 +25,28 @@
         {% if shop %}<span>🛒 {% if shop.rank > 1 %}{{ shop.name }}まで行けば材料がそろう{% else %}普通のスーパーで材料がそろう{% endif %}</span>{% endif %}
     </p>
 
+    {% if recipe.has_nutrition %}
+    {% with pfc=recipe.pfc_ratio %}
+    <section class="washoku-nutrition" aria-labelledby="nutrition-heading">
+        <h2 id="nutrition-heading">1人分の栄養<small>（目安）</small></h2>
+        <dl class="washoku-nutrition-grid">
+            <div class="washoku-nutrition-energy"><dt>エネルギー</dt><dd>{{ recipe.energy_kcal }}<small>kcal</small></dd></div>
+            <div><dt><span class="washoku-dot washoku-dot-p" aria-hidden="true"></span>たんぱく質</dt><dd>{{ recipe.protein_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div><dt><span class="washoku-dot washoku-dot-f" aria-hidden="true"></span>脂質</dt><dd>{{ recipe.fat_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div><dt><span class="washoku-dot washoku-dot-c" aria-hidden="true"></span>炭水化物</dt><dd>{{ recipe.carbs_g|floatformat:"-1" }}<small>g</small></dd></div>
+            {% if recipe.salt_g is not None %}<div><dt>塩分</dt><dd>{{ recipe.salt_g|floatformat:1 }}<small>g</small></dd></div>{% endif %}
+        </dl>
+        {% if pfc %}
+            <div class="washoku-pfc" role="img" aria-label="PFCバランス たんぱく質{{ pfc.protein }}% 脂質{{ pfc.fat }}% 炭水化物{{ pfc.carbs }}%">
+                <span class="washoku-pfc-p" style="width: {{ pfc.protein }}%"></span><span class="washoku-pfc-f" style="width: {{ pfc.fat }}%"></span><span class="washoku-pfc-c" style="width: {{ pfc.carbs }}%"></span>
+            </div>
+            <p class="washoku-pfc-legend">PFCバランス: P {{ pfc.protein }}% ・ F {{ pfc.fat }}% ・ C {{ pfc.carbs }}%</p>
+        {% endif %}
+        <p class="washoku-note">材料と分量からの概算です。{% if includes_rice %}ご飯1膳（150g）を含みます。{% endif %}</p>
+    </section>
+    {% endwith %}
+    {% endif %}
+
     <section class="washoku-section">
         <h2>材料</h2>
         <p class="washoku-legend">お店の名前がない食材は、Migros・Coop などの普通のスーパーで買えます。</p>

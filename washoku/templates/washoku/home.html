@@ -60,6 +60,25 @@
     {% endif %}
 </section>
 
+<section class="washoku-section">
+    <h2>みんなの知恵</h2>
+    <div class="washoku-chips">
+        <a class="washoku-chip-link" href="{% url 'washoku:column_list' %}"><i class="bi bi-journal-text" aria-hidden="true"></i> コラム</a>
+        <a class="washoku-chip-link" href="{% url 'washoku:product_list' %}"><i class="bi bi-bag" aria-hidden="true"></i> スーパーのおすすめ商品</a>
+        <a class="washoku-chip-link" href="{% url 'washoku:substitute_list' %}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> 日本の野菜の代わり</a>
+    </div>
+    {% if latest_posts %}
+        <ul class="washoku-list">
+            {% for post in latest_posts %}
+                <li>
+                    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                    <small>{{ post.get_kind_display }} ・ {{ post.author|display_name }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
+
 {% if questions %}
 <section class="washoku-section">
     <h2>答えを待っている質問</h2>

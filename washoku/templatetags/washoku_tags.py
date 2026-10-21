@@ -13,6 +13,9 @@ def display_name(user):
     Yapp のニックネーム。プロフィールがなければユーザー名。
     """
 
+    if user is None:
+        return "退会した会員"
+
     try:
         return user.profile.display_name
     except Exception:

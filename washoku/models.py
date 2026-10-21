@@ -227,6 +227,7 @@ class Recipe(models.Model):
         ("side", "副菜"),
         ("soup", "汁物・鍋"),
         ("flour", "粉もの・おやつ"),
+        ("yoshoku", "洋食"),
         ("chinese", "中華"),
         ("korean", "韓国"),
         ("vietnamese", "ベトナム"),
@@ -299,6 +300,46 @@ class Recipe(models.Model):
         related_name="recipes",
     )
 
+    # 1人分の栄養の目安 (材料からの概算)
+    energy_kcal = models.PositiveIntegerField(
+        "エネルギー（kcal）",
+        null=True,
+        blank=True,
+        help_text="1人分の目安。",
+    )
+
+    protein_g = models.DecimalField(
+        "たんぱく質（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    fat_g = models.DecimalField(
+        "脂質（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    carbs_g = models.DecimalField(
+        "炭水化物（g）",
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
+    salt_g = models.DecimalField(
+        "食塩相当量（g）",
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+
     shop_rank = models.PositiveSmallIntegerField(
         "必要な店",
         null=True,
@@ -361,6 +402,37 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def has_nutrition(self):
+        return None not in (self.energy_kcal, self.protein_g, self.fat_g, self.carbs_g)
+
+    def pfc_ratio(self):
+        """
+        エネルギーに占めるたんぱく質・脂質・炭水化物の割合 (%)。
+        """
+
+        if not self.has_nutrition:
+            return None
+
+        parts = [
+            float(self.protein_g) * 4,
+            float(self.fat_g) * 9,
+            float(self.carbs_g) * 4,
+        ]
+
+        total = sum(parts)
+
+        if not total:
+            return None
+
+        protein, fat = (round(part * 100 / total) for part in parts[:2])
+
+        return {
+            "protein": protein,
+            "fat": fat,
+            "carbs": 100 - protein - fat,
+        }
 
     def step_list(self):
         return [
@@ -743,12 +815,129 @@ class Feedback(models.Model):
 
 
 # =========================================================
+# みんなの投稿 (コラム・おすすめ商品)
+# =========================================================
+
+class Post(models.Model):
+    """
+    会員が書くコラム・体験談と、スーパーで買えるおすすめ商品。
+    管理者が公開するまでは、書いた本人と管理者にだけ見える。
+    """
+
+    KIND_CHOICES = [
+        ("column", "コラム"),
+        ("product", "おすすめ商品"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "確認待ち"),
+        ("published", "公開"),
+    ]
+
+    SHOP_CHOICES = [
+        ("migros", "Migros"),
+        ("coop", "Coop"),
+        ("denner", "Denner"),
+        ("aldi", "Aldi"),
+        ("lidl", "Lidl"),
+        ("asian", "アジア・日系の店"),
+        ("other", "その他"),
+    ]
+
+    SECTION_CHOICES = [
+        ("frozen", "冷凍"),
+        ("chilled", "冷蔵・チルド"),
+        ("pantry", "常温"),
+    ]
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+        db_index=True,
+    )
+
+    title = models.CharField(
+        "タイトル・商品名",
+        max_length=100,
+    )
+
+    body = models.TextField(
+        "本文",
+        max_length=4000,
+    )
+
+    shop = models.CharField(
+        "買えるお店",
+        max_length=20,
+        choices=SHOP_CHOICES,
+        blank=True,
+    )
+
+    section = models.CharField(
+        "売り場",
+        max_length=20,
+        choices=SECTION_CHOICES,
+        blank=True,
+    )
+
+    resembles = models.CharField(
+        "日本の何に近い？",
+        max_length=100,
+        blank=True,
+        help_text="例: 冷凍餃子、ちくわ",
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した会員",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_posts",
+    )
+
+    status = models.CharField(
+        "公開状態",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField(
+        "投稿日時",
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        "更新日時",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "みんなの投稿"
+        verbose_name_plural = "みんなの投稿"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def name(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("washoku:post_detail", args=[self.pk])
+
+
+# =========================================================
 # コメント・Q&A
 # =========================================================
 
 class Comment(models.Model):
     """
-    レシピ・食材・お店のどれか1つに付くコメント。
+    レシピ・食材・お店・みんなの投稿のどれか1つに付くコメント。
     返信は1段だけ (parent は返信先のスレッドの先頭コメント)。
     """
 
@@ -775,6 +964,14 @@ class Comment(models.Model):
 
     store = models.ForeignKey(
         Store,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comments",
+    )
+
+    post = models.ForeignKey(
+        Post,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -845,9 +1042,10 @@ class Comment(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(recipe__isnull=False, ingredient__isnull=True, store__isnull=True)
-                    | models.Q(recipe__isnull=True, ingredient__isnull=False, store__isnull=True)
-                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=False)
+                    models.Q(recipe__isnull=False, ingredient__isnull=True, store__isnull=True, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=False, store__isnull=True, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=False, post__isnull=True)
+                    | models.Q(recipe__isnull=True, ingredient__isnull=True, store__isnull=True, post__isnull=False)
                 ),
                 name="washoku_comment_has_one_target",
             )
@@ -858,12 +1056,14 @@ class Comment(models.Model):
 
     @property
     def target(self):
-        return self.recipe or self.ingredient or self.store
+        return self.recipe or self.ingredient or self.store or self.post
 
     def get_absolute_url(self):
 
         if self.recipe_id:
             url = reverse("washoku:recipe_detail", args=[self.recipe_id])
+        elif self.post_id:
+            url = reverse("washoku:post_detail", args=[self.post_id])
         elif self.store_id:
             url = reverse("washoku:store_detail", args=[self.store_id])
         else:

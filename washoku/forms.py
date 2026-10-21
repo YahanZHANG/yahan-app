@@ -2,7 +2,7 @@ import re
 
 from django import forms
 
-from .models import Comment, Feedback, Ingredient, MoodTag, Recipe
+from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe
 
 
 class CommentForm(forms.ModelForm):
@@ -73,6 +73,70 @@ class FeedbackForm(forms.ModelForm):
             raise forms.ValidationError("内容を入力してください。")
 
         return message
+
+
+class PostForm(forms.ModelForm):
+    """
+    みんなの投稿 (コラム・おすすめ商品) のフォーム。
+    商品のときだけ、お店・売り場・日本の何に近いかを聞く。
+    """
+
+    class Meta:
+        model = Post
+        fields = ["title", "shop", "section", "resembles", "body"]
+        widgets = {
+            "title": forms.TextInput(attrs={"maxlength": 100}),
+            "resembles": forms.TextInput(attrs={"placeholder": "例: 冷凍餃子、ちくわ"}),
+            "body": forms.Textarea(attrs={"rows": 10, "maxlength": 4000}),
+        }
+
+    def __init__(self, *args, kind="column", **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        self.kind = kind
+
+        if kind == "product":
+
+            self.fields["title"].label = "商品名"
+            self.fields["title"].widget.attrs["placeholder"] = "例: Migros の冷凍ギョーザ"
+            self.fields["resembles"].help_text = ""
+            self.fields["shop"].required = True
+            self.fields["shop"].choices = [("", "選んでください")] + Post.SHOP_CHOICES
+            self.fields["section"].choices = [("", "わからない")] + Post.SECTION_CHOICES
+            self.fields["body"].label = "おすすめのポイント"
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "味の感想、日本のものとの違い、おいしい食べ方、値段など"
+            )
+
+        else:
+
+            for name in ("shop", "section", "resembles"):
+                del self.fields[name]
+
+            self.fields["title"].label = "タイトル"
+            self.fields["title"].widget.attrs["placeholder"] = "例: 肉屋さんで薄切り肉を頼むコツ"
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "スイスでの買い物や料理で、知っていると助かる経験を書いてください。"
+            )
+
+    def clean_title(self):
+
+        title = self.cleaned_data["title"].strip()
+
+        if not title:
+            raise forms.ValidationError("入力してください。")
+
+        return title
+
+    def clean_body(self):
+
+        body = self.cleaned_data["body"].strip()
+
+        if len(body) < 10:
+            raise forms.ValidationError("もう少し詳しく書いてください（10文字以上）。")
+
+        return body
 
 
 class RecipeSubmissionForm(forms.ModelForm):

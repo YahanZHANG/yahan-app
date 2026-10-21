@@ -20,6 +20,7 @@ from outings.models import (
 from washoku.models import (
     Comment as WashokuComment,
     Feedback as WashokuFeedback,
+    Post as WashokuPost,
     Recipe as WashokuRecipe,
 )
 
@@ -69,6 +70,18 @@ def _washoku_items():
             unchecked.filter(store__isnull=False).count(),
             comments_url,
             "admin_checked__exact=0&target=store",
+        ),
+        _item(
+            "コラム・商品の投稿",
+            WashokuPost.objects.filter(status="draft").count(),
+            "admin:washoku_post_changelist",
+            "status__exact=draft",
+        ),
+        _item(
+            "コラム・商品へのコメント",
+            unchecked.filter(post__isnull=False).count(),
+            comments_url,
+            "admin_checked__exact=0&target=post",
         ),
         _item(
             "質問箱",

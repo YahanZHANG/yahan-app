@@ -1,0 +1,35 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}投稿したコラム・商品 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>投稿したコラム・商品</h1>
+
+<p class="washoku-quick">
+    <a href="{% url 'washoku:post_submit' 'column' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> コラムを書く</a>
+    <a href="{% url 'washoku:post_submit' 'product' %}"><i class="bi bi-bag-plus" aria-hidden="true"></i> 商品を紹介する</a>
+</p>
+
+{% if posts %}
+    <ul class="washoku-list">
+        {% for post in posts %}
+            <li>
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                <small>
+                    {{ post.get_kind_display }}
+                    {% if post.status == "published" %}
+                        <span class="washoku-chip washoku-chip-shop">掲載中</span>
+                    {% else %}
+                        <span class="washoku-chip washoku-chip-draft">確認待ち</span>
+                    {% endif %}
+                    {{ post.created_at|date:"Y/n/j" }}
+                </small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="washoku-empty">まだ投稿はありません。</p>
+{% endif %}
+
+{% endblock %}
