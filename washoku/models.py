@@ -1260,15 +1260,32 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
+# コメントとコラムに押せるスタンプ (並び順もこのとおり)
+REACTION_CHOICES = [
+    ("thanks", "ありがとう"),
+    ("insight", "なるほど"),
+    ("like", "いいね"),
+    ("genius", "天才"),
+    ("lovely", "ステキ"),
+    ("check", "確認します"),
+]
+
+REACTION_EMOJI = {
+    "thanks": "🙏",
+    "insight": "💡",
+    "like": "👍",
+    "genius": "🤩",
+    "lovely": "✨",
+    "check": "👀",
+}
+
+
 class CommentReaction(models.Model):
     """
-    コメントへの「いいね」「ありがとう」。1人1種類につき1回。
+    コメントへのスタンプ。1人1種類につき1回。
     """
 
-    KIND_CHOICES = [
-        ("like", "いいね"),
-        ("thanks", "ありがとう"),
-    ]
+    KIND_CHOICES = REACTION_CHOICES
 
     comment = models.ForeignKey(
         Comment,
@@ -1293,8 +1310,8 @@ class CommentReaction(models.Model):
     )
 
     class Meta:
-        verbose_name = "いいね・ありがとう"
-        verbose_name_plural = "いいね・ありがとう"
+        verbose_name = "コメントへのスタンプ"
+        verbose_name_plural = "コメントへのスタンプ"
         constraints = [
             models.UniqueConstraint(
                 fields=["comment", "user", "kind"],
@@ -1304,6 +1321,49 @@ class CommentReaction(models.Model):
 
     def __str__(self):
         return f"{self.user} {self.get_kind_display()} → {self.comment_id}"
+
+
+class PostReaction(models.Model):
+    """
+    コラムへのスタンプ。1人1種類につき1回。
+    """
+
+    KIND_CHOICES = REACTION_CHOICES
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="reactions",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_post_reactions",
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "コラムへのスタンプ"
+        verbose_name_plural = "コラムへのスタンプ"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post", "user", "kind"],
+                name="washoku_unique_post_reaction",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} {self.get_kind_display()} → {self.post_id}"
 
 
 class Notification(models.Model):

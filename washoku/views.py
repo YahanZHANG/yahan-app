@@ -38,6 +38,7 @@ from .models import (
     MoodTag,
     Notification,
     Post,
+    PostReaction,
     PushSubscription,
     Recipe,
     RecipeFavorite,
@@ -47,6 +48,8 @@ from .models import (
     ShopType,
     Store,
     Substitute,
+    REACTION_CHOICES,
+    REACTION_EMOJI,
 )
 
 
@@ -906,26 +909,62 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
     }
 
 
-def attach_reactions(comments, user):
+def reaction_stamps(rows, user):
     """
-    各コメントに like_count・thanks_count と、自分が押したかどうかを付ける。
+    (対象の id, user_id, kind) の並びから、対象ごとのスタンプ一覧を作る。
+    各スタンプは kind・label・emoji・count・mine を持つ。
     """
 
     counts = defaultdict(int)
     mine = set()
 
-    for comment_id, user_id, kind in CommentReaction.objects.filter(
-        comment__in=[comment.pk for comment in comments]
-    ).values_list("comment_id", "user_id", "kind"):
-        counts[comment_id, kind] += 1
+    for target_id, user_id, kind in rows:
+        counts[target_id, kind] += 1
         if user.is_authenticated and user_id == user.pk:
-            mine.add((comment_id, kind))
+            mine.add((target_id, kind))
+
+    def stamps_for(target_id):
+        return [
+            {
+                "kind": kind,
+                "label": label,
+                "emoji": REACTION_EMOJI[kind],
+                "count": counts[target_id, kind],
+                "mine": (target_id, kind) in mine,
+            }
+            for kind, label in REACTION_CHOICES
+        ]
+
+    return stamps_for
+
+
+def attach_reactions(comments, user):
+    """
+    各コメントに stamps (スタンプの種類ごとの数と、自分が押したか) を付ける。
+    """
+
+    stamps_for = reaction_stamps(
+        CommentReaction.objects.filter(
+            comment__in=[comment.pk for comment in comments]
+        ).values_list("comment_id", "user_id", "kind"),
+        user,
+    )
 
     for comment in comments:
-        comment.like_count = counts[comment.pk, "like"]
-        comment.thanks_count = counts[comment.pk, "thanks"]
-        comment.i_liked = (comment.pk, "like") in mine
-        comment.i_thanked = (comment.pk, "thanks") in mine
+        comment.stamps = stamps_for(comment.pk)
+
+
+def toggle_reaction(model, user, kind, **target):
+    """
+    スタンプを押す / もう一度押すと取り消す。押したときだけ True を返す。
+    """
+
+    reaction, created = model.objects.get_or_create(user=user, kind=kind, **target)
+
+    if not created:
+        reaction.delete()
+
+    return created
 
 
 @login_required
@@ -940,19 +979,12 @@ def comment_react(request, pk):
     kind = request.POST.get("kind", "")
 
     # 自分のコメントには押せない
-    if kind not in dict(CommentReaction.KIND_CHOICES) or comment.author_id == request.user.pk:
+    if kind not in dict(REACTION_CHOICES) or comment.author_id == request.user.pk:
         return redirect(comment_target_url(comment))
 
-    reaction, created = CommentReaction.objects.get_or_create(
-        comment=comment,
-        user=request.user,
-        kind=kind,
-    )
+    created = toggle_reaction(CommentReaction, request.user, kind, comment=comment)
 
-    if not created:
-        reaction.delete()
-
-    elif kind == "thanks":
+    if created and kind == "thanks":
         Notification.objects.create(
             recipient_id=comment.author_id,
             actor=request.user,
@@ -961,6 +993,24 @@ def comment_react(request, pk):
         )
 
     return redirect(comment_target_url(comment))
+
+
+@login_required
+@require_POST
+def post_react(request, pk):
+
+    post = get_object_or_404(
+        Post.objects.filter(status="published", kind="column"),
+        pk=pk,
+    )
+
+    kind = request.POST.get("kind", "")
+
+    # 自分のコラムには押せない
+    if kind in dict(REACTION_CHOICES) and post.author_id != request.user.pk:
+        toggle_reaction(PostReaction, request.user, kind, post=post)
+
+    return redirect(reverse("washoku:post_detail", args=[post.pk]) + "#stamps")
 
 
 def comment_target_url(comment):
@@ -1919,6 +1969,10 @@ def post_detail(request, pk):
         {
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
+            "stamps": reaction_stamps(
+                post.reactions.values_list("post_id", "user_id", "kind"),
+                request.user,
+            )(post.pk),
             **comment_context(request, post=post),
         },
     )

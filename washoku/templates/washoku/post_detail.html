@@ -36,6 +36,11 @@
         <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
     {% endif %}
 
+    {% if post.kind == "column" and post.status == "published" %}
+        {% url 'washoku:post_react' post.pk as react_url %}
+        {% include "washoku/includes/stamps.html" with action=react_url author_id=post.author_id anchor="stamps" %}
+    {% endif %}
+
 </article>
 
 {% if post.status == "published" %}

@@ -11,18 +11,8 @@
         {% if comment.is_hidden %}<span class="washoku-chip washoku-chip-draft">非表示中</span>{% endif %}
     </header>
     <p class="washoku-comment-text">{{ comment.body|linebreaksbr }}</p>
-    <div class="washoku-reactions">
-        {% if user.is_authenticated and comment.author_id != user.pk %}
-            <form method="post" action="{% url 'washoku:comment_react' comment.pk %}">
-                {% csrf_token %}
-                <button type="submit" name="kind" value="like" class="washoku-reaction{% if comment.i_liked %} is-on{% endif %}" aria-pressed="{% if comment.i_liked %}true{% else %}false{% endif %}">👍 いいね{% if comment.like_count %} <b>{{ comment.like_count }}</b>{% endif %}</button>
-                <button type="submit" name="kind" value="thanks" class="washoku-reaction{% if comment.i_thanked %} is-on{% endif %}" aria-pressed="{% if comment.i_thanked %}true{% else %}false{% endif %}">🙏 ありがとう{% if comment.thanks_count %} <b>{{ comment.thanks_count }}</b>{% endif %}</button>
-            </form>
-        {% else %}
-            {% if comment.like_count %}<span class="washoku-reaction-count">👍 {{ comment.like_count }}</span>{% endif %}
-            {% if comment.thanks_count %}<span class="washoku-reaction-count">🙏 {{ comment.thanks_count }}</span>{% endif %}
-        {% endif %}
-    </div>
+    {% url 'washoku:comment_react' comment.pk as react_url %}
+    {% include "washoku/includes/stamps.html" with stamps=comment.stamps action=react_url author_id=comment.author_id %}
     {% if user.is_authenticated %}
     <div class="washoku-comment-actions">
         {% if comment.author_id == user.pk %}

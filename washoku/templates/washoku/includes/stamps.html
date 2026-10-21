@@ -1,0 +1,26 @@
+{% comment %}
+スタンプの列。押された種類だけ数と一緒に並べ、＋で全種類を選べる。
+stamps: views.reaction_stamps の一覧 / action: 送り先 / author_id: 書いた人 (自分のものには押せない)
+{% endcomment %}
+<div class="washoku-reactions"{% if anchor %} id="{{ anchor }}"{% endif %}>
+    {% if user.is_authenticated and author_id != user.pk %}
+        <form method="post" action="{{ action }}">
+            {% csrf_token %}
+            {% for stamp in stamps %}{% if stamp.count %}
+                <button type="submit" name="kind" value="{{ stamp.kind }}" class="washoku-reaction{% if stamp.mine %} is-on{% endif %}" aria-pressed="{% if stamp.mine %}true{% else %}false{% endif %}" title="{{ stamp.label }}">{{ stamp.emoji }} {{ stamp.label }} <b>{{ stamp.count }}</b></button>
+            {% endif %}{% endfor %}
+            <details class="washoku-stamp-picker">
+                <summary class="washoku-reaction" aria-label="スタンプを押す">😊＋</summary>
+                <div class="washoku-stamp-menu">
+                    {% for stamp in stamps %}
+                        <button type="submit" name="kind" value="{{ stamp.kind }}" class="washoku-reaction{% if stamp.mine %} is-on{% endif %}" aria-pressed="{% if stamp.mine %}true{% else %}false{% endif %}">{{ stamp.emoji }} {{ stamp.label }}</button>
+                    {% endfor %}
+                </div>
+            </details>
+        </form>
+    {% else %}
+        {% for stamp in stamps %}{% if stamp.count %}
+            <span class="washoku-reaction-count" title="{{ stamp.label }}">{{ stamp.emoji }} {{ stamp.label }} {{ stamp.count }}</span>
+        {% endif %}{% endfor %}
+    {% endif %}
+</div>

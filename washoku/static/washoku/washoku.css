@@ -2213,7 +2213,7 @@ html[data-washoku-theme="dark"] {
     font-weight: 700;
 }
 
-/* コメントの いいね・ありがとう */
+/* コメント・コラムのスタンプ */
 .washoku-reactions {
     display: flex;
     flex-wrap: wrap;
@@ -2255,6 +2255,36 @@ html[data-washoku-theme="dark"] {
 
 .washoku-reaction b {
     margin-left: 2px;
+}
+
+/* ＋を押すと全種類が下に並ぶ */
+.washoku-stamp-picker > summary {
+    display: inline-block;
+    list-style: none;
+}
+
+.washoku-stamp-picker > summary::-webkit-details-marker {
+    display: none;
+}
+
+.washoku-stamp-picker[open] {
+    flex-basis: 100%;
+}
+
+.washoku-stamp-picker[open] > summary {
+    border-color: var(--washoku-accent) !important;
+}
+
+.washoku-stamp-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.washoku-stamp-menu .washoku-reaction {
+    font-size: 14px;
+    padding: 6px 12px !important;
 }
 
 /* お店の種類: 携帯でも1行に収める */

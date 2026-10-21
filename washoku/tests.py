@@ -23,6 +23,7 @@ from .models import (
     Notification,
     CommentReaction,
     Post,
+    PostReaction,
     Recipe,
     RecipeFavorite,
     RecipeIngredient,
@@ -1390,6 +1391,35 @@ class FavoriteNoteReactionTests(TestCase):
         self.client.post(url, {"kind": "like"})
         self.assertEqual(CommentReaction.objects.count(), 1)
         self.assertContains(self.client.get(reverse("washoku:notification_list")), "「ありがとう」を送りました")
+
+    def test_new_stamps_on_comments_and_columns(self):
+
+        answer = Comment.objects.create(author=self.child, recipe=self.recipe, kind="tip", body="白ワインで代用できます")
+
+        self.client.force_login(self.me)
+        self.client.post(reverse("washoku:comment_react", args=[answer.pk]), {"kind": "genius"})
+        self.client.post(reverse("washoku:comment_react", args=[answer.pk]), {"kind": "unknown"})
+
+        self.assertEqual(list(CommentReaction.objects.values_list("kind", flat=True)), ["genius"])
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "🤩 天才 <b>1</b>")
+
+        column = Post.objects.create(author=self.child, kind="column", title="Rahm の選び方", body="本文", status="published")
+        url = reverse("washoku:post_react", args=[column.pk])
+
+        self.client.post(url, {"kind": "insight"})
+        self.client.post(url, {"kind": "check"})
+        self.client.post(url, {"kind": "check"})
+
+        self.assertEqual(list(PostReaction.objects.values_list("kind", flat=True)), ["insight"])
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "💡 なるほど <b>1</b>")
+
+        # 自分のコラムには押せず、数だけ見える
+        self.client.force_login(self.child)
+        self.client.post(url, {"kind": "like"})
+        self.assertEqual(PostReaction.objects.count(), 1)
+        page = self.client.get(reverse("washoku:post_detail", args=[column.pk]))
+        self.assertContains(page, "💡 なるほど 1")
+        self.assertNotContains(page, "スタンプを押す")
 
     def test_filter_recipes_by_nutrition(self):
 
