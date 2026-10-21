@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import DatabaseError
 from django.utils import timezone
 
+from .browsers import detect_browser
 from .catalog import app_for_path, should_track_path
 from .models import PageView
 from .sources import classify_source
@@ -217,6 +218,7 @@ class UsageAnalyticsMiddleware:
             accessed_at=now,
             is_visit_start=is_visit_start,
             device_type=get_device_type(request),
+            browser=detect_browser(request.META.get("HTTP_USER_AGENT", "")),
         )
 
         if is_new_cookie:

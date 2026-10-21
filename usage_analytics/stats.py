@@ -14,6 +14,7 @@ from django.db.models import Count, Max, Min
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
+from .browsers import browser_info
 from .catalog import app_info
 from .models import (
     AnalyticsExclusion,
@@ -430,6 +431,12 @@ def build_dashboard(scope):
         for key, count in device_counter.most_common()
     ]
 
+    # ---------------------------------------------------
+    # どこで開いたか (アプリ内ブラウザ)
+    # ---------------------------------------------------
+
+    browsers = browser_rows(visits, new_visitors, days_per_visitor)
+
     return {
         "summary": now_summary,
         "previous": before_summary,
@@ -453,6 +460,7 @@ def build_dashboard(scope):
         "frequency": frequency,
         "retention": retention,
         "devices": devices,
+        "browsers": browsers,
         "visits_count": len(visits),
         "recent_visits": recent_visits(visits),
     }
@@ -524,6 +532,7 @@ def visit_rows(scope, current):
                 "source_type",
                 "source_label",
                 "device_type",
+                "browser",
                 "app_key",
                 "utm_source",
                 "utm_medium",
@@ -553,6 +562,7 @@ def visit_rows(scope, current):
             "source_type": start.get("source_type", ""),
             "source_label": start.get("source_label", ""),
             "device_type": start.get("device_type", "other"),
+            "browser": browser_info(start.get("browser", "")),
             "entry_app": start.get("app_key") or next(iter(apps_per_visit[visit_id]), "portal"),
             "entry_path": start.get("path", ""),
             "utm_source": start.get("utm_source", ""),
@@ -681,6 +691,53 @@ def app_interest(scope, current, previous, visits):
         "multi_app_visits": multi_app_visits,
         "multi_app_visitors": multi_app_visitors,
         "total_visitors": total_visitors if visits else 0,
+    }
+
+
+def browser_rows(visits, new_visitors, days_per_visitor):
+    """
+    開いた場所ごとの訪問。アプリ内ブラウザは cookie が残りにくいので、
+    「初めての人」「1日だけの人」の割合が高くなりがち (同じ人の数え直し)。
+    """
+
+    rows = {}
+
+    for visit in visits:
+        info = visit["browser"]
+        row = rows.setdefault(info["key"], {**info, "visits": 0, "visitors": set()})
+        row["visits"] += 1
+        row["visitors"].add(visit["visitor_id"])
+
+    total_visits = len(visits) or 1
+
+    result = []
+    for row in rows.values():
+        visitors = row.pop("visitors")
+        count = len(visitors) or 1
+        result.append({
+            **row,
+            "visitors": len(visitors),
+            "share": round(row["visits"] / total_visits * 100),
+            "new_share": round(sum(1 for v in visitors if v in new_visitors) / count * 100),
+            "one_day_share": round(sum(1 for v in visitors if days_per_visitor[v] == 1) / count * 100),
+        })
+
+    # 「記録なし」(以前のデータ) はいちばん下
+    result.sort(key=lambda row: (not row["key"], -row["visits"]))
+
+    recorded = [row for row in result if row["key"]]
+    in_app_visits = sum(row["visits"] for row in recorded if row["in_app"])
+    recorded_visits = sum(row["visits"] for row in recorded)
+
+    max_visits = max((row["visits"] for row in result), default=0) or 1
+    for row in result:
+        row["bar"] = round(row["visits"] / max_visits * 100)
+
+    return {
+        "rows": result,
+        "in_app_visits": in_app_visits,
+        "recorded_visits": recorded_visits,
+        "in_app_share": round(in_app_visits / recorded_visits * 100) if recorded_visits else None,
     }
 
 
@@ -887,6 +944,7 @@ def person_timeline(views, limit=400):
             "source_type",
             "source_label",
             "device_type",
+            "browser",
             "utm_campaign",
         )[:limit]
     )
@@ -903,6 +961,7 @@ def person_timeline(views, limit=400):
             "source": source_info("unknown"),
             "source_label": "",
             "device_type": row["device_type"],
+            "browser": browser_info(row["browser"]),
             "apps": [],
         })
         visit["end"] = row["accessed_at"]
@@ -910,6 +969,7 @@ def person_timeline(views, limit=400):
             visit["source"] = source_info(row["source_type"] or "unknown")
             visit["source_label"] = row["source_label"]
             visit["device_type"] = row["device_type"]
+            visit["browser"] = browser_info(row["browser"])
         info = app_info(row["app_key"])
         if info not in visit["apps"]:
             visit["apps"].append(info)

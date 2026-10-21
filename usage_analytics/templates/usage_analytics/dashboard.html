@@ -143,6 +143,57 @@
                 {% endif %}
             </div>
         </div>
+
+        <div class="ya-card" style="margin-top: 12px">
+            <h3>📲 どこで開いたか</h3>
+            <p class="ya-note">
+                LINE・Facebook・Instagram などのアプリの中で開くと、Safari や Chrome とは別の記録になり、記録が消えることも多いので、同じ人が別の人として数えられやすくなります。
+                「初めて」「1日だけ」の割合がほかより高い場所は、その数え直しが起きている目安です。
+                {% if data.browsers.in_app_share is not None %}
+                    この期間の訪問の <strong>{{ data.browsers.in_app_share }}%</strong> がアプリ内からです。
+                {% endif %}
+            </p>
+            {% if data.browsers.rows %}
+                <div class="ya-table-wrap">
+                    <table class="ya-table">
+                        <thead>
+                            <tr>
+                                <th>開いた場所</th>
+                                <th style="width: 30%">訪問</th>
+                                <th class="ya-num">人</th>
+                                <th class="ya-num">初めての人</th>
+                                <th class="ya-num">1日だけの人</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data.browsers.rows %}
+                                <tr>
+                                    <td>
+                                        {% if row.in_app %}<span class="ya-tag">アプリ内</span>{% endif %}
+                                        <strong>{{ row.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="ya-bar-inline">
+                                            <div class="ya-bar-track"><div class="ya-bar-fill {% if not row.key %}ya-s9{% elif row.in_app %}ya-s2{% else %}ya-s1{% endif %}" style="width: {{ row.bar }}%"></div></div>
+                                            <span class="ya-num">{{ row.visits }} <span class="ya-sub" style="display: inline">{{ row.share }}%</span></span>
+                                        </div>
+                                    </td>
+                                    <td class="ya-num">{{ row.visitors }}</td>
+                                    <td class="ya-num">{{ row.new_share }}%</td>
+                                    <td class="ya-num">{{ row.one_day_share }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="ya-note" style="margin: 8px 0 0">
+                    iPhone の「ホーム画面アプリ / その他のアプリ内」は、ホーム画面に追加したYappから開いた場合と、名前の分からないアプリの中で開いた場合が混ざっています（見分けられません）。
+                    この記録はこの機能を入れた日から始まるので、それより前の訪問は「記録なし」になります。
+                </p>
+            {% else %}
+                <p class="ya-empty">この期間の記録はまだありません。</p>
+            {% endif %}
+        </div>
     </section>
 
     <!-- =====================================================
@@ -432,6 +483,7 @@
                         <span class="ya-visit-meta">
                             <span class="ya-tag"><i class="ya-swatch ya-{{ visit.source.css }}"></i>{{ visit.source_label|default:visit.source.short }}</span>
                             {% for app in visit.app_list %}<span class="ya-tag">{{ app.emoji }} {{ app.name }}</span>{% endfor %}
+                            {% if visit.browser.key %}<span class="ya-tag">📲 {{ visit.browser.name }}</span>{% endif %}
                             <span class="ya-tag">{{ visit.pages }}ページ{% if visit.minutes %}・{{ visit.minutes }}分{% endif %}</span>
                         </span>
                     </a>

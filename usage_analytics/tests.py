@@ -12,7 +12,27 @@ SIMPLE_STATIC = {
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
-BROWSER = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile Safari"
+BROWSER = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+
+
+class BrowserTests(TestCase):
+
+    def test_in_app_browsers(self):
+
+        from .browsers import detect_browser
+
+        iphone = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+
+        self.assertEqual(detect_browser(iphone + " Mobile/15E148 Safari Line/13.19.0"), "line")
+        self.assertEqual(detect_browser(iphone + " Mobile/21B91 [FBAN/FBIOS;FBAV/440.0.0.33.116]"), "facebook")
+        self.assertEqual(detect_browser(iphone + " Mobile/15E148 Instagram 307.0.0.34.111"), "instagram")
+        self.assertEqual(detect_browser(iphone + " Version/17.1 Mobile/15E148 Safari/604.1"), "safari")
+        self.assertEqual(detect_browser(iphone + " CriOS/119.0 Mobile/15E148 Safari/604.1"), "chrome")
+        self.assertEqual(detect_browser(iphone + " Mobile/15E148"), "ios_app")
+        self.assertEqual(
+            detect_browser("Mozilla/5.0 (Linux; Android 14; Pixel 8; wv) AppleWebKit/537.36 Chrome/119.0 Mobile Safari/537.36"),
+            "other_app",
+        )
 
 
 class SourceTests(TestCase):
@@ -59,6 +79,7 @@ class TrackingTests(TestCase):
         self.assertTrue(view.is_visit_start)
         self.assertTrue(view.is_new_visitor)
         self.assertEqual((view.source_type, view.source_label), ("search", "Google"))
+        self.assertEqual(view.browser, "safari")
         self.assertIn(VISITOR_COOKIE, response.cookies)
         self.assertIn(VISIT_COOKIE, response.cookies)
 

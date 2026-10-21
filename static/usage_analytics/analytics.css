@@ -886,3 +886,10 @@ line.ya-axis {
 .ya-live-windows b {
     color: var(--ya-ink);
 }
+
+.ya-bar-inline {
+    display: grid;
+    grid-template-columns: minmax(60px, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}

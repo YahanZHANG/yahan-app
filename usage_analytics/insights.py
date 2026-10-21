@@ -222,6 +222,19 @@ def build_insights(scope, data, pages, clicks):
                 "text": format_html("訪問の <strong>{}%</strong> はスマホからです。", mobile["share"]),
             })
 
+    browsers = data["browsers"]
+    if browsers["in_app_share"] is not None and browsers["recorded_visits"] >= 5 and browsers["in_app_share"] >= 15:
+        top_app = next((row for row in browsers["rows"] if row["in_app"]), None)
+        lines.append({
+            "icon": "📲",
+            "text": format_html(
+                "訪問の <strong>{}%</strong> は {} などアプリの中から開かれています。"
+                "アプリ内は記録が残りにくいので、実際の人数は「来た人」より少し少ないかもしれません。",
+                browsers["in_app_share"],
+                top_app["name"] if top_app else "LINE",
+            ),
+        })
+
     # ---------------------------------------------------
     # 人気
     # ---------------------------------------------------
