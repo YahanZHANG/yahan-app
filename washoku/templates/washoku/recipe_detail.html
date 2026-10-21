@@ -31,10 +31,10 @@
         <h2 id="nutrition-heading">1人分の栄養<small>（目安）</small></h2>
         <dl class="washoku-nutrition-grid">
             <div class="washoku-nutrition-energy"><dt>エネルギー</dt><dd>{{ recipe.energy_kcal }}<small>kcal</small></dd></div>
-            <div><dt><span class="washoku-dot washoku-dot-p" aria-hidden="true"></span>たんぱく質</dt><dd>{{ recipe.protein_g|floatformat:"-1" }}<small>g</small></dd></div>
-            <div><dt><span class="washoku-dot washoku-dot-f" aria-hidden="true"></span>脂質</dt><dd>{{ recipe.fat_g|floatformat:"-1" }}<small>g</small></dd></div>
-            <div><dt><span class="washoku-dot washoku-dot-c" aria-hidden="true"></span>炭水化物</dt><dd>{{ recipe.carbs_g|floatformat:"-1" }}<small>g</small></dd></div>
-            {% if recipe.salt_g is not None %}<div><dt>塩分</dt><dd>{{ recipe.salt_g|floatformat:1 }}<small>g</small></dd></div>{% endif %}
+            <div class="washoku-nutrition-p"><dt>たんぱく質</dt><dd>{{ recipe.protein_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div class="washoku-nutrition-f"><dt>脂質</dt><dd>{{ recipe.fat_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div class="washoku-nutrition-c"><dt>炭水化物</dt><dd>{{ recipe.carbs_g|floatformat:"-1" }}<small>g</small></dd></div>
+            <div><dt>塩分</dt><dd>{% if recipe.salt_g is not None %}{{ recipe.salt_g|floatformat:1 }}<small>g</small>{% else %}-{% endif %}</dd></div>
         </dl>
         {% if pfc %}
             <div class="washoku-pfc" role="img" aria-label="PFCバランス たんぱく質{{ pfc.protein }}% 脂質{{ pfc.fat }}% 炭水化物{{ pfc.carbs }}%">

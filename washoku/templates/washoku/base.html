@@ -69,10 +69,15 @@
             <nav class="washoku-desktop-nav" aria-label="PCメニュー">
                 <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
                 <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients random_recipe' %}active{% endif %}"><i class="bi bi-journal-richtext" aria-hidden="true"></i>レシピ</a>
-                <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail substitute_list' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
+                <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail substitute_list substitute_submit' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
                 <a href="{% url 'washoku:store_list' %}" class="{% if name in 'store_list store_detail' %}active{% endif %}"><i class="bi bi-shop" aria-hidden="true"></i>お店</a>
-                <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list post_detail post_submit' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>みんな</a>
+                <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list post_detail post_submit activity' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>みんな</a>
             </nav>
+
+            <a href="{% url 'washoku:search' %}" class="washoku-search-button{% if name == 'search' %} active{% endif %}" aria-label="アプリ全体を検索">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <span class="washoku-search-label">検索</span>
+            </a>
 
             <a href="{% url 'washoku:recipe_submit' %}" class="washoku-post-button{% if name == 'recipe_submit' %} active{% endif %}">
                 <i class="bi bi-pencil-square" aria-hidden="true"></i>レシピを投稿
@@ -123,16 +128,16 @@
             <i class="bi bi-journal-richtext" aria-hidden="true"></i>
             <span>レシピ</span>
         </a>
-        <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail substitute_list' %}active{% endif %}">
-            <i class="bi bi-basket{% if name in 'ingredient_list ingredient_detail substitute_list' %}-fill{% endif %}" aria-hidden="true"></i>
+        <a href="{% url 'washoku:ingredient_list' %}" class="{% if name in 'ingredient_list ingredient_detail substitute_list substitute_submit' %}active{% endif %}">
+            <i class="bi bi-basket{% if name in 'ingredient_list ingredient_detail substitute_list substitute_submit' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>食材</span>
         </a>
         <a href="{% url 'washoku:store_list' %}" class="{% if name in 'store_list store_detail' %}active{% endif %}">
             <i class="bi bi-shop{% if name in 'store_list store_detail' %}-window{% endif %}" aria-hidden="true"></i>
             <span>お店</span>
         </a>
-        <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list post_detail post_submit' %}active{% endif %}">
-            <i class="bi bi-people{% if name in 'question_list column_list product_list post_detail post_submit' %}-fill{% endif %}" aria-hidden="true"></i>
+        <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list post_detail post_submit activity' %}active{% endif %}">
+            <i class="bi bi-people{% if name in 'question_list column_list product_list post_detail post_submit activity' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>みんな</span>
         </a>
     </nav>

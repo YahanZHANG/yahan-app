@@ -23,6 +23,15 @@ urlpatterns = [
     path("ingredients/", views.ingredient_list, name="ingredient_list"),
     path("ingredients/<int:pk>/", views.ingredient_detail, name="ingredient_detail"),
     path("substitutes/", views.substitute_list, name="substitute_list"),
+    path("substitutes/new/", views.substitute_submit, name="substitute_submit"),
+
+    # 検索・みんなの新着
+    path("search/", views.search, name="search"),
+    path("activity/", views.activity, name="activity"),
+
+    # プッシュ通知
+    path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
+    path("push/unsubscribe/", views.push_unsubscribe, name="push_unsubscribe"),
 
     # お店
     path("stores/", views.store_list, name="store_list"),

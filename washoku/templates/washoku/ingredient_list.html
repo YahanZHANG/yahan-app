@@ -4,37 +4,45 @@
 
 {% block content %}
 
+{% include "washoku/includes/ingredient_tabs.html" %}
+
 <h1>食材と買い方</h1>
 
-<p class="washoku-lead">日本の食材がスイスで何と呼ばれ、どこで買えるか。代わりになる食材もまとめています。</p>
-
-<p class="washoku-quick"><a href="{% url 'washoku:substitute_list' %}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> 日本の野菜・食材の代わり一覧</a></p>
+<p class="washoku-lead">日本の食材がスイスで何と呼ばれ、どこで買えるかをまとめています。</p>
 
 <form method="get" class="washoku-search">
     <input type="search" name="q" value="{{ query }}" placeholder="例: 大根、Lauch（独語もOK）" aria-label="食材を検索">
     <button type="submit">探す</button>
 </form>
 
-<p class="washoku-legend">お店の名前がない食材は、Migros・Coop などの普通のスーパーで買えます。</p>
+{% if by_category %}
+    <nav class="washoku-quick" aria-label="カテゴリー">
+        {% for category in by_category %}<a href="#cat-{{ forloop.counter }}">{{ category }}</a>{% endfor %}
+    </nav>
+
+    <p class="washoku-legend">お店の印がない食材は、Migros・Coop などの普通のスーパーで買えます。</p>
+{% endif %}
 
 {% for category, ingredients in by_category.items %}
-    <section class="washoku-section">
-        <h2>{{ category }}</h2>
-        <ul class="washoku-ingredient-index">
+    <section class="washoku-section" id="cat-{{ forloop.counter }}">
+        <h2>{{ category }}<small class="washoku-count">{{ ingredients|length }}</small></h2>
+        <ul class="washoku-cards">
             {% for ingredient in ingredients %}
                 <li>
-                    <a href="{% url 'washoku:ingredient_detail' ingredient.pk %}">{{ ingredient.name }}</a>
-                    {% if ingredient.name_de %}<small lang="de">{{ ingredient.name_de }}</small>{% endif %}
-                    {% for substitute in ingredient.substitutes_for.all %}<small class="washoku-substitute">{{ substitute.original_name }}の代わり</small>{% endfor %}
-                    <span class="washoku-shops">
-                        {% for shop in ingredient.shops.all %}{% if forloop.first and shop.code != "supermarket" %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endif %}{% endfor %}
-                    </span>
+                    <a href="{% url 'washoku:ingredient_detail' ingredient.pk %}" class="washoku-card-link">
+                        <span class="washoku-card-title">{{ ingredient.name }}</span>
+                        {% if ingredient.name_de %}<small class="washoku-card-de" lang="de">{{ ingredient.name_de }}</small>{% endif %}
+                        <span class="washoku-card-tags">
+                            {% for shop in ingredient.shops.all %}{% if forloop.first and shop.code != "supermarket" %}<span class="washoku-shop washoku-shop-{{ shop.code }}">{{ shop.name }}</span>{% endif %}{% endfor %}
+                            {% for substitute in ingredient.substitutes_for.all %}<span class="washoku-substitute-tag">{{ substitute.original_name }}の代わり</span>{% endfor %}
+                        </span>
+                    </a>
                 </li>
             {% endfor %}
         </ul>
     </section>
 {% empty %}
-    <p class="washoku-empty">見つかりませんでした。</p>
+    <p class="washoku-empty">見つかりませんでした。<a href="{% url 'washoku:search' %}?q={{ query|urlencode }}">ほかのページも探す</a></p>
 {% endfor %}
 
 {% endblock %}

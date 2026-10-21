@@ -2,7 +2,7 @@ import re
 
 from django import forms
 
-from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe
+from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe, Substitute
 
 
 class CommentForm(forms.ModelForm):
@@ -137,6 +137,81 @@ class PostForm(forms.ModelForm):
             raise forms.ValidationError("もう少し詳しく書いてください（10文字以上）。")
 
         return body
+
+
+class SubstituteForm(forms.ModelForm):
+    """
+    会員が「日本の食材 → スイスで代わりに使えるもの」を教えるフォーム。
+    スイスの食材は自由に書いてもらい、食材リストにある名前ならつなげる。
+    """
+
+    swiss_name = forms.CharField(
+        label="スイスで買えるもの",
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "例: Kohlrabi（コールラビ）"}),
+    )
+
+    class Meta:
+        model = Substitute
+        fields = ["original_name", "tips"]
+        labels = {
+            "original_name": "日本の食材",
+            "tips": "使い方・コツ",
+        }
+        widgets = {
+            "original_name": forms.TextInput(attrs={"placeholder": "例: かぶ"}),
+            "tips": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "maxlength": 500,
+                    "placeholder": "例: 薄めに切れば煮物や浅漬けにそのまま使える。",
+                }
+            ),
+        }
+
+    field_order = ["original_name", "swiss_name", "tips"]
+
+    def clean_original_name(self):
+
+        name = self.cleaned_data["original_name"].strip()
+
+        if not name:
+            raise forms.ValidationError("入力してください。")
+
+        return name
+
+    def clean(self):
+
+        cleaned = super().clean()
+
+        swiss_name = (cleaned.get("swiss_name") or "").strip()
+
+        if not swiss_name:
+            return cleaned
+
+        # 食材リストの日本語名・ドイツ語名と同じなら、その食材につなぐ
+        key = swiss_name.casefold()
+
+        for ingredient in Ingredient.objects.all():
+            names = [ingredient.name, *split_lines(ingredient.name_de.replace("/", "\n"))]
+            if key in {name.strip().casefold() for name in names if name.strip()}:
+                self.instance.substitute = ingredient
+                self.instance.substitute_name = ""
+                break
+        else:
+            self.instance.substitute = None
+            self.instance.substitute_name = swiss_name
+
+        original = cleaned.get("original_name")
+
+        if original and Substitute.objects.filter(
+            original_name=original,
+            substitute=self.instance.substitute,
+            substitute_name=self.instance.substitute_name,
+        ).exists():
+            raise forms.ValidationError("この組み合わせは、もう登録されています。")
+
+        return cleaned
 
 
 class RecipeSubmissionForm(forms.ModelForm):

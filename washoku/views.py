@@ -1,3 +1,4 @@
+import json
 import random
 
 from collections import defaultdict
@@ -8,21 +9,24 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
+from .push import send_reply_push
 from .forms import (
     CommentEditForm,
     CommentForm,
     FeedbackForm,
     PostForm,
     RecipeSubmissionForm,
+    SubstituteForm,
 )
 from .models import (
+    Announcement,
     Comment,
     CommentReport,
     Feedback,
@@ -33,6 +37,7 @@ from .models import (
     MoodTag,
     Notification,
     Post,
+    PushSubscription,
     Recipe,
     RecipeIngredient,
     RecipeRating,
@@ -207,7 +212,7 @@ def home(request):
         )
         .filter(public_comment_targets())
         .select_related("recipe", "ingredient", "store", "post", "author")
-        .order_by("-created_at")[:5]
+        .order_by("-created_at")[:3]
     )
 
     return render(
@@ -218,6 +223,7 @@ def home(request):
             "latest_comments": latest_comments,
             "questions": open_questions()[:5],
             "latest_posts": Post.objects.filter(status="published").select_related("author")[:3],
+            "announcement": Announcement.latest(),
             "moods": MoodTag.objects.all(),
             "categories": Recipe.CATEGORY_CHOICES[:-1],
             "recipe_count": recipes.count(),
@@ -615,7 +621,7 @@ def ingredient_list(request):
 
     ingredients = Ingredient.objects.prefetch_related(
         "shops",
-        "substitutes_for",
+        Prefetch("substitutes_for", queryset=published_substitutes()),
     )
 
     if query:
@@ -624,13 +630,20 @@ def ingredient_list(request):
             | Q(name_de__icontains=query)
             | Q(name_fr__icontains=query)
             | Q(search_group__icontains=query)
-            | Q(substitutes_for__original_name__icontains=query)
+            | Q(
+                substitutes_for__original_name__icontains=query,
+                substitutes_for__status="published",
+            )
         ).distinct()
 
     by_category = defaultdict(list)
 
-    for ingredient in ingredients.order_by("category", "name"):
+    for ingredient in ingredients.order_by("name"):
         by_category[ingredient.get_category_display()].append(ingredient)
+
+    # 肉・魚・野菜… の順 (Ingredient.CATEGORY_CHOICES の順)
+    order = [label for _value, label in Ingredient.CATEGORY_CHOICES]
+    by_category = dict(sorted(by_category.items(), key=lambda item: order.index(item[0])))
 
     return render(
         request,
@@ -645,7 +658,10 @@ def ingredient_list(request):
 def ingredient_detail(request, pk):
 
     ingredient = get_object_or_404(
-        Ingredient.objects.prefetch_related("shops", "substitutes_for"),
+        Ingredient.objects.prefetch_related(
+            "shops",
+            Prefetch("substitutes_for", queryset=published_substitutes()),
+        ),
         pk=pk,
     )
 
@@ -839,6 +855,8 @@ def notify_reply(comment):
             for user_id in recipients
         ]
     )
+
+    send_reply_push(comment, recipients)
 
 
 def own_comment(request, pk):
@@ -1300,7 +1318,11 @@ def about(request):
 
 def my_page(request):
 
-    context = {}
+    from django.conf import settings
+
+    context = {
+        "vapid_public_key": settings.VAPID_PUBLIC_KEY or "",
+    }
 
     if request.user.is_authenticated:
         context.update(
@@ -1383,31 +1405,98 @@ def my_comments(request):
 # 日本の食材の代わり
 # =========================================================
 
+def published_substitutes():
+    return Substitute.objects.filter(status="published")
+
+
 def substitute_list(request):
     """
-    日本の食材 → スイスで代わりに使えるもの、の一覧。
+    日本の食材 → スイスで代わりに使えるもの、の一覧。会員も投稿できる。
     """
 
-    substitutes = Substitute.objects.select_related("substitute").order_by(
-        "substitute__category",
-        "original_name",
-    )
+    query = request.GET.get("q", "").strip()
+
+    substitutes = published_substitutes().select_related("substitute", "submitted_by")
+
+    if query:
+        substitutes = substitutes.filter(
+            Q(original_name__icontains=query)
+            | Q(substitute__name__icontains=query)
+            | Q(substitute__name_de__icontains=query)
+            | Q(substitute_name__icontains=query)
+            | Q(tips__icontains=query)
+        )
 
     by_category = defaultdict(list)
 
-    for item in substitutes:
-        by_category[item.substitute.get_category_display()].append(item)
+    for item in substitutes.order_by("original_name"):
+        category = (
+            item.substitute.get_category_display()
+            if item.substitute_id
+            else "みんなが見つけた代用品"
+        )
+        by_category[category].append(item)
 
-    # 野菜を先に
+    # 野菜・きのこを先に、みんなの投稿 (食材リストにないもの) は最後に
+    order = ["野菜", "きのこ"] + [
+        label for _value, label in Ingredient.CATEGORY_CHOICES
+        if label not in ("野菜", "きのこ")
+    ] + ["みんなが見つけた代用品"]
     by_category = dict(
-        sorted(by_category.items(), key=lambda item: item[0] != "野菜")
+        sorted(by_category.items(), key=lambda item: order.index(item[0]))
     )
+
+    form = SubstituteForm()
 
     return render(
         request,
         "washoku/substitute_list.html",
         {
             "by_category": by_category,
+            "query": query,
+            "total": sum(len(items) for items in by_category.values()),
+            "form": form,
+        },
+    )
+
+
+@login_required
+def substitute_submit(request):
+
+    pending = Substitute.objects.filter(submitted_by=request.user, status="draft").count()
+
+    if pending >= MAX_PENDING_SUBMISSIONS:
+        messages.info(request, f"確認待ちの代用品が{pending}件あります。掲載されてから、また投稿してください。")
+        return redirect(reverse("washoku:substitute_list") + "#suggest")
+
+    form = SubstituteForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+
+        substitute = form.save(commit=False)
+        substitute.submitted_by = request.user
+        substitute.status = "published" if request.user.is_staff else "draft"
+        substitute.save()
+
+        if substitute.status == "draft":
+
+            send_admin_alert(
+                "新しい代用品の投稿",
+                f"{substitute}（{request.user.username} さん）\n\n"
+                + request.build_absolute_uri(
+                    reverse("admin:washoku_substitute_change", args=[substitute.pk])
+                ),
+            )
+
+            messages.success(request, "教えてくれてありがとうございます！管理者が確認してから掲載します。")
+
+        return redirect(reverse("washoku:substitute_list") + "#suggest")
+
+    return render(
+        request,
+        "washoku/substitute_submit.html",
+        {
+            "form": form,
         },
     )
 
@@ -1581,3 +1670,186 @@ def my_posts(request):
             "posts": posts,
         },
     )
+
+
+# =========================================================
+# みんなの新着 (コメント・投稿を時系列で)
+# =========================================================
+
+ACTIVITY_PER_PAGE = 30
+
+
+def activity(request):
+
+    comments = (
+        Comment.objects
+        .filter(is_hidden=False, is_deleted=False)
+        .filter(public_comment_targets())
+        .select_related("recipe", "ingredient", "store", "post", "author", "parent")
+        .order_by("-created_at")[:300]
+    )
+
+    posts = (
+        Post.objects
+        .filter(status="published")
+        .select_related("author")
+        .order_by("-created_at")[:100]
+    )
+
+    items = [{"kind": "comment", "item": comment, "at": comment.created_at} for comment in comments]
+    items += [{"kind": "post", "item": post, "at": post.created_at} for post in posts]
+    items.sort(key=lambda entry: entry["at"], reverse=True)
+
+    from django.core.paginator import Paginator
+
+    page = Paginator(items, ACTIVITY_PER_PAGE).get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "washoku/activity.html",
+        {
+            "page": page,
+        },
+    )
+
+
+# =========================================================
+# 全体の検索
+# =========================================================
+
+SEARCH_LIMIT = 20
+
+
+def search(request):
+
+    query = request.GET.get("q", "").strip()[:100]
+
+    results = []
+
+    if query:
+
+        recipes = (
+            visible_recipes(request.user)
+            .filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(ingredients__name__icontains=query)
+                | Q(ingredients__name_de__icontains=query)
+                | Q(ingredients__search_group__icontains=query)
+            )
+            .distinct()
+            .order_by("name")
+        )
+
+        ingredients = (
+            Ingredient.objects
+            .filter(
+                Q(name__icontains=query)
+                | Q(name_de__icontains=query)
+                | Q(search_group__icontains=query)
+            )
+            .order_by("name")
+        )
+
+        substitutes = (
+            published_substitutes()
+            .filter(
+                Q(original_name__icontains=query)
+                | Q(substitute__name__icontains=query)
+                | Q(substitute__name_de__icontains=query)
+                | Q(substitute_name__icontains=query)
+            )
+            .select_related("substitute")
+            .order_by("original_name")
+        )
+
+        stores = (
+            Store.objects
+            .filter(is_active=True)
+            .filter(
+                Q(name__icontains=query)
+                | Q(city__icontains=query)
+                | Q(area__icontains=query)
+                | Q(description__icontains=query)
+            )
+            .order_by("name")
+        )
+
+        posts = (
+            Post.objects
+            .filter(status="published")
+            .filter(Q(title__icontains=query) | Q(body__icontains=query) | Q(resembles__icontains=query))
+        )
+
+        comments = (
+            Comment.objects
+            .filter(is_hidden=False, is_deleted=False, body__icontains=query)
+            .filter(public_comment_targets())
+            .select_related("recipe", "ingredient", "store", "post", "author")
+            .order_by("-created_at")
+        )
+
+        results = [
+            ("レシピ", "recipe", list(recipes[:SEARCH_LIMIT])),
+            ("食材", "ingredient", list(ingredients[:SEARCH_LIMIT])),
+            ("日本の食材の代わり", "substitute", list(substitutes[:SEARCH_LIMIT])),
+            ("お店", "store", list(stores[:SEARCH_LIMIT])),
+            ("コラム・おすすめ商品", "post", list(posts[:SEARCH_LIMIT])),
+            ("コメント・質問", "comment", list(comments[:SEARCH_LIMIT])),
+        ]
+
+        results = [group for group in results if group[2]]
+
+    return render(
+        request,
+        "washoku/search.html",
+        {
+            "query": query,
+            "results": results,
+            "result_count": sum(len(group[2]) for group in results),
+        },
+    )
+
+
+# =========================================================
+# プッシュ通知 (返信のお知らせ)
+# =========================================================
+
+@login_required
+@require_POST
+def push_subscribe(request):
+
+    from news.push_views import parse_subscription
+
+    data = parse_subscription(request)
+
+    if data is None:
+        return JsonResponse({"error": "Invalid subscription."}, status=400)
+
+    PushSubscription.objects.update_or_create(
+        endpoint=data["endpoint"],
+        defaults={
+            "user": request.user,
+            "p256dh": data["p256dh"],
+            "auth": data["auth"],
+        },
+    )
+
+    return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+def push_unsubscribe(request):
+
+    try:
+        endpoint = json.loads(request.body).get("endpoint")
+    except (ValueError, UnicodeDecodeError, AttributeError):
+        endpoint = None
+
+    if not isinstance(endpoint, str) or not endpoint:
+        return JsonResponse({"error": "Invalid endpoint."}, status=400)
+
+    PushSubscription.objects.filter(endpoint=endpoint, user=request.user).delete()
+
+    return JsonResponse({"success": True})

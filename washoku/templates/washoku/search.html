@@ -1,0 +1,56 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}{% if query %}「{{ query }}」の検索結果{% else %}検索{% endif %} | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>アプリ全体を検索</h1>
+
+<form method="get" class="washoku-search">
+    <input type="search" name="q" value="{{ query }}" placeholder="料理、食材、お店、コラムなど" aria-label="アプリ全体を検索" {% if not query %}autofocus{% endif %}>
+    <button type="submit">探す</button>
+</form>
+
+{% if query %}
+    {% if results %}
+        <p class="washoku-note">「{{ query }}」で {{ result_count }} 件見つかりました。</p>
+        <nav class="washoku-quick" aria-label="種類">
+            {% for label, kind, items in results %}<a href="#result-{{ kind }}">{{ label }} {{ items|length }}</a>{% endfor %}
+        </nav>
+        {% for label, kind, items in results %}
+            <section class="washoku-section" id="result-{{ kind }}">
+                <h2>{{ label }}<small class="washoku-count">{{ items|length }}</small></h2>
+                <ul class="washoku-list">
+                    {% for item in items %}
+                        <li>
+                            {% if kind == "recipe" %}
+                                <a href="{% url 'washoku:recipe_detail' item.pk %}">{{ item.name }}</a>
+                                {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+                            {% elif kind == "ingredient" %}
+                                <a href="{% url 'washoku:ingredient_detail' item.pk %}">{{ item.name }}</a>
+                                {% if item.name_de %}<small lang="de">{{ item.name_de }}</small>{% endif %}
+                            {% elif kind == "substitute" %}
+                                <a href="{% url 'washoku:substitute_list' %}?q={{ item.original_name|urlencode }}">{{ item.original_name }} → {{ item.display_name }}</a>
+                                {% if item.tips %}<small>{{ item.tips|truncatechars:60 }}</small>{% endif %}
+                            {% elif kind == "store" %}
+                                <a href="{% url 'washoku:store_detail' item.pk %}">{{ item.name }}</a>
+                                <small>{{ item.city }}{% if item.area %}・{{ item.area }}{% endif %}</small>
+                            {% elif kind == "post" %}
+                                <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>
+                                <small>{{ item.get_kind_display }} ・ {{ item.author|display_name }}</small>
+                            {% else %}
+                                <a href="{{ item.get_absolute_url }}">{{ item.body|truncatechars:70 }}</a>
+                                <small>{{ item.author|display_name }} ・ {{ item.target.name }}</small>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+    {% else %}
+        <p class="washoku-empty">「{{ query }}」に当てはまるものは見つかりませんでした。ひらがな・カタカナや、ドイツ語でも試してみてください。</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

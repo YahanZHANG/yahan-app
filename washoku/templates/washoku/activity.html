@@ -1,0 +1,43 @@
+{% extends "washoku/base.html" %}
+{% load washoku_tags %}
+
+{% block title %}みんなの新着 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>みんなの新着</h1>
+
+<p class="washoku-lead">コメント、質問、コラム、おすすめ商品を新しい順にすべて見られます。</p>
+
+{% if page.object_list %}
+    <ul class="washoku-activity">
+        {% for entry in page.object_list %}
+            {% with item=entry.item %}
+            <li>
+                <a href="{{ item.get_absolute_url }}">
+                    <span class="washoku-activity-kind">
+                        {% if entry.kind == "post" %}{{ item.get_kind_display }}
+                        {% elif item.parent_id %}返信
+                        {% elif item.kind == "question" %}質問
+                        {% else %}コメント{% endif %}
+                    </span>
+                    <span class="washoku-activity-body">{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:90 }}{% endif %}</span>
+                    <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %} ・ {{ entry.at|date:"n/j H:i" }}</small>
+                </a>
+            </li>
+            {% endwith %}
+        {% endfor %}
+    </ul>
+
+    {% if page.has_other_pages %}
+        <nav class="washoku-pager" aria-label="ページ">
+            {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">← 新しい</a>{% else %}<span></span>{% endif %}
+            <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a href="?page={{ page.next_page_number }}">古い →</a>{% else %}<span></span>{% endif %}
+        </nav>
+    {% endif %}
+{% else %}
+    <p class="washoku-empty">まだ投稿はありません。</p>
+{% endif %}
+
+{% endblock %}

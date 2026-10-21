@@ -3,6 +3,28 @@
 
 {% block content %}
 
+{% if announcement %}
+    <div class="washoku-announcement" id="washoku-announcement" data-announcement-id="{{ announcement.pk }}">
+        <span class="washoku-announcement-label">お知らせ</span>
+        <span class="washoku-announcement-text">{{ announcement.message }}</span>
+        <button type="button" class="washoku-announcement-close" aria-label="お知らせを閉じる" data-announcement-close>×</button>
+    </div>
+    <script>
+    // ×で閉じたお知らせは、この端末では再表示しない
+    (function () {
+        var box = document.getElementById("washoku-announcement");
+        var key = "washoku_announcement_closed";
+        try {
+            if (localStorage.getItem(key) === box.dataset.announcementId) box.hidden = true;
+        } catch (error) {}
+        box.querySelector("[data-announcement-close]").addEventListener("click", function () {
+            box.hidden = true;
+            try { localStorage.setItem(key, box.dataset.announcementId); } catch (error) {}
+        });
+    })();
+    </script>
+{% endif %}
+
 <section class="washoku-hero">
     <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
@@ -95,21 +117,24 @@
 </section>
 {% endif %}
 
-{% if latest_comments %}
 <section class="washoku-section">
-    <h2>みんなの工夫・新しいコメント</h2>
-    <ul class="washoku-list">
-        {% for comment in latest_comments %}
-            <li>
-                <a href="{{ comment.get_absolute_url }}">
-                    {{ comment.body|truncatechars:60 }}
-                </a>
-                <small>{{ comment.author|display_name }} ・ {{ comment.target.name }}</small>
-            </li>
-        {% endfor %}
-    </ul>
+    <h2>みんなの新しいコメント</h2>
+    {% if latest_comments %}
+        <ul class="washoku-list">
+            {% for comment in latest_comments %}
+                <li>
+                    <a href="{{ comment.get_absolute_url }}">
+                        {{ comment.body|truncatechars:60 }}
+                    </a>
+                    <small>{% if comment.parent_id %}返信{% elif comment.kind == "question" %}質問{% else %}コメント{% endif %} ・ {{ comment.author|display_name }} ・ {{ comment.target.name }} ・ {{ comment.created_at|date:"n/j" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-empty">まだコメントはありません。レシピや食材のページから、工夫や質問を書いてみてください。</p>
+    {% endif %}
+    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">みんなの投稿をすべて見る</a></p>
 </section>
-{% endif %}
 
 {% if user.is_staff %}
 <p class="washoku-admin-box">

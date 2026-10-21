@@ -66,7 +66,8 @@ self.addEventListener(
         }
 
 
-        // Swiss News専用
+        // Swiss News と スイスで和食 で共通。
+        // url / tag がなければ Swiss News の通知として扱う。
 
         const title = (
             data.title
@@ -93,12 +94,21 @@ self.addEventListener(
                     // have separate notifications.
 
                     tag: (
-                        "Swiss-news-"
-                        + (data.batch_id || "update")
+                        data.tag
+                        || (
+                            "Swiss-news-"
+                            + (data.batch_id || "update")
+                        )
                     ),
 
                     data: {
-                        url: "/news/",
+                        url: (
+                            typeof data.url === "string"
+                            && data.url.startsWith("/")
+                            && !data.url.startsWith("//")
+                        )
+                            ? data.url
+                            : "/news/",
                     },
 
                 }
@@ -129,9 +139,14 @@ self.addEventListener(
 
             (async () => {
 
+                const path = (
+                    event.notification.data
+                    && event.notification.data.url
+                ) || "/news/";
+
                 const destination = (
                     self.location.origin
-                    + "/news/"
+                    + path
                 );
 
 

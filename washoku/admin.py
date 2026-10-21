@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .geocode import geocode_store
 from .models import (
+    Announcement,
     Comment,
     CommentReport,
     Feedback,
@@ -12,6 +13,7 @@ from .models import (
     MoodTag,
     Notification,
     Post,
+    PushSubscription,
     Recipe,
     RecipeIngredient,
     RecipeRating,
@@ -88,17 +90,74 @@ class IngredientAdmin(admin.ModelAdmin):
 class SubstituteAdmin(admin.ModelAdmin):
     list_display = (
         "original_name",
-        "substitute",
+        "display_name",
+        "status",
+        "submitted_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
     )
 
     search_fields = (
         "original_name",
         "substitute__name",
+        "substitute_name",
     )
 
     autocomplete_fields = (
         "substitute",
     )
+
+    readonly_fields = (
+        "submitted_by",
+        "created_at",
+    )
+
+    actions = [
+        "publish",
+    ]
+
+    @admin.display(description="スイスでの代用品")
+    def display_name(self, obj):
+        return obj.display_name
+
+    @admin.action(description="選んだ代用品を公開する")
+    def publish(self, request, queryset):
+        queryset.update(status="published")
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = (
+        "message",
+        "is_active",
+        "created_at",
+    )
+
+    list_editable = (
+        "is_active",
+    )
+
+
+@admin.register(PushSubscription)
+class PushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "created_at",
+    )
+
+    readonly_fields = (
+        "user",
+        "endpoint",
+        "p256dh",
+        "auth",
+        "created_at",
+    )
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(MoodTag)

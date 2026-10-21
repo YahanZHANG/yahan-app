@@ -1,31 +1,63 @@
 {% extends "washoku/base.html" %}
+{% load washoku_tags %}
 
 {% block title %}日本の食材の代わり | スイスで和食{% endblock %}
 
 {% block content %}
 
+{% include "washoku/includes/ingredient_tabs.html" %}
+
 <h1>日本の食材の代わり</h1>
 
-<p class="washoku-lead">日本の野菜や食材が見つからないときに、スイスのスーパーで代わりに使えるものです。</p>
+<p class="washoku-lead">日本の野菜や食材が見つからないときに、スイスで代わりに使えるものです。知っている代わりがあれば教えてください。</p>
+
+<p><a class="washoku-button" href="#suggest"><i class="bi bi-plus-lg" aria-hidden="true"></i> 代わりを教える</a></p>
+
+<form method="get" class="washoku-search">
+    <input type="search" name="q" value="{{ query }}" placeholder="例: ごぼう、Kohlrabi" aria-label="代わりの食材を検索">
+    <button type="submit">探す</button>
+</form>
+
+{% if by_category|length > 1 %}
+    <nav class="washoku-quick" aria-label="カテゴリー">
+        {% for category in by_category %}<a href="#sub-{{ forloop.counter }}">{{ category }}</a>{% endfor %}
+    </nav>
+{% endif %}
 
 {% for category, items in by_category.items %}
-    <section class="washoku-section">
-        <h2>{{ category }}</h2>
-        <ul class="washoku-substitutes">
+    <section class="washoku-section" id="sub-{{ forloop.counter }}">
+        <h2>{{ category }}<small class="washoku-count">{{ items|length }}</small></h2>
+        <ul class="washoku-cards washoku-cards-wide">
             {% for item in items %}
-                <li>
+                <li class="washoku-substitute-card">
                     <p class="washoku-substitute-pair">
                         <span class="washoku-substitute-from">{{ item.original_name }}</span>
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                        <a href="{% url 'washoku:ingredient_detail' item.substitute.pk %}">{{ item.substitute.name }}{% if item.substitute.name_de %} <small>（{{ item.substitute.name_de }}）</small>{% endif %}</a>
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="washoku-visually-hidden">の代わりに</span>
+                        {% if item.substitute_id %}
+                            <a href="{% url 'washoku:ingredient_detail' item.substitute.pk %}">{{ item.substitute.name }}</a>
+                        {% else %}
+                            <span>{{ item.substitute_name }}</span>
+                        {% endif %}
                     </p>
+                    {% if item.substitute.name_de %}<small class="washoku-card-de" lang="de">{{ item.substitute.name_de }}</small>{% endif %}
                     {% if item.tips %}<p class="washoku-substitute-tips">{{ item.tips }}</p>{% endif %}
+                    {% if item.submitted_by %}<small class="washoku-credit">{{ item.submitted_by|display_name }} さんが教えてくれました</small>{% endif %}
                 </li>
             {% endfor %}
         </ul>
     </section>
+{% empty %}
+    <p class="washoku-empty">{% if query %}「{{ query }}」の代わりはまだ登録されていません。{% else %}まだ登録されていません。{% endif %}</p>
 {% endfor %}
 
-<p class="washoku-note">ほかにも代わりになる食材を知っていたら、食材のページのコメントや<a href="{% url 'washoku:column_list' %}">コラム</a>で教えてください。</p>
+<section class="washoku-section washoku-suggest" id="suggest">
+    <h2>代わりを教える</h2>
+    {% if user.is_authenticated %}
+        <p class="washoku-note">管理者が確認してから掲載します。</p>
+        {% include "washoku/includes/substitute_form.html" %}
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}%23suggest">ログイン</a>すると、代わりの食材を教えられます。</p>
+    {% endif %}
+</section>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "washoku/base.html" %}
+{% load static %}
 {% load washoku_tags %}
 
 {% block title %}マイページ | スイスで和食{% endblock %}
@@ -60,6 +61,22 @@
             <span class="washoku-menu-text"><strong>ダークモード</strong><small id="washoku-theme-description">表示の色を切り替える</small></span>
             <span class="washoku-switch" aria-hidden="true"></span>
         </button>
+        {% if user.is_authenticated %}
+        <button
+            type="button"
+            id="washoku-push-toggle"
+            class="washoku-menu-item"
+            aria-pressed="false"
+            data-public-key="{{ vapid_public_key }}"
+            data-csrf-token="{{ csrf_token }}"
+            data-subscribe-url="{% url 'washoku:push_subscribe' %}"
+            data-unsubscribe-url="{% url 'washoku:push_unsubscribe' %}"
+        >
+            <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>返信をプッシュ通知で受け取る</strong><small id="washoku-push-description">自分の質問やコメントに返事が来たとき</small></span>
+            <span class="washoku-switch" aria-hidden="true"></span>
+        </button>
+        {% endif %}
         <a class="washoku-menu-item" href="{% url 'washoku:question_list' %}">
             <span class="washoku-menu-icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>Q&amp;A</strong><small>答えを待っている質問</small></span>
@@ -83,5 +100,9 @@
         </a>
     </div>
 </section>
+
+<script src="{% static 'washoku/push.js' %}" defer></script>
+
+<script src="{% static 'washoku/push.js' %}" defer></script>
 
 {% endblock %}

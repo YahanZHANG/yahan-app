@@ -976,5 +976,190 @@ class SubstituteListTests(TestCase):
         response = self.client.get(reverse("washoku:substitute_list"))
 
         self.assertContains(response, "かぶ")
-        self.assertContains(response, "コールラビ <small>（Kohlrabi）</small>")
+        self.assertContains(response, "コールラビ</a>")
+        self.assertContains(response, "Kohlrabi")
         self.assertContains(response, "薄めに切る。")
+
+    def test_member_suggestion_waits_for_approval_and_links_known_ingredients(self):
+
+        kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
+        member = get_user_model().objects.create_user("hanako", password="x")
+        self.client.force_login(member)
+
+        with mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(
+                reverse("washoku:substitute_submit"),
+                {"original_name": "かぶ", "swiss_name": "kohlrabi", "tips": "薄く切る"},
+            )
+            self.client.post(
+                reverse("washoku:substitute_submit"),
+                {"original_name": "春菊", "swiss_name": "Rucola", "tips": ""},
+            )
+
+        linked, free = Substitute.objects.order_by("pk")
+
+        self.assertEqual((linked.substitute, linked.status, linked.submitted_by), (kohlrabi, "draft", member))
+        self.assertEqual((free.substitute, free.substitute_name), (None, "Rucola"))
+        self.assertEqual(alert.call_count, 2)
+
+        page = reverse("washoku:substitute_list")
+        self.assertNotContains(self.client.get(page), "Rucola")
+        self.assertNotContains(self.client.get(reverse("washoku:ingredient_detail", args=[kohlrabi.pk])), "「かぶ」の代わりに")
+
+        Substitute.objects.update(status="published")
+
+        response = self.client.get(page)
+        self.assertContains(response, "Rucola")
+        self.assertContains(response, "みんなが見つけた代用品")
+        self.assertContains(response, "hanako さんが教えてくれました")
+        self.assertContains(self.client.get(page + "?q=春菊"), "Rucola")
+        self.assertNotContains(self.client.get(page + "?q=春菊"), "コールラビ</a>")
+
+        # 同じ組み合わせは二重に登録しない
+        response = self.client.post(
+            reverse("washoku:substitute_submit"),
+            {"original_name": "春菊", "swiss_name": "Rucola", "tips": ""},
+        )
+        self.assertContains(response, "もう登録されています")
+        self.assertEqual(Substitute.objects.count(), 2)
+
+
+class SearchAndActivityTests(TestCase):
+
+    def setUp(self):
+        self.member = get_user_model().objects.create_user("hanako", password="x")
+        self.recipe = make_recipe()
+
+    def test_search_covers_the_whole_app(self):
+
+        Store.objects.create(name="Lian Hua", kind="asian", address="Förrlibuckstrasse 30, 8005 Zürich")
+        Post.objects.create(kind="column", title="照り焼きのコツ", body="x" * 20, status="published")
+        Post.objects.create(kind="column", title="照り焼きの下書き", body="x" * 20)
+        Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body="照り焼きは弱火で")
+
+        response = self.client.get(reverse("washoku:search") + "?q=照り焼き")
+
+        self.assertContains(response, "照り焼きチキン")
+        self.assertContains(response, "照り焼きのコツ")
+        self.assertContains(response, "照り焼きは弱火で")
+        self.assertNotContains(response, "照り焼きの下書き")
+        self.assertContains(self.client.get(reverse("washoku:search") + "?q=lian"), "Lian Hua")
+        self.assertContains(self.client.get(reverse("washoku:search") + "?q=zzz"), "見つかりませんでした")
+        self.assertContains(self.client.get(reverse("washoku:home")), reverse("washoku:search"))
+
+    def test_home_shows_three_latest_comments_and_links_to_all(self):
+
+        for number in range(4):
+            Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body=f"コメント{number}")
+
+        Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published")
+
+        home = self.client.get(reverse("washoku:home"))
+
+        self.assertContains(home, "コメント3")
+        self.assertNotContains(home, "コメント0")
+        self.assertContains(home, reverse("washoku:activity"))
+
+        activity = self.client.get(reverse("washoku:activity"))
+
+        self.assertContains(activity, "コメント0")
+        self.assertContains(activity, "冷凍餃子")
+        html = activity.content.decode()
+        self.assertLess(html.index("冷凍餃子"), html.index("コメント3"))
+
+
+class AnnouncementTests(TestCase):
+
+    def test_latest_active_announcement_is_shown_on_home(self):
+
+        from .models import Announcement
+
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-announcement-text")
+
+        Announcement.objects.create(message="古いお知らせ")
+        Announcement.objects.create(message="和風洋食を10品追加しました")
+        Announcement.objects.create(message="非表示", is_active=False)
+
+        response = self.client.get(reverse("washoku:home"))
+
+        self.assertContains(response, "和風洋食を10品追加しました")
+        self.assertNotContains(response, "古いお知らせ")
+        self.assertContains(response, "washoku_announcement_closed")
+
+        Announcement.objects.update(created_at=timezone.now() - timedelta(days=30))
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-announcement-text")
+
+
+class PushTests(TestCase):
+
+    ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
+
+    def setUp(self):
+        User = get_user_model()
+        self.asker = User.objects.create_user("hanako", password="x")
+        self.answerer = User.objects.create_user("taro", password="x")
+        self.recipe = make_recipe()
+
+    def subscribe(self, user):
+        self.client.force_login(user)
+        return self.client.post(
+            reverse("washoku:push_subscribe"),
+            data=json.dumps({"endpoint": self.ENDPOINT, "keys": {"p256dh": "p", "auth": "a"}}),
+            content_type="application/json",
+        )
+
+    def test_subscribe_and_unsubscribe(self):
+
+        from .models import PushSubscription
+
+        self.assertEqual(self.subscribe(self.asker).status_code, 200)
+        self.assertEqual(PushSubscription.objects.get().user, self.asker)
+
+        self.client.post(
+            reverse("washoku:push_unsubscribe"),
+            data=json.dumps({"endpoint": self.ENDPOINT}),
+            content_type="application/json",
+        )
+        self.assertFalse(PushSubscription.objects.exists())
+
+        self.client.logout()
+        self.assertEqual(
+            self.client.post(reverse("washoku:push_subscribe"), data="{}", content_type="application/json").status_code,
+            302,
+        )
+
+    @mock.patch("washoku.push.is_configured", return_value=True)
+    @mock.patch("washoku.push.webpush")
+    def test_answer_to_a_question_is_pushed_to_the_asker(self, webpush, _configured):
+
+        self.subscribe(self.asker)
+        question = Comment.objects.create(author=self.asker, recipe=self.recipe, kind="question", body="みりんがないときは？")
+
+        self.client.force_login(self.answerer)
+        self.client.post(
+            reverse("washoku:comment_create", args=["recipe", self.recipe.pk]),
+            {"kind": "tip", "body": "白ワインと砂糖で", "parent": question.pk},
+        )
+
+        webpush.assert_called_once()
+        payload = json.loads(webpush.call_args.kwargs["data"])
+        self.assertIn("質問に答えが届きました", payload["title"])
+        self.assertIn("白ワインと砂糖で", payload["body"])
+        self.assertTrue(payload["url"].startswith(reverse("washoku:recipe_detail", args=[self.recipe.pk])))
+        self.assertTrue(Notification.objects.filter(recipient=self.asker).exists())
+
+    @mock.patch("washoku.push.is_configured", return_value=True)
+    @mock.patch("washoku.push.webpush", side_effect=Exception("down"))
+    def test_push_failure_does_not_break_replies(self, _webpush, _configured):
+
+        self.subscribe(self.asker)
+        comment = Comment.objects.create(author=self.asker, recipe=self.recipe, kind="tip", body="a")
+
+        self.client.force_login(self.answerer)
+        response = self.client.post(
+            reverse("washoku:comment_create", args=["recipe", self.recipe.pk]),
+            {"kind": "tip", "body": "返信", "parent": comment.pk},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 2)

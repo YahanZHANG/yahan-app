@@ -1,0 +1,15 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}代わりを教える | スイスで和食{% endblock %}
+
+{% block content %}
+
+{% include "washoku/includes/ingredient_tabs.html" %}
+
+<h1>代わりを教える</h1>
+
+<p class="washoku-lead">日本の食材の代わりに、スイスで使っているものを教えてください。管理者が確認してから掲載します。</p>
+
+{% include "washoku/includes/substitute_form.html" %}
+
+{% endblock %}

@@ -22,6 +22,7 @@ from washoku.models import (
     Feedback as WashokuFeedback,
     Post as WashokuPost,
     Recipe as WashokuRecipe,
+    Substitute as WashokuSubstitute,
 )
 
 
@@ -82,6 +83,12 @@ def _washoku_items():
             unchecked.filter(post__isnull=False).count(),
             comments_url,
             "admin_checked__exact=0&target=post",
+        ),
+        _item(
+            "代用品の投稿",
+            WashokuSubstitute.objects.filter(status="draft").count(),
+            "admin:washoku_substitute_changelist",
+            "status__exact=draft",
         ),
         _item(
             "質問箱",

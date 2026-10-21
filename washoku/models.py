@@ -152,7 +152,15 @@ class Substitute(models.Model):
     """
     日本の食材 → スイスで代わりに使える食材。
     例: 大根 → Rettich
+
+    会員も投稿できる。食材リストにないものは substitute_name に書き、
+    管理者が確認して公開する (必要なら食材を登録してつなぐ)。
     """
+
+    STATUS_CHOICES = [
+        ("draft", "確認待ち"),
+        ("published", "公開"),
+    ]
 
     original_name = models.CharField(
         "日本の食材",
@@ -164,13 +172,45 @@ class Substitute(models.Model):
         Ingredient,
         verbose_name="スイスでの代用品",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="substitutes_for",
+    )
+
+    substitute_name = models.CharField(
+        "スイスでの代用品（食材リストにないとき）",
+        max_length=100,
+        blank=True,
+        help_text="例: Kohlrabi。上の「スイスでの代用品」を選んだときは空欄でよい。",
     )
 
     tips = models.TextField(
         "使うときのコツ",
         blank=True,
         help_text="例: 少し辛いので下茹でを長めに。",
+    )
+
+    status = models.CharField(
+        "公開状態",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="published",
+        db_index=True,
+    )
+
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した会員",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_substitutes",
+    )
+
+    created_at = models.DateTimeField(
+        "登録日時",
+        auto_now_add=True,
+        null=True,
     )
 
     class Meta:
@@ -185,7 +225,11 @@ class Substitute(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.original_name} → {self.substitute.name}"
+        return f"{self.original_name} → {self.display_name}"
+
+    @property
+    def display_name(self):
+        return self.substitute.name if self.substitute_id else self.substitute_name
 
 
 # =========================================================
@@ -1152,3 +1196,80 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
+
+
+# =========================================================
+# 更新のお知らせ・プッシュ通知
+# =========================================================
+
+class Announcement(models.Model):
+    """
+    HOME の一番上に出す「更新のお知らせ」。管理画面から追加する。
+    表示されるのは最新の1件だけで、×で閉じるとその端末では出なくなる。
+    """
+
+    SHOW_DAYS = 14
+
+    message = models.CharField(
+        "お知らせ",
+        max_length=200,
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "更新のお知らせ"
+        verbose_name_plural = "更新のお知らせ"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message
+
+    @classmethod
+    def latest(cls):
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
+
+        return cls.objects.filter(is_active=True, created_at__gte=since).first()
+
+
+class PushSubscription(models.Model):
+    """
+    返信が来たことをプッシュ通知で知らせる端末 (ログインした会員だけ)。
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_push_subscriptions",
+    )
+
+    endpoint = models.TextField(
+        unique=True,
+    )
+
+    p256dh = models.TextField()
+
+    auth = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "プッシュ通知の登録"
+        verbose_name_plural = "プッシュ通知の登録"
+
+    def __str__(self):
+        return f"{self.user} - {self.pk}"
