@@ -115,3 +115,19 @@ def send_reply_push(comment, recipient_ids):
         url,
         tag,
     )
+
+
+def send_stamp_push(recipient_id, actor_user, label, target_text, url, tag):
+    """
+    コメントやコラムにスタンプが押されたことを知らせる。
+    """
+
+    from .templatetags.washoku_tags import display_name
+
+    send_push(
+        {recipient_id},
+        f"{display_name(actor_user)}さんが「{label}」を押しました",
+        target_text[:80],
+        url,
+        tag,
+    )

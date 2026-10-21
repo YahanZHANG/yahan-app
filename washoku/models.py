@@ -1368,12 +1368,14 @@ class PostReaction(models.Model):
 
 class Notification(models.Model):
     """
-    自分のコメントに返信や「ありがとう」が付いたことを知らせる。
+    自分のコメントへの返信や、コメント・コラムに押されたスタンプを知らせる。
     """
 
     KIND_CHOICES = [
         ("reply", "返信"),
+        # 2026-10-21 まで: スタンプが「ありがとう」だけだったころの通知
         ("thanks", "ありがとう"),
+        ("stamp", "スタンプ"),
     ]
 
     recipient = models.ForeignKey(
@@ -1388,10 +1390,21 @@ class Notification(models.Model):
         related_name="washoku_sent_notifications",
     )
 
+    # コメントへの返信・スタンプは comment、コラムへのスタンプは post
     comment = models.ForeignKey(
         Comment,
         on_delete=models.CASCADE,
         related_name="notifications",
+        null=True,
+        blank=True,
+    )
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
     )
 
     kind = models.CharField(
@@ -1399,6 +1412,13 @@ class Notification(models.Model):
         max_length=20,
         choices=KIND_CHOICES,
         default="reply",
+    )
+
+    stamp = models.CharField(
+        "スタンプ",
+        max_length=20,
+        choices=REACTION_CHOICES,
+        blank=True,
     )
 
     is_read = models.BooleanField(
@@ -1417,6 +1437,9 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
+
+    def stamp_emoji(self):
+        return REACTION_EMOJI.get(self.stamp, "")
 
 
 # =========================================================

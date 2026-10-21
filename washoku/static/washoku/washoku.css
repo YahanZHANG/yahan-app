@@ -8,9 +8,10 @@
     --washoku-muted: #85695A;
     --washoku-border: #F0DFCC;
     --washoku-accent: #E2572B;
-    /* ランダムのボタン: 深蘇芳 (ふかきすおう) */
-    --washoku-random: #740125;
-    --washoku-random-strong: #58001B;
+    /* ランダムのボタン: 杏色 (あんずいろ)。白い字は読みにくいので濃い茶色の字 */
+    --washoku-random: #DAA274;
+    --washoku-random-strong: #CB8D5A;
+    --washoku-random-text: #3A2414;
     --washoku-accent-strong: #C4431C;
     --washoku-accent-soft: #FDE4D7;
     --washoku-yolk: #F0A20F;
@@ -28,8 +29,9 @@
     --washoku-muted: #B3A9A2;
     --washoku-border: #3D3631;
     --washoku-accent: #E07A5F;
-    --washoku-random: #8E1C3D;
-    --washoku-random-strong: #A52A4D;
+    --washoku-random: #C9915F;
+    --washoku-random-strong: #DAA274;
+    --washoku-random-text: #24160C;
     --washoku-accent-strong: #F0957C;
     --washoku-accent-soft: #3D2A22;
     --washoku-yolk: #E8B04A;
@@ -2444,7 +2446,7 @@ html[data-washoku-theme="dark"] {
     }
 }
 
-/* HOME: ランダムは、3枚のカードの下に深蘇芳の横長ボタン */
+/* HOME: ランダムは、3枚のカードの下に杏色の横長ボタン */
 .washoku-entry-random {
     grid-column: 1 / -1;
     display: flex;
@@ -2454,7 +2456,7 @@ html[data-washoku-theme="dark"] {
     min-height: 72px;
     border-radius: 999px;
     background: var(--washoku-random);
-    color: #fff;
+    color: var(--washoku-random-text);
     text-decoration: none;
 }
 

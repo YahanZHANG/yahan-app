@@ -1377,20 +1377,24 @@ class FavoriteNoteReactionTests(TestCase):
         self.client.post(url, {"kind": "like"})
 
         self.assertEqual(CommentReaction.objects.count(), 2)
-        self.assertTrue(Notification.objects.filter(recipient=self.child, kind="thanks").exists())
+        self.assertEqual(
+            sorted(Notification.objects.filter(recipient=self.child, kind="stamp").values_list("stamp", flat=True)),
+            ["like", "thanks"],
+        )
 
         page = self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk]))
         self.assertContains(page, "🙏 ありがとう <b>1</b>")
 
-        # もう一度押すと取り消し
+        # もう一度押すと取り消し (通知も消える)
         self.client.post(url, {"kind": "like"})
         self.assertEqual(CommentReaction.objects.count(), 1)
+        self.assertEqual(Notification.objects.filter(recipient=self.child).count(), 1)
 
         # 自分のコメントには押せない
         self.client.force_login(self.child)
         self.client.post(url, {"kind": "like"})
         self.assertEqual(CommentReaction.objects.count(), 1)
-        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「ありがとう」を送りました")
+        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「ありがとう」を押しました")
 
     def test_new_stamps_on_comments_and_columns(self):
 
@@ -1411,6 +1415,10 @@ class FavoriteNoteReactionTests(TestCase):
         self.client.post(url, {"kind": "check"})
 
         self.assertEqual(list(PostReaction.objects.values_list("kind", flat=True)), ["insight"])
+        self.assertEqual(
+            sorted(Notification.objects.filter(recipient=self.child).values_list("stamp", flat=True)),
+            ["genius", "insight"],
+        )
         self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "💡 なるほど <b>1</b>")
 
         # 自分のコラムには押せず、数だけ見える
@@ -1420,6 +1428,7 @@ class FavoriteNoteReactionTests(TestCase):
         page = self.client.get(reverse("washoku:post_detail", args=[column.pk]))
         self.assertContains(page, "💡 なるほど 1")
         self.assertNotContains(page, "スタンプを押す")
+        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「なるほど」を押しました: コラム「Rahm の選び方」")
 
     def test_filter_recipes_by_nutrition(self):
 

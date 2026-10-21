@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
-from .push import send_reply_push
+from .push import send_reply_push, send_stamp_push
 from .forms import (
     CommentEditForm,
     CommentForm,
@@ -984,13 +984,15 @@ def comment_react(request, pk):
 
     created = toggle_reaction(CommentReaction, request.user, kind, comment=comment)
 
-    if created and kind == "thanks":
-        Notification.objects.create(
-            recipient_id=comment.author_id,
-            actor=request.user,
-            comment=comment,
-            kind="thanks",
-        )
+    notify_stamp(
+        created,
+        request.user,
+        kind,
+        recipient_id=comment.author_id,
+        target_text=f"あなたのコメント: {comment.body}",
+        url=comment_target_url(comment),
+        comment=comment,
+    )
 
     return redirect(comment_target_url(comment))
 
@@ -1007,10 +1009,59 @@ def post_react(request, pk):
     kind = request.POST.get("kind", "")
 
     # 自分のコラムには押せない
-    if kind in dict(REACTION_CHOICES) and post.author_id != request.user.pk:
-        toggle_reaction(PostReaction, request.user, kind, post=post)
+    url = reverse("washoku:post_detail", args=[post.pk]) + "#stamps"
 
-    return redirect(reverse("washoku:post_detail", args=[post.pk]) + "#stamps")
+    if kind in dict(REACTION_CHOICES) and post.author_id and post.author_id != request.user.pk:
+
+        created = toggle_reaction(PostReaction, request.user, kind, post=post)
+
+        notify_stamp(
+            created,
+            request.user,
+            kind,
+            recipient_id=post.author_id,
+            target_text=f"あなたのコラム「{post.title}」",
+            url=url,
+            post=post,
+        )
+
+    return redirect(url)
+
+
+def notify_stamp(created, actor, kind, recipient_id, target_text, url, **target):
+    """
+    スタンプが押されたら、どの種類でも書いた人に知らせる。
+    取り消されたら、その通知も消す。
+    """
+
+    if not created:
+        Notification.objects.filter(
+            recipient_id=recipient_id,
+            actor=actor,
+            kind="stamp",
+            stamp=kind,
+            **target,
+        ).delete()
+        return
+
+    Notification.objects.create(
+        recipient_id=recipient_id,
+        actor=actor,
+        kind="stamp",
+        stamp=kind,
+        **target,
+    )
+
+    target_id = next(iter(target.values())).pk
+
+    send_stamp_push(
+        recipient_id,
+        actor,
+        dict(REACTION_CHOICES)[kind],
+        target_text,
+        url,
+        f"washoku-stamp-{next(iter(target))}-{target_id}",
+    )
 
 
 def comment_target_url(comment):
@@ -1228,11 +1279,14 @@ def notification_list(request):
     notifications = list(
         Notification.objects
         .filter(recipient=request.user)
-        .select_related("actor", "comment", "comment__recipe", "comment__ingredient", "comment__store", "comment__post")[:50]
+        .select_related("actor", "post", "comment", "comment__recipe", "comment__ingredient", "comment__store", "comment__post")[:50]
     )
 
     for notification in notifications:
-        notification.url = comment_target_url(notification.comment)
+        if notification.comment:
+            notification.url = comment_target_url(notification.comment)
+        else:
+            notification.url = reverse("washoku:post_detail", args=[notification.post_id])
 
     Notification.objects.filter(
         recipient=request.user,
