@@ -95,7 +95,7 @@
 
     <section class="washoku-section" id="rating">
         <h2>家族の好み</h2>
-        <p class="washoku-note"><i class="bi bi-lock" aria-hidden="true"></i> 評価は、あなたと家族のメンバーにだけ見えます。ほかの人には公開されません。</p>
+        <p class="washoku-note"><i class="bi bi-lock" aria-hidden="true"></i> 評価は、あなたと家族のメンバーにだけ見えます。</p>
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'washoku:rate_recipe' recipe.pk %}" class="washoku-rating">
                 {% csrf_token %}
@@ -136,7 +136,7 @@
     </section>
     {% endif %}
 
-    {% include "washoku/includes/comments.html" with target="recipe" target_pk=recipe.pk heading="みんなの工夫・質問" help_text="スイスで作ったときの工夫や、わからないことを書いてください。" %}
+    {% include "washoku/includes/comments.html" with target="recipe" target_pk=recipe.pk heading="みんなの工夫・質問" %}
 
 </article>
 

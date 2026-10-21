@@ -804,9 +804,9 @@ class Store(models.Model):
     """
 
     KIND_CHOICES = [
-        ("japanese", "日本・韓国食材店"),
-        ("asian", "アジア・中華食材店"),
-        ("southeast", "東南アジア食材店"),
+        ("japanese", "日韓食材店"),
+        ("asian", "中華食材店"),
+        ("southeast", "その他のアジア食材店"),
     ]
 
     name = models.CharField(
@@ -941,13 +941,15 @@ class Feedback(models.Model):
 
 class Post(models.Model):
     """
-    会員が書くコラム・体験談と、スーパーで買えるおすすめ商品。
+    会員が書くコラム・体験談、スーパーで買えるおすすめ商品、外部サイトの参考リンク。
     管理者が公開するまでは、書いた本人と管理者にだけ見える。
+    参考リンクは、記事を写さずに要点だけを自分の言葉で書き、出典とリンクを載せる。
     """
 
     KIND_CHOICES = [
         ("column", "コラム"),
         ("product", "おすすめ商品"),
+        ("link", "参考リンク"),
     ]
 
     STATUS_CHOICES = [
@@ -1007,6 +1009,19 @@ class Post(models.Model):
         max_length=100,
         blank=True,
         help_text="例: 冷凍餃子、ちくわ",
+    )
+
+    url = models.URLField(
+        "記事のURL",
+        max_length=500,
+        blank=True,
+    )
+
+    source = models.CharField(
+        "出典",
+        max_length=200,
+        blank=True,
+        help_text="サイト名・書いた人・公開日など",
     )
 
     author = models.ForeignKey(

@@ -225,7 +225,6 @@ def home(request):
             "latest_recipes": attach_family_rating(latest, request.user),
             "latest_comments": latest_comments,
             "questions": open_questions()[:5],
-            "latest_posts": Post.objects.filter(status="published").select_related("author")[:3],
             "announcement": Announcement.latest(),
             "moods": MoodTag.objects.all(),
             "categories": Recipe.CATEGORY_CHOICES[:-1],
@@ -334,8 +333,97 @@ def recipe_list(request):
             "shops": shop_choices(),
             "sort_choices": SORT_CHOICES,
             "nutrition": nutrition,
-            "nutrition_choices": [(key, label) for key, label, _q in NUTRITION_FILTERS],
             "time_choices": [(15, "15分以内"), (30, "30分以内"), (60, "1時間以内")],
+        },
+    )
+
+
+# 栄養で選ぶ: (GET の名前, 見出し, 項目, 以上/以下, 選べる値)
+NUTRITION_LIMITS = [
+    ("kcal", "カロリー", "energy_kcal", "lte", [300, 400, 500, 600, 700], "kcal以下"),
+    ("protein", "たんぱく質", "protein_g", "gte", [15, 20, 25, 30], "g以上"),
+    ("fat", "脂質", "fat_g", "lte", [10, 15, 20, 30], "g以下"),
+    ("carbs", "炭水化物", "carbs_g", "lte", [20, 30, 50, 70], "g以下"),
+    ("salt", "塩分", "salt_g", "lte", [1.5, 2, 2.5, 3], "g以下"),
+]
+
+NUTRITION_SORTS = [
+    ("kcal", "カロリーが低い順", F("energy_kcal").asc(nulls_last=True)),
+    ("protein", "たんぱく質が多い順", F("protein_g").desc(nulls_last=True)),
+    ("fat", "脂質が少ない順", F("fat_g").asc(nulls_last=True)),
+    ("carbs", "炭水化物が少ない順", F("carbs_g").asc(nulls_last=True)),
+    ("salt", "塩分が少ない順", F("salt_g").asc(nulls_last=True)),
+]
+
+# よく使う組み合わせ (押すと上の条件に入る)
+NUTRITION_PRESETS = [
+    ("軽めにしたい", "kcal=400&sort=kcal"),
+    ("たんぱく質をとりたい", "protein=20&sort=protein"),
+    ("塩分控えめ", "salt=2&sort=salt"),
+    ("糖質控えめ", "carbs=30&sort=carbs"),
+    ("脂質控えめ", "fat=15&sort=fat"),
+]
+
+
+def find_by_nutrition(request):
+    """
+    1人分の栄養の目安 (カロリー・PFC・塩分) の条件と並び順で、レシピを探す。
+    栄養の目安がないレシピは出さない。
+    """
+
+    recipes = visible_recipes(request.user).filter(energy_kcal__isnull=False)
+
+    limits = []
+    selected = {}
+
+    for key, label, field, lookup, values, unit in NUTRITION_LIMITS:
+
+        raw = request.GET.get(key, "")
+        value = next((item for item in values if str(item) == raw), None)
+
+        if value is not None:
+            recipes = recipes.filter(**{f"{field}__{lookup}": value})
+            selected[key] = raw
+
+        limits.append(
+            {
+                "key": key,
+                "label": label,
+                "options": [(str(item), f"{item}{unit}") for item in values],
+                "value": raw if value is not None else "",
+            }
+        )
+
+    category = request.GET.get("category", "")
+
+    if category in dict(Recipe.CATEGORY_CHOICES):
+        recipes = recipes.filter(category=category)
+    else:
+        category = ""
+
+    sorts = {key: order for key, _label, order in NUTRITION_SORTS}
+    sort = request.GET.get("sort", "kcal")
+
+    if sort not in sorts:
+        sort = "kcal"
+
+    recipes = attach_family_rating(
+        recipe_card_queryset(recipes.order_by(sorts[sort], "name")),
+        request.user,
+    )
+
+    return render(
+        request,
+        "washoku/find_by_nutrition.html",
+        {
+            "recipes": recipes,
+            "limits": limits,
+            "has_condition": bool(selected or category),
+            "category": category,
+            "categories": Recipe.CATEGORY_CHOICES[:-1],
+            "sort": sort,
+            "sort_choices": [(key, label) for key, label, _order in NUTRITION_SORTS],
+            "presets": NUTRITION_PRESETS,
         },
     )
 
@@ -1725,14 +1813,20 @@ POST_KIND_TEXT = {
     "column": {
         "url_name": "washoku:column_list",
         "heading": "みんなのコラム",
-        "lead": "スイスでの買い物や料理の工夫、失敗談など、みんなの経験をまとめて読めます。",
+        "lead": "スイスでの買い物や料理の工夫、失敗談などです。",
         "new_label": "コラムを書く",
     },
     "product": {
         "url_name": "washoku:product_list",
         "heading": "スーパーのおすすめ商品",
-        "lead": "普通のスーパーやアジアの店で買える、日本の味に近い冷凍・チルド食品などを紹介し合う場所です。",
+        "lead": "スーパーやアジアの店で買える、日本の味に近い商品です。",
         "new_label": "商品を紹介する",
+    },
+    "link": {
+        "url_name": "washoku:link_list",
+        "heading": "参考リンク",
+        "lead": "ほかのサイトの役に立つ記事です。要点と出典を載せています。",
+        "new_label": "リンクを紹介する",
     },
 }
 
@@ -1796,6 +1890,10 @@ def column_list(request):
 
 def product_list(request):
     return post_list(request, "product")
+
+
+def link_list(request):
+    return post_list(request, "link")
 
 
 def post_detail(request, pk):

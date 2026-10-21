@@ -4,16 +4,18 @@
 
 {% block content %}
 
-<h1>レシピ</h1>
-
-<nav class="washoku-quick" aria-label="選び方">
-    <a href="{% url 'washoku:find_by_ingredients' %}"><i class="bi bi-basket" aria-hidden="true"></i>食材で選ぶ</a>
-    <a href="{% url 'washoku:find_by_mood' %}"><i class="bi bi-emoji-smile" aria-hidden="true"></i>気分で選ぶ</a>
-    <a href="{% url 'washoku:random_recipe' %}"><i class="bi bi-shuffle" aria-hidden="true"></i>ランダム</a>
-    <a href="{% url 'washoku:recipe_list' %}?shop=1"><i class="bi bi-cart" aria-hidden="true"></i>普通のスーパーだけ</a>
-    <a href="{% url 'washoku:recipe_list' %}?sort=light#nutrition"><i class="bi bi-heart-pulse" aria-hidden="true"></i>栄養で選ぶ</a>
-    <a href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i>レシピを投稿</a>
-</nav>
+<div class="washoku-title-row">
+    <h1>レシピ</h1>
+    <details class="washoku-ways">
+        <summary>ほかの探し方</summary>
+        <ul>
+            <li><a href="{% url 'washoku:find_by_ingredients' %}">🧺 食材で選ぶ</a></li>
+            <li><a href="{% url 'washoku:find_by_mood' %}">😋 気分で選ぶ</a></li>
+            <li><a href="{% url 'washoku:find_by_nutrition' %}">🥗 栄養で選ぶ</a></li>
+            <li><a href="{% url 'washoku:random_recipe' %}">🎲 ランダム</a></li>
+        </ul>
+    </details>
+</div>
 
 <form method="get" class="washoku-filter">
 
@@ -55,14 +57,7 @@
         {% endfor %}
     </select>
 
-    <fieldset class="washoku-nutrition-filter" id="nutrition">
-        <legend>栄養で絞る<small>（1人分）</small></legend>
-        <div class="washoku-check-chips">
-            {% for value, label in nutrition_choices %}
-                <label><input type="checkbox" name="n" value="{{ value }}" {% if value in nutrition %}checked{% endif %}><span>{{ label }}</span></label>
-            {% endfor %}
-        </div>
-    </fieldset>
+    {% for value in nutrition %}<input type="hidden" name="n" value="{{ value }}">{% endfor %}
 
     <button type="submit">絞り込む</button>
 
@@ -79,5 +74,7 @@
 {% else %}
     <p class="washoku-empty">条件に合うレシピがありません。</p>
 {% endif %}
+
+<p class="washoku-more"><a href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> あなたのレシピを投稿する</a></p>
 
 {% endblock %}

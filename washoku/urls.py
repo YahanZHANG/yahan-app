@@ -12,6 +12,7 @@ urlpatterns = [
     path("recipes/", views.recipe_list, name="recipe_list"),
     path("mood/", views.find_by_mood, name="find_by_mood"),
     path("find/", views.find_by_ingredients, name="find_by_ingredients"),
+    path("nutrition/", views.find_by_nutrition, name="find_by_nutrition"),
     path("random/", views.random_recipe, name="random_recipe"),
 
     # レシピ
@@ -50,6 +51,7 @@ urlpatterns = [
     # みんなの投稿
     path("columns/", views.column_list, name="column_list"),
     path("products/", views.product_list, name="product_list"),
+    path("links/", views.link_list, name="link_list"),
     path("posts/<int:pk>/", views.post_detail, name="post_detail"),
     path("posts/new/<str:kind>/", views.post_submit, name="post_submit"),
     path("me/posts/", views.my_posts, name="my_posts"),

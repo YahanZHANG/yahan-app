@@ -859,6 +859,43 @@ class NutritionTests(TestCase):
         self.assertLess(html.index("軽い料理"), html.index("重い料理"))
         self.assertLess(html.index("重い料理"), html.index("不明な料理"))
 
+    def test_find_by_nutrition_filters_and_sorts(self):
+
+        make_recipe("鶏むね", energy_kcal=350, protein_g=32, fat_g=6, carbs_g=10, salt_g=1.5)
+        make_recipe("豚汁", energy_kcal=250, protein_g=12, fat_g=10, carbs_g=20, salt_g=2.8)
+        make_recipe("カツ丼", energy_kcal=850, protein_g=30, fat_g=30, carbs_g=100, salt_g=3.5)
+        make_recipe("不明な料理")
+
+        url = reverse("washoku:find_by_nutrition")
+
+        html = self.client.get(url).content.decode()
+        self.assertNotIn("不明な料理", html)
+        self.assertLess(html.index("豚汁"), html.index("鶏むね"))
+
+        html = self.client.get(url + "?protein=20&sort=protein").content.decode()
+        self.assertLess(html.index("鶏むね"), html.index("カツ丼"))
+        self.assertNotIn("豚汁", html)
+        self.assertIn("P 32g", html)
+
+        response = self.client.get(url + "?kcal=400&salt=2")
+        self.assertContains(response, "鶏むね")
+        self.assertNotContains(response, "豚汁")
+        self.assertNotContains(response, "カツ丼")
+
+        # 選べない値は無視する
+        self.assertContains(self.client.get(url + "?kcal=abc&sort=zzz"), "カツ丼")
+
+    def test_home_offers_three_ways_and_random(self):
+
+        response = self.client.get(reverse("washoku:home"))
+
+        self.assertContains(response, reverse("washoku:find_by_nutrition"))
+        self.assertContains(response, "washoku-entry-wide")
+        self.assertNotContains(response, "みんなの知恵")
+
+        response = self.client.get(reverse("washoku:recipe_list"))
+        self.assertContains(response, "ほかの探し方")
+
 
 class PostTests(TestCase):
 
@@ -894,7 +931,7 @@ class PostTests(TestCase):
         post.save()
 
         self.assertContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
-        self.assertContains(self.client.get(reverse("washoku:home")), "薄切り肉")
+        self.assertContains(self.client.get(reverse("washoku:activity")), "薄切り肉")
 
     def test_product_needs_a_shop_and_can_be_filtered(self):
 
@@ -967,6 +1004,53 @@ class PostTests(TestCase):
             self.client.get(reverse("washoku:post_submit", args=["product"])).status_code,
             200,
         )
+
+    def test_member_link_needs_url_and_shows_source(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:post_submit", args=["link"])
+
+        response = self.client.post(url, {"title": "食材探しの記事", "body": "Coop で買える日本の食材の話です。"})
+        self.assertContains(response, "このフィールドは必須です")
+
+        with mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(
+                url,
+                {
+                    "title": "食材探しの記事",
+                    "url": "https://example.com/article",
+                    "source": "例のブログ（2025年）",
+                    "body": "Coop で買える日本の食材の話です。",
+                },
+            )
+
+        post = Post.objects.get()
+        self.assertEqual((post.kind, post.status), ("link", "draft"))
+
+        post.status = "published"
+        post.save()
+
+        self.assertContains(self.client.get(reverse("washoku:link_list")), "出典: 例のブログ（2025年）")
+        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "食材探しの記事")
+
+        detail = self.client.get(post.get_absolute_url())
+        self.assertContains(detail, 'href="https://example.com/article"')
+        self.assertContains(detail, "元の記事を読む")
+        self.assertContains(detail, "紹介: hanako さん")
+
+    def test_import_adds_reference_links_once(self):
+
+        get_user_model().objects.create_superuser("owner", password="x")
+
+        for _ in range(2):
+            call_command("import_washoku", "--new-only", "--no-geocode", stdout=open("/dev/null", "w"))
+
+        links = Post.objects.filter(kind="link")
+
+        self.assertEqual(links.count(), 5)
+        self.assertEqual(links.filter(status="published").count(), 4)
+        self.assertEqual(set(links.values_list("author__username", flat=True)), {"owner"})
+        self.assertTrue(all(link.source for link in links))
 
 
 class SubstituteListTests(TestCase):
@@ -1271,3 +1355,25 @@ class FavoriteNoteReactionTests(TestCase):
         low_salt = self.client.get(url + "?n=lowsalt&n=light")
         self.assertContains(low_salt, "肉じゃが")
         self.assertNotContains(low_salt, "照り焼きチキン</h3>")
+
+
+class CompactPageTests(TestCase):
+
+    def test_tab_pages_skip_the_visible_heading_and_long_lead(self):
+
+        response = self.client.get(reverse("washoku:ingredient_list"))
+        self.assertNotContains(response, "何と呼ばれ、どこで買えるか")
+        self.assertContains(response, '<h1 class="washoku-visually-hidden">食材と買い方</h1>', html=True)
+
+        response = self.client.get(reverse("washoku:substitute_list"))
+        self.assertContains(response, "日本の野菜や食材の代わりに使えるものの紹介です。")
+
+    def test_store_kinds_have_short_labels_and_back_to_top(self):
+
+        response = self.client.get(reverse("washoku:store_list"))
+
+        for label in ("日韓食材店", "中華食材店", "その他のアジア食材店"):
+            self.assertContains(response, label)
+
+        self.assertContains(response, "washoku-quick-fit")
+        self.assertContains(response, 'aria-label="ページの上へ"')

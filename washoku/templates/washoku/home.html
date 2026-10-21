@@ -35,20 +35,25 @@
 </section>
 
 <section class="washoku-entry">
-    <a href="{% url 'washoku:find_by_mood' %}" class="washoku-entry-card">
-        <span>😋</span>
-        <strong>気分で選ぶ</strong>
-        <small>さっぱり、がっつり…</small>
-    </a>
     <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-entry-card">
         <span>🧺</span>
         <strong>食材で選ぶ</strong>
         <small>家にあるもので</small>
     </a>
-    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-card">
+    <a href="{% url 'washoku:find_by_mood' %}" class="washoku-entry-card">
+        <span>😋</span>
+        <strong>気分で選ぶ</strong>
+        <small>さっぱり、がっつり…</small>
+    </a>
+    <a href="{% url 'washoku:find_by_nutrition' %}" class="washoku-entry-card">
+        <span>🥗</span>
+        <strong>栄養で選ぶ</strong>
+        <small>カロリー、PFC…</small>
+    </a>
+    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-card washoku-entry-wide">
         <span>🎲</span>
         <strong>ランダム</strong>
-        <small>今日はこれ！</small>
+        <small>迷ったら、今日はこれ！</small>
     </a>
 </section>
 
@@ -79,25 +84,6 @@
         <p class="washoku-more"><a href="{% url 'washoku:recipe_list' %}">すべてのレシピ（{{ recipe_count }}品）</a></p>
     {% else %}
         <p class="washoku-empty">レシピを準備中です。</p>
-    {% endif %}
-</section>
-
-<section class="washoku-section">
-    <h2>みんなの知恵</h2>
-    <div class="washoku-chips">
-        <a class="washoku-chip-link" href="{% url 'washoku:column_list' %}"><i class="bi bi-journal-text" aria-hidden="true"></i> コラム</a>
-        <a class="washoku-chip-link" href="{% url 'washoku:product_list' %}"><i class="bi bi-bag" aria-hidden="true"></i> スーパーのおすすめ商品</a>
-        <a class="washoku-chip-link" href="{% url 'washoku:substitute_list' %}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> 日本の野菜の代わり</a>
-    </div>
-    {% if latest_posts %}
-        <ul class="washoku-list">
-            {% for post in latest_posts %}
-                <li>
-                    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-                    <small>{{ post.get_kind_display }} ・ {{ post.author|display_name }}</small>
-                </li>
-            {% endfor %}
-        </ul>
     {% endif %}
 </section>
 

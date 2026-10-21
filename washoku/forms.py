@@ -77,13 +77,14 @@ class FeedbackForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     """
-    みんなの投稿 (コラム・おすすめ商品) のフォーム。
+    みんなの投稿 (コラム・おすすめ商品・参考リンク) のフォーム。
     商品のときだけ、お店・売り場・日本の何に近いかを聞く。
+    参考リンクのときだけ、URL と出典を聞く。
     """
 
     class Meta:
         model = Post
-        fields = ["title", "shop", "section", "resembles", "body"]
+        fields = ["title", "url", "source", "shop", "section", "resembles", "body"]
         widgets = {
             "title": forms.TextInput(attrs={"maxlength": 100}),
             "resembles": forms.TextInput(attrs={"placeholder": "例: 冷凍餃子、ちくわ"}),
@@ -109,9 +110,28 @@ class PostForm(forms.ModelForm):
                 "味の感想、日本のものとの違い、おいしい食べ方、値段など"
             )
 
-        else:
+            for name in ("url", "source"):
+                del self.fields[name]
+
+        elif kind == "link":
 
             for name in ("shop", "section", "resembles"):
+                del self.fields[name]
+
+            self.fields["title"].label = "記事のタイトル"
+            self.fields["url"].required = True
+            self.fields["url"].widget.attrs["placeholder"] = "https://"
+            self.fields["source"].widget.attrs["placeholder"] = "例: スイス暮らしのブログ、2025年7月"
+            self.fields["body"].label = "どんなことが書いてある？"
+            self.fields["body"].help_text = "記事の文章は写さずに、役に立つ点を自分の言葉で短く書いてください。"
+            self.fields["body"].widget.attrs["rows"] = 6
+            self.fields["body"].widget.attrs["placeholder"] = (
+                "例: Coop で買える日本の食材と、スイスの食材を使った和食のアレンジが載っています。"
+            )
+
+        else:
+
+            for name in ("url", "source", "shop", "section", "resembles"):
                 del self.fields[name]
 
             self.fields["title"].label = "タイトル"

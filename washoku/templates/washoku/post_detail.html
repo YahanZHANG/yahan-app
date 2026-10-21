@@ -22,9 +22,19 @@
 
     {% if post.resembles %}<p class="washoku-lead">日本の「{{ post.resembles }}」に近い</p>{% endif %}
 
-    <p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>
+    {% if post.kind == "link" %}
+        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
 
-    <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+        <p class="washoku-credit">出典: {% if post.source %}{{ post.source }}{% else %}{{ post.url }}{% endif %}</p>
+
+        <p><a class="washoku-button" href="{{ post.url }}" target="_blank" rel="noopener nofollow ugc">元の記事を読む <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+
+        {% if post.author %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> 紹介: {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>{% endif %}
+    {% else %}
+        <p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>
+
+        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+    {% endif %}
 
 </article>
 

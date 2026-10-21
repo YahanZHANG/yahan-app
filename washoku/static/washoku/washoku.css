@@ -2251,3 +2251,177 @@ html[data-washoku-theme="dark"] {
 .washoku-reaction b {
     margin-left: 2px;
 }
+
+/* お店の種類: 携帯でも1行に収める */
+.washoku-quick-fit {
+    flex-wrap: nowrap;
+    gap: 4px;
+}
+
+.washoku-quick-fit a {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 7px 6px;
+    font-size: min(13px, 3.1vw);
+    white-space: nowrap;
+}
+
+/* 右下の「ページの上へ」ボタン */
+.washoku-to-top {
+    position: fixed;
+    right: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--washoku-surface);
+    color: var(--washoku-accent);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    text-decoration: none;
+}
+
+.washoku-to-top[hidden] {
+    display: none;
+}
+
+.washoku-to-top svg {
+    width: 30px;
+    height: 30px;
+}
+
+@media (min-width: 800px) {
+    .washoku-to-top {
+        right: 24px;
+        bottom: 24px;
+    }
+}
+
+/* HOME: 選び方の3枚 + 横長のランダム */
+.washoku-entry-wide {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 12px;
+}
+
+.washoku-entry-wide span {
+    font-size: 22px;
+}
+
+.washoku-entry-wide small {
+    display: inline !important;
+}
+
+/* レシピ一覧: 見出しの横の「ほかの探し方」 */
+.washoku-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.washoku-ways {
+    position: relative;
+}
+
+.washoku-ways summary {
+    padding: 6px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 13px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.washoku-ways summary::-webkit-details-marker {
+    display: none;
+}
+
+.washoku-ways summary::after {
+    content: " ▾";
+}
+
+.washoku-ways ul {
+    position: absolute;
+    right: 0;
+    z-index: 20;
+    min-width: 170px;
+    margin: 6px 0 0;
+    padding: 6px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    list-style: none;
+}
+
+.washoku-ways a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-ways a:hover {
+    background: var(--washoku-accent-soft);
+}
+
+/* 栄養で選ぶ */
+.washoku-nutrition-form {
+    margin: 8px 0 12px;
+    padding: 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-nutrition-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+}
+
+.washoku-nutrition-fields label {
+    display: grid;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--washoku-muted);
+}
+
+.washoku-nutrition-fields select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    font-size: 15px;
+}
+
+.washoku-nutrition-sort {
+    grid-column: 1 / -1;
+}
+
+.washoku-nutrition-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.washoku-card-nutrition {
+    margin: 4px 0 0;
+    color: var(--washoku-muted);
+    font-size: 12.5px;
+}
+
+@media (min-width: 800px) {
+    .washoku-nutrition-fields {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
