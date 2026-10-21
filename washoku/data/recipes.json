@@ -3643,7 +3643,7 @@
  },
  {
   "name": "どら焼き",
-  "category": "flour",
+  "category": "sweets",
   "cooking_time_minutes": 30,
   "servings": 6,
   "description": "ふわふわの生地であんこをはさむ。",
@@ -3709,6 +3709,1083 @@
    "fat_g": 3,
    "carbs_g": 38,
    "salt_g": 0.2
+  }
+ },
+ {
+  "name": "ふわふわホットケーキ",
+  "category": "sweets",
+  "cooking_time_minutes": 30,
+  "servings": 2,
+  "description": "ホットケーキミックスなしで、厚くふわっと焼く。",
+  "mood_tags": [
+   "子どもが喜ぶ"
+  ],
+  "ingredients": [
+   {
+    "name": "薄力粉",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ベーキングパウダー",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "40g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "120ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バニラシュガー",
+    "amount": "1袋",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "サラダ油",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "はちみつ",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "卵を卵黄と卵白に分ける。卵黄・牛乳・バニラシュガーを混ぜ、薄力粉とベーキングパウダーをふるい入れて混ぜる。",
+   "卵白に砂糖を2回に分けて入れ、角が立つまで泡立てる。",
+   "メレンゲの1/3を生地に混ぜ、残りを入れて泡を消さないようにさっくり混ぜる。",
+   "フライパンに油を薄く引いて拭き、弱火で生地を高く盛る。水大さじ1を周りに入れ、蓋をして4分焼く。",
+   "返して蓋をし、さらに3〜4分焼く。バターとはちみつをのせる。"
+  ],
+  "swiss_tips": "Backpulver の1袋（約15g）は粉500g用。この量なら小さじ2で足りる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 470,
+   "protein_g": 15,
+   "fat_g": 10,
+   "carbs_g": 78,
+   "salt_g": 0.9
+  }
+ },
+ {
+  "name": "ガトーショコラ",
+  "category": "sweets",
+  "cooking_time_minutes": 60,
+  "servings": 8,
+  "description": "スイスのチョコで作る、しっとり濃いケーキ。",
+  "mood_tags": [
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "製菓用チョコレート",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "80g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "80g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ココアパウダー",
+    "amount": "30g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "50ml",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "オーブンを170℃に温め、直径18cmの型に紙を敷く。",
+   "チョコとバターを刻んで湯せんで溶かし、生クリームを混ぜる。",
+   "卵黄と砂糖の半量をすり混ぜ、チョコに加える。薄力粉とココアをふるい入れて混ぜる。",
+   "卵白に残りの砂糖を入れて泡立て、生地に2回に分けてさっくり混ぜる。",
+   "型に流して40分焼く。冷めてから冷蔵庫で冷やすと切りやすい。"
+  ],
+  "swiss_tips": "「Kochschokolade」は板のまま刻んで使える。型はスイスの「Springform」18cmがちょうどよい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 250,
+   "protein_g": 4,
+   "fat_g": 18,
+   "carbs_g": 19,
+   "salt_g": 0.1
+  }
+ },
+ {
+  "name": "カスタードプリン",
+  "category": "sweets",
+  "cooking_time_minutes": 50,
+  "servings": 4,
+  "description": "卵と牛乳と砂糖だけの、昔ながらの固めのプリン。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "卵",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "300ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "50g+40g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バニラシュガー",
+    "amount": "1袋",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "カラメル: 砂糖40gと水大さじ1を小鍋で茶色くなるまで煮詰め、湯大さじ1を入れて器に分ける。",
+   "牛乳と砂糖50g・バニラシュガーを人肌に温める。",
+   "卵を泡立てないように溶き、牛乳を少しずつ混ぜて、こしながら器に注ぐ。",
+   "深めのフライパンに器を並べ、器の半分まで湯を入れる。蓋をして弱火で15分、火を止めて10分置く。",
+   "粗熱が取れたら冷蔵庫で冷やす。"
+  ],
+  "swiss_tips": "オーブンなら150℃で湯せん焼き30分。スイスの「Caramelköpfli」に似ているので、子どもにも通じやすい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 190,
+   "protein_g": 7,
+   "fat_g": 6,
+   "carbs_g": 27,
+   "salt_g": 0.2
+  }
+ },
+ {
+  "name": "大学芋",
+  "category": "sweets",
+  "cooking_time_minutes": 30,
+  "servings": 3,
+  "description": "外はカリッと、中はほくほく。甘い蜜をからめて。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "さつまいも",
+    "amount": "1本（300g）",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "はちみつ",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "白ごま",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "さつまいもを皮ごと乱切りにして10分水にさらし、水気をよく拭く。",
+   "フライパンに油を1cmほど入れ、さつまいもを冷たい油から中火で揚げ焼きにする（8〜10分）。",
+   "油をあけて、砂糖・はちみつ・醤油・水大さじ1を入れ、とろっとするまで煮詰めてからめる。",
+   "ごまをふり、くっつかないように広げて冷ます。"
+  ],
+  "swiss_tips": "普通のスーパーのオレンジ色のさつまいもは水分が多いので、アジアスーパーの赤紫の皮のものがほくほくする。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 290,
+   "protein_g": 2,
+   "fat_g": 9,
+   "carbs_g": 52,
+   "salt_g": 0.3
+  }
+ },
+ {
+  "name": "ふわふわ蒸しパン",
+  "category": "sweets",
+  "cooking_time_minutes": 25,
+  "servings": 4,
+  "description": "フライパンで蒸す、素朴なおやつ。",
+  "mood_tags": [
+   "子どもが喜ぶ"
+  ],
+  "ingredients": [
+   {
+    "name": "薄力粉",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ベーキングパウダー",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "40g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "80ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "あんこ",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "さつまいも",
+    "amount": "1/4本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "卵・砂糖・牛乳・油をよく混ぜる。",
+   "薄力粉とベーキングパウダーをふるい入れ、粉が見えなくなるまで混ぜる。",
+   "シリコンカップや紙カップに7分目まで入れ、好みであんこや角切りのさつまいもをのせる。",
+   "フライパンに水を1cm入れて沸かし、カップを並べる。布巾で包んだ蓋をして中火で12分蒸す。"
+  ],
+  "swiss_tips": "マフィン用の紙カップは Coop・Migros の製菓コーナーにある。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 190,
+   "protein_g": 5,
+   "fat_g": 7,
+   "carbs_g": 28,
+   "salt_g": 0.3
+  }
+ },
+ {
+  "name": "食パン",
+  "category": "bread",
+  "cooking_time_minutes": 180,
+  "servings": 8,
+  "description": "ふんわり甘めの、日本の食パン。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "強力粉",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ドライイースト",
+    "amount": "5g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "20g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "5g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "210ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "ボウルに強力粉・砂糖・塩・イーストを入れ、人肌に温めた牛乳を加えて混ぜる。",
+   "台に出して10分こね、柔らかくしたバターを加えてさらに5〜10分、表面がなめらかになるまでこねる。",
+   "ボウルに戻してラップをし、2倍の大きさになるまで温かい所で1時間置く。",
+   "ガスを抜いて2つに分け、丸めて15分休ませる。長方形にのばして巻き、型に並べる。",
+   "型の縁まで40〜50分ふくらませ、180℃のオーブンで30分焼く。すぐ型から出して冷ます。"
+  ],
+  "swiss_tips": "型は「Cakeform」（パウンド型）の長いもので焼ける。オーブンの発酵機能がなければ、40℃に温めて火を消した中で発酵させる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 185,
+   "protein_g": 6,
+   "fat_g": 4,
+   "carbs_g": 32,
+   "salt_g": 0.6
+  }
+ },
+ {
+  "name": "メロンパン",
+  "category": "bread",
+  "cooking_time_minutes": 150,
+  "servings": 8,
+  "description": "サクサクのクッキー生地をかぶせた、懐かしいパン。",
+  "mood_tags": [
+   "子どもが喜ぶ"
+  ],
+  "ingredients": [
+   {
+    "name": "強力粉",
+    "amount": "250g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ドライイースト",
+    "amount": "4g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "30g+60g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "3g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1/2個+1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "130ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "20g+40g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "120g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バニラシュガー",
+    "amount": "1袋",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "パン生地: 強力粉・砂糖30g・塩・イースト・卵1/2個・牛乳を混ぜてこね、バター20gを加えてなめらかになるまでこねる。",
+   "ボウルに入れて1時間、2倍になるまで発酵させる。",
+   "クッキー生地: バター40gと砂糖60g・バニラシュガーを混ぜ、卵1/2個、薄力粉を加えてまとめ、冷蔵庫で30分冷やす。",
+   "パン生地を8つに分けて丸める。クッキー生地も8つに分けて薄くのばし、パン生地にかぶせる。",
+   "表面に砂糖（分量外）をまぶして格子の筋をつけ、30分発酵させる。180℃で13〜15分焼く。"
+  ],
+  "swiss_tips": "強力粉は「Zopfmehl」で焼ける。クッキー生地はラップではさんでのばすとくっつかない。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 6,
+   "fat_g": 8,
+   "carbs_g": 45,
+   "salt_g": 0.4
+  }
+ },
+ {
+  "name": "クリームパン",
+  "category": "bread",
+  "cooking_time_minutes": 150,
+  "servings": 8,
+  "description": "とろっとしたカスタードを包んだパン。",
+  "mood_tags": [
+   "子どもが喜ぶ"
+  ],
+  "ingredients": [
+   {
+    "name": "強力粉",
+    "amount": "250g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ドライイースト",
+    "amount": "4g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "30g+50g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "3g",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1/2個+2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "130ml+250ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バニラシュガー",
+    "amount": "1袋",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "カスタード: 卵2個・砂糖50g・薄力粉を混ぜ、温めた牛乳250mlとバニラシュガーを少しずつ加える。",
+   "鍋で混ぜながら中火で煮て、ふつふつしてつやが出たら火を止める。平らな器に広げてラップを密着させ、冷やす。",
+   "パン生地: 強力粉・砂糖30g・塩・イースト・卵1/2個・牛乳130mlを混ぜてこね、バターを加えてこねる。1時間発酵させる。",
+   "8つに分けて楕円にのばし、カスタードをのせて半分に折り、縁をしっかり閉じる。切り込みを3本入れる。",
+   "30分発酵させ、溶き卵（分量外）を塗って180℃で12〜15分焼く。"
+  ],
+  "swiss_tips": "カスタードは前の日に作って冷やしておくと包みやすい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 240,
+   "protein_g": 8,
+   "fat_g": 6,
+   "carbs_g": 38,
+   "salt_g": 0.4
+  }
+ },
+ {
+  "name": "たまごサンド",
+  "category": "bread",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "description": "ゆで卵をマヨネーズであえた、定番のサンド。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "サンドイッチ用パン",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "ひとつまみ",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "卵を沸騰した湯で11分ゆで、冷水で冷やして殻をむく。",
+   "フォークで細かくつぶし、マヨネーズ・砂糖・塩・こしょうであえる。",
+   "パンにバターを薄く塗り、卵をたっぷりはさむ。",
+   "ラップで包んで10分置いてから、耳を落として切る。"
+  ],
+  "swiss_tips": "殻に色がついた卵はゆで卵なので、そのまま使えて便利。日本の味に近づけるならマヨネーズはキューピーで。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 480,
+   "protein_g": 16,
+   "fat_g": 30,
+   "carbs_g": 36,
+   "salt_g": 1.4
+  }
+ },
+ {
+  "name": "ハムサンド",
+  "category": "bread",
+  "cooking_time_minutes": 10,
+  "servings": 2,
+  "description": "ハムとバターだけの、シンプルなサンドイッチ。",
+  "mood_tags": [
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "サンドイッチ用パン",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ハム",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "きゅうり",
+    "amount": "1/3本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "レタス",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "パンにバターを塗る。好みでマヨネーズを薄く重ねる。",
+   "ハムを2枚ずつのせ、好みで薄切りのきゅうりやレタスを重ねる。",
+   "もう1枚のパンではさみ、軽く押さえて耳を落として切る。"
+  ],
+  "swiss_tips": "ハムは「Hinterschinken」が日本のハムに一番近い。きゅうりは種を取ると水っぽくならない。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 15,
+   "fat_g": 11,
+   "carbs_g": 36,
+   "salt_g": 1.9
+  }
+ },
+ {
+  "name": "肉味噌クラッカー",
+  "category": "apero",
+  "cooking_time_minutes": 20,
+  "servings": 6,
+  "description": "甘辛い肉味噌をクラッカーにのせて。ワインにも合う。",
+  "mood_tags": [
+   "おもてなし",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "豚ひき肉",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "味噌",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "クラッカー",
+    "amount": "24枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "生姜をみじん切りにし、ごま油で炒める。",
+   "ひき肉を入れてぽろぽろになるまで炒める。",
+   "味噌・砂糖・みりん・酒を混ぜて加え、汁気がなくなるまで炒める。",
+   "食べる直前にクラッカーにのせ、刻んだねぎを散らす。"
+  ],
+  "swiss_tips": "肉味噌は冷蔵で4〜5日もつ。持ち寄りでは肉味噌とクラッカーを別に持って行き、その場でのせるとしけらない。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 190,
+   "protein_g": 8,
+   "fat_g": 11,
+   "carbs_g": 14,
+   "salt_g": 1.2
+  }
+ },
+ {
+  "name": "野菜スティックと味噌マヨディップ",
+  "category": "apero",
+  "cooking_time_minutes": 15,
+  "servings": 4,
+  "description": "切って並べるだけ。味噌マヨが和の味。",
+  "mood_tags": [
+   "さっぱり",
+   "野菜たっぷり",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "きゅうり",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんじん",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パプリカ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "セロリ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ラディッシュ",
+    "amount": "6個",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "味噌",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "きゅうり・にんじん・パプリカ・セロリをスティック状に切る。ラディッシュは半分に切る。",
+   "味噌・マヨネーズ・砂糖・すりごまを混ぜてディップを作る。",
+   "グラスに野菜を立てて、ディップを添える。"
+  ],
+  "swiss_tips": "にんじんは細めの「Bundkarotten」が甘くて生でもおいしい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 120,
+   "protein_g": 2,
+   "fat_g": 9,
+   "carbs_g": 8,
+   "salt_g": 0.8
+  }
+ },
+ {
+  "name": "ハムのクロワッサン（Schinkengipfeli）",
+  "category": "apero",
+  "cooking_time_minutes": 40,
+  "servings": 6,
+  "description": "スイスのアペロの定番を、パイシートで手軽に。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "パイシート",
+    "amount": "1枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ハム",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "大さじ3",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "オーブンを200℃に温める。ハムを細かく刻み、生クリーム・卵白・こしょうと混ぜる。",
+   "丸いパイシートを放射状に16等分に切る。",
+   "広いほうにハムをのせて、外側から巻いて三日月形にする。",
+   "卵黄を塗り、15〜18分こんがり焼く。"
+  ],
+  "swiss_tips": "丸いパイシートは Coop・Migros の冷蔵コーナー。パン屋の Schinkengipfeli と同じ味になる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 220,
+   "protein_g": 8,
+   "fat_g": 14,
+   "carbs_g": 14,
+   "salt_g": 0.8
+  }
+ },
+ {
+  "name": "焼き鳥風ピック",
+  "category": "apero",
+  "cooking_time_minutes": 30,
+  "servings": 4,
+  "description": "フライパンで焼く、つまみやすい焼き鳥。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "おもてなし",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "鶏もも肉",
+    "amount": "400g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "リーキ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "鶏肉を一口大に切り、リーキの白い部分を3cmに切る。",
+   "フライパンに油を熱し、鶏肉を皮目から焼く。リーキも一緒に焼く。",
+   "両面焼けたら、醤油・みりん・砂糖・酒を入れて照りが出るまでからめる。",
+   "鶏肉とリーキを交互に短い串（ピック）に刺す。"
+  ],
+  "swiss_tips": "短い串や「Apéro-Spiessli」は Coop・Migros のパーティー用品の売り場にある。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 300,
+   "protein_g": 20,
+   "fat_g": 17,
+   "carbs_g": 14,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "枝豆のガーリック炒め",
+  "category": "apero",
+  "cooking_time_minutes": 10,
+  "servings": 4,
+  "description": "冷凍の枝豆で、すぐできるおつまみ。",
+  "mood_tags": [
+   "ピリ辛",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "枝豆",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "2かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "唐辛子",
+    "amount": "1本",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "枝豆は凍ったまま、さっと水で洗って表面の氷を落とす。",
+   "フライパンにごま油と薄切りのにんにく、唐辛子を入れて弱火で香りを出す。",
+   "枝豆を入れて中火で5分、ときどき混ぜながら焼き色をつける。",
+   "塩と醤油で味を整える。"
+  ],
+  "swiss_tips": "さや付きの冷凍枝豆は Coop・Migros にある。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 130,
+   "protein_g": 9,
+   "fat_g": 7,
+   "carbs_g": 7,
+   "salt_g": 1.0
   }
  },
  {

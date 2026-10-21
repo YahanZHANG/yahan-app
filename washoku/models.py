@@ -270,7 +270,10 @@ class Recipe(models.Model):
         ("noodle", "麺"),
         ("side", "副菜"),
         ("soup", "汁物・鍋"),
-        ("flour", "粉もの・おやつ"),
+        ("flour", "粉もの"),
+        ("sweets", "デザート・おやつ"),
+        ("bread", "パン"),
+        ("apero", "アペロ・持ち寄り"),
         ("yoshoku", "洋食"),
         ("chinese", "中華"),
         ("korean", "韓国"),
@@ -1257,15 +1260,32 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
+# コメントとコラムに押せるスタンプ (並び順もこのとおり)
+REACTION_CHOICES = [
+    ("thanks", "ありがとう"),
+    ("insight", "なるほど"),
+    ("like", "いいね"),
+    ("genius", "天才"),
+    ("lovely", "ステキ"),
+    ("check", "確認します"),
+]
+
+REACTION_EMOJI = {
+    "thanks": "🙏",
+    "insight": "💡",
+    "like": "👍",
+    "genius": "🤩",
+    "lovely": "✨",
+    "check": "👀",
+}
+
+
 class CommentReaction(models.Model):
     """
-    コメントへの「いいね」「ありがとう」。1人1種類につき1回。
+    コメントへのスタンプ。1人1種類につき1回。
     """
 
-    KIND_CHOICES = [
-        ("like", "いいね"),
-        ("thanks", "ありがとう"),
-    ]
+    KIND_CHOICES = REACTION_CHOICES
 
     comment = models.ForeignKey(
         Comment,
@@ -1290,8 +1310,8 @@ class CommentReaction(models.Model):
     )
 
     class Meta:
-        verbose_name = "いいね・ありがとう"
-        verbose_name_plural = "いいね・ありがとう"
+        verbose_name = "コメントへのスタンプ"
+        verbose_name_plural = "コメントへのスタンプ"
         constraints = [
             models.UniqueConstraint(
                 fields=["comment", "user", "kind"],
@@ -1303,14 +1323,59 @@ class CommentReaction(models.Model):
         return f"{self.user} {self.get_kind_display()} → {self.comment_id}"
 
 
+class PostReaction(models.Model):
+    """
+    コラムへのスタンプ。1人1種類につき1回。
+    """
+
+    KIND_CHOICES = REACTION_CHOICES
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="reactions",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_post_reactions",
+    )
+
+    kind = models.CharField(
+        "種類",
+        max_length=20,
+        choices=KIND_CHOICES,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "コラムへのスタンプ"
+        verbose_name_plural = "コラムへのスタンプ"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post", "user", "kind"],
+                name="washoku_unique_post_reaction",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} {self.get_kind_display()} → {self.post_id}"
+
+
 class Notification(models.Model):
     """
-    自分のコメントに返信や「ありがとう」が付いたことを知らせる。
+    自分のコメントへの返信や、コメント・コラムに押されたスタンプを知らせる。
     """
 
     KIND_CHOICES = [
         ("reply", "返信"),
+        # 2026-10-21 まで: スタンプが「ありがとう」だけだったころの通知
         ("thanks", "ありがとう"),
+        ("stamp", "スタンプ"),
     ]
 
     recipient = models.ForeignKey(
@@ -1325,10 +1390,21 @@ class Notification(models.Model):
         related_name="washoku_sent_notifications",
     )
 
+    # コメントへの返信・スタンプは comment、コラムへのスタンプは post
     comment = models.ForeignKey(
         Comment,
         on_delete=models.CASCADE,
         related_name="notifications",
+        null=True,
+        blank=True,
+    )
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
     )
 
     kind = models.CharField(
@@ -1336,6 +1412,13 @@ class Notification(models.Model):
         max_length=20,
         choices=KIND_CHOICES,
         default="reply",
+    )
+
+    stamp = models.CharField(
+        "スタンプ",
+        max_length=20,
+        choices=REACTION_CHOICES,
+        blank=True,
     )
 
     is_read = models.BooleanField(
@@ -1354,6 +1437,9 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
+
+    def stamp_emoji(self):
+        return REACTION_EMOJI.get(self.stamp, "")
 
 
 # =========================================================

@@ -28,7 +28,7 @@ urlpatterns = [
     path("substitutes/", views.substitute_list, name="substitute_list"),
     path("substitutes/new/", views.substitute_submit, name="substitute_submit"),
 
-    # 検索・みんなの新着
+    # 検索・みんなの投稿・コメント
     path("search/", views.search, name="search"),
     path("activity/", views.activity, name="activity"),
 
@@ -53,6 +53,7 @@ urlpatterns = [
     path("products/", views.product_list, name="product_list"),
     path("links/", views.link_list, name="link_list"),
     path("posts/<int:pk>/", views.post_detail, name="post_detail"),
+    path("posts/<int:pk>/react/", views.post_react, name="post_react"),
     path("posts/new/<str:kind>/", views.post_submit, name="post_submit"),
     path("me/posts/", views.my_posts, name="my_posts"),
     path("notifications/", views.notification_list, name="notification_list"),

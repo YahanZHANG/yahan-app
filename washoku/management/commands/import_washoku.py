@@ -136,10 +136,12 @@ class Command(BaseCommand):
                 if options["new_only"]:
                     substitute_count = self.add_missing_substitutes(all_ingredients)
                     nutrition_count = self.fill_missing_nutrition(all_recipes)
+                    notes_count = self.fill_missing_buying_notes(all_ingredients)
 
-                    if substitute_count or nutrition_count:
+                    if substitute_count or nutrition_count or notes_count:
                         self.stdout.write(
-                            f"代用品 {substitute_count}件、栄養の目安 {nutrition_count}件を追加"
+                            f"代用品 {substitute_count}件、栄養の目安 {nutrition_count}件、"
+                            f"買い方のメモ {notes_count}件を追加"
                         )
 
                 if options["dry_run"]:
@@ -243,6 +245,27 @@ class Command(BaseCommand):
                 )
 
                 count += created
+
+        return count
+
+    def fill_missing_buying_notes(self, rows):
+        """
+        買い方のメモが空の食材にだけ、JSON のメモを入れる (管理画面で書いたものは変えない)。
+        """
+
+        count = 0
+
+        for row in rows:
+
+            notes = row.get("buying_notes")
+
+            if not notes:
+                continue
+
+            count += Ingredient.objects.filter(
+                name=row["name"],
+                buying_notes="",
+            ).update(buying_notes=notes)
 
         return count
 
