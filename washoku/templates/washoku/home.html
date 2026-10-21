@@ -28,8 +28,8 @@
 <section class="washoku-hero">
     <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
-    <form action="{% url 'washoku:recipe_list' %}" method="get" class="washoku-search">
-        <input type="search" name="q" placeholder="料理名や食材で探す" aria-label="レシピを検索">
+    <form action="{% url 'washoku:search' %}" method="get" class="washoku-search">
+        <input type="search" name="q" placeholder="料理、食材、お店などを探す" aria-label="アプリ全体を検索">
         <button type="submit">探す</button>
     </form>
 </section>
@@ -50,10 +50,10 @@
         <strong>栄養で選ぶ</strong>
         <small>カロリー、PFC…</small>
     </a>
-    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-card washoku-entry-wide">
-        <span>🎲</span>
-        <strong>ランダム</strong>
-        <small>迷ったら、今日はこれ！</small>
+    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-random">
+        <span aria-hidden="true">🎲</span>
+        <strong>迷ったら、ランダムで決める</strong>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
     </a>
 </section>
 

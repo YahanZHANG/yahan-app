@@ -2300,23 +2300,6 @@ html[data-washoku-theme="dark"] {
     }
 }
 
-/* HOME: 選び方の3枚 + 横長のランダム */
-.washoku-entry-wide {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 12px;
-}
-
-.washoku-entry-wide span {
-    font-size: 22px;
-}
-
-.washoku-entry-wide small {
-    display: inline !important;
-}
-
 /* レシピ一覧: 見出しの横の「ほかの探し方」 */
 .washoku-title-row {
     display: flex;
@@ -2424,4 +2407,45 @@ html[data-washoku-theme="dark"] {
     .washoku-nutrition-fields {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+}
+
+/* HOME: ランダムは、ほかの3枚と違う帯の形にする */
+.washoku-entry-random {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 1px dashed var(--washoku-accent);
+    border-radius: 999px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    text-decoration: none;
+}
+
+.washoku-entry-random span {
+    font-size: 22px;
+}
+
+.washoku-entry-random strong {
+    flex: 1;
+    font-size: 15px;
+}
+
+.washoku-entry-random:hover {
+    border-style: solid;
+}
+
+/* 代わり: スイスで買えるもののドイツ語名を、その名前のすぐ後ろに */
+.washoku-substitute-to {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 6px;
+}
+
+.washoku-substitute-to small {
+    color: var(--washoku-muted);
+    font-size: 12.5px;
+    font-weight: 400;
 }

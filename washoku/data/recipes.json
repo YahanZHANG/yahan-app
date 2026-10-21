@@ -3804,7 +3804,7 @@
   ],
   "swiss_tips": "ウインナーは「Wienerli」が日本のものに近い。粉チーズ（Parmesan）とタバスコをかけると喫茶店の味に。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 620,
    "protein_g": 18,
@@ -3919,7 +3919,7 @@
   ],
   "swiss_tips": "赤ワインは料理用の安いもので十分。ひき肉は牛と豚の「Hackfleisch gemischt」。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 450,
    "protein_g": 23,
@@ -4016,7 +4016,7 @@
   ],
   "swiss_tips": "日本のシチュールーはアジアスーパーにもあるが、この作り方なら普通のスーパーの材料だけで作れる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 420,
    "protein_g": 22,
@@ -4125,7 +4125,7 @@
   ],
   "swiss_tips": "牛肉は冷凍の Fondue Chinoise 用が薄くて便利。トマト缶は「Pelati」でも「gehackte Tomaten」でもよい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 680,
    "protein_g": 22,
@@ -4228,7 +4228,7 @@
   ],
   "swiss_tips": "マカロニはスイスの「Hörnli」で。チーズはグラタン用の「Reibkäse」が手軽。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 560,
    "protein_g": 28,
@@ -4330,7 +4330,7 @@
   ],
   "swiss_tips": "エビは冷凍の生（roh）を解凍して使う。残りご飯で作れる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 680,
    "protein_g": 24,
@@ -4439,7 +4439,7 @@
   ],
   "swiss_tips": "じゃがいもは粉質の「mehligkochend」がほくほくに仕上がる。パン粉はアジアコーナーの「Panko」がサクサク。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 420,
    "protein_g": 13,
@@ -4530,7 +4530,7 @@
   ],
   "swiss_tips": "スイスの普通のキャベツは葉が硬くて巻きにくい。縮れた「Wirz」は柔らかく、破れにくい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 300,
    "protein_g": 18,
@@ -4633,7 +4633,7 @@
   ],
   "swiss_tips": "豚肉は「Schweinsplätzli」で。厚いときは包丁の背でたたいてのばす。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 420,
    "protein_g": 28,
@@ -4717,7 +4717,7 @@
   ],
   "swiss_tips": "Rettich は辛みが強いので、おろしてから5分ほど置くと和らぐ。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 560,
    "protein_g": 24,

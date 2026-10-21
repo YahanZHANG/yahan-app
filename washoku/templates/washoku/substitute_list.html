@@ -34,12 +34,14 @@
                         <span class="washoku-substitute-from">{{ item.original_name }}</span>
                         <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="washoku-visually-hidden">の代わりに</span>
                         {% if item.substitute_id %}
-                            <a href="{% url 'washoku:ingredient_detail' item.substitute.pk %}">{{ item.substitute.name }}</a>
+                            <span class="washoku-substitute-to">
+                                <a href="{% url 'washoku:ingredient_detail' item.substitute.pk %}">{{ item.substitute.name }}</a>
+                                {% if item.substitute.name_de %}<small lang="de">{{ item.substitute.name_de }}</small>{% endif %}
+                            </span>
                         {% else %}
                             <span>{{ item.substitute_name }}</span>
                         {% endif %}
                     </p>
-                    {% if item.substitute.name_de %}<small class="washoku-card-de" lang="de">{{ item.substitute.name_de }}</small>{% endif %}
                     {% if item.tips %}<p class="washoku-substitute-tips">{{ item.tips }}</p>{% endif %}
                     {% if item.submitted_by %}<small class="washoku-credit">{{ item.submitted_by|display_name }} さんが教えてくれました</small>{% endif %}
                 </li>
@@ -47,7 +49,7 @@
         </ul>
     </section>
 {% empty %}
-    <p class="washoku-empty">{% if query %}「{{ query }}」の代わりはまだ登録されていません。{% else %}まだ登録されていません。{% endif %}</p>
+    <p class="washoku-empty">{% if query %}「{{ query }}」の代わりはまだ登録されていません。<a href="{% url 'washoku:search' %}?q={{ query|urlencode }}">ほかのページも探す</a>{% else %}まだ登録されていません。{% endif %}</p>
 {% endfor %}
 
 <section class="washoku-section washoku-suggest" id="suggest">

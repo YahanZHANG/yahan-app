@@ -40,10 +40,8 @@
                         </span>
                     {% endif %}
                     <strong>{{ post.title }}</strong>
+                    {% if kind != "link" %}
                     <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>
-                    {% if kind == "link" %}
-                    <small>出典: {{ post.source|default:post.url|truncatechars:60 }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
-                    {% else %}
                     <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
                     {% endif %}
                 </a>

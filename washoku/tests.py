@@ -890,11 +890,14 @@ class NutritionTests(TestCase):
         response = self.client.get(reverse("washoku:home"))
 
         self.assertContains(response, reverse("washoku:find_by_nutrition"))
-        self.assertContains(response, "washoku-entry-wide")
+        self.assertContains(response, "washoku-entry-random")
+        self.assertContains(response, f'action="{reverse("washoku:search")}"')
         self.assertNotContains(response, "みんなの知恵")
 
         response = self.client.get(reverse("washoku:recipe_list"))
         self.assertContains(response, "ほかの探し方")
+        self.assertContains(response, reverse("washoku:my_favorites"))
+        self.assertContains(response, reverse("washoku:family_favorites"))
 
 
 class PostTests(TestCase):
@@ -1030,7 +1033,9 @@ class PostTests(TestCase):
         post.status = "published"
         post.save()
 
-        self.assertContains(self.client.get(reverse("washoku:link_list")), "出典: 例のブログ（2025年）")
+        links = self.client.get(reverse("washoku:link_list"))
+        self.assertContains(links, "食材探しの記事")
+        self.assertNotContains(links, "Coop で買える日本の食材の話です。")
         self.assertNotContains(self.client.get(reverse("washoku:column_list")), "食材探しの記事")
 
         detail = self.client.get(post.get_absolute_url())
