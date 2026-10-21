@@ -221,23 +221,13 @@ def home(request):
         recipes.order_by("-created_at")
     )[:6]
 
-    latest_comments = (
-        Comment.objects
-        .filter(
-            is_hidden=False,
-            is_deleted=False,
-        )
-        .filter(public_comment_targets())
-        .select_related("recipe", "ingredient", "store", "post", "author")
-        .order_by("-created_at")[:3]
-    )
 
     return render(
         request,
         "washoku/home.html",
         {
             "latest_recipes": attach_family_rating(latest, request.user),
-            "latest_comments": latest_comments,
+            "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
             "questions": open_questions()[:5],
             "announcement": Announcement.latest(),
             "moods": MoodTag.objects.all(),
@@ -2013,26 +2003,36 @@ def my_posts(request):
 ACTIVITY_PER_PAGE = 30
 
 
-def activity(request):
+def activity_entries(comment_limit=300, post_limit=100):
+    """
+    公開中のコメントとみんなの投稿を、新しい順に1つの列にする。
+    """
 
     comments = (
         Comment.objects
         .filter(is_hidden=False, is_deleted=False)
         .filter(public_comment_targets())
         .select_related("recipe", "ingredient", "store", "post", "author", "parent")
-        .order_by("-created_at")[:300]
+        .order_by("-created_at")[:comment_limit]
     )
 
     posts = (
         Post.objects
         .filter(status="published")
         .select_related("author")
-        .order_by("-created_at")[:100]
+        .order_by("-created_at")[:post_limit]
     )
 
     items = [{"kind": "comment", "item": comment, "at": comment.created_at} for comment in comments]
     items += [{"kind": "post", "item": post, "at": post.created_at} for post in posts]
     items.sort(key=lambda entry: entry["at"], reverse=True)
+
+    return items
+
+
+def activity(request):
+
+    items = activity_entries()
 
     from django.core.paginator import Paginator
 

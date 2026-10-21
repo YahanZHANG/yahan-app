@@ -1,6 +1,5 @@
 {% with name=request.resolver_match.url_name %}
-<nav class="washoku-subtabs washoku-subtabs-5" aria-label="みんなのページ">
-    <a href="{% url 'washoku:activity' %}" class="{% if name == 'activity' %}active{% endif %}">新着</a>
+<nav class="washoku-subtabs" aria-label="みんなのページ">
     <a href="{% url 'washoku:question_list' %}" class="{% if name == 'question_list' %}active{% endif %}">Q&amp;A</a>
     <a href="{% url 'washoku:column_list' %}" class="{% if name == 'column_list' or kind == 'column' %}active{% endif %}">コラム</a>
     <a href="{% url 'washoku:product_list' %}" class="{% if name == 'product_list' or kind == 'product' %}active{% endif %}">おすすめ</a>

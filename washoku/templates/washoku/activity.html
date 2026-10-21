@@ -5,27 +5,12 @@
 
 {% block content %}
 
-{% include "washoku/includes/community_tabs.html" %}
-
-<h1 class="washoku-visually-hidden">みんなの新着</h1>
+<h1>みんなの新着</h1>
 
 {% if page.object_list %}
     <ul class="washoku-activity">
         {% for entry in page.object_list %}
-            {% with item=entry.item %}
-            <li>
-                <a href="{{ item.get_absolute_url }}">
-                    <span class="washoku-activity-kind">
-                        {% if entry.kind == "post" %}{{ item.get_kind_display }}
-                        {% elif item.parent_id %}返信
-                        {% elif item.kind == "question" %}質問
-                        {% else %}コメント{% endif %}
-                    </span>
-                    <span class="washoku-activity-body">{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:90 }}{% endif %}</span>
-                    <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %} ・ {{ entry.at|date:"n/j H:i" }}</small>
-                </a>
-            </li>
-            {% endwith %}
+            {% include "washoku/includes/activity_item.html" %}
         {% endfor %}
     </ul>
 

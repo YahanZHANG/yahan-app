@@ -1,5 +1,6 @@
-/* スイスで和食: はじめて開いたときと、その1週間後に1回だけ出す案内。
-   ホーム画面に追加する方法 (端末ごと) と、会員登録・通知への入り口。
+/* スイスで和食: 下から出る案内。いちどに1つだけ出す。
+   1. 携帯のブラウザで開いているとき: ホーム画面に追加 (初めて開いたときと、その1週間後)
+   2. ホーム画面から開いたとき (または追加できない PC): 会員なら通知、未ログインなら会員登録 (1回だけ)
    いつ出したかは、この端末の localStorage にだけ残す。 */
 
 (function () {
@@ -9,7 +10,8 @@
     if (!sheet) return;
 
     var FIRST_SEEN = "washoku_first_seen";
-    var STAGE = "washoku_welcome_stage";
+    var INSTALL_STAGE = "washoku_welcome_stage";
+    var NEXT_SHOWN = "washoku_welcome_next_shown";
     var WEEK = 7 * 24 * 60 * 60 * 1000;
 
     function read(key) {
@@ -25,14 +27,13 @@
     var isAndroid = /Android/.test(ua);
     var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
-    // ホーム画面に追加の手順を、端末に合わせて1つだけ見せる
-    var install = sheet.querySelector("[data-welcome-install]");
-    var installButton = sheet.querySelector("[data-install-button]");
-    var deferredPrompt = null;
+    var steps = {};
+    sheet.querySelectorAll("[data-welcome-step]").forEach(function (section) {
+        steps[section.dataset.welcomeStep] = section;
+    });
 
-    if (standalone) {
-        install.hidden = true;
-    } else if (isIOS) {
+    // ホーム画面に追加の手順を、端末に合わせて1つだけ見せる
+    if (isIOS) {
         var safari = !/CriOS|FxiOS|EdgiOS/.test(ua);
         sheet.querySelector(safari ? "[data-install-ios-safari]" : "[data-install-ios-browser]").hidden = false;
     } else if (isAndroid) {
@@ -42,6 +43,9 @@
     }
 
     // Android の Chrome などでは、ボタン1つで追加できる
+    var installButton = sheet.querySelector("[data-install-button]");
+    var deferredPrompt = null;
+
     window.addEventListener("beforeinstallprompt", function (event) {
         event.preventDefault();
         deferredPrompt = event;
@@ -56,6 +60,13 @@
             installButton.hidden = true;
         });
     });
+
+    function open(name) {
+        Object.keys(steps).forEach(function (key) {
+            steps[key].hidden = key !== name;
+        });
+        sheet.hidden = false;
+    }
 
     function close() {
         sheet.hidden = true;
@@ -72,11 +83,11 @@
     // マイページの「ホーム画面に追加する方法」から、いつでも開ける
     document.querySelectorAll("[data-welcome-open]").forEach(function (button) {
         button.addEventListener("click", function () {
-            sheet.hidden = false;
+            open("install");
         });
     });
 
-    // 出すかどうか: 1回目は初めて開いたとき、2回目は1週間たってから
+    // どれを出すか決める
     var now = Date.now();
     var firstSeen = parseInt(read(FIRST_SEEN), 10);
 
@@ -85,17 +96,33 @@
         write(FIRST_SEEN, String(now));
     }
 
-    var stage = parseInt(read(STAGE), 10) || 0;
-    var due = stage === 0 || (stage === 1 && now - firstSeen >= WEEK);
+    var mobile = isIOS || isAndroid;
+    var step = null;
 
-    // ホーム画面から開いていて、会員でもあるなら、通知の案内だけなので2回目は出さない
-    var onlyPush = install.hidden && sheet.querySelector("[data-welcome-push]");
+    if (mobile && !standalone) {
 
-    if (!due || (onlyPush && stage > 0)) return;
+        var stage = parseInt(read(INSTALL_STAGE), 10) || 0;
 
-    write(STAGE, String(stage + 1));
+        if (stage === 0 || (stage === 1 && now - firstSeen >= WEEK)) {
+            write(INSTALL_STAGE, String(stage + 1));
+            step = "install";
+        }
 
-    window.setTimeout(function () {
-        sheet.hidden = false;
-    }, 1200);
+    } else if (!read(NEXT_SHOWN)) {
+
+        // 通知がもう許可されている会員には、通知の案内はいらない
+        var pushDone = "Notification" in window && Notification.permission === "granted" && read("washoku_push_on") === "1";
+        var next = steps.push ? (pushDone ? null : "push") : "join";
+
+        if (next) {
+            write(NEXT_SHOWN, "1");
+            step = next;
+        }
+    }
+
+    if (step) {
+        window.setTimeout(function () {
+            open(step);
+        }, 1200);
+    }
 })();

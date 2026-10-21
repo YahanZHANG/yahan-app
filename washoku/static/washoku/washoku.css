@@ -2421,7 +2421,7 @@ html[data-washoku-theme="dark"] {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 44px;
+    min-height: 72px;
     border-radius: 999px;
     background: var(--washoku-random);
     color: #fff;
@@ -2429,11 +2429,11 @@ html[data-washoku-theme="dark"] {
 }
 
 .washoku-entry-random span {
-    font-size: 20px;
+    font-size: 28px;
 }
 
 .washoku-entry-random strong {
-    font-size: 15px;
+    font-size: 17px;
 }
 
 .washoku-entry-random:hover {
@@ -2574,8 +2574,7 @@ a.washoku-favorite {
 }
 
 .washoku-sheet section {
-    padding: 10px 0;
-    border-top: 1px solid var(--washoku-border);
+    padding: 0 0 4px;
 }
 
 .washoku-sheet h3 {
@@ -2635,16 +2634,6 @@ a.washoku-favorite {
     text-decoration: none;
 }
 
-/* みんなのタブ: 5つを携帯でも1行に */
-.washoku-subtabs-5 {
-    gap: 2px;
-    padding: 3px;
-}
-
-.washoku-subtabs-5 a {
-    padding: 7px 2px;
-    font-size: min(14px, 3.7vw);
-}
 
 .washoku-theme-auto {
     margin: -4px 0 4px;

@@ -1,12 +1,11 @@
 {% load static %}
-{# はじめて開いた人と、1週間後にもう一度だけ出す案内 (ホーム画面に追加・会員登録・通知) #}
-<div class="washoku-sheet" id="washoku-welcome" role="dialog" aria-modal="false" aria-labelledby="washoku-welcome-title" hidden>
+{# 案内は1回に1つだけ出す: まずホーム画面に追加。ホーム画面から開いたら、次に通知 (会員) か会員登録 #}
+<div class="washoku-sheet" id="washoku-welcome" role="dialog" aria-modal="false" aria-label="スイスで和食のご案内" hidden>
     <div class="washoku-sheet-inner">
         <button type="button" class="washoku-sheet-close" data-welcome-close aria-label="閉じる">×</button>
-        <h2 id="washoku-welcome-title">スイスで和食を、もっと便利に</h2>
 
-        <section data-welcome-install>
-            <h3>📱 ホーム画面に追加</h3>
+        <section data-welcome-step="install" hidden>
+            <h2>📱 ホーム画面に追加しませんか？</h2>
             <p>アプリのように、すぐ開けます。</p>
             <ol class="washoku-install-steps" data-install-ios-safari hidden>
                 <li>共有ボタン <span class="washoku-key" aria-label="共有">□↑</span> を押す（画面の下か「…」の中）</li>
@@ -22,16 +21,18 @@
             </ol>
             <button type="button" class="washoku-button" data-install-button hidden>ホーム画面に追加する</button>
             <p class="washoku-install-desktop" data-install-desktop hidden>携帯で開くと、ホーム画面に追加できます。</p>
+            <p class="washoku-note">追加したら、ホーム画面のアイコンから開いてください。</p>
         </section>
 
         {% if user.is_authenticated %}
-            <section data-welcome-push>
-                <h3>🔔 返信の通知</h3>
-                <p>質問に答えが来たら、お知らせします。<a href="{% url 'washoku:my_page' %}#push">マイページでオンにする</a></p>
+            <section data-welcome-step="push" hidden>
+                <h2>🔔 通知をオンにしませんか？</h2>
+                <p>質問に答えが来たときや、コメントに返信が来たときにお知らせします。</p>
+                <p><a class="washoku-button" href="{% url 'washoku:my_page' %}#push">マイページでオンにする</a></p>
             </section>
         {% else %}
-            <section>
-                <h3>👤 無料の会員登録</h3>
+            <section data-welcome-step="join" hidden>
+                <h2>👤 無料の会員登録</h2>
                 <p>お気に入り、家族で好みの記録、質問やコメント、返信の通知が使えます。</p>
                 <p class="washoku-join-actions">
                     <a class="washoku-button" href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">会員登録する</a>

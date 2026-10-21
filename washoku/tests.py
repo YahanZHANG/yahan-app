@@ -698,7 +698,7 @@ class MenuTests(TestCase):
         html = self.client.get(reverse("washoku:home")).content.decode()
         tabbar = html[html.index('class="washoku-tabbar"'):]
 
-        self.assertIn(reverse("washoku:activity"), tabbar)
+        self.assertIn(reverse("washoku:question_list"), tabbar)
         self.assertNotIn(reverse("washoku:my_page"), tabbar)
         self.assertIn('class="washoku-me', html)
         self.assertNotIn("家庭料理のレシピ集です", html)
@@ -1152,16 +1152,18 @@ class SearchAndActivityTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:search") + "?q=zzz"), "見つかりませんでした")
         self.assertContains(self.client.get(reverse("washoku:home")), reverse("washoku:search"))
 
-    def test_home_shows_three_latest_comments_and_links_to_all(self):
+    def test_home_shows_five_latest_entries_and_links_to_all(self):
 
-        for number in range(4):
+        for number in range(5):
             Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body=f"コメント{number}")
 
         Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published")
 
         home = self.client.get(reverse("washoku:home"))
 
-        self.assertContains(home, "コメント3")
+        # 新しい5件 = 商品1件 + コメント4〜1
+        self.assertContains(home, "冷凍餃子")
+        self.assertContains(home, "コメント1")
         self.assertNotContains(home, "コメント0")
         self.assertContains(home, reverse("washoku:activity"))
 

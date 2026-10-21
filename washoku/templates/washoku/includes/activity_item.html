@@ -1,0 +1,15 @@
+{% load washoku_tags %}
+{% with item=entry.item %}
+<li>
+    <a href="{{ item.get_absolute_url }}">
+        <span class="washoku-activity-kind">
+            {% if entry.kind == "post" %}{{ item.get_kind_display }}
+            {% elif item.parent_id %}返信
+            {% elif item.kind == "question" %}質問
+            {% else %}コメント{% endif %}
+        </span>
+        <span class="washoku-activity-body">{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:90 }}{% endif %}</span>
+        <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %} ・ {{ entry.at|date:"n/j H:i" }}</small>
+    </a>
+</li>
+{% endwith %}
