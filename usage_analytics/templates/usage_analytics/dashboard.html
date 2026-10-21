@@ -1,731 +1,493 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static analytics_tags %}
 
-{% block title %}
-    利用状況 | Yapp
+{% block title %}アクセス解析 | Yapp分析{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usage_analytics/analytics.css' %}">
 {% endblock %}
 
-
 {% block content %}
-
-<link
-    rel="stylesheet"
-    href="{% static 'usage_analytics/analytics.css' %}"
->
-
-
-<div class="analytics-page">
+<div class="ya">
 
     <!-- =====================================================
-         Hero
+         Header
          ===================================================== -->
 
-    <header class="analytics-hero">
-
-        <p class="analytics-eyebrow">
-            Yapp ANALYTICS
-        </p>
-
-        <h1>
-            📊 利用状況
-        </h1>
-
-        <p>
-            アプリとユーザーの利用状況を確認
-        </p>
-
-
-        <div class="analytics-actions">
-
-            <a
-                href="{% url 'portal:home' %}"
-            >
-                ← Portal
-            </a>
-
-
-            {% if user.is_superuser %}
-
-                <a
-                    href="{% url 'usage_analytics:access_control' %}"
-                >
-                    🔐 閲覧権限
-                </a>
-
-            {% endif %}
-
+    <header class="ya-header">
+        <div>
+            <p class="ya-eyebrow">YAPP ANALYTICS</p>
+            <h1>📊 アクセス解析</h1>
+            <p>
+                {{ scope.start|date:"n/j" }}〜{{ scope.end|date:"n/j" }} の{% if selected_app %} {{ selected_app.emoji }} {{ selected_app.name }} {% else %}全アプリ{% endif %}
+                ・前の{{ scope.days }}日間と比べています
+            </p>
         </div>
-
+        <nav class="ya-links">
+            <a class="ya-link" href="{% url 'portal:home' %}">← Yapp</a>
+            <a class="ya-link" href="{% url 'usage_analytics:settings' %}">⚙️ 設定</a>
+            {% if user.is_superuser %}
+                <a class="ya-link" href="{% url 'usage_analytics:access_control' %}">🔐 閲覧権限</a>
+            {% endif %}
+        </nav>
     </header>
 
+    {% if messages %}
+        <div class="ya-messages">
+            {% for message in messages %}<div class="alert alert-success py-2">{{ message }}</div>{% endfor %}
+        </div>
+    {% endif %}
 
     <!-- =====================================================
-         Main
+         Filters
          ===================================================== -->
 
-    <main class="analytics-main">
+    <div class="ya-filters">
+        <div class="ya-chip-row" aria-label="期間">
+            {% for days in period_choices %}
+                <a class="ya-chip{% if days == scope.days %} is-active{% endif %}" href="{% scope_query scope days=days %}">
+                    {% if days == 365 %}1年{% else %}{{ days }}日{% endif %}
+                </a>
+            {% endfor %}
+        </div>
+        <div class="ya-chip-row" aria-label="アプリ">
+            <a class="ya-chip{% if not scope.app %} is-active{% endif %}" href="{% scope_query scope app='' %}">すべてのアプリ</a>
+            {% for app in apps_available %}
+                <a class="ya-chip{% if app.key == scope.app %} is-active{% endif %}" href="{% scope_query scope app=app.key %}">{{ app.emoji }} {{ app.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
 
+    <!-- =====================================================
+         Now + insights
+         ===================================================== -->
 
-        <!-- =================================================
-             Online users
-             ================================================= -->
+    <section class="ya-card ya-live" id="ya-live" data-url="{% url 'usage_analytics:live_status' %}" aria-live="polite">
+        {% include "usage_analytics/_live.html" %}
+    </section>
 
-        <section
-            class="analytics-online-section"
-            id="analytics-online"
-            data-online-url="{% url 'usage_analytics:online_users' %}"
-        >
+    <section class="ya-card ya-insights" aria-labelledby="ya-insights-title">
+        <h3 id="ya-insights-title">📝 最近の傾向</h3>
+        <ul>
+            {% for line in insights %}
+                <li><span aria-hidden="true">{{ line.icon }}</span><span>{{ line.text }}</span></li>
+            {% endfor %}
+        </ul>
+    </section>
 
-            <div class="analytics-online-heading">
+    <div class="ya-kpis">
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">来た人</div>
+            <div class="ya-kpi-value">{{ data.summary.visitors }}<small>人</small></div>
+            {% delta data.changes.visitors %}
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">初めて来た人</div>
+            <div class="ya-kpi-value">{{ data.summary.new_visitors }}<small>人</small></div>
+            {% delta data.changes.new_visitors %}
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">訪問回数</div>
+            <div class="ya-kpi-value">{{ data.summary.visits }}<small>回</small></div>
+            {% delta data.changes.visits %}
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">ページ閲覧</div>
+            <div class="ya-kpi-value">{{ data.summary.page_views }}<small>回</small></div>
+            {% delta data.changes.page_views %}
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">1回の訪問で見たページ</div>
+            <div class="ya-kpi-value">{{ data.summary.pages_per_visit }}<small>ページ</small></div>
+            <span class="ya-delta">前: {{ data.previous.pages_per_visit }}</span>
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">ログインして使った人</div>
+            <div class="ya-kpi-value">{{ data.summary.users }}<small>人</small></div>
+            {% delta data.changes.users %}
+        </div>
+    </div>
 
-                <div>
+    <!-- =====================================================
+         People
+         ===================================================== -->
 
-                    <p class="analytics-online-eyebrow">
-                        LIVE ACTIVITY
+    <section class="ya-section">
+        <h2>👥 人の動き</h2>
+        <p class="ya-lead">1人 = 1つのブラウザ（スマホとPCで見ると2人になります）。訪問は30分あくと次の訪問として数えます。</p>
+
+        <div class="ya-grid ya-grid-2">
+            <div class="ya-card">
+                <h3>来た人の推移</h3>
+                <p class="ya-note">{% if scope.bucket == "week" %}週ごと{% else %}日ごと{% endif %}。その日に初めて来た人と、前にも来たことがある人</p>
+                <div data-ya-chart="chart-visitors" data-label="来た人の推移"></div>
+            </div>
+
+            <div class="ya-card">
+                <h3>何日来ているか</h3>
+                <p class="ya-note">この期間に来た人を、来た日数で分けたもの</p>
+                <div class="ya-bars">
+                    {% for row in data.frequency %}
+                        <div class="ya-bar-row">
+                            <span>{{ row.label }}</span>
+                            <div class="ya-bar-track"><div class="ya-bar-fill ya-s1" style="width: {{ row.bar }}%"></div></div>
+                            <span class="ya-num">{{ row.visitors }}人 <span class="ya-sub" style="display:inline">{{ row.share }}%</span></span>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if data.retention.rate is not None %}
+                    <p class="ya-note" style="margin-top: 14px">
+                        🌱 期間の前半に初めて来た {{ data.retention.base }}人のうち、
+                        <strong>{{ data.retention.returned }}人（{{ data.retention.rate }}%）</strong>が別の日にもまた来ました。
                     </p>
-
-                    <h2>
-                        🟢 現在の利用状況
-                    </h2>
-
-                </div>
-
-
-                <span class="analytics-live-badge">
-                    LIVE
-                </span>
-
+                {% endif %}
             </div>
-
-
-            <p class="analytics-online-description">
-                5秒ごとに自動更新・直近20秒の生存信号で判定
-            </p>
-
-
-            <!-- =============================================
-                 Online count
-                 ============================================= -->
-
-            <div class="analytics-online-summary">
-
-                <span>
-                    現在オンラインと推定されるユーザー
-                </span>
-
-
-                <div class="analytics-online-total">
-
-                    <strong id="analytics-online-count">
-                        —
-                    </strong>
-
-                    <span>
-                        人
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- =============================================
-                 Online status
-                 ============================================= -->
-
-            <div
-                id="analytics-online-status"
-                class="analytics-online-status"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-            >
-                オンライン状況を確認中...
-            </div>
-
-
-            <!-- =============================================
-                 Online user list
-                 ============================================= -->
-
-            <div
-                id="analytics-online-users"
-                class="analytics-online-users"
-            ></div>
-
-
-            <!-- =============================================
-                 Last check
-                 ============================================= -->
-
-            <div class="analytics-online-footer">
-
-                <span id="analytics-online-checked-at">
-
-                    最終確認：—
-
-                </span>
-
-
-                <span>
-                    自動更新：5秒
-                </span>
-
-            </div>
-
-
-            <p class="analytics-online-note">
-
-                ※ オンライン状態は推定値。
-                記事を開いたまま読んでいる場合など、
-                実際の利用状況と一致しないことがある。
-
-            </p>
-
-        </section>
-
-
-        <!-- =================================================
-             Analytics filters
-             ================================================= -->
-
-        <section class="analytics-section">
-
-            <div class="analytics-section-heading">
-
-                <p>
-                    ANALYTICS FILTERS
-                </p>
-
-                <h2>
-                    集計条件
-                </h2>
-
-            </div>
-
-
-            <!-- =============================================
-                 Period selector
-                 ============================================= -->
-
-            <p class="analytics-description">
-                集計期間
-            </p>
-
-
-            <nav class="analytics-period">
-
-                <a
-                    href="?days=7&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
-                >
-                    7日間
-                </a>
-
-
-                <a
-                    href="?days=30&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
-                >
-                    30日間
-                </a>
-
-
-                <a
-                    href="?days=all&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
-                >
-                    全期間
-                </a>
-
-            </nav>
-
-
-            <!-- =============================================
-                 User filter
-                 ============================================= -->
-
-            <div class="analytics-filter-summary">
-
-                <div class="analytics-filter-summary-copy">
-
-                    <strong>
-                        集計対象ユーザー
-                    </strong>
-
-
-                    <p>
-
-                        {% if excluded_ids %}
-
-                            {{ excluded_ids|length }}人のユーザーを
-                            除外して集計中
-
-                        {% else %}
-
-                            全ユーザーを集計中
-
-                        {% endif %}
-
-                    </p>
-
-                </div>
-
-
-                <a
-                    href="{% url 'usage_analytics:filters' %}?days={{ days }}&amp;filter_applied=1{% for id in excluded_ids %}&amp;exclude_users={{ id }}{% endfor %}"
-                    class="analytics-filter-link"
-                >
-                    ⚙ 集計対象を設定
-                </a>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             Summary
-             ================================================= -->
-
-        <section class="analytics-summary">
-
-            <div class="analytics-stat-card">
-
-                <span>
-                    集計対象ユーザー
-                </span>
-
-                <strong>
-                    {{ registered_users }}
-                </strong>
-
-                <small>
-                    人
-                </small>
-
-            </div>
-
-
-            <div class="analytics-stat-card">
-
-                <span>
-                    期間中の利用者
-                </span>
-
-                <strong>
-                    {{ active_users }}
-                </strong>
-
-                <small>
-                    人
-                </small>
-
-            </div>
-
-
-            <div class="analytics-stat-card">
-
-                <span>
-                    訪問回数
-                </span>
-
-                <strong>
-                    {{ total_visits }}
-                </strong>
-
-                <small>
-                    回
-                </small>
-
-            </div>
-
-
-            <div class="analytics-stat-card">
-
-                <span>
-                    ページ閲覧数
-                </span>
-
-                <strong>
-                    {{ total_page_views }}
-                </strong>
-
-                <small>
-                    回
-                </small>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             Swiss News
-             ================================================= -->
-
-        <section class="analytics-section">
-
-            <div class="analytics-section-heading">
-
-                <p>
-                    SWISS NEWS
-                </p>
-
-                <h2>
-                    📰 Swiss News
-                </h2>
-
-            </div>
-
-
-            <p class="analytics-description">
-                一般公開しているSwiss Newsの利用状況。
-                詳細画面ではDAU・WAU・MAU、
-                継続利用、記事クリック、流入元などを確認できます。
-            </p>
-
-
-            <div class="analytics-summary">
-
-                <div class="analytics-stat-card">
-
-                    <span>
-                        訪問者
-                    </span>
-
-                    <strong>
-                        {{ public_news.visitors }}
-                    </strong>
-
-                    <small>
-                        Visitor
-                    </small>
-
-                </div>
-
-
-                <div class="analytics-stat-card">
-
-                    <span>
-                        Visits
-                    </span>
-
-                    <strong>
-                        {{ public_news.visits }}
-                    </strong>
-
-                    <small>
-                        訪問
-                    </small>
-
-                </div>
-
-
-                <div class="analytics-stat-card">
-
-                    <span>
-                        Page views
-                    </span>
-
-                    <strong>
-                        {{ public_news.page_views }}
-                    </strong>
-
-                    <small>
-                        閲覧
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div class="analytics-public-news-actions">
-
-                <a
-                    href="{% url 'usage_analytics:news_app_detail' %}?days={{ days }}"
-                    class="analytics-filter-link"
-                >
-                    Swiss News Analytics →
-                </a>
-
-            </div>
-
-        </section>
-
-        <!-- =================================================
-             App statistics
-             ================================================= -->
-
-        <section class="analytics-section">
-
-            <div class="analytics-section-heading">
-
-                <p>
-                    APP STATISTICS
-                </p>
-
-                <h2>
-                    アプリ別の利用状況
-                </h2>
-
-            </div>
-
-
-            <div class="analytics-table-wrap">
-
-                <table class="analytics-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                アプリ
-                            </th>
-
-                            <th>
-                                利用者
-                            </th>
-
-                            <th>
-                                訪問
-                            </th>
-
-                            <th>
-                                閲覧
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        {% for app in apps %}
-
-                            <tr>
-
-                                <td>
-                                    <strong>
-
-                                        {% if app.key == "news" %}
-
-                                            <a
-                                                href="{% url 'usage_analytics:news_app_detail' %}?days={{ days }}"
-                                                class="analytics-app-link"
-                                            >
-                                                {{ app.name }}
-                                                <span>
-                                                    →
-                                                </span>
-                                            </a>
-
-                                        {% else %}
-
-                                            {{ app.name }}
-
-                                        {% endif %}
-
-                                    </strong>
-                                </td>
-
-
-                                <td>
-                                    {{ app.users }}人
-                                </td>
-
-
-                                <td>
-                                    {{ app.visits }}回
-                                </td>
-
-
-                                <td>
-                                    {{ app.page_views }}回
-                                </td>
-
-                            </tr>
-
+        </div>
+    </section>
+
+    <!-- =====================================================
+         Page views
+         ===================================================== -->
+
+    <section class="ya-section">
+        <h2>👀 閲覧回数の推移</h2>
+        <p class="ya-lead">どのアプリのページが何回見られたか</p>
+        <div class="ya-card">
+            <div data-ya-chart="chart-page-views" data-label="閲覧回数の推移"></div>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         Sources
+         ===================================================== -->
+
+    <section class="ya-section">
+        <h2>🧭 どこから来たか</h2>
+        <p class="ya-lead">訪問の最初のページで、どのサイト・アプリから来たかを見ています。</p>
+
+        <div class="ya-grid ya-grid-2">
+            <div class="ya-card">
+                <h3>経路の割合</h3>
+                <p class="ya-note">訪問 {{ data.visits_count }}回の内訳</p>
+                {% if data.source_types %}
+                    <div class="ya-stack" role="img" aria-label="経路の割合">
+                        {% for row in data.source_types %}<span class="ya-{{ row.css }}" style="flex: {{ row.visits }}" title="{{ row.short }} {{ row.share }}%"></span>{% endfor %}
+                    </div>
+                    <ul class="ya-share-list">
+                        {% for row in data.source_types %}
+                            <li>
+                                <i class="ya-swatch ya-{{ row.css }}"></i>
+                                <span>{{ row.name }}</span>
+                                <span class="ya-num">{{ row.visits }}回</span>
+                                <span class="ya-num">{{ row.share }}%</span>
+                            </li>
                         {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="ya-empty">この期間の記録はまだありません。</p>
+                {% endif %}
+            </div>
 
+            <div class="ya-card">
+                <h3>経路ごとの訪問の推移</h3>
+                <div data-ya-chart="chart-sources" data-label="経路ごとの訪問の推移"></div>
+            </div>
+        </div>
+
+        <div class="ya-card" style="margin-top: 12px">
+            <h3>流入元のくわしい一覧</h3>
+            <p class="ya-note">「ページ/回」が大きいほど、来た人がよく見て回っています</p>
+            <div class="ya-table-wrap">
+                <table class="ya-table">
+                    <thead>
+                        <tr>
+                            <th>流入元</th>
+                            <th>種類</th>
+                            <th class="ya-num">訪問</th>
+                            <th class="ya-num">人</th>
+                            <th class="ya-num">初めて</th>
+                            <th class="ya-num">ページ/回</th>
+                            <th>最初に見たアプリ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data.source_table %}
+                            <tr>
+                                <td><strong>{{ row.label }}</strong></td>
+                                <td><span class="ya-tag"><i class="ya-swatch ya-{{ row.type.css }}"></i>{{ row.type.short }}</span></td>
+                                <td class="ya-num">{{ row.visits }} <span class="ya-sub" style="display:inline">{{ row.share }}%</span></td>
+                                <td class="ya-num">{{ row.visitors }}</td>
+                                <td class="ya-num">{{ row.new_visitors }}</td>
+                                <td class="ya-num">{{ row.pages_per_visit }}</td>
+                                <td>{{ row.top_app.emoji }} {{ row.top_app.name }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="ya-empty">記録はまだありません。</td></tr>
+                        {% endfor %}
                     </tbody>
-
                 </table>
-
             </div>
+        </div>
 
-        </section>
+        <div class="ya-card" style="margin-top: 12px">
+            <h3>キャンペーン（utm付きリンク）</h3>
+            <p class="ya-note">
+                SNSなどに貼るリンクに <code>?utm_source=instagram&amp;utm_campaign=10月告知</code> のように付けると、ここで効果が分かります
+            </p>
+            {% if data.campaigns %}
+                <div class="ya-table-wrap">
+                    <table class="ya-table">
+                        <thead>
+                            <tr>
+                                <th>source / medium</th>
+                                <th>campaign</th>
+                                <th class="ya-num">訪問</th>
+                                <th class="ya-num">人</th>
+                                <th class="ya-num">また来た人</th>
+                                <th class="ya-num">ページ/回</th>
+                                <th>期間</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data.campaigns %}
+                                <tr>
+                                    <td><strong>{{ row.source }}</strong>{% if row.medium %} / {{ row.medium }}{% endif %}</td>
+                                    <td>{{ row.campaign|default:"—" }}</td>
+                                    <td class="ya-num">{{ row.visits }}</td>
+                                    <td class="ya-num">{{ row.visitors }}</td>
+                                    <td class="ya-num">{{ row.returned }}</td>
+                                    <td class="ya-num">{{ row.pages_per_visit }}</td>
+                                    <td class="ya-num">{{ row.first|date:"n/j" }}〜{{ row.last|date:"n/j" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="ya-empty">この期間にキャンペーンリンクからの訪問はありません。</p>
+            {% endif %}
+        </div>
+    </section>
 
+    <!-- =====================================================
+         Apps
+         ===================================================== -->
 
-        <!-- =================================================
-             User statistics
-             ================================================= -->
+    <section class="ya-section">
+        <h2>🧩 アプリ別の関心</h2>
+        <p class="ya-lead">カードを押すと、そのアプリだけに絞って見られます。バーは来た人の数です。</p>
 
-        <section class="analytics-section">
+        <div class="ya-apps">
+            {% for app in data.apps.rows %}
+                <a class="ya-app" href="{% scope_query scope app=app.key %}">
+                    <div class="ya-app-head">
+                        <span class="ya-app-emoji" aria-hidden="true">{{ app.emoji }}</span>
+                        <span>{{ app.name }}</span>
+                        <span style="margin-left: auto">{% delta app.change %}</span>
+                    </div>
+                    <div class="ya-bar-track"><div class="ya-bar-fill ya-{{ app.color_class }}" style="width: {{ app.bar }}%"></div></div>
+                    <div class="ya-app-stats">
+                        <div><b>{{ app.visitors }}人</b>来た人の{{ app.share }}%</div>
+                        <div><b>{{ app.page_views }}</b>ページ閲覧</div>
+                        <div><b>{{ app.pages_per_visit }}</b>ページ/回</div>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="ya-empty">この期間の記録はまだありません。</p>
+            {% endfor %}
+        </div>
 
-            <div class="analytics-section-heading">
-
-                <p>
-                    USER STATISTICS
+        {% if not scope.app and data.apps.pairs %}
+            <div class="ya-card" style="margin-top: 12px">
+                <h3>🔗 いっしょに見られているアプリ</h3>
+                <p class="ya-note">
+                    来た人 {{ data.apps.total_visitors }}人のうち {{ data.apps.multi_app_visitors }}人が2つ以上のアプリを使っています。1回の訪問での組み合わせ:
                 </p>
+                <ul class="ya-share-list">
+                    {% for pair in data.apps.pairs %}
+                        <li style="grid-template-columns: 1fr auto">
+                            <span>{{ pair.a.emoji }} {{ pair.a.name }} ＋ {{ pair.b.emoji }} {{ pair.b.name }}</span>
+                            <span class="ya-num">{{ pair.visits }}回</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </section>
 
-                <h2>
-                    ユーザー別の利用状況
-                </h2>
+    <!-- =====================================================
+         When
+         ===================================================== -->
 
+    <section class="ya-section">
+        <h2>🕒 いつ来ているか</h2>
+        <p class="ya-lead">曜日と時間（スイス時間）ごとの訪問回数。濃いほど多い。</p>
+        <div class="ya-card">
+            {% if data.heatmap.max %}
+                <div class="ya-heat" role="img" aria-label="曜日と時間ごとの訪問回数">
+                    <span></span>
+                    {% for cell in data.heatmap.cells.0.1 %}<span class="ya-heat-hour">{{ cell.hour }}</span>{% endfor %}
+                    {% for weekday, cells in data.heatmap.cells %}
+                        <span class="ya-heat-label">{{ weekday }}</span>
+                        {% for cell in cells %}
+                            <span class="ya-heat-cell l{{ cell.level }}" title="{{ weekday }}曜 {{ cell.hour }}時台: {{ cell.n }}回"></span>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="ya-heat-scale">
+                    少ない
+                    <span class="ya-heat-cell"></span><span class="ya-heat-cell l1"></span><span class="ya-heat-cell l2"></span>
+                    <span class="ya-heat-cell l3"></span><span class="ya-heat-cell l4"></span><span class="ya-heat-cell l5"></span>
+                    多い（最大 {{ data.heatmap.max }}回）
+                </div>
+            {% else %}
+                <p class="ya-empty">この期間の記録はまだありません。</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- =====================================================
+         Pages / articles / devices
+         ===================================================== -->
+
+    <section class="ya-section">
+        <h2>⭐ よく見られているもの</h2>
+
+        <div class="ya-grid ya-grid-2">
+            <div class="ya-card">
+                <h3>人気のページ</h3>
+                <div class="ya-table-wrap">
+                    <table class="ya-table">
+                        <thead><tr><th>ページ</th><th class="ya-num">閲覧</th><th class="ya-num">人</th></tr></thead>
+                        <tbody>
+                            {% for page in pages %}
+                                <tr>
+                                    <td>
+                                        {{ page.app.emoji }} {% if page.title %}{{ page.title }}{% else %}{{ page.path }}{% endif %}
+                                        {% if page.title %}<span class="ya-sub">{{ page.path }}</span>{% endif %}
+                                    </td>
+                                    <td class="ya-num">{{ page.page_views }}</td>
+                                    <td class="ya-num">{{ page.visitors }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="3" class="ya-empty">記録はまだありません。</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-
-            <div class="analytics-user-grid">
-
-                {% for account in users %}
-
-                    <a
-                        class="analytics-user-card"
-
-                        href="{% url 'usage_analytics:user_detail' account.id %}?{{ request.GET.urlencode }}"
-                    >
-
-                        <!-- =================================
-                             User information
-                             ================================= -->
-
-                        <div class="analytics-user-top">
-
-                            <div class="analytics-avatar">
-
-                                {{ account.display_name|first|upper }}
-
-                            </div>
-
-
-                            <div class="analytics-user-name">
-
-                                <strong>
-                                    {{ account.display_name }}
-                                </strong>
-
-                                <span>
-                                    @{{ account.username }}
-                                </span>
-
-                            </div>
-
+            <div class="ya-grid">
+                {% if clicks %}
+                    <div class="ya-card">
+                        <h3>📰 Swiss News でよく読まれた記事</h3>
+                        <p class="ya-note">元記事へのクリック数</p>
+                        <div class="ya-table-wrap">
+                            <table class="ya-table">
+                                <tbody>
+                                    {% for article in clicks %}
+                                        <tr>
+                                            <td>{{ article.title }}<span class="ya-sub">{{ article.source }}</span></td>
+                                            <td class="ya-num">{{ article.clicks }}回</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                {% endif %}
 
-
-                        <!-- =================================
-                             Statistics
-                             ================================= -->
-
-                        <div class="analytics-user-numbers">
-
-                            <div>
-
-                                <strong>
-                                    {{ account.active_days }}
-                                </strong>
-
-                                <span>
-                                    利用日数
-                                </span>
-
+                <div class="ya-card">
+                    <h3>📱 デバイス</h3>
+                    <div class="ya-bars">
+                        {% for row in data.devices %}
+                            <div class="ya-bar-row">
+                                <span>{{ row.name }}</span>
+                                <div class="ya-bar-track"><div class="ya-bar-fill ya-s1" style="width: {{ row.share }}%"></div></div>
+                                <span class="ya-num">{{ row.share }}%</span>
                             </div>
+                        {% empty %}
+                            <p class="ya-empty">記録はまだありません。</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- =====================================================
+         Recent visits
+         ===================================================== -->
 
-                            <div>
+    <section class="ya-section">
+        <h2>🚶 最近の訪問</h2>
+        <p class="ya-lead">新しい順に30件。押すとその人の足あと（過去の訪問の流れ）が見られます。</p>
 
-                                <strong>
-                                    {{ account.visits }}
-                                </strong>
-
-                                <span>
-                                    訪問
-                                </span>
-
-                            </div>
-
-
-                            <div>
-
-                                <strong>
-                                    {{ account.page_views }}
-                                </strong>
-
-                                <span>
-                                    閲覧
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- =================================
-                             Last seen
-                             ================================= -->
-
-                        <div class="analytics-last-seen">
-
-                            選択期間の最終アクセス：
-
-                            {% if account.last_seen %}
-
-                                {{ account.last_seen|date:"Y/m/d H:i" }}
-
-                            {% else %}
-
-                                記録なし
-
-                            {% endif %}
-
-                        </div>
-
+        <ul class="ya-visits">
+            {% for visit in data.recent_visits %}
+                <li>
+                    <a class="ya-visit" href="{% if visit.user_id %}{% url 'usage_analytics:user_detail' visit.user_id %}{% else %}{% url 'usage_analytics:visitor_detail' visit.visitor_id %}{% endif %}">
+                        <span class="ya-visit-who">{% if visit.user_id %}👤{% else %}🕶️{% endif %} {{ visit.person }}{% if visit.is_first_visit and visit.source.key != "unknown" %} <span class="ya-tag">はじめて</span>{% endif %}</span>
+                        <span class="ya-visit-time">{{ visit.start|date:"n/j H:i" }}</span>
+                        <span class="ya-visit-meta">
+                            <span class="ya-tag"><i class="ya-swatch ya-{{ visit.source.css }}"></i>{{ visit.source_label|default:visit.source.short }}</span>
+                            {% for app in visit.app_list %}<span class="ya-tag">{{ app.emoji }} {{ app.name }}</span>{% endfor %}
+                            <span class="ya-tag">{{ visit.pages }}ページ{% if visit.minutes %}・{{ visit.minutes }}分{% endif %}</span>
+                        </span>
                     </a>
+                </li>
+            {% empty %}
+                <li class="ya-empty">この期間の訪問はまだありません。</li>
+            {% endfor %}
+        </ul>
+    </section>
 
-                {% empty %}
+    <!-- =====================================================
+         Signed-in users
+         ===================================================== -->
 
-                    <p class="analytics-description">
-
-                        集計対象のユーザーがいません。
-
-                    </p>
-
-                {% endfor %}
-
+    <section class="ya-section">
+        <h2>👤 ログインして使っている人</h2>
+        <div class="ya-card">
+            <div class="ya-table-wrap">
+                <table class="ya-table">
+                    <thead>
+                        <tr>
+                            <th>名前</th>
+                            <th class="ya-num">来た日</th>
+                            <th class="ya-num">訪問</th>
+                            <th class="ya-num">閲覧</th>
+                            <th>よく使うアプリ</th>
+                            <th>最後</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in users %}
+                            <tr>
+                                <td><a href="{% url 'usage_analytics:user_detail' row.user_id %}"><strong>{{ row.display_name }}</strong></a></td>
+                                <td class="ya-num">{{ row.active_days }}</td>
+                                <td class="ya-num">{{ row.visits }}</td>
+                                <td class="ya-num">{{ row.page_views }}</td>
+                                <td>{% for app in row.apps %}<span title="{{ app.name }}">{{ app.emoji }}</span>{% endfor %}</td>
+                                <td class="ya-num">{{ row.last_seen|date:"n/j H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="ya-empty">この期間にログインして使った人はいません。</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-
-        </section>
-
-
-        <!-- =================================================
-             Notes
-             ================================================= -->
-
-        <p class="analytics-note">
-
-            ※ 利用状況は記録機能の導入後から集計。
-
-            訪問回数は同じアプリで30分以上
-            アクセスが空いた場合に
-            新しい訪問として計算。
-
-            除外したユーザーの利用履歴は削除されない。
-
-        </p>
-
-    </main>
+        </div>
+    </section>
 
 </div>
 
+{{ charts.visitors|json_script:"chart-visitors" }}
+{{ charts.page_views|json_script:"chart-page-views" }}
+{{ charts.sources|json_script:"chart-sources" }}
+{% endblock %}
 
-<!-- =====================================================
-     Online users auto refresh
-     ===================================================== -->
-
-<script
-    src="{% static 'usage_analytics/online.js' %}"
-    defer
-></script>
-
+{% block extra_js %}
+<script src="{% static 'usage_analytics/charts.js' %}"></script>
+<script src="{% static 'usage_analytics/live.js' %}"></script>
 {% endblock %}

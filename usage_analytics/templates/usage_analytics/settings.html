@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}設定 | Yapp分析{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usage_analytics/analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ya" style="max-width: 760px">
+
+    <header class="ya-header">
+        <div>
+            <p class="ya-eyebrow">SETTINGS</p>
+            <h1>⚙️ 解析の設定</h1>
+            <p>自分や家族の確認用の閲覧を、数字に混ぜないための設定です。</p>
+        </div>
+        <nav class="ya-links">
+            <a class="ya-link" href="{% url 'usage_analytics:dashboard' %}">← アクセス解析</a>
+        </nav>
+    </header>
+
+    {% if messages %}
+        <div class="ya-messages">
+            {% for message in messages %}<div class="alert alert-success py-2">{{ message }}</div>{% endfor %}
+        </div>
+    {% endif %}
+
+    <section class="ya-card">
+        <h3>🙈 このブラウザを記録しない</h3>
+        <p class="ya-note">
+            ログインしないで Swiss News などを確認するときも、このブラウザの閲覧は数えなくなります。
+            スマホとPCなど、使っている端末ごとに1回押してください。
+        </p>
+        <form method="post" action="{% url 'usage_analytics:toggle_ignore_browser' %}">
+            {% csrf_token %}
+            {% if is_ignored_browser %}
+                <p><span class="ya-tag">いまは記録していません</span></p>
+                <input type="hidden" name="ignore" value="0">
+                <button class="ya-button is-ghost" type="submit">また記録する</button>
+            {% else %}
+                <input type="hidden" name="ignore" value="1">
+                <button class="ya-button" type="submit">このブラウザを記録しない</button>
+            {% endif %}
+        </form>
+    </section>
+
+    <section class="ya-card" style="margin-top: 12px">
+        <h3>👤 集計から外すアカウント</h3>
+        <p class="ya-note">
+            チェックしたアカウントの閲覧と、そのアカウントでログインしたことがあるブラウザの閲覧（ログアウト中も）を、すべての数字から外します。
+            記録は消さないので、チェックを外せば元に戻ります。
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="ya-check-list">
+                {% for account in accounts %}
+                    <label class="ya-check">
+                        <input type="checkbox" name="exclude_users" value="{{ account.id }}" {% if account.is_excluded %}checked{% endif %} {% if not user.is_superuser %}disabled{% endif %}>
+                        <span><strong>{{ account.display_name }}</strong> <span class="ya-sub" style="display: inline">{{ account.username }}</span></span>
+                    </label>
+                {% endfor %}
+            </div>
+            {% if user.is_superuser %}
+                <button class="ya-button" type="submit">保存</button>
+            {% else %}
+                <p class="ya-note">変更できるのは管理者だけです。</p>
+            {% endif %}
+        </form>
+    </section>
+
+</div>
+{% endblock %}

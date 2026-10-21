@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Yapp分析{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usage_analytics/analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ya">
+
+    <header class="ya-header">
+        <div>
+            <p class="ya-eyebrow">足あと</p>
+            <h1>{{ title }}</h1>
+            <p>{{ subtitle }}</p>
+        </div>
+        <nav class="ya-links">
+            <a class="ya-link" href="{% url 'usage_analytics:dashboard' %}">← アクセス解析</a>
+        </nav>
+    </header>
+
+    {% if linked_users %}
+        <p class="ya-online">
+            このブラウザでログインしたアカウント:
+            {% for linked in linked_users %}<a class="ya-tag" href="{% url 'usage_analytics:user_detail' linked.id %}">👤 {{ linked.name }}</a>{% endfor %}
+        </p>
+    {% endif %}
+
+    <div class="ya-kpis">
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">初めて来た日</div>
+            <div class="ya-kpi-value" style="font-size: 1.2rem">{{ summary.first|date:"Y/n/j" }}</div>
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">最後に来た日</div>
+            <div class="ya-kpi-value" style="font-size: 1.2rem">{{ summary.last|date:"Y/n/j H:i" }}</div>
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">来た日数</div>
+            <div class="ya-kpi-value">{{ summary.active_days }}<small>日</small></div>
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">訪問回数</div>
+            <div class="ya-kpi-value">{{ summary.visits }}<small>回</small></div>
+        </div>
+        <div class="ya-kpi">
+            <div class="ya-kpi-label">ページ閲覧</div>
+            <div class="ya-kpi-value">{{ summary.page_views }}<small>回</small></div>
+        </div>
+    </div>
+
+    <div class="ya-grid ya-grid-2" style="margin-top: 12px">
+        <div class="ya-card">
+            <h3>見ているアプリ</h3>
+            <div class="ya-bars" style="margin-top: 10px">
+                {% for app in summary.apps %}
+                    <div class="ya-bar-row">
+                        <span>{{ app.emoji }} {{ app.name }}</span>
+                        <div class="ya-bar-track"><div class="ya-bar-fill ya-s1" style="width: {{ app.bar }}%"></div></div>
+                        <span class="ya-num">{{ app.page_views }}回</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="ya-card">
+            <h3>最近8週間</h3>
+            <p class="ya-note">1列 = 1週間（上から下へ1日ずつ、右下が今日）。濃いほどたくさん見た日です</p>
+            <div class="ya-strip">
+                {% for cell in strip %}
+                    <span class="ya-heat-cell l{{ cell.level }}" title="{{ cell.day|date:'n/j' }}: {{ cell.n }}回"></span>
+                {% endfor %}
+            </div>
+            {% if summary.sources %}
+                <h3 style="margin-top: 16px">来た経路</h3>
+                <ul class="ya-share-list">
+                    {% for source in summary.sources %}
+                        <li>
+                            <i class="ya-swatch ya-{{ source.css }}"></i>
+                            <span>{{ source.label|default:source.short }}</span>
+                            <span class="ya-num"></span>
+                            <span class="ya-num">{{ source.visits }}回</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <section class="ya-section">
+        <h2>🚶 訪問の流れ</h2>
+        <p class="ya-lead">新しい訪問から。1回の訪問で見たページを順番に並べています（最近の400ページまで）。</p>
+
+        <div class="ya-timeline">
+            {% for visit in timeline %}
+                <div class="ya-card">
+                    <div class="ya-visit-meta" style="display: flex; align-items: center">
+                        <strong>{{ visit.start|date:"Y/n/j" }} ({{ visit.weekday }}) {{ visit.start|date:"H:i" }}</strong>
+                        <span class="ya-tag"><i class="ya-swatch ya-{{ visit.source.css }}"></i>{{ visit.source_label|default:visit.source.short }}</span>
+                        {% for app in visit.apps %}<span class="ya-tag">{{ app.emoji }} {{ app.name }}</span>{% endfor %}
+                        <span class="ya-tag">{{ visit.pages|length }}ページ{% if visit.minutes %}・{{ visit.minutes }}分{% endif %}</span>
+                    </div>
+                    <ol class="ya-timeline-pages">
+                        {% for page in visit.pages %}
+                            <li>
+                                <time>{{ page.at|date:"H:i" }}</time>
+                                <span>
+                                    {{ page.app.emoji }} {% if page.title %}{{ page.title }}{% else %}{{ page.path }}{% endif %}
+                                    {% if page.title %}<span class="ya-sub">{{ page.path }}</span>{% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -589,3 +589,103 @@ class UserNewsArticleClick(models.Model):
             f"{self.article_title} | "
             f"{self.clicked_at}"
         )
+
+# =========================================================
+# Page views (all apps)
+# =========================================================
+
+class PageView(models.Model):
+    """
+    全アプリ共通のページ閲覧記録。
+
+    visitor_id:
+        ブラウザ単位の長期匿名ID (cookie)。ログインしていても付く。
+
+    visit_id:
+        30分操作がなければ区切る1回の訪問。
+
+    流入元 (source_*, referrer_host, utm_*) は
+    訪問の最初のページ (is_visit_start=True) にだけ入る。
+    """
+
+    visitor_id = models.UUIDField("訪問者ID")
+
+    visit_id = models.UUIDField("訪問ID")
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="page_views",
+        verbose_name="ユーザー",
+    )
+
+    app_key = models.CharField("アプリ", max_length=40)
+
+    path = models.CharField("ページ", max_length=300, blank=True)
+
+    # bulk_create (過去データの引き継ぎ) で日時を指定できるよう auto_now_add は使わない
+    accessed_at = models.DateTimeField("日時", default=timezone.now)
+
+    is_visit_start = models.BooleanField("訪問の最初", default=False)
+
+    is_new_visitor = models.BooleanField("初めての訪問者", default=False)
+
+    source_type = models.CharField("流入元の種類", max_length=20, blank=True, default="")
+
+    source_label = models.CharField("流入元", max_length=120, blank=True, default="")
+
+    referrer_host = models.CharField("リファラー", max_length=255, blank=True, default="")
+
+    utm_source = models.CharField(max_length=100, blank=True, default="")
+
+    utm_medium = models.CharField(max_length=100, blank=True, default="")
+
+    utm_campaign = models.CharField(max_length=150, blank=True, default="")
+
+    device_type = models.CharField("デバイス", max_length=20, default="other")
+
+    class Meta:
+
+        verbose_name = "ページ閲覧"
+        verbose_name_plural = "ページ閲覧"
+
+        # 既定の並び順は付けない (付けると DISTINCT や集計に並び順の列が混ざる)
+
+        indexes = [
+            models.Index(fields=["accessed_at"]),
+            models.Index(fields=["app_key", "accessed_at"]),
+            models.Index(fields=["visitor_id", "accessed_at"]),
+            models.Index(fields=["visit_id"]),
+            models.Index(fields=["user", "accessed_at"]),
+        ]
+
+    def __str__(self):
+
+        return f"{self.visitor_id} | {self.path} | {self.accessed_at}"
+
+
+class AnalyticsExclusion(models.Model):
+    """
+    集計から外すアカウント (自分や家族の確認用アカウントなど)。
+    そのアカウントでログインしたことがあるブラウザの閲覧もまとめて外す。
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="analytics_exclusion",
+        verbose_name="ユーザー",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+
+        verbose_name = "集計から外すアカウント"
+        verbose_name_plural = "集計から外すアカウント"
+
+    def __str__(self):
+
+        return self.user.username
