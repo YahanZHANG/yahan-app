@@ -990,11 +990,12 @@ class Post(models.Model):
         max_length=4000,
     )
 
+    # 買えるお店は複数選べる。SHOP_CHOICES のコードをカンマでつなげて入れる (例: "migros,coop")
     shop = models.CharField(
         "買えるお店",
-        max_length=20,
-        choices=SHOP_CHOICES,
+        max_length=200,
         blank=True,
+        help_text="SHOP_CHOICES のコードをカンマ区切りで (例: migros,coop)",
     )
 
     section = models.CharField(
@@ -1062,6 +1063,13 @@ class Post(models.Model):
     @property
     def name(self):
         return self.title
+
+    def shop_codes(self):
+        return [code for code in self.shop.split(",") if code]
+
+    def shop_labels(self):
+        labels = dict(self.SHOP_CHOICES)
+        return [labels.get(code, code) for code in self.shop_codes()]
 
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])

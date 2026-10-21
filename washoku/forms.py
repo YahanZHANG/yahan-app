@@ -1,5 +1,7 @@
 import re
 
+from urllib.parse import urlparse
+
 from django import forms
 
 from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe, Substitute
@@ -79,12 +81,21 @@ class PostForm(forms.ModelForm):
     """
     みんなの投稿 (コラム・おすすめ商品・参考リンク) のフォーム。
     商品のときだけ、お店・売り場・日本の何に近いかを聞く。
-    参考リンクのときだけ、URL と出典を聞く。
+    参考リンクのときだけ、URL と出典を聞く (必須は URL だけ)。
     """
+
+    # 同じ商品が Migros でも Coop でも買えることがあるので、お店は複数選べる
+    shops = forms.MultipleChoiceField(
+        label="買えるお店",
+        choices=Post.SHOP_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        help_text="買えるお店をすべて選んでください。",
+    )
 
     class Meta:
         model = Post
-        fields = ["title", "url", "source", "shop", "section", "resembles", "body"]
+        fields = ["url", "title", "source", "section", "resembles", "body"]
         widgets = {
             "title": forms.TextInput(attrs={"maxlength": 100}),
             "resembles": forms.TextInput(attrs={"placeholder": "例: 冷凍餃子、ちくわ"}),
@@ -102,8 +113,8 @@ class PostForm(forms.ModelForm):
             self.fields["title"].label = "商品名"
             self.fields["title"].widget.attrs["placeholder"] = "例: Migros の冷凍ギョーザ"
             self.fields["resembles"].help_text = ""
-            self.fields["shop"].required = True
-            self.fields["shop"].choices = [("", "選んでください")] + Post.SHOP_CHOICES
+            self.fields["shops"].required = True
+            self.order_fields(["title", "shops", "section", "resembles", "body"])
             self.fields["section"].choices = [("", "わからない")] + Post.SECTION_CHOICES
             self.fields["body"].label = "おすすめのポイント"
             self.fields["body"].widget.attrs["placeholder"] = (
@@ -115,15 +126,17 @@ class PostForm(forms.ModelForm):
 
         elif kind == "link":
 
-            for name in ("shop", "section", "resembles"):
+            for name in ("shops", "section", "resembles"):
                 del self.fields[name]
 
-            self.fields["title"].label = "記事のタイトル"
             self.fields["url"].required = True
             self.fields["url"].widget.attrs["placeholder"] = "https://"
+            self.fields["title"].label = "記事のタイトル"
+            self.fields["title"].required = False
             self.fields["source"].widget.attrs["placeholder"] = "例: スイス暮らしのブログ、2025年7月"
             self.fields["body"].label = "どんなことが書いてある？"
-            self.fields["body"].help_text = "記事の文章は写さずに、役に立つ点を自分の言葉で短く書いてください。"
+            self.fields["body"].required = False
+            self.fields["body"].help_text = "記事の文章は写さずに、自分の言葉で短く。"
             self.fields["body"].widget.attrs["rows"] = 6
             self.fields["body"].widget.attrs["placeholder"] = (
                 "例: Coop で買える日本の食材と、スイスの食材を使った和食のアレンジが載っています。"
@@ -131,7 +144,7 @@ class PostForm(forms.ModelForm):
 
         else:
 
-            for name in ("url", "source", "shop", "section", "resembles"):
+            for name in ("url", "source", "shops", "section", "resembles"):
                 del self.fields[name]
 
             self.fields["title"].label = "タイトル"
@@ -144,7 +157,7 @@ class PostForm(forms.ModelForm):
 
         title = self.cleaned_data["title"].strip()
 
-        if not title:
+        if not title and self.kind != "link":
             raise forms.ValidationError("入力してください。")
 
         return title
@@ -153,10 +166,30 @@ class PostForm(forms.ModelForm):
 
         body = self.cleaned_data["body"].strip()
 
+        # 参考リンクは URL だけでよい (管理者があとでまとめる)
+        if self.kind == "link" and not body:
+            return body
+
         if len(body) < 10:
             raise forms.ValidationError("もう少し詳しく書いてください（10文字以上）。")
 
         return body
+
+    def save(self, commit=True):
+
+        post = super().save(commit=False)
+
+        if "shops" in self.fields:
+            post.shop = ",".join(self.cleaned_data["shops"])
+
+        # タイトルがない参考リンクは、ひとまずサイト名を入れておく
+        if self.kind == "link" and not post.title:
+            post.title = urlparse(post.url).netloc or post.url[:100]
+
+        if commit:
+            post.save()
+
+        return post
 
 
 class SubstituteForm(forms.ModelForm):

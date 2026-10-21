@@ -10,7 +10,7 @@
     {% for label, params in presets %}<a href="?{{ params }}">{{ label }}</a>{% endfor %}
 </nav>
 
-<form method="get" class="washoku-nutrition-form">
+<form method="get" action="#results" class="washoku-nutrition-form">
 
     <div class="washoku-nutrition-fields">
         {% for limit in limits %}
@@ -52,7 +52,7 @@
 
 </form>
 
-<p class="washoku-count">{{ recipes|length }}品<small>（1人分の目安）</small></p>
+<p class="washoku-count" id="results">{{ recipes|length }}品<small>（1人分の目安）</small></p>
 
 {% if recipes %}
     <div class="washoku-grid">

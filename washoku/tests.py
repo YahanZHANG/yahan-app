@@ -399,7 +399,9 @@ class CommentViewTests(TestCase):
         reply = Comment.objects.get(parent=question)
         self.assertEqual(reply.kind, "tip")
         self.assertEqual(Notification.objects.get().recipient, self.taro)
-        self.assertNotContains(self.client.get(reverse("washoku:question_list")), "みりん")
+        # 答えが出た質問は、下の「答えが出た質問」に移る
+        html = self.client.get(reverse("washoku:question_list")).content.decode()
+        self.assertLess(html.index("答えが出た質問"), html.index("みりん"))
 
     def test_reply_to_a_reply_stays_one_level(self):
 
@@ -946,14 +948,17 @@ class PostTests(TestCase):
 
         self.client.post(
             url,
-            {"title": "冷凍ギョーザ", "shop": "migros", "section": "frozen", "resembles": "冷凍餃子", "body": "日本の味にかなり近いです。"},
+            {"title": "冷凍ギョーザ", "shops": ["migros", "coop"], "section": "frozen", "resembles": "冷凍餃子", "body": "日本の味にかなり近いです。"},
         )
         Post.objects.update(status="published")
+
+        self.assertEqual(Post.objects.get().shop_labels(), ["Migros", "Coop"])
 
         list_url = reverse("washoku:product_list")
         self.assertContains(self.client.get(list_url + "?shop=migros"), "冷凍ギョーザ")
         self.assertContains(self.client.get(list_url + "?shop=migros"), "冷凍餃子に近い")
-        self.assertNotContains(self.client.get(list_url + "?shop=coop"), "冷凍ギョーザ")
+        self.assertContains(self.client.get(list_url + "?shop=coop"), "冷凍ギョーザ")
+        self.assertNotContains(self.client.get(list_url + "?shop=denner"), "冷凍ギョーザ")
         self.assertNotContains(self.client.get(reverse("washoku:column_list")), "冷凍ギョーザ")
 
     def test_staff_posts_are_published_at_once(self):
@@ -1015,6 +1020,14 @@ class PostTests(TestCase):
 
         response = self.client.post(url, {"title": "食材探しの記事", "body": "Coop で買える日本の食材の話です。"})
         self.assertContains(response, "このフィールドは必須です")
+
+        # URL だけでも投稿できる (タイトルはひとまずサイト名)
+        with mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(url, {"url": "https://blog.example.ch/post/1"})
+
+        only_url = Post.objects.get()
+        self.assertEqual((only_url.title, only_url.body), ("blog.example.ch", ""))
+        only_url.delete()
 
         with mock.patch("washoku.views.send_admin_alert"):
             self.client.post(
@@ -1382,3 +1395,24 @@ class CompactPageTests(TestCase):
 
         self.assertContains(response, "washoku-quick-fit")
         self.assertContains(response, 'aria-label="ページの上へ"')
+
+
+class QuestionListTests(TestCase):
+
+    def test_open_questions_first_then_answered_ones(self):
+
+        User = get_user_model()
+        asker = User.objects.create_user("asker", password="x")
+        helper = User.objects.create_user("helper", password="x")
+        ingredient = Ingredient.objects.create(name="大根")
+
+        open_question = Comment.objects.create(ingredient=ingredient, author=asker, kind="question", body="どこで買えますか？")
+        solved = Comment.objects.create(ingredient=ingredient, author=asker, kind="question", body="Rettich で合っていますか？")
+        Comment.objects.create(ingredient=ingredient, author=helper, kind="tip", body="合っています", parent=solved)
+
+        html = self.client.get(reverse("washoku:question_list")).content.decode()
+
+        self.assertLess(html.index("答えを待っている質問"), html.index(open_question.body))
+        self.assertLess(html.index(open_question.body), html.index("答えが出た質問"))
+        self.assertLess(html.index("答えが出た質問"), html.index(solved.body))
+        self.assertIn("返信 1件", html)

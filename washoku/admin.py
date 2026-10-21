@@ -327,7 +327,7 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "kind",
         "status",
-        "shop",
+        "shop_names",
         "author",
         "created_at",
     )
@@ -335,7 +335,6 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "kind",
-        "shop",
         "section",
     )
 
@@ -343,6 +342,10 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "body",
     )
+
+    @admin.display(description="買えるお店")
+    def shop_names(self, obj):
+        return "、".join(obj.shop_labels())
 
     readonly_fields = (
         "created_at",

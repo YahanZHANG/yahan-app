@@ -8,7 +8,7 @@
 
 <p class="washoku-lead">家にある食材にチェックを入れてください。賞味期限が近いなど、<strong>絶対に使いたい食材</strong>は横の「必ず使う」も押すと、それを使うレシピだけに絞れます。調味料は数えません。</p>
 
-<form method="get" class="washoku-find-form">
+<form method="get" action="#results" class="washoku-find-form">
 
     {% for category, names in options_by_category.items %}
         <fieldset class="washoku-checks">

@@ -168,12 +168,12 @@ def public_comment_targets():
     )
 
 
-def open_questions():
+def questions_with_answer_state():
     """
-    返信がまだない質問 (新しい順)。
+    公開中の質問に、返信があるか (has_answer) と返信の数 (answer_count) を付ける。
     """
 
-    answered = Comment.objects.filter(
+    answers = Comment.objects.filter(
         parent=OuterRef("pk"),
         is_hidden=False,
         is_deleted=False,
@@ -188,11 +188,25 @@ def open_questions():
             is_deleted=False,
         )
         .filter(public_comment_targets())
-        .annotate(has_answer=Exists(answered))
-        .filter(has_answer=False)
+        .annotate(
+            has_answer=Exists(answers),
+            answer_count=Count(
+                "replies",
+                filter=Q(replies__is_hidden=False, replies__is_deleted=False),
+                distinct=True,
+            ),
+        )
         .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-created_at")
     )
+
+
+def open_questions():
+    """
+    返信がまだない質問 (新しい順)。
+    """
+
+    return questions_with_answer_state().filter(has_answer=False)
 
 
 # =========================================================
@@ -1163,6 +1177,7 @@ def question_list(request):
         "washoku/question_list.html",
         {
             "questions": open_questions()[:50],
+            "answered": questions_with_answer_state().filter(has_answer=True)[:50],
         },
     )
 
@@ -1867,8 +1882,9 @@ def post_list(request, kind):
 
     if kind == "product":
 
+        # お店のコードはどれもほかのコードの一部ではないので、含むかどうかで絞れる
         if shop in dict(Post.SHOP_CHOICES):
-            posts = posts.filter(shop=shop)
+            posts = posts.filter(shop__contains=shop)
 
         if section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)

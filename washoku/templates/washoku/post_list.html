@@ -34,7 +34,7 @@
                 <a href="{{ post.get_absolute_url }}">
                     {% if kind == "product" %}
                         <span class="washoku-chips">
-                            <span class="washoku-chip">{{ post.get_shop_display }}</span>
+                            {% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}
                             {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
                             {% if post.resembles %}<span class="washoku-chip washoku-chip-shop">{{ post.resembles }}に近い</span>{% endif %}
                         </span>
