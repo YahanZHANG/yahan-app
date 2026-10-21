@@ -143,7 +143,7 @@
   "shops": [
    "supermarket"
   ],
-  "buying_notes": "",
+  "buying_notes": "サンドイッチには「Hinterschinken」（もも肉のハム）が日本のハムに一番近い。薄切りパックが便利。",
   "substitutes_for": []
  },
  {
@@ -241,7 +241,7 @@
   "shops": [
    "supermarket"
   ],
-  "buying_notes": "",
+  "buying_notes": "殻に色がついた卵（Picknick-Eier など）はゆで卵なので、生卵は普通のパックを選ぶ。",
   "substitutes_for": []
  },
  {
@@ -292,6 +292,17 @@
     "tips": "Gruyère と Emmentaler を混ぜたグラタン用の袋が近い。"
    }
   ]
+ },
+ {
+  "name": "製菓用チョコレート",
+  "name_de": "Kochschokolade / Crémant",
+  "category": "other",
+  "search_group": "チョコレート",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "お菓子作りには板チョコの「Kochschokolade」。甘さ控えめにしたいときはカカオの多い「Crémant」。",
+  "substitutes_for": []
  },
  {
   "name": "木綿豆腐",
@@ -494,6 +505,66 @@
    "supermarket"
   ],
   "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "サンドイッチ用パン",
+  "name_de": "Toastbrot / Sandwichbrot",
+  "category": "grain",
+  "search_group": "パン",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "四角い「Toastbrot」か、耳まで柔らかい「Sandwichbrot」。日本の食パンより薄いので2枚重ねてもよい。",
+  "substitutes_for": [
+   {
+    "original_name": "食パン",
+    "tips": "「Toastbrot」や「Sandwichbrot」で。厚切りが欲しいときは自分で焼くか、パン屋の「Modelbrot」を切ってもらう。"
+   }
+  ]
+ },
+ {
+  "name": "強力粉",
+  "name_de": "Zopfmehl / Manitoba-Mehl",
+  "category": "grain",
+  "search_group": "小麦粉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "パンには「Zopfmehl」で十分ふんわり焼ける。もっと高くふくらませたいときは、たんぱく質の多い「Manitoba」。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ドライイースト",
+  "name_de": "Trockenhefe",
+  "category": "grain",
+  "search_group": "イースト",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "粉の売り場に7gの小袋がある。冷蔵の生イースト（Frischhefe）を使うときは3倍の量で。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パイシート",
+  "name_de": "Blätterteig, ausgewallt",
+  "category": "grain",
+  "search_group": "皮",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冷蔵コーナーの、のばしてある丸いシートや四角いシート。紙ごと広げてそのまま使える。",
+  "substitutes_for": []
+ },
+ {
+  "name": "クラッカー",
+  "name_de": "Cracker / Blévita",
+  "category": "grain",
+  "search_group": "クラッカー",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "塩味の「Blévita」や「Party-Cracker」が、具をのせるのにちょうどよい。",
   "substitutes_for": []
  },
  {
@@ -880,6 +951,17 @@
    "supermarket"
   ],
   "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "セロリ",
+  "name_de": "Stangensellerie",
+  "category": "vegetable",
+  "search_group": "セロリ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "株の大きい「Knollensellerie」（根セロリ）とは別物。茎を食べるのは「Stangensellerie」。",
   "substitutes_for": []
  },
  {
@@ -1624,6 +1706,33 @@
    "supermarket"
   ],
   "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "バニラシュガー",
+  "name_de": "Vanillezucker",
+  "category": "seasoning",
+  "search_group": "バニラ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "小袋の「Vanillezucker」。バニラエッセンスの代わりに、砂糖の一部として入れる。",
+  "substitutes_for": [
+   {
+    "original_name": "バニラエッセンス",
+    "tips": "数滴の代わりに Vanillezucker を小さじ1ほど。"
+   }
+  ]
+ },
+ {
+  "name": "ココアパウダー",
+  "name_de": "Kakaopulver",
+  "category": "seasoning",
+  "search_group": "ココア",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "お菓子には無糖の「Kakaopulver」。飲み物用の「Schokoladenpulver」は砂糖入りなので避ける。",
   "substitutes_for": []
  },
  {

@@ -169,6 +169,33 @@ class ImportTests(TestCase):
         recipe.refresh_from_db()
         self.assertEqual(recipe.energy_kcal, 300)
 
+    def test_new_only_fills_empty_buying_notes_only(self):
+
+        self.run_import()
+        Ingredient.objects.filter(name="醤油").update(buying_notes="管理画面で書いたメモ")
+
+        ingredients = [
+            {**row, "buying_notes": f"{row['name']}の新しいメモ"}
+            for row in INGREDIENTS
+        ]
+
+        self.run_import(ingredients=ingredients, new_only=True)
+
+        notes = dict(Ingredient.objects.values_list("name", "buying_notes"))
+        self.assertEqual(notes["鶏もも肉"], "鶏もも肉の新しいメモ")
+        self.assertEqual(notes["醤油"], "管理画面で書いたメモ")
+
+    def test_bundled_recipes_have_sweets_bread_and_apero(self):
+
+        recipes = json.loads((Path(__file__).parent / "data" / "recipes.json").read_text(encoding="utf-8"))
+        categories = {recipe["name"]: recipe["category"] for recipe in recipes}
+
+        self.assertEqual(categories["どら焼き"], "sweets")
+
+        for category in ("sweets", "bread", "apero"):
+            with self.subTest(category=category):
+                self.assertGreaterEqual(list(categories.values()).count(category), 5)
+
     def test_import_creates_recipes_as_drafts(self):
 
         self.run_import()
