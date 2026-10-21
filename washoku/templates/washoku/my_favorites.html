@@ -7,12 +7,9 @@
 
 <h1>お気に入り</h1>
 
-<p class="washoku-lead">レシピのページで「♡ お気に入り」を押すと、ここに保存されます。あなたにだけ見えます。</p>
+{% include "washoku/includes/favorite_tabs.html" %}
 
-<p class="washoku-quick">
-    {% for value, label in sorts %}<a href="?sort={{ value }}"{% if sort == value %} aria-current="true" class="is-current"{% endif %}>{{ label }}</a>{% endfor %}
-    <a href="{% url 'washoku:family_favorites' %}"><i class="bi bi-star" aria-hidden="true"></i> 家族の好きな料理</a>
-</p>
+<p class="washoku-lead">レシピの「♡ お気に入り」で保存したものです。あなたにだけ見えます。</p>
 
 {% if recipes %}
     <div class="washoku-grid">

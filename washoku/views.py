@@ -1655,6 +1655,10 @@ def family_favorites(request):
 
     rows.sort(key=lambda row: (-row["average"], -row["rated"], row["recipe"].name))
 
+    # お気に入りの一覧と同じカードで出す (カードの星は家族の平均)
+    for row in rows:
+        row["recipe"].family_average = row["average"]
+
     return render(
         request,
         "washoku/family_favorites.html",
