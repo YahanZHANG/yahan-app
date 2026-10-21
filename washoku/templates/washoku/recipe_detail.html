@@ -23,6 +23,9 @@
                     {% if is_favorite %}保存済み{% else %}お気に入り{% endif %}
                 </button>
             </form>
+        {% elif not user.is_authenticated and recipe.status == "published" %}
+            {# 押すとログイン画面へ (会員登録へのリンクもある) #}
+            <a class="washoku-favorite" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}"><span aria-hidden="true">♡</span> お気に入り</a>
         {% endif %}
     </div>
 
@@ -119,7 +122,7 @@
                 <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、みんなの好みが見られます。</p>
             {% endif %}
         {% else %}
-            <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族で好みを記録できます。</p>
+            {% include "washoku/includes/join_prompt.html" with reason="家族で好みを記録する機能" %}
         {% endif %}
     </section>
 

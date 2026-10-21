@@ -45,7 +45,7 @@
             <button type="submit" class="washoku-button">投稿する</button>
         </form>
     {% else %}
-        <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>するとコメントや質問ができます。</p>
+        {% include "washoku/includes/join_prompt.html" with reason="コメントや質問" %}
     {% endif %}
 
 </section>

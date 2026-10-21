@@ -8,8 +8,9 @@
     --washoku-muted: #85695A;
     --washoku-border: #F0DFCC;
     --washoku-accent: #E2572B;
-    --washoku-navy: #1F3A5F;
-    --washoku-navy-strong: #152A47;
+    /* ランダムのボタン: 深蘇芳 (ふかきすおう) */
+    --washoku-random: #740125;
+    --washoku-random-strong: #58001B;
     --washoku-accent-strong: #C4431C;
     --washoku-accent-soft: #FDE4D7;
     --washoku-yolk: #F0A20F;
@@ -27,8 +28,8 @@
     --washoku-muted: #B3A9A2;
     --washoku-border: #3D3631;
     --washoku-accent: #E07A5F;
-    --washoku-navy: #2C4E7A;
-    --washoku-navy-strong: #3A6296;
+    --washoku-random: #8E1C3D;
+    --washoku-random-strong: #A52A4D;
     --washoku-accent-strong: #F0957C;
     --washoku-accent-soft: #3D2A22;
     --washoku-yolk: #E8B04A;
@@ -2413,7 +2414,7 @@ html[data-washoku-theme="dark"] {
     }
 }
 
-/* HOME: ランダムは、3枚のカードの下に紺色の横長ボタン */
+/* HOME: ランダムは、3枚のカードの下に深蘇芳の横長ボタン */
 .washoku-entry-random {
     grid-column: 1 / -1;
     display: flex;
@@ -2422,7 +2423,7 @@ html[data-washoku-theme="dark"] {
     gap: 8px;
     min-height: 44px;
     border-radius: 999px;
-    background: var(--washoku-navy);
+    background: var(--washoku-random);
     color: #fff;
     text-decoration: none;
 }
@@ -2436,7 +2437,7 @@ html[data-washoku-theme="dark"] {
 }
 
 .washoku-entry-random:hover {
-    background: var(--washoku-navy-strong);
+    background: var(--washoku-random-strong);
 }
 
 /* 代わり: スイスで買えるもののドイツ語名を、その名前のすぐ後ろに */
@@ -2489,4 +2490,147 @@ html[data-washoku-theme="dark"] {
     align-items: center;
     gap: 6px;
     font-weight: 400;
+}
+
+a.washoku-favorite {
+    text-decoration: none;
+}
+
+/* 未ログインの人への会員登録のおすすめ */
+.washoku-join {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--washoku-accent-soft);
+    font-size: 14px;
+}
+
+.washoku-join small {
+    display: block;
+    margin-top: 2px;
+    color: var(--washoku-muted);
+}
+
+.washoku-join-card {
+    margin: 16px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-join-card p {
+    margin: 0;
+}
+
+.washoku-join-card ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+    margin: 8px 0 12px;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+}
+
+.washoku-join-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* はじめての案内 (下から出るシート) */
+.washoku-sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    padding: 0 8px calc(8px + env(safe-area-inset-bottom));
+}
+
+.washoku-sheet[hidden] {
+    display: none;
+}
+
+.washoku-sheet-inner {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 16px 18px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 18px;
+    background: var(--washoku-surface);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.22);
+}
+
+.washoku-sheet h2 {
+    margin: 0 32px 8px 0;
+    font-size: 18px;
+}
+
+.washoku-sheet section {
+    padding: 10px 0;
+    border-top: 1px solid var(--washoku-border);
+}
+
+.washoku-sheet h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.washoku-sheet p {
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+.washoku-install-steps {
+    margin: 4px 0 8px;
+    padding-left: 22px;
+    font-size: 14px;
+}
+
+.washoku-key {
+    display: inline-block;
+    padding: 0 6px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.washoku-sheet-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: transparent;
+    color: var(--washoku-muted);
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.washoku-sheet-later {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--washoku-text);
+    cursor: pointer;
+}
+
+.washoku-join-actions .washoku-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 20px;
+    line-height: 1;
+    text-decoration: none;
 }

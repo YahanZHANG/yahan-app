@@ -56,6 +56,22 @@
     </a>
 </section>
 
+{% if not user.is_authenticated %}
+<section class="washoku-join-card">
+    <p><strong>無料の会員登録でできること</strong></p>
+    <ul>
+        <li>♡ お気に入りを保存</li>
+        <li>👪 家族で好みを記録</li>
+        <li>💬 質問・コメント</li>
+        <li>🔔 返信の通知</li>
+    </ul>
+    <p class="washoku-join-actions">
+        <a class="washoku-button" href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">会員登録する</a>
+        <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>
+    </p>
+</section>
+{% endif %}
+
 <section class="washoku-section">
     <h2>カテゴリー</h2>
     <div class="washoku-chips">

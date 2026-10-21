@@ -1416,3 +1416,29 @@ class QuestionListTests(TestCase):
         self.assertLess(html.index(open_question.body), html.index("答えが出た質問"))
         self.assertLess(html.index("答えが出た質問"), html.index(solved.body))
         self.assertIn("返信 1件", html)
+
+
+class WelcomeAndJoinTests(TestCase):
+
+    def test_logged_out_visitors_are_invited_to_sign_up(self):
+
+        recipe = make_recipe()
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "無料の会員登録でできること")
+        self.assertContains(home, reverse("portal:signup"))
+        self.assertContains(home, 'id="washoku-welcome"')
+
+        detail = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+        self.assertContains(detail, "コメントや質問は、")
+        self.assertContains(detail, "♡</span> お気に入り")
+
+    def test_members_see_push_hint_instead_of_sign_up(self):
+
+        user = get_user_model().objects.create_user("hanako", password="x")
+        self.client.force_login(user)
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertNotContains(home, "無料の会員登録でできること")
+        self.assertContains(home, "マイページでオンにする")
+        self.assertContains(self.client.get(reverse("washoku:my_page")), "ホーム画面に追加する方法")
