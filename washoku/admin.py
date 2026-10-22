@@ -327,6 +327,7 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "kind",
         "status",
+        "publish_at",
         "shop_names",
         "author",
         "created_at",

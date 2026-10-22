@@ -103,6 +103,9 @@ MIDDLEWARE = [
     # App usage tracking
     "usage_analytics.middleware.UsageAnalyticsMiddleware",
 
+    # スイスで和食: 公開予約の投稿を時刻どおりに公開
+    "washoku.middleware.PublishScheduledPostsMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 

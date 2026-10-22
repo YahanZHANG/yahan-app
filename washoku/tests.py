@@ -989,6 +989,28 @@ class PostTests(TestCase):
         self.assertNotContains(self.client.get(list_url + "?shop=denner"), "冷凍ギョーザ")
         self.assertNotContains(self.client.get(reverse("washoku:column_list")), "冷凍ギョーザ")
 
+    def test_scheduled_column_is_published_when_its_time_comes(self):
+
+        from washoku import middleware
+
+        later = timezone.now() + timedelta(hours=2)
+        post = Post.objects.create(
+            kind="column", title="予約したコラム", body="x" * 20, author=self.admin, publish_at=later,
+        )
+        unscheduled = Post.objects.create(kind="column", title="確認待ち", body="x" * 20, author=self.member)
+
+        middleware._last_check = 0
+        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "予約したコラム")
+
+        with mock.patch("django.utils.timezone.now", return_value=later + timedelta(minutes=1)):
+            middleware._last_check = 0
+            self.assertContains(self.client.get(reverse("washoku:column_list")), "予約したコラム")
+
+        post.refresh_from_db()
+        unscheduled.refresh_from_db()
+        self.assertEqual((post.status, post.created_at), ("published", later))
+        self.assertEqual(unscheduled.status, "draft")
+
     def test_staff_posts_are_published_at_once(self):
 
         self.client.force_login(self.admin)
