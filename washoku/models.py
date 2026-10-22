@@ -5,6 +5,7 @@ from django.core.validators import (
 )
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 
 # =========================================================
@@ -1045,6 +1046,13 @@ class Post(models.Model):
         db_index=True,
     )
 
+    publish_at = models.DateTimeField(
+        "公開予約",
+        null=True,
+        blank=True,
+        help_text="確認待ちのまま日時を入れると、その時刻に自動で公開されます（スイス時間）。",
+    )
+
     created_at = models.DateTimeField(
         "投稿日時",
         auto_now_add=True,
@@ -1063,6 +1071,7 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+
     @property
     def name(self):
         return self.title
@@ -1076,6 +1085,25 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])
+
+
+def publish_due_posts():
+    """
+    公開予約の時刻を過ぎた投稿を公開する。投稿日時も公開した時刻にそろえる。
+    公開した件数を返す。
+    """
+
+    now = timezone.now()
+    count = 0
+
+    for post in Post.objects.filter(status="draft", publish_at__lte=now):
+        count += Post.objects.filter(pk=post.pk, status="draft").update(
+            status="published",
+            created_at=post.publish_at,
+        )
+
+    return count
+
 
 
 # =========================================================
