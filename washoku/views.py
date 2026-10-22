@@ -691,6 +691,9 @@ def recipe_detail(request, pk):
                 item for item in recipe.recipe_ingredients.all()
                 if item.is_seasoning
             ],
+            "related_posts": related_posts(
+                [item.ingredient for item in recipe.recipe_ingredients.all()]
+            ),
             "includes_rice": any(
                 item.ingredient.name == "米" and "膳" in item.amount
                 for item in recipe.recipe_ingredients.all()
@@ -833,6 +836,7 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
+            "related_posts": related_posts([ingredient]),
             **comment_context(request, ingredient=ingredient),
         },
     )
@@ -1944,6 +1948,54 @@ POST_KIND_TEXT = {
 }
 
 
+def ingredient_group_filter(prefix, ingredients):
+    """
+    食材 (と同じ検索グループの食材) に当てはまる条件。prefix は関係名 (例: "ingredients__")。
+    """
+
+    groups = {ingredient.group_name for ingredient in ingredients}
+
+    return (
+        Q(**{f"{prefix}search_group__in": groups})
+        | Q(**{f"{prefix}search_group": "", f"{prefix}name__in": groups})
+    )
+
+
+def related_posts(ingredients, limit=5):
+    """
+    これらの食材に関係するコラム・参考リンクなど (公開済み、新しい順)。
+    """
+
+    if not ingredients:
+        return []
+
+    return list(
+        Post.objects
+        .filter(status="published")
+        .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("-created_at")[:limit]
+    )
+
+
+def related_recipes(user, post, limit=6):
+    """
+    投稿に選んだ食材を使うレシピ。
+    """
+
+    ingredients = list(post.ingredients.all())
+
+    if not ingredients:
+        return []
+
+    return list(
+        visible_recipes(user)
+        .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("name")[:limit]
+    )
+
+
 def visible_posts(user):
 
     posts = Post.objects.all()
@@ -2023,6 +2075,7 @@ def post_detail(request, pk):
         {
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
+            "related_recipes": related_recipes(request.user, post),
             "stamps": reaction_stamps(
                 post.reactions.values_list("post_id", "user_id", "kind"),
                 request.user,

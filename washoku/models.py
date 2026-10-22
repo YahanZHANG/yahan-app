@@ -325,6 +325,13 @@ class Recipe(models.Model):
         blank=True,
     )
 
+    serving_unit = models.CharField(
+        "数え方",
+        max_length=10,
+        blank=True,
+        help_text="パンやおやつなど、人数でなく数で数えるとき（例: 個、切れ）。空欄なら「人分」。栄養はこの1つ分。",
+    )
+
     steps = models.TextField(
         "作り方",
         help_text="1行に1手順。",
@@ -450,6 +457,23 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def servings_label(self):
+        """例: 4人分、8切れ分"""
+        return f"{self.servings}{self.serving_unit or '人'}分"
+
+    @property
+    def per_serving_label(self):
+        """カード用の短い形。例: 1人分、1個"""
+        return f"1{self.serving_unit}" if self.serving_unit else "1人分"
+
+    @property
+    def nutrition_label(self):
+        """栄養の見出し。例: 1人分（1食分）、1切れあたり"""
+        if self.serving_unit:
+            return f"1{self.serving_unit}あたり"
+        return "1人分（1食分）"
 
     @property
     def has_nutrition(self):
@@ -1044,6 +1068,14 @@ class Post(models.Model):
         choices=STATUS_CHOICES,
         default="draft",
         db_index=True,
+    )
+
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        verbose_name="関係する食材",
+        blank=True,
+        related_name="posts",
+        help_text="選んだ食材（と同じ検索グループの食材）を使うレシピや食材のページに、この投稿が「関連する読みもの」として出ます。",
     )
 
     publish_at = models.DateTimeField(

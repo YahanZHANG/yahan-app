@@ -2681,3 +2681,17 @@ a.washoku-favorite {
     text-decoration: underline;
     cursor: pointer;
 }
+
+/* 関連する読みもの・関連レシピ: 種類のラベルはタイトルの横に小さく */
+.washoku-related li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+}
+
+.washoku-related .washoku-chip {
+    flex: none;
+    width: auto;
+    margin: 0;
+}

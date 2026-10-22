@@ -43,6 +43,17 @@
 
 </article>
 
+{% if related_recipes %}
+<section class="washoku-section washoku-related">
+    <h2>関連レシピ</h2>
+    <ul class="washoku-list">
+        {% for recipe in related_recipes %}
+            <li><a href="{% url 'washoku:recipe_detail' recipe.pk %}">{{ recipe.name }}</a></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 {% if post.status == "published" %}
     {% if post.kind == "product" %}
         {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" help_text="食べてみた感想や、おいしい食べ方を教えてください。" tip_label="感想" %}

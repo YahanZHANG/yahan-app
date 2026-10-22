@@ -356,6 +356,7 @@ class Command(BaseCommand):
                 "category": row.get("category", "other"),
                 "cooking_time_minutes": row.get("cooking_time_minutes"),
                 "servings": row.get("servings"),
+                "serving_unit": row.get("serving_unit", ""),
                 "steps": steps,
                 "swiss_tips": row.get("swiss_tips", ""),
                 "origin": row.get("origin", "manual"),

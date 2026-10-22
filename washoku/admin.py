@@ -344,6 +344,10 @@ class PostAdmin(admin.ModelAdmin):
         "body",
     )
 
+    autocomplete_fields = (
+        "ingredients",
+    )
+
     @admin.display(description="買えるお店")
     def shop_names(self, obj):
         return "、".join(obj.shop_labels())

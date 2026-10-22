@@ -864,7 +864,7 @@ class NutritionTests(TestCase):
 
         response = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
 
-        self.assertContains(response, "1人分の栄養")
+        self.assertContains(response, "1人分（1食分）の栄養")
         self.assertContains(response, "340<small>kcal</small>")
         self.assertContains(response, "P 33% ・ F 53% ・ C 14%")
 
@@ -875,7 +875,7 @@ class NutritionTests(TestCase):
         self.assertIsNone(recipe.pfc_ratio())
         self.assertNotContains(
             self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])),
-            "1人分の栄養",
+            "1人分（1食分）の栄養",
         )
 
     def test_recipes_can_be_sorted_by_energy(self):
@@ -1010,6 +1010,41 @@ class PostTests(TestCase):
         unscheduled.refresh_from_db()
         self.assertEqual((post.status, post.created_at), ("published", later))
         self.assertEqual(unscheduled.status, "draft")
+
+    def test_columns_and_recipes_link_through_ingredient_groups(self):
+
+        recipe = make_recipe()
+        thigh = Ingredient.objects.get(name="鶏もも肉")
+        breast = Ingredient.objects.create(name="鶏むね肉", search_group="鶏肉", category="meat")
+
+        column = Post.objects.create(kind="column", title="鶏肉の部位の選び方", body="x" * 20, author=self.member, status="published")
+        column.ingredients.add(breast)
+        draft = Post.objects.create(kind="column", title="下書きのコラム", body="x" * 20, author=self.member)
+        draft.ingredients.add(thigh)
+
+        # 同じ検索グループ (鶏肉) のレシピと食材のページに出る。下書きは出ない
+        page = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+        self.assertContains(page, "関連する読みもの")
+        self.assertContains(page, "鶏肉の部位の選び方")
+        self.assertNotContains(page, "下書きのコラム")
+        self.assertContains(self.client.get(reverse("washoku:ingredient_detail", args=[thigh.pk])), "鶏肉の部位の選び方")
+
+        page = self.client.get(column.get_absolute_url())
+        self.assertContains(page, "関連レシピ")
+        self.assertContains(page, "照り焼きチキン")
+
+    def test_serving_unit_labels(self):
+
+        bread = make_recipe(name="メロンパン", servings=8, serving_unit="個", energy_kcal=280, protein_g=6, fat_g=8, carbs_g=45)
+        dish = make_recipe(name="肉じゃが", servings=4, energy_kcal=330, protein_g=14, fat_g=12, carbs_g=40)
+
+        page = self.client.get(reverse("washoku:recipe_detail", args=[bread.pk]))
+        self.assertContains(page, "8個分")
+        self.assertContains(page, "1個あたりの栄養")
+
+        page = self.client.get(reverse("washoku:recipe_detail", args=[dish.pk]))
+        self.assertContains(page, "4人分")
+        self.assertContains(page, "1人分（1食分）の栄養")
 
     def test_staff_posts_are_published_at_once(self):
 
