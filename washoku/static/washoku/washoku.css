@@ -3268,3 +3268,10 @@ button.washoku-poll-row:hover {
     color: var(--washoku-muted);
     font-size: 13px;
 }
+
+.washoku-comment-hint {
+    margin: 6px 0 0;
+    text-align: right;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
