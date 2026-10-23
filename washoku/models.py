@@ -301,12 +301,12 @@ class Recipe(models.Model):
         ("sweets", "デザート・おやつ"),
         ("bread", "パン"),
         ("apero", "アペロ・持ち寄り"),
-        ("yoshoku", "洋食"),
+        ("yoshoku", "和風洋食"),
         ("chinese", "中華"),
         ("korean", "韓国"),
         ("vietnamese", "ベトナム"),
         ("thai", "タイ"),
-        ("europe", "スイス・ヨーロッパ"),
+        ("europe", "本場の洋食"),
         ("other", "その他"),
     ]
 
