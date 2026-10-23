@@ -1301,15 +1301,17 @@ class AnnouncementTests(TestCase):
         self.assertContains(response, 'href="/washoku/recipes/?category=europe"')
         self.assertNotContains(response, "新着レシピ")
 
-    def test_home_shows_new_columns_and_column_page_links_back(self):
+    def test_columns_in_home_feed_and_column_page_links_back(self):
 
         author = get_user_model().objects.create_user("hanako", password="x")
         first = Post.objects.create(kind="column", title="Rahm の選び方", body="x", status="published", author=author)
         Post.objects.create(kind="column", title="下書きのコラム", body="x", status="draft", author=author)
         Post.objects.create(kind="column", title="豆腐の水切り", body="x", status="published", author=author)
 
+        # コラムはカードでなく、みんなの投稿・コメントの中に色付きのタグで出る
         home = self.client.get(reverse("washoku:home"))
-        self.assertContains(home, "新着コラム")
+        self.assertNotContains(home, "新着コラム")
+        self.assertContains(home, "kind-column")
         self.assertContains(home, "Rahm の選び方")
         self.assertNotContains(home, "下書きのコラム")
 
@@ -1449,7 +1451,7 @@ class FavoriteNoteReactionTests(TestCase):
         self.client.force_login(self.me)
         html = self.client.get(reverse("washoku:family_favorites")).content.decode()
 
-        self.assertIn("家族の好きな料理", html)
+        self.assertIn("家族が喜ぶ料理", html)
         self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
         self.assertNotIn("other", html)
 

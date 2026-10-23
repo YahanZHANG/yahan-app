@@ -46,7 +46,7 @@
 
 <section class="washoku-entry">
     <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-entry-card">
-        <span>🧺</span>
+        <span>🥕</span>
         <strong>食材で選ぶ</strong>
         <small>家にあるもので</small>
     </a>
@@ -66,39 +66,20 @@
     </a>
 </section>
 
-{% if columns %}
-<section class="washoku-section">
-    <h2>新着コラム</h2>
-    <ul class="washoku-posts">
-        {% for post in columns %}
-            <li>
-                <a href="{{ post.get_absolute_url }}"{% if post.photo_1 %} class="has-photo"{% endif %}>
-                    {% if post.photo_1 %}<img src="{{ post.photo_1|thumb:160 }}" alt="" loading="lazy">{% endif %}
-                    <strong>{{ post.title }}</strong>
-                    <span class="washoku-post-excerpt">{{ post.body|truncatechars:60 }}</span>
-                    <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"n/j" }}</small>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-    <p class="washoku-more"><a href="{% url 'washoku:column_list' %}">コラムをもっと読む</a></p>
-</section>
-{% endif %}
-
 {% if questions %}
-<section class="washoku-section">
-    <h2>返事を待っている質問</h2>
-    <ul class="washoku-list">
+<section class="washoku-section washoku-open-questions">
+    <h2>💬 返事を待っている質問</h2>
+    <ul>
         {% for question in questions %}
             <li>
                 <a href="{{ question.get_absolute_url }}">
-                    {{ question.body|truncatechars:60 }}
+                    <span>{{ question.body|truncatechars:60 }}</span>
+                    <small>{{ question.target.name }} ・ {{ question.author|display_name }} さん ・ {{ question.created_at|date:"n/j" }}</small>
                 </a>
-                <small>{{ question.target.name }}</small>
             </li>
         {% endfor %}
     </ul>
-    <p class="washoku-more"><a href="{% url 'washoku:question_list' %}">質問をすべて見る</a></p>
+    <p class="washoku-more"><a href="{% url 'washoku:question_list' %}">質問をすべて見る ›</a></p>
 </section>
 {% endif %}
 
@@ -106,7 +87,7 @@
 <section class="washoku-join-card">
     <p><strong>無料の会員登録でできること</strong></p>
     <ul>
-        <li>♡ お気に入りを保存</li>
+        <li>❤️ お気に入りを保存</li>
         <li>👪 家族で好みを記録</li>
         <li>💬 質問・コメント</li>
         <li>🔔 返信の通知</li>

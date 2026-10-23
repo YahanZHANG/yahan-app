@@ -3014,21 +3014,6 @@ a.washoku-favorite {
     font-size: 15px;
 }
 
-/* HOME の新着コラム: 写真があれば左に小さく */
-.washoku-posts a.has-photo {
-    display: grid;
-    grid-template-columns: 64px 1fr;
-    column-gap: 12px;
-}
-
-.washoku-posts a.has-photo img {
-    grid-row: span 3;
-    width: 64px;
-    height: 64px;
-    border-radius: 10px;
-    object-fit: cover;
-}
-
 /* コラムから一覧へ戻るボタン */
 .washoku-back {
     margin: 16px 0;
@@ -3050,3 +3035,53 @@ a.washoku-favorite {
     border-color: var(--washoku-accent);
     color: var(--washoku-accent-strong);
 }
+
+/* みんなの投稿・コメント: 種類ごとにタグの色を変える */
+.washoku-activity-kind.kind-column { background: #FBE3D3; color: #A4461C; }
+.washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
+.washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
+.washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
+.washoku-activity-kind.kind-comment,
+.washoku-activity-kind.kind-reply { background: #ECE7F5; color: #5B4A87; }
+
+/* HOME の返事を待っている質問 */
+.washoku-open-questions {
+    padding: 14px 16px;
+    border: 1px solid #F1D98C;
+    border-radius: 14px;
+    background: #FFF8E1;
+}
+
+.washoku-open-questions h2 {
+    margin-top: 0;
+}
+
+.washoku-open-questions ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-open-questions li + li {
+    border-top: 1px solid #F1E3B5;
+}
+
+.washoku-open-questions a {
+    display: block;
+    padding: 8px 0;
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-open-questions small {
+    display: block;
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+.washoku-open-questions .washoku-more {
+    margin: 6px 0 0;
+}
+
+:root[data-washoku-theme="dark"] .washoku-open-questions { border-color: #5A4A1A; background: #2E2717; }
+:root[data-washoku-theme="dark"] .washoku-open-questions li + li { border-color: #4A3E1C; }

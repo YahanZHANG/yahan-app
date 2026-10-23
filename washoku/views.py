@@ -241,8 +241,7 @@ def home(request):
         "washoku/home.html",
         {
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:3],
-            "columns": latest_columns(),
+            "questions": open_questions()[:5],
             "announcements": list(Announcement.current()),
             "moods": MoodTag.objects.all(),
             "categories": Recipe.CATEGORY_CHOICES[:-1],
