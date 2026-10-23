@@ -4,5 +4,6 @@
     <a href="{% url 'washoku:column_list' %}" class="{% if name == 'column_list' or kind == 'column' %}active{% endif %}">コラム</a>
     <a href="{% url 'washoku:product_list' %}" class="{% if name == 'product_list' or kind == 'product' %}active{% endif %}">おすすめ</a>
     <a href="{% url 'washoku:link_list' %}" class="{% if name == 'link_list' or kind == 'link' %}active{% endif %}">リンク</a>
+    <a href="{% url 'washoku:poll_list' %}" class="{% if name == 'poll_list' or kind == 'poll' %}active{% endif %}">アンケート</a>
 </nav>
 {% endwith %}

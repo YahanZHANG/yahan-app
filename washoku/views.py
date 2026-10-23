@@ -14,6 +14,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
@@ -40,6 +41,8 @@ from .models import (
     MemberPhoto,
     MoodTag,
     Notification,
+    PollChoice,
+    PollVote,
     Post,
     PostReaction,
     PushSubscription,
@@ -842,7 +845,7 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
-            "related_posts": related_posts([ingredient]),
+            **split_polls(request.user, related_posts([ingredient])),
             **photo_context(request, ingredient=ingredient),
             **comment_context(request, ingredient=ingredient),
         },
@@ -2206,7 +2209,16 @@ POST_KIND_TEXT = {
         "lead": "ほかのサイトの役に立つ記事です。要点と出典を載せています。",
         "new_label": "リンクを紹介する",
     },
+    "poll": {
+        "url_name": "washoku:poll_list",
+        "heading": "みんなのアンケート",
+        "lead": "結果はだれでも見られます。投票は会員だけ。",
+        "new_label": "アンケートを作る",
+    },
 }
+
+# 会員がフォームから投稿できる種類 (アンケートは今は管理画面からだけ作る)
+MEMBER_POST_KINDS = ("column", "product", "link")
 
 
 def ingredient_group_filter(prefix, ingredients):
@@ -2280,7 +2292,9 @@ def post_list(request, kind):
             comment_count=Count(
                 "comments",
                 filter=Q(comments__is_hidden=False, comments__is_deleted=False),
-            )
+                distinct=True,
+            ),
+            vote_count=Count("votes", distinct=True),
         )
     )
 
@@ -2323,12 +2337,111 @@ def link_list(request):
     return post_list(request, "link")
 
 
+def poll_list(request):
+    return post_list(request, "poll")
+
+
+def attach_poll_results(polls, user):
+    """
+    アンケートごとに、選択肢・票数・割合・自分の票を poll.results に入れる。
+    """
+
+    polls = list(polls)
+
+    if not polls:
+        return polls
+
+    counts = dict(
+        PollVote.objects
+        .filter(post__in=polls)
+        .values_list("choice")
+        .annotate(count=Count("pk"))
+        .values_list("choice", "count")
+    )
+
+    mine = {}
+
+    if user.is_authenticated:
+        mine = dict(
+            PollVote.objects
+            .filter(post__in=polls, user=user)
+            .values_list("post_id", "choice_id")
+        )
+
+    choices = defaultdict(list)
+
+    for choice in PollChoice.objects.filter(post__in=polls):
+        choices[choice.post_id].append(choice)
+
+    for poll in polls:
+
+        total = sum(counts.get(choice.pk, 0) for choice in choices[poll.pk])
+
+        poll.results = {
+            "total": total,
+            "my_choice_id": mine.get(poll.pk),
+            "choices": [
+                {
+                    "choice": choice,
+                    "count": counts.get(choice.pk, 0),
+                    "percent": round(counts.get(choice.pk, 0) * 100 / total) if total else 0,
+                }
+                for choice in choices[poll.pk]
+            ],
+        }
+
+    return polls
+
+
+def split_polls(user, posts):
+    """
+    関連する投稿のうち、アンケートはその場で投票できるように分けて出す。
+    """
+
+    return {
+        "polls": attach_poll_results([post for post in posts if post.kind == "poll"], user),
+        "related_posts": [post for post in posts if post.kind != "poll"],
+    }
+
+
+@login_required
+@require_POST
+def poll_vote(request, pk):
+
+    post = get_object_or_404(
+        Post.objects.filter(status="published", kind="poll"),
+        pk=pk,
+    )
+
+    choice = get_object_or_404(
+        PollChoice,
+        pk=request.POST.get("choice") or 0,
+        post=post,
+    )
+
+    PollVote.objects.update_or_create(
+        post=post,
+        user=request.user,
+        defaults={"choice": choice},
+    )
+
+    url = request.POST.get("next", "")
+
+    if not url_has_allowed_host_and_scheme(url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        url = reverse("washoku:post_detail", args=[post.pk])
+
+    return redirect(f"{url}#poll-{post.pk}")
+
+
 def post_detail(request, pk):
 
     post = get_object_or_404(
         visible_posts(request.user).select_related("author"),
         pk=pk,
     )
+
+    if post.kind == "poll":
+        attach_poll_results([post], request.user)
 
     return render(
         request,
@@ -2350,7 +2463,7 @@ def post_detail(request, pk):
 @login_required
 def post_submit(request, kind):
 
-    if kind not in POST_KIND_TEXT:
+    if kind not in MEMBER_POST_KINDS:
         raise Http404
 
     pending = Post.objects.filter(author=request.user, kind=kind, status="draft").count()

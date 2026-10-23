@@ -44,6 +44,10 @@
 </section>
 {% endfor %}
 
+{% for poll in polls %}
+    {% include "washoku/includes/poll_box.html" with with_title=True %}
+{% endfor %}
+
 {% include "washoku/includes/related_posts.html" %}
 
 {% if recipes %}

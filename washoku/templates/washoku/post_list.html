@@ -11,7 +11,11 @@
 
 <p class="washoku-lead">{{ text.lead }}</p>
 
+{% if kind != "poll" %}
 <p><a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+{% elif user.is_staff %}
+<p><a class="washoku-button" href="{% url 'admin:washoku_post_add' %}?kind=poll&amp;status=published"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+{% endif %}
 
 {% if kind == "product" %}
 <form method="get" class="washoku-filter">
@@ -40,7 +44,9 @@
                         </span>
                     {% endif %}
                     <strong>{{ post.title }}</strong>
-                    {% if kind != "link" %}
+                    {% if kind == "poll" %}
+                    <small>{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                    {% elif kind != "link" %}
                     <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>
                     <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
                     {% endif %}

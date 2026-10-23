@@ -1733,7 +1733,7 @@ html[data-washoku-theme="dark"] {
 }
 
 .washoku-subtabs a {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 7px 4px;
     border-radius: 999px;
     color: var(--washoku-muted);
@@ -3041,6 +3041,7 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
 .washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
 .washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
+.washoku-activity-kind.kind-poll { background: #D9F0EC; color: #1E6A5E; }
 .washoku-activity-kind.kind-comment,
 .washoku-activity-kind.kind-reply { background: #6B6B6B; color: #fff; }
 
@@ -3119,4 +3120,92 @@ a.washoku-favorite {
 
 .washoku-fold[open] > summary {
     margin-bottom: 12px;
+}
+
+@media (max-width: 400px) {
+    .washoku-subtabs a {
+        font-size: 13px;
+    }
+}
+
+/* アンケート: 押せる横長の行。背景の帯の長さが割合 */
+.washoku-poll {
+    scroll-margin-top: 90px;
+    margin: 16px 0;
+    padding: 14px 16px 10px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-poll h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.washoku-poll h3 a {
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-poll form {
+    margin: 0;
+}
+
+.washoku-poll-rows {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-poll-row {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 10px;
+    background:
+        linear-gradient(to right, var(--washoku-poll-bar) var(--poll-percent), transparent var(--poll-percent))
+        var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 15px;
+    text-align: left;
+}
+
+button.washoku-poll-row {
+    cursor: pointer;
+}
+
+.washoku-poll-row.is-mine {
+    border-color: var(--washoku-accent);
+    font-weight: 700;
+}
+
+.washoku-poll-percent {
+    color: var(--washoku-muted);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+
+.washoku-poll-total {
+    margin: 8px 0 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+:root {
+    --washoku-poll-bar: #F8DCC9;
+}
+
+:root[data-washoku-theme="dark"] {
+    --washoku-poll-bar: #5A3A28;
 }
