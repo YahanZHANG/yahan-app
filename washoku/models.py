@@ -306,6 +306,7 @@ class Recipe(models.Model):
         ("korean", "韓国"),
         ("vietnamese", "ベトナム"),
         ("thai", "タイ"),
+        ("europe", "スイス・ヨーロッパ"),
         ("other", "その他"),
     ]
 
@@ -351,9 +352,8 @@ class Recipe(models.Model):
         blank=True,
     )
 
-    # 料理の写真 (2枚まで)。会員の投稿か、管理者がページから追加する
-    photo_1 = models.URLField("写真1", max_length=500, blank=True)
-    photo_2 = models.URLField("写真2", max_length=500, blank=True)
+    # 載せる写真は1枚。会員が投稿した写真 (MemberPhoto) の中から、最初の1枚か管理者が選んだもの
+    photo_1 = models.URLField("載せる写真", max_length=500, blank=True)
 
     serving_unit = models.CharField(
         "数え方",
@@ -487,9 +487,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-    def photos(self):
-        return [url for url in (self.photo_1, self.photo_2) if url]
 
     @property
     def servings_label(self):
@@ -858,6 +855,71 @@ class RecipeNote(models.Model):
 # =========================================================
 # お店
 # =========================================================
+
+class MemberPhoto(models.Model):
+    """
+    会員が投稿した料理・食材の写真。ページに載るのは1枚だけで、
+    最初の1枚が自動で載り、2枚目からは管理者が選ぶ。
+    """
+
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name="料理",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="member_photos",
+    )
+
+    ingredient = models.ForeignKey(
+        Ingredient,
+        verbose_name="食材",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="member_photos",
+    )
+
+    url = models.URLField(
+        "写真",
+        max_length=500,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した人",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_photos",
+    )
+
+    created_at = models.DateTimeField(
+        "投稿日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "投稿された写真"
+        verbose_name_plural = "投稿された写真"
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"{self.target} の写真"
+
+    @property
+    def target(self):
+        return self.recipe or self.ingredient
+
+    @property
+    def target_field(self):
+        """target で、載せる写真の URL を入れる項目"""
+        return "photo_1" if self.recipe_id else "photo_url"
+
+    @property
+    def is_shown(self):
+        return getattr(self.target, self.target_field) == self.url
+
 
 class Store(models.Model):
     """

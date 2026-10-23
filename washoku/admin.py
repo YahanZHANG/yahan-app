@@ -14,6 +14,7 @@ from .models import (
     HouseholdInvite,
     HouseholdMember,
     Ingredient,
+    MemberPhoto,
     MoodTag,
     Notification,
     Post,
@@ -123,13 +124,15 @@ class IngredientAdmin(admin.ModelAdmin):
         uploaded = form.cleaned_data.get("photo_upload")
 
         if uploaded:
-            old = Ingredient.objects.filter(pk=obj.pk).values_list("photo_url", flat=True).first() if change else ""
             obj.photo_url = uploaded
             obj.photo_credit = ""
             obj.photo_source = ""
-            delete_uploaded_photos(old)
 
         super().save_model(request, obj, form, change)
+
+        # 管理画面で上げた写真も、ページの写真の一覧に入れる (前の写真は候補として残る)
+        if uploaded:
+            MemberPhoto.objects.create(ingredient=obj, url=uploaded, user=request.user)
 
     @admin.action(description="写真がない食材の写真を Wikimedia Commons で探す（10件ずつ）")
     def find_photos_on_commons(self, request, queryset):
@@ -645,3 +648,43 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_editable = (
         "is_read",
     )
+
+
+@admin.register(MemberPhoto)
+class MemberPhotoAdmin(admin.ModelAdmin):
+    """
+    投稿された写真の一覧。載せる写真を選ぶのは、料理・食材のページで。
+    """
+
+    list_display = (
+        "photo_thumb",
+        "target",
+        "user",
+        "is_shown",
+        "created_at",
+    )
+
+    list_select_related = ("recipe", "ingredient", "user")
+    readonly_fields = ("recipe", "ingredient", "url", "user", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="写真")
+    def photo_thumb(self, obj):
+        return format_html('<img src="{}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:6px">', obj.url)
+
+    @admin.display(description="掲載中", boolean=True)
+    def is_shown(self, obj):
+        return obj.is_shown
+
+    def delete_model(self, request, obj):
+        self.delete_queryset(request, MemberPhoto.objects.filter(pk=obj.pk))
+
+    def delete_queryset(self, request, queryset):
+        # 載っている写真なら、ページからも外す
+        for photo in queryset.select_related("recipe", "ingredient"):
+            if photo.is_shown:
+                photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
+            delete_uploaded_photos(photo.url)
+        queryset.delete()

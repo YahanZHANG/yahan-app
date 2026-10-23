@@ -1256,6 +1256,127 @@
   ]
  },
  {
+  "name": "子牛肉（薄切り）",
+  "name_de": "Kalbsgeschnetzeltes",
+  "category": "meat",
+  "search_group": "子牛肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "肉売り場の「Kalbsgeschnetzeltes」が細切りでそのまま使える。高いときは豚の「Schweinsgeschnetzeltes」や鶏でも。",
+  "substitutes_for": []
+ },
+ {
+  "name": "牛肉（煮込み用）",
+  "name_de": "Rindsvoressen / Rindsragout",
+  "category": "meat",
+  "search_group": "牛肉",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "「Voressen」「Ragout」と書かれた角切り肉。すね肉など、煮込むと柔らかくなる部位。",
+  "substitutes_for": []
+ },
+ {
+  "name": "グリュイエールチーズ",
+  "name_de": "Gruyère",
+  "category": "dairy",
+  "search_group": "チーズ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "削った袋入り（gerieben）が便利。なければピザ用チーズでも。",
+  "substitutes_for": []
+ },
+ {
+  "name": "フォンデュ用チーズ",
+  "name_de": "Fertigfondue / Fondue-Mischung",
+  "category": "dairy",
+  "search_group": "チーズ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "冷蔵の袋入り「Fertigfondue」はワインも入っていて、温めるだけでできる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "大麦",
+  "name_de": "Rollgerste",
+  "category": "grain",
+  "search_group": "",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "スープ用の「Rollgerste」。日本の押し麦に近い。",
+  "substitutes_for": []
+ },
+ {
+  "name": "タルト生地",
+  "name_de": "Kuchenteig, ausgewallt",
+  "category": "grain",
+  "search_group": "皮",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "丸く伸ばした「ausgewallter Kuchenteig」が冷蔵売り場にある。紙ごと型に敷ける。",
+  "substitutes_for": []
+ },
+ {
+  "name": "ズッキーニ",
+  "name_de": "Zucchetti",
+  "category": "vegetable",
+  "search_group": "",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
+  "name": "アップルムース",
+  "name_de": "Apfelmus",
+  "category": "fruit",
+  "search_group": "",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "瓶入りの「Apfelmus」。りんごを砂糖少々で煮てつぶしても作れる。",
+  "substitutes_for": []
+ },
+ {
+  "name": "パプリカパウダー",
+  "name_de": "Paprika edelsüss",
+  "category": "seasoning",
+  "search_group": "",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "辛くない「edelsüss」を選ぶ。",
+  "substitutes_for": []
+ },
+ {
+  "name": "白ワイン",
+  "name_de": "Weisswein",
+  "category": "seasoning",
+  "search_group": "酒",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "辛口のもの。料理用に小さな瓶やパックも売っている。",
+  "substitutes_for": []
+ },
+ {
+  "name": "オリーブオイル",
+  "name_de": "Olivenöl",
+  "category": "seasoning",
+  "search_group": "油",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "",
+  "substitutes_for": []
+ },
+ {
   "name": "昆布",
   "name_de": "Kombu",
   "category": "seaweed",

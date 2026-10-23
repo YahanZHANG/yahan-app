@@ -15,6 +15,19 @@ def remove_auto_photos(apps, schema_editor):
     ).update(photo_url="", photo_credit="", photo_source="")
 
 
+TICINO_URL_PART = "_onigiri-tofu-kabocha"
+
+
+def remove_ticino_link(apps, schema_editor):
+    """
+    要点を書かないままの swissinfo のリンク (下書き) を消す。元データからも外したので、もう戻らない。
+    """
+
+    Post = apps.get_model("washoku", "Post")
+
+    Post.objects.filter(kind="link", url__contains=TICINO_URL_PART).delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -23,4 +36,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(remove_auto_photos, migrations.RunPython.noop),
+        migrations.RunPython(remove_ticino_link, migrations.RunPython.noop),
     ]

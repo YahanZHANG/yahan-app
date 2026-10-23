@@ -21,6 +21,7 @@ from .models import (
     Feedback,
     HouseholdInvite,
     Ingredient,
+    MemberPhoto,
     MoodTag,
     Notification,
     CommentReaction,
@@ -1152,7 +1153,7 @@ class PostTests(TestCase):
 
         links = Post.objects.filter(kind="link")
 
-        self.assertEqual(links.count(), 5)
+        self.assertEqual(links.count(), 4)
         self.assertEqual(links.filter(status="published").count(), 4)
         self.assertEqual(set(links.values_list("author__username", flat=True)), {"owner"})
         self.assertTrue(all(link.source for link in links))
@@ -1671,37 +1672,93 @@ class PhotoTests(TestCase):
         self.assertEqual(photo["url"], "https://upload.wikimedia.org/thumb/k.jpg")
         self.assertEqual(photo["credit"], "Rainer / CC BY-SA 3.0 / Wikimedia Commons")
 
-    def test_only_staff_can_add_photos_to_recipe_ingredient_and_store_pages(self):
+    def test_members_post_photos_first_is_shown_and_staff_picks_the_rest(self):
 
         staff = get_user_model().objects.create_user("admin", password="x", is_staff=True)
-        url = reverse("washoku:staff_photo", args=["recipe", self.recipe.pk])
+        other = get_user_model().objects.create_user("yuki", password="x")
+        add_url = reverse("washoku:photo_add", args=["recipe", self.recipe.pk])
         page_url = reverse("washoku:recipe_detail", args=[self.recipe.pk])
 
-        # 会員には追加のボタンも見えず、送っても何も変わらない
+        # ログインしていない人には投稿の欄が出ない
+        self.assertNotContains(self.client.get(page_url), "写真を投稿")
+
+        # 最初の1枚はそのまま載る
         self.client.force_login(self.member)
-        self.assertNotContains(self.client.get(page_url), "写真を追加・変更")
-        self.assertEqual(self.client.post(url, {"field": "photo_2", "photo": self.photo()}).status_code, 404)
+        self.assertContains(self.client.get(page_url), "写真を投稿")
 
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/1.webp"):
+            self.client.post(add_url, {"photo": self.photo()})
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photo_1, "https://example.com/1.webp")
+        self.assertContains(self.client.get(page_url), "写真: hanako さん")
+
+        # 2枚目は候補になり、管理者に知らせる
+        self.client.force_login(other)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/2.webp"), \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(add_url, {"photo": self.photo()})
+
+        alert.assert_called_once()
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photo_1, "https://example.com/1.webp")
+        second = MemberPhoto.objects.get(url="https://example.com/2.webp")
+
+        # 会員は載せる写真を選べず、ほかの人の写真も消せない
+        first = MemberPhoto.objects.get(url="https://example.com/1.webp")
+        manage = lambda photo: reverse("washoku:photo_manage", args=[photo.pk])
+        self.assertEqual(self.client.post(manage(second), {"action": "show"}).status_code, 404)
+        self.assertEqual(self.client.post(manage(first), {"action": "delete"}).status_code, 404)
+
+        # 管理者は2枚目を載せられる
         self.client.force_login(staff)
-        self.assertContains(self.client.get(page_url), "写真を追加・変更")
-
-        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/r2.webp"):
-            self.client.post(url, {"field": "photo_2", "photo": self.photo()})
-
+        self.assertContains(self.client.get(page_url), "これを載せる")
+        self.client.post(manage(second), {"action": "show"})
         self.recipe.refresh_from_db()
-        self.assertEqual(self.recipe.photos(), ["https://example.com/r2.webp"])
+        self.assertEqual(self.recipe.photo_1, "https://example.com/2.webp")
 
+        # 載っている写真を消すと、残りの一番古い写真が載る
         with mock.patch("washoku.views.delete_uploaded_photos") as delete:
-            self.client.post(url, {"field": "photo_2", "remove": "1"})
+            self.client.post(manage(second), {"action": "delete"})
 
-        delete.assert_called_once_with("https://example.com/r2.webp")
+        delete.assert_called_once_with("https://example.com/2.webp")
         self.recipe.refresh_from_db()
-        self.assertEqual(self.recipe.photos(), [])
+        self.assertEqual(self.recipe.photo_1, "https://example.com/1.webp")
+
+        # 投稿した本人は自分の写真を消せる
+        self.client.force_login(self.member)
+
+        with mock.patch("washoku.views.delete_uploaded_photos"):
+            self.client.post(manage(first), {"action": "delete"})
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photo_1, "")
+        self.assertFalse(MemberPhoto.objects.exists())
+
+    def test_ingredient_photo_and_staff_only_store_photo(self):
+
+        kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable", photo_url="https://upload.wikimedia.org/k.jpg", photo_credit="A / CC BY")
+        self.client.force_login(self.member)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/k.webp"), \
+                mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(reverse("washoku:photo_add", args=["ingredient", kohlrabi.pk]), {"photo": self.photo()})
+
+        # Wikimedia の写真が載っているので、候補として残る
+        kohlrabi.refresh_from_db()
+        self.assertEqual(kohlrabi.photo_url, "https://upload.wikimedia.org/k.jpg")
+        self.assertEqual(kohlrabi.member_photos.count(), 1)
 
         store = Store.objects.create(name="Yoshi", kind="japanese", city="Zürich", address="x")
+        store_url = reverse("washoku:staff_photo", args=["store", store.pk])
+        self.assertEqual(self.client.post(store_url, {"photo": self.photo()}).status_code, 404)
+
+        staff = get_user_model().objects.create_user("admin", password="x", is_staff=True)
+        self.client.force_login(staff)
 
         with mock.patch("washoku.views.upload_photo", return_value="https://example.com/s.webp"):
-            self.client.post(reverse("washoku:staff_photo", args=["store", store.pk]), {"photo": self.photo()})
+            self.client.post(store_url, {"photo": self.photo()})
 
         self.assertContains(self.client.get(reverse("washoku:store_detail", args=[store.pk])), "https://example.com/s.webp")
 
@@ -1719,4 +1776,5 @@ class PhotoTests(TestCase):
             })
 
         recipe = Recipe.objects.get(name="豆腐ハンバーグ")
-        self.assertEqual(recipe.photos(), ["https://example.com/a.webp", "https://example.com/b.webp"])
+        self.assertEqual(recipe.photo_1, "https://example.com/a.webp")
+        self.assertEqual(list(recipe.member_photos.values_list("url", flat=True)), ["https://example.com/a.webp", "https://example.com/b.webp"])
