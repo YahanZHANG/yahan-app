@@ -3,7 +3,7 @@
 <section class="washoku-section" id="comments">
 
     <h2>{{ heading }}</h2>
-    <p class="washoku-note">{{ help_text }}</p>
+    {% if help_text %}<p class="washoku-note">{{ help_text }}</p>{% endif %}
 
     {% for thread in threads %}
         {% with comment=thread.comment %}

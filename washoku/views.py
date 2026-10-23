@@ -243,6 +243,12 @@ def home(request):
         {
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
             "questions": open_questions()[:3],
+            "polls": (
+                Post.objects
+                .filter(kind="poll", status="published")
+                .annotate(vote_count=Count("votes"))
+                .order_by("-created_at")[:3]
+            ),
             "announcements": list(Announcement.current()),
         },
     )
@@ -2449,7 +2455,7 @@ def post_detail(request, pk):
         {
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
-            "related_recipes": related_recipes(request.user, post),
+            "related_recipes": related_recipes(request.user, post) if post.kind != "poll" else [],
             "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
             "stamps": reaction_stamps(
                 post.reactions.values_list("post_id", "user_id", "kind"),

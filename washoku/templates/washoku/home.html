@@ -78,6 +78,18 @@
 </section>
 {% endif %}
 
+{% if polls %}
+<section class="washoku-section washoku-open-questions washoku-open-polls">
+    <h2>📊 みんなのアンケート</h2>
+    <ul class="washoku-question-lines washoku-poll-lines">
+        {% for poll in polls %}
+            <li><a href="{{ poll.get_absolute_url }}"><span>{{ poll.title }}</span><small>{{ poll.vote_count }}票</small></a></li>
+        {% endfor %}
+    </ul>
+    <p class="washoku-more"><a href="{% url 'washoku:poll_list' %}">アンケートをすべて見る</a></p>
+</section>
+{% endif %}
+
 {% if not user.is_authenticated %}
 <section class="washoku-join-card">
     <p><strong>無料の会員登録でできること</strong></p>

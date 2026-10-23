@@ -66,11 +66,11 @@
 
 {% if post.status == "published" %}
     {% if post.kind == "product" %}
-        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" help_text="食べてみた感想や、おいしい食べ方を教えてください。" tip_label="感想" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" tip_label="感想" %}
     {% elif post.kind == "poll" %}
-        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" help_text="選んだ理由や、おすすめを教えてください。" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" %}
     {% else %}
-        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" help_text="同じ経験や、ほかのやり方があれば教えてください。" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" %}
     {% endif %}
 {% endif %}
 

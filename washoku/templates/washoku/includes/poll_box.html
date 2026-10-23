@@ -10,7 +10,8 @@
                 {% if user.is_authenticated %}<button type="submit" name="choice" value="{{ row.choice.pk }}"{% else %}<div{% endif %}
                     class="washoku-poll-row{% if row.choice.pk == results.my_choice_id %} is-mine{% endif %}" style="--poll-percent: {{ row.percent }}%">
                     <span class="washoku-poll-label">{% if row.choice.pk == results.my_choice_id %}✓ {% endif %}{{ row.choice.label }}</span>
-                    {% if results.total %}<span class="washoku-poll-percent">{{ row.percent }}%</span>{% endif %}
+                    {% if results.total %}<span class="washoku-poll-percent">{{ row.percent }}%</span>
+                    <span class="washoku-poll-bar" aria-hidden="true"><span></span></span>{% endif %}
                 {% if user.is_authenticated %}</button>{% else %}</div>{% endif %}
             </li>
         {% endfor %}
@@ -19,7 +20,8 @@
 
     <p class="washoku-poll-total">
         {% if results.total %}{{ results.total }}票{% else %}まだ投票がありません{% endif %}
-        {% if results.my_choice_id %} ・ 押すと選び直せます{% elif not user.is_authenticated %} ・ <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログインして投票</a>{% endif %}
+        {% if results.my_choice_id %} ・ 押すと選び直せます{% elif user.is_authenticated %} ・ 押して投票{% endif %}
     </p>
+    {% if not user.is_authenticated %}<p class="washoku-poll-login"><a class="washoku-button" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログインして投票する</a></p>{% endif %}
 </section>
 {% endwith %}
