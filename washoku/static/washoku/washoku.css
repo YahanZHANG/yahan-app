@@ -3091,7 +3091,7 @@ a.washoku-favorite {
 
 /* HOME の選び方カード: 携帯は2×2、PC は横に4つ。押しやすい高さで1行に */
 .washoku-entry {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -3105,11 +3105,11 @@ a.washoku-favorite {
 }
 
 .washoku-entry-card span {
-    font-size: 24px;
+    font-size: 26px;
 }
 
 .washoku-entry-card strong {
-    font-size: 15px;
+    font-size: 17px;
     white-space: nowrap;
 }
 
@@ -3118,17 +3118,22 @@ a.washoku-favorite {
 }
 
 @media (max-width: 400px) {
+    .washoku-entry {
+        gap: 8px;
+    }
+
     .washoku-entry-card {
-        gap: 6px;
-        padding: 12px 4px;
+        gap: 3px;
+        padding: 12px 2px;
     }
 
     .washoku-entry-card span {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     .washoku-entry-card strong {
-        font-size: 14px;
+        font-size: 16px;
+        letter-spacing: -0.03em;
     }
 }
 
@@ -3137,15 +3142,15 @@ a.washoku-favorite {
 }
 
 .washoku-entry .washoku-entry-random span {
-    font-size: 26px;
+    font-size: 28px;
 }
 
 .washoku-entry .washoku-entry-random strong {
-    font-size: 17px;
+    font-size: 19px;
 }
 
 @media (min-width: 800px) {
     .washoku-entry {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
