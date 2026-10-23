@@ -7,6 +7,8 @@ from pathlib import Path
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import IntegrityError
@@ -1567,3 +1569,103 @@ class WelcomeAndJoinTests(TestCase):
         self.assertNotContains(home, "無料の会員登録でできること")
         self.assertContains(home, "マイページでオンにする")
         self.assertContains(self.client.get(reverse("washoku:my_page")), "ホーム画面に追加する方法")
+
+
+class PhotoTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.recipe = make_recipe()
+
+    def photo(self):
+        return SimpleUploadedFile("tofu.jpg", b"fake", content_type="image/jpeg")
+
+    def test_comment_with_one_photo_and_delete_removes_it(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://res.cloudinary.com/demo/image/upload/v1/yapp/washoku/comments/a.webp") as upload:
+            self.client.post(url, {"kind": "tip", "body": "絹ごしはこれが近い", "photo": self.photo()})
+
+        upload.assert_called_once()
+        comment = Comment.objects.get()
+        self.assertTrue(comment.photo_url.endswith("a.webp"))
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), comment.photo_url)
+
+        with mock.patch("washoku.views.delete_uploaded_photos") as delete:
+            self.client.post(reverse("washoku:comment_delete", args=[comment.pk]))
+
+        delete.assert_called_once_with(comment.photo_url)
+        self.assertFalse(Comment.objects.exists())
+
+    def test_photo_that_cannot_be_read_stops_the_comment(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=ValidationError("画像を正常に読み込めませんでした。")):
+            response = self.client.post(url, {"kind": "tip", "body": "写真つき", "photo": self.photo()}, follow=True)
+
+        self.assertContains(response, "画像を正常に読み込めませんでした。")
+        self.assertFalse(Comment.objects.exists())
+
+    def test_column_takes_two_photos_and_products_none(self):
+
+        self.client.force_login(self.member)
+
+        uploaded = iter(["https://example.com/1.webp", "https://example.com/2.webp"])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=lambda *args: next(uploaded)), \
+                mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(
+                reverse("washoku:post_submit", args=["column"]),
+                {"title": "豆腐の選び方", "body": "Coop の Tofu nature は木綿に近いです。", "photo_1": self.photo(), "photo_2": self.photo()},
+            )
+
+        post = Post.objects.get()
+        self.assertEqual(post.photos(), ["https://example.com/1.webp", "https://example.com/2.webp"])
+
+        page = self.client.get(reverse("washoku:post_submit", args=["product"]))
+        self.assertNotContains(page, 'name="photo_1"')
+        self.assertContains(self.client.get(reverse("washoku:post_submit", args=["column"])), 'name="photo_2"')
+
+    def test_ingredient_photo_on_substitute_list_and_detail(self):
+
+        kohlrabi = Ingredient.objects.create(
+            name="コールラビ", name_de="Kohlrabi", category="vegetable",
+            photo_url="https://upload.wikimedia.org/k.jpg", photo_credit="Someone / CC BY-SA 4.0 / Wikimedia Commons",
+        )
+        Substitute.objects.create(original_name="かぶ", substitute=kohlrabi)
+
+        self.assertContains(self.client.get(reverse("washoku:substitute_list")), "https://upload.wikimedia.org/k.jpg")
+        self.assertContains(self.client.get(reverse("washoku:ingredient_detail", args=[kohlrabi.pk])), "CC BY-SA 4.0")
+
+    def test_find_commons_photo_takes_the_first_usable_image_with_credit(self):
+
+        from washoku.photos import commons_query, find_commons_photo, thumbnail_url
+
+        self.assertEqual(commons_query(Ingredient(name="白かぶ", name_de="Weisse Rüben / Mairübli")), "Weisse Rüben")
+        self.assertEqual(
+            thumbnail_url("https://res.cloudinary.com/demo/image/upload/v1/a.webp", 160),
+            "https://res.cloudinary.com/demo/image/upload/c_fill,w_160,h_160/v1/a.webp",
+        )
+
+        pages = {
+            "1": {"index": 1, "imageinfo": [{"mime": "image/svg+xml", "width": 800}]},
+            "2": {"index": 2, "imageinfo": [{
+                "mime": "image/jpeg", "width": 1200, "thumburl": "https://upload.wikimedia.org/thumb/k.jpg",
+                "descriptionurl": "https://commons.wikimedia.org/wiki/File:K.jpg",
+                "extmetadata": {"Artist": {"value": "<a href='x'>Rainer</a>"}, "LicenseShortName": {"value": "CC BY-SA 3.0"}},
+            }]},
+        }
+
+        response = mock.Mock()
+        response.json.return_value = {"query": {"pages": pages}}
+
+        with mock.patch("washoku.photos.requests.get", return_value=response):
+            photo = find_commons_photo("Kohlrabi")
+
+        self.assertEqual(photo["url"], "https://upload.wikimedia.org/thumb/k.jpg")
+        self.assertEqual(photo["credit"], "Rainer / CC BY-SA 3.0 / Wikimedia Commons")

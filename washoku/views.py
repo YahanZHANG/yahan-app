@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
 from django.http import Http404, JsonResponse
@@ -16,6 +17,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
+from .photos import delete_uploaded_photos, upload_photo
 from .push import send_reply_push, send_stamp_push
 from .forms import (
     CommentEditForm,
@@ -1100,7 +1102,7 @@ def comment_create(request, target, pk):
     else:
         raise Http404
 
-    form = CommentForm(request.POST)
+    form = CommentForm(request.POST, request.FILES)
 
     if not form.is_valid():
         messages.error(request, "コメントを入力してください（500文字まで）。")
@@ -1109,6 +1111,15 @@ def comment_create(request, target, pk):
     if posted_too_recently(request.user):
         messages.error(request, "続けて投稿するときは1分ほど空けてください。")
         return redirect(back + "#comments")
+
+    photo_url = ""
+
+    if form.cleaned_data.get("photo"):
+        try:
+            photo_url = upload_photo(form.cleaned_data["photo"], "comments")
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back + "#comments")
 
     parent = None
     parent_id = request.POST.get("parent", "")
@@ -1137,6 +1148,7 @@ def comment_create(request, target, pk):
     comment.store = store
     comment.post = post
     comment.parent = parent
+    comment.photo_url = photo_url
 
     if parent:
         comment.kind = "tip"
@@ -1194,13 +1206,28 @@ def comment_edit(request, pk):
 
     if request.method == "POST":
 
-        form = CommentEditForm(request.POST, instance=comment)
+        old_photo = comment.photo_url
+        form = CommentEditForm(request.POST, request.FILES, instance=comment)
 
         if form.is_valid():
 
             comment = form.save(commit=False)
+
+            try:
+                if form.cleaned_data.get("photo"):
+                    comment.photo_url = upload_photo(form.cleaned_data["photo"], "comments")
+                elif form.cleaned_data.get("remove_photo"):
+                    comment.photo_url = ""
+            except ValidationError as error:
+                form.add_error("photo", error)
+
+        if form.is_valid():
+
             comment.edited_at = timezone.now()
             comment.save()
+
+            if old_photo != comment.photo_url:
+                delete_uploaded_photos(old_photo)
 
             return redirect(comment_target_url(comment))
 
@@ -1226,12 +1253,17 @@ def comment_delete(request, pk):
 
     back = comment_target_url(comment).split("#")[0] + "#comments"
 
+    photo_url = comment.photo_url
+
     if comment.replies.exists():
         # 返信が付いていれば消さずに「削除されました」と表示する
         comment.is_deleted = True
-        comment.save(update_fields=["is_deleted"])
+        comment.photo_url = ""
+        comment.save(update_fields=["is_deleted", "photo_url"])
     else:
         comment.delete()
+
+    delete_uploaded_photos(photo_url)
 
     messages.success(request, "コメントを削除しました。")
 
@@ -2100,12 +2132,27 @@ def post_submit(request, kind):
         )
         return redirect("washoku:my_posts")
 
-    form = PostForm(request.POST or None, kind=kind)
+    form = PostForm(request.POST or None, request.FILES or None, kind=kind)
+
+    photos = []
+
+    if request.method == "POST" and form.is_valid():
+
+        for name in ("photo_1", "photo_2"):
+            if form.cleaned_data.get(name):
+                try:
+                    photos.append(upload_photo(form.cleaned_data[name], "columns"))
+                except ValidationError as error:
+                    form.add_error(name, error)
+
+        if not form.is_valid():
+            delete_uploaded_photos(*photos)
 
     if request.method == "POST" and form.is_valid():
 
         post = form.save(commit=False)
         post.kind = kind
+        post.photo_1, post.photo_2 = (photos + ["", ""])[:2]
         post.author = request.user
         # 管理者の投稿はそのまま公開する
         post.status = "published" if request.user.is_staff else "draft"

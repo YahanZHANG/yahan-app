@@ -2695,3 +2695,81 @@ a.washoku-favorite {
     width: auto;
     margin: 0;
 }
+
+/* ---------- 写真 ---------- */
+
+/* コメント・コラムの写真 */
+.washoku-photo {
+    display: block;
+    max-width: 100%;
+    max-height: 420px;
+    margin: 8px 0;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.washoku-photo-small {
+    max-height: 160px;
+}
+
+.washoku-photo-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-photo-input input[type="file"] {
+    max-width: 220px;
+    font-size: 13px;
+}
+
+/* 食材のページの写真と出典 */
+.washoku-ingredient-photo {
+    margin: 0 0 16px;
+}
+
+.washoku-ingredient-photo img {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    object-fit: cover;
+}
+
+.washoku-ingredient-photo figcaption {
+    margin-top: 4px;
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-ingredient-photo figcaption a {
+    color: inherit;
+}
+
+/* 代わりの食材: 写真があれば左に小さく */
+.washoku-substitute-card.has-photo {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    column-gap: 12px;
+    align-content: start;
+}
+
+.washoku-substitute-photo {
+    grid-row: 1 / span 3;
+}
+
+.washoku-substitute-photo img {
+    display: block;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.washoku-comment .washoku-photo {
+    max-height: 240px;
+}

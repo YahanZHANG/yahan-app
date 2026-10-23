@@ -47,7 +47,7 @@ def get_cloudinary_settings():
     return cloud_name, api_key, api_secret
 
 
-def upload_user_event_photo(image_file):
+def upload_user_event_photo(image_file, folder="yapp/outings/member-events", filename="event_photo.webp"):
 
     cloud_name, api_key, api_secret = (
         get_cloudinary_settings()
@@ -65,13 +65,13 @@ def upload_user_event_photo(image_file):
             auth=(api_key, api_secret),
             files={
                 "file": (
-                    "event_photo.webp",
+                    filename,
                     image_file,
                     "image/webp",
                 )
             },
             data={
-                "folder": "yapp/outings/member-events",
+                "folder": folder,
                 "resource_type": "image",
                 "overwrite": "false",
             },

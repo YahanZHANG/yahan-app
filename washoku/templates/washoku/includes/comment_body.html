@@ -11,6 +11,7 @@
         {% if comment.is_hidden %}<span class="washoku-chip washoku-chip-draft">非表示中</span>{% endif %}
     </header>
     <p class="washoku-comment-text">{{ comment.body|linebreaksbr }}</p>
+    {% if comment.photo_url %}<a href="{{ comment.photo_url }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ comment.photo_url }}" alt="{{ comment.author|display_name }} さんの写真" loading="lazy"></a>{% endif %}
     {% url 'washoku:comment_react' comment.pk as react_url %}
     {% include "washoku/includes/stamps.html" with stamps=comment.stamps action=react_url author_id=comment.author_id %}
     {% if user.is_authenticated %}

@@ -36,6 +36,10 @@
         <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
     {% endif %}
 
+    {% for photo in post.photos %}
+        <a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ post.title }}の写真{{ forloop.counter }}" loading="lazy"></a>
+    {% endfor %}
+
     {% if post.kind == "column" and post.status == "published" %}
         {% url 'washoku:post_react' post.pk as react_url %}
         {% include "washoku/includes/stamps.html" with action=react_url author_id=post.author_id anchor="stamps" %}
