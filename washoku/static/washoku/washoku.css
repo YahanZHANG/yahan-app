@@ -3042,7 +3042,7 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
 .washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
 .washoku-activity-kind.kind-comment,
-.washoku-activity-kind.kind-reply { background: #ECE7F5; color: #5B4A87; }
+.washoku-activity-kind.kind-reply { background: #6B6B6B; color: #fff; }
 
 /* HOME の返事を待っている質問: 質問文だけを1行ずつ */
 .washoku-question-lines {
@@ -3072,13 +3072,42 @@ a.washoku-favorite {
     font-weight: 700;
 }
 
-/* HOME の選び方カード: 携帯は2×2、PC は横に4つ */
+/* HOME の選び方カード: 携帯は2×2、PC は横に4つ。小さめに */
 .washoku-entry {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.washoku-entry-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border-radius: 12px;
+}
+
+.washoku-entry-card span {
+    font-size: 20px;
+}
+
+.washoku-entry-card strong {
+    font-size: 14px;
 }
 
 .washoku-entry-card small {
-    display: block;
+    display: none;
+}
+
+.washoku-entry .washoku-entry-random {
+    min-height: 52px;
+}
+
+.washoku-entry .washoku-entry-random span {
+    font-size: 22px;
+}
+
+.washoku-entry .washoku-entry-random strong {
+    font-size: 15px;
 }
 
 @media (min-width: 800px) {

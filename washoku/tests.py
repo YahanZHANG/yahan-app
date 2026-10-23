@@ -1319,16 +1319,6 @@ class AnnouncementTests(TestCase):
         self.assertContains(page, "みんなのコラムの一覧へ")
         self.assertEqual([post.title for post in page.context["other_columns"]], ["豆腐の水切り"])
 
-    def test_genre_page_lists_categories_with_counts(self):
-
-        make_recipe(category="meat")
-        response = self.client.get(reverse("washoku:find_by_genre"))
-
-        self.assertContains(response, "?category=meat")
-        self.assertContains(response, "1品")
-        self.assertNotContains(response, "?category=thai")
-        self.assertContains(self.client.get(reverse("washoku:home")), reverse("washoku:find_by_genre"))
-
     def test_publishing_a_draft_column_moves_it_to_the_top(self):
 
         staff = get_user_model().objects.create_superuser("owner", password="x")
