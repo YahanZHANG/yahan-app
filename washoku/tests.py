@@ -1941,3 +1941,32 @@ class PollTests(TestCase):
         self.assertNotContains(page, "アンケートを作る")
 
         self.assertEqual(self.client.get(reverse("washoku:post_submit", args=["poll"])).status_code, 404)
+
+
+class FeaturedTests(TestCase):
+
+    def test_home_features_columns_and_comments_with_recent_stamps(self):
+
+        User = get_user_model()
+        author, fan, fan2 = (User.objects.create_user(name, password="x") for name in ("a", "b", "c"))
+        ingredient = Ingredient.objects.create(name="テスト食材", category="other")
+
+        column = Post.objects.create(kind="column", title="人気のコラム", body="本文です。", status="published", author=author)
+        quiet = Post.objects.create(kind="column", title="静かなコラム", body="本文です。", status="published", author=author)
+        comment = Comment.objects.create(ingredient=ingredient, author=author, body="人気のコメント")
+        old = Comment.objects.create(ingredient=ingredient, author=author, body="昔のコメント")
+
+        PostReaction.objects.create(post=column, user=fan, kind="thanks")
+        PostReaction.objects.create(post=column, user=fan2, kind="thanks")
+        CommentReaction.objects.create(comment=comment, user=fan, kind="thanks")
+        CommentReaction.objects.filter(
+            pk=CommentReaction.objects.create(comment=old, user=fan, kind="thanks").pk
+        ).update(created_at=timezone.now() - timedelta(days=60))
+
+        home = self.client.get(reverse("washoku:home"))
+
+        self.assertEqual(
+            [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
+            [(column.pk, 2), (comment.pk, 1)],
+        )
+        self.assertContains(home, "⭐ 注目")

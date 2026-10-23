@@ -3047,7 +3047,8 @@ a.washoku-favorite {
 
 /* HOME の返事を待っている質問: 質問文だけを1行ずつ。左にアクセントの線 */
 .washoku-open-questions {
-    padding: 4px 16px 2px;
+    margin: 12px 0;
+    padding: 2px 14px 0;
     border: 1px solid var(--washoku-border);
     border-left: 4px solid var(--washoku-accent);
     border-radius: 12px;
@@ -3055,12 +3056,26 @@ a.washoku-favorite {
 }
 
 .washoku-open-questions h2 {
-    margin: 12px 0 4px;
-    font-size: 17px;
+    margin: 8px 0 0;
+    font-size: 16px;
 }
 
 .washoku-open-questions .washoku-more {
-    margin: 4px 0 10px;
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.washoku-open-questions .washoku-question-lines a {
+    padding: 6px 0;
+    font-size: 15px;
+}
+
+.washoku-open-questions.washoku-featured {
+    border-left-color: #E0B33A;
+}
+
+.washoku-featured ul {
+    margin-bottom: 4px;
 }
 
 .washoku-question-lines {

@@ -235,6 +235,41 @@ def latest_columns(exclude=None, limit=3):
     return columns[:limit]
 
 
+# 「注目」に出すもの: この日数のあいだにスタンプが付いたコラムとコメント
+FEATURED_DAYS = 30
+
+
+def featured_items(limit=3):
+    """
+    最近スタンプを多くもらったコラムとコメントを、多い順に。スタンプがないものは出さない。
+    """
+
+    since = timezone.now() - timedelta(days=FEATURED_DAYS)
+
+    columns = (
+        Post.objects
+        .filter(kind="column", status="published", reactions__created_at__gte=since)
+        .annotate(stamp_count=Count("reactions"))
+        .select_related("author")
+        .order_by("-stamp_count", "-created_at")[:limit]
+    )
+
+    comments = (
+        Comment.objects
+        .filter(is_hidden=False, is_deleted=False, reactions__created_at__gte=since)
+        .filter(public_comment_targets())
+        .annotate(stamp_count=Count("reactions"))
+        .select_related("recipe", "ingredient", "store", "post", "author")
+        .order_by("-stamp_count", "-created_at")[:limit]
+    )
+
+    items = [{"kind": "column", "item": post, "count": post.stamp_count} for post in columns]
+    items += [{"kind": "comment", "item": comment, "count": comment.stamp_count} for comment in comments]
+    items.sort(key=lambda entry: (entry["count"], entry["item"].created_at), reverse=True)
+
+    return items[:limit]
+
+
 def home(request):
 
     return render(
@@ -249,6 +284,7 @@ def home(request):
                 .annotate(vote_count=Count("votes"))
                 .order_by("-created_at")[:3]
             ),
+            "featured": featured_items(),
             "announcements": list(Announcement.current()),
         },
     )

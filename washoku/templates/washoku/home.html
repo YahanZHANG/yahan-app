@@ -90,6 +90,19 @@
 </section>
 {% endif %}
 
+{% if featured %}
+<section class="washoku-section washoku-open-questions washoku-featured">
+    <h2>⭐ 注目</h2>
+    <ul class="washoku-question-lines washoku-poll-lines">
+        {% for entry in featured %}
+            {% with item=entry.item %}
+            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "column" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "column" %}コラム{% else %}コメント{% endif %} ・ 😊{{ entry.count }}</small></a></li>
+            {% endwith %}
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 {% if not user.is_authenticated %}
 <section class="washoku-join-card">
     <p><strong>無料の会員登録でできること</strong></p>
