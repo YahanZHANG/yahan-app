@@ -461,6 +461,31 @@ def find_by_mood(request):
     )
 
 
+def find_by_genre(request):
+    """
+    ジャンル (カテゴリー) の一覧と、それぞれの品数。
+    """
+
+    counts = dict(
+        visible_recipes(request.user)
+        .values_list("category")
+        .annotate(count=Count("pk"))
+        .values_list("category", "count")
+    )
+
+    return render(
+        request,
+        "washoku/find_by_genre.html",
+        {
+            "genres": [
+                (value, label, counts[value])
+                for value, label in Recipe.CATEGORY_CHOICES
+                if counts.get(value)
+            ],
+        },
+    )
+
+
 def find_by_ingredients(request):
     """
     家にある食材を選ぶと、足りない材料が少ない順にレシピを出す。
