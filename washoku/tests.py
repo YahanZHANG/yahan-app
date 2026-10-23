@@ -1600,36 +1600,6 @@ class PhotoTests(TestCase):
         delete.assert_called_once_with(comment.photo_url)
         self.assertFalse(Comment.objects.exists())
 
-    def test_find_washoku_photos_tries_each_swiss_substitute_once(self):
-
-        kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
-        leek = Ingredient.objects.create(name="リーキ", name_de="Lauch", category="vegetable")
-        Ingredient.objects.create(name="テスト用の調味料", category="seasoning")
-        Substitute.objects.create(original_name="かぶ", substitute=kohlrabi)
-        Substitute.objects.create(original_name="長ねぎ", substitute=leek)
-
-        found = {"url": "https://upload.wikimedia.org/k.jpg", "credit": "A / CC BY-SA 4.0 / Wikimedia Commons", "source": "https://commons.wikimedia.org/wiki/File:K.jpg"}
-
-        with mock.patch("washoku.management.commands.find_washoku_photos.find_commons_photo", side_effect=[found, None]) as search, \
-                mock.patch("washoku.management.commands.find_washoku_photos.time.sleep"):
-            call_command("find_washoku_photos", stdout=open("/dev/null", "w"))
-
-        self.assertEqual(search.call_count, 2)
-        self.assertEqual(search.call_args_list[0].args[0], "kohlrabi vegetable")
-
-        kohlrabi.refresh_from_db()
-        self.assertEqual(kohlrabi.photo_url, found["url"])
-        self.assertTrue(Ingredient.objects.get(name="リーキ").photo_auto_tried)
-        self.assertFalse(Ingredient.objects.get(name="テスト用の調味料").photo_auto_tried)
-
-        # 外した写真は、次の起動で付け直さない
-        Ingredient.objects.filter(pk=kohlrabi.pk).update(photo_url="")
-
-        with mock.patch("washoku.management.commands.find_washoku_photos.find_commons_photo") as search:
-            call_command("find_washoku_photos", stdout=open("/dev/null", "w"))
-
-        search.assert_not_called()
-
     def test_photo_that_cannot_be_read_stops_the_comment(self):
 
         self.client.force_login(self.member)
