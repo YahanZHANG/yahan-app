@@ -3044,44 +3044,45 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-comment,
 .washoku-activity-kind.kind-reply { background: #ECE7F5; color: #5B4A87; }
 
-/* HOME の返事を待っている質問 */
-.washoku-open-questions {
-    padding: 14px 16px;
-    border: 1px solid #F1D98C;
-    border-radius: 14px;
-    background: #FFF8E1;
-}
-
-.washoku-open-questions h2 {
-    margin-top: 0;
-}
-
-.washoku-open-questions ul {
+/* HOME の返事を待っている質問: 質問文だけを1行ずつ */
+.washoku-question-lines {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.washoku-open-questions li + li {
-    border-top: 1px solid #F1E3B5;
+.washoku-question-lines li + li {
+    border-top: 1px solid var(--washoku-border);
 }
 
-.washoku-open-questions a {
+.washoku-question-lines a {
     display: block;
-    padding: 8px 0;
+    overflow: hidden;
+    padding: 10px 0;
     color: var(--washoku-text);
     text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.washoku-open-questions small {
+.washoku-question-lines a::before {
+    margin-right: 6px;
+    content: "Q.";
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+/* HOME の選び方カード: 携帯は2×2、PC は横に4つ */
+.washoku-entry {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.washoku-entry-card small {
     display: block;
-    color: var(--washoku-muted);
-    font-size: 12px;
 }
 
-.washoku-open-questions .washoku-more {
-    margin: 6px 0 0;
+@media (min-width: 800px) {
+    .washoku-entry {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
-
-:root[data-washoku-theme="dark"] .washoku-open-questions { border-color: #5A4A1A; background: #2E2717; }
-:root[data-washoku-theme="dark"] .washoku-open-questions li + li { border-color: #4A3E1C; }

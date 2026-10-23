@@ -234,18 +234,13 @@ def latest_columns(exclude=None, limit=3):
 
 def home(request):
 
-    recipes = visible_recipes(request.user)
-
     return render(
         request,
         "washoku/home.html",
         {
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:5],
+            "questions": open_questions()[:3],
             "announcements": list(Announcement.current()),
-            "moods": MoodTag.objects.all(),
-            "categories": Recipe.CATEGORY_CHOICES[:-1],
-            "recipe_count": recipes.count(),
         },
     )
 
@@ -462,6 +457,31 @@ def find_by_mood(request):
         "washoku/find_by_mood.html",
         {
             "moods": moods,
+        },
+    )
+
+
+def find_by_genre(request):
+    """
+    ジャンル (カテゴリー) の一覧と、それぞれの品数。
+    """
+
+    counts = dict(
+        visible_recipes(request.user)
+        .values_list("category")
+        .annotate(count=Count("pk"))
+        .values_list("category", "count")
+    )
+
+    return render(
+        request,
+        "washoku/find_by_genre.html",
+        {
+            "genres": [
+                (value, label, counts[value])
+                for value, label in Recipe.CATEGORY_CHOICES
+                if counts.get(value)
+            ],
         },
     )
 
