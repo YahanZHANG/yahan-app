@@ -1882,14 +1882,19 @@ html[data-washoku-theme="dark"] {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 12px 0 0;
+    margin: 12px 0 14px;
     padding: 6px 6px 6px 12px;
-    border: 1px solid var(--washoku-border);
+    border: 1px solid color-mix(in srgb, var(--washoku-accent) 35%, transparent);
     border-radius: 12px;
-    background: var(--washoku-surface);
+    background: var(--washoku-accent-soft);
     color: var(--washoku-muted);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
+}
+
+a.washoku-announcement-text {
+    font-weight: 700;
+    text-decoration: none;
 }
 
 .washoku-announcement[hidden] {

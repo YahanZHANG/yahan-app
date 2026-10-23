@@ -6,7 +6,11 @@
 {% if announcement %}
     <div class="washoku-announcement" id="washoku-announcement" data-announcement-id="{{ announcement.pk }}">
         <span class="washoku-announcement-label">お知らせ</span>
-        <span class="washoku-announcement-text">{{ announcement.message }}</span>
+        {% if announcement.link %}
+            <a class="washoku-announcement-text" href="{{ announcement.link }}">{{ announcement.message }} <span aria-hidden="true">›</span></a>
+        {% else %}
+            <span class="washoku-announcement-text">{{ announcement.message }}</span>
+        {% endif %}
         <button type="button" class="washoku-announcement-close" aria-label="お知らせを閉じる" data-announcement-close>×</button>
     </div>
     <script>
@@ -80,6 +84,7 @@
         {% endfor %}
         <a class="washoku-chip-link washoku-chip-link-strong" href="{% url 'washoku:recipe_list' %}?shop=1">普通のスーパーだけで作れる</a>
     </div>
+    <p class="washoku-more"><a href="{% url 'washoku:recipe_list' %}">すべてのレシピ（{{ recipe_count }}品）</a></p>
 </section>
 
 <a class="washoku-banner" href="{% url 'washoku:recipe_submit' %}">
@@ -87,20 +92,6 @@
     <span><strong>あなたのレシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
     <i class="bi bi-chevron-right" aria-hidden="true"></i>
 </a>
-
-<section class="washoku-section">
-    <h2>新着レシピ</h2>
-    {% if latest_recipes %}
-        <div class="washoku-grid">
-            {% for recipe in latest_recipes %}
-                {% include "washoku/includes/recipe_card.html" %}
-            {% endfor %}
-        </div>
-        <p class="washoku-more"><a href="{% url 'washoku:recipe_list' %}">すべてのレシピ（{{ recipe_count }}品）</a></p>
-    {% else %}
-        <p class="washoku-empty">レシピを準備中です。</p>
-    {% endif %}
-</section>
 
 {% if questions %}
 <section class="washoku-section">

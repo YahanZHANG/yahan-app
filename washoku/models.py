@@ -1192,7 +1192,8 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(
         "投稿日時",
-        auto_now_add=True,
+        default=timezone.now,
+        help_text="一覧はこの日時の新しい順に並びます。確認待ちから公開にすると、公開した時刻になります。",
     )
 
     updated_at = models.DateTimeField(
@@ -1631,6 +1632,13 @@ class Announcement(models.Model):
     message = models.CharField(
         "お知らせ",
         max_length=200,
+    )
+
+    link = models.CharField(
+        "リンク先（なくてもOK）",
+        max_length=300,
+        blank=True,
+        help_text="例: /washoku/recipes/?category=europe （本場の洋食の一覧）",
     )
 
     is_active = models.BooleanField(

@@ -1284,6 +1284,30 @@ class AnnouncementTests(TestCase):
         Announcement.objects.update(created_at=timezone.now() - timedelta(days=30))
         self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-announcement-text")
 
+    def test_announcement_link_and_no_new_recipes_section(self):
+
+        from .models import Announcement
+
+        Announcement.objects.create(message="本場の洋食を9品追加しました", link="/washoku/recipes/?category=europe")
+        response = self.client.get(reverse("washoku:home"))
+
+        self.assertContains(response, 'href="/washoku/recipes/?category=europe"')
+        self.assertNotContains(response, "新着レシピ")
+
+    def test_publishing_a_draft_column_moves_it_to_the_top(self):
+
+        staff = get_user_model().objects.create_superuser("owner", password="x")
+        old = Post.objects.create(kind="column", title="前に書いたコラム", body="x", status="draft", author=staff)
+        Post.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=5))
+        Post.objects.create(kind="column", title="昨日のコラム", body="x", status="published", author=staff,
+                            created_at=timezone.now() - timedelta(days=1))
+
+        self.client.force_login(staff)
+        self.client.post(reverse("admin:washoku_post_changelist"), {"action": "publish", "_selected_action": [old.pk]})
+
+        titles = [post.title for post in self.client.get(reverse("washoku:column_list")).context["posts"]]
+        self.assertEqual(titles, ["前に書いたコラム", "昨日のコラム"])
+
 
 class PushTests(TestCase):
 

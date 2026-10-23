@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.utils.html import format_html
 
 from .geocode import geocode_store
@@ -243,6 +244,7 @@ class SubstituteAdmin(admin.ModelAdmin):
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display = (
         "message",
+        "link",
         "is_active",
         "created_at",
     )
@@ -464,7 +466,6 @@ class PostAdmin(admin.ModelAdmin):
         return "、".join(obj.shop_labels())
 
     readonly_fields = (
-        "created_at",
         "updated_at",
     )
 
@@ -479,11 +480,20 @@ class PostAdmin(admin.ModelAdmin):
         if not change and obj.author_id is None:
             obj.author = request.user
 
+        # 確認待ちから公開にしたら、一覧の一番上に来るよう投稿日時を今にする (日時を自分で変えたときはそのまま)
+        if (
+            change
+            and obj.status == "published"
+            and form.initial.get("status") == "draft"
+            and "created_at" not in form.changed_data
+        ):
+            obj.created_at = timezone.now()
+
         super().save_model(request, obj, form, change)
 
     @admin.action(description="選んだ投稿を公開する")
     def publish(self, request, queryset):
-        queryset.update(status="published")
+        queryset.filter(status="draft").update(status="published", created_at=timezone.now())
 
     @admin.action(description="選んだ投稿を確認待ちに戻す")
     def unpublish(self, request, queryset):

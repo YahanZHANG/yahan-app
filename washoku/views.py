@@ -223,16 +223,10 @@ def home(request):
 
     recipes = visible_recipes(request.user)
 
-    latest = recipe_card_queryset(
-        recipes.order_by("-created_at")
-    )[:6]
-
-
     return render(
         request,
         "washoku/home.html",
         {
-            "latest_recipes": attach_family_rating(latest, request.user),
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
             "questions": open_questions()[:5],
             "announcement": Announcement.latest(),
