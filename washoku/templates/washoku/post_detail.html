@@ -5,7 +5,7 @@
 
 {% block content %}
 
-{% include "washoku/includes/community_tabs.html" with kind=post.kind %}
+{% if post.kind == "product" %}{% include "washoku/includes/ingredient_tabs.html" with kind=post.kind %}{% else %}{% include "washoku/includes/community_tabs.html" with kind=post.kind %}{% endif %}
 
 <article class="washoku-post">
 
@@ -36,6 +36,10 @@
         <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
     {% endif %}
 
+    {% if post.kind == "poll" %}
+        {% include "washoku/includes/poll_box.html" with poll=post %}
+    {% endif %}
+
     {% for photo in post.photos %}
         <a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ post.title }}の写真{{ forloop.counter }}" loading="lazy"></a>
     {% endfor %}
@@ -62,9 +66,11 @@
 
 {% if post.status == "published" %}
     {% if post.kind == "product" %}
-        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" help_text="食べてみた感想や、おいしい食べ方を教えてください。" tip_label="感想" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" tip_label="感想" %}
+    {% elif post.kind == "poll" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" %}
     {% else %}
-        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" help_text="同じ経験や、ほかのやり方があれば教えてください。" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" %}
     {% endif %}
 {% endif %}
 

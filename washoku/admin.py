@@ -18,6 +18,7 @@ from .models import (
     MemberPhoto,
     MoodTag,
     Notification,
+    PollChoice,
     Post,
     PushSubscription,
     Recipe,
@@ -434,8 +435,29 @@ class CommentTargetFilter(admin.SimpleListFilter):
         return queryset
 
 
+class PollChoiceInline(admin.TabularInline):
+    """
+    アンケートの選択肢 (種類が「アンケート」のときだけ使う)。
+    """
+
+    model = PollChoice
+    extra = 4
+    fields = ("label", "order", "vote_count")
+    readonly_fields = ("vote_count",)
+    verbose_name = "選択肢（アンケートのときだけ）"
+    verbose_name_plural = "選択肢（アンケートのときだけ。並び順の小さい順に出ます）"
+
+    @admin.display(description="票数")
+    def vote_count(self, obj):
+        return obj.votes.count() if obj.pk else ""
+
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
+    inlines = (
+        PollChoiceInline,
+    )
+
     list_display = (
         "title",
         "kind",

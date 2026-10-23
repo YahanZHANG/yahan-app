@@ -3,7 +3,7 @@
 <section class="washoku-section" id="comments">
 
     <h2>{{ heading }}</h2>
-    <p class="washoku-note">{{ help_text }}</p>
+    {% if help_text %}<p class="washoku-note">{{ help_text }}</p>{% endif %}
 
     {% for thread in threads %}
         {% with comment=thread.comment %}
@@ -44,7 +44,8 @@
             </div>
             {{ comment_form.body }}
             <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo" accept="image/*"></label>
-            <button type="submit" class="washoku-button">投稿する</button>
+            <button type="submit" class="washoku-button">コメントする</button>
+            <p class="washoku-comment-hint">ニックネームで表示・あとから編集や削除OK</p>
         </form>
     {% else %}
         {% include "washoku/includes/join_prompt.html" with reason="コメントや質問" %}

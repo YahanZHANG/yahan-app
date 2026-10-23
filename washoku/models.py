@@ -1070,7 +1070,8 @@ class Feedback(models.Model):
 
 class Post(models.Model):
     """
-    会員が書くコラム・体験談、スーパーで買えるおすすめ商品、外部サイトの参考リンク。
+    会員が書くコラム・体験談、スーパーで買えるおすすめ商品、外部サイトの参考リンク、
+    管理者が作るアンケート (選択肢は PollChoice)。
     管理者が公開するまでは、書いた本人と管理者にだけ見える。
     参考リンクは、記事を写さずに要点だけを自分の言葉で書き、出典とリンクを載せる。
     """
@@ -1079,6 +1080,7 @@ class Post(models.Model):
         ("column", "コラム"),
         ("product", "おすすめ商品"),
         ("link", "参考リンク"),
+        ("poll", "アンケート"),
     ]
 
     STATUS_CHOICES = [
@@ -1114,9 +1116,11 @@ class Post(models.Model):
         max_length=100,
     )
 
+    # アンケートは本文なしでもよい (会員のフォームでは必須のまま)
     body = models.TextField(
         "本文",
         max_length=4000,
+        blank=True,
     )
 
     # コラムの写真 (2枚まで)
@@ -1496,6 +1500,78 @@ class CommentReaction(models.Model):
 
     def __str__(self):
         return f"{self.user} {self.get_kind_display()} → {self.comment_id}"
+
+
+class PollChoice(models.Model):
+    """
+    アンケートの選択肢。
+    """
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="choices",
+        limit_choices_to={"kind": "poll"},
+    )
+
+    label = models.CharField(
+        "選択肢",
+        max_length=60,
+    )
+
+    order = models.PositiveSmallIntegerField(
+        "並び順",
+        default=0,
+    )
+
+    class Meta:
+        verbose_name = "アンケートの選択肢"
+        verbose_name_plural = "アンケートの選択肢"
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return self.label
+
+
+class PollVote(models.Model):
+    """
+    アンケートの1票。1人1票で、あとから選び直せる。
+    """
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="votes",
+    )
+
+    choice = models.ForeignKey(
+        PollChoice,
+        on_delete=models.CASCADE,
+        related_name="votes",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_poll_votes",
+    )
+
+    voted_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "アンケートの票"
+        verbose_name_plural = "アンケートの票"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post", "user"],
+                name="washoku_one_vote_per_poll",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} → {self.choice}"
 
 
 class PostReaction(models.Model):

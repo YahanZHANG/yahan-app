@@ -44,12 +44,16 @@
 </section>
 {% endfor %}
 
+{% for poll in polls %}
+    {% include "washoku/includes/poll_box.html" with with_title=True %}
+{% endfor %}
+
 {% include "washoku/includes/related_posts.html" %}
 
 {% if recipes %}
 <section class="washoku-section">
-    <h2>この食材を使うレシピ</h2>
-    <ul class="washoku-list">
+    <h2>この食材を使うレシピ（{{ recipes|length }}）</h2>
+    <ul class="washoku-tag-links">
         {% for recipe in recipes %}
             <li><a href="{% url 'washoku:recipe_detail' recipe.pk %}">{{ recipe.name }}</a></li>
         {% endfor %}
@@ -57,6 +61,6 @@
 </section>
 {% endif %}
 
-{% include "washoku/includes/comments.html" with target="ingredient" target_pk=ingredient.pk heading="どこで買える？ 何で代用してる？" help_text="この食材を買った店、代わりに使っているもの、わからないことを共有してください。" %}
+{% include "washoku/includes/comments.html" with target="ingredient" target_pk=ingredient.pk heading="どこで買える？ 何で代用してる？" %}
 
 {% endblock %}

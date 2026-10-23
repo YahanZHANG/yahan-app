@@ -1733,7 +1733,7 @@ html[data-washoku-theme="dark"] {
 }
 
 .washoku-subtabs a {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 7px 4px;
     border-radius: 999px;
     color: var(--washoku-muted);
@@ -3041,6 +3041,7 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
 .washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
 .washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
+.washoku-activity-kind.kind-poll { background: #D9F0EC; color: #1E6A5E; }
 .washoku-activity-kind.kind-comment,
 .washoku-activity-kind.kind-reply { background: #6B6B6B; color: #fff; }
 
@@ -3087,4 +3088,177 @@ a.washoku-favorite {
     content: "Q.";
     color: var(--washoku-accent-strong);
     font-weight: 700;
+}
+
+/* 食材ページの「この食材を使うレシピ」: 文字のリンクを「、」でつないで、文章のように流す */
+.washoku-tag-links {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    line-height: 2;
+}
+
+.washoku-tag-links li {
+    white-space: nowrap;
+}
+
+.washoku-tag-links li:not(:last-child)::after {
+    content: "、";
+    color: var(--washoku-muted);
+}
+
+@media (max-width: 400px) {
+    .washoku-subtabs a {
+        font-size: 13px;
+    }
+}
+
+/* アンケート: 押せる横長の行。背景の帯の長さが割合 */
+.washoku-poll {
+    scroll-margin-top: 90px;
+    max-width: 640px;
+    margin: 16px 0;
+    padding: 14px 16px 10px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-poll h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.washoku-poll h3 a {
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-poll form {
+    margin: 0;
+}
+
+.washoku-poll-rows {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-poll-row {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+button.washoku-poll-row {
+    cursor: pointer;
+}
+
+button.washoku-poll-row:hover {
+    border-color: var(--washoku-accent);
+}
+
+.washoku-poll-row.is-mine {
+    border: 2px solid var(--washoku-accent);
+    padding: 9px 13px;
+    font-weight: 700;
+}
+
+.washoku-poll-percent {
+    color: var(--washoku-text);
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.washoku-poll-bar {
+    grid-column: 1 / -1;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+}
+
+.washoku-poll-bar span {
+    display: block;
+    width: var(--poll-percent);
+    height: 100%;
+    border-radius: 999px;
+    background: var(--washoku-poll-bar);
+}
+
+.washoku-poll-login {
+    margin: 12px 0 4px;
+}
+
+.washoku-poll-login a {
+    text-decoration: none;
+}
+
+.washoku-poll-total {
+    margin: 10px 0 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+:root {
+    --washoku-poll-bar: #E8956A;
+    --washoku-poll-accent: #2E8B7A;
+}
+
+:root[data-washoku-theme="dark"] {
+    --washoku-poll-bar: #D27C52;
+    --washoku-poll-accent: #5CB8A6;
+}
+
+/* HOME のアンケート枠: 返事を待っている質問と同じ形で、色だけ変える */
+.washoku-open-questions.washoku-open-polls {
+    border-left-color: var(--washoku-poll-accent);
+}
+
+.washoku-poll-lines a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.washoku-poll-lines a::before {
+    content: none;
+}
+
+.washoku-poll-lines span {
+    overflow: hidden;
+    flex: 1;
+    text-overflow: ellipsis;
+}
+
+.washoku-poll-lines small {
+    flex: none;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-comment-hint {
+    margin: 6px 0 0;
+    text-align: right;
+    color: var(--washoku-muted);
+    font-size: 13px;
 }

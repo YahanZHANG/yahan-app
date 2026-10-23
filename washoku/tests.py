@@ -25,6 +25,8 @@ from .models import (
     MoodTag,
     Notification,
     CommentReaction,
+    PollChoice,
+    PollVote,
     Post,
     PostReaction,
     Recipe,
@@ -1827,3 +1829,115 @@ class PhotoTests(TestCase):
         recipe = Recipe.objects.get(name="豆腐ハンバーグ")
         self.assertEqual(recipe.photo_1, "https://example.com/a.webp")
         self.assertEqual(list(recipe.member_photos.values_list("url", flat=True)), ["https://example.com/a.webp", "https://example.com/b.webp"])
+
+
+class PollTests(TestCase):
+
+    def setUp(self):
+
+        self.member = get_user_model().objects.create_user("hanako", password="x")
+        self.other = get_user_model().objects.create_user("jiro", password="x")
+        self.potato = Ingredient.objects.create(name="テスト用じゃがいも", category="vegetable")
+
+        self.poll = Post.objects.create(kind="poll", title="何色の袋を買う？", status="published")
+        self.poll.ingredients.add(self.potato)
+        self.green = PollChoice.objects.create(post=self.poll, label="緑", order=0)
+        self.red = PollChoice.objects.create(post=self.poll, label="赤", order=1)
+
+    def vote(self, choice, user=None, **extra):
+        self.client.force_login(user or self.member)
+        return self.client.post(
+            reverse("washoku:poll_vote", args=[self.poll.pk]),
+            {"choice": choice.pk, **extra},
+        )
+
+    def test_first_polls_are_seeded(self):
+
+        import importlib
+
+        from django.apps import apps
+
+        egg = Ingredient.objects.create(name="卵", category="other")
+        importlib.import_module("washoku.migrations.0028_first_polls").add_first_polls(apps, None)
+
+        titles = list(Post.objects.filter(kind="poll").exclude(pk=self.poll.pk).values_list("title", flat=True))
+        self.assertEqual(list(egg.posts.values_list("title", flat=True)), ["ぶっちゃけ、スイスで生卵を食べたことある？"])
+
+        self.assertIn("ぶっちゃけ、スイスで生卵を食べたことある？", titles)
+        self.assertIn("じゃがいもは、いつも何色の袋を買っている？", titles)
+
+    def test_results_are_public_but_voting_needs_login(self):
+
+        self.vote(self.green)
+        self.client.logout()
+
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+
+        self.assertContains(page, "100%")
+        self.assertContains(page, "1票")
+        self.assertContains(page, "ログインして投票")
+        self.assertNotContains(page, 'name="choice"')
+
+        response = self.client.post(reverse("washoku:poll_vote", args=[self.poll.pk]), {"choice": self.red.pk})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(PollVote.objects.count(), 1)
+
+    def test_one_vote_per_member_and_it_can_be_changed(self):
+
+        self.vote(self.green)
+        self.vote(self.red)
+        self.vote(self.red, user=self.other)
+
+        self.assertEqual(PollVote.objects.filter(post=self.poll).count(), 2)
+        self.assertEqual(PollVote.objects.get(user=self.member).choice, self.red)
+
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertContains(page, "✓ 赤")
+        self.assertContains(page, "2票")
+
+    def test_vote_needs_a_choice_of_this_published_poll(self):
+
+        other_poll = Post.objects.create(kind="poll", title="別の", status="published")
+        other_choice = PollChoice.objects.create(post=other_poll, label="はい")
+
+        self.assertEqual(self.vote(other_choice).status_code, 404)
+
+        self.poll.status = "draft"
+        self.poll.save()
+        self.assertEqual(self.vote(self.green).status_code, 404)
+        self.assertFalse(PollVote.objects.exists())
+
+    def test_vote_returns_to_the_page_it_came_from(self):
+
+        page = reverse("washoku:ingredient_detail", args=[self.potato.pk])
+
+        self.assertRedirects(
+            self.vote(self.green, next=page),
+            f"{page}#poll-{self.poll.pk}",
+            fetch_redirect_response=False,
+        )
+        self.assertRedirects(
+            self.vote(self.green, next="https://example.com/"),
+            reverse("washoku:post_detail", args=[self.poll.pk]) + f"#poll-{self.poll.pk}",
+            fetch_redirect_response=False,
+        )
+
+    def test_ingredient_page_shows_the_poll_to_vote_in_place(self):
+
+        self.client.force_login(self.member)
+        page = self.client.get(reverse("washoku:ingredient_detail", args=[self.potato.pk]))
+
+        self.assertContains(page, f'id="poll-{self.poll.pk}"')
+        self.assertContains(page, 'name="choice"')
+        self.assertEqual(page.context["related_posts"], [])
+
+    def test_poll_list_and_members_cannot_create_polls(self):
+
+        self.vote(self.green)
+
+        page = self.client.get(reverse("washoku:poll_list"))
+        self.assertContains(page, "何色の袋を買う？")
+        self.assertContains(page, "1票")
+        self.assertNotContains(page, "アンケートを作る")
+
+        self.assertEqual(self.client.get(reverse("washoku:post_submit", args=["poll"])).status_code, 404)
