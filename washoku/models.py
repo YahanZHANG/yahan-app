@@ -1441,20 +1441,36 @@ class CommentReport(models.Model):
 
 # コメントとコラムに押せるスタンプ (並び順もこのとおり)
 REACTION_CHOICES = [
+    ("like", "いいね"),
     ("thanks", "ありがとう"),
     ("insight", "なるほど"),
-    ("like", "いいね"),
-    ("genius", "天才"),
+    ("learned", "勉強になる"),
+    ("surprise", "意外！"),
+    ("metoo", "私も知りたかった"),
+    ("relate", "わかる〜"),
+    ("yummy", "おいしそう"),
+    ("cook", "作ってみる"),
+    ("buy", "買ってみる"),
     ("lovely", "ステキ"),
+    ("genius", "天才"),
+    ("lol", "笑った"),
     ("check", "確認します"),
 ]
 
 REACTION_EMOJI = {
+    "like": "👍",
     "thanks": "🙏",
     "insight": "💡",
-    "like": "👍",
-    "genius": "🤩",
+    "learned": "📚",
+    "surprise": "😲",
+    "metoo": "🙋",
+    "relate": "🤝",
+    "yummy": "😋",
+    "cook": "🍳",
+    "buy": "🛒",
     "lovely": "✨",
+    "genius": "🤩",
+    "lol": "😂",
     "check": "👀",
 }
 

@@ -495,7 +495,7 @@ def find_by_mood(request):
                 if not request.user.is_staff else Q()
             ),
         )
-    )
+    ).order_by("display_order", "name")
 
     return render(
         request,
@@ -2326,9 +2326,11 @@ def visible_posts(user):
 
 def post_list(request, kind):
 
+    # 集計 (annotate) すると Meta.ordering が使われないので、新しい順をここで指定する
     posts = (
         Post.objects
         .filter(kind=kind, status="published")
+        .order_by("-created_at", "-pk")
         .select_related("author")
         .annotate(
             comment_count=Count(
