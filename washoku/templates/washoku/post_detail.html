@@ -5,7 +5,7 @@
 
 {% block content %}
 
-{% include "washoku/includes/community_tabs.html" with kind=post.kind %}
+{% if post.kind == "product" %}{% include "washoku/includes/ingredient_tabs.html" with kind=post.kind %}{% else %}{% include "washoku/includes/community_tabs.html" with kind=post.kind %}{% endif %}
 
 <article class="washoku-post">
 

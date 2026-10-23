@@ -2321,6 +2321,7 @@ def post_list(request, kind):
         "washoku/post_list.html",
         {
             "kind": kind,
+            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
             "shop": shop,
@@ -2454,6 +2455,7 @@ def post_detail(request, pk):
         "washoku/post_detail.html",
         {
             "post": post,
+            "nav": "ingredients" if post.kind == "product" else "",
             "text": POST_KIND_TEXT[post.kind],
             "related_recipes": related_recipes(request.user, post) if post.kind != "poll" else [],
             "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
@@ -2521,6 +2523,7 @@ def post_submit(request, kind):
         {
             "form": form,
             "kind": kind,
+            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
         },
     )
