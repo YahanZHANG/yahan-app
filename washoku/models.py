@@ -301,11 +301,12 @@ class Recipe(models.Model):
         ("sweets", "デザート・おやつ"),
         ("bread", "パン"),
         ("apero", "アペロ・持ち寄り"),
-        ("yoshoku", "洋食"),
+        ("yoshoku", "和風洋食"),
         ("chinese", "中華"),
         ("korean", "韓国"),
         ("vietnamese", "ベトナム"),
         ("thai", "タイ"),
+        ("europe", "本場の洋食"),
         ("other", "その他"),
     ]
 
@@ -351,9 +352,8 @@ class Recipe(models.Model):
         blank=True,
     )
 
-    # 料理の写真 (2枚まで)。会員の投稿か、管理者がページから追加する
-    photo_1 = models.URLField("写真1", max_length=500, blank=True)
-    photo_2 = models.URLField("写真2", max_length=500, blank=True)
+    # 載せる写真は1枚。会員が投稿した写真 (MemberPhoto) の中から、最初の1枚か管理者が選んだもの
+    photo_1 = models.URLField("載せる写真", max_length=500, blank=True)
 
     serving_unit = models.CharField(
         "数え方",
@@ -487,9 +487,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-    def photos(self):
-        return [url for url in (self.photo_1, self.photo_2) if url]
 
     @property
     def servings_label(self):
@@ -859,6 +856,71 @@ class RecipeNote(models.Model):
 # お店
 # =========================================================
 
+class MemberPhoto(models.Model):
+    """
+    会員が投稿した料理・食材の写真。ページに載るのは1枚だけで、
+    最初の1枚が自動で載り、2枚目からは管理者が選ぶ。
+    """
+
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name="料理",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="member_photos",
+    )
+
+    ingredient = models.ForeignKey(
+        Ingredient,
+        verbose_name="食材",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="member_photos",
+    )
+
+    url = models.URLField(
+        "写真",
+        max_length=500,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="投稿した人",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_photos",
+    )
+
+    created_at = models.DateTimeField(
+        "投稿日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "投稿された写真"
+        verbose_name_plural = "投稿された写真"
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"{self.target} の写真"
+
+    @property
+    def target(self):
+        return self.recipe or self.ingredient
+
+    @property
+    def target_field(self):
+        """target で、載せる写真の URL を入れる項目"""
+        return "photo_1" if self.recipe_id else "photo_url"
+
+    @property
+    def is_shown(self):
+        return getattr(self.target, self.target_field) == self.url
+
+
 class Store(models.Model):
     """
     アジア・日本食材のお店。みんなが口コミを書ける。
@@ -1130,7 +1192,8 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(
         "投稿日時",
-        auto_now_add=True,
+        default=timezone.now,
+        help_text="一覧はこの日時の新しい順に並びます。確認待ちから公開にすると、公開した時刻になります。",
     )
 
     updated_at = models.DateTimeField(
@@ -1561,14 +1624,22 @@ class Notification(models.Model):
 class Announcement(models.Model):
     """
     HOME の一番上に出す「更新のお知らせ」。管理画面から追加する。
-    表示されるのは最新の1件だけで、×で閉じるとその端末では出なくなる。
+    新しい3件まで表示し、×で閉じたものはその端末では出なくなる。
     """
 
     SHOW_DAYS = 14
+    MAX_SHOWN = 3
 
     message = models.CharField(
         "お知らせ",
         max_length=200,
+    )
+
+    link = models.CharField(
+        "リンク先（なくてもOK）",
+        max_length=300,
+        blank=True,
+        help_text="例: /washoku/recipes/?category=europe （本場の洋食の一覧）",
     )
 
     is_active = models.BooleanField(
@@ -1589,7 +1660,8 @@ class Announcement(models.Model):
         return self.message
 
     @classmethod
-    def latest(cls):
+    def current(cls):
+        """HOME に出すお知らせ (新しい順、最大 MAX_SHOWN 件)"""
 
         from datetime import timedelta
 
@@ -1597,7 +1669,7 @@ class Announcement(models.Model):
 
         since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
 
-        return cls.objects.filter(is_active=True, created_at__gte=since).first()
+        return cls.objects.filter(is_active=True, created_at__gte=since)[:cls.MAX_SHOWN]
 
 
 class PushSubscription(models.Model):

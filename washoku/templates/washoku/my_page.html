@@ -26,7 +26,7 @@
         </a>
         <a class="washoku-menu-item" href="{% url 'washoku:family_favorites' %}">
             <span class="washoku-menu-icon"><i class="bi bi-star" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>家族の好きな料理</strong><small>{% if user.is_authenticated %}評価した料理 {{ rated_count }}品{% else %}家族の評価が高い順に見られる{% endif %}</small></span>
+            <span class="washoku-menu-text"><strong>家族が喜ぶ料理</strong><small>{% if user.is_authenticated %}評価した料理 {{ rated_count }}品{% else %}家族の評価が高い順に見られる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
         <a class="washoku-menu-item" href="{% url 'washoku:my_notes' %}">

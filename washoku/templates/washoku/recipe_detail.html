@@ -33,12 +33,13 @@
 
     {% if recipe.submitted_by %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ recipe.submitted_by|display_name }} さんのレシピ</p>{% endif %}
 
-    {% if recipe.photos %}
-    <div class="washoku-photo-row">
-        {% for photo in recipe.photos %}<a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ recipe.name }}の写真{{ forloop.counter }}" loading="lazy"></a>{% endfor %}
-    </div>
+    {% if recipe.photo_1 %}
+    <figure class="washoku-ingredient-photo">
+        <img src="{{ recipe.photo_1 }}" alt="{{ recipe.name }}の写真" loading="lazy">
+        {% if shown_photo.user %}<figcaption>写真: {{ shown_photo.user|display_name }} さん</figcaption>{% endif %}
+    </figure>
     {% endif %}
-    {% include "washoku/includes/staff_photos.html" with target="recipe" pk=recipe.pk slots=photo_slots %}
+    {% include "washoku/includes/photo_box.html" with pk=recipe.pk has_photo=recipe.photo_1 %}
 
     <p class="washoku-meta">
         {% if recipe.cooking_time_minutes %}<span>⏱ {{ recipe.cooking_time_minutes }}分</span>{% endif %}

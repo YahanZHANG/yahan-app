@@ -1,0 +1,36 @@
+{% load washoku_tags %}
+{% comment %}
+料理・食材の写真の投稿。会員は投稿と自分の写真の削除、管理者はどれを載せるか選べる。
+{% endcomment %}
+{% if user.is_authenticated %}
+<details class="washoku-staff-photos washoku-photo-box"{% if user.is_staff and photo_list|length > 1 %} open{% endif %}>
+    <summary><i class="bi bi-camera" aria-hidden="true"></i> 写真を投稿{% if user.is_staff and photo_list %}（{{ photo_list|length }}枚）{% endif %}</summary>
+    <form method="post" action="{% url 'washoku:photo_add' photo_target pk %}" enctype="multipart/form-data" class="washoku-staff-photo-form">
+        {% csrf_token %}
+        <input type="file" name="photo" accept="image/*" required aria-label="写真を選ぶ">
+        <button type="submit" class="washoku-button">送る</button>
+    </form>
+    {% if has_photo and not user.is_staff %}<p class="washoku-hint">載せる写真は1枚です。届いた写真から管理者が選びます。</p>{% endif %}
+    {% if photo_list %}
+    <ul class="washoku-photo-choices">
+        {% for photo in photo_list %}
+        <li>
+            <img src="{{ photo.url|thumb:160 }}" alt="" loading="lazy">
+            <small>{% if photo.user %}{{ photo.user|display_name }} さん{% else %}管理者{% endif %}</small>
+            {% if photo.is_shown %}<span class="washoku-chip">掲載中</span>{% endif %}
+            {% if user.is_staff and not photo.is_shown %}
+            <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}">
+                {% csrf_token %}
+                <button type="submit" name="action" value="show" class="washoku-link-button">これを載せる</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}">
+                {% csrf_token %}
+                <button type="submit" name="action" value="delete" class="washoku-link-button">消す</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</details>
+{% endif %}

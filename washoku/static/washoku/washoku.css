@@ -1882,14 +1882,19 @@ html[data-washoku-theme="dark"] {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 12px 0 0;
+    margin: 12px 0 14px;
     padding: 6px 6px 6px 12px;
-    border: 1px solid var(--washoku-border);
+    border: 1px solid color-mix(in srgb, var(--washoku-accent) 35%, transparent);
     border-radius: 12px;
-    background: var(--washoku-surface);
+    background: var(--washoku-accent-soft);
     color: var(--washoku-muted);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
+}
+
+a.washoku-announcement-text {
+    font-weight: 700;
+    text-decoration: none;
 }
 
 .washoku-announcement[hidden] {
@@ -2930,21 +2935,7 @@ a.washoku-favorite {
     flex-wrap: wrap;
 }
 
-/* レシピの写真2枚は横に並べる */
-.washoku-photo-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-    margin: 8px 0 12px;
-}
-
-.washoku-photo-row .washoku-photo {
-    width: 100%;
-    height: 220px;
-    margin: 0;
-}
-
-/* 管理者だけの写真の追加 */
+/* 写真の投稿 (料理・食材は会員、お店は管理者だけ) */
 .washoku-staff-photos {
     margin: 8px 0 16px;
     padding: 10px 14px;
@@ -2964,4 +2955,163 @@ a.washoku-favorite {
     align-items: center;
     gap: 8px;
     margin-top: 10px;
+}
+
+/* 投稿された写真の一覧 (管理者は載せる写真を選ぶ) */
+.washoku-photo-box .washoku-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+}
+
+.washoku-photo-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-photo-choices li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.washoku-photo-choices img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.washoku-photo-choices form {
+    margin: 0;
+}
+
+/* ---------- HOME のお知らせ: 細いバーを最大3件 ---------- */
+
+.washoku-announcements {
+    display: grid;
+    gap: 4px;
+    margin: 10px 0 14px;
+}
+
+.washoku-announcements .washoku-announcement {
+    gap: 6px;
+    margin: 0;
+    padding: 0 2px 0 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.washoku-announcements .washoku-announcement-close {
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
+}
+
+/* コラムから一覧へ戻るボタン */
+.washoku-back {
+    margin: 16px 0;
+}
+
+.washoku-back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.washoku-back-button:hover {
+    border-color: var(--washoku-accent);
+    color: var(--washoku-accent-strong);
+}
+
+/* みんなの投稿・コメント: 種類ごとにタグの色を変える */
+.washoku-activity-kind.kind-column { background: #FBE3D3; color: #A4461C; }
+.washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
+.washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
+.washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
+.washoku-activity-kind.kind-comment,
+.washoku-activity-kind.kind-reply { background: #6B6B6B; color: #fff; }
+
+/* HOME の返事を待っている質問: 質問文だけを1行ずつ */
+.washoku-question-lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-question-lines li + li {
+    border-top: 1px solid var(--washoku-border);
+}
+
+.washoku-question-lines a {
+    display: block;
+    overflow: hidden;
+    padding: 10px 0;
+    color: var(--washoku-text);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-question-lines a::before {
+    margin-right: 6px;
+    content: "Q.";
+    color: var(--washoku-accent-strong);
+    font-weight: 700;
+}
+
+/* HOME の選び方カード: 携帯は2×2、PC は横に4つ。小さめに */
+.washoku-entry {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.washoku-entry-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border-radius: 12px;
+}
+
+.washoku-entry-card span {
+    font-size: 20px;
+}
+
+.washoku-entry-card strong {
+    font-size: 14px;
+}
+
+.washoku-entry-card small {
+    display: none;
+}
+
+.washoku-entry .washoku-entry-random {
+    min-height: 52px;
+}
+
+.washoku-entry .washoku-entry-random span {
+    font-size: 22px;
+}
+
+.washoku-entry .washoku-entry-random strong {
+    font-size: 15px;
+}
+
+@media (min-width: 800px) {
+    .washoku-entry {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }

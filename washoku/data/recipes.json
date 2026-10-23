@@ -7754,5 +7754,805 @@
    "carbs_g": 8,
    "salt_g": 3.0
   }
+ },
+ {
+  "name": "チューリッヒ風クリーム煮（Zürcher Geschnetzeltes）",
+  "category": "europe",
+  "cooking_time_minutes": 25,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "細切りの子牛肉とマッシュルームのクリーム煮。チューリッヒの名物。",
+  "mood_tags": [
+   "おもてなし",
+   "子どもが喜ぶ"
+  ],
+  "ingredients": [
+   {
+    "name": "子牛肉（薄切り）",
+    "amount": "500g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "250g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "白ワイン",
+    "amount": "100ml",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ビーフブイヨン",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "200ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "レモン",
+    "amount": "少々",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "玉ねぎはみじん切り、マッシュルームは薄切りにする。肉に塩こしょうと薄力粉をまぶす。",
+   "フライパンにバター半量を熱し、肉を強火で2回に分けてさっと焼き、取り出す。",
+   "残りのバターで玉ねぎとマッシュルームを炒め、白ワインを入れて半量になるまで煮詰める。",
+   "水100mlとブイヨン、生クリームを加え、とろみがつくまで3分ほど煮る。",
+   "肉を戻して温め、塩こしょうで味を整える。レモンを少し搾ると軽くなる。"
+  ],
+  "swiss_tips": "肉は焼きすぎると硬くなるので、最後に戻して温めるだけにする。ロスティを添えるのが定番だが、ご飯にもよく合う。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 30,
+   "fat_g": 27,
+   "carbs_g": 8,
+   "salt_g": 1.4
+  }
+ },
+ {
+  "name": "ロスティ（Rösti）",
+  "category": "europe",
+  "cooking_time_minutes": 30,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "じゃがいもを細く削って、外はカリッと焼く。スイスの国民食。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "じゃがいも",
+    "amount": "600g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ベーコン",
+    "amount": "50g",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "じゃがいもは皮付きのまま10分ほど茹でて、芯が少し残るくらいで冷ます（前の日に茹でておくと削りやすい）。",
+   "皮をむき、チーズおろし器の粗い目で削る。塩こしょうを混ぜる。",
+   "フライパンに油とバター半量を熱し、じゃがいもを広げて軽く押さえる。",
+   "中火で10分、焼き色がつくまで触らずに焼く。",
+   "皿をかぶせて裏返し、残りのバターを入れたフライパンに滑らせて戻し、裏も8〜10分焼く。"
+  ],
+  "swiss_tips": "じゃがいもは煮崩れしにくい「festkochend」。スーパーの袋入り「Rösti」を使えば、焼くだけでできる。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 400,
+   "protein_g": 6,
+   "fat_g": 19,
+   "carbs_g": 50,
+   "salt_g": 1.6
+  }
+ },
+ {
+  "name": "アルプラーマグロネン（Älplermagronen）",
+  "category": "europe",
+  "cooking_time_minutes": 35,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "マカロニとじゃがいもをチーズとクリームでまとめた、アルプスの山小屋ごはん。",
+  "mood_tags": [
+   "がっつり",
+   "子どもが喜ぶ",
+   "あったまりたい"
+  ],
+  "ingredients": [
+   {
+    "name": "マカロニ",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "じゃがいも",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "グリュイエールチーズ",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "150ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "100ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ベーコン",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "アップルムース",
+    "amount": "適量",
+    "is_seasoning": false,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "じゃがいもは1.5cm角に切る。玉ねぎは薄切りにする。",
+   "玉ねぎをバターで茶色くなるまで15分ほど炒める（ベーコンを入れるならここで一緒に）。",
+   "塩を入れたお湯でじゃがいもを5分茹で、マカロニを加えて表示どおり茹でる。",
+   "湯を切って鍋に戻し、生クリーム・牛乳・チーズを入れて弱火で混ぜ、塩こしょうで整える。",
+   "器に盛って炒めた玉ねぎをのせ、アップルムースを添える。"
+  ],
+  "swiss_tips": "アップルムースを一緒に食べるのがスイス流。甘じょっぱさが意外と合う。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 760,
+   "protein_g": 24,
+   "fat_g": 36,
+   "carbs_g": 85,
+   "salt_g": 1.8
+  }
+ },
+ {
+  "name": "大麦のスープ（Bündner Gerstensuppe）",
+  "category": "europe",
+  "cooking_time_minutes": 60,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "大麦と野菜、ベーコンをことこと煮た、グラウビュンデンのスープ。",
+  "mood_tags": [
+   "あったまりたい",
+   "野菜たっぷり",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "大麦",
+    "amount": "80g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ベーコン",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんじん",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "セロリ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "リーキ",
+    "amount": "1/2本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "じゃがいも",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "100ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "野菜はすべて1cm角に切る。大麦はさっと洗う。",
+   "鍋にバターを熱し、ベーコンと玉ねぎを炒める。",
+   "残りの野菜と大麦を加えて軽く炒め、水1.2Lとコンソメを入れる。",
+   "蓋を少しずらして弱火で45分、大麦が柔らかくなるまで煮る。",
+   "生クリームを入れ、塩こしょうで味を整える。"
+  ],
+  "swiss_tips": "本場では干し肉の「Bündnerfleisch」を刻んで入れる。翌日のほうが味がなじんでおいしい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 340,
+   "protein_g": 9,
+   "fat_g": 24,
+   "carbs_g": 24,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "シュニッツェル（Schnitzel）",
+  "category": "europe",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "薄くたたいた肉に細かいパン粉をつけて、バターで焼く。とんかつより手軽。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "豚ロース肉（厚切り）",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "1カップ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ4",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "レモン",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "肉をラップではさみ、めん棒や瓶で5mmくらいの薄さにたたいて伸ばす。塩こしょうをする。",
+   "パン粉は袋の上から手でもんで細かくする。",
+   "薄力粉、溶き卵、パン粉の順につける。パン粉は押しつけずに軽くまぶす。",
+   "フライパンに油とバターを多めに熱し、フライパンをゆすりながら片面2〜3分ずつきつね色に焼く。",
+   "レモンを添える。"
+  ],
+  "swiss_tips": "スーパーの「Schweinsschnitzel」はもう薄く切ってあるので、たたく手間が少ない。本場ウィーン風は子牛肉（Kalbsschnitzel）。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 540,
+   "protein_g": 34,
+   "fat_g": 34,
+   "carbs_g": 24,
+   "salt_g": 1.3
+  }
+ },
+ {
+  "name": "グーラッシュ（Gulasch）",
+  "category": "europe",
+  "cooking_time_minutes": 120,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "玉ねぎとパプリカでじっくり煮込んだ牛肉のシチュー。",
+  "mood_tags": [
+   "あったまりたい",
+   "作りおき",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "牛肉（煮込み用）",
+    "amount": "600g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パプリカ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パプリカパウダー",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "トマト缶",
+    "amount": "1/2缶",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ビーフブイヨン",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "赤ワイン",
+    "amount": "100ml",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "玉ねぎは薄切り、パプリカは2cm角、にんにくはみじん切りにする。肉に塩こしょうをする。",
+   "鍋に油を熱して肉の表面を焼き、取り出す。",
+   "同じ鍋で玉ねぎを茶色くなるまで15分ほど炒め、にんにくを加える。",
+   "火を止めてパプリカパウダーを混ぜ（焦げると苦くなる）、肉・トマト缶・ブイヨン・赤ワイン・水400mlを入れる。",
+   "蓋をして弱火で1時間半、肉が柔らかくなるまで煮る。パプリカを加えて10分煮て、塩で整える。"
+  ],
+  "swiss_tips": "ご飯にもよく合う。スイスではシュペッツリ（Spätzli）やパンを添えることが多い。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 430,
+   "protein_g": 36,
+   "fat_g": 24,
+   "carbs_g": 16,
+   "salt_g": 2.1
+  }
+ },
+ {
+  "name": "ラタトゥイユ",
+  "category": "europe",
+  "cooking_time_minutes": 40,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "夏野菜をトマトで煮込んだ南フランスの料理。冷やしてもおいしい。",
+  "mood_tags": [
+   "野菜たっぷり",
+   "作りおき",
+   "さっぱり"
+  ],
+  "ingredients": [
+   {
+    "name": "なす",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ズッキーニ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パプリカ",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "トマト缶",
+    "amount": "1缶",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "オリーブオイル",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バジル",
+    "amount": "少々",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "野菜はすべて2cm角に切る。にんにくはつぶす。",
+   "鍋にオリーブオイルとにんにくを入れて弱火にかけ、香りが出たら玉ねぎを炒める。",
+   "なす、パプリカ、ズッキーニの順に加えて、油がまわるまで炒める。",
+   "トマト缶と塩を入れ、蓋をして弱火で20分煮る。",
+   "蓋を取って5分煮詰め、塩こしょうで整える。バジルをちらす。"
+  ],
+  "swiss_tips": "ズッキーニはスイスでは「Zucchetti」。夏は地元の野菜が安く、まとめて作りおきできる。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 150,
+   "protein_g": 3,
+   "fat_g": 10,
+   "carbs_g": 14,
+   "salt_g": 1.2
+  }
+ },
+ {
+  "name": "キッシュ・ロレーヌ",
+  "category": "europe",
+  "cooking_time_minutes": 60,
+  "servings": 8,
+  "serving_unit": "切れ",
+  "description": "ベーコンと玉ねぎ、チーズの卵液を焼いたフランスのタルト。",
+  "mood_tags": [
+   "おもてなし",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "タルト生地",
+    "amount": "1枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ベーコン",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生クリーム",
+    "amount": "200ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "牛乳",
+    "amount": "100ml",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "グリュイエールチーズ",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "オーブンを200℃に温める。タルト生地を紙ごと型に敷き、フォークで底に穴をあける。",
+   "玉ねぎは薄切りにして、ベーコンと一緒にしんなりするまで炒め、冷ます。",
+   "卵・生クリーム・牛乳を混ぜ、塩こしょうを少し入れる（ベーコンの塩気があるので控えめに）。",
+   "生地にベーコンと玉ねぎ、チーズを広げ、卵液を流し入れる。",
+   "200℃のオーブンの下段で30〜35分、表面がきつね色になるまで焼く。"
+  ],
+  "swiss_tips": "直径28cm前後の丸い生地が1枚でちょうど。スイスでは同じように焼く「Wähe」も定番。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 370,
+   "protein_g": 12,
+   "fat_g": 28,
+   "carbs_g": 17,
+   "salt_g": 1.1
+  }
+ },
+ {
+  "name": "チーズフォンデュ",
+  "category": "europe",
+  "cooking_time_minutes": 20,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "とろけたチーズにパンやじゃがいもをからめて。冬のスイスの定番。",
+  "mood_tags": [
+   "おもてなし",
+   "あったまりたい"
+  ],
+  "ingredients": [
+   {
+    "name": "フォンデュ用チーズ",
+    "amount": "800g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "白ワイン",
+    "amount": "50ml",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "片栗粉",
+    "amount": "小さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バゲット",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "じゃがいも",
+    "amount": "500g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ブロッコリー",
+    "amount": "1株",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "じゃがいもは皮付きのまま茹でて、一口大に切る。バゲットは皮が付くように一口大に切る。",
+   "鍋の内側に切ったにんにくをこすりつける。",
+   "チーズを入れて弱火にかけ、8の字を描くように混ぜながら溶かす。",
+   "固いときは白ワインを、分離したときは白ワインで溶いた片栗粉を少し加える。",
+   "弱火のまま、パンや野菜を串に刺してからめて食べる。"
+  ],
+  "swiss_tips": "袋入りの「Fertigfondue」なら温めるだけ。土鍋でもできる。飲みものは冷たい水より温かいお茶や白ワインがよいと言われる。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 1050,
+   "protein_g": 55,
+   "fat_g": 58,
+   "carbs_g": 75,
+   "salt_g": 3.5
+  }
  }
 ]

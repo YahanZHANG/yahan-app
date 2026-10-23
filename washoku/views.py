@@ -37,6 +37,7 @@ from .models import (
     HouseholdInvite,
     HouseholdMember,
     Ingredient,
+    MemberPhoto,
     MoodTag,
     Notification,
     Post,
@@ -218,26 +219,28 @@ def open_questions():
 # ホーム
 # =========================================================
 
+def latest_columns(exclude=None, limit=3):
+    """
+    新しいコラム。HOME と、コラムの下の「ほかのコラム」に出す。
+    """
+
+    columns = Post.objects.filter(kind="column", status="published").select_related("author")
+
+    if exclude:
+        columns = columns.exclude(pk=exclude.pk)
+
+    return columns[:limit]
+
+
 def home(request):
-
-    recipes = visible_recipes(request.user)
-
-    latest = recipe_card_queryset(
-        recipes.order_by("-created_at")
-    )[:6]
-
 
     return render(
         request,
         "washoku/home.html",
         {
-            "latest_recipes": attach_family_rating(latest, request.user),
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:5],
-            "announcement": Announcement.latest(),
-            "moods": MoodTag.objects.all(),
-            "categories": Recipe.CATEGORY_CHOICES[:-1],
-            "recipe_count": recipes.count(),
+            "questions": open_questions()[:3],
+            "announcements": list(Announcement.current()),
         },
     )
 
@@ -696,7 +699,7 @@ def recipe_detail(request, pk):
             "related_posts": related_posts(
                 [item.ingredient for item in recipe.recipe_ingredients.all()]
             ),
-            "photo_slots": [("photo_1", recipe.photo_1), ("photo_2", recipe.photo_2)],
+            **photo_context(request, recipe=recipe),
             "includes_rice": any(
                 item.ingredient.name == "米" and "膳" in item.amount
                 for item in recipe.recipe_ingredients.all()
@@ -840,7 +843,7 @@ def ingredient_detail(request, pk):
             "ingredient": ingredient,
             "recipes": recipes,
             "related_posts": related_posts([ingredient]),
-            "photo_slots": [("photo_url", ingredient.photo_url)],
+            **photo_context(request, ingredient=ingredient),
             **comment_context(request, ingredient=ingredient),
         },
     )
@@ -1165,10 +1168,145 @@ def comment_create(request, target, pk):
 
 # 管理者がページから写真を足せるもの: (モデル, 写真の項目, 保存先, ページの URL 名)
 STAFF_PHOTO_TARGETS = {
-    "recipe": (Recipe, ("photo_1", "photo_2"), "recipes", "washoku:recipe_detail"),
-    "ingredient": (Ingredient, ("photo_url",), "ingredients", "washoku:ingredient_detail"),
     "store": (Store, ("photo_url",), "stores", "washoku:store_detail"),
 }
+
+
+# 会員が料理・食材の写真を投稿できる先: (モデル, 保存先のフォルダー, ページ)
+MEMBER_PHOTO_TARGETS = {
+    "recipe": (Recipe, "recipes", "washoku:recipe_detail"),
+    "ingredient": (Ingredient, "ingredients", "washoku:ingredient_detail"),
+}
+
+# 1人が1日に投稿できる写真の数 (保存先の容量を守るため)
+MEMBER_PHOTOS_PER_DAY = 10
+
+
+def photo_context(request, recipe=None, ingredient=None):
+    """
+    ページに載っている写真を投稿した人と、写真の一覧 (管理者はすべて、会員は自分の分)。
+    """
+
+    item = recipe or ingredient
+    shown = item.photo_1 if recipe else item.photo_url
+    photos = list(item.member_photos.select_related("user"))
+    shown_photo = next((photo for photo in photos if shown and photo.url == shown), None)
+
+    if not request.user.is_staff:
+        photos = [photo for photo in photos if request.user.is_authenticated and photo.user_id == request.user.pk]
+
+    return {
+        "photo_target": "recipe" if recipe else "ingredient",
+        "shown_photo": shown_photo,
+        "photo_list": photos,
+    }
+
+
+def show_photo(item, url):
+    """
+    料理・食材に載せる写真を url にする (空なら外す)。食材の Wikimedia の出典は消す。
+    """
+
+    if isinstance(item, Recipe):
+        item.photo_1 = url
+        item.save(update_fields=["photo_1"])
+        return
+
+    item.photo_url = url
+    item.photo_credit = ""
+    item.photo_source = ""
+    item.save(update_fields=["photo_url", "photo_credit", "photo_source"])
+
+
+@login_required
+@require_POST
+def photo_add(request, target, pk):
+    """
+    会員が料理・食材の写真を投稿する。まだ写真がなければそのまま載り、
+    あれば候補として残して、管理者が選ぶ。
+    """
+
+    if target not in MEMBER_PHOTO_TARGETS:
+        raise Http404
+
+    model, folder, url_name = MEMBER_PHOTO_TARGETS[target]
+    item = get_object_or_404(model, pk=pk)
+    back = reverse(url_name, args=[pk])
+
+    photo = request.FILES.get("photo")
+
+    if not photo:
+        return redirect(back)
+
+    today = MemberPhoto.objects.filter(
+        user=request.user,
+        created_at__gte=timezone.now() - timedelta(days=1),
+    ).count()
+
+    if today >= MEMBER_PHOTOS_PER_DAY and not request.user.is_staff:
+        messages.info(request, "今日はもう写真を投稿できません。また明日お願いします。")
+        return redirect(back)
+
+    try:
+        url = upload_photo(photo, folder)
+    except ValidationError as error:
+        messages.error(request, error.messages[0])
+        return redirect(back)
+
+    MemberPhoto.objects.create(user=request.user, url=url, **{target: item})
+
+    current = item.photo_1 if target == "recipe" else item.photo_url
+
+    if not current:
+        show_photo(item, url)
+        messages.success(request, "写真を載せました。ありがとうございます！")
+        return redirect(back)
+
+    messages.success(request, "写真を受け付けました。ありがとうございます！載せる写真は管理者が選びます。")
+
+    if not request.user.is_staff:
+        send_admin_alert(
+            f"[スイスで和食] {item} に写真の候補が届きました",
+            f"{request.build_absolute_uri(back)}\nページの「写真」から、載せる写真を選べます。",
+        )
+
+    return redirect(back)
+
+
+@login_required
+@require_POST
+def photo_manage(request, pk):
+    """
+    show: 管理者がこの写真を載せる。delete: 管理者か投稿した本人が消す。
+    載っている写真を消したら、残っている候補のうち一番古いものを載せる。
+    """
+
+    photo = get_object_or_404(MemberPhoto.objects.select_related("recipe", "ingredient"), pk=pk)
+    item = photo.target
+    action = request.POST.get("action")
+    target = "recipe" if photo.recipe_id else "ingredient"
+    back = reverse(MEMBER_PHOTO_TARGETS[target][2], args=[item.pk])
+
+    if action == "show" and request.user.is_staff:
+        show_photo(item, photo.url)
+        messages.success(request, "この写真を載せました。")
+
+    elif action == "delete" and (request.user.is_staff or photo.user_id == request.user.pk):
+
+        was_shown = photo.is_shown
+        photo.delete()
+        delete_uploaded_photos(photo.url)
+
+        if was_shown:
+            oldest = item.member_photos.first()
+            show_photo(item, oldest.url if oldest else "")
+
+        messages.success(request, "写真を消しました。")
+
+    else:
+        raise Http404
+
+    return redirect(back)
 
 
 @login_required
@@ -1642,13 +1780,16 @@ def recipe_submit(request):
         with transaction.atomic():
 
             recipe = form.save(commit=False)
-            recipe.photo_1, recipe.photo_2 = (photos + ["", ""])[:2]
+            recipe.photo_1 = photos[0] if photos else ""
             recipe.status = "draft"
             recipe.origin = "member"
             recipe.submitted_by = request.user
             recipe.submitted_ingredients = form.cleaned_data["ingredients_text"]
             recipe.save()
             form.save_m2m()
+
+            for url in photos:
+                MemberPhoto.objects.create(recipe=recipe, url=url, user=request.user)
 
             linked = set()
 
@@ -2196,6 +2337,7 @@ def post_detail(request, pk):
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
             "related_recipes": related_recipes(request.user, post),
+            "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
             "stamps": reaction_stamps(
                 post.reactions.values_list("post_id", "user_id", "kind"),
                 request.user,
