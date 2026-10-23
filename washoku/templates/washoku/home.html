@@ -60,7 +60,7 @@
         <strong>栄養で選ぶ</strong>
         <small>カロリー、PFC…</small>
     </a>
-    <a href="{% url 'washoku:recipe_list' %}" class="washoku-entry-card">
+    <a href="{% url 'washoku:find_by_genre' %}" class="washoku-entry-card">
         <span>🍱</span>
         <strong>カテゴリーで選ぶ</strong>
         <small>麺、丼、中華…</small>
@@ -72,8 +72,8 @@
 </section>
 
 {% if questions %}
-<section class="washoku-section">
-    <h2>返事を待っている質問</h2>
+<section class="washoku-section washoku-open-questions">
+    <h2>💬 返事を待っている質問</h2>
     <ul class="washoku-question-lines">
         {% for question in questions %}
             <li><a href="{{ question.get_absolute_url }}">{{ question.body }}</a></li>

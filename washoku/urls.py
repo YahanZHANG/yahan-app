@@ -13,6 +13,7 @@ urlpatterns = [
     path("mood/", views.find_by_mood, name="find_by_mood"),
     path("find/", views.find_by_ingredients, name="find_by_ingredients"),
     path("nutrition/", views.find_by_nutrition, name="find_by_nutrition"),
+    path("genres/", views.find_by_genre, name="find_by_genre"),
     path("random/", views.random_recipe, name="random_recipe"),
 
     # レシピ
