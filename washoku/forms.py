@@ -310,6 +310,9 @@ class RecipeSubmissionForm(forms.ModelForm):
         ),
     )
 
+    photo_1 = photo_field("料理の写真（なくてもOK）")
+    photo_2 = photo_field("写真2（なくてもOK）")
+
     mood_tags = forms.ModelMultipleChoiceField(
         label="気分タグ",
         queryset=MoodTag.objects.order_by("display_order", "name"),

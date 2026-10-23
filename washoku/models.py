@@ -345,6 +345,10 @@ class Recipe(models.Model):
         blank=True,
     )
 
+    # 料理の写真 (2枚まで)。会員の投稿か、管理者がページから追加する
+    photo_1 = models.URLField("写真1", max_length=500, blank=True)
+    photo_2 = models.URLField("写真2", max_length=500, blank=True)
+
     serving_unit = models.CharField(
         "数え方",
         max_length=10,
@@ -477,6 +481,9 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    def photos(self):
+        return [url for url in (self.photo_1, self.photo_2) if url]
 
     @property
     def servings_label(self):
@@ -894,6 +901,12 @@ class Store(models.Model):
     opening_hours = models.CharField(
         "営業時間",
         max_length=200,
+        blank=True,
+    )
+
+    photo_url = models.URLField(
+        "写真",
+        max_length=500,
         blank=True,
     )
 

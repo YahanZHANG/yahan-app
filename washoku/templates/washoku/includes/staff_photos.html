@@ -1,0 +1,26 @@
+{% comment %}
+管理者だけに見える写真の追加・変更。target: recipe / ingredient / store、slots: [(項目名, 今の写真の URL), ...]
+{% endcomment %}
+{% if user.is_staff %}
+<details class="washoku-staff-photos">
+    <summary><i class="bi bi-camera" aria-hidden="true"></i> 写真を追加・変更（管理者だけに表示）</summary>
+    {% for field, current in slots %}
+        <form method="post" action="{% url 'washoku:staff_photo' target pk %}" enctype="multipart/form-data" class="washoku-staff-photo-form">
+            {% csrf_token %}
+            <input type="hidden" name="field" value="{{ field }}">
+            {% if slots|length > 1 %}<strong>写真{{ forloop.counter }}</strong>{% endif %}
+            {% if current %}<img class="washoku-photo washoku-photo-small" src="{{ current }}" alt="">{% endif %}
+            <input type="file" name="photo" accept="image/*" required aria-label="写真を選ぶ">
+            <button type="submit" class="washoku-button">保存</button>
+        </form>
+        {% if current %}
+            <form method="post" action="{% url 'washoku:staff_photo' target pk %}" class="washoku-staff-photo-form">
+                {% csrf_token %}
+                <input type="hidden" name="field" value="{{ field }}">
+                <input type="hidden" name="remove" value="1">
+                <button type="submit" class="washoku-link-button">この写真を外す</button>
+            </form>
+        {% endif %}
+    {% endfor %}
+</details>
+{% endif %}

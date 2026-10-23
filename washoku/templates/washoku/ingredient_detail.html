@@ -14,6 +14,7 @@
     {% if ingredient.photo_credit %}<figcaption>写真: {% if ingredient.photo_source %}<a href="{{ ingredient.photo_source }}" target="_blank" rel="noopener">{{ ingredient.photo_credit }}</a>{% else %}{{ ingredient.photo_credit }}{% endif %}</figcaption>{% endif %}
 </figure>
 {% endif %}
+{% include "washoku/includes/staff_photos.html" with target="ingredient" pk=ingredient.pk slots=photo_slots %}
 
 <dl class="washoku-facts">
     {% if ingredient.name_de %}<dt>ドイツ語</dt><dd lang="de">{{ ingredient.name_de }}</dd>{% endif %}

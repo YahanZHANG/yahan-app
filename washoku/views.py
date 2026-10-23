@@ -696,6 +696,7 @@ def recipe_detail(request, pk):
             "related_posts": related_posts(
                 [item.ingredient for item in recipe.recipe_ingredients.all()]
             ),
+            "photo_slots": [("photo_1", recipe.photo_1), ("photo_2", recipe.photo_2)],
             "includes_rice": any(
                 item.ingredient.name == "米" and "膳" in item.amount
                 for item in recipe.recipe_ingredients.all()
@@ -839,6 +840,7 @@ def ingredient_detail(request, pk):
             "ingredient": ingredient,
             "recipes": recipes,
             "related_posts": related_posts([ingredient]),
+            "photo_slots": [("photo_url", ingredient.photo_url)],
             **comment_context(request, ingredient=ingredient),
         },
     )
@@ -1159,6 +1161,85 @@ def comment_create(request, target, pk):
         notify_reply(comment)
 
     return redirect(comment_target_url(comment))
+
+
+# 管理者がページから写真を足せるもの: (モデル, 写真の項目, 保存先, ページの URL 名)
+STAFF_PHOTO_TARGETS = {
+    "recipe": (Recipe, ("photo_1", "photo_2"), "recipes", "washoku:recipe_detail"),
+    "ingredient": (Ingredient, ("photo_url",), "ingredients", "washoku:ingredient_detail"),
+    "store": (Store, ("photo_url",), "stores", "washoku:store_detail"),
+}
+
+
+@login_required
+@require_POST
+def staff_photo(request, target, pk):
+    """
+    管理者だけ: レシピ・食材・お店のページで写真を追加・変更・削除する。
+    """
+
+    if not request.user.is_staff or target not in STAFF_PHOTO_TARGETS:
+        raise Http404
+
+    model, fields, folder, url_name = STAFF_PHOTO_TARGETS[target]
+    item = get_object_or_404(model, pk=pk)
+    back = reverse(url_name, args=[pk])
+
+    field = request.POST.get("field", fields[0])
+
+    if field not in fields:
+        raise Http404
+
+    old = getattr(item, field)
+    photo = request.FILES.get("photo")
+
+    if photo:
+        try:
+            setattr(item, field, upload_photo(photo, folder))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+    elif request.POST.get("remove"):
+        setattr(item, field, "")
+    else:
+        return redirect(back)
+
+    update_fields = [field]
+
+    # 食材の写真を自分の写真に変えたら、Wikimedia の出典は消す
+    if target == "ingredient":
+        item.photo_credit = ""
+        item.photo_source = ""
+        update_fields += ["photo_credit", "photo_source"]
+
+    item.save(update_fields=update_fields)
+    delete_uploaded_photos(old)
+
+    messages.success(request, "写真を保存しました。" if photo else "写真を外しました。")
+
+    return redirect(back)
+
+
+def upload_form_photos(form, folder, names=("photo_1", "photo_2")):
+    """
+    フォームで選ばれた写真を順に保存して URL の一覧を返す。
+    どれかが失敗したら、その項目にエラーを付け、保存済みの写真は消す。
+    """
+
+    urls = []
+
+    for name in names:
+        if form.cleaned_data.get(name):
+            try:
+                urls.append(upload_photo(form.cleaned_data[name], folder))
+            except ValidationError as error:
+                form.add_error(name, error)
+
+    if form.errors:
+        delete_uploaded_photos(*urls)
+        return []
+
+    return urls
 
 
 def notify_reply(comment):
@@ -1527,6 +1608,7 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
+            "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
     )
@@ -1548,13 +1630,19 @@ def recipe_submit(request):
         )
         return redirect("washoku:my_recipes")
 
-    form = RecipeSubmissionForm(request.POST or None)
+    form = RecipeSubmissionForm(request.POST or None, request.FILES or None)
+
+    photos = []
+
+    if request.method == "POST" and form.is_valid():
+        photos = upload_form_photos(form, "recipes")
 
     if request.method == "POST" and form.is_valid():
 
         with transaction.atomic():
 
             recipe = form.save(commit=False)
+            recipe.photo_1, recipe.photo_2 = (photos + ["", ""])[:2]
             recipe.status = "draft"
             recipe.origin = "member"
             recipe.submitted_by = request.user
@@ -2137,16 +2225,7 @@ def post_submit(request, kind):
     photos = []
 
     if request.method == "POST" and form.is_valid():
-
-        for name in ("photo_1", "photo_2"):
-            if form.cleaned_data.get(name):
-                try:
-                    photos.append(upload_photo(form.cleaned_data[name], "columns"))
-                except ValidationError as error:
-                    form.add_error(name, error)
-
-        if not form.is_valid():
-            delete_uploaded_photos(*photos)
+        photos = upload_form_photos(form, "columns")
 
     if request.method == "POST" and form.is_valid():
 

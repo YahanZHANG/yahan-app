@@ -1669,3 +1669,53 @@ class PhotoTests(TestCase):
 
         self.assertEqual(photo["url"], "https://upload.wikimedia.org/thumb/k.jpg")
         self.assertEqual(photo["credit"], "Rainer / CC BY-SA 3.0 / Wikimedia Commons")
+
+    def test_only_staff_can_add_photos_to_recipe_ingredient_and_store_pages(self):
+
+        staff = get_user_model().objects.create_user("admin", password="x", is_staff=True)
+        url = reverse("washoku:staff_photo", args=["recipe", self.recipe.pk])
+        page_url = reverse("washoku:recipe_detail", args=[self.recipe.pk])
+
+        # 会員には追加のボタンも見えず、送っても何も変わらない
+        self.client.force_login(self.member)
+        self.assertNotContains(self.client.get(page_url), "写真を追加・変更")
+        self.assertEqual(self.client.post(url, {"field": "photo_2", "photo": self.photo()}).status_code, 404)
+
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(page_url), "写真を追加・変更")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/r2.webp"):
+            self.client.post(url, {"field": "photo_2", "photo": self.photo()})
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photos(), ["https://example.com/r2.webp"])
+
+        with mock.patch("washoku.views.delete_uploaded_photos") as delete:
+            self.client.post(url, {"field": "photo_2", "remove": "1"})
+
+        delete.assert_called_once_with("https://example.com/r2.webp")
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photos(), [])
+
+        store = Store.objects.create(name="Yoshi", kind="japanese", city="Zürich", address="x")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/s.webp"):
+            self.client.post(reverse("washoku:staff_photo", args=["store", store.pk]), {"photo": self.photo()})
+
+        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[store.pk])), "https://example.com/s.webp")
+
+    def test_recipe_submission_takes_two_photos(self):
+
+        self.client.force_login(self.member)
+
+        uploaded = iter(["https://example.com/a.webp", "https://example.com/b.webp"])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=lambda *args: next(uploaded)), \
+                mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(reverse("washoku:recipe_submit"), {
+                "name": "豆腐ハンバーグ", "category": "meat", "ingredients_text": "鶏もも肉 200g\n木綿豆腐 1丁",
+                "steps": "混ぜて焼く", "photo_1": self.photo(), "photo_2": self.photo(),
+            })
+
+        recipe = Recipe.objects.get(name="豆腐ハンバーグ")
+        self.assertEqual(recipe.photos(), ["https://example.com/a.webp", "https://example.com/b.webp"])

@@ -8,7 +8,7 @@
 
 <p class="washoku-lead">スイスで手に入る食材で作れる、あなたの家のレシピを教えてください。管理者が確認してから掲載します。</p>
 
-<form method="post" class="washoku-form" novalidate>
+<form method="post" class="washoku-form" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
     {% if form.non_field_errors %}

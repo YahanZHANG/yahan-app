@@ -11,6 +11,9 @@
 
 <h1>{{ store.name }}</h1>
 
+{% if store.photo_url %}<img class="washoku-photo" src="{{ store.photo_url }}" alt="{{ store.name }}の写真">{% endif %}
+{% include "washoku/includes/staff_photos.html" with target="store" pk=store.pk slots=photo_slots %}
+
 {% if store.description %}<p class="washoku-lead">{{ store.description }}</p>{% endif %}
 
 <dl class="washoku-facts">
