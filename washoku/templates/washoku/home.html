@@ -3,27 +3,33 @@
 
 {% block content %}
 
-{% if announcement %}
-    <div class="washoku-announcement" id="washoku-announcement" data-announcement-id="{{ announcement.pk }}">
-        <span class="washoku-announcement-label">お知らせ</span>
-        {% if announcement.link %}
-            <a class="washoku-announcement-text" href="{{ announcement.link }}">{{ announcement.message }} <span aria-hidden="true">›</span></a>
-        {% else %}
-            <span class="washoku-announcement-text">{{ announcement.message }}</span>
-        {% endif %}
-        <button type="button" class="washoku-announcement-close" aria-label="お知らせを閉じる" data-announcement-close>×</button>
+{% if announcements %}
+    <div class="washoku-announcements" id="washoku-announcements">
+        {% for announcement in announcements %}
+        <div class="washoku-announcement" data-announcement-id="{{ announcement.pk }}">
+            {% if announcement.link %}
+                <a class="washoku-announcement-text" href="{{ announcement.link }}">{{ announcement.message }} <span aria-hidden="true">›</span></a>
+            {% else %}
+                <span class="washoku-announcement-text">{{ announcement.message }}</span>
+            {% endif %}
+            <button type="button" class="washoku-announcement-close" aria-label="お知らせを閉じる" data-announcement-close>×</button>
+        </div>
+        {% endfor %}
     </div>
     <script>
     // ×で閉じたお知らせは、この端末では再表示しない
     (function () {
-        var box = document.getElementById("washoku-announcement");
-        var key = "washoku_announcement_closed";
-        try {
-            if (localStorage.getItem(key) === box.dataset.announcementId) box.hidden = true;
-        } catch (error) {}
-        box.querySelector("[data-announcement-close]").addEventListener("click", function () {
-            box.hidden = true;
-            try { localStorage.setItem(key, box.dataset.announcementId); } catch (error) {}
+        var key = "washoku_announcements_closed";
+        var closed = [];
+        try { closed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) {}
+        document.querySelectorAll("#washoku-announcements [data-announcement-id]").forEach(function (box) {
+            var id = box.dataset.announcementId;
+            if (closed.indexOf(id) !== -1) box.hidden = true;
+            box.querySelector("[data-announcement-close]").addEventListener("click", function () {
+                box.hidden = true;
+                closed.push(id);
+                try { localStorage.setItem(key, JSON.stringify(closed.slice(-30))); } catch (error) {}
+            });
         });
     })();
     </script>
@@ -60,6 +66,42 @@
     </a>
 </section>
 
+{% if columns %}
+<section class="washoku-section">
+    <h2>新着コラム</h2>
+    <ul class="washoku-posts">
+        {% for post in columns %}
+            <li>
+                <a href="{{ post.get_absolute_url }}"{% if post.photo_1 %} class="has-photo"{% endif %}>
+                    {% if post.photo_1 %}<img src="{{ post.photo_1|thumb:160 }}" alt="" loading="lazy">{% endif %}
+                    <strong>{{ post.title }}</strong>
+                    <span class="washoku-post-excerpt">{{ post.body|truncatechars:60 }}</span>
+                    <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"n/j" }}</small>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <p class="washoku-more"><a href="{% url 'washoku:column_list' %}">コラムをもっと読む</a></p>
+</section>
+{% endif %}
+
+{% if questions %}
+<section class="washoku-section">
+    <h2>返事を待っている質問</h2>
+    <ul class="washoku-list">
+        {% for question in questions %}
+            <li>
+                <a href="{{ question.get_absolute_url }}">
+                    {{ question.body|truncatechars:60 }}
+                </a>
+                <small>{{ question.target.name }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+    <p class="washoku-more"><a href="{% url 'washoku:question_list' %}">質問をすべて見る</a></p>
+</section>
+{% endif %}
+
 {% if not user.is_authenticated %}
 <section class="washoku-join-card">
     <p><strong>無料の会員登録でできること</strong></p>
@@ -93,21 +135,6 @@
     <i class="bi bi-chevron-right" aria-hidden="true"></i>
 </a>
 
-{% if questions %}
-<section class="washoku-section">
-    <h2>答えを待っている質問</h2>
-    <ul class="washoku-list">
-        {% for question in questions %}
-            <li>
-                <a href="{{ question.get_absolute_url }}">
-                    {{ question.body|truncatechars:60 }}
-                </a>
-                <small>{{ question.target.name }}</small>
-            </li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
 
 <section class="washoku-section">
     <h2>みんなの投稿・コメント</h2>

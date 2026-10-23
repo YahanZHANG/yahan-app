@@ -1271,15 +1271,22 @@ class AnnouncementTests(TestCase):
 
         self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-announcement-text")
 
-        Announcement.objects.create(message="古いお知らせ")
+        old = Announcement.objects.create(message="古いお知らせ")
+        Announcement.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(hours=1))
+        Announcement.objects.create(message="3件目")
         Announcement.objects.create(message="和風洋食を10品追加しました")
         Announcement.objects.create(message="非表示", is_active=False)
 
+        Announcement.objects.create(message="4件目")
+
         response = self.client.get(reverse("washoku:home"))
 
+        # 新しい3件まで
         self.assertContains(response, "和風洋食を10品追加しました")
+        self.assertContains(response, "4件目")
         self.assertNotContains(response, "古いお知らせ")
-        self.assertContains(response, "washoku_announcement_closed")
+        self.assertNotContains(response, "非表示")
+        self.assertContains(response, "washoku_announcements_closed")
 
         Announcement.objects.update(created_at=timezone.now() - timedelta(days=30))
         self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-announcement-text")
@@ -1293,6 +1300,22 @@ class AnnouncementTests(TestCase):
 
         self.assertContains(response, 'href="/washoku/recipes/?category=europe"')
         self.assertNotContains(response, "新着レシピ")
+
+    def test_home_shows_new_columns_and_column_page_links_back(self):
+
+        author = get_user_model().objects.create_user("hanako", password="x")
+        first = Post.objects.create(kind="column", title="Rahm の選び方", body="x", status="published", author=author)
+        Post.objects.create(kind="column", title="下書きのコラム", body="x", status="draft", author=author)
+        Post.objects.create(kind="column", title="豆腐の水切り", body="x", status="published", author=author)
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "新着コラム")
+        self.assertContains(home, "Rahm の選び方")
+        self.assertNotContains(home, "下書きのコラム")
+
+        page = self.client.get(reverse("washoku:post_detail", args=[first.pk]))
+        self.assertContains(page, "みんなのコラムの一覧へ")
+        self.assertEqual([post.title for post in page.context["other_columns"]], ["豆腐の水切り"])
 
     def test_publishing_a_draft_column_moves_it_to_the_top(self):
 

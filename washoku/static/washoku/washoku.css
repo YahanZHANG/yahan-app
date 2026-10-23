@@ -2990,3 +2990,63 @@ a.washoku-favorite {
 .washoku-photo-choices form {
     margin: 0;
 }
+
+/* ---------- HOME のお知らせ: 細いバーを最大3件 ---------- */
+
+.washoku-announcements {
+    display: grid;
+    gap: 4px;
+    margin: 10px 0 14px;
+}
+
+.washoku-announcements .washoku-announcement {
+    gap: 6px;
+    margin: 0;
+    padding: 0 2px 0 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.washoku-announcements .washoku-announcement-close {
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
+}
+
+/* HOME の新着コラム: 写真があれば左に小さく */
+.washoku-posts a.has-photo {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    column-gap: 12px;
+}
+
+.washoku-posts a.has-photo img {
+    grid-row: span 3;
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* コラムから一覧へ戻るボタン */
+.washoku-back {
+    margin: 16px 0;
+}
+
+.washoku-back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.washoku-back-button:hover {
+    border-color: var(--washoku-accent);
+    color: var(--washoku-accent-strong);
+}

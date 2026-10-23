@@ -1624,10 +1624,11 @@ class Notification(models.Model):
 class Announcement(models.Model):
     """
     HOME の一番上に出す「更新のお知らせ」。管理画面から追加する。
-    表示されるのは最新の1件だけで、×で閉じるとその端末では出なくなる。
+    新しい3件まで表示し、×で閉じたものはその端末では出なくなる。
     """
 
     SHOW_DAYS = 14
+    MAX_SHOWN = 3
 
     message = models.CharField(
         "お知らせ",
@@ -1659,7 +1660,8 @@ class Announcement(models.Model):
         return self.message
 
     @classmethod
-    def latest(cls):
+    def current(cls):
+        """HOME に出すお知らせ (新しい順、最大 MAX_SHOWN 件)"""
 
         from datetime import timedelta
 
@@ -1667,7 +1669,7 @@ class Announcement(models.Model):
 
         since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
 
-        return cls.objects.filter(is_active=True, created_at__gte=since).first()
+        return cls.objects.filter(is_active=True, created_at__gte=since)[:cls.MAX_SHOWN]
 
 
 class PushSubscription(models.Model):

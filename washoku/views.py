@@ -219,6 +219,19 @@ def open_questions():
 # ホーム
 # =========================================================
 
+def latest_columns(exclude=None, limit=3):
+    """
+    新しいコラム。HOME と、コラムの下の「ほかのコラム」に出す。
+    """
+
+    columns = Post.objects.filter(kind="column", status="published").select_related("author")
+
+    if exclude:
+        columns = columns.exclude(pk=exclude.pk)
+
+    return columns[:limit]
+
+
 def home(request):
 
     recipes = visible_recipes(request.user)
@@ -228,8 +241,9 @@ def home(request):
         "washoku/home.html",
         {
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:5],
-            "announcement": Announcement.latest(),
+            "questions": open_questions()[:3],
+            "columns": latest_columns(),
+            "announcements": list(Announcement.current()),
             "moods": MoodTag.objects.all(),
             "categories": Recipe.CATEGORY_CHOICES[:-1],
             "recipe_count": recipes.count(),
@@ -2329,6 +2343,7 @@ def post_detail(request, pk):
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
             "related_recipes": related_recipes(request.user, post),
+            "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
             "stamps": reaction_stamps(
                 post.reactions.values_list("post_id", "user_id", "kind"),
                 request.user,
