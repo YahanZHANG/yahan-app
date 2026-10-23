@@ -33,16 +33,23 @@
 
     {% if recipe.submitted_by %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ recipe.submitted_by|display_name }} さんのレシピ</p>{% endif %}
 
+    {% if recipe.photos %}
+    <div class="washoku-photo-row">
+        {% for photo in recipe.photos %}<a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ recipe.name }}の写真{{ forloop.counter }}" loading="lazy"></a>{% endfor %}
+    </div>
+    {% endif %}
+    {% include "washoku/includes/staff_photos.html" with target="recipe" pk=recipe.pk slots=photo_slots %}
+
     <p class="washoku-meta">
         {% if recipe.cooking_time_minutes %}<span>⏱ {{ recipe.cooking_time_minutes }}分</span>{% endif %}
-        {% if recipe.servings %}<span>🍽 {{ recipe.servings }}人分</span>{% endif %}
+        {% if recipe.servings %}<span>🍽 {{ recipe.servings_label }}</span>{% endif %}
         {% if shop %}<span>🛒 {% if shop.rank > 1 %}{{ shop.name }}まで行けば材料がそろう{% else %}普通のスーパーで材料がそろう{% endif %}</span>{% endif %}
     </p>
 
     {% if recipe.has_nutrition %}
     {% with pfc=recipe.pfc_ratio %}
     <section class="washoku-nutrition" aria-labelledby="nutrition-heading">
-        <h2 id="nutrition-heading">1人分の栄養<small>（目安）</small></h2>
+        <h2 id="nutrition-heading">{{ recipe.nutrition_label }}の栄養<small>（目安）</small></h2>
         <dl class="washoku-nutrition-grid">
             <div class="washoku-nutrition-energy"><dt>エネルギー</dt><dd>{{ recipe.energy_kcal }}<small>kcal</small></dd></div>
             <div class="washoku-nutrition-p"><dt>たんぱく質</dt><dd>{{ recipe.protein_g|floatformat:"-1" }}<small>g</small></dd></div>
@@ -95,6 +102,8 @@
         <p>{{ recipe.swiss_tips|linebreaksbr }}</p>
     </section>
     {% endif %}
+
+    {% include "washoku/includes/related_posts.html" %}
 
     <section class="washoku-section" id="rating">
         <h2>家族の好み</h2>

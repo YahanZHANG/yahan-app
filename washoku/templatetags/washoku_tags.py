@@ -53,3 +53,10 @@ def stars(value):
 @register.simple_tag
 def search_engines_allowed():
     return getattr(settings, "WASHOKU_ALLOW_SEARCH_ENGINES", False)
+
+
+@register.filter
+def thumb(url, size=160):
+    """Cloudinary の写真なら小さく切り抜いた版にする。"""
+    from ..photos import thumbnail_url
+    return thumbnail_url(url, int(size))

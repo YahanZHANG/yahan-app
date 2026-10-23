@@ -18,6 +18,9 @@ python manage.py seed_master_data
 # スイスで和食: JSON にあってまだ DB にない食材・レシピを追加 (新しいレシピは下書き)
 python manage.py import_washoku --new-only
 
+# スイスで和食: 代わりの食材の写真を Wikimedia Commons で探す (一度探した食材はとばす。裏で動かす)
+python manage.py find_washoku_photos &
+
 
 # =====================================================
 # Start Outings scheduler

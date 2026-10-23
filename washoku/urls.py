@@ -54,6 +54,7 @@ urlpatterns = [
     path("links/", views.link_list, name="link_list"),
     path("posts/<int:pk>/", views.post_detail, name="post_detail"),
     path("posts/<int:pk>/react/", views.post_react, name="post_react"),
+    path("photos/<str:target>/<int:pk>/", views.staff_photo, name="staff_photo"),
     path("posts/new/<str:kind>/", views.post_submit, name="post_submit"),
     path("me/posts/", views.my_posts, name="my_posts"),
     path("notifications/", views.notification_list, name="notification_list"),

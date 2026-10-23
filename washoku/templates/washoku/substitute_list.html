@@ -29,7 +29,8 @@
         <h2>{{ category }}<small class="washoku-count">{{ items|length }}</small></h2>
         <ul class="washoku-cards washoku-cards-wide">
             {% for item in items %}
-                <li class="washoku-substitute-card">
+                <li class="washoku-substitute-card{% if item.substitute.photo_url %} has-photo{% endif %}">
+                    {% if item.substitute.photo_url %}<a class="washoku-substitute-photo" href="{% url 'washoku:ingredient_detail' item.substitute.pk %}"><img src="{{ item.substitute.photo_url|thumb:160 }}" alt="{{ item.substitute.name }}" loading="lazy" width="80" height="80"></a>{% endif %}
                     <p class="washoku-substitute-pair">
                         <span class="washoku-substitute-from">{{ item.original_name }}</span>
                         <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="washoku-visually-hidden">の代わりに</span>

@@ -104,6 +104,32 @@ class Ingredient(models.Model):
         help_text="例: 鶏もも肉→鶏肉。空欄の場合は食材名と同じ扱い。",
     )
 
+    photo_url = models.URLField(
+        "写真",
+        max_length=500,
+        blank=True,
+        help_text="下の「写真をアップロード」か、Wikimedia Commons の画像 URL。",
+    )
+
+    photo_credit = models.CharField(
+        "写真の出典",
+        max_length=300,
+        blank=True,
+        help_text="Wikimedia の写真は作者とライセンスを必ず残す。",
+    )
+
+    photo_source = models.URLField(
+        "写真の元ページ",
+        max_length=500,
+        blank=True,
+    )
+
+    photo_auto_tried = models.BooleanField(
+        "写真を自動で探した",
+        default=False,
+        help_text="自動で一度探した食材は、写真を外しても探し直さない。",
+    )
+
     shops = models.ManyToManyField(
         ShopType,
         verbose_name="買える店",
@@ -325,6 +351,17 @@ class Recipe(models.Model):
         blank=True,
     )
 
+    # 料理の写真 (2枚まで)。会員の投稿か、管理者がページから追加する
+    photo_1 = models.URLField("写真1", max_length=500, blank=True)
+    photo_2 = models.URLField("写真2", max_length=500, blank=True)
+
+    serving_unit = models.CharField(
+        "数え方",
+        max_length=10,
+        blank=True,
+        help_text="パンやおやつなど、人数でなく数で数えるとき（例: 個、切れ）。空欄なら「人分」。栄養はこの1つ分。",
+    )
+
     steps = models.TextField(
         "作り方",
         help_text="1行に1手順。",
@@ -450,6 +487,26 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    def photos(self):
+        return [url for url in (self.photo_1, self.photo_2) if url]
+
+    @property
+    def servings_label(self):
+        """例: 4人分、8切れ分"""
+        return f"{self.servings}{self.serving_unit or '人'}分"
+
+    @property
+    def per_serving_label(self):
+        """カード用の短い形。例: 1人分、1個"""
+        return f"1{self.serving_unit}" if self.serving_unit else "1人分"
+
+    @property
+    def nutrition_label(self):
+        """栄養の見出し。例: 1人分（1食分）、1切れあたり"""
+        if self.serving_unit:
+            return f"1{self.serving_unit}あたり"
+        return "1人分（1食分）"
 
     @property
     def has_nutrition(self):
@@ -853,6 +910,12 @@ class Store(models.Model):
         blank=True,
     )
 
+    photo_url = models.URLField(
+        "写真",
+        max_length=500,
+        blank=True,
+    )
+
     description = models.TextField(
         "紹介",
         blank=True,
@@ -994,6 +1057,10 @@ class Post(models.Model):
         max_length=4000,
     )
 
+    # コラムの写真 (2枚まで)
+    photo_1 = models.URLField("写真1", max_length=500, blank=True)
+    photo_2 = models.URLField("写真2", max_length=500, blank=True)
+
     # 買えるお店は複数選べる。SHOP_CHOICES のコードをカンマでつなげて入れる (例: "migros,coop")
     shop = models.CharField(
         "買えるお店",
@@ -1046,6 +1113,14 @@ class Post(models.Model):
         db_index=True,
     )
 
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        verbose_name="関係する食材",
+        blank=True,
+        related_name="posts",
+        help_text="選んだ食材（と同じ検索グループの食材）を使うレシピや食材のページに、この投稿が「関連する読みもの」として出ます。",
+    )
+
     publish_at = models.DateTimeField(
         "公開予約",
         null=True,
@@ -1082,6 +1157,9 @@ class Post(models.Model):
     def shop_labels(self):
         labels = dict(self.SHOP_CHOICES)
         return [labels.get(code, code) for code in self.shop_codes()]
+
+    def photos(self):
+        return [url for url in (self.photo_1, self.photo_2) if url]
 
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])
@@ -1178,6 +1256,12 @@ class Comment(models.Model):
     body = models.TextField(
         "本文",
         max_length=500,
+    )
+
+    photo_url = models.URLField(
+        "写真",
+        max_length=500,
+        blank=True,
     )
 
     is_deleted = models.BooleanField(

@@ -310,6 +310,18 @@ INGREDIENTS = [
 # レシピ
 # =========================================================
 
+# 人数でなく数で数える料理 (栄養はこの1つ分)
+SERVING_UNITS = {
+    "どら焼き": "個",
+    "ガトーショコラ": "切れ",
+    "カスタードプリン": "個",
+    "ふわふわ蒸しパン": "個",
+    "食パン": "切れ",
+    "メロンパン": "個",
+    "クリームパン": "個",
+}
+
+
 def recipe(name, category, minutes, servings, description, moods, ingredients, steps, tips=""):
 
     return {
@@ -317,6 +329,7 @@ def recipe(name, category, minutes, servings, description, moods, ingredients, s
         "category": category,
         "cooking_time_minutes": minutes,
         "servings": servings,
+        "serving_unit": SERVING_UNITS.get(name, ""),
         "description": description,
         "mood_tags": moods,
         "ingredients": ingredients,

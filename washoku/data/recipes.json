@@ -4,6 +4,7 @@
   "category": "meat",
   "cooking_time_minutes": 40,
   "servings": 4,
+  "serving_unit": "",
   "description": "甘辛い煮汁がしみた、ほっとする家庭の味。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -101,6 +102,7 @@
   "category": "meat",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "ご飯がすすむ定番おかず。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -192,6 +194,7 @@
   "category": "meat",
   "cooking_time_minutes": 40,
   "servings": 3,
+  "serving_unit": "",
   "description": "外はカリッと、中はジューシー。",
   "mood_tags": [
    "がっつり",
@@ -277,6 +280,7 @@
   "category": "meat",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "甘辛いタレがからんだ照りが食欲をそそる。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -343,6 +347,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 35,
   "servings": 4,
+  "serving_unit": "",
   "description": "大根おろしとポン酢風のタレでさっぱり。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -445,6 +450,7 @@
   "category": "meat",
   "cooking_time_minutes": 150,
   "servings": 4,
+  "serving_unit": "",
   "description": "とろとろに煮込んだ豚バラ。週末にゆっくり。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -524,6 +530,7 @@
   "category": "meat",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "ふわふわのつくねに甘辛ダレ。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -613,6 +620,7 @@
   "category": "meat",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "サクサクの衣が決め手。",
   "mood_tags": [
    "がっつり",
@@ -702,6 +710,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 40,
   "servings": 4,
+  "serving_unit": "",
   "description": "肉汁あふれる揚げたてを。",
   "mood_tags": [
    "がっつり",
@@ -791,6 +800,7 @@
   "category": "meat",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "揚げた鶏を甘酢に漬けて、さっぱりと。",
   "mood_tags": [
    "さっぱり",
@@ -881,6 +891,7 @@
   "category": "fish",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "甘辛ダレで、冷めてもおいしい。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -946,6 +957,7 @@
   "category": "fish",
   "cooking_time_minutes": 25,
   "servings": 3,
+  "serving_unit": "",
   "description": "味噌バターで鮭と野菜をまとめて蒸し焼き。",
   "mood_tags": [
    "野菜たっぷり",
@@ -1036,6 +1048,7 @@
   "category": "fish",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "こってり味噌味で、ご飯が止まらない。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -1107,6 +1120,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "タルタルソースを添えて。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -1190,6 +1204,7 @@
   "category": "fish",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "あっさり甘辛の煮魚。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -1254,6 +1269,7 @@
   "category": "rice",
   "cooking_time_minutes": 45,
   "servings": 4,
+  "serving_unit": "",
   "description": "炊飯器がなくても鍋でふっくら炊ける。",
   "mood_tags": [
    "和の定番が恋しい"
@@ -1288,6 +1304,7 @@
   "category": "rice",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "とろとろ卵で包む、だしのきいた丼。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -1372,6 +1389,7 @@
   "category": "rice",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "甘辛の牛肉と玉ねぎをたっぷりのせて。",
   "mood_tags": [
    "がっつり",
@@ -1455,6 +1473,7 @@
   "category": "rice",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "とんかつを卵でとじた、ボリューム満点の丼。",
   "mood_tags": [
    "がっつり"
@@ -1549,6 +1568,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "ケチャップ味のなつかしい洋食。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -1619,6 +1639,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "ふんわり卵でチキンライスを包んで。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -1708,6 +1729,7 @@
   "category": "rice",
   "cooking_time_minutes": 60,
   "servings": 4,
+  "serving_unit": "",
   "description": "きのことにんじんの香りが広がる。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -1791,6 +1813,7 @@
   "category": "rice",
   "cooking_time_minutes": 15,
   "servings": 2,
+  "serving_unit": "",
   "description": "鮭や梅の代わりにツナマヨでも。",
   "mood_tags": [
    "お弁当向き",
@@ -1856,6 +1879,7 @@
   "category": "rice",
   "cooking_time_minutes": 15,
   "servings": 2,
+  "serving_unit": "",
   "description": "パラパラに仕上げる強火の一皿。",
   "mood_tags": [
    "がっつり",
@@ -1939,6 +1963,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 45,
   "servings": 5,
+  "serving_unit": "",
   "description": "日本のカレールーで作る、みんなの好きなカレー。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -2011,6 +2036,7 @@
   "category": "noodle",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "ソース味の屋台の味。",
   "mood_tags": [
    "がっつり",
@@ -2100,6 +2126,7 @@
   "category": "noodle",
   "cooking_time_minutes": 15,
   "servings": 2,
+  "serving_unit": "",
   "description": "醤油とバターで香ばしく。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -2182,6 +2209,7 @@
   "category": "noodle",
   "cooking_time_minutes": 15,
   "servings": 2,
+  "serving_unit": "",
   "description": "だしの香るシンプルなうどん。",
   "mood_tags": [
    "あったまりたい",
@@ -2252,6 +2280,7 @@
   "category": "noodle",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "夏に食べたい、甘酸っぱい冷たい麺。",
   "mood_tags": [
    "さっぱり",
@@ -2341,6 +2370,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "バター醤油の香りがたまらない。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -2423,6 +2453,7 @@
   "category": "side",
   "cooking_time_minutes": 10,
   "servings": 2,
+  "serving_unit": "",
   "description": "だし醤油でシンプルに。",
   "mood_tags": [
    "さっぱり",
@@ -2475,6 +2506,7 @@
   "category": "side",
   "cooking_time_minutes": 20,
   "servings": 4,
+  "serving_unit": "",
   "description": "ごぼうの代わりにパースニップで。",
   "mood_tags": [
    "作りおき",
@@ -2552,6 +2584,7 @@
   "category": "side",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "マヨネーズでまとめる、日本の定番。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -2635,6 +2668,7 @@
   "category": "side",
   "cooking_time_minutes": 15,
   "servings": 2,
+  "serving_unit": "",
   "description": "四角いフライパンがなくても丸いフライパンで。",
   "mood_tags": [
    "お弁当向き",
@@ -2700,6 +2734,7 @@
   "category": "side",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "乾物でつくる、やさしい常備菜。",
   "mood_tags": [
    "作りおき",
@@ -2776,6 +2811,7 @@
   "category": "side",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "栄養たっぷりの常備菜。",
   "mood_tags": [
    "作りおき",
@@ -2852,6 +2888,7 @@
   "category": "side",
   "cooking_time_minutes": 10,
   "servings": 2,
+  "serving_unit": "",
   "description": "ポリ袋でもむだけ。",
   "mood_tags": [
    "さっぱり",
@@ -2909,6 +2946,7 @@
   "category": "soup",
   "cooking_time_minutes": 10,
   "servings": 2,
+  "serving_unit": "",
   "description": "具は冷蔵庫にあるもので。",
   "mood_tags": [
    "和の定番が恋しい",
@@ -2967,6 +3005,7 @@
   "category": "soup",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "根菜たっぷりで体の芯から温まる。",
   "mood_tags": [
    "あったまりたい",
@@ -3057,6 +3096,7 @@
   "category": "soup",
   "cooking_time_minutes": 90,
   "servings": 4,
+  "serving_unit": "",
   "description": "冬のスイスでこそ食べたい、だしのしみた鍋。",
   "mood_tags": [
    "あったまりたい",
@@ -3148,6 +3188,7 @@
   "category": "soup",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "特別な日に、甘辛い割り下で。",
   "mood_tags": [
    "おもてなし",
@@ -3249,6 +3290,7 @@
   "category": "soup",
   "cooking_time_minutes": 20,
   "servings": 4,
+  "serving_unit": "",
   "description": "フォンデュ・シノワーズの肉で手軽に。",
   "mood_tags": [
    "さっぱり",
@@ -3356,6 +3398,7 @@
   "category": "soup",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "だしで具材を煮るだけの、やさしい鍋。",
   "mood_tags": [
    "あったまりたい",
@@ -3450,6 +3493,7 @@
   "category": "flour",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "キャベツたっぷり、ソースとマヨで。",
   "mood_tags": [
    "がっつり",
@@ -3551,6 +3595,7 @@
   "category": "flour",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "たこ焼き器で、タコの代わりにウインナーやエビで。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -3646,6 +3691,7 @@
   "category": "sweets",
   "cooking_time_minutes": 30,
   "servings": 6,
+  "serving_unit": "個",
   "description": "ふわふわの生地であんこをはさむ。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -3716,6 +3762,7 @@
   "category": "sweets",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "ホットケーキミックスなしで、厚くふわっと焼く。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -3799,6 +3846,7 @@
   "category": "sweets",
   "cooking_time_minutes": 60,
   "servings": 8,
+  "serving_unit": "切れ",
   "description": "スイスのチョコで作る、しっとり濃いケーキ。",
   "mood_tags": [
    "おもてなし"
@@ -3870,6 +3918,7 @@
   "category": "sweets",
   "cooking_time_minutes": 50,
   "servings": 4,
+  "serving_unit": "個",
   "description": "卵と牛乳と砂糖だけの、昔ながらの固めのプリン。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -3924,6 +3973,7 @@
   "category": "sweets",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "外はカリッと、中はほくほく。甘い蜜をからめて。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -3989,6 +4039,7 @@
   "category": "sweets",
   "cooking_time_minutes": 25,
   "servings": 4,
+  "serving_unit": "個",
   "description": "フライパンで蒸す、素朴なおやつ。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -4065,6 +4116,7 @@
   "category": "bread",
   "cooking_time_minutes": 180,
   "servings": 8,
+  "serving_unit": "切れ",
   "description": "ふんわり甘めの、日本の食パン。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -4131,6 +4183,7 @@
   "category": "bread",
   "cooking_time_minutes": 150,
   "servings": 8,
+  "serving_unit": "個",
   "description": "サクサクのクッキー生地をかぶせた、懐かしいパン。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -4214,6 +4267,7 @@
   "category": "bread",
   "cooking_time_minutes": 150,
   "servings": 8,
+  "serving_unit": "個",
   "description": "とろっとしたカスタードを包んだパン。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -4297,6 +4351,7 @@
   "category": "bread",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "ゆで卵をマヨネーズであえた、定番のサンド。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -4368,6 +4423,7 @@
   "category": "bread",
   "cooking_time_minutes": 10,
   "servings": 2,
+  "serving_unit": "",
   "description": "ハムとバターだけの、シンプルなサンドイッチ。",
   "mood_tags": [
    "お弁当向き"
@@ -4431,6 +4487,7 @@
   "category": "apero",
   "cooking_time_minutes": 20,
   "servings": 6,
+  "serving_unit": "",
   "description": "甘辛い肉味噌をクラッカーにのせて。ワインにも合う。",
   "mood_tags": [
    "おもてなし",
@@ -4514,6 +4571,7 @@
   "category": "apero",
   "cooking_time_minutes": 15,
   "servings": 4,
+  "serving_unit": "",
   "description": "切って並べるだけ。味噌マヨが和の味。",
   "mood_tags": [
    "さっぱり",
@@ -4597,6 +4655,7 @@
   "category": "apero",
   "cooking_time_minutes": 40,
   "servings": 6,
+  "serving_unit": "",
   "description": "スイスのアペロの定番を、パイシートで手軽に。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -4656,6 +4715,7 @@
   "category": "apero",
   "cooking_time_minutes": 30,
   "servings": 4,
+  "serving_unit": "",
   "description": "フライパンで焼く、つまみやすい焼き鳥。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -4728,6 +4788,7 @@
   "category": "apero",
   "cooking_time_minutes": 10,
   "servings": 4,
+  "serving_unit": "",
   "description": "冷凍の枝豆で、すぐできるおつまみ。",
   "mood_tags": [
    "ピリ辛",
@@ -4793,6 +4854,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "喫茶店の味。ケチャップを炒めて甘みを出すのがコツ。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -4895,6 +4957,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 40,
   "servings": 4,
+  "serving_unit": "",
   "description": "ケチャップとソースで作る、日本の洋食屋さんのデミ風ソース。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -5010,6 +5073,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 45,
   "servings": 4,
+  "serving_unit": "",
   "description": "ルーを使わず、バターと小麦粉で作るやさしい味。",
   "mood_tags": [
    "あったまりたい",
@@ -5107,6 +5171,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 35,
   "servings": 4,
+  "serving_unit": "",
   "description": "甘酸っぱいソースの、子どもも大人も好きな洋食。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -5216,6 +5281,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 40,
   "servings": 3,
+  "serving_unit": "",
   "description": "ホワイトソースから作る、熱々の日本のグラタン。",
   "mood_tags": [
    "あったまりたい",
@@ -5319,6 +5385,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 35,
   "servings": 2,
+  "serving_unit": "",
   "description": "ケチャップライスにホワイトソースとチーズをのせて焼く。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -5421,6 +5488,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 50,
   "servings": 4,
+  "serving_unit": "",
   "description": "ほくほくのじゃがいもとひき肉。揚げたてにソースをかけて。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -5530,6 +5598,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 50,
   "servings": 4,
+  "serving_unit": "",
   "description": "コンソメでことこと煮た、やさしい味。",
   "mood_tags": [
    "あったまりたい",
@@ -5621,6 +5690,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "ケチャップ味の甘辛い豚肉。ご飯にもパンにも。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -5724,6 +5794,7 @@
   "category": "yoshoku",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "醤油とバターの香り。大根おろしでさっぱり。",
   "mood_tags": [
    "さっぱり",
@@ -5808,6 +5879,7 @@
   "category": "chinese",
   "cooking_time_minutes": 20,
   "servings": 3,
+  "serving_unit": "",
   "description": "豆板醤でピリッと、ご飯にのせて。",
   "mood_tags": [
    "ピリ辛",
@@ -5922,6 +5994,7 @@
   "category": "chinese",
   "cooking_time_minutes": 50,
   "servings": 4,
+  "serving_unit": "",
   "description": "パリッと焼いた羽根つき餃子。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -6025,6 +6098,7 @@
   "category": "chinese",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "甘辛いケチャップソースのエビ。",
   "mood_tags": [
    "ピリ辛",
@@ -6115,6 +6189,7 @@
   "category": "chinese",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "キャベツと豚肉の甘辛味噌炒め。",
   "mood_tags": [
    "がっつり",
@@ -6205,6 +6280,7 @@
   "category": "chinese",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "細切りのピーマンと牛肉の炒め物。",
   "mood_tags": [
    "野菜たっぷり",
@@ -6282,6 +6358,7 @@
   "category": "chinese",
   "cooking_time_minutes": 35,
   "servings": 3,
+  "serving_unit": "",
   "description": "甘酢あんで野菜もたっぷり。",
   "mood_tags": [
    "子どもが喜ぶ",
@@ -6377,6 +6454,7 @@
   "category": "chinese",
   "cooking_time_minutes": 45,
   "servings": 4,
+  "serving_unit": "",
   "description": "パリパリの皮に春雨の具を包んで。",
   "mood_tags": [
    "おもてなし",
@@ -6466,6 +6544,7 @@
   "category": "chinese",
   "cooking_time_minutes": 10,
   "servings": 2,
+  "serving_unit": "",
   "description": "ふんわり卵の、すぐできるスープ。",
   "mood_tags": [
    "あったまりたい",
@@ -6536,6 +6615,7 @@
   "category": "korean",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "甘辛い春雨と野菜の炒め物。",
   "mood_tags": [
    "野菜たっぷり",
@@ -6637,6 +6717,7 @@
   "category": "korean",
   "cooking_time_minutes": 35,
   "servings": 2,
+  "serving_unit": "",
   "description": "ナムルと肉をご飯の上で混ぜて。",
   "mood_tags": [
    "野菜たっぷり",
@@ -6744,6 +6825,7 @@
   "category": "korean",
   "cooking_time_minutes": 25,
   "servings": 3,
+  "serving_unit": "",
   "description": "甘めのタレに漬けた牛肉と野菜の炒め物。",
   "mood_tags": [
    "がっつり",
@@ -6838,6 +6920,7 @@
   "category": "korean",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "やわらか豆腐の辛いスープ。",
   "mood_tags": [
    "ピリ辛",
@@ -6933,6 +7016,7 @@
   "category": "korean",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "ねぎたっぷりのもちもちチヂミ。",
   "mood_tags": [
    "おもてなし",
@@ -7028,6 +7112,7 @@
   "category": "vietnamese",
   "cooking_time_minutes": 30,
   "servings": 3,
+  "serving_unit": "",
   "description": "エビと野菜を包んで、スイートチリソースで。",
   "mood_tags": [
    "さっぱり",
@@ -7106,6 +7191,7 @@
   "category": "vietnamese",
   "cooking_time_minutes": 30,
   "servings": 2,
+  "serving_unit": "",
   "description": "あっさりスープの米麺。",
   "mood_tags": [
    "さっぱり",
@@ -7195,6 +7281,7 @@
   "category": "vietnamese",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "なますとハムをはさんだベトナムのサンドイッチ。",
   "mood_tags": [
    "さっぱり",
@@ -7289,6 +7376,7 @@
   "category": "thai",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "ひき肉とバジルの炒め物に目玉焼きをのせて。",
   "mood_tags": [
    "ピリ辛",
@@ -7390,6 +7478,7 @@
   "category": "thai",
   "cooking_time_minutes": 25,
   "servings": 3,
+  "serving_unit": "",
   "description": "ココナッツミルクのまろやかな辛さ。",
   "mood_tags": [
    "ピリ辛",
@@ -7485,6 +7574,7 @@
   "category": "thai",
   "cooking_time_minutes": 25,
   "servings": 2,
+  "serving_unit": "",
   "description": "甘酸っぱい米麺の焼きそば。",
   "mood_tags": [
    "子どもが喜ぶ"
@@ -7586,6 +7676,7 @@
   "category": "thai",
   "cooking_time_minutes": 20,
   "servings": 2,
+  "serving_unit": "",
   "description": "酸っぱくて辛い、エビのスープ。",
   "mood_tags": [
    "ピリ辛",

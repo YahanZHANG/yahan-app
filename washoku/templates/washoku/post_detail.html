@@ -36,12 +36,27 @@
         <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
     {% endif %}
 
+    {% for photo in post.photos %}
+        <a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ post.title }}の写真{{ forloop.counter }}" loading="lazy"></a>
+    {% endfor %}
+
     {% if post.kind == "column" and post.status == "published" %}
         {% url 'washoku:post_react' post.pk as react_url %}
         {% include "washoku/includes/stamps.html" with action=react_url author_id=post.author_id anchor="stamps" %}
     {% endif %}
 
 </article>
+
+{% if related_recipes %}
+<section class="washoku-section washoku-related">
+    <h2>関連レシピ</h2>
+    <ul class="washoku-list">
+        {% for recipe in related_recipes %}
+            <li><a href="{% url 'washoku:recipe_detail' recipe.pk %}">{{ recipe.name }}</a></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
 
 {% if post.status == "published" %}
     {% if post.kind == "product" %}

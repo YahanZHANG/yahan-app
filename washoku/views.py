@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
 from django.http import Http404, JsonResponse
@@ -16,6 +17,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .alerts import send_admin_alert
+from .photos import delete_uploaded_photos, upload_photo
 from .push import send_reply_push, send_stamp_push
 from .forms import (
     CommentEditForm,
@@ -691,6 +693,10 @@ def recipe_detail(request, pk):
                 item for item in recipe.recipe_ingredients.all()
                 if item.is_seasoning
             ],
+            "related_posts": related_posts(
+                [item.ingredient for item in recipe.recipe_ingredients.all()]
+            ),
+            "photo_slots": [("photo_1", recipe.photo_1), ("photo_2", recipe.photo_2)],
             "includes_rice": any(
                 item.ingredient.name == "米" and "膳" in item.amount
                 for item in recipe.recipe_ingredients.all()
@@ -833,6 +839,8 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
+            "related_posts": related_posts([ingredient]),
+            "photo_slots": [("photo_url", ingredient.photo_url)],
             **comment_context(request, ingredient=ingredient),
         },
     )
@@ -1096,7 +1104,7 @@ def comment_create(request, target, pk):
     else:
         raise Http404
 
-    form = CommentForm(request.POST)
+    form = CommentForm(request.POST, request.FILES)
 
     if not form.is_valid():
         messages.error(request, "コメントを入力してください（500文字まで）。")
@@ -1105,6 +1113,15 @@ def comment_create(request, target, pk):
     if posted_too_recently(request.user):
         messages.error(request, "続けて投稿するときは1分ほど空けてください。")
         return redirect(back + "#comments")
+
+    photo_url = ""
+
+    if form.cleaned_data.get("photo"):
+        try:
+            photo_url = upload_photo(form.cleaned_data["photo"], "comments")
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back + "#comments")
 
     parent = None
     parent_id = request.POST.get("parent", "")
@@ -1133,6 +1150,7 @@ def comment_create(request, target, pk):
     comment.store = store
     comment.post = post
     comment.parent = parent
+    comment.photo_url = photo_url
 
     if parent:
         comment.kind = "tip"
@@ -1143,6 +1161,85 @@ def comment_create(request, target, pk):
         notify_reply(comment)
 
     return redirect(comment_target_url(comment))
+
+
+# 管理者がページから写真を足せるもの: (モデル, 写真の項目, 保存先, ページの URL 名)
+STAFF_PHOTO_TARGETS = {
+    "recipe": (Recipe, ("photo_1", "photo_2"), "recipes", "washoku:recipe_detail"),
+    "ingredient": (Ingredient, ("photo_url",), "ingredients", "washoku:ingredient_detail"),
+    "store": (Store, ("photo_url",), "stores", "washoku:store_detail"),
+}
+
+
+@login_required
+@require_POST
+def staff_photo(request, target, pk):
+    """
+    管理者だけ: レシピ・食材・お店のページで写真を追加・変更・削除する。
+    """
+
+    if not request.user.is_staff or target not in STAFF_PHOTO_TARGETS:
+        raise Http404
+
+    model, fields, folder, url_name = STAFF_PHOTO_TARGETS[target]
+    item = get_object_or_404(model, pk=pk)
+    back = reverse(url_name, args=[pk])
+
+    field = request.POST.get("field", fields[0])
+
+    if field not in fields:
+        raise Http404
+
+    old = getattr(item, field)
+    photo = request.FILES.get("photo")
+
+    if photo:
+        try:
+            setattr(item, field, upload_photo(photo, folder))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+    elif request.POST.get("remove"):
+        setattr(item, field, "")
+    else:
+        return redirect(back)
+
+    update_fields = [field]
+
+    # 食材の写真を自分の写真に変えたら、Wikimedia の出典は消す
+    if target == "ingredient":
+        item.photo_credit = ""
+        item.photo_source = ""
+        update_fields += ["photo_credit", "photo_source"]
+
+    item.save(update_fields=update_fields)
+    delete_uploaded_photos(old)
+
+    messages.success(request, "写真を保存しました。" if photo else "写真を外しました。")
+
+    return redirect(back)
+
+
+def upload_form_photos(form, folder, names=("photo_1", "photo_2")):
+    """
+    フォームで選ばれた写真を順に保存して URL の一覧を返す。
+    どれかが失敗したら、その項目にエラーを付け、保存済みの写真は消す。
+    """
+
+    urls = []
+
+    for name in names:
+        if form.cleaned_data.get(name):
+            try:
+                urls.append(upload_photo(form.cleaned_data[name], folder))
+            except ValidationError as error:
+                form.add_error(name, error)
+
+    if form.errors:
+        delete_uploaded_photos(*urls)
+        return []
+
+    return urls
 
 
 def notify_reply(comment):
@@ -1190,13 +1287,28 @@ def comment_edit(request, pk):
 
     if request.method == "POST":
 
-        form = CommentEditForm(request.POST, instance=comment)
+        old_photo = comment.photo_url
+        form = CommentEditForm(request.POST, request.FILES, instance=comment)
 
         if form.is_valid():
 
             comment = form.save(commit=False)
+
+            try:
+                if form.cleaned_data.get("photo"):
+                    comment.photo_url = upload_photo(form.cleaned_data["photo"], "comments")
+                elif form.cleaned_data.get("remove_photo"):
+                    comment.photo_url = ""
+            except ValidationError as error:
+                form.add_error("photo", error)
+
+        if form.is_valid():
+
             comment.edited_at = timezone.now()
             comment.save()
+
+            if old_photo != comment.photo_url:
+                delete_uploaded_photos(old_photo)
 
             return redirect(comment_target_url(comment))
 
@@ -1222,12 +1334,17 @@ def comment_delete(request, pk):
 
     back = comment_target_url(comment).split("#")[0] + "#comments"
 
+    photo_url = comment.photo_url
+
     if comment.replies.exists():
         # 返信が付いていれば消さずに「削除されました」と表示する
         comment.is_deleted = True
-        comment.save(update_fields=["is_deleted"])
+        comment.photo_url = ""
+        comment.save(update_fields=["is_deleted", "photo_url"])
     else:
         comment.delete()
+
+    delete_uploaded_photos(photo_url)
 
     messages.success(request, "コメントを削除しました。")
 
@@ -1491,6 +1608,7 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
+            "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
     )
@@ -1512,13 +1630,19 @@ def recipe_submit(request):
         )
         return redirect("washoku:my_recipes")
 
-    form = RecipeSubmissionForm(request.POST or None)
+    form = RecipeSubmissionForm(request.POST or None, request.FILES or None)
+
+    photos = []
+
+    if request.method == "POST" and form.is_valid():
+        photos = upload_form_photos(form, "recipes")
 
     if request.method == "POST" and form.is_valid():
 
         with transaction.atomic():
 
             recipe = form.save(commit=False)
+            recipe.photo_1, recipe.photo_2 = (photos + ["", ""])[:2]
             recipe.status = "draft"
             recipe.origin = "member"
             recipe.submitted_by = request.user
@@ -1944,6 +2068,54 @@ POST_KIND_TEXT = {
 }
 
 
+def ingredient_group_filter(prefix, ingredients):
+    """
+    食材 (と同じ検索グループの食材) に当てはまる条件。prefix は関係名 (例: "ingredients__")。
+    """
+
+    groups = {ingredient.group_name for ingredient in ingredients}
+
+    return (
+        Q(**{f"{prefix}search_group__in": groups})
+        | Q(**{f"{prefix}search_group": "", f"{prefix}name__in": groups})
+    )
+
+
+def related_posts(ingredients, limit=5):
+    """
+    これらの食材に関係するコラム・参考リンクなど (公開済み、新しい順)。
+    """
+
+    if not ingredients:
+        return []
+
+    return list(
+        Post.objects
+        .filter(status="published")
+        .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("-created_at")[:limit]
+    )
+
+
+def related_recipes(user, post, limit=6):
+    """
+    投稿に選んだ食材を使うレシピ。
+    """
+
+    ingredients = list(post.ingredients.all())
+
+    if not ingredients:
+        return []
+
+    return list(
+        visible_recipes(user)
+        .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("name")[:limit]
+    )
+
+
 def visible_posts(user):
 
     posts = Post.objects.all()
@@ -2023,6 +2195,7 @@ def post_detail(request, pk):
         {
             "post": post,
             "text": POST_KIND_TEXT[post.kind],
+            "related_recipes": related_recipes(request.user, post),
             "stamps": reaction_stamps(
                 post.reactions.values_list("post_id", "user_id", "kind"),
                 request.user,
@@ -2047,12 +2220,18 @@ def post_submit(request, kind):
         )
         return redirect("washoku:my_posts")
 
-    form = PostForm(request.POST or None, kind=kind)
+    form = PostForm(request.POST or None, request.FILES or None, kind=kind)
+
+    photos = []
+
+    if request.method == "POST" and form.is_valid():
+        photos = upload_form_photos(form, "columns")
 
     if request.method == "POST" and form.is_valid():
 
         post = form.save(commit=False)
         post.kind = kind
+        post.photo_1, post.photo_2 = (photos + ["", ""])[:2]
         post.author = request.user
         # 管理者の投稿はそのまま公開する
         post.status = "published" if request.user.is_staff else "draft"

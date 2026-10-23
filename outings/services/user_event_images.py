@@ -20,7 +20,7 @@ SUPPORTED_FORMATS = {
 }
 
 
-def process_user_event_image(uploaded_file):
+def process_user_event_image(uploaded_file, max_size=MAX_OUTPUT_SIZE, quality=82):
 
     if uploaded_file.size > MAX_FILE_SIZE:
         raise ValidationError(
@@ -54,8 +54,8 @@ def process_user_event_image(uploaded_file):
 
             image.thumbnail(
                 (
-                    MAX_OUTPUT_SIZE,
-                    MAX_OUTPUT_SIZE,
+                    max_size,
+                    max_size,
                 ),
                 Image.Resampling.LANCZOS,
             )
@@ -68,7 +68,7 @@ def process_user_event_image(uploaded_file):
             image.save(
                 output,
                 format="WEBP",
-                quality=82,
+                quality=quality,
                 method=6,
             )
 

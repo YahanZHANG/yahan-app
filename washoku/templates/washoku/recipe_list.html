@@ -6,6 +6,7 @@
 
 <div class="washoku-title-row">
     <h1>レシピ</h1>
+    <a class="washoku-submit-pill" href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i>投稿する</a>
     <details class="washoku-ways">
         <summary>ほかの探し方</summary>
         <ul>
@@ -76,7 +77,5 @@
 {% else %}
     <p class="washoku-empty">条件に合うレシピがありません。{% if query %}<a href="{% url 'washoku:search' %}?q={{ query|urlencode }}">ほかのページも探す</a>{% endif %}</p>
 {% endif %}
-
-<p class="washoku-more"><a href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> あなたのレシピを投稿する</a></p>
 
 {% endblock %}

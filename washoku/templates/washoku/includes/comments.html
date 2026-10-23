@@ -19,11 +19,12 @@
             {% if user.is_authenticated and not comment.is_deleted and not comment.is_hidden %}
                 <details class="washoku-reply-form">
                     <summary>返信する</summary>
-                    <form method="post" action="{% url 'washoku:comment_create' target target_pk %}">
+                    <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="parent" value="{{ comment.pk }}">
                         <input type="hidden" name="kind" value="tip">
                         <textarea name="body" rows="2" maxlength="500" required aria-label="返信"></textarea>
+                        <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo" accept="image/*"></label>
                         <button type="submit">返信</button>
                     </form>
                 </details>
@@ -35,13 +36,14 @@
     {% endfor %}
 
     {% if user.is_authenticated %}
-        <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form">
+        <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="washoku-kind">
                 <label><input type="radio" name="kind" value="tip" checked> {{ tip_label|default:"工夫・コツ" }}</label>
                 <label><input type="radio" name="kind" value="question"> 質問</label>
             </div>
             {{ comment_form.body }}
+            <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo" accept="image/*"></label>
             <button type="submit" class="washoku-button">投稿する</button>
         </form>
     {% else %}

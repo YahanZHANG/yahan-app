@@ -7,6 +7,8 @@ from pathlib import Path
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import IntegrityError
@@ -864,7 +866,7 @@ class NutritionTests(TestCase):
 
         response = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
 
-        self.assertContains(response, "1人分の栄養")
+        self.assertContains(response, "1人分（1食分）の栄養")
         self.assertContains(response, "340<small>kcal</small>")
         self.assertContains(response, "P 33% ・ F 53% ・ C 14%")
 
@@ -875,7 +877,7 @@ class NutritionTests(TestCase):
         self.assertIsNone(recipe.pfc_ratio())
         self.assertNotContains(
             self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])),
-            "1人分の栄養",
+            "1人分（1食分）の栄養",
         )
 
     def test_recipes_can_be_sorted_by_energy(self):
@@ -1010,6 +1012,41 @@ class PostTests(TestCase):
         unscheduled.refresh_from_db()
         self.assertEqual((post.status, post.created_at), ("published", later))
         self.assertEqual(unscheduled.status, "draft")
+
+    def test_columns_and_recipes_link_through_ingredient_groups(self):
+
+        recipe = make_recipe()
+        thigh = Ingredient.objects.get(name="鶏もも肉")
+        breast = Ingredient.objects.create(name="鶏むね肉", search_group="鶏肉", category="meat")
+
+        column = Post.objects.create(kind="column", title="鶏肉の部位の選び方", body="x" * 20, author=self.member, status="published")
+        column.ingredients.add(breast)
+        draft = Post.objects.create(kind="column", title="下書きのコラム", body="x" * 20, author=self.member)
+        draft.ingredients.add(thigh)
+
+        # 同じ検索グループ (鶏肉) のレシピと食材のページに出る。下書きは出ない
+        page = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+        self.assertContains(page, "関連する読みもの")
+        self.assertContains(page, "鶏肉の部位の選び方")
+        self.assertNotContains(page, "下書きのコラム")
+        self.assertContains(self.client.get(reverse("washoku:ingredient_detail", args=[thigh.pk])), "鶏肉の部位の選び方")
+
+        page = self.client.get(column.get_absolute_url())
+        self.assertContains(page, "関連レシピ")
+        self.assertContains(page, "照り焼きチキン")
+
+    def test_serving_unit_labels(self):
+
+        bread = make_recipe(name="メロンパン", servings=8, serving_unit="個", energy_kcal=280, protein_g=6, fat_g=8, carbs_g=45)
+        dish = make_recipe(name="肉じゃが", servings=4, energy_kcal=330, protein_g=14, fat_g=12, carbs_g=40)
+
+        page = self.client.get(reverse("washoku:recipe_detail", args=[bread.pk]))
+        self.assertContains(page, "8個分")
+        self.assertContains(page, "1個あたりの栄養")
+
+        page = self.client.get(reverse("washoku:recipe_detail", args=[dish.pk]))
+        self.assertContains(page, "4人分")
+        self.assertContains(page, "1人分（1食分）の栄養")
 
     def test_staff_posts_are_published_at_once(self):
 
@@ -1532,3 +1569,184 @@ class WelcomeAndJoinTests(TestCase):
         self.assertNotContains(home, "無料の会員登録でできること")
         self.assertContains(home, "マイページでオンにする")
         self.assertContains(self.client.get(reverse("washoku:my_page")), "ホーム画面に追加する方法")
+
+
+class PhotoTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.recipe = make_recipe()
+
+    def photo(self):
+        return SimpleUploadedFile("tofu.jpg", b"fake", content_type="image/jpeg")
+
+    def test_comment_with_one_photo_and_delete_removes_it(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://res.cloudinary.com/demo/image/upload/v1/yapp/washoku/comments/a.webp") as upload:
+            self.client.post(url, {"kind": "tip", "body": "絹ごしはこれが近い", "photo": self.photo()})
+
+        upload.assert_called_once()
+        comment = Comment.objects.get()
+        self.assertTrue(comment.photo_url.endswith("a.webp"))
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), comment.photo_url)
+
+        with mock.patch("washoku.views.delete_uploaded_photos") as delete:
+            self.client.post(reverse("washoku:comment_delete", args=[comment.pk]))
+
+        delete.assert_called_once_with(comment.photo_url)
+        self.assertFalse(Comment.objects.exists())
+
+    def test_find_washoku_photos_tries_each_swiss_substitute_once(self):
+
+        kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
+        leek = Ingredient.objects.create(name="リーキ", name_de="Lauch", category="vegetable")
+        Ingredient.objects.create(name="テスト用の調味料", category="seasoning")
+        Substitute.objects.create(original_name="かぶ", substitute=kohlrabi)
+        Substitute.objects.create(original_name="長ねぎ", substitute=leek)
+
+        found = {"url": "https://upload.wikimedia.org/k.jpg", "credit": "A / CC BY-SA 4.0 / Wikimedia Commons", "source": "https://commons.wikimedia.org/wiki/File:K.jpg"}
+
+        with mock.patch("washoku.management.commands.find_washoku_photos.find_commons_photo", side_effect=[found, None]) as search, \
+                mock.patch("washoku.management.commands.find_washoku_photos.time.sleep"):
+            call_command("find_washoku_photos", stdout=open("/dev/null", "w"))
+
+        self.assertEqual(search.call_count, 2)
+        self.assertEqual(search.call_args_list[0].args[0], "kohlrabi vegetable")
+
+        kohlrabi.refresh_from_db()
+        self.assertEqual(kohlrabi.photo_url, found["url"])
+        self.assertTrue(Ingredient.objects.get(name="リーキ").photo_auto_tried)
+        self.assertFalse(Ingredient.objects.get(name="テスト用の調味料").photo_auto_tried)
+
+        # 外した写真は、次の起動で付け直さない
+        Ingredient.objects.filter(pk=kohlrabi.pk).update(photo_url="")
+
+        with mock.patch("washoku.management.commands.find_washoku_photos.find_commons_photo") as search:
+            call_command("find_washoku_photos", stdout=open("/dev/null", "w"))
+
+        search.assert_not_called()
+
+    def test_photo_that_cannot_be_read_stops_the_comment(self):
+
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=ValidationError("画像を正常に読み込めませんでした。")):
+            response = self.client.post(url, {"kind": "tip", "body": "写真つき", "photo": self.photo()}, follow=True)
+
+        self.assertContains(response, "画像を正常に読み込めませんでした。")
+        self.assertFalse(Comment.objects.exists())
+
+    def test_column_takes_two_photos_and_products_none(self):
+
+        self.client.force_login(self.member)
+
+        uploaded = iter(["https://example.com/1.webp", "https://example.com/2.webp"])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=lambda *args: next(uploaded)), \
+                mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(
+                reverse("washoku:post_submit", args=["column"]),
+                {"title": "豆腐の選び方", "body": "Coop の Tofu nature は木綿に近いです。", "photo_1": self.photo(), "photo_2": self.photo()},
+            )
+
+        post = Post.objects.get()
+        self.assertEqual(post.photos(), ["https://example.com/1.webp", "https://example.com/2.webp"])
+
+        page = self.client.get(reverse("washoku:post_submit", args=["product"]))
+        self.assertNotContains(page, 'name="photo_1"')
+        self.assertContains(self.client.get(reverse("washoku:post_submit", args=["column"])), 'name="photo_2"')
+
+    def test_ingredient_photo_on_substitute_list_and_detail(self):
+
+        kohlrabi = Ingredient.objects.create(
+            name="コールラビ", name_de="Kohlrabi", category="vegetable",
+            photo_url="https://upload.wikimedia.org/k.jpg", photo_credit="Someone / CC BY-SA 4.0 / Wikimedia Commons",
+        )
+        Substitute.objects.create(original_name="かぶ", substitute=kohlrabi)
+
+        self.assertContains(self.client.get(reverse("washoku:substitute_list")), "https://upload.wikimedia.org/k.jpg")
+        self.assertContains(self.client.get(reverse("washoku:ingredient_detail", args=[kohlrabi.pk])), "CC BY-SA 4.0")
+
+    def test_find_commons_photo_takes_the_first_usable_image_with_credit(self):
+
+        from washoku.photos import commons_query, find_commons_photo, thumbnail_url
+
+        self.assertEqual(commons_query(Ingredient(name="かぶ（テスト）", name_de="Weisse Rüben / Mairübli")), "Weisse Rüben")
+        self.assertEqual(commons_query(Ingredient(name="白かぶ", name_de="Weisse Rüben")), "white turnips Brassica rapa")
+        self.assertEqual(
+            thumbnail_url("https://res.cloudinary.com/demo/image/upload/v1/a.webp", 160),
+            "https://res.cloudinary.com/demo/image/upload/c_fill,w_160,h_160/v1/a.webp",
+        )
+
+        pages = {
+            "1": {"index": 1, "imageinfo": [{"mime": "image/svg+xml", "width": 800}]},
+            "2": {"index": 2, "imageinfo": [{
+                "mime": "image/jpeg", "width": 1200, "thumburl": "https://upload.wikimedia.org/thumb/k.jpg",
+                "descriptionurl": "https://commons.wikimedia.org/wiki/File:K.jpg",
+                "extmetadata": {"Artist": {"value": "<a href='x'>Rainer</a>"}, "LicenseShortName": {"value": "CC BY-SA 3.0"}},
+            }]},
+        }
+
+        response = mock.Mock()
+        response.json.return_value = {"query": {"pages": pages}}
+
+        with mock.patch("washoku.photos.requests.get", return_value=response):
+            photo = find_commons_photo("Kohlrabi")
+
+        self.assertEqual(photo["url"], "https://upload.wikimedia.org/thumb/k.jpg")
+        self.assertEqual(photo["credit"], "Rainer / CC BY-SA 3.0 / Wikimedia Commons")
+
+    def test_only_staff_can_add_photos_to_recipe_ingredient_and_store_pages(self):
+
+        staff = get_user_model().objects.create_user("admin", password="x", is_staff=True)
+        url = reverse("washoku:staff_photo", args=["recipe", self.recipe.pk])
+        page_url = reverse("washoku:recipe_detail", args=[self.recipe.pk])
+
+        # 会員には追加のボタンも見えず、送っても何も変わらない
+        self.client.force_login(self.member)
+        self.assertNotContains(self.client.get(page_url), "写真を追加・変更")
+        self.assertEqual(self.client.post(url, {"field": "photo_2", "photo": self.photo()}).status_code, 404)
+
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(page_url), "写真を追加・変更")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/r2.webp"):
+            self.client.post(url, {"field": "photo_2", "photo": self.photo()})
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photos(), ["https://example.com/r2.webp"])
+
+        with mock.patch("washoku.views.delete_uploaded_photos") as delete:
+            self.client.post(url, {"field": "photo_2", "remove": "1"})
+
+        delete.assert_called_once_with("https://example.com/r2.webp")
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photos(), [])
+
+        store = Store.objects.create(name="Yoshi", kind="japanese", city="Zürich", address="x")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/s.webp"):
+            self.client.post(reverse("washoku:staff_photo", args=["store", store.pk]), {"photo": self.photo()})
+
+        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[store.pk])), "https://example.com/s.webp")
+
+    def test_recipe_submission_takes_two_photos(self):
+
+        self.client.force_login(self.member)
+
+        uploaded = iter(["https://example.com/a.webp", "https://example.com/b.webp"])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=lambda *args: next(uploaded)), \
+                mock.patch("washoku.views.send_admin_alert"):
+            self.client.post(reverse("washoku:recipe_submit"), {
+                "name": "豆腐ハンバーグ", "category": "meat", "ingredients_text": "鶏もも肉 200g\n木綿豆腐 1丁",
+                "steps": "混ぜて焼く", "photo_1": self.photo(), "photo_2": self.photo(),
+            })
+
+        recipe = Recipe.objects.get(name="豆腐ハンバーグ")
+        self.assertEqual(recipe.photos(), ["https://example.com/a.webp", "https://example.com/b.webp"])

@@ -1,6 +1,10 @@
-from django.contrib import admin
+from django import forms
+from django.contrib import admin, messages
+from django.core.exceptions import ValidationError
+from django.utils.html import format_html
 
 from .geocode import geocode_store
+from .photos import commons_query, delete_uploaded_photos, find_commons_photo, upload_photo
 from .models import (
     Announcement,
     Comment,
@@ -41,19 +45,123 @@ class SubstituteInline(admin.TabularInline):
     extra = 0
 
 
+class IngredientAdminForm(forms.ModelForm):
+
+    photo_upload = forms.FileField(
+        label="写真をアップロード",
+        required=False,
+        help_text="自分で撮った写真など。小さく変換して保存し、上の「写真」を置きかえます。",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = "__all__"
+
+    def clean_photo_upload(self):
+
+        photo = self.cleaned_data.get("photo_upload")
+
+        if not photo:
+            return ""
+
+        try:
+            return upload_photo(photo, "ingredients")
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages)
+
+
+class HasPhotoFilter(admin.SimpleListFilter):
+    title = "写真"
+    parameter_name = "photo"
+
+    def lookups(self, request, model_admin):
+        return [("yes", "あり"), ("no", "なし")]
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.exclude(photo_url="")
+        if self.value() == "no":
+            return queryset.filter(photo_url="")
+        return queryset
+
+
+# Wikimedia で一度に探す数 (1件に1〜2秒かかるので、画面がタイムアウトしない数に)
+COMMONS_BATCH = 10
+
+
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
+    form = IngredientAdminForm
+
     list_display = (
         "name",
         "name_de",
         "category",
         "shop_list",
+        "photo_thumb",
     )
 
     list_filter = (
+        HasPhotoFilter,
         "category",
         "shops",
     )
+
+    actions = [
+        "find_photos_on_commons",
+    ]
+
+    @admin.display(description="写真")
+    def photo_thumb(self, obj):
+        if not obj.photo_url:
+            return ""
+        return format_html('<img src="{}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px">', obj.photo_url)
+
+    def save_model(self, request, obj, form, change):
+
+        uploaded = form.cleaned_data.get("photo_upload")
+
+        if uploaded:
+            old = Ingredient.objects.filter(pk=obj.pk).values_list("photo_url", flat=True).first() if change else ""
+            obj.photo_url = uploaded
+            obj.photo_credit = ""
+            obj.photo_source = ""
+            delete_uploaded_photos(old)
+
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="写真がない食材の写真を Wikimedia Commons で探す（10件ずつ）")
+    def find_photos_on_commons(self, request, queryset):
+
+        targets = list(queryset.filter(photo_url="")[:COMMONS_BATCH])
+        found = []
+        missing = []
+
+        for ingredient in targets:
+
+            try:
+                photo = find_commons_photo(commons_query(ingredient))
+            except Exception as error:  # 通信の失敗などで、ほかの食材まで止めない
+                self.message_user(request, f"{ingredient.name}: 探せませんでした（{type(error).__name__}）", messages.WARNING)
+                continue
+
+            if not photo:
+                missing.append(ingredient.name)
+                continue
+
+            ingredient.photo_url = photo["url"]
+            ingredient.photo_credit = photo["credit"]
+            ingredient.photo_source = photo["source"]
+            ingredient.save(update_fields=["photo_url", "photo_credit", "photo_source"])
+            found.append(ingredient.name)
+
+        if found:
+            self.message_user(request, f"写真を付けました（{len(found)}件）: {'、'.join(found)}。合っているか、食材のページで確かめてください。")
+        if missing:
+            self.message_user(request, f"見つかりませんでした: {'、'.join(missing)}", messages.WARNING)
+        if not targets:
+            self.message_user(request, "選んだ食材には、もう写真があります。", messages.INFO)
 
     search_fields = (
         "name",
@@ -342,6 +450,10 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = (
         "title",
         "body",
+    )
+
+    autocomplete_fields = (
+        "ingredients",
     )
 
     @admin.display(description="買えるお店")

@@ -8,6 +8,14 @@
 
 <h1>{{ ingredient.name }}</h1>
 
+{% if ingredient.photo_url %}
+<figure class="washoku-ingredient-photo">
+    <img src="{{ ingredient.photo_url }}" alt="{{ ingredient.name }}（{{ ingredient.name_de }}）">
+    {% if ingredient.photo_credit %}<figcaption>写真: {% if ingredient.photo_source %}<a href="{{ ingredient.photo_source }}" target="_blank" rel="noopener">{{ ingredient.photo_credit }}</a>{% else %}{{ ingredient.photo_credit }}{% endif %}</figcaption>{% endif %}
+</figure>
+{% endif %}
+{% include "washoku/includes/staff_photos.html" with target="ingredient" pk=ingredient.pk slots=photo_slots %}
+
 <dl class="washoku-facts">
     {% if ingredient.name_de %}<dt>ドイツ語</dt><dd lang="de">{{ ingredient.name_de }}</dd>{% endif %}
     {% if ingredient.name_fr %}<dt>フランス語</dt><dd lang="fr">{{ ingredient.name_fr }}</dd>{% endif %}
@@ -34,6 +42,8 @@
     {% if substitute.tips %}<p>{{ substitute.tips|linebreaksbr }}</p>{% endif %}
 </section>
 {% endfor %}
+
+{% include "washoku/includes/related_posts.html" %}
 
 {% if recipes %}
 <section class="washoku-section">

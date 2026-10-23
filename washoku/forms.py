@@ -7,7 +7,18 @@ from django import forms
 from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe, Substitute
 
 
+def photo_field(label="写真（なくてもOK）"):
+    # 送る前に小さな WebP にするので、元の大きさは気にしなくてよい
+    return forms.FileField(
+        label=label,
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
+    )
+
+
 class CommentForm(forms.ModelForm):
+
+    photo = photo_field()
 
     class Meta:
         model = Comment
@@ -25,6 +36,13 @@ class CommentForm(forms.ModelForm):
 
 
 class CommentEditForm(forms.ModelForm):
+
+    photo = photo_field("写真を変える")
+
+    remove_photo = forms.BooleanField(
+        label="写真を外す",
+        required=False,
+    )
 
     class Meta:
         model = Comment
@@ -84,6 +102,10 @@ class PostForm(forms.ModelForm):
     参考リンクのときだけ、URL と出典を聞く (必須は URL だけ)。
     """
 
+    # コラムだけ写真を2枚まで
+    photo_1 = photo_field()
+    photo_2 = photo_field("写真2（なくてもOK）")
+
     # 同じ商品が Migros でも Coop でも買えることがあるので、お店は複数選べる
     shops = forms.MultipleChoiceField(
         label="買えるお店",
@@ -107,6 +129,10 @@ class PostForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.kind = kind
+
+        if kind != "column":
+            del self.fields["photo_1"]
+            del self.fields["photo_2"]
 
         if kind == "product":
 
@@ -283,6 +309,9 @@ class RecipeSubmissionForm(forms.ModelForm):
             }
         ),
     )
+
+    photo_1 = photo_field("料理の写真（なくてもOK）")
+    photo_2 = photo_field("写真2（なくてもOK）")
 
     mood_tags = forms.ModelMultipleChoiceField(
         label="気分タグ",

@@ -1,0 +1,10 @@
+{% if related_posts %}
+<section class="washoku-section washoku-related">
+    <h2>関連する読みもの</h2>
+    <ul class="washoku-list">
+        {% for post in related_posts %}
+            <li><a href="{% url 'washoku:post_detail' post.pk %}">{{ post.title }}</a> <small class="washoku-chip">{{ post.get_kind_display }}</small></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}

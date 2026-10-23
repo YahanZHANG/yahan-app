@@ -2681,3 +2681,287 @@ a.washoku-favorite {
     text-decoration: underline;
     cursor: pointer;
 }
+
+/* 関連する読みもの・関連レシピ: 種類のラベルはタイトルの横に小さく */
+.washoku-related li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+}
+
+.washoku-related .washoku-chip {
+    flex: none;
+    width: auto;
+    margin: 0;
+}
+
+/* ---------- 写真 ---------- */
+
+/* コメント・コラムの写真 */
+.washoku-photo {
+    display: block;
+    max-width: 100%;
+    max-height: 420px;
+    margin: 8px 0;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.washoku-photo-small {
+    max-height: 160px;
+}
+
+.washoku-photo-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-photo-input input[type="file"] {
+    max-width: 220px;
+    font-size: 13px;
+}
+
+/* 食材のページの写真と出典 */
+.washoku-ingredient-photo {
+    margin: 0 0 16px;
+}
+
+.washoku-ingredient-photo img {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    object-fit: cover;
+}
+
+.washoku-ingredient-photo figcaption {
+    margin-top: 4px;
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-ingredient-photo figcaption a {
+    color: inherit;
+}
+
+/* 代わりの食材: 写真があれば左に小さく */
+.washoku-substitute-card.has-photo {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    column-gap: 12px;
+    align-content: start;
+}
+
+.washoku-substitute-photo {
+    grid-row: 1 / span 3;
+}
+
+.washoku-substitute-photo img {
+    display: block;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.washoku-comment .washoku-photo {
+    max-height: 240px;
+}
+
+/* ---------- ヘッダー: ロゴ・メニュー・広い検索欄・マイページ ---------- */
+
+.washoku-brand {
+    flex: none;
+}
+
+.washoku-brand small {
+    white-space: nowrap;
+}
+
+.washoku-desktop-nav a,
+.washoku-me {
+    white-space: nowrap;
+}
+
+/* 携帯は虫めがねのボタン、PC は入力欄 */
+.washoku-header-search {
+    display: none;
+}
+
+@media (min-width: 800px) {
+
+    .washoku-brand strong {
+        font-size: 19px;
+    }
+
+    .washoku-brand small {
+        font-size: 12px;
+    }
+
+    .washoku-desktop-nav a {
+        font-size: 16px;
+    }
+
+    .washoku-search-button {
+        display: none;
+    }
+
+    .washoku-header-search {
+        position: relative;
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 150px;
+        max-width: 340px;
+        margin-left: auto;
+    }
+
+    .washoku-header-search i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: var(--washoku-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .washoku-header-search input {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 14px 0 38px;
+        border: 1px solid var(--washoku-border);
+        border-radius: 999px;
+        background: var(--washoku-surface-2);
+        color: var(--washoku-text);
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .washoku-header-search input:focus {
+        border-color: var(--washoku-accent);
+        background: var(--washoku-surface);
+        outline: none;
+    }
+
+    .washoku-header-search ~ .washoku-me {
+        margin-left: 0;
+    }
+}
+
+/* 狭めの PC 画面では、すき間とメニューのアイコンを減らして1行に収める */
+@media (min-width: 800px) and (max-width: 1100px) {
+
+    .washoku-header-inner {
+        gap: 16px;
+    }
+
+    .washoku-desktop-nav a {
+        padding: 0 10px;
+        font-size: 15px;
+    }
+
+    .washoku-desktop-nav a i {
+        display: none;
+    }
+}
+
+@media (min-width: 800px) and (max-width: 960px) {
+
+    .washoku-me-label {
+        display: none;
+    }
+}
+
+/* レシピ一覧: 見出しの横の「投稿する」 */
+.washoku-title-row h1 {
+    margin-right: auto;
+}
+
+.washoku-submit-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.washoku-submit-pill:hover {
+    background: var(--washoku-accent-strong);
+    color: #fff;
+}
+
+/* ---------- 写真を選ぶボタン (ブラウザ標準の「Choose File」を、まわりに合わせた丸いボタンに) ---------- */
+
+.washoku-main input[type="file"] {
+    max-width: 100%;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-main input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 14px;
+    border: 1px dashed var(--washoku-accent);
+    border-radius: 999px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-accent-strong);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.washoku-main input[type="file"]::file-selector-button:hover {
+    background: var(--washoku-surface);
+}
+
+.washoku-photo-input {
+    flex-wrap: wrap;
+}
+
+/* レシピの写真2枚は横に並べる */
+.washoku-photo-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin: 8px 0 12px;
+}
+
+.washoku-photo-row .washoku-photo {
+    width: 100%;
+    height: 220px;
+    margin: 0;
+}
+
+/* 管理者だけの写真の追加 */
+.washoku-staff-photos {
+    margin: 8px 0 16px;
+    padding: 10px 14px;
+    border: 1px dashed var(--washoku-border);
+    border-radius: 12px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+}
+
+.washoku-staff-photos summary {
+    cursor: pointer;
+}
+
+.washoku-staff-photo-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
