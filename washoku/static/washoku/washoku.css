@@ -3088,3 +3088,35 @@ a.washoku-favorite {
     color: var(--washoku-accent-strong);
     font-weight: 700;
 }
+
+/* 食材ページの「この食材を使うレシピ」: ふだんは閉じておき、押すと開く */
+.washoku-fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.washoku-fold > summary::-webkit-details-marker {
+    display: none;
+}
+
+.washoku-fold > summary h2 {
+    margin: 0;
+}
+
+.washoku-fold > summary::after {
+    content: "▾";
+    color: var(--washoku-muted);
+    transition: transform 0.15s;
+}
+
+.washoku-fold[open] > summary::after {
+    transform: rotate(180deg);
+}
+
+.washoku-fold[open] > summary {
+    margin-bottom: 12px;
+}
