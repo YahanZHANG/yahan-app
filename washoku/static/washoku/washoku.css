@@ -3090,30 +3090,23 @@ a.washoku-favorite {
     font-weight: 700;
 }
 
-/* 食材ページの「この食材を使うレシピ」: タグのように横に並べる */
+/* 食材ページの「この食材を使うレシピ」: 文字のリンクを「、」でつないで、文章のように流す */
 .washoku-tag-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
     margin: 0;
     padding: 0;
     list-style: none;
+    line-height: 2;
 }
 
-.washoku-tag-links a {
-    display: inline-block;
-    padding: 6px 12px;
-    border: 1px solid var(--washoku-border);
-    border-radius: 999px;
-    background: var(--washoku-surface);
-    color: var(--washoku-text);
-    font-size: 14px;
-    text-decoration: none;
+.washoku-tag-links li {
+    white-space: nowrap;
 }
 
-.washoku-tag-links a:hover {
-    border-color: var(--washoku-accent);
-    color: var(--washoku-accent-strong);
+.washoku-tag-links li:not(:last-child)::after {
+    content: "、";
+    color: var(--washoku-muted);
 }
 
 @media (max-width: 400px) {
