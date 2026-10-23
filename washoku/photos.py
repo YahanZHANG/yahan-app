@@ -70,10 +70,54 @@ def thumbnail_url(url, size):
     return url.replace("/image/upload/", f"/image/upload/c_fill,w_{size},h_{size}/", 1)
 
 
+# スイス側の代わりの食材は、写真がよく見つかる言葉 (英語名や学名) で探す
+COMMONS_QUERIES = {
+    "豚薄切り肉": "sliced pork meat raw",
+    "豚バラ肉": "raw pork belly",
+    "牛薄切り肉": "thinly sliced beef raw",
+    "白身魚": "cod fillet raw",
+    "おでん種": "fish balls",
+    "ピザ用チーズ": "grated mozzarella cheese",
+    "米": "japonica rice grains",
+    "サンドイッチ用パン": "sliced toast bread",
+    "リーキ": "leeks vegetable",
+    "スプリングオニオン": "spring onions bunch",
+    "大根（Rettich）": "white radish Rettich",
+    "パースニップ": "parsnips vegetable",
+    "マッシュルーム": "button mushrooms Agaricus bisporus",
+    "バジル": "basil leaves Ocimum basilicum",
+    "コールラビ": "kohlrabi vegetable",
+    "白かぶ": "white turnips Brassica rapa",
+    "ラディッシュ": "radishes bunch",
+    "スイスチャード": "Swiss chard Mangold",
+    "チンゲン菜": "bok choy vegetable",
+    "とんがりキャベツ": "pointed cabbage Spitzkohl",
+    "ちりめんキャベツ": "savoy cabbage",
+    "黒ごぼう": "black salsify Scorzonera hispanica",
+    "絹さや": "snow peas pods",
+    "いんげん": "green beans Phaseolus vulgaris pods",
+    "パドロン": "Padrón peppers",
+    "クレス": "garden cress Lepidium sativum",
+    "ベアラウフ": "Allium ursinum leaves",
+    "さつまいも": "sweet potatoes tubers",
+    "エリンギ": "Pleurotus eryngii mushrooms",
+    "ひらたけ": "oyster mushrooms Pleurotus ostreatus",
+    "こんにゃく": "shirataki noodles",
+    "日本酒": "sake bottle",
+    "鶏がらスープの素": "chicken bouillon cubes",
+    "コンソメ": "vegetable bouillon powder",
+    "ウスターソース": "Worcestershire sauce bottle",
+    "バニラシュガー": "vanilla sugar",
+}
+
+
 def commons_query(ingredient):
     """
-    Wikimedia Commons で探す言葉。ドイツ語名の最初の候補 (例: "Weisse Rüben / Mairübli" → "Weisse Rüben")。
+    Wikimedia Commons で探す言葉。決めてある言葉がなければ、ドイツ語名の最初の候補 (例: "Weisse Rüben / Mairübli" → "Weisse Rüben")。
     """
+
+    if ingredient.name in COMMONS_QUERIES:
+        return COMMONS_QUERIES[ingredient.name]
 
     name = ingredient.name_de or ingredient.name
     name = name.split("/")[0]

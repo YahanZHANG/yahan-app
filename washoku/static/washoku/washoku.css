@@ -2774,34 +2774,95 @@ a.washoku-favorite {
     max-height: 240px;
 }
 
-/* ---------- ヘッダー: 文字が縦に折り返さないように ---------- */
+/* ---------- ヘッダー: ロゴ・メニュー・広い検索欄・マイページ ---------- */
 
 .washoku-brand {
     flex: none;
 }
 
 .washoku-brand small {
-    font-size: 10px;
     white-space: nowrap;
 }
 
 .washoku-desktop-nav a,
-.washoku-post-button,
-.washoku-search-button,
 .washoku-me {
     white-space: nowrap;
+}
+
+/* 携帯は虫めがねのボタン、PC は入力欄 */
+.washoku-header-search {
+    display: none;
+}
+
+@media (min-width: 800px) {
+
+    .washoku-brand strong {
+        font-size: 19px;
+    }
+
+    .washoku-brand small {
+        font-size: 12px;
+    }
+
+    .washoku-desktop-nav a {
+        font-size: 16px;
+    }
+
+    .washoku-search-button {
+        display: none;
+    }
+
+    .washoku-header-search {
+        position: relative;
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 150px;
+        max-width: 340px;
+        margin-left: auto;
+    }
+
+    .washoku-header-search i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: var(--washoku-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .washoku-header-search input {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 14px 0 38px;
+        border: 1px solid var(--washoku-border);
+        border-radius: 999px;
+        background: var(--washoku-surface-2);
+        color: var(--washoku-text);
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .washoku-header-search input:focus {
+        border-color: var(--washoku-accent);
+        background: var(--washoku-surface);
+        outline: none;
+    }
+
+    .washoku-header-search ~ .washoku-me {
+        margin-left: 0;
+    }
 }
 
 /* 狭めの PC 画面では、すき間とメニューのアイコンを減らして1行に収める */
 @media (min-width: 800px) and (max-width: 1100px) {
 
     .washoku-header-inner {
-        gap: 14px;
+        gap: 16px;
     }
 
     .washoku-desktop-nav a {
-        padding: 0 9px;
-        font-size: 14px;
+        padding: 0 10px;
+        font-size: 15px;
     }
 
     .washoku-desktop-nav a i {
@@ -2809,13 +2870,35 @@ a.washoku-favorite {
     }
 }
 
-/* さらに狭いときは、検索とマイページをアイコンだけに */
 @media (min-width: 800px) and (max-width: 960px) {
 
-    .washoku-search-label,
     .washoku-me-label {
         display: none;
     }
+}
+
+/* レシピ一覧: 見出しの横の「投稿する」 */
+.washoku-title-row h1 {
+    margin-right: auto;
+}
+
+.washoku-submit-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.washoku-submit-pill:hover {
+    background: var(--washoku-accent-strong);
+    color: #fff;
 }
 
 /* ---------- 写真を選ぶボタン (ブラウザ標準の「Choose File」を、まわりに合わせた丸いボタンに) ---------- */

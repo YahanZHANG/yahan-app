@@ -124,6 +124,12 @@ class Ingredient(models.Model):
         blank=True,
     )
 
+    photo_auto_tried = models.BooleanField(
+        "写真を自動で探した",
+        default=False,
+        help_text="自動で一度探した食材は、写真を外しても探し直さない。",
+    )
+
     shops = models.ManyToManyField(
         ShopType,
         verbose_name="買える店",
