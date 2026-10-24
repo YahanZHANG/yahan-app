@@ -3271,6 +3271,60 @@ button.washoku-poll-row:hover {
     font-size: 13px;
 }
 
+/* HOMEの注目・質問・アンケート: 見出しを左の細い列に置き、見出しの行をなくす */
+.washoku-open-questions.washoku-side-box {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 0 12px 0 0;
+}
+
+.washoku-side-box .washoku-side-label {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    margin: 0;
+    border-right: 1px solid var(--washoku-border);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.washoku-side-label a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-side-word {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.washoku-side-label a .washoku-side-word {
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-side-box ul {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.washoku-side-box .washoku-question-lines a {
+    padding: 5px 0;
+}
+
 .washoku-comment-hint {
     margin: 6px 0 0;
     text-align: right;

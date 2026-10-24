@@ -2001,7 +2001,7 @@ class FeaturedTests(TestCase):
             [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
             [(column.pk, 2), (comment.pk, 1)],
         )
-        self.assertContains(home, "⭐ 注目")
+        self.assertContains(home, "washoku-featured")
 
 
 class ColumnOrderTests(TestCase):
