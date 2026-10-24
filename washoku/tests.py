@@ -1541,6 +1541,38 @@ class FavoriteNoteReactionTests(TestCase):
         self.assertNotContains(page, "スタンプを押す")
         self.assertContains(self.client.get(reverse("washoku:notification_list")), "「なるほど」を押しました: コラム「Rahm の選び方」")
 
+    def test_stamps_edited_in_admin(self):
+
+        from .models import Stamp
+
+        answer = Comment.objects.create(author=self.child, recipe=self.recipe, kind="tip", body="白ワインで代用できます")
+        detail = reverse("washoku:recipe_detail", args=[self.recipe.pk])
+        url = reverse("washoku:comment_react", args=[answer.pk])
+
+        Stamp.objects.create(key="onigiri", emoji="🍙", label="おにぎり食べたい", order=1)
+        Stamp.objects.filter(key="like").update(label="いいね！")
+
+        self.client.force_login(self.me)
+        self.client.post(url, {"kind": "onigiri"})
+        self.client.post(url, {"kind": "like"})
+        page = self.client.get(detail)
+        self.assertContains(page, "🍙 おにぎり食べたい <b>1</b>")
+        self.assertContains(page, "👍 いいね！ <b>1</b>")
+
+        # 非表示: 選ぶ欄から消え、新しく押せないが、押されたぶんは残り取り消せる
+        Stamp.objects.filter(key__in=["onigiri", "lol"]).update(is_active=False)
+        self.client.post(url, {"kind": "lol"})
+        self.assertFalse(CommentReaction.objects.filter(kind="lol").exists())
+        page = self.client.get(detail)
+        self.assertContains(page, "🍙 おにぎり食べたい <b>1</b>")
+        self.assertNotContains(page, "😂 笑った")
+        self.client.post(url, {"kind": "onigiri"})
+        self.assertFalse(CommentReaction.objects.filter(kind="onigiri").exists())
+        self.assertNotContains(self.client.get(detail), "おにぎり食べたい")
+
+        self.client.force_login(self.child)
+        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「いいね！」を押しました")
+
     def test_filter_recipes_by_nutrition(self):
 
         url = reverse("washoku:recipe_list")

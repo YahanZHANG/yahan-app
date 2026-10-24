@@ -25,6 +25,7 @@ from .models import (
     RecipeIngredient,
     RecipeRating,
     ShopType,
+    Stamp,
     Store,
     Substitute,
 )
@@ -738,3 +739,18 @@ class MemberPhotoAdmin(admin.ModelAdmin):
                 photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
             delete_uploaded_photos(photo.url)
         queryset.delete()
+
+
+@admin.register(Stamp)
+class StampAdmin(admin.ModelAdmin):
+    list_display = ("key", "emoji", "label", "order", "is_active")
+    list_display_links = ("key",)
+    list_editable = ("emoji", "label", "order", "is_active")
+
+    def get_readonly_fields(self, request, obj=None):
+        # 押された記録が key でつながっているので、作ったあとは変えない
+        return ("key",) if obj else ()
+
+    def has_delete_permission(self, request, obj=None):
+        # 消すと押されたぶんが表示できなくなるので「表示する」を外して隠す
+        return False

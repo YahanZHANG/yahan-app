@@ -45,6 +45,7 @@ from .models import (
     PollVote,
     Post,
     PostReaction,
+    Stamp,
     PushSubscription,
     Recipe,
     RecipeFavorite,
@@ -54,8 +55,6 @@ from .models import (
     ShopType,
     Store,
     Substitute,
-    REACTION_CHOICES,
-    REACTION_EMOJI,
 )
 
 
@@ -999,16 +998,21 @@ def reaction_stamps(rows, user):
         if user.is_authenticated and user_id == user.pk:
             mine.add((target_id, kind))
 
+    stamps = list(Stamp.objects.all())
+
+    # 非表示のスタンプも、押されていれば結果には出す (選ぶ欄には出さない)
     def stamps_for(target_id):
         return [
             {
-                "kind": kind,
-                "label": label,
-                "emoji": REACTION_EMOJI[kind],
-                "count": counts[target_id, kind],
-                "mine": (target_id, kind) in mine,
+                "kind": stamp.key,
+                "label": stamp.label,
+                "emoji": stamp.emoji,
+                "count": counts[target_id, stamp.key],
+                "mine": (target_id, stamp.key) in mine,
+                "active": stamp.is_active,
             }
-            for kind, label in REACTION_CHOICES
+            for stamp in stamps
+            if stamp.is_active or counts[target_id, stamp.key]
         ]
 
     return stamps_for
@@ -1055,7 +1059,7 @@ def comment_react(request, pk):
     kind = request.POST.get("kind", "")
 
     # 自分のコメントには押せない
-    if kind not in dict(REACTION_CHOICES) or comment.author_id == request.user.pk:
+    if not can_stamp(request.user, kind, comment=comment) or comment.author_id == request.user.pk:
         return redirect(comment_target_url(comment))
 
     created = toggle_reaction(CommentReaction, request.user, kind, comment=comment)
@@ -1087,7 +1091,7 @@ def post_react(request, pk):
     # 自分のコラムには押せない
     url = reverse("washoku:post_detail", args=[post.pk]) + "#stamps"
 
-    if kind in dict(REACTION_CHOICES) and post.author_id and post.author_id != request.user.pk:
+    if can_stamp(request.user, kind, post=post) and post.author_id and post.author_id != request.user.pk:
 
         created = toggle_reaction(PostReaction, request.user, kind, post=post)
 
@@ -1102,6 +1106,19 @@ def post_react(request, pk):
         )
 
     return redirect(url)
+
+
+def can_stamp(user, kind, **target):
+    """
+    表示中のスタンプなら押せる。非表示にしたものは、自分が押したぶんを取り消すことだけできる。
+    """
+
+    if Stamp.objects.filter(key=kind, is_active=True).exists():
+        return True
+
+    model = CommentReaction if "comment" in target else PostReaction
+
+    return model.objects.filter(user=user, kind=kind, **target).exists()
 
 
 def notify_stamp(created, actor, kind, recipient_id, target_text, url, **target):
@@ -1133,7 +1150,7 @@ def notify_stamp(created, actor, kind, recipient_id, target_text, url, **target)
     send_stamp_push(
         recipient_id,
         actor,
-        dict(REACTION_CHOICES)[kind],
+        Stamp.objects.filter(key=kind).values_list("label", flat=True).first() or kind,
         target_text,
         url,
         f"washoku-stamp-{next(iter(target))}-{target_id}",

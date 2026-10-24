@@ -1457,58 +1457,42 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
-# コメントとコラムに押せるスタンプ (並び順もこのとおり)
-REACTION_CHOICES = [
-    ("like", "いいね"),
-    ("thanks", "ありがとう"),
-    ("helped", "助かった"),
-    ("insight", "なるほど"),
-    ("learned", "勉強になる"),
-    ("surprise", "意外！"),
-    ("metoo", "私も知りたかった"),
-    ("relate", "わかる〜"),
-    ("empathy", "共感"),
-    ("yummy", "おいしそう"),
-    ("tasty", "おいしかった"),
-    ("cook", "作ってみる"),
-    ("buy", "買ってみる"),
-    ("lovely", "ステキ"),
-    ("genius", "天才"),
-    ("lol", "笑った"),
-    ("cheer", "がんばる"),
-    ("congrats", "おめでとう"),
-    ("check", "確認します"),
-]
+class Stamp(models.Model):
+    """
+    コメントとコラムに押せるスタンプ。管理画面で追加・編集・並べ替え・非表示できる。
+    """
 
-REACTION_EMOJI = {
-    "like": "👍",
-    "thanks": "🙏",
-    "helped": "🥹",
-    "insight": "💡",
-    "learned": "📚",
-    "surprise": "😲",
-    "metoo": "🙋",
-    "relate": "🤝",
-    "empathy": "🫶",
-    "yummy": "😋",
-    "tasty": "🍚",
-    "cook": "🍳",
-    "buy": "🛒",
-    "lovely": "✨",
-    "genius": "🤩",
-    "lol": "😂",
-    "cheer": "💪",
-    "congrats": "🎉",
-    "check": "👀",
-}
+    key = models.SlugField(
+        "ID（英字・あとから変えない）",
+        max_length=20,
+        unique=True,
+    )
+
+    emoji = models.CharField("絵文字", max_length=16)
+
+    label = models.CharField("言葉", max_length=20)
+
+    order = models.PositiveSmallIntegerField("並び順", default=100)
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+        help_text="外すと選べなくなります（押されたぶんは残ります）",
+    )
+
+    class Meta:
+        verbose_name = "スタンプ"
+        verbose_name_plural = "スタンプ"
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return f"{self.emoji} {self.label}"
 
 
 class CommentReaction(models.Model):
     """
     コメントへのスタンプ。1人1種類につき1回。
     """
-
-    KIND_CHOICES = REACTION_CHOICES
 
     comment = models.ForeignKey(
         Comment,
@@ -1525,7 +1509,6 @@ class CommentReaction(models.Model):
     kind = models.CharField(
         "種類",
         max_length=20,
-        choices=KIND_CHOICES,
     )
 
     created_at = models.DateTimeField(
@@ -1623,8 +1606,6 @@ class PostReaction(models.Model):
     コラムへのスタンプ。1人1種類につき1回。
     """
 
-    KIND_CHOICES = REACTION_CHOICES
-
     post = models.ForeignKey(
         "Post",
         on_delete=models.CASCADE,
@@ -1640,7 +1621,6 @@ class PostReaction(models.Model):
     kind = models.CharField(
         "種類",
         max_length=20,
-        choices=KIND_CHOICES,
     )
 
     created_at = models.DateTimeField(
@@ -1712,7 +1692,6 @@ class Notification(models.Model):
     stamp = models.CharField(
         "スタンプ",
         max_length=20,
-        choices=REACTION_CHOICES,
         blank=True,
     )
 
@@ -1733,8 +1712,18 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
 
+    def _stamp(self):
+        if not hasattr(self, "_stamp_cache"):
+            self._stamp_cache = Stamp.objects.filter(key=self.stamp).first()
+        return self._stamp_cache
+
     def stamp_emoji(self):
-        return REACTION_EMOJI.get(self.stamp, "")
+        stamp = self._stamp()
+        return stamp.emoji if stamp else ""
+
+    def stamp_label(self):
+        stamp = self._stamp()
+        return stamp.label if stamp else self.stamp
 
 
 # =========================================================

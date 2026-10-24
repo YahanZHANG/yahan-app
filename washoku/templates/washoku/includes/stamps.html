@@ -12,9 +12,9 @@ stamps: views.reaction_stamps の一覧 / action: 送り先 / author_id: 書い�
             <details class="washoku-stamp-picker">
                 <summary class="washoku-reaction" aria-label="スタンプを押す">😊＋</summary>
                 <div class="washoku-stamp-menu">
-                    {% for stamp in stamps %}
+                    {% for stamp in stamps %}{% if stamp.active %}
                         <button type="submit" name="kind" value="{{ stamp.kind }}" class="washoku-reaction{% if stamp.mine %} is-on{% endif %}" aria-pressed="{% if stamp.mine %}true{% else %}false{% endif %}">{{ stamp.emoji }} {{ stamp.label }}</button>
-                    {% endfor %}
+                    {% endif %}{% endfor %}
                 </div>
             </details>
         </form>

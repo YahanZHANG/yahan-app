@@ -66,6 +66,19 @@
     </a>
 </section>
 
+{% if featured %}
+<section class="washoku-section washoku-open-questions washoku-featured">
+    <h2>⭐ 注目</h2>
+    <ul class="washoku-question-lines washoku-poll-lines">
+        {% for entry in featured %}
+            {% with item=entry.item %}
+            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "post" %}{{ item.get_kind_display }}{% else %}コメント{% endif %}{% if entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></a></li>
+            {% endwith %}
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 {% if questions %}
 <section class="washoku-section washoku-open-questions">
     <h2>💬 返事を待っている質問</h2>
@@ -87,19 +100,6 @@
         {% endfor %}
     </ul>
     <p class="washoku-more"><a href="{% url 'washoku:poll_list' %}">アンケートをすべて見る</a></p>
-</section>
-{% endif %}
-
-{% if featured %}
-<section class="washoku-section washoku-open-questions washoku-featured">
-    <h2>⭐ 注目</h2>
-    <ul class="washoku-question-lines washoku-poll-lines">
-        {% for entry in featured %}
-            {% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "post" %}{{ item.get_kind_display }}{% else %}コメント{% endif %}{% if entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></a></li>
-            {% endwith %}
-        {% endfor %}
-    </ul>
 </section>
 {% endif %}
 
