@@ -3487,3 +3487,40 @@ button.washoku-poll-row:hover {
     line-height: 1.5;
     opacity: 0.8;
 }
+
+/* コラムの一覧: タイトルだけを1行ずつ。押すと記事を開く */
+.washoku-posts.washoku-posts-titles {
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-posts-titles li + li {
+    border-top: 1px solid var(--washoku-border);
+}
+
+.washoku-posts.washoku-posts-titles a {
+    border: 0;
+    border-radius: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+}
+
+.washoku-posts-titles strong {
+    font-size: 15px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-posts-titles small {
+    flex: none;
+    margin: 0;
+}

@@ -32,7 +32,7 @@
 {% endif %}
 
 {% if posts %}
-    <ul class="washoku-posts">
+    <ul class="washoku-posts{% if kind == "column" %} washoku-posts-titles{% endif %}">
         {% for post in posts %}
             <li>
                 <a href="{{ post.get_absolute_url }}">
@@ -46,6 +46,8 @@
                     <strong>{{ post.title }}</strong>
                     {% if kind == "poll" %}
                     <small>{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                    {% elif kind == "column" %}
+                    <small>{{ post.created_at|date:"n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
                     {% elif kind != "link" %}
                     <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>
                     <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
