@@ -134,7 +134,7 @@
 <section class="washoku-section">
     <h2>みんなの投稿・コメント</h2>
     {% if latest_activity %}
-        <ul class="washoku-activity">
+        <ul class="washoku-activity washoku-activity-compact">
             {% for entry in latest_activity %}
                 {% include "washoku/includes/activity_item.html" %}
             {% endfor %}

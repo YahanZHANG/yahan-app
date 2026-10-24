@@ -3447,3 +3447,32 @@ button.washoku-poll-row:hover {
     font-size: 11px;
     font-weight: 700;
 }
+
+/* HOME の「みんなの投稿・コメント」: 本文は1行、名前と日時は小さく、間隔を狭く */
+.washoku-activity-compact a {
+    padding: 6px 0;
+}
+
+.washoku-activity-compact .washoku-activity-body {
+    display: block;
+    overflow: hidden;
+    margin-top: 1px;
+    font-size: 14px;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-activity-compact .washoku-activity-kind {
+    float: left;
+    margin-top: 2px;
+}
+
+.washoku-activity-compact small {
+    overflow: hidden;
+    margin-top: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

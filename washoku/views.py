@@ -227,6 +227,9 @@ def open_questions():
     return questions_with_answer_state().filter(has_answer=False)
 
 
+# HOME の「みんなの投稿・コメント」に出す新着の数
+HOME_ACTIVITY_COUNT = 15
+
 # 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
 HOME_SOLVED_DAYS = 2
 
@@ -327,7 +330,7 @@ def home(request):
         request,
         "washoku/home.html",
         {
-            "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
+            "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
             "polls": (
                 Post.objects
