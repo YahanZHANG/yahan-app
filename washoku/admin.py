@@ -25,9 +25,25 @@ from .models import (
     RecipeIngredient,
     RecipeRating,
     ShopType,
+    Stamp,
     Store,
     Substitute,
 )
+
+
+def home_featured_ids(kind):
+    # いまHOMEの「注目」に出ているもの (自動で入ったものを外すときの目印)
+    from .views import featured_items
+
+    return {entry["item"].pk for entry in featured_items() if entry["kind"] == kind}
+
+
+class NarrowFeaturedOrderMixin:
+    # 一覧で「注目の順番」の入力欄が場所を取らないように
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "featured_order":
+            kwargs["widget"] = forms.NumberInput(attrs={"style": "width: 3.5em"})
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 @admin.register(ShopType)
@@ -437,15 +453,15 @@ class CommentTargetFilter(admin.SimpleListFilter):
 
 class PollChoiceInline(admin.TabularInline):
     """
-    アンケートの選択肢 (種類が「アンケート」のときだけ使う)。
+    アンケートの選択肢 (種類が「アンケート」のときと、コラムにアンケートを付けるときに使う)。
     """
 
     model = PollChoice
     extra = 4
     fields = ("label", "order", "vote_count")
     readonly_fields = ("vote_count",)
-    verbose_name = "選択肢（アンケートのときだけ）"
-    verbose_name_plural = "選択肢（アンケートのときだけ。並び順の小さい順に出ます）"
+    verbose_name = "選択肢（アンケートとコラムのとき）"
+    verbose_name_plural = "選択肢（アンケート、またはコラムの最後に付けるアンケート。並び順の小さい順に出ます）"
 
     @admin.display(description="票数")
     def vote_count(self, obj):
@@ -453,7 +469,7 @@ class PollChoiceInline(admin.TabularInline):
 
 
 @admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
     inlines = (
         PollChoiceInline,
     )
@@ -462,6 +478,10 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "kind",
         "status",
+        "is_featured",
+        "featured_order",
+        "featured_hidden",
+        "on_home",
         "publish_at",
         "shop_names",
         "author",
@@ -471,7 +491,15 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "kind",
+        "is_featured",
+        "featured_hidden",
         "section",
+    )
+
+    list_editable = (
+        "is_featured",
+        "featured_order",
+        "featured_hidden",
     )
 
     search_fields = (
@@ -482,6 +510,14 @@ class PostAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "ingredients",
     )
+
+    def changelist_view(self, request, extra_context=None):
+        self._home_featured = home_featured_ids("post")
+        return super().changelist_view(request, extra_context)
+
+    @admin.display(description="いまHOMEの注目", boolean=True)
+    def on_home(self, obj):
+        return obj.pk in getattr(self, "_home_featured", set())
 
     @admin.display(description="買えるお店")
     def shop_names(self, obj):
@@ -494,6 +530,8 @@ class PostAdmin(admin.ModelAdmin):
     actions = [
         "publish",
         "unpublish",
+        "feature",
+        "unfeature",
     ]
 
     def save_model(self, request, obj, form, change):
@@ -521,9 +559,17 @@ class PostAdmin(admin.ModelAdmin):
     def unpublish(self, request, queryset):
         queryset.update(status="draft")
 
+    @admin.action(description="選んだ投稿をHOMEの注目に出す")
+    def feature(self, request, queryset):
+        queryset.update(is_featured=True)
+
+    @admin.action(description="選んだ投稿をHOMEの注目から外す")
+    def unfeature(self, request, queryset):
+        queryset.update(is_featured=False)
+
 
 @admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
+class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
     list_display = (
         "short_body",
         "target_label",
@@ -531,6 +577,13 @@ class CommentAdmin(admin.ModelAdmin):
         "author",
         "report_count",
         "is_hidden",
+        "is_featured",
+        "featured_order",
+        "featured_hidden",
+        "on_home",
+        "reopened",
+        "home_hidden",
+        "home_until",
         "admin_checked",
         "created_at",
     )
@@ -540,12 +593,30 @@ class CommentAdmin(admin.ModelAdmin):
         CommentTargetFilter,
         "is_hidden",
         "is_deleted",
+        "is_featured",
+        "featured_hidden",
+        "reopened",
+        "home_hidden",
         "kind",
     )
 
     list_editable = (
+        "is_featured",
+        "featured_order",
+        "featured_hidden",
+        "reopened",
+        "home_hidden",
+        "home_until",
         "admin_checked",
     )
+
+    def changelist_view(self, request, extra_context=None):
+        self._home_featured = home_featured_ids("comment")
+        return super().changelist_view(request, extra_context)
+
+    @admin.display(description="いまHOMEの注目", boolean=True)
+    def on_home(self, obj):
+        return obj.pk in getattr(self, "_home_featured", set())
 
     search_fields = (
         "body",
@@ -693,9 +764,12 @@ class MemberPhotoAdmin(admin.ModelAdmin):
         "target",
         "user",
         "is_shown",
+        "admin_checked",
         "created_at",
     )
 
+    list_editable = ("admin_checked",)
+    list_filter = ("admin_checked",)
     list_select_related = ("recipe", "ingredient", "user")
     readonly_fields = ("recipe", "ingredient", "url", "user", "created_at")
 
@@ -720,3 +794,18 @@ class MemberPhotoAdmin(admin.ModelAdmin):
                 photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
             delete_uploaded_photos(photo.url)
         queryset.delete()
+
+
+@admin.register(Stamp)
+class StampAdmin(admin.ModelAdmin):
+    list_display = ("key", "emoji", "label", "order", "is_active")
+    list_display_links = ("key",)
+    list_editable = ("emoji", "label", "order", "is_active")
+
+    def get_readonly_fields(self, request, obj=None):
+        # 押された記録が key でつながっているので、作ったあとは変えない
+        return ("key",) if obj else ()
+
+    def has_delete_permission(self, request, obj=None):
+        # 消すと押されたぶんが表示できなくなるので「表示する」を外して隠す
+        return False

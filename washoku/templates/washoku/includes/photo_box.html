@@ -1,6 +1,6 @@
 {% load washoku_tags %}
 {% comment %}
-料理・食材の写真の投稿。会員は投稿と自分の写真の削除、管理者はどれを載せるか選べる。
+料理・食材の写真の投稿。会員は投稿と自分の写真の差し替え・削除、管理者はどれを載せるか選べる。
 {% endcomment %}
 {% if user.is_authenticated %}
 <details class="washoku-staff-photos washoku-photo-box"{% if user.is_staff and photo_list|length > 1 %} open{% endif %}>
@@ -24,6 +24,11 @@
                 <button type="submit" name="action" value="show" class="washoku-link-button">これを載せる</button>
             </form>
             {% endif %}
+            <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="replace">
+                <label class="washoku-link-button washoku-photo-pick">差し替える<input type="file" name="photo" accept="image/*" onchange="this.form.submit()"></label>
+            </form>
             <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}">
                 {% csrf_token %}
                 <button type="submit" name="action" value="delete" class="washoku-link-button">消す</button>

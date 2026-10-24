@@ -1475,7 +1475,7 @@ h1, h2, h3,
 /* HOME: 見出しなしで、ヘッダーのすぐ下に検索バー */
 .washoku-hero {
     margin: 0;
-    padding: 4px 0 16px;
+    padding: 0 0 16px;
     background: none;
 }
 
@@ -2290,8 +2290,8 @@ a.washoku-announcement-text {
 }
 
 .washoku-stamp-menu .washoku-reaction {
-    font-size: 14px;
-    padding: 6px 12px !important;
+    font-size: 13px;
+    padding: 5px 10px !important;
 }
 
 /* お店の種類: 携帯でも1行に収める */
@@ -2991,12 +2991,30 @@ a.washoku-favorite {
     margin: 0;
 }
 
+/* 写真の「差し替える」: ファイル選択は隠し、選んだらすぐ送る */
+.washoku-photo-pick {
+    position: relative;
+    cursor: pointer;
+}
+
+.washoku-photo-pick input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+}
+
 /* ---------- HOME のお知らせ: 細いバーを最大3件 ---------- */
 
 .washoku-announcements {
     display: grid;
     gap: 4px;
-    margin: 10px 0 14px;
+    margin: 0 0 12px;
+}
+
+.washoku-announcements[hidden] {
+    display: none;
 }
 
 .washoku-announcements .washoku-announcement {
@@ -3047,7 +3065,8 @@ a.washoku-favorite {
 
 /* HOME の返事を待っている質問: 質問文だけを1行ずつ。左にアクセントの線 */
 .washoku-open-questions {
-    padding: 4px 16px 2px;
+    margin: 12px 0;
+    padding: 2px 14px 0;
     border: 1px solid var(--washoku-border);
     border-left: 4px solid var(--washoku-accent);
     border-radius: 12px;
@@ -3055,12 +3074,26 @@ a.washoku-favorite {
 }
 
 .washoku-open-questions h2 {
-    margin: 12px 0 4px;
-    font-size: 17px;
+    margin: 8px 0 0;
+    font-size: 16px;
 }
 
 .washoku-open-questions .washoku-more {
-    margin: 4px 0 10px;
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.washoku-open-questions .washoku-question-lines a {
+    padding: 6px 0;
+    font-size: 15px;
+}
+
+.washoku-open-questions.washoku-featured {
+    border-left-color: #E0B33A;
+}
+
+.washoku-featured ul {
+    margin-bottom: 4px;
 }
 
 .washoku-question-lines {
@@ -3222,11 +3255,81 @@ button.washoku-poll-row:hover {
 :root {
     --washoku-poll-bar: #E8956A;
     --washoku-poll-accent: #2E8B7A;
+    --washoku-poll-tint: #EEF7F4;
 }
 
 :root[data-washoku-theme="dark"] {
     --washoku-poll-bar: #D27C52;
     --washoku-poll-accent: #5CB8A6;
+    --washoku-poll-tint: #1F2D2A;
+}
+
+/* 食材ページのアンケート: 本文とちがう雰囲気にする (うすい緑の背景・小さめの文字) */
+.washoku-poll.washoku-poll-inline {
+    padding: 10px 12px 8px;
+    border-color: transparent;
+    border-left: 4px solid var(--washoku-poll-accent);
+    background: var(--washoku-poll-tint);
+    font-size: 13px;
+}
+
+.washoku-poll-inline h3 {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.washoku-poll-inline .washoku-poll-rows {
+    gap: 6px;
+}
+
+.washoku-poll-inline .washoku-poll-row {
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.washoku-poll-inline .washoku-poll-row.is-mine {
+    padding: 5px 9px;
+}
+
+.washoku-poll-inline .washoku-poll-percent {
+    font-size: 13px;
+}
+
+.washoku-poll-inline .washoku-poll-bar {
+    height: 4px;
+}
+
+.washoku-poll-inline .washoku-poll-total {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.washoku-poll-comments {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--washoku-border);
+}
+
+.washoku-poll-comments p {
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.washoku-poll-comments a {
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-poll-comments small {
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-poll-comments .washoku-poll-comments-more a {
+    color: var(--washoku-poll-accent);
+    font-weight: 700;
 }
 
 /* HOME のアンケート枠: 返事を待っている質問と同じ形で、色だけ変える */
@@ -3256,9 +3359,120 @@ button.washoku-poll-row:hover {
     font-size: 13px;
 }
 
+/* HOMEの注目・質問・アンケート: 見出しを左の細い列に置き、見出しの行をなくす */
+.washoku-open-questions.washoku-side-box {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 0 12px 0 0;
+}
+
+.washoku-side-box .washoku-side-label {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    margin: 0;
+    border-right: 1px solid var(--washoku-border);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.washoku-side-label a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-side-word {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.washoku-side-label a .washoku-side-word {
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-side-box ul {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.washoku-side-box .washoku-question-lines a {
+    padding: 7px 0;
+}
+
 .washoku-comment-hint {
     margin: 6px 0 0;
     text-align: right;
     color: var(--washoku-muted);
     font-size: 13px;
+}
+
+/* HOMEの質問: 解決してから2日は「解決済」を付けて残す */
+.washoku-question-lines a.is-solved {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--washoku-muted);
+}
+
+.washoku-question-lines a.is-solved::before {
+    color: var(--washoku-muted);
+}
+
+.washoku-question-lines a.is-solved span {
+    overflow: hidden;
+    flex: 1;
+    text-overflow: ellipsis;
+}
+
+.washoku-solved-tag {
+    flex: none;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--washoku-poll-tint);
+    color: var(--washoku-poll-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* HOME の「みんなの投稿・コメント」: 本文は1行、名前と日時は小さく、間隔を狭く */
+.washoku-activity-compact a {
+    padding: 6px 0;
+}
+
+.washoku-activity-compact .washoku-activity-body {
+    display: block;
+    overflow: hidden;
+    margin-top: 1px;
+    font-size: 14px;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-activity-compact .washoku-activity-kind {
+    float: left;
+    margin-top: 2px;
+}
+
+.washoku-activity-compact small {
+    overflow: hidden;
+    margin-top: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

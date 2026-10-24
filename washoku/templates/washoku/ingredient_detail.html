@@ -45,7 +45,7 @@
 {% endfor %}
 
 {% for poll in polls %}
-    {% include "washoku/includes/poll_box.html" with with_title=True %}
+    {% include "washoku/includes/poll_box.html" with with_title=True inline=True %}
 {% endfor %}
 
 {% include "washoku/includes/related_posts.html" %}

@@ -44,6 +44,35 @@
         <a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ post.title }}の写真{{ forloop.counter }}" loading="lazy"></a>
     {% endfor %}
 
+    {% if post.kind == "column" and post.results %}
+        {% include "washoku/includes/poll_box.html" with poll=post question=post.poll_question|default:"みなさんはどうですか？" %}
+    {% endif %}
+
+    {% if user.is_authenticated and post.kind != "poll" and post.author_id == user.pk or user.is_staff and post.kind != "poll" %}
+    <details class="washoku-staff-photos washoku-photo-box" id="photos">
+        <summary><i class="bi bi-camera" aria-hidden="true"></i> 写真を変える・消す</summary>
+        <ul class="washoku-photo-choices">
+            {% for field, url in post.photo_slots %}
+            <li>
+                {% if url %}<img src="{{ url }}" alt="" loading="lazy">{% endif %}
+                <form method="post" action="{% url 'washoku:post_photo' post.pk %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="field" value="{{ field }}">
+                    <label class="washoku-link-button washoku-photo-pick">{% if url %}差し替える{% else %}＋ 写真を追加{% endif %}<input type="file" name="photo" accept="image/*" onchange="this.form.submit()"></label>
+                </form>
+                {% if url %}
+                <form method="post" action="{% url 'washoku:post_photo' post.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="field" value="{{ field }}">
+                    <button type="submit" name="remove" value="1" class="washoku-link-button">消す</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+
     {% if post.kind == "column" and post.status == "published" %}
         {% url 'washoku:post_react' post.pk as react_url %}
         {% include "washoku/includes/stamps.html" with action=react_url author_id=post.author_id anchor="stamps" %}
