@@ -3528,12 +3528,40 @@ button.washoku-poll-row:hover {
     }
 }
 
-.washoku-filter.washoku-column-sort {
-    margin: 12px 0;
+.washoku-list-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
 }
 
-.washoku-filter.washoku-column-sort select {
-    flex: none;
-    width: auto;
-    min-width: 8em;
+.washoku-list-actions .washoku-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.washoku-sort-switch {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--washoku-accent-soft);
+}
+
+.washoku-sort-switch a {
+    padding: 9px 16px;
+    border-radius: 999px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.washoku-sort-switch a.is-active {
+    background: var(--washoku-surface);
+    color: var(--washoku-accent-strong);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }

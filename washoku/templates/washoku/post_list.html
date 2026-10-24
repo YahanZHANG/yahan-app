@@ -12,7 +12,14 @@
 <p class="washoku-lead">{{ text.lead }}</p>
 
 {% if kind != "poll" %}
-<p><a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+<p class="washoku-list-actions">
+    <a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a>
+    {% if kind == "column" and posts %}
+    <span class="washoku-sort-switch" role="group" aria-label="並べ替え">
+        {% for value, label in sort_choices %}<a href="?sort={{ value }}"{% if sort == value %} class="is-active" aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+    </span>
+    {% endif %}
+</p>
 {% elif user.is_staff %}
 <p><a class="washoku-button" href="{% url 'admin:washoku_post_add' %}?kind=poll&amp;status=published"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
 {% endif %}
@@ -28,15 +35,6 @@
         {% for value, label in sections %}<option value="{{ value }}" {% if section == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
     <noscript><button type="submit">絞り込む</button></noscript>
-</form>
-{% endif %}
-
-{% if kind == "column" and posts %}
-<form method="get" class="washoku-filter washoku-column-sort">
-    <select name="sort" aria-label="並べ替え" onchange="this.form.submit()">
-        {% for value, label in sort_choices %}<option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <noscript><button type="submit">並べ替える</button></noscript>
 </form>
 {% endif %}
 
