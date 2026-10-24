@@ -1475,7 +1475,7 @@ h1, h2, h3,
 /* HOME: 見出しなしで、ヘッダーのすぐ下に検索バー */
 .washoku-hero {
     margin: 0;
-    padding: 4px 0 16px;
+    padding: 0 0 16px;
     background: none;
 }
 
@@ -3010,7 +3010,11 @@ a.washoku-favorite {
 .washoku-announcements {
     display: grid;
     gap: 4px;
-    margin: 10px 0 14px;
+    margin: 0 0 12px;
+}
+
+.washoku-announcements[hidden] {
+    display: none;
 }
 
 .washoku-announcements .washoku-announcement {

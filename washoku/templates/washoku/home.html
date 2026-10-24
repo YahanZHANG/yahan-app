@@ -22,15 +22,22 @@
         var key = "washoku_announcements_closed";
         var closed = [];
         try { closed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) {}
-        document.querySelectorAll("#washoku-announcements [data-announcement-id]").forEach(function (box) {
+        var area = document.getElementById("washoku-announcements");
+        // 全部閉じたら、お知らせの場所ごと消して上のすき間をなくす
+        function hideAreaIfEmpty() {
+            area.hidden = !area.querySelector("[data-announcement-id]:not([hidden])");
+        }
+        area.querySelectorAll("[data-announcement-id]").forEach(function (box) {
             var id = box.dataset.announcementId;
             if (closed.indexOf(id) !== -1) box.hidden = true;
             box.querySelector("[data-announcement-close]").addEventListener("click", function () {
                 box.hidden = true;
+                hideAreaIfEmpty();
                 closed.push(id);
                 try { localStorage.setItem(key, JSON.stringify(closed.slice(-30))); } catch (error) {}
             });
         });
+        hideAreaIfEmpty();
     })();
     </script>
 {% endif %}
