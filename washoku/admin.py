@@ -462,6 +462,7 @@ class PostAdmin(admin.ModelAdmin):
         "title",
         "kind",
         "status",
+        "is_featured",
         "publish_at",
         "shop_names",
         "author",
@@ -471,6 +472,7 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "kind",
+        "is_featured",
         "section",
     )
 
@@ -494,6 +496,8 @@ class PostAdmin(admin.ModelAdmin):
     actions = [
         "publish",
         "unpublish",
+        "feature",
+        "unfeature",
     ]
 
     def save_model(self, request, obj, form, change):
@@ -521,6 +525,14 @@ class PostAdmin(admin.ModelAdmin):
     def unpublish(self, request, queryset):
         queryset.update(status="draft")
 
+    @admin.action(description="選んだ投稿をHOMEの注目に出す")
+    def feature(self, request, queryset):
+        queryset.update(is_featured=True)
+
+    @admin.action(description="選んだ投稿をHOMEの注目から外す")
+    def unfeature(self, request, queryset):
+        queryset.update(is_featured=False)
+
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -531,6 +543,8 @@ class CommentAdmin(admin.ModelAdmin):
         "author",
         "report_count",
         "is_hidden",
+        "is_featured",
+        "reopened",
         "admin_checked",
         "created_at",
     )
@@ -540,10 +554,14 @@ class CommentAdmin(admin.ModelAdmin):
         CommentTargetFilter,
         "is_hidden",
         "is_deleted",
+        "is_featured",
+        "reopened",
         "kind",
     )
 
     list_editable = (
+        "is_featured",
+        "reopened",
         "admin_checked",
     )
 

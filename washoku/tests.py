@@ -1494,7 +1494,7 @@ class FavoriteNoteReactionTests(TestCase):
         )
 
         page = self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk]))
-        self.assertContains(page, "🙏 <b>1</b>")
+        self.assertContains(page, "🙏 ありがとう <b>1</b>")
 
         # もう一度押すと取り消し (通知も消える)
         self.client.post(url, {"kind": "like"})
@@ -1516,7 +1516,7 @@ class FavoriteNoteReactionTests(TestCase):
         self.client.post(reverse("washoku:comment_react", args=[answer.pk]), {"kind": "unknown"})
 
         self.assertEqual(list(CommentReaction.objects.values_list("kind", flat=True)), ["genius"])
-        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "🤩 <b>1</b>")
+        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "🤩 天才 <b>1</b>")
 
         column = Post.objects.create(author=self.child, kind="column", title="Rahm の選び方", body="本文", status="published")
         url = reverse("washoku:post_react", args=[column.pk])
@@ -1530,14 +1530,14 @@ class FavoriteNoteReactionTests(TestCase):
             sorted(Notification.objects.filter(recipient=self.child).values_list("stamp", flat=True)),
             ["genius", "insight"],
         )
-        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "💡 <b>1</b>")
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "💡 なるほど <b>1</b>")
 
         # 自分のコラムには押せず、数だけ見える
         self.client.force_login(self.child)
         self.client.post(url, {"kind": "like"})
         self.assertEqual(PostReaction.objects.count(), 1)
         page = self.client.get(reverse("washoku:post_detail", args=[column.pk]))
-        self.assertContains(page, "💡 1")
+        self.assertContains(page, "💡 なるほど 1")
         self.assertNotContains(page, "スタンプを押す")
         self.assertContains(self.client.get(reverse("washoku:notification_list")), "「なるほど」を押しました: コラム「Rahm の選び方」")
 
@@ -1983,3 +1983,35 @@ class ColumnOrderTests(TestCase):
         page = self.client.get(reverse("washoku:column_list"))
 
         self.assertEqual([post.pk for post in page.context["posts"]], [new.pk, old.pk])
+
+
+class AdminPickTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.author = User.objects.create_user("a", password="x")
+        self.other = User.objects.create_user("b", password="x")
+        self.ingredient = Ingredient.objects.create(name="テスト食材", category="other")
+
+    def test_picked_items_come_first_in_featured(self):
+
+        popular = Post.objects.create(kind="column", title="人気", body="本文です。", status="published", author=self.author)
+        PostReaction.objects.create(post=popular, user=self.other, kind="thanks")
+        picked = Comment.objects.create(ingredient=self.ingredient, author=self.author, body="選んだコメント", is_featured=True)
+        Post.objects.create(kind="column", title="下書き", body="本文です。", status="draft", is_featured=True)
+
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+
+        self.assertEqual([(entry["item"].pk, entry["count"]) for entry in featured], [(picked.pk, None), (popular.pk, 1)])
+
+    def test_reopened_question_stays_open_with_a_reply(self):
+
+        question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
+        Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します")
+
+        self.assertEqual(list(self.client.get(reverse("washoku:home")).context["questions"]), [])
+
+        question.reopened = True
+        question.save()
+
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])

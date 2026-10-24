@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
+from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Prefetch, Q, Value, When
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -180,6 +180,7 @@ def public_comment_targets():
 def questions_with_answer_state():
     """
     公開中の質問に、返信があるか (has_answer) と返信の数 (answer_count) を付ける。
+    管理者が「未解決に戻す」にした質問は、返信があっても未解決 (has_answer=False) にする。
     """
 
     answers = Comment.objects.filter(
@@ -198,7 +199,11 @@ def questions_with_answer_state():
         )
         .filter(public_comment_targets())
         .annotate(
-            has_answer=Exists(answers),
+            has_answer=Case(
+                When(reopened=True, then=Value(False)),
+                default=Exists(answers),
+                output_field=BooleanField(),
+            ),
             answer_count=Count(
                 "replies",
                 filter=Q(replies__is_hidden=False, replies__is_deleted=False),
@@ -241,33 +246,48 @@ FEATURED_DAYS = 30
 
 def featured_items(limit=3):
     """
-    最近スタンプを多くもらったコラムとコメントを、多い順に。スタンプがないものは出さない。
+    HOMEの「注目」。管理画面で選んだもの (is_featured) を先に、残りを
+    最近スタンプを多くもらったコラムとコメントで埋める。スタンプがないものは出さない。
     """
 
     since = timezone.now() - timedelta(days=FEATURED_DAYS)
+    visible_comments = (
+        Comment.objects
+        .filter(is_hidden=False, is_deleted=False)
+        .filter(public_comment_targets())
+        .select_related("recipe", "ingredient", "store", "post", "author")
+    )
+
+    picked = [
+        {"kind": "post", "item": post, "count": None}
+        for post in Post.objects.filter(status="published", is_featured=True).order_by("-created_at")[:limit]
+    ]
+    picked += [
+        {"kind": "comment", "item": comment, "count": None}
+        for comment in visible_comments.filter(is_featured=True).order_by("-created_at")[:limit]
+    ]
+    picked.sort(key=lambda entry: entry["item"].created_at, reverse=True)
+    picked = picked[:limit]
 
     columns = (
         Post.objects
-        .filter(kind="column", status="published", reactions__created_at__gte=since)
+        .filter(kind="column", status="published", is_featured=False, reactions__created_at__gte=since)
         .annotate(stamp_count=Count("reactions"))
-        .select_related("author")
         .order_by("-stamp_count", "-created_at")[:limit]
     )
 
     comments = (
-        Comment.objects
-        .filter(is_hidden=False, is_deleted=False, reactions__created_at__gte=since)
-        .filter(public_comment_targets())
+        visible_comments
+        .filter(is_featured=False, reactions__created_at__gte=since)
         .annotate(stamp_count=Count("reactions"))
-        .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-stamp_count", "-created_at")[:limit]
     )
 
-    items = [{"kind": "column", "item": post, "count": post.stamp_count} for post in columns]
-    items += [{"kind": "comment", "item": comment, "count": comment.stamp_count} for comment in comments]
-    items.sort(key=lambda entry: (entry["count"], entry["item"].created_at), reverse=True)
+    popular = [{"kind": "post", "item": post, "count": post.stamp_count} for post in columns]
+    popular += [{"kind": "comment", "item": comment, "count": comment.stamp_count} for comment in comments]
+    popular.sort(key=lambda entry: (entry["count"], entry["item"].created_at), reverse=True)
 
-    return items[:limit]
+    return (picked + popular)[:limit]
 
 
 def home(request):

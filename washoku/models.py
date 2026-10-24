@@ -1187,6 +1187,12 @@ class Post(models.Model):
         help_text="選んだ食材（と同じ検索グループの食材）を使うレシピや食材のページに、この投稿が「関連する読みもの」として出ます。",
     )
 
+    is_featured = models.BooleanField(
+        "HOMEの注目に出す",
+        default=False,
+        help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
     publish_at = models.DateTimeField(
         "公開予約",
         null=True,
@@ -1343,6 +1349,18 @@ class Comment(models.Model):
         help_text="通報で自動的に、または管理者が非表示にしたもの。",
     )
 
+    is_featured = models.BooleanField(
+        "HOMEの注目に出す",
+        default=False,
+        help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
+    reopened = models.BooleanField(
+        "未解決に戻す",
+        default=False,
+        help_text="質問だけ。「確認します」などの返信しかないとき、返信があっても「返事を待っている質問」に出します。",
+    )
+
     admin_checked = models.BooleanField(
         "管理者確認済み",
         default=False,
@@ -1443,34 +1461,44 @@ class CommentReport(models.Model):
 REACTION_CHOICES = [
     ("like", "いいね"),
     ("thanks", "ありがとう"),
+    ("helped", "助かった"),
     ("insight", "なるほど"),
     ("learned", "勉強になる"),
     ("surprise", "意外！"),
     ("metoo", "私も知りたかった"),
     ("relate", "わかる〜"),
+    ("empathy", "共感"),
     ("yummy", "おいしそう"),
+    ("tasty", "おいしかった"),
     ("cook", "作ってみる"),
     ("buy", "買ってみる"),
     ("lovely", "ステキ"),
     ("genius", "天才"),
     ("lol", "笑った"),
+    ("cheer", "がんばる"),
+    ("congrats", "おめでとう"),
     ("check", "確認します"),
 ]
 
 REACTION_EMOJI = {
     "like": "👍",
     "thanks": "🙏",
+    "helped": "🥹",
     "insight": "💡",
     "learned": "📚",
     "surprise": "😲",
     "metoo": "🙋",
     "relate": "🤝",
+    "empathy": "🫶",
     "yummy": "😋",
+    "tasty": "🍚",
     "cook": "🍳",
     "buy": "🛒",
     "lovely": "✨",
     "genius": "🤩",
     "lol": "😂",
+    "cheer": "💪",
+    "congrats": "🎉",
     "check": "👀",
 }
 

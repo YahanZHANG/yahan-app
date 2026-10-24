@@ -96,7 +96,7 @@
     <ul class="washoku-question-lines washoku-poll-lines">
         {% for entry in featured %}
             {% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "column" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "column" %}コラム{% else %}コメント{% endif %} ・ 😊{{ entry.count }}</small></a></li>
+            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "post" %}{{ item.get_kind_display }}{% else %}コメント{% endif %}{% if entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></a></li>
             {% endwith %}
         {% endfor %}
     </ul>
