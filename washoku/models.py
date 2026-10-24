@@ -1267,6 +1267,18 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])
 
+    @property
+    def poll_title(self):
+        """HOME などに出すアンケートの文: アンケートはタイトル、コラムに付けたものはその質問"""
+        if self.kind == "poll":
+            return self.title
+        return self.poll_question or f"{self.title}：みなさんはどうですか？"
+
+    @property
+    def poll_url(self):
+        url = self.get_absolute_url()
+        return url if self.kind == "poll" else f"{url}#poll-{self.pk}"
+
 
 def publish_due_posts():
     """

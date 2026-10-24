@@ -102,7 +102,7 @@
     <h2 class="washoku-side-label"><a href="{% url 'washoku:poll_list' %}" title="アンケートをすべて見る"><span aria-hidden="true">📊</span><span class="washoku-side-word">アンケート</span></a></h2>
     <ul class="washoku-question-lines washoku-poll-lines">
         {% for poll in polls %}
-            <li><a href="{{ poll.get_absolute_url }}"><span>{{ poll.title }}</span><small>{{ poll.vote_count }}票</small></a></li>
+            <li><a href="{{ poll.poll_url }}"><span>{{ poll.poll_title }}</span><small>{{ poll.vote_count }}票</small></a></li>
         {% endfor %}
     </ul>
 </section>

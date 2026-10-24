@@ -2204,5 +2204,7 @@ class ColumnPollTests(TestCase):
         self.assertEqual(PollVote.objects.get().choice, vollrahm)
         self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "100%")
 
-        # コラムのアンケートは「アンケート」の一覧や HOME には出ない
-        self.assertNotContains(self.client.get(reverse("washoku:home")), "どの Rahm を使う？")
+        # HOME のアンケート欄にも、新しいアンケートとして出る
+        polls = self.client.get(reverse("washoku:home")).context["polls"]
+        self.assertEqual([(poll.pk, poll.vote_count) for poll in polls], [(column.pk, 1)])
+        self.assertContains(self.client.get(reverse("washoku:home")), f"/washoku/posts/{column.pk}/#poll-{column.pk}")

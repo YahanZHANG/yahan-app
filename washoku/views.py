@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import BooleanField, Case, Count, Exists, F, Max, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -332,11 +332,13 @@ def home(request):
         {
             "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
+            # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
             "polls": (
                 Post.objects
-                .filter(kind="poll", status="published")
-                .annotate(vote_count=Count("votes"))
-                .order_by("-created_at")[:3]
+                .filter(status="published")
+                .filter(Q(kind="poll") | Q(kind="column", choices__isnull=False))
+                .annotate(vote_count=Count("votes", distinct=True), started=Max("choices__pk"))
+                .order_by(F("started").desc(nulls_last=True), "-created_at")[:3]
             ),
             "featured": featured_items(),
             "announcements": list(Announcement.current()),
