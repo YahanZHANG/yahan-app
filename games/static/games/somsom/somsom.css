@@ -1418,6 +1418,13 @@
    ========================================================= */
 
 .somsom-piece {
+    /*
+       The shared body rule above sets position: relative.
+       Pieces must stay absolute, or they fall into normal
+       flow and most of the 7x7 board ends up outside it.
+    */
+    position: absolute;
+
     border-radius: 0;
 
     background: transparent;
