@@ -165,9 +165,9 @@
 
                 <span class="games-count">
                     {% if can_play_maaario %}
-                        04 GAMES
+                        05 GAMES
                     {% else %}
-                        03 GAMES
+                        04 GAMES
                     {% endif %}
                 </span>
 
@@ -341,6 +341,71 @@
                             ドットを集めて、
                             ゴーストから逃げよう。
                             5つの迷路に挑戦！
+                        </p>
+
+                        <div class="games-card-bottom">
+
+                            <span class="games-card-play">
+                                PLAY NOW
+                            </span>
+
+                            <span
+                                class="games-card-arrow"
+                                aria-hidden="true"
+                            >
+                                ↗
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+                <!-- =====================================
+                    SomSom
+                ===================================== -->
+
+                <a
+                    href="{% url 'games:somsom' %}"
+                    class="games-card games-card-somsom"
+                >
+
+                    <div class="games-card-art">
+
+                        <div class="games-card-art-glow"></div>
+
+                        <div
+                            class="games-somsom-preview"
+                            aria-hidden="true"
+                        >
+                            <span class="games-somsom-face is-red"></span>
+                            <span class="games-somsom-face is-blue"></span>
+                            <span class="games-somsom-face is-green"></span>
+                            <span class="games-somsom-face is-yellow"></span>
+                            <span class="games-somsom-face is-purple"></span>
+                        </div>
+
+                        <span class="games-card-badge">
+                            PUZZLE
+                        </span>
+
+                    </div>
+
+                    <div class="games-card-body">
+
+                        <div class="games-card-meta">
+                            CONNECT & CLEAR
+                        </div>
+
+                        <h3 class="games-card-title">
+                            ソムソム
+                        </h3>
+
+                        <p class="games-card-description">
+                            同じソムをつないで消そう。
+                            5種類の能力を使って、
+                            ハイスコアに挑戦！
                         </p>
 
                         <div class="games-card-bottom">
