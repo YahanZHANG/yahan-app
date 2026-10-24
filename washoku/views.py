@@ -2620,7 +2620,7 @@ def split_polls(user, posts):
 def poll_vote(request, pk):
 
     post = get_object_or_404(
-        Post.objects.filter(status="published", kind="poll"),
+        Post.objects.filter(status="published", kind__in=("poll", "column")),
         pk=pk,
     )
 
@@ -2652,6 +2652,10 @@ def post_detail(request, pk):
     )
 
     if post.kind == "poll":
+        attach_poll_results([post], request.user)
+
+    # コラムに選択肢があれば、最後にアンケートを付ける
+    if post.kind == "column" and post.choices.exists():
         attach_poll_results([post], request.user)
 
     return render(

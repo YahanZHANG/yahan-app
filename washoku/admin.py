@@ -453,15 +453,15 @@ class CommentTargetFilter(admin.SimpleListFilter):
 
 class PollChoiceInline(admin.TabularInline):
     """
-    アンケートの選択肢 (種類が「アンケート」のときだけ使う)。
+    アンケートの選択肢 (種類が「アンケート」のときと、コラムにアンケートを付けるときに使う)。
     """
 
     model = PollChoice
     extra = 4
     fields = ("label", "order", "vote_count")
     readonly_fields = ("vote_count",)
-    verbose_name = "選択肢（アンケートのときだけ）"
-    verbose_name_plural = "選択肢（アンケートのときだけ。並び順の小さい順に出ます）"
+    verbose_name = "選択肢（アンケートとコラムのとき）"
+    verbose_name_plural = "選択肢（アンケート、またはコラムの最後に付けるアンケート。並び順の小さい順に出ます）"
 
     @admin.display(description="票数")
     def vote_count(self, obj):

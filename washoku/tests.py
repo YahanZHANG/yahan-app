@@ -2181,3 +2181,28 @@ class PollCommentsOnIngredientTests(TestCase):
         self.assertContains(page, "washoku-poll-inline")
         self.assertContains(page, "いつも緑です")
         self.assertContains(page, "コメント1件を見る・書く")
+
+
+class ColumnPollTests(TestCase):
+
+    def test_column_with_choices_shows_a_poll_at_the_end(self):
+
+        User = get_user_model()
+        member = User.objects.create_user("hanako", password="x")
+        column = Post.objects.create(kind="column", title="Rahm の選び方", body="本文です。", status="published", poll_question="どの Rahm を使う？")
+        plain = Post.objects.create(kind="column", title="ふつうのコラム", body="本文です。", status="published")
+        vollrahm = PollChoice.objects.create(post=column, label="Vollrahm", order=1)
+        PollChoice.objects.create(post=column, label="Halbrahm", order=2)
+
+        page = self.client.get(reverse("washoku:post_detail", args=[column.pk]))
+        self.assertContains(page, "どの Rahm を使う？")
+        self.assertContains(page, "Halbrahm")
+        self.assertNotContains(self.client.get(reverse("washoku:post_detail", args=[plain.pk])), "washoku-poll-rows")
+
+        self.client.force_login(member)
+        self.client.post(reverse("washoku:poll_vote", args=[column.pk]), {"choice": vollrahm.pk})
+        self.assertEqual(PollVote.objects.get().choice, vollrahm)
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "100%")
+
+        # コラムのアンケートは「アンケート」の一覧や HOME には出ない
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "どの Rahm を使う？")

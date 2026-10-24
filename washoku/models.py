@@ -1193,6 +1193,13 @@ class Post(models.Model):
         help_text="選んだ食材（と同じ検索グループの食材）を使うレシピや食材のページに、この投稿が「関連する読みもの」として出ます。",
     )
 
+    poll_question = models.CharField(
+        "コラムのアンケートの質問",
+        max_length=200,
+        blank=True,
+        help_text="コラムだけ。下の「選択肢」も入れると、コラムの最後にアンケートが出ます（空なら「みなさんはどうですか？」）。",
+    )
+
     is_featured = models.BooleanField(
         "注目に出す",
         default=False,

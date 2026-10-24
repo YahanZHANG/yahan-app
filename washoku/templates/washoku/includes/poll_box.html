@@ -1,7 +1,8 @@
-{# アンケート。結果はだれでも見られ、会員は押して投票（選び直し）できる。with_title でタイトルを付ける / inline は食材ページ用 (小さめ・色違い・コメントつき) #}
+{# アンケート。結果はだれでも見られ、会員は押して投票（選び直し）できる。with_title でタイトルを付ける / question はコラムに付けたアンケートの質問 / inline は食材ページ用 (小さめ・色違い・コメントつき) #}
 {% load washoku_tags %}
 {% with results=poll.results %}
 <section class="washoku-poll{% if inline %} washoku-poll-inline{% endif %}" id="poll-{{ poll.pk }}">
+    {% if question %}<h3><span class="washoku-activity-kind kind-poll">アンケート</span> {{ question }}</h3>{% endif %}
     {% if with_title %}<h3><span class="washoku-activity-kind kind-poll">アンケート</span> <a href="{{ poll.get_absolute_url }}">{{ poll.title }}</a></h3>{% endif %}
 
     {% if user.is_authenticated %}<form method="post" action="{% url 'washoku:poll_vote' poll.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% endif %}

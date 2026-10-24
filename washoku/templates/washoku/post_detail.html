@@ -44,6 +44,10 @@
         <a href="{{ photo }}" target="_blank" rel="noopener"><img class="washoku-photo" src="{{ photo }}" alt="{{ post.title }}の写真{{ forloop.counter }}" loading="lazy"></a>
     {% endfor %}
 
+    {% if post.kind == "column" and post.results %}
+        {% include "washoku/includes/poll_box.html" with poll=post question=post.poll_question|default:"みなさんはどうですか？" %}
+    {% endif %}
+
     {% if user.is_authenticated and post.kind != "poll" and post.author_id == user.pk or user.is_staff and post.kind != "poll" %}
     <details class="washoku-staff-photos washoku-photo-box" id="photos">
         <summary><i class="bi bi-camera" aria-hidden="true"></i> 写真を変える・消す</summary>
