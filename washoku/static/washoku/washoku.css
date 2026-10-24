@@ -3058,10 +3058,11 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-column { background: #FBE3D3; color: #A4461C; }
 .washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
 .washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
-.washoku-activity-kind.kind-question { background: #FFF0C2; color: #866100; }
+.washoku-activity-kind.kind-question,
+.washoku-activity-kind.kind-reply { background: #FFF0C2; color: #866100; }
 .washoku-activity-kind.kind-poll { background: #D9F0EC; color: #1E6A5E; }
-.washoku-activity-kind.kind-comment,
-.washoku-activity-kind.kind-reply { background: #6B6B6B; color: #fff; }
+.washoku-activity-kind.kind-comment { background: #E8743B; color: #fff; }
+.washoku-activity-kind.kind-review { background: #6B6B6B; color: #fff; }
 
 /* HOME の返事を待っている質問: 質問文だけを1行ずつ。左にアクセントの線 */
 .washoku-open-questions {
