@@ -3489,21 +3489,7 @@ button.washoku-poll-row:hover {
 }
 
 /* コラムの一覧: タイトルだけを1行ずつ。押すと記事を開く */
-.washoku-posts.washoku-posts-titles {
-    gap: 0;
-    overflow: hidden;
-    border: 1px solid var(--washoku-border);
-    border-radius: 14px;
-    background: var(--washoku-surface);
-}
-
-.washoku-posts-titles li + li {
-    border-top: 1px solid var(--washoku-border);
-}
-
 .washoku-posts.washoku-posts-titles a {
-    border: 0;
-    border-radius: 0;
     display: flex;
     align-items: baseline;
     gap: 10px;
@@ -3540,4 +3526,14 @@ button.washoku-poll-row:hover {
     .washoku-posts-titles strong {
         flex: none;
     }
+}
+
+.washoku-filter.washoku-column-sort {
+    margin: 12px 0;
+}
+
+.washoku-filter.washoku-column-sort select {
+    flex: none;
+    width: auto;
+    min-width: 8em;
 }

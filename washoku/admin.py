@@ -877,6 +877,7 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
                 "column_show_time",
                 "column_show_comments",
                 "column_show_stamps",
+                "column_show_readers",
             ),
         }),
     )

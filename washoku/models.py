@@ -1575,6 +1575,12 @@ class DisplaySettings(models.Model):
 
     column_show_stamps = models.BooleanField("コラム一覧: スタンプ数", default=True)
 
+    column_show_readers = models.BooleanField(
+        "コラム一覧: 読んだ人の数",
+        default=False,
+        help_text="人気順のもとになる数です",
+    )
+
     class Meta:
         verbose_name = "表示設定"
         verbose_name_plural = "表示設定"

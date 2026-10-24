@@ -2520,6 +2520,36 @@ def visible_posts(user):
     return posts.filter(status="published")
 
 
+COLUMN_SORTS = (
+    ("new", "新着順"),
+    ("popular", "人気順"),
+)
+
+
+def post_reader_counts():
+    """
+    {投稿のpk: ページを開いた人の数}。アクセス解析の記録から数える (集計から外したアカウントは除く)。
+    """
+
+    from usage_analytics.models import AnalyticsExclusion, PageView
+
+    views = PageView.objects.filter(path__startswith="/washoku/posts/")
+    excluded = AnalyticsExclusion.objects.values("user_id")
+    views = views.exclude(user_id__in=excluded).exclude(
+        visitor_id__in=PageView.objects.filter(user_id__in=excluded).values("visitor_id")
+    )
+
+    counts = {}
+
+    for path, readers in views.values("path").annotate(readers=Count("visitor_id", distinct=True)).values_list("path", "readers"):
+        parts = path.strip("/").split("/")
+        # /washoku/posts/<pk>/ だけ数える (写真・投票などのページは別)
+        if len(parts) == 3 and parts[2].isdigit():
+            counts[int(parts[2])] = counts.get(int(parts[2]), 0) + readers
+
+    return counts
+
+
 def post_list(request, kind):
 
     # 集計 (annotate) すると Meta.ordering が使われないので、新しい順をここで指定する
@@ -2551,6 +2581,17 @@ def post_list(request, kind):
         if section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)
 
+    sort = request.GET.get("sort", "new")
+
+    if kind == "column":
+        readers = post_reader_counts()
+        posts = list(posts)
+        for post in posts:
+            post.reader_count = readers.get(post.pk, 0)
+        if sort == "popular":
+            # 並びは安定なので、同じ人数なら新しい順のまま
+            posts.sort(key=lambda post: post.reader_count, reverse=True)
+
     return render(
         request,
         "washoku/post_list.html",
@@ -2560,6 +2601,8 @@ def post_list(request, kind):
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
             "display": DisplaySettings.load() if kind == "column" else None,
+            "sort": sort,
+            "sort_choices": COLUMN_SORTS,
             "shop": shop,
             "section": section,
             "shops": Post.SHOP_CHOICES,

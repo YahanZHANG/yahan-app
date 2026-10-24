@@ -31,6 +31,15 @@
 </form>
 {% endif %}
 
+{% if kind == "column" and posts %}
+<form method="get" class="washoku-filter washoku-column-sort">
+    <select name="sort" aria-label="並べ替え" onchange="this.form.submit()">
+        {% for value, label in sort_choices %}<option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <noscript><button type="submit">並べ替える</button></noscript>
+</form>
+{% endif %}
+
 {% if posts %}
     <ul class="washoku-posts{% if kind == "column" %} washoku-posts-titles{% endif %}">
         {% for post in posts %}
@@ -52,6 +61,7 @@
                         {% if display.column_show_date or display.column_show_time %}<span>{% if display.column_show_date %}{{ post.created_at|date:"n/j" }}{% endif %}{% if display.column_show_date and display.column_show_time %} {% endif %}{% if display.column_show_time %}{{ post.created_at|date:"H:i" }}{% endif %}</span>{% endif %}
                         {% if display.column_show_comments and post.comment_count %}<span><i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}</span>{% endif %}
                         {% if display.column_show_stamps and post.stamp_count %}<span title="スタンプ">😊 {{ post.stamp_count }}</span>{% endif %}
+                        {% if display.column_show_readers %}<span title="読んだ人"><i class="bi bi-eye" aria-hidden="true"></i> {{ post.reader_count }}人</span>{% endif %}
                     {% endspaceless %}</small>
                     {% elif kind != "link" %}
                     <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>

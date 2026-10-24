@@ -2280,3 +2280,23 @@ class ColumnListDisplayTests(TestCase):
         self.client.force_login(User.objects.create_superuser("boss", password="x"))
         response = self.client.get(reverse("admin:washoku_displaysettings_changelist"))
         self.assertRedirects(response, reverse("admin:washoku_displaysettings_change", args=[1]))
+
+    def test_columns_sort_by_newest_or_most_readers(self):
+
+        import uuid
+
+        from usage_analytics.models import PageView
+
+        older = Post.objects.create(kind="column", title="古いけど人気", body="x", status="published")
+        newer = Post.objects.create(kind="column", title="新しいコラム", body="x", status="published")
+        Post.objects.filter(pk=older.pk).update(created_at=timezone.now() - timedelta(days=3))
+        for _ in range(2):
+            PageView.objects.create(visitor_id=uuid.uuid4(), visit_id=uuid.uuid4(), app_key="washoku", path=f"/washoku/posts/{older.pk}/")
+        PageView.objects.create(visitor_id=uuid.uuid4(), visit_id=uuid.uuid4(), app_key="washoku", path=f"/washoku/posts/{newer.pk}/photo/")
+
+        titles = lambda response: [post.title for post in response.context["posts"]]
+
+        self.assertEqual(titles(self.client.get(reverse("washoku:column_list"))), ["新しいコラム", "古いけど人気"])
+        popular = self.client.get(reverse("washoku:column_list"), {"sort": "popular"})
+        self.assertEqual(titles(popular), ["古いけど人気", "新しいコラム"])
+        self.assertEqual([post.reader_count for post in popular.context["posts"]], [2, 0])
