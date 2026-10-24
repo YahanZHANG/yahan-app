@@ -222,6 +222,10 @@ html[data-yapp-resolved-theme="dark"] body {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
 }
 
+.ya-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
 .ya-card {
     min-width: 0;
     padding: 16px;
@@ -393,6 +397,11 @@ line.ya-axis {
 .ya-fill-s4 { fill: var(--ya-s4); }
 .ya-fill-s5 { fill: var(--ya-s5); }
 .ya-fill-s9 { fill: var(--ya-s9); }
+
+.ya-line { fill: none; stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.ya-stroke-s1 { stroke: var(--ya-s1); }
+.ya-stroke-s3 { stroke: var(--ya-s3); }
+.ya-stroke-s4 { stroke: var(--ya-s4); }
 
 .ya-s0 { background: var(--ya-s0); }
 .ya-s1 { background: var(--ya-s1); }
@@ -892,4 +901,48 @@ line.ya-axis {
     grid-template-columns: minmax(60px, 1fr) auto;
     gap: 8px;
     align-items: center;
+}
+
+/* 使い方の傾向: 3つの短いランキング */
+.ya-behavior {
+    margin-top: 12px;
+}
+
+.ya-behavior h4 {
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+.ya-behavior-list {
+    margin: 0;
+    padding-left: 1.4em;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ya-insights .ya-behavior-list li {
+    display: list-item;
+    margin: 2px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ya-behavior-list .ya-sub {
+    display: inline;
+    margin-left: 6px;
+}
+
+.ya-behavior {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+}
+
+.ya-insights .ya-behavior-list li.ya-empty {
+    list-style: none;
+    margin-left: -1.4em;
+    padding: 0;
+    text-align: left;
+}
+
+.ya-insights + .ya-insights {
+    margin-top: 12px;
 }

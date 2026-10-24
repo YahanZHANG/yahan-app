@@ -18,6 +18,7 @@ from travel.models import UserProfile
 
 from . import stats
 from .catalog import app_info
+from .behavior import build_behavior
 from .insights import build_insights
 from .middleware import IGNORE_COOKIE, visitor_of
 from .models import (
@@ -131,10 +132,13 @@ def dashboard(request):
         "pages": pages,
         "clicks": clicks,
         "users": users,
+        "behavior": build_behavior(scope),
         "charts": {
             "visitors": data["visitors_chart"],
             "page_views": data["page_views_chart"],
             "sources": data["sources_chart"],
+            "traffic": stats.traffic_chart(scope),
+            "last_day": stats.last_day_chart(scope),
         },
         **live_context(request),
     }

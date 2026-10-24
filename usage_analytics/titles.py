@@ -16,6 +16,7 @@ DETAIL_PAGES = {
     "washoku:recipe_detail": ("washoku.Recipe", "pk", "name", "pk"),
     "washoku:ingredient_detail": ("washoku.Ingredient", "pk", "name", "pk"),
     "washoku:store_detail": ("washoku.Store", "pk", "name", "pk"),
+    "washoku:post_detail": ("washoku.Post", "pk", "title", "pk"),
     "outings:event_detail": ("outings.Event", "pk", "title", "pk"),
     "outings:tourist_spot_detail": ("outings.TouristSpot", "pk", "title_ja", "pk"),
     "news:topic_detail": ("news.Topic", "slug", "name", "slug"),
@@ -52,6 +53,17 @@ PAGE_NAMES = {
     "washoku:about": "このアプリについて",
     "washoku:my_page": "マイページ",
     "washoku:recipe_submit": "レシピ投稿",
+    "washoku:find_by_nutrition": "栄養で選ぶ",
+    "washoku:substitute_list": "代わりの食材",
+    "washoku:search": "検索",
+    "washoku:activity": "みんなの投稿・コメント",
+    "washoku:question_list": "Q&A",
+    "washoku:column_list": "コラム一覧",
+    "washoku:product_list": "おすすめ商品",
+    "washoku:link_list": "参考リンク一覧",
+    "washoku:poll_list": "アンケート一覧",
+    "washoku:notification_list": "お知らせ",
+    "washoku:my_favorites": "お気に入り",
 }
 
 

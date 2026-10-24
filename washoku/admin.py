@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from .geocode import geocode_store
+from .templatetags.washoku_tags import display_name
 from .photos import commons_query, delete_uploaded_photos, find_commons_photo, upload_photo
 from .models import (
     Announcement,
@@ -19,6 +20,7 @@ from .models import (
     MoodTag,
     Notification,
     PollChoice,
+    PollVote,
     Post,
     PushSubscription,
     Recipe,
@@ -468,10 +470,73 @@ class PollChoiceInline(admin.TabularInline):
         return obj.votes.count() if obj.pk else ""
 
 
+class PollVoteInline(admin.TabularInline):
+    """
+    だれが何に投票したか (見るだけ)。
+    """
+
+    model = PollVote
+    extra = 0
+    can_delete = False
+    fields = ("user_name", "choice_label", "voted_time")
+    readonly_fields = ("user_name", "choice_label", "voted_time")
+    ordering = ("-voted_at",)
+    verbose_name = "回答"
+    verbose_name_plural = "回答した人（新しい順）"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="回答した人")
+    def user_name(self, obj):
+        return f"{display_name(obj.user)}（{obj.user.username}）"
+
+    @admin.display(description="選んだ答え")
+    def choice_label(self, obj):
+        return obj.choice.label
+
+    @admin.display(description="回答日時")
+    def voted_time(self, obj):
+        return timezone.localtime(obj.voted_at).strftime("%Y/%m/%d %H:%M")
+
+
+@admin.register(PollVote)
+class PollVoteAdmin(admin.ModelAdmin):
+    """
+    アンケートの回答の一覧。アンケートや選択肢で絞り込める。
+    """
+
+    list_display = ("poll_name", "choice_label", "user_name", "voted_time")
+    list_filter = (("post", admin.RelatedOnlyFieldListFilter),)
+    list_select_related = ("post", "choice", "user")
+    search_fields = ("user__username", "post__title", "choice__label")
+    readonly_fields = ("post", "choice", "user", "voted_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="アンケート", ordering="post__title")
+    def poll_name(self, obj):
+        return obj.post.poll_title
+
+    @admin.display(description="選んだ答え", ordering="choice__order")
+    def choice_label(self, obj):
+        return obj.choice.label
+
+    @admin.display(description="回答した人", ordering="user__username")
+    def user_name(self, obj):
+        return f"{display_name(obj.user)}（{obj.user.username}）"
+
+    @admin.display(description="回答日時", ordering="voted_at")
+    def voted_time(self, obj):
+        return timezone.localtime(obj.voted_at).strftime("%Y/%m/%d %H:%M")
+
+
 @admin.register(Post)
 class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
     inlines = (
         PollChoiceInline,
+        PollVoteInline,
     )
 
     list_display = (

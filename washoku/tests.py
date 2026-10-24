@@ -2224,3 +2224,22 @@ class ColumnPollTests(TestCase):
         polls = self.client.get(reverse("washoku:home")).context["polls"]
         self.assertEqual([(poll.pk, poll.vote_count) for poll in polls], [(column.pk, 1)])
         self.assertContains(self.client.get(reverse("washoku:home")), f"/washoku/posts/{column.pk}/#poll-{column.pk}")
+
+
+
+class PollVoteAdminTests(TestCase):
+
+    def test_admin_sees_who_answered_what(self):
+
+        User = get_user_model()
+        staff = User.objects.create_superuser("boss", password="x")
+        member = User.objects.create_user("hanako", password="x")
+        poll = Post.objects.create(kind="poll", title="何色の袋？", status="published")
+        green = PollChoice.objects.create(post=poll, label="緑", order=1)
+        PollVote.objects.create(post=poll, choice=green, user=member)
+
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("admin:washoku_post_change", args=[poll.pk])), "hanako")
+        page = self.client.get(reverse("admin:washoku_pollvote_changelist"))
+        self.assertContains(page, "hanako")
+        self.assertContains(page, "緑")

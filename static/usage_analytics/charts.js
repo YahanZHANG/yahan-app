@@ -1,5 +1,5 @@
 /* =====================================================
-   Yapp分析: 積み上げ棒グラフ (SVG, ライブラリなし)
+   Yapp分析: 積み上げ棒グラフ / 折れ線 (mode: "line") (SVG, ライブラリなし)
 
    <div data-ya-chart="chart-id"></div> と
    {{ data|json_script:"chart-id" }} を置くと描く。
@@ -121,8 +121,11 @@
         const plotH = HEIGHT - PAD.top - PAD.bottom;
         const count = data.labels.length;
 
+        const isLine = data.mode === "line";
         const totals = data.labels.map((_, i) =>
-            data.series.reduce((sum, s) => sum + s.values[i], 0)
+            isLine
+                ? Math.max(0, ...data.series.map((s) => s.values[i]))
+                : data.series.reduce((sum, s) => sum + s.values[i], 0)
         );
         const max = niceMax(Math.max(0, ...totals));
 
@@ -154,11 +157,32 @@
         // 横軸のラベルは重ならない間隔で
         const every = Math.ceil(count / Math.max(1, Math.floor(plotW / 54)));
 
+        // 折れ線: 系列ごとに線を引く (積み上げない)
+        if (isLine) {
+            for (const series of data.series) {
+                const points = series.values.map((value, i) => {
+                    const x = PAD.left + slot * i + slot / 2;
+                    const y = PAD.top + plotH - (value / max) * plotH;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                });
+                el("polyline", {
+                    points: points.join(" "),
+                    class: `ya-line ya-stroke-${series.color}`,
+                }, svg);
+                if (count <= 60) {
+                    points.forEach((point) => {
+                        const [cx, cy] = point.split(",");
+                        el("circle", { cx, cy, r: 2.5, class: `ya-fill-${series.color}` }, svg);
+                    });
+                }
+            }
+        }
+
         data.labels.forEach((label, i) => {
             const x = PAD.left + slot * i + (slot - barW) / 2;
             let y = PAD.top + plotH;
 
-            const visible = data.series
+            const visible = isLine ? [] : data.series
                 .map((s) => ({ series: s, value: s.values[i] }))
                 .filter((item) => item.value > 0);
 
@@ -180,7 +204,10 @@
                 }
             });
 
-            if (i % every === 0) {
+            // tickStep があれば、その倍数 (例: 15分刻みなら1時間ごと) で目盛りを出す
+            const step = data.tickStep || 1;
+            const tickEvery = step * Math.ceil(every / step);
+            if ((i - (data.tickOffset || 0)) % tickEvery === 0) {
                 const text = el("text", {
                     x: x + barW / 2, y: HEIGHT - 8, class: "ya-tick", "text-anchor": "middle",
                 }, svg);
@@ -220,7 +247,7 @@
         });
 
         tip.innerHTML = `<div class="ya-tip-title">${escapeHtml(data.labels[i])}</div>${rows.join("")}`
-            + (data.series.length > 1
+            + (data.series.length > 1 && data.mode !== "line"
                 ? `<div class="ya-tip-row ya-tip-total"><span>合計</span><b>${format(total)}${unit}</b></div>`
                 : "");
 
