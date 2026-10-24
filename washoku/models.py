@@ -1390,6 +1390,19 @@ class Comment(models.Model):
         help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
     )
 
+    home_hidden = models.BooleanField(
+        "HOMEに出さない",
+        default=False,
+        help_text="質問だけ。HOMEの「質問」の欄から外します（質問の一覧には残ります）。",
+    )
+
+    home_until = models.DateTimeField(
+        "HOMEに残す期限",
+        null=True,
+        blank=True,
+        help_text="質問だけ。空なら自動（未解決のあいだ＋解決してから2日）。日時を入れると、解決済みでもその日時までHOMEに出します。",
+    )
+
     reopened = models.BooleanField(
         "未解決に戻す",
         default=False,

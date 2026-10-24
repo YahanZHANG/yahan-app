@@ -582,6 +582,8 @@ class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
         "featured_hidden",
         "on_home",
         "reopened",
+        "home_hidden",
+        "home_until",
         "admin_checked",
         "created_at",
     )
@@ -594,6 +596,7 @@ class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
         "is_featured",
         "featured_hidden",
         "reopened",
+        "home_hidden",
         "kind",
     )
 
@@ -602,6 +605,8 @@ class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
         "featured_order",
         "featured_hidden",
         "reopened",
+        "home_hidden",
+        "home_until",
         "admin_checked",
     )
 

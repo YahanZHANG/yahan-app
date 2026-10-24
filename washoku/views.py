@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Prefetch, Q, Value, When
+from django.db.models import BooleanField, Case, Count, Exists, F, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -211,6 +211,8 @@ def questions_with_answer_state():
                 filter=Q(replies__is_hidden=False, replies__is_deleted=False),
                 distinct=True,
             ),
+            # 最初の返信の日時 = 解決した日時
+            answered_at=Subquery(answers.order_by("created_at").values("created_at")[:1]),
         )
         .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-created_at")
@@ -223,6 +225,32 @@ def open_questions():
     """
 
     return questions_with_answer_state().filter(has_answer=False)
+
+
+# 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
+HOME_SOLVED_DAYS = 2
+
+
+def home_questions(open_limit=3, solved_limit=2):
+    """
+    HOME の質問。未解決は (新しい順に) 残り続け、解決済みは解決から2日だけ「解決済」付きで残る。
+    管理画面の「HOMEに出さない」「HOMEに残す期限」で、手で調整できる。
+    """
+
+    now = timezone.now()
+    questions = questions_with_answer_state().filter(home_hidden=False)
+
+    solved = (
+        questions
+        .filter(has_answer=True)
+        .filter(
+            Q(home_until__gt=now)
+            | Q(home_until__isnull=True, answered_at__gte=now - timedelta(days=HOME_SOLVED_DAYS))
+        )
+        .order_by("-answered_at")
+    )
+
+    return list(questions.filter(has_answer=False)[:open_limit]) + list(solved[:solved_limit])
 
 
 # =========================================================
@@ -300,7 +328,7 @@ def home(request):
         "washoku/home.html",
         {
             "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:3],
+            "questions": home_questions(),
             "polls": (
                 Post.objects
                 .filter(kind="poll", status="published")

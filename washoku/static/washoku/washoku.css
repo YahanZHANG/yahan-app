@@ -3419,3 +3419,31 @@ button.washoku-poll-row:hover {
     color: var(--washoku-muted);
     font-size: 13px;
 }
+
+/* HOMEの質問: 解決してから2日は「解決済」を付けて残す */
+.washoku-question-lines a.is-solved {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--washoku-muted);
+}
+
+.washoku-question-lines a.is-solved::before {
+    color: var(--washoku-muted);
+}
+
+.washoku-question-lines a.is-solved span {
+    overflow: hidden;
+    flex: 1;
+    text-overflow: ellipsis;
+}
+
+.washoku-solved-tag {
+    flex: none;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--washoku-poll-tint);
+    color: var(--washoku-poll-accent);
+    font-size: 11px;
+    font-weight: 700;
+}

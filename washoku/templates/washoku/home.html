@@ -88,10 +88,10 @@
 
 {% if questions %}
 <section class="washoku-section washoku-open-questions washoku-side-box">
-    <h2 class="washoku-side-label"><a href="{% url 'washoku:question_list' %}" title="返事を待っている質問をすべて見る"><span aria-hidden="true">💬</span><span class="washoku-side-word">質問</span></a></h2>
+    <h2 class="washoku-side-label"><a href="{% url 'washoku:question_list' %}" title="質問をすべて見る"><span aria-hidden="true">💬</span><span class="washoku-side-word">質問</span></a></h2>
     <ul class="washoku-question-lines">
         {% for question in questions %}
-            <li><a href="{{ question.get_absolute_url }}">{{ question.body }}</a></li>
+            <li>{% if question.has_answer %}<a class="is-solved" href="{{ question.get_absolute_url }}"><span>{{ question.body }}</span><small class="washoku-solved-tag">解決済</small></a>{% else %}<a href="{{ question.get_absolute_url }}">{{ question.body }}</a>{% endif %}</li>
         {% endfor %}
     </ul>
 </section>

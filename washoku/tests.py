@@ -2041,7 +2041,9 @@ class AdminPickTests(TestCase):
         question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
         Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します")
 
-        self.assertEqual(list(self.client.get(reverse("washoku:home")).context["questions"]), [])
+        # 解決済みは2日間「解決済」付きで残る
+        questions = self.client.get(reverse("washoku:home")).context["questions"]
+        self.assertEqual([(q.pk, q.has_answer) for q in questions], [(question.pk, True)])
 
         question.reopened = True
         question.save()
@@ -2054,6 +2056,28 @@ class AdminPickTests(TestCase):
         Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します", reopened=True)
 
         self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
+
+    def test_solved_questions_stay_on_home_for_two_days(self):
+
+        from datetime import timedelta
+        from django.utils import timezone
+
+        open_q = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="未解決の質問")
+        solved = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="解決した質問")
+        reply = Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=solved, body="Coop にあります")
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
+        self.assertContains(home, "解決済")
+
+        # 3日たつと消える (未解決はずっと残る)
+        Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [open_q.pk])
+
+        # 管理画面で期限を延ばせる / HOMEから外せる
+        Comment.objects.filter(pk=solved.pk).update(home_until=timezone.now() + timedelta(days=1))
+        Comment.objects.filter(pk=open_q.pk).update(home_hidden=True)
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [solved.pk])
 
     def test_featured_order_and_hidden(self):
 
