@@ -3056,7 +3056,7 @@ a.washoku-favorite {
 
 /* みんなの投稿・コメント: 種類ごとにタグの色を変える */
 .washoku-activity-kind.kind-column { background: #FBE3D3; color: #A4461C; }
-.washoku-activity-kind.kind-link { background: #DCEBF7; color: #2B5F8A; }
+.washoku-activity-kind.kind-link { background: #ECECEC; color: #666; }
 .washoku-activity-kind.kind-product { background: #E3F1DC; color: #3E6B2A; }
 .washoku-activity-kind.kind-question,
 .washoku-activity-kind.kind-reply { background: #FFF0C2; color: #866100; }
