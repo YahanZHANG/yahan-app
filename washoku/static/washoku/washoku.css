@@ -3364,7 +3364,7 @@ button.washoku-poll-row:hover {
     display: flex;
     align-items: stretch;
     gap: 10px;
-    margin: 8px 0;
+    margin: 10px 0;
     padding: 0 12px 0 0;
 }
 
@@ -3410,7 +3410,7 @@ button.washoku-poll-row:hover {
 }
 
 .washoku-side-box .washoku-question-lines a {
-    padding: 5px 0;
+    padding: 7px 0;
 }
 
 .washoku-comment-hint {
