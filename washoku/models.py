@@ -1188,9 +1188,21 @@ class Post(models.Model):
     )
 
     is_featured = models.BooleanField(
-        "HOMEの注目に出す",
+        "注目に出す",
         default=False,
         help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
+    featured_order = models.PositiveSmallIntegerField(
+        "注目の順番",
+        default=10,
+        help_text="「注目に出す」ものの並び順。小さい数ほど上（同じ数なら新しい順）。",
+    )
+
+    featured_hidden = models.BooleanField(
+        "注目から外す",
+        default=False,
+        help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
     )
 
     publish_at = models.DateTimeField(
@@ -1350,9 +1362,21 @@ class Comment(models.Model):
     )
 
     is_featured = models.BooleanField(
-        "HOMEの注目に出す",
+        "注目に出す",
         default=False,
         help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
+    featured_order = models.PositiveSmallIntegerField(
+        "注目の順番",
+        default=10,
+        help_text="「注目に出す」ものの並び順。小さい数ほど上（同じ数なら新しい順）。",
+    )
+
+    featured_hidden = models.BooleanField(
+        "注目から外す",
+        default=False,
+        help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
     )
 
     reopened = models.BooleanField(

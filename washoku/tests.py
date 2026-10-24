@@ -2047,3 +2047,24 @@ class AdminPickTests(TestCase):
         question.save()
 
         self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
+
+    def test_featured_order_and_hidden(self):
+
+        link = Post.objects.create(kind="link", title="参考リンク", url="https://example.com", status="published", is_featured=True, featured_order=2)
+        first = Comment.objects.create(ingredient=self.ingredient, author=self.author, body="いちばん上", is_featured=True, featured_order=1)
+        popular = Post.objects.create(kind="column", title="人気", body="本文です。", status="published", author=self.author)
+        PostReaction.objects.create(post=popular, user=self.other, kind="thanks")
+
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+        self.assertEqual([entry["item"].pk for entry in featured], [first.pk, link.pk, popular.pk])
+
+        # 自動で入ったものも、管理画面で外せる
+        popular.featured_hidden = True
+        popular.save()
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+        self.assertEqual([entry["item"].pk for entry in featured], [first.pk, link.pk])
+
+        staff = get_user_model().objects.create_superuser("admin", password="x")
+        self.client.force_login(staff)
+        page = self.client.get(reverse("admin:washoku_post_changelist"))
+        self.assertContains(page, 'name="form-0-featured_order"')

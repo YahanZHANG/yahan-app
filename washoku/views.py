@@ -245,7 +245,7 @@ FEATURED_DAYS = 30
 
 def featured_items(limit=3):
     """
-    HOMEの「注目」。管理画面で選んだもの (is_featured) を先に、残りを
+    HOMEの「注目」。管理画面で選んだもの (is_featured、featured_order 順) を先に、残りを
     最近スタンプを多くもらったコラムとコメントで埋める。スタンプがないものは出さない。
     """
 
@@ -259,25 +259,26 @@ def featured_items(limit=3):
 
     picked = [
         {"kind": "post", "item": post, "count": None}
-        for post in Post.objects.filter(status="published", is_featured=True).order_by("-created_at")[:limit]
+        for post in Post.objects.filter(status="published", is_featured=True).order_by("featured_order", "-created_at")[:limit]
     ]
     picked += [
         {"kind": "comment", "item": comment, "count": None}
-        for comment in visible_comments.filter(is_featured=True).order_by("-created_at")[:limit]
+        for comment in visible_comments.filter(is_featured=True).order_by("featured_order", "-created_at")[:limit]
     ]
-    picked.sort(key=lambda entry: entry["item"].created_at, reverse=True)
+    picked.sort(key=lambda entry: (entry["item"].featured_order, -entry["item"].created_at.timestamp()))
     picked = picked[:limit]
 
+    # スタンプの多いものは自動で入る。管理画面で「注目から外す」にしたものは出さない
     columns = (
         Post.objects
-        .filter(kind="column", status="published", is_featured=False, reactions__created_at__gte=since)
+        .filter(kind="column", status="published", is_featured=False, featured_hidden=False, reactions__created_at__gte=since)
         .annotate(stamp_count=Count("reactions"))
         .order_by("-stamp_count", "-created_at")[:limit]
     )
 
     comments = (
         visible_comments
-        .filter(is_featured=False, reactions__created_at__gte=since)
+        .filter(is_featured=False, featured_hidden=False, reactions__created_at__gte=since)
         .annotate(stamp_count=Count("reactions"))
         .order_by("-stamp_count", "-created_at")[:limit]
     )
