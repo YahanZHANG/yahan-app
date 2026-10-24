@@ -1556,6 +1556,38 @@ class Stamp(models.Model):
         return f"{self.emoji} {self.label}"
 
 
+class DisplaySettings(models.Model):
+    """
+    画面の表示の切り替え (1件だけ)。管理画面の「表示設定」で変える。
+    """
+
+    column_show_author = models.BooleanField("コラム一覧: 投稿者", default=True)
+
+    column_show_date = models.BooleanField("コラム一覧: 日付", default=True)
+
+    column_show_time = models.BooleanField(
+        "コラム一覧: 時間",
+        default=True,
+        help_text="日付のうしろに 14:05 のように出します",
+    )
+
+    column_show_comments = models.BooleanField("コラム一覧: コメント数", default=True)
+
+    column_show_stamps = models.BooleanField("コラム一覧: スタンプ数", default=True)
+
+    class Meta:
+        verbose_name = "表示設定"
+        verbose_name_plural = "表示設定"
+
+    def __str__(self):
+        return "表示設定"
+
+    @classmethod
+    def load(cls):
+        settings_row, _ = cls.objects.get_or_create(pk=1)
+        return settings_row
+
+
 class CommentReaction(models.Model):
     """
     コメントへのスタンプ。1人1種類につき1回。

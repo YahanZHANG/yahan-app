@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -11,6 +12,7 @@ from .models import (
     Announcement,
     Comment,
     CommentReport,
+    DisplaySettings,
     Feedback,
     Household,
     HouseholdInvite,
@@ -859,6 +861,35 @@ class MemberPhotoAdmin(admin.ModelAdmin):
                 photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
             delete_uploaded_photos(photo.url)
         queryset.delete()
+
+
+@admin.register(DisplaySettings)
+class DisplaySettingsAdmin(admin.ModelAdmin):
+    """
+    1件だけの設定。一覧を開くとすぐその設定の画面になる。
+    """
+
+    fieldsets = (
+        ("コラム一覧（/washoku/columns/）に出すもの", {
+            "fields": (
+                "column_show_author",
+                "column_show_date",
+                "column_show_time",
+                "column_show_comments",
+                "column_show_stamps",
+            ),
+        }),
+    )
+
+    def changelist_view(self, request, extra_context=None):
+        settings_row = DisplaySettings.load()
+        return redirect("admin:washoku_displaysettings_change", settings_row.pk)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Stamp)

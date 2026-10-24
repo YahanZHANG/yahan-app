@@ -3524,3 +3524,20 @@ button.washoku-poll-row:hover {
     flex: none;
     margin: 0;
 }
+
+.washoku-column-meta span + span::before {
+    content: "・";
+    margin: 0 2px;
+}
+
+@media (max-width: 600px) {
+    .washoku-posts.washoku-posts-titles a {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+    }
+
+    .washoku-posts-titles strong {
+        flex: none;
+    }
+}

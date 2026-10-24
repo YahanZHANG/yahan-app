@@ -34,6 +34,7 @@ from .models import (
     Comment,
     CommentReaction,
     CommentReport,
+    DisplaySettings,
     Feedback,
     Household,
     HouseholdInvite,
@@ -2534,6 +2535,7 @@ def post_list(request, kind):
                 distinct=True,
             ),
             vote_count=Count("votes", distinct=True),
+            stamp_count=Count("reactions", distinct=True),
         )
     )
 
@@ -2557,6 +2559,7 @@ def post_list(request, kind):
             "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
+            "display": DisplaySettings.load() if kind == "column" else None,
             "shop": shop,
             "section": section,
             "shops": Post.SHOP_CHOICES,

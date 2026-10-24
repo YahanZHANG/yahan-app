@@ -18,6 +18,7 @@ from django.utils import timezone
 
 from .models import (
     Comment,
+    DisplaySettings,
     Feedback,
     HouseholdInvite,
     Ingredient,
@@ -2243,3 +2244,39 @@ class PollVoteAdminTests(TestCase):
         page = self.client.get(reverse("admin:washoku_pollvote_changelist"))
         self.assertContains(page, "hanako")
         self.assertContains(page, "緑")
+
+
+class ColumnListDisplayTests(TestCase):
+
+    def test_column_list_shows_author_time_stamps_and_follows_settings(self):
+
+        User = get_user_model()
+        author = User.objects.create_user("hanako", password="x")
+        fan = User.objects.create_user("taro", password="x")
+        column = Post.objects.create(kind="column", title="薄切り肉のコツ", body="本文", author=author, status="published")
+        PostReaction.objects.create(post=column, user=fan, kind="insight")
+        PostReaction.objects.create(post=column, user=author, kind="like")
+        time_text = timezone.localtime(column.created_at).strftime("%H:%M")
+
+        page = self.client.get(reverse("washoku:column_list"))
+        self.assertContains(page, "hanako")
+        self.assertContains(page, time_text)
+        self.assertContains(page, "😊 2")
+
+        settings_row = DisplaySettings.load()
+        settings_row.column_show_author = False
+        settings_row.column_show_time = False
+        settings_row.column_show_stamps = False
+        settings_row.save()
+
+        page = self.client.get(reverse("washoku:column_list"))
+        self.assertNotContains(page, "hanako")
+        self.assertNotContains(page, time_text)
+        self.assertNotContains(page, "😊 2")
+
+    def test_admin_opens_the_single_settings_page(self):
+
+        User = get_user_model()
+        self.client.force_login(User.objects.create_superuser("boss", password="x"))
+        response = self.client.get(reverse("admin:washoku_displaysettings_changelist"))
+        self.assertRedirects(response, reverse("admin:washoku_displaysettings_change", args=[1]))
