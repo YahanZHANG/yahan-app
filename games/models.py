@@ -26,6 +26,11 @@ class GameScore(models.Model):
             "マアアアリオ",
         )
 
+        SOMSOM = (
+            "somsom",
+            "ソムソム",
+        )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

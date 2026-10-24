@@ -537,6 +537,154 @@
 
 
 /* =========================================================
+   SomSom Card
+   ========================================================= */
+
+.games-card-somsom {
+    --game-accent: #b474c8;
+    --game-art-start: #6957a8;
+    --game-art-end: #34316a;
+}
+
+
+/* =========================================================
+   SomSom Preview
+   ========================================================= */
+
+.games-somsom-preview {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    width: 100%;
+    padding: 0 18px;
+
+    transform: rotate(-7deg);
+
+    transition: transform 0.25s ease;
+}
+
+
+.games-card-somsom:hover .games-somsom-preview {
+    transform: rotate(0deg) scale(1.05);
+}
+
+
+/* =========================================================
+   SomSom Faces
+   ========================================================= */
+
+.games-somsom-face {
+    position: relative;
+
+    display: block;
+    flex: 0 1 65px;
+
+    width: 65px;
+    max-width: 65px;
+    aspect-ratio: 1;
+
+    border-radius: 50%;
+
+    background: var(--som-color);
+
+    box-shadow:
+        inset -5px -7px 0 rgba(0, 0, 0, 0.09),
+        inset 4px 5px 0 rgba(255, 255, 255, 0.25),
+        0 10px 18px rgba(0, 0, 0, 0.18);
+}
+
+
+/* Eyes */
+
+.games-somsom-face::before {
+    position: absolute;
+
+    top: 39%;
+    left: 29%;
+
+    width: 10%;
+    height: 13%;
+
+    border-radius: 50%;
+
+    background: #303044;
+
+    box-shadow:
+        22px 0 0 #303044;
+
+    content: "";
+}
+
+
+/* Mouth */
+
+.games-somsom-face::after {
+    position: absolute;
+
+    bottom: 24%;
+    left: 43%;
+
+    width: 16%;
+    height: 9%;
+
+    border-bottom: 2px solid #303044;
+    border-radius: 50%;
+
+    content: "";
+}
+
+
+/* =========================================================
+   SomSom Colors
+   ========================================================= */
+
+.games-somsom-face.is-red {
+    --som-color: #ff838a;
+}
+
+.games-somsom-face.is-blue {
+    --som-color: #79b9f2;
+}
+
+.games-somsom-face.is-green {
+    --som-color: #78d5ad;
+}
+
+.games-somsom-face.is-yellow {
+    --som-color: #ffd66f;
+}
+
+.games-somsom-face.is-purple {
+    --som-color: #c69be8;
+}
+
+
+/* =========================================================
+   SomSom Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .games-somsom-preview {
+        gap: 5px;
+        padding: 0 14px;
+    }
+
+    .games-somsom-face::before {
+        box-shadow:
+            17px 0 0 #303044;
+    }
+
+}
+
+
+/* =========================================================
    Card body
    ========================================================= */
 
@@ -925,6 +1073,182 @@
     .games-card:hover,
     .games-ranking-signup:hover {
         transform: none;
+    }
+
+}
+
+
+/* =========================================================
+   SomSom Preview - Accessible Characters
+   ========================================================= */
+
+/* =========================================================
+   Colors / Shapes / Expressions
+   ========================================================= */
+
+.games-somsom-face.is-red {
+    --som-color: #f17d83;
+    --som-shape: circle(47% at 50% 50%);
+    --som-face: "•‿•";
+    --som-face-y: 50%;
+}
+
+.games-somsom-face.is-blue {
+    --som-color: #70ace5;
+    --som-shape: inset(6% round 19%);
+    --som-face: "•_•";
+    --som-face-y: 50%;
+}
+
+.games-somsom-face.is-green {
+    --som-color: #62c49b;
+    --som-shape: polygon(
+        50% 3%,
+        98% 94%,
+        2% 94%
+    );
+    --som-face: "•o•";
+    --som-face-y: 65%;
+}
+
+.games-somsom-face.is-yellow {
+    --som-color: #f0c75d;
+    --som-shape: polygon(
+        50% 3%,
+        63% 32%,
+        96% 36%,
+        72% 57%,
+        79% 92%,
+        50% 75%,
+        21% 92%,
+        28% 57%,
+        4% 36%,
+        37% 32%
+    );
+    --som-face: "−‿•";
+    --som-face-y: 53%;
+}
+
+.games-somsom-face.is-purple {
+    --som-color: #ba93df;
+    --som-shape: polygon(
+        50% 3%,
+        97% 50%,
+        50% 97%,
+        3% 50%
+    );
+    --som-face: "⌒ᴗ⌒";
+    --som-face-y: 52%;
+}
+
+/* =========================================================
+   Shared Shape
+   ========================================================= */
+
+.games-somsom-face {
+    position: relative;
+
+    background: transparent;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    isolation: isolate;
+
+    font-size: clamp(28px, 4.5vw, 65px);
+}
+
+.games-somsom-face::before {
+    position: absolute;
+
+    z-index: 0;
+
+    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+    border-radius: 0;
+
+    background: var(--som-color);
+
+    box-shadow: none;
+
+    clip-path: var(--som-shape);
+
+    content: "";
+}
+
+/* =========================================================
+   Facial Expressions
+   ========================================================= */
+
+.games-somsom-face::after {
+    position: absolute;
+
+    z-index: 1;
+
+    top: var(--som-face-y, 50%);
+    left: 50%;
+    right: auto;
+    bottom: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 80%;
+    height: 35%;
+
+    border: 0;
+    border-radius: 0;
+
+    background: transparent;
+
+    color: #303044;
+
+    font-family:
+        "Arial Rounded MT Bold",
+        "Arial",
+        sans-serif;
+
+    font-size: 0.34em;
+    font-weight: 900;
+
+    letter-spacing: -0.06em;
+    line-height: 1;
+
+    white-space: nowrap;
+
+    box-shadow: none;
+
+    transform: translate(-50%, -50%);
+
+    content: var(--som-face);
+}
+
+/* =========================================================
+   Hover Animation
+   ========================================================= */
+
+.games-card-somsom:hover .games-somsom-preview {
+    transform: rotate(0deg) scale(1.05);
+}
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .games-somsom-face {
+        font-size: clamp(27px, 8vw, 50px);
     }
 
 }

@@ -1,0 +1,591 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    ソムソム | Yapp
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'games/somsom/somsom.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section
+    class="somsom-page"
+    data-score-url="{% url 'games:save_score' %}"
+    data-ranking-url="{% url 'games:ranking' 'somsom' %}"
+    data-csrf-token="{{ csrf_token }}"
+    data-is-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}"
+    data-login-url="{{ login_url }}"
+>
+
+    <div class="somsom-card">
+
+        <!-- =========================================
+             Header
+        ========================================= -->
+
+        <header class="somsom-header">
+
+            <a
+                href="{% url 'games:game_list' %}"
+                class="somsom-back-button"
+            >
+                ← ゲーム一覧
+            </a>
+
+            <div class="somsom-title-area">
+
+                <div
+                    class="somsom-title-icon"
+                    aria-hidden="true"
+                >
+                    <span class="somsom-mini-face"></span>
+                </div>
+
+                <div>
+                    <p class="somsom-eyebrow">
+                        MINI GAME
+                    </p>
+
+                    <h1 class="somsom-title">
+                        ソムソム
+                    </h1>
+
+                    <p class="somsom-description">
+                        同じソムをつないで消そう！
+                    </p>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================================
+             Level Selection
+        ========================================= -->
+
+        <section class="somsom-level-section">
+
+            <div class="somsom-level-heading">
+
+                <div>
+                    <span class="somsom-level-label">
+                        LEVEL SELECT
+                    </span>
+
+                    <p class="somsom-level-title">
+                        難易度を選ぶ
+                    </p>
+                </div>
+
+                <div class="somsom-selected-level">
+                    LEVEL
+                    <strong id="somsom-selected-level">
+                        1
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="somsom-level-buttons">
+
+                <button
+                    type="button"
+                    class="somsom-level-button is-active"
+                    data-level="1"
+                    aria-pressed="true"
+                >
+                    <strong>1</strong>
+                    <span>やさしい</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="somsom-level-button"
+                    data-level="2"
+                    aria-pressed="false"
+                >
+                    <strong>2</strong>
+                    <span>ふつう</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="somsom-level-button"
+                    data-level="3"
+                    aria-pressed="false"
+                >
+                    <strong>3</strong>
+                    <span>むずかしい</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="somsom-level-button"
+                    data-level="4"
+                    aria-pressed="false"
+                >
+                    <strong>4</strong>
+                    <span>激ムズ</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="somsom-level-button somsom-level-button-danger"
+                    data-level="5"
+                    aria-pressed="false"
+                >
+                    <strong>5</strong>
+                    <span>鬼</span>
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             Game Status
+        ========================================= -->
+
+        <div class="somsom-status">
+
+            <div class="somsom-status-item">
+                <span class="somsom-status-label">
+                    LEVEL
+                </span>
+                <strong
+                    id="somsom-current-level"
+                    class="somsom-status-value"
+                >
+                    1
+                </strong>
+            </div>
+
+            <div class="somsom-status-divider"></div>
+
+            <div class="somsom-status-item">
+                <span class="somsom-status-label">
+                    SCORE
+                </span>
+                <strong
+                    id="somsom-score"
+                    class="somsom-status-value"
+                >
+                    0
+                </strong>
+            </div>
+
+            <div class="somsom-status-divider"></div>
+
+            <div class="somsom-status-item">
+                <span class="somsom-status-label">
+                    TIME
+                </span>
+                <strong
+                    id="somsom-time"
+                    class="somsom-status-value"
+                >
+                    60
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             Game Area
+        ========================================= -->
+
+        <div
+            id="somsom-game-area"
+            class="somsom-game-area"
+        >
+
+            <!-- Game Board -->
+
+            <div
+                id="somsom-board"
+                class="somsom-board"
+                aria-label="ソムソムのゲーム盤"
+                hidden
+            ></div>
+
+
+            <!-- Connection Effects -->
+
+            <svg
+                id="somsom-chain-layer"
+                class="somsom-chain-layer"
+                aria-hidden="true"
+            >
+                <polyline
+                    id="somsom-chain-line"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                ></polyline>
+            </svg>
+
+
+            <!-- Floating Score / Effects -->
+
+            <div
+                id="somsom-effects"
+                class="somsom-effects"
+                aria-hidden="true"
+            ></div>
+
+
+            <!-- Ready Screen -->
+
+            <div
+                id="somsom-ready"
+                class="somsom-ready"
+            >
+
+                <div class="somsom-ready-faces" aria-hidden="true">
+                    <span class="somsom-mini-face is-red"></span>
+                    <span class="somsom-mini-face is-blue"></span>
+                    <span class="somsom-mini-face is-green"></span>
+                    <span class="somsom-mini-face is-yellow"></span>
+                    <span class="somsom-mini-face is-purple"></span>
+                </div>
+
+                <h2 class="somsom-ready-title">
+                    ソムをつなげよう！
+                </h2>
+
+                <p class="somsom-ready-text">
+                    同じソムを3個以上なぞると消えるよ。
+                    たくさんつなげて高得点を目指そう！
+                </p>
+
+                <button
+                    id="somsom-start-button"
+                    class="somsom-start-button"
+                    type="button"
+                >
+                    ゲームスタート
+                </button>
+
+            </div>
+
+
+            <!-- Result Screen -->
+
+            <div
+                id="somsom-result"
+                class="somsom-result"
+                hidden
+            >
+
+                <div class="somsom-result-icon">
+                    🎉
+                </div>
+
+                <p class="somsom-result-label">
+                    FINISH!
+                </p>
+
+                <h2 class="somsom-result-title">
+                    おつかれさま！
+                </h2>
+
+                <p class="somsom-result-level">
+                    LEVEL
+                    <strong id="somsom-result-level">
+                        1
+                    </strong>
+                </p>
+
+                <p class="somsom-result-score">
+                    <span id="somsom-final-score">
+                        0
+                    </span>
+                    <small>点</small>
+                </p>
+
+                <p
+                    id="somsom-result-message"
+                    class="somsom-result-message"
+                >
+                    ナイスチャレンジ！
+                </p>
+
+                <a
+                    id="somsom-login-score-button"
+                    class="somsom-login-score-button"
+                    href="#"
+                    hidden
+                >
+                    🏆 ログインして点数を記録する
+                </a>
+
+                <button
+                    id="somsom-restart-button"
+                    class="somsom-restart-button"
+                    type="button"
+                >
+                    もう一度遊ぶ
+                </button>
+
+            </div>
+
+
+            <!-- Pause Overlay -->
+
+            <div
+                id="somsom-pause-overlay"
+                class="somsom-pause-overlay"
+                hidden
+            >
+
+                <div class="somsom-pause-icon">
+                    ⏸
+                </div>
+
+                <h2 class="somsom-pause-title">
+                    一時停止中
+                </h2>
+
+                <p class="somsom-pause-text">
+                    「再開」を押すとゲームに戻る
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             Game Controls
+        ========================================= -->
+
+        <div
+            id="somsom-game-controls"
+            class="somsom-game-controls"
+            hidden
+        >
+
+            <button
+                id="somsom-pause-button"
+                class="somsom-control-button somsom-pause-button"
+                type="button"
+            >
+                ⏸ 一時停止
+            </button>
+
+            <button
+                id="somsom-quit-button"
+                class="somsom-control-button somsom-quit-button"
+                type="button"
+            >
+                やめる
+            </button>
+
+        </div>
+
+
+        <p class="somsom-hint">
+            指やマウスで同じソムをなぞろう。
+            レベルはゲーム開始前に変更できる。
+        </p>
+
+
+        <!-- =========================================
+             Character Abilities
+        ========================================= -->
+
+        <section class="somsom-abilities">
+
+            <div class="somsom-section-heading">
+                <span class="somsom-section-label">
+                    SPECIAL ABILITIES
+                </span>
+
+                <h2>
+                    5種類のソムの能力
+                </h2>
+            </div>
+
+            <div class="somsom-ability-grid">
+
+                <div class="somsom-ability-item">
+                    <span class="somsom-mini-face is-red"></span>
+                    <div>
+                        <strong>赤ソム・ボム</strong>
+                        <p>6個以上で周囲も消す</p>
+                    </div>
+                </div>
+
+                <div class="somsom-ability-item">
+                    <span class="somsom-mini-face is-blue"></span>
+                    <div>
+                        <strong>青ソム・タイム</strong>
+                        <p>6個以上で時間 +1秒</p>
+                    </div>
+                </div>
+
+                <div class="somsom-ability-item">
+                    <span class="somsom-mini-face is-green"></span>
+                    <div>
+                        <strong>緑ソム・変身</strong>
+                        <p>6個以上で2個を緑に変える</p>
+                    </div>
+                </div>
+
+                <div class="somsom-ability-item">
+                    <span class="somsom-mini-face is-yellow"></span>
+                    <div>
+                        <strong>黄ソム・ボーナス</strong>
+                        <p>黄色の消去得点が1.5倍</p>
+                    </div>
+                </div>
+
+                <div class="somsom-ability-item">
+                    <span class="somsom-mini-face is-purple"></span>
+                    <div>
+                        <strong>紫ソム・ライン</strong>
+                        <p>7個以上で横1列を消す</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             Ranking
+        ========================================= -->
+
+        <section
+            class="somsom-ranking"
+            aria-labelledby="somsom-ranking-title"
+        >
+
+            <div class="somsom-ranking-header">
+
+                <div>
+                    <span class="somsom-ranking-label">
+                        HIGH SCORES
+                    </span>
+
+                    <h2 id="somsom-ranking-title">
+                        🏆 LEVEL
+                        <span id="somsom-ranking-level">1</span>
+                        ランキング
+                    </h2>
+                </div>
+
+                <div class="somsom-personal-best">
+
+                    {% if request.user.is_authenticated %}
+                        <span>MY BEST</span>
+                    {% else %}
+                        <span>GUEST</span>
+                    {% endif %}
+
+                    <strong id="somsom-personal-best">
+                        {% if request.user.is_authenticated and personal_best is not None %}
+                            {{ personal_best }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </strong>
+
+                    {% if request.user.is_authenticated %}
+                        <small>点</small>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <ol
+                id="somsom-ranking-list"
+                class="somsom-ranking-list"
+            >
+
+                {% for item in ranking_entries %}
+
+                    <li{% if item.is_me %} class="is-me"{% endif %}>
+
+                        <span class="somsom-ranking-position">
+                            {{ item.rank }}
+                        </span>
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <span>
+                            {{ item.score }} 点
+                        </span>
+
+                    </li>
+
+                {% empty %}
+
+                    <li class="somsom-ranking-empty">
+                        まだ記録がない
+                    </li>
+
+                {% endfor %}
+
+            </ol>
+
+
+            <p
+                id="somsom-save-status"
+                class="somsom-save-status"
+                aria-live="polite"
+            ></p>
+
+
+            {% if request.user.is_authenticated %}
+
+                <p class="somsom-ranking-note">
+                    レベルごとに自己ベストを保存する。
+                </p>
+
+            {% else %}
+
+                <p class="somsom-ranking-note">
+                    ランキングは誰でも閲覧できる。
+                    スコアを保存するには無料アカウントが必要。
+                    <a href="{% url 'portal:signup' %}">
+                        無料登録はこちら →
+                    </a>
+                </p>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'games/somsom/somsom.js' %}"
+    defer
+></script>
+
+{% endblock %}

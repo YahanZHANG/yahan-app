@@ -38,6 +38,12 @@ urlpatterns = [
         name="maaario",
     ),
 
+    path(
+        "somsom/",
+        views.somsom,
+        name="somsom",
+    ),
+
     # API
 
     path(
