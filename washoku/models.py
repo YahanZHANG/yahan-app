@@ -894,6 +894,12 @@ class MemberPhoto(models.Model):
         related_name="washoku_photos",
     )
 
+    admin_checked = models.BooleanField(
+        "確認済み",
+        default=False,
+        help_text="管理画面の「対応待ち」に出さないようにするための印。",
+    )
+
     created_at = models.DateTimeField(
         "投稿日時",
         auto_now_add=True,
@@ -1245,6 +1251,11 @@ class Post(models.Model):
 
     def photos(self):
         return [url for url in (self.photo_1, self.photo_2) if url]
+
+    @property
+    def photo_slots(self):
+        """写真を変える欄: (項目, URL) を2枠"""
+        return [("photo_1", self.photo_1), ("photo_2", self.photo_2)]
 
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])

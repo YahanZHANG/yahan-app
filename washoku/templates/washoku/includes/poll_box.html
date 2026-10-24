@@ -1,6 +1,7 @@
-{# アンケート。結果はだれでも見られ、会員は押して投票（選び直し）できる。with_title でタイトルを付ける #}
+{# アンケート。結果はだれでも見られ、会員は押して投票（選び直し）できる。with_title でタイトルを付ける / inline は食材ページ用 (小さめ・色違い・コメントつき) #}
+{% load washoku_tags %}
 {% with results=poll.results %}
-<section class="washoku-poll" id="poll-{{ poll.pk }}">
+<section class="washoku-poll{% if inline %} washoku-poll-inline{% endif %}" id="poll-{{ poll.pk }}">
     {% if with_title %}<h3><span class="washoku-activity-kind kind-poll">アンケート</span> <a href="{{ poll.get_absolute_url }}">{{ poll.title }}</a></h3>{% endif %}
 
     {% if user.is_authenticated %}<form method="post" action="{% url 'washoku:poll_vote' poll.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% endif %}
@@ -22,6 +23,14 @@
         {% if results.total %}{{ results.total }}票{% else %}まだ投票がありません{% endif %}
         {% if results.my_choice_id %} ・ 押すと選び直せます{% elif user.is_authenticated %} ・ 押して投票{% endif %}
     </p>
+    {% if inline %}
+    <div class="washoku-poll-comments">
+        {% for comment in poll.recent_comments %}
+            <p><a href="{{ poll.get_absolute_url }}#comment-{{ comment.pk }}">{{ comment.body|truncatechars:80 }}</a> <small>{{ comment.author|display_name }}</small></p>
+        {% endfor %}
+        <p class="washoku-poll-comments-more"><a href="{{ poll.get_absolute_url }}#comments">{% if poll.comment_total %}💬 コメント{{ poll.comment_total }}件を見る・書く{% else %}💬 コメントする{% endif %}</a></p>
+    </div>
+    {% endif %}
     {% if not user.is_authenticated %}<p class="washoku-poll-login"><a class="washoku-button" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログインして投票する</a></p>{% endif %}
 </section>
 {% endwith %}

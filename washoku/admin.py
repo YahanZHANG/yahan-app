@@ -759,9 +759,12 @@ class MemberPhotoAdmin(admin.ModelAdmin):
         "target",
         "user",
         "is_shown",
+        "admin_checked",
         "created_at",
     )
 
+    list_editable = ("admin_checked",)
+    list_filter = ("admin_checked",)
     list_select_related = ("recipe", "ingredient", "user")
     readonly_fields = ("recipe", "ingredient", "url", "user", "created_at")
 

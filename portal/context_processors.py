@@ -20,6 +20,7 @@ from outings.models import (
 from washoku.models import (
     Comment as WashokuComment,
     Feedback as WashokuFeedback,
+    MemberPhoto as WashokuMemberPhoto,
     Post as WashokuPost,
     Recipe as WashokuRecipe,
     Substitute as WashokuSubstitute,
@@ -83,6 +84,12 @@ def _washoku_items():
             unchecked.filter(post__isnull=False).count(),
             comments_url,
             "admin_checked__exact=0&target=post",
+        ),
+        _item(
+            "投稿された写真",
+            WashokuMemberPhoto.objects.filter(admin_checked=False).count(),
+            "admin:washoku_memberphoto_changelist",
+            "admin_checked__exact=0",
         ),
         _item(
             "代用品の投稿",

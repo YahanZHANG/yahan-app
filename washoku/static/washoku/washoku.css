@@ -2991,6 +2991,20 @@ a.washoku-favorite {
     margin: 0;
 }
 
+/* 写真の「差し替える」: ファイル選択は隠し、選んだらすぐ送る */
+.washoku-photo-pick {
+    position: relative;
+    cursor: pointer;
+}
+
+.washoku-photo-pick input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+}
+
 /* ---------- HOME のお知らせ: 細いバーを最大3件 ---------- */
 
 .washoku-announcements {
@@ -3237,11 +3251,81 @@ button.washoku-poll-row:hover {
 :root {
     --washoku-poll-bar: #E8956A;
     --washoku-poll-accent: #2E8B7A;
+    --washoku-poll-tint: #EEF7F4;
 }
 
 :root[data-washoku-theme="dark"] {
     --washoku-poll-bar: #D27C52;
     --washoku-poll-accent: #5CB8A6;
+    --washoku-poll-tint: #1F2D2A;
+}
+
+/* 食材ページのアンケート: 本文とちがう雰囲気にする (うすい緑の背景・小さめの文字) */
+.washoku-poll.washoku-poll-inline {
+    padding: 10px 12px 8px;
+    border-color: transparent;
+    border-left: 4px solid var(--washoku-poll-accent);
+    background: var(--washoku-poll-tint);
+    font-size: 13px;
+}
+
+.washoku-poll-inline h3 {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.washoku-poll-inline .washoku-poll-rows {
+    gap: 6px;
+}
+
+.washoku-poll-inline .washoku-poll-row {
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.washoku-poll-inline .washoku-poll-row.is-mine {
+    padding: 5px 9px;
+}
+
+.washoku-poll-inline .washoku-poll-percent {
+    font-size: 13px;
+}
+
+.washoku-poll-inline .washoku-poll-bar {
+    height: 4px;
+}
+
+.washoku-poll-inline .washoku-poll-total {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.washoku-poll-comments {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--washoku-border);
+}
+
+.washoku-poll-comments p {
+    margin: 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.washoku-poll-comments a {
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-poll-comments small {
+    color: var(--washoku-muted);
+    font-size: 11px;
+}
+
+.washoku-poll-comments .washoku-poll-comments-more a {
+    color: var(--washoku-poll-accent);
+    font-weight: 700;
 }
 
 /* HOME のアンケート枠: 返事を待っている質問と同じ形で、色だけ変える */

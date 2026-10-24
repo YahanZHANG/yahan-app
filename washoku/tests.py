@@ -2068,3 +2068,84 @@ class AdminPickTests(TestCase):
         self.client.force_login(staff)
         page = self.client.get(reverse("admin:washoku_post_changelist"))
         self.assertContains(page, 'name="form-0-featured_order"')
+
+
+class PhotoReplaceTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.other = User.objects.create_user("jiro", password="x")
+        self.recipe = make_recipe()
+
+    def photo(self):
+        return SimpleUploadedFile("tofu.jpg", b"fake", content_type="image/jpeg")
+
+    def test_member_replaces_own_shown_photo_and_admin_is_told(self):
+
+        self.client.force_login(self.member)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/a.webp"), \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(reverse("washoku:photo_add", args=["recipe", self.recipe.pk]), {"photo": self.photo()})
+
+        alert.assert_called_once()
+        photo = MemberPhoto.objects.get()
+        self.assertFalse(photo.admin_checked)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/b.webp"), \
+                mock.patch("washoku.views.delete_uploaded_photos") as delete, \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(reverse("washoku:photo_manage", args=[photo.pk]), {"action": "replace", "photo": self.photo()})
+
+        alert.assert_called_once()
+        delete.assert_called_once_with("https://example.com/a.webp")
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photo_1, "https://example.com/b.webp")
+
+        # ほかの人は差し替えられない
+        self.client.force_login(self.other)
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/c.webp"):
+            response = self.client.post(reverse("washoku:photo_manage", args=[photo.pk]), {"action": "replace", "photo": self.photo()})
+        self.assertEqual(response.status_code, 404)
+
+    def test_author_replaces_and_removes_column_photo(self):
+
+        post = Post.objects.create(author=self.member, kind="column", title="豆腐", body="本文です。", status="published", photo_1="https://example.com/1.webp")
+        url = reverse("washoku:post_photo", args=[post.pk])
+
+        self.client.force_login(self.member)
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[post.pk])), "写真を変える・消す")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/2.webp"), \
+                mock.patch("washoku.views.delete_uploaded_photos"), \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(url, {"field": "photo_1", "photo": self.photo()})
+            self.client.post(url, {"field": "photo_2", "photo": self.photo()})
+            self.client.post(url, {"field": "photo_1", "remove": "1"})
+
+        self.assertEqual(alert.call_count, 2)
+        post.refresh_from_db()
+        self.assertEqual(post.photos(), ["https://example.com/2.webp"])
+
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.post(url, {"field": "photo_2", "remove": "1"}).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("washoku:post_detail", args=[post.pk])), "写真を変える・消す")
+
+
+class PollCommentsOnIngredientTests(TestCase):
+
+    def test_poll_comments_show_under_ingredient_poll(self):
+
+        User = get_user_model()
+        member = User.objects.create_user("hanako", password="x")
+        potato = Ingredient.objects.create(name="じゃがいも", category="vegetable")
+        poll = Post.objects.create(kind="poll", title="何色の袋？", status="published")
+        poll.ingredients.add(potato)
+        PollChoice.objects.create(post=poll, label="緑", order=1)
+        Comment.objects.create(post=poll, author=member, body="いつも緑です")
+
+        page = self.client.get(reverse("washoku:ingredient_detail", args=[potato.pk]))
+        self.assertContains(page, "washoku-poll-inline")
+        self.assertContains(page, "いつも緑です")
+        self.assertContains(page, "コメント1件を見る・書く")

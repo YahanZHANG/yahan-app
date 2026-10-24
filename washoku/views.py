@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from .alerts import send_admin_alert
 from .photos import delete_uploaded_photos, upload_photo
 from .push import send_reply_push, send_stamp_push
+from .templatetags.washoku_tags import display_name
 from .forms import (
     CommentEditForm,
     CommentForm,
@@ -1246,6 +1247,9 @@ def comment_create(request, target, pk):
     if parent:
         notify_reply(comment)
 
+    if photo_url:
+        alert_new_photo(request, f"コメント「{comment.body[:30]}」", comment_target_url(comment))
+
     return redirect(comment_target_url(comment))
 
 
@@ -1283,6 +1287,20 @@ def photo_context(request, recipe=None, ingredient=None):
         "shown_photo": shown_photo,
         "photo_list": photos,
     }
+
+
+def alert_new_photo(request, what, page_url):
+    """
+    会員が写真を載せたら管理者にメールで知らせる (管理者自身の写真は知らせない)。
+    """
+
+    if request.user.is_staff:
+        return
+
+    send_admin_alert(
+        f"写真が投稿されました: {what}",
+        f"{display_name(request.user)} さん\n{request.build_absolute_uri(page_url)}",
+    )
 
 
 def show_photo(item, url):
@@ -1336,22 +1354,18 @@ def photo_add(request, target, pk):
         messages.error(request, error.messages[0])
         return redirect(back)
 
-    MemberPhoto.objects.create(user=request.user, url=url, **{target: item})
+    MemberPhoto.objects.create(user=request.user, url=url, admin_checked=request.user.is_staff, **{target: item})
 
     current = item.photo_1 if target == "recipe" else item.photo_url
 
     if not current:
         show_photo(item, url)
+        alert_new_photo(request, f"{item}（掲載中）", back)
         messages.success(request, "写真を載せました。ありがとうございます！")
         return redirect(back)
 
+    alert_new_photo(request, f"{item}（候補。ページの「写真を投稿」から載せる写真を選べます）", back)
     messages.success(request, "写真を受け付けました。ありがとうございます！載せる写真は管理者が選びます。")
-
-    if not request.user.is_staff:
-        send_admin_alert(
-            f"[スイスで和食] {item} に写真の候補が届きました",
-            f"{request.build_absolute_uri(back)}\nページの「写真」から、載せる写真を選べます。",
-        )
 
     return redirect(back)
 
@@ -1373,6 +1387,33 @@ def photo_manage(request, pk):
     if action == "show" and request.user.is_staff:
         show_photo(item, photo.url)
         messages.success(request, "この写真を載せました。")
+
+    elif action == "replace" and (request.user.is_staff or photo.user_id == request.user.pk):
+
+        upload = request.FILES.get("photo")
+
+        if not upload:
+            return redirect(back)
+
+        try:
+            url = upload_photo(upload, MEMBER_PHOTO_TARGETS[target][1])
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+
+        old_url = photo.url
+        was_shown = photo.is_shown
+
+        photo.url = url
+        photo.admin_checked = request.user.is_staff
+        photo.save(update_fields=["url", "admin_checked"])
+
+        if was_shown:
+            show_photo(item, url)
+
+        delete_uploaded_photos(old_url)
+        alert_new_photo(request, f"{item}（差し替え）", back)
+        messages.success(request, "写真を差し替えました。")
 
     elif action == "delete" and (request.user.is_staff or photo.user_id == request.user.pk):
 
@@ -1437,6 +1478,49 @@ def staff_photo(request, target, pk):
     delete_uploaded_photos(old)
 
     messages.success(request, "写真を保存しました。" if photo else "写真を外しました。")
+
+    return redirect(back)
+
+
+@login_required
+@require_POST
+def post_photo(request, pk):
+    """
+    コラムなどを書いた本人 (と管理者) が、あとから写真を差し替え・削除・追加する。
+    """
+
+    post = get_object_or_404(Post, pk=pk, kind__in=MEMBER_POST_KINDS)
+
+    if post.author_id != request.user.pk and not request.user.is_staff:
+        raise Http404
+
+    field = request.POST.get("field", "")
+
+    if field not in ("photo_1", "photo_2"):
+        raise Http404
+
+    back = reverse("washoku:post_detail", args=[post.pk]) + "#photos"
+    old = getattr(post, field)
+    upload = request.FILES.get("photo")
+
+    if upload:
+        try:
+            setattr(post, field, upload_photo(upload, "columns"))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+    elif request.POST.get("remove"):
+        setattr(post, field, "")
+    else:
+        return redirect(back)
+
+    post.save(update_fields=[field])
+    delete_uploaded_photos(old)
+
+    if upload:
+        alert_new_photo(request, f"{post.get_kind_display()}「{post.title}」", back)
+
+    messages.success(request, "写真を保存しました。" if upload else "写真を消しました。")
 
     return redirect(back)
 
@@ -1530,6 +1614,9 @@ def comment_edit(request, pk):
 
             if old_photo != comment.photo_url:
                 delete_uploaded_photos(old_photo)
+
+                if comment.photo_url:
+                    alert_new_photo(request, f"コメント「{comment.body[:30]}」（差し替え）", comment_target_url(comment))
 
             return redirect(comment_target_url(comment))
 
@@ -2481,8 +2568,16 @@ def split_polls(user, posts):
     関連する投稿のうち、アンケートはその場で投票できるように分けて出す。
     """
 
+    polls = attach_poll_results([post for post in posts if post.kind == "poll"], user)
+
+    # アンケートについたコメントも、食材ページのアンケートの下に新しい順で少し見せる
+    for poll in polls:
+        comments = Comment.objects.filter(post=poll, parent__isnull=True, is_hidden=False, is_deleted=False)
+        poll.comment_total = comments.count()
+        poll.recent_comments = list(comments.select_related("author").order_by("-created_at", "-pk")[:3])
+
     return {
-        "polls": attach_poll_results([post for post in posts if post.kind == "poll"], user),
+        "polls": polls,
         "related_posts": [post for post in posts if post.kind != "poll"],
     }
 
