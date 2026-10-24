@@ -16,6 +16,7 @@
     {% endif %}
     {{ form.photo.errors }}
     <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> {% if comment.photo_url %}写真を変える{% else %}写真を1枚付ける{% endif %} <input type="file" name="photo" accept="image/*"></label>
+    <p class="washoku-photo-note">写真は自動で小さくして送ります。うまくいかないときは、写真をスクショしてから選ぶと送れることが多いです。</p>
     <button type="submit" class="washoku-button">保存する</button>
     <a href="{{ back_url }}">キャンセル</a>
 </form>

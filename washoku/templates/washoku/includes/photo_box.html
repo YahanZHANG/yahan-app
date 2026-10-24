@@ -10,6 +10,7 @@
         <input type="file" name="photo" accept="image/*" required aria-label="写真を選ぶ">
         <button type="submit" class="washoku-button">送る</button>
     </form>
+    <p class="washoku-photo-note">写真は自動で小さくして送ります。うまくいかないときは、写真をスクショしてから選ぶと送れることが多いです。</p>
     {% if has_photo and not user.is_staff %}<p class="washoku-hint">載せる写真は1枚です。届いた写真から管理者が選びます。</p>{% endif %}
     {% if photo_list %}
     <ul class="washoku-photo-choices">
@@ -27,7 +28,7 @@
             <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="replace">
-                <label class="washoku-link-button washoku-photo-pick">差し替える<input type="file" name="photo" accept="image/*" onchange="this.form.submit()"></label>
+                <label class="washoku-link-button washoku-photo-pick">差し替える<input type="file" name="photo" accept="image/*" data-autosubmit></label>
             </form>
             <form method="post" action="{% url 'washoku:photo_manage' photo.pk %}">
                 {% csrf_token %}

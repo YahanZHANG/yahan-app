@@ -1014,9 +1014,18 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
 
     attach_reactions(comments, request.user)
 
+    item = recipe or ingredient or store or post
+    target = "recipe" if recipe else "ingredient" if ingredient else "store" if store else "post"
+    draft = pop_comment_draft(request, f"{target}:{item.pk}") or {}
+    reply_draft = draft if draft.get("parent") else {}
+    main_draft = draft if not draft.get("parent") else {}
+
     return {
         "threads": comment_threads(comments, request.user),
-        "comment_form": CommentForm(),
+        "comment_form": CommentForm(initial={"body": main_draft.get("body", "")}),
+        "draft_kind": main_draft.get("kind", "tip"),
+        "reply_draft_parent": reply_draft.get("parent", ""),
+        "reply_draft_body": reply_draft.get("body", ""),
         "reported_ids": reported_ids,
     }
 
@@ -1205,6 +1214,29 @@ def posted_too_recently(user):
     ).exists()
 
 
+# 投稿に失敗したとき (写真が大きすぎるなど)、書いた文を消さずにフォームへ戻す
+COMMENT_DRAFT_KEY = "washoku_comment_draft"
+
+
+def keep_comment_draft(request, target, pk):
+    request.session[COMMENT_DRAFT_KEY] = {
+        "target": f"{target}:{pk}",
+        "body": request.POST.get("body", "")[:500],
+        "kind": request.POST.get("kind", "tip"),
+        "parent": request.POST.get("parent", ""),
+    }
+
+
+def pop_comment_draft(request, target):
+    draft = request.session.get(COMMENT_DRAFT_KEY)
+
+    if not draft or draft.get("target") != target:
+        return None
+
+    del request.session[COMMENT_DRAFT_KEY]
+    return draft
+
+
 @login_required
 @require_POST
 def comment_create(request, target, pk):
@@ -1229,10 +1261,12 @@ def comment_create(request, target, pk):
     form = CommentForm(request.POST, request.FILES)
 
     if not form.is_valid():
+        keep_comment_draft(request, target, pk)
         messages.error(request, "コメントを入力してください（500文字まで）。")
         return redirect(back + "#comments")
 
     if posted_too_recently(request.user):
+        keep_comment_draft(request, target, pk)
         messages.error(request, "続けて投稿するときは1分ほど空けてください。")
         return redirect(back + "#comments")
 
@@ -1242,7 +1276,8 @@ def comment_create(request, target, pk):
         try:
             photo_url = upload_photo(form.cleaned_data["photo"], "comments")
         except ValidationError as error:
-            messages.error(request, error.messages[0])
+            keep_comment_draft(request, target, pk)
+            messages.error(request, f"{error.messages[0]} 書いた文はそのまま残してあります。")
             return redirect(back + "#comments")
 
     parent = None

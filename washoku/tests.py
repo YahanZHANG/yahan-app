@@ -1695,6 +1695,22 @@ class PhotoTests(TestCase):
 
         self.assertContains(response, "画像を正常に読み込めませんでした。")
         self.assertFalse(Comment.objects.exists())
+        # 書いた文はフォームに残る (1回だけ)
+        self.assertContains(response, "写真つき</textarea>")
+        self.assertNotContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "写真つき</textarea>")
+
+    def test_failed_reply_keeps_the_draft_in_the_reply_form(self):
+
+        asker = get_user_model().objects.create_user("jiro", password="x")
+        question = Comment.objects.create(author=asker, recipe=self.recipe, kind="question", body="どこで買える？")
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=ValidationError("画像は5MB以下にしてください。")):
+            response = self.client.post(url, {"kind": "tip", "parent": question.pk, "body": "Coop にあります", "photo": self.photo()}, follow=True)
+
+        self.assertContains(response, "Coop にあります</textarea>")
+        self.assertContains(response, "書いた文はそのまま残してあります。")
 
     def test_column_takes_two_photos_and_products_none(self):
 

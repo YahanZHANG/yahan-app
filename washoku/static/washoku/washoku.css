@@ -3476,3 +3476,11 @@ button.washoku-poll-row:hover {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* 写真の欄の下の小さな注意書き */
+.washoku-photo-note {
+    margin: 0 0 8px;
+    color: var(--washoku-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}

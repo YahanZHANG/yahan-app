@@ -58,7 +58,7 @@
                 <form method="post" action="{% url 'washoku:post_photo' post.pk %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="field" value="{{ field }}">
-                    <label class="washoku-link-button washoku-photo-pick">{% if url %}差し替える{% else %}＋ 写真を追加{% endif %}<input type="file" name="photo" accept="image/*" onchange="this.form.submit()"></label>
+                    <label class="washoku-link-button washoku-photo-pick">{% if url %}差し替える{% else %}＋ 写真を追加{% endif %}<input type="file" name="photo" accept="image/*" data-autosubmit></label>
                 </form>
                 {% if url %}
                 <form method="post" action="{% url 'washoku:post_photo' post.pk %}">

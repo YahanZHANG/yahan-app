@@ -12,6 +12,7 @@ def photo_field(label="写真（なくてもOK）"):
     return forms.FileField(
         label=label,
         required=False,
+        help_text="写真は自動で小さくして送ります。うまくいかないときは、写真をスクショしてから選ぶと送れることが多いです。",
         widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
     )
 
