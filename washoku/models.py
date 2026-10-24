@@ -1393,7 +1393,7 @@ class Comment(models.Model):
     reopened = models.BooleanField(
         "未解決に戻す",
         default=False,
-        help_text="質問だけ。「確認します」などの返信しかないとき、返信があっても「返事を待っている質問」に出します。",
+        help_text="「確認します」などの返信しかないとき、返信があっても「返事を待っている質問」に出します。質問とその返信のどちらにチェックしても同じです。",
     )
 
     admin_checked = models.BooleanField(

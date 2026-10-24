@@ -2048,6 +2048,13 @@ class AdminPickTests(TestCase):
 
         self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
 
+    def test_reopen_ticked_on_the_reply_reopens_the_question(self):
+
+        question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
+        Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します", reopened=True)
+
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
+
     def test_featured_order_and_hidden(self):
 
         link = Post.objects.create(kind="link", title="参考リンク", url="https://example.com", status="published", is_featured=True, featured_order=2)

@@ -180,7 +180,7 @@ def public_comment_targets():
 def questions_with_answer_state():
     """
     公開中の質問に、返信があるか (has_answer) と返信の数 (answer_count) を付ける。
-    管理者が「未解決に戻す」にした質問は、返信があっても未解決 (has_answer=False) にする。
+    管理者が「未解決に戻す」にした質問 (またはその返信) は、返信があっても未解決 (has_answer=False) にする。
     """
 
     answers = Comment.objects.filter(
@@ -201,6 +201,8 @@ def questions_with_answer_state():
         .annotate(
             has_answer=Case(
                 When(reopened=True, then=Value(False)),
+                # 返信の行で「未解決に戻す」を押した場合も、その質問を未解決にする
+                When(Exists(answers.filter(reopened=True)), then=Value(False)),
                 default=Exists(answers),
                 output_field=BooleanField(),
             ),
