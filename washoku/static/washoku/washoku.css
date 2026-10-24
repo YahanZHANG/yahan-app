@@ -3482,6 +3482,8 @@ button.washoku-poll-row:hover {
 .washoku-photo-note {
     margin: 0 0 8px;
     color: var(--washoku-muted);
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.45;
+    opacity: 0.8;
 }
