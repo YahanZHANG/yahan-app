@@ -55,6 +55,13 @@ yapp-public-home
             aria-label="アカウント"
         >
 
+            <a
+                href="{% url 'portal:help' %}"
+                class="yapp-public-help"
+            >
+                困ったときは
+            </a>
+
             {% if user.is_authenticated %}
 
                 <a
@@ -107,6 +114,7 @@ yapp-public-home
 
             <span>
                 アカウントなしでも多くのサービスを利用できます。アカウントは全サービス共通で使えます。
+                <a href="{% url 'portal:help' %}" class="yapp-public-note-help">ログインで困ったときは ›</a>
             </span>
         </div>
 

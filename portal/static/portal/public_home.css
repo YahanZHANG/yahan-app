@@ -632,3 +632,28 @@
     }
 
 }
+
+/* ヘッダーの「困ったときは」 */
+.yapp-public-help {
+    padding: 8px 4px;
+    color: #476173;
+    font-size: .85rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+}
+
+/* スマホではヘッダーに入りきらないので、下のお知らせ欄のリンクだけにする */
+@media (max-width: 480px) {
+    .yapp-public-help {
+        display: none;
+    }
+}
+
+.yapp-public-note-help {
+    display: inline-block;
+    margin-left: 4px;
+    color: inherit;
+    font-weight: 700;
+    white-space: nowrap;
+}
