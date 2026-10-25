@@ -77,12 +77,14 @@ page-content news-site-container
             </div>
 
 
+            {% if request.resolver_match.url_name != 'install' %}
             <a
                 href="{% url 'news:install' %}"
                 class="news-install-pill yapp-install-only"
             >
                 📲 アプリにする
             </a>
+            {% endif %}
 
 
             <!-- =============================================

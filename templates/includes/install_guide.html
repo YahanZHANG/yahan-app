@@ -2,7 +2,7 @@
 {# ホーム画面に追加する方法 (Swiss News・スイスで和食で共通)。各アプリの install.html から読み込む。 #}
 <link rel="stylesheet" href="{% static 'pwa/install_guide.css' %}">
 
-<div class="yapp-install" style="--install-color: {{ pwa_icons.theme_color }};" data-install-guide>
+<div class="yapp-install" style="--install-color: {{ install_color|default:pwa_icons.theme_color }};" data-install-guide>
 
     <header class="yapp-install-hero">
         <img src="{% static pwa_icons.folder|add:'/apple-touch-icon.png' %}" alt="" width="88" height="88">
