@@ -4233,3 +4233,49 @@ button.washoku-poll-row:hover {
     color: var(--washoku-muted);
     font-size: 13px;
 }
+
+/* アンケート: いくつでも選べる (チェック) / 自由に書く */
+.washoku-poll-check {
+    cursor: pointer;
+}
+
+.washoku-poll-check input {
+    width: 18px;
+    height: 18px;
+    margin: 0 6px 0 0;
+    vertical-align: -3px;
+    accent-color: var(--washoku-accent);
+}
+
+.washoku-poll-send {
+    margin-top: 8px;
+}
+
+.washoku-poll-answer {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 16px;
+}
+
+.washoku-poll-answers {
+    display: grid;
+    gap: 6px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-poll-answers li {
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}

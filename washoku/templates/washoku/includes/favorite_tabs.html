@@ -1,8 +1,7 @@
 {% with name=request.resolver_match.url_name %}
 <nav class="washoku-quick washoku-quick-fit" aria-label="お気に入りの見方">
-    <a href="{% url 'washoku:my_favorites' %}?sort=new"{% if name == 'my_favorites' and sort != 'family' %} aria-current="page" class="is-current"{% endif %}>保存した順</a>
-    <a href="{% url 'washoku:my_favorites' %}?sort=family"{% if name == 'my_favorites' and sort == 'family' %} aria-current="page" class="is-current"{% endif %}>家族の評価順</a>
-    <a href="{% url 'washoku:family_favorites' %}"{% if name == 'family_favorites' %} aria-current="page" class="is-current"{% endif %}>家族が喜ぶ料理</a>
+    <a href="{% url 'washoku:my_favorites' %}"{% if name == 'my_favorites' %} aria-current="page" class="is-current"{% endif %}>わたしのお気に入り</a>
+    <a href="{% url 'washoku:family_favorites' %}"{% if name == 'family_favorites' %} aria-current="page" class="is-current"{% endif %}>家族のお気に入り</a>
 </nav>
 {% endwith %}
 <p class="washoku-family-invite"><a class="washoku-button" href="{% url 'washoku:family' %}"><i class="bi bi-people" aria-hidden="true"></i> 家族を招待する</a></p>

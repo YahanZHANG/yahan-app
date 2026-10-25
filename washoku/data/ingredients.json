@@ -1143,12 +1143,7 @@
    "supermarket"
   ],
   "buying_notes": "夏に Coop・Migros に並ぶ、小さな緑のとうがらし。",
-  "substitutes_for": [
-   {
-    "original_name": "ししとう",
-    "tips": "焼いて醤油とかつお節で。ときどき辛いものが混じるのも同じ。"
-   }
-  ]
+  "substitutes_for": []
  },
  {
   "name": "クレス",
@@ -1195,12 +1190,7 @@
    "supermarket"
   ],
   "buying_notes": "普通のスーパーのものはオレンジ色の身で水分が多く、甘さ控えめ。",
-  "substitutes_for": [
-   {
-    "original_name": "さつまいも",
-    "tips": "天ぷらや大学いもには、アジアスーパーにある赤紫の皮・黄色い身のものがほくほくする。"
-   }
-  ]
+  "substitutes_for": []
  },
  {
   "name": "エリンギ",

@@ -23,6 +23,7 @@ from .models import (
     Notification,
     PollChoice,
     PollSuggestion,
+    PollAnswer,
     PollVote,
     Post,
     PushSubscription,
@@ -505,6 +506,50 @@ class PollVoteInline(admin.TabularInline):
         return timezone.localtime(obj.voted_at).strftime("%Y/%m/%d %H:%M")
 
 
+class PollAnswerInline(admin.TabularInline):
+    """
+    「自由に書く」アンケートの答え (だれが書いたか見られる。隠すこともできる)。
+    """
+
+    model = PollAnswer
+    extra = 0
+    can_delete = True
+    fields = ("text", "user_name", "answered_time", "is_hidden")
+    readonly_fields = ("text", "user_name", "answered_time")
+    verbose_name = "答え"
+    verbose_name_plural = "自由記述の答え（新しい順）"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="答えた人")
+    def user_name(self, obj):
+        if obj.user is None:
+            return "ゲスト（ログインなし）"
+        return f"{display_name(obj.user)}（{obj.user.username}）"
+
+    @admin.display(description="日時")
+    def answered_time(self, obj):
+        return timezone.localtime(obj.answered_at).strftime("%Y/%m/%d %H:%M")
+
+
+@admin.register(PollAnswer)
+class PollAnswerAdmin(admin.ModelAdmin):
+    list_display = ("text", "poll_name", "user", "is_hidden", "answered_at")
+    list_editable = ("is_hidden",)
+    list_filter = ("is_hidden", ("post", admin.RelatedOnlyFieldListFilter))
+    list_select_related = ("post", "user")
+    search_fields = ("text", "post__title", "user__username")
+    readonly_fields = ("post", "user", "voter_key", "answered_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="アンケート")
+    def poll_name(self, obj):
+        return obj.post.poll_title
+
+
 @admin.register(PollVote)
 class PollVoteAdmin(admin.ModelAdmin):
     """
@@ -596,6 +641,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
     inlines = (
         PollChoiceInline,
         PollVoteInline,
+        PollAnswerInline,
     )
 
     list_display = (

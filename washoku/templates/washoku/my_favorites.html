@@ -12,7 +12,7 @@
 {% if user.is_authenticated %}{% include "washoku/includes/favorite_tabs.html" %}{% endif %}
 
 {% if user.is_authenticated %}
-<p class="washoku-lead">レシピの「♡ お気に入り」で保存したものです。あなたにだけ見えます。</p>
+<p class="washoku-lead">レシピの「♡ お気に入り」で保存した料理です。家族にも「家族のお気に入り」で見えます。</p>
 {% else %}
 {% include "washoku/includes/join_prompt.html" with reason="お気に入りの保存" %}
 {% endif %}

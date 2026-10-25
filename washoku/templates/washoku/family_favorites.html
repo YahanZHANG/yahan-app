@@ -1,7 +1,7 @@
 {% extends "washoku/base.html" %}
 {% load washoku_tags %}
 
-{% block title %}家族が喜ぶ料理 | スイスで和食{% endblock %}
+{% block title %}家族のお気に入り | スイスで和食{% endblock %}
 
 {% block content %}
 
@@ -11,10 +11,10 @@
 
 {% if user.is_authenticated %}{% include "washoku/includes/favorite_tabs.html" %}{% endif %}
 
-<p class="washoku-lead">{% if has_family %}家族みんなの評価の平均が高い順です。{% else %}あなたの評価が高い順です。{% endif %}評価は、あなたと家族のメンバーにだけ見えます。</p>
+<p class="washoku-lead">{% if has_family %}家族のだれかが ♡ 保存したり評価したりした料理です。家族みんなの評価が高い順に並びます。{% else %}あなたが ♡ 保存したり評価したりした料理を、評価が高い順に並べています。{% endif %}あなたと家族にだけ見えます。</p>
 
 {% if not has_family %}
-    <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、家族みんなの評価で並べられます。</p>
+    <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、家族のお気に入りや評価もここに並びます。</p>
 {% endif %}
 
 {% if rows %}
@@ -22,16 +22,17 @@
         {% for row in rows %}
             <div class="washoku-family-card">
                 {% include "washoku/includes/recipe_card.html" with recipe=row.recipe %}
-                {% if has_family %}
+                {% if row.fans or row.members %}
                     <small>
-                        {% for member in row.members %}{{ member.user|display_name }} {% if member.rating %}{{ member.rating|stars }}{% else %}未評価{% endif %}{% if not forloop.last %} ・ {% endif %}{% endfor %}
+                        {% if row.fans %}<span class="washoku-family-fans">♡ {% for fan in row.fans %}{{ fan|display_name }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>{% endif %}
+                        {% if has_family and row.members %}{% if row.fans %} ・ {% endif %}{% for member in row.members %}{{ member.user|display_name }} {{ member.rating|stars }}{% if not forloop.last %} ・ {% endif %}{% endfor %}{% endif %}
                     </small>
                 {% endif %}
             </div>
         {% endfor %}
     </div>
 {% else %}
-    <p class="washoku-empty">まだ評価した料理はありません。レシピのページで「大好き」「好き」などを押すと、ここに並びます。</p>
+    <p class="washoku-empty">まだありません。レシピのページで「♡ お気に入り」や「大好き」「好き」などを押すと、ここに並びます。</p>
 {% endif %}
 
 {% endblock %}

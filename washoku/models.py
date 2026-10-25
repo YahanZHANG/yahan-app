@@ -1206,6 +1206,20 @@ class Post(models.Model):
         help_text="コラムだけ。下の「選択肢」も入れると、コラムの最後にアンケートが出ます（空なら「みなさんはどうですか？」）。",
     )
 
+    POLL_TYPE_CHOICES = [
+        ("single", "ひとつだけ選ぶ"),
+        ("multiple", "いくつでも選べる"),
+        ("text", "自由に書く"),
+    ]
+
+    poll_type = models.CharField(
+        "アンケートの答え方",
+        max_length=10,
+        choices=POLL_TYPE_CHOICES,
+        default="single",
+        help_text="アンケートと、コラムに付けるアンケートで使います。「自由に書く」のときは選択肢はいりません。",
+    )
+
     is_featured = models.BooleanField(
         "注目に出す",
         default=False,
@@ -1279,6 +1293,13 @@ class Post(models.Model):
         if self.kind == "poll":
             return self.title
         return self.poll_question or f"{self.title}：みなさんはどうですか？"
+
+    @property
+    def has_poll(self):
+        """アンケート、または最後にアンケートを付けたコラム"""
+        if self.kind == "poll":
+            return True
+        return self.kind == "column" and (self.poll_type == "text" or self.choices.exists())
 
     @property
     def poll_url(self):
@@ -1729,21 +1750,86 @@ class PollVote(models.Model):
     class Meta:
         verbose_name = "アンケートの票"
         verbose_name_plural = "アンケートの票"
+        # 「ひとつだけ選ぶ」アンケートで1人1票にするのは投票の処理側 (いくつでも選べるアンケートがあるため)
         constraints = [
             models.UniqueConstraint(
-                fields=["post", "user"],
+                fields=["post", "user", "choice"],
                 condition=models.Q(user__isnull=False),
-                name="washoku_one_vote_per_poll",
+                name="washoku_one_vote_per_choice",
             ),
             models.UniqueConstraint(
-                fields=["post", "voter_key"],
+                fields=["post", "voter_key", "choice"],
                 condition=~models.Q(voter_key=""),
-                name="washoku_one_guest_vote_per_poll",
+                name="washoku_one_guest_vote_per_choice",
             ),
         ]
 
     def __str__(self):
         return f"{self.user or 'ゲスト'} → {self.choice}"
+
+
+class PollAnswer(models.Model):
+    """
+    「自由に書く」アンケートの答え。1人1つで、あとから書き直せる。
+    みんなの答えは名前なしで出る (管理画面ではだれの答えか見られる)。
+    """
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
+
+    text = models.CharField(
+        "答え",
+        max_length=300,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="washoku_poll_answers",
+        null=True,
+        blank=True,
+    )
+
+    voter_key = models.CharField(
+        "ブラウザの目印",
+        max_length=36,
+        blank=True,
+        default="",
+        db_index=True,
+    )
+
+    is_hidden = models.BooleanField(
+        "隠す",
+        default=False,
+        help_text="チェックすると、みんなの答えに出なくなります。",
+    )
+
+    answered_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "アンケートの答え（自由記述）"
+        verbose_name_plural = "アンケートの答え（自由記述）"
+        ordering = ["-answered_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post", "user"],
+                condition=models.Q(user__isnull=False),
+                name="washoku_one_answer_per_poll",
+            ),
+            models.UniqueConstraint(
+                fields=["post", "voter_key"],
+                condition=~models.Q(voter_key=""),
+                name="washoku_one_guest_answer_per_poll",
+            ),
+        ]
+
+    def __str__(self):
+        return self.text
 
 
 class PollSuggestion(models.Model):
