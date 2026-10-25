@@ -8,7 +8,7 @@
         <img src="{% static pwa_icons.folder|add:'/apple-touch-icon.png' %}" alt="" width="88" height="88">
         <h1>{{ pwa_icons.name }} を<br>ホーム画面に追加しよう</h1>
         <p class="yapp-install-done" data-install-standalone hidden>🎉 もう追加済みです。ありがとうございます！</p>
-        <p class="yapp-install-inapp" data-install-inapp hidden>⚠️ LINE や Instagram などのアプリの中では、ホーム画面に追加できません。メニューから「Safariで開く」「ブラウザで開く」を選んでから、下の手順で追加してください。</p>
+        <p class="yapp-install-inapp" data-install-inapp hidden>⚠️ LINE や Instagram などのアプリの中からは、ホーム画面に追加できません。メニューの「Safariで開く」「ブラウザで開く」から Safari や Chrome などのブラウザで開き、下の手順で追加してください。</p>
     </header>
 
     <ul class="yapp-install-merits">
@@ -92,7 +92,7 @@
             <span></span><span></span><span></span><span></span>
         </div>
         <p>ホーム画面の <b>{{ pwa_icons.name }}</b> のアイコンから開いてください。</p>
-        <p class="yapp-install-note">ホーム画面のアプリは、ブラウザとは別にログインが必要です。最初の1回だけ、もう一度ログインしてください。</p>
+        <p class="yapp-install-note">ホーム画面のアプリでは、ブラウザとは別にログインが必要です。お手数ですが、最初の1回だけログインしてください。</p>
         <p><a class="yapp-install-back" href="{{ app_url }}">{{ pwa_icons.name }} に戻る</a></p>
     </section>
 

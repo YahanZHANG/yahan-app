@@ -213,8 +213,8 @@ class SignupForm(UserCreationForm):
 
             raise forms.ValidationError(
                 "このユーザーIDはすでに使用されています。"
-                "もしかすると、さきほどの登録がもう完了しているかもしれません。"
-                "同じIDとパスワードでログインしてみてください。"
+                "先ほどの登録がすでに完了している可能性があります。"
+                "同じユーザーIDとパスワードでログインをお試しください。"
             )
 
         return username
@@ -236,7 +236,7 @@ class SignupForm(UserCreationForm):
 
             raise forms.ValidationError(
                 "このメールアドレスはすでに登録されています。"
-                "メールアドレスとパスワードでもログインできます。"
+                "このメールアドレスとパスワードでログインすることもできます。"
             )
 
         return email
