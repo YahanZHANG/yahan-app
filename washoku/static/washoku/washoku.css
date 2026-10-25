@@ -3659,27 +3659,19 @@ button.washoku-poll-row:hover {
     margin: 0 auto;
 }
 
-/* 今日のごはん: オレンジのグラデーションに水玉、白いシール風のカード */
 .washoku-pick-box {
-    position: relative;
-    margin: 4px 0 20px;
-    padding: 16px 12px 20px;
-    overflow: hidden;
-    border-radius: 24px;
-    background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.18) 2.5px, transparent 3px) 0 0 / 22px 22px,
-        linear-gradient(135deg, #FF9A3C 0%, #F2664B 55%, #E2466A 100%);
-    box-shadow: 0 10px 24px rgba(226, 87, 43, 0.28);
+    margin: 4px 0 18px;
+    padding: 12px 12px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 20px;
+    background: var(--washoku-surface-2);
 }
 
 .washoku-pick-title {
-    margin: 0 0 14px;
-    color: #FFFFFF;
-    font-size: 23px;
-    font-weight: 900;
-    letter-spacing: 0.02em;
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 700;
     text-align: center;
-    text-shadow: 0 2px 0 rgba(150, 40, 20, 0.35);
 }
 
 .washoku-picker {
@@ -3687,90 +3679,46 @@ button.washoku-poll-row:hover {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 104px;
-    padding: 10px 4px;
-    border: 0;
-    border-radius: 22px;
-    background: #FFFFFF;
-    box-shadow: 0 5px 0 rgba(120, 30, 10, 0.25);
-    color: #3B2416;
+    gap: 4px;
+    min-height: 76px;
+    padding: 8px 4px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 18px;
+    background: var(--washoku-surface);
+    box-shadow: var(--washoku-shadow);
+    color: var(--washoku-text);
     text-decoration: none;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform 0.12s ease;
 }
 
 .washoku-picker span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #FFE9D6;
-    font-size: 30px;
+    font-size: 26px;
     line-height: 1;
 }
 
-.washoku-picker:last-child span {
-    background: #E3F5DF;
-}
-
 .washoku-picker strong {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 13.5px;
     white-space: nowrap;
 }
 
 .washoku-picker:active {
-    box-shadow: 0 1px 0 rgba(120, 30, 10, 0.25);
-    transform: translateY(4px);
+    transform: scale(0.97);
 }
 
 .washoku-picker.washoku-picker-random {
-    min-height: 128px;
-    border: 3px solid #FFFFFF;
-    background: linear-gradient(160deg, #FFE066, #FFC21A);
-    box-shadow: 0 6px 0 #C98A00, 0 10px 20px rgba(120, 60, 0, 0.3);
-    color: #3B2416;
-}
-
-.washoku-picker.washoku-picker-random:active {
-    box-shadow: 0 2px 0 #C98A00;
+    min-height: 92px;
+    border: 0;
+    background: linear-gradient(150deg, var(--washoku-random), var(--washoku-random-strong));
+    box-shadow: 0 6px 16px rgba(160, 90, 30, 0.25);
+    color: var(--washoku-random-text);
 }
 
 .washoku-picker-random span {
-    width: auto;
-    height: auto;
-    background: none;
-    font-size: 48px;
-    animation: washoku-dice 2.8s ease-in-out infinite;
+    font-size: 34px;
 }
 
 .washoku-picker-random strong {
-    font-size: 18px;
-    font-weight: 900;
-}
-
-/* サイコロがときどき転がる */
-@keyframes washoku-dice {
-    0%, 70%, 100% {
-        transform: rotate(0deg);
-    }
-    78% {
-        transform: rotate(-18deg) scale(1.08);
-    }
-    86% {
-        transform: rotate(14deg) scale(1.08);
-    }
-    93% {
-        transform: rotate(-6deg);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .washoku-picker-random span {
-        animation: none;
-    }
+    font-size: 15.5px;
 }
 
 /* ---------- HOME: いちばん目立つアンケート ---------- */
