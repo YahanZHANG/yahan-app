@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.db import DatabaseError
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -481,6 +481,10 @@ def public_news_article_click(
         logger.exception(
             "Failed to save news article click."
         )
+
+    # カードのリンクは元記事へ直接飛び、記録だけ裏で送る (beacon=1)
+    if request.GET.get("beacon"):
+        return HttpResponse(status=204)
 
     return redirect(
         destination_url

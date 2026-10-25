@@ -74,7 +74,8 @@
             {% for source_article in article.source_articles %}
 
                 <a
-                    href="{% url 'usage_analytics:public_news_article_click' source_article.id %}?origin={{ request.get_full_path|urlencode }}"
+                    href="{{ source_article.source_url }}"
+                    data-click-url="{% url 'usage_analytics:public_news_article_click' source_article.id %}?origin={{ request.get_full_path|urlencode }}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="news-source-link"

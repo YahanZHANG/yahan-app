@@ -363,6 +363,20 @@ page-content news-site-container
     data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
 ></div>
 
+<script>
+// 元記事へは直接飛ぶ（iPhoneのSafariでYapp経由の転送が拒否されないように）。
+// クリックの記録は裏で送る。
+document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest("a[data-click-url]");
+    if (!link) return;
+    try {
+        fetch(link.dataset.clickUrl + "&beacon=1", {
+            credentials: "same-origin",
+            keepalive: true,
+        }).catch(function () {});
+    } catch (error) {}
+});
+</script>
 <script src="{% static 'news/push_client.js' %}"></script>
 <script src="{% static 'news/push_toggle.js' %}" defer></script>
 <script src="{% static 'news/push_prompt.js' %}" defer></script>

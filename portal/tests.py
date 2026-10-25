@@ -162,3 +162,9 @@ class NewsArticleClickTests(TestCase):
             "https://www.srf.ch/news/1",
             fetch_redirect_response=False,
         )
+
+    def test_beacon_records_click_without_redirect(self):
+
+        response = self.client.get(self.url + "?origin=/news/&beacon=1")
+
+        self.assertEqual(response.status_code, 204)
