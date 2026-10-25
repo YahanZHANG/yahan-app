@@ -122,6 +122,13 @@
 
                 {% endfor %}
 
+                {% if form.username.errors %}
+                    <p class="login-field-note">
+                        <a href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">ログインする ›</a>
+                        ・<a href="{% url 'portal:help' %}">困ったときは</a>
+                    </p>
+                {% endif %}
+
             </div>
 
 

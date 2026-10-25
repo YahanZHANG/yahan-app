@@ -40,6 +40,11 @@ urlpatterns = [
         name="support",
     ),
     path(
+        "help/",
+        support_views.help_page,
+        name="help",
+    ),
+    path(
         "support/<str:method>/",
         support_views.support_contact,
         name="support_contact",

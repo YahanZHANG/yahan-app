@@ -178,3 +178,16 @@ class InstallGuideTests(TestCase):
             response = self.client.get(reverse(name))
             self.assertContains(response, "ホーム画面に追加しよう")
             self.assertContains(response, "<svg", msg_prefix=name)
+
+
+class HelpPageTests(TestCase):
+
+    def test_help_page_and_links(self):
+
+        response = self.client.get(reverse("portal:help") + "?from=washoku")
+        self.assertContains(response, "困ったときは")
+        self.assertContains(response, reverse("washoku:about") + "#feedback")
+
+        self.assertContains(self.client.get(reverse("washoku:about")), reverse("portal:help"))
+        self.assertContains(self.client.get(reverse("news:about")), reverse("portal:help"))
+        self.assertContains(self.client.get(reverse("portal:home")), reverse("portal:help"))

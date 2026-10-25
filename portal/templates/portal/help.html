@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}困ったときは | Yapp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal/public_home.css' %}">
+<link rel="stylesheet" href="{% static 'portal/theme.css' %}">
+<link rel="stylesheet" href="{% static 'portal/support.css' %}">
+<link rel="stylesheet" href="{% static 'portal/help.css' %}">
+{% endblock %}
+
+{% block main_class %}yapp-public-home{% endblock %}
+
+{% block content %}
+<div class="yapp-public-page yapp-support yapp-help">
+
+    {% include "portal/includes/support_header.html" %}
+
+    <section class="yapp-support__intro">
+        <p class="yapp-public-eyebrow">HELP</p>
+        <h1>困ったときは</h1>
+        <p>ログインできない、ページが開けないなど、よくあるトラブルと解決方法です。当てはまるものを押すと開きます。</p>
+    </section>
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">👤</span> アカウント・ログイン</h2>
+
+        <details class="yapp-help__item">
+            <summary>アカウント作成で「すでに使用されています」と出る</summary>
+            <div>
+                <p>ボタンを2回押したり、画面を戻って送り直したりすると、1回目で登録は済んでいるのにこの表示が出ることがあります。</p>
+                <p>まず、入力したユーザーIDとパスワードで <a href="{% url 'login' %}">ログイン</a> してみてください。入れない場合は、別のユーザーIDで作り直してください。</p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>「パスワードを確認してください」と出てログインできない</summary>
+            <div>
+                <ul>
+                    <li>ユーザーIDの代わりに、登録したメールアドレスでもログインできます。大文字・小文字は区別しません。</li>
+                    <li>パスワード欄の 👁 を押すと、入力した文字を確かめられます。</li>
+                    <li>Safari と Chrome は、保存したパスワードを別々に覚えています。登録したときのブラウザで保存したパスワードを確認してください。</li>
+                    <li>パスワードを忘れたときは、<a href="{% url 'password_reset' %}">パスワードの再設定</a> から。メールアドレスを登録していない場合は、下の「解決しないとき」からご連絡ください。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>ホーム画面に追加したら、またログインを求められた</summary>
+            <div>
+                <p>iPhone では、ホーム画面に追加したアプリとブラウザ（Safari など）は、別々にログイン状態を覚えています。ホーム画面のアプリで、最初の1回だけもう一度ログインしてください。そのあとは半年間ログインしたままになります。</p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>「ログインを一時的に制限しています」と出た</summary>
+            <div>
+                <p>同じユーザーIDで続けて6回まちがえると、安全のため30分間ログインできなくなります。30分ほど待ってから、もう一度お試しください。</p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>LINE や Instagram から開くと、すぐログアウトされる</summary>
+            <div>
+                <p>LINE・Instagram・Facebook などのアプリの中で開いたページは、ログイン状態が消えやすくなっています。右上や右下のメニューから「Safariで開く」「ブラウザで開く」を選んでください。</p>
+            </div>
+        </details>
+    </section>
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">📄</span> ページ・表示</h2>
+
+        <details class="yapp-help__item">
+            <summary>Swiss News の元記事が開けない</summary>
+            <div>
+                <p>iPhone の Safari では、ニュースサイト側が表示を断ることがあります。Chrome や Edge など、別のブラウザで開いてみてください。</p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>「このアプリは利用できません」と出る</summary>
+            <div>
+                <p>一般公開していないアプリのページです。<a href="{% url 'portal:home' %}">Yappのトップ</a> から、公開中のサービスをお使いください。</p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>ページが古いまま・表示がおかしい</summary>
+            <div>
+                <ul>
+                    <li>ブラウザでは、ページを下に引っぱるか再読み込みボタンで読み込み直してください。</li>
+                    <li>ホーム画面のアプリでは、アプリを一度完全に閉じてから開き直してください。</li>
+                    <li>パソコンでは Shift キーを押しながら再読み込み（Windows は Shift+F5）してください。</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">📱</span> ホーム画面・通知</h2>
+
+        <details class="yapp-help__item">
+            <summary>ホーム画面に追加する方法</summary>
+            <div>
+                <p>画像つきの説明があります。</p>
+                <p class="yapp-help__links">
+                    {% if not origin or origin.key == "news" %}<a href="{% url 'news:install' %}">Swiss News を追加する</a>{% endif %}
+                    {% if not origin or origin.key == "washoku" %}<a href="{% url 'washoku:install' %}">スイスで和食 を追加する</a>{% endif %}
+                </p>
+            </div>
+        </details>
+
+        <details class="yapp-help__item">
+            <summary>通知が届かない</summary>
+            <div>
+                <ul>
+                    <li>iPhone では、ホーム画面に追加したアプリから開いたときだけ通知を受け取れます。</li>
+                    <li>アプリの設定（Swiss News は「設定」、スイスで和食は「マイページ」）で通知をオンにしてください。</li>
+                    <li>端末の設定で、そのアプリやブラウザの通知が許可されているか確認してください。</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <section class="yapp-support__card">
+        <h2><span aria-hidden="true">💬</span> 解決しないとき</h2>
+        <p>使っている端末（iPhone・Android・パソコン）とブラウザ、どんな表示が出たかを書いて送ってください。</p>
+        <a class="yapp-support__share" href="{{ feedback_url }}">質問箱で知らせる</a>
+    </section>
+
+    <nav class="yapp-support__back">
+        {% if origin %}
+            <a href="{{ origin.url }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> {{ origin.name }}にもどる</a>
+        {% endif %}
+        <a href="{% url 'portal:home' %}">Yappのサービス一覧</a>
+    </nav>
+</div>
+{% endblock %}
