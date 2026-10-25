@@ -3850,7 +3850,7 @@ button.washoku-poll-row:hover {
 
 .washoku-home-slide {
     display: flex;
-    flex: 0 0 80%;
+    flex: 0 0 72%;
     flex-direction: column;
     min-width: 0;
     scroll-snap-align: start;
@@ -4123,4 +4123,13 @@ button.washoku-poll-row:hover {
     height: 72px;
     object-fit: cover;
     border-radius: 12px;
+}
+
+/* お気に入りのページから家族の招待へ */
+.washoku-family-invite {
+    margin: 16px 0 14px;
+}
+
+.washoku-family-invite a {
+    text-decoration: none;
 }

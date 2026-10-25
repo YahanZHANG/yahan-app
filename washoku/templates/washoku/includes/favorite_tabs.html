@@ -5,3 +5,4 @@
     <a href="{% url 'washoku:family_favorites' %}"{% if name == 'family_favorites' %} aria-current="page" class="is-current"{% endif %}>家族が喜ぶ料理</a>
 </nav>
 {% endwith %}
+<p class="washoku-family-invite"><a class="washoku-button" href="{% url 'washoku:family' %}"><i class="bi bi-people" aria-hidden="true"></i> 家族を招待する</a></p>
