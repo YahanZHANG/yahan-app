@@ -14,6 +14,11 @@
         guide.querySelector("[data-install-standalone]").hidden = false;
     }
 
+    // LINE・Instagram などのアプリ内ブラウザでは追加できない
+    if (/Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|TikTok|BytedanceWebview|; wv\)/.test(ua)) {
+        guide.querySelector("[data-install-inapp]").hidden = false;
+    }
+
     var tabs = guide.querySelectorAll("[data-install-tab]");
     var panels = guide.querySelectorAll("[data-install-panel]");
 

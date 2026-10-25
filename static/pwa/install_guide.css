@@ -230,3 +230,14 @@
     font-size: 13px;
     opacity: 0.75;
 }
+
+.yapp-install-inapp {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #FFF3CD;
+    color: #5C4400;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+}

@@ -57,13 +57,19 @@
             <summary>「ログインを一時的に制限しています」と出た</summary>
             <div>
                 <p>同じユーザーIDで続けて6回まちがえると、安全のため30分間ログインできなくなります。30分ほど待ってから、もう一度お試しください。</p>
+                <p>パスワードをまちがえていないのにこの表示が出たときは、別のブラウザ（Safari と Chrome を切り替えるなど）で試してみてください。</p>
             </div>
         </details>
 
         <details class="yapp-help__item">
-            <summary>LINE や Instagram から開くと、すぐログアウトされる</summary>
+            <summary>LINE や Instagram の中で開くと、すぐログアウトされる</summary>
             <div>
-                <p>LINE・Instagram・Facebook などのアプリの中で開いたページは、ログイン状態が消えやすくなっています。右上や右下のメニューから「Safariで開く」「ブラウザで開く」を選んでください。</p>
+                <p>LINE・Instagram・Facebook などのアプリの中で開くのはおすすめしません。ログイン状態が消えやすく、ホーム画面に追加することもできないためです。</p>
+                <p>右上や右下のメニューから「Safariで開く」「ブラウザで開く」を選び、そこから <b>ホーム画面に追加</b> してください。次からはアイコンからワンタップで開けて、ログインも続きます。</p>
+                <p class="yapp-help__links">
+                    {% if not origin or origin.key == "news" %}<a href="{% url 'news:install' %}">Swiss News を追加する</a>{% endif %}
+                    {% if not origin or origin.key == "washoku" %}<a href="{% url 'washoku:install' %}">スイスで和食 を追加する</a>{% endif %}
+                </p>
             </div>
         </details>
     </section>
