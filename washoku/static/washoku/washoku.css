@@ -4198,3 +4198,38 @@ button.washoku-poll-row:hover {
         padding: 8px 12px;
     }
 }
+
+/* HOMEスライドの最後: ホーム画面に追加 (スマホのブラウザで開いているときだけ) */
+.washoku-home-install {
+    padding: 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--washoku-accent) 30%, transparent);
+    border-radius: 20px;
+    background: var(--washoku-accent-soft);
+}
+
+.washoku-home-install-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--washoku-text);
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-home-install-body img {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.washoku-home-install-body strong {
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.washoku-home-install-body small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}

@@ -1,5 +1,5 @@
 {% extends "washoku/base.html" %}
-{% load washoku_tags %}
+{% load static washoku_tags %}
 
 {% block content %}
 
@@ -133,6 +133,18 @@
     </ul>
 </section>
 {% endif %}
+
+<section class="washoku-home-slide washoku-home-install yapp-install-only" aria-labelledby="washoku-home-install-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-install-label" class="washoku-home-poll-badge">📲 アプリにしよう</span>
+    </p>
+    <a class="washoku-home-install-body" href="{% url 'washoku:install' %}">
+        <img src="{% static 'pwa/washoku/apple-touch-icon.png' %}" alt="" width="72" height="72">
+        <strong>ホーム画面に追加すると、<br>ワンタップで開けます</strong>
+        <small>無料・ダウンロード不要。通知も届きます。</small>
+        <span class="washoku-button">やり方を見る（画像つき）</span>
+    </a>
+</section>
 
 </div>
 </div>

@@ -77,6 +77,14 @@ page-content news-site-container
             </div>
 
 
+            <a
+                href="{% url 'news:install' %}"
+                class="news-install-pill yapp-install-only"
+            >
+                📲 アプリにする
+            </a>
+
+
             <!-- =============================================
                  Desktop navigation
                  ============================================= -->
@@ -135,6 +143,17 @@ page-content news-site-container
                     {% endif %}"
                 >
                     Yappについて
+                </a>
+
+
+                <a
+                    href="{% url 'news:install' %}"
+                    class="news-desktop-nav-item
+                    {% if request.resolver_match.url_name == 'install' %}
+                        is-active
+                    {% endif %}"
+                >
+                    📲 スマホで使う
                 </a>
 
             </nav>
