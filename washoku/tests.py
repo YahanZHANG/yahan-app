@@ -1603,7 +1603,7 @@ class CompactPageTests(TestCase):
 
         response = self.client.get(reverse("washoku:store_list"))
 
-        for label in ("日韓食材店", "中華食材店", "その他のアジア食材店"):
+        for label in ("日韓食材店", "中華食材店", "アジア食材店"):
             self.assertContains(response, label)
 
         self.assertContains(response, "washoku-quick-fit")

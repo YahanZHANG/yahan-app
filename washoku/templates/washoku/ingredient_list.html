@@ -14,7 +14,7 @@
 </form>
 
 {% if by_category %}
-    <nav class="washoku-quick" aria-label="カテゴリー">
+    <nav class="washoku-quick washoku-ingredient-kinds" aria-label="カテゴリー">
         {% for category in by_category %}<a href="#cat-{{ forloop.counter }}">{{ category }}</a>{% endfor %}
     </nav>
 

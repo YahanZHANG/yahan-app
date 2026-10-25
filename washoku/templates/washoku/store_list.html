@@ -8,7 +8,7 @@
 
 <p class="washoku-lead">チューリッヒ周辺（ほかの地域も追加予定）</p>
 
-<nav class="washoku-quick washoku-quick-fit" aria-label="お店の種類">
+<nav class="washoku-quick washoku-quick-fit washoku-store-kinds" aria-label="お店の種類">
     <a href="{% url 'washoku:store_list' %}" {% if not kind %}aria-current="page"{% endif %}>すべて</a>
     {% for value, label in kinds %}
         <a href="?kind={{ value }}" {% if value == kind %}aria-current="page"{% endif %}>{{ label }}</a>
