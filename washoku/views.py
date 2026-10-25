@@ -342,6 +342,7 @@ def home(request):
                 .order_by(F("started").desc(nulls_last=True), "-created_at")[:3]
             ),
             "featured": featured_items(),
+            "display": DisplaySettings.load(),
             "announcements": list(Announcement.current()),
         },
     )
@@ -2582,6 +2583,10 @@ def post_list(request, kind):
             posts = posts.filter(section=section)
 
     sort = request.GET.get("sort", "new")
+    display = DisplaySettings.load() if kind == "column" else None
+
+    if kind == "column" and not display.column_show_sort:
+        sort = "new"
 
     if kind == "column":
         readers = post_reader_counts()
@@ -2600,7 +2605,7 @@ def post_list(request, kind):
             "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
-            "display": DisplaySettings.load() if kind == "column" else None,
+            "display": display,
             "sort": sort,
             "sort_choices": COLUMN_SORTS,
             "shop": shop,

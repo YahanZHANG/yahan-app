@@ -1561,6 +1561,17 @@ class DisplaySettings(models.Model):
     画面の表示の切り替え (1件だけ)。管理画面の「表示設定」で変える。
     """
 
+    home_featured_show_stamps = models.BooleanField(
+        "HOMEの注目: スタンプ数",
+        default=False,
+    )
+
+    column_show_sort = models.BooleanField(
+        "コラム一覧: 人気順の切り替え",
+        default=False,
+        help_text="外すと新着順だけになります",
+    )
+
     column_show_author = models.BooleanField("コラム一覧: 投稿者", default=True)
 
     column_show_date = models.BooleanField("コラム一覧: 日付", default=True)
@@ -1573,7 +1584,7 @@ class DisplaySettings(models.Model):
 
     column_show_comments = models.BooleanField("コラム一覧: コメント数", default=True)
 
-    column_show_stamps = models.BooleanField("コラム一覧: スタンプ数", default=True)
+    column_show_stamps = models.BooleanField("コラム一覧: スタンプ数", default=False)
 
     column_show_readers = models.BooleanField(
         "コラム一覧: 読んだ人の数",
