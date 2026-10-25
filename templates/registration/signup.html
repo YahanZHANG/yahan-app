@@ -70,6 +70,7 @@
         <form
             method="post"
             class="login-form"
+            id="signup-form"
         >
 
                 
@@ -121,6 +122,13 @@
 
                 {% endfor %}
 
+                {% if form.username.errors %}
+                    <p class="login-field-note">
+                        <a href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">ログインする ›</a>
+                        ・<a href="{% url 'portal:help' %}">困ったときは</a>
+                    </p>
+                {% endif %}
+
             </div>
 
 
@@ -131,7 +139,7 @@
                 <label for="{{ form.email.id_for_label }}">
 
                     <span>
-                        メールアドレス
+                        メールアドレス（任意）
                     </span>
 
                     <small>
@@ -151,7 +159,7 @@
                 </div>
 
                 <p class="login-field-note">
-                    入力間違いにご注意ください。
+                    パスワードを忘れたときの再設定に使います。
                 </p>
 
                 {% for error in form.email.errors %}
@@ -188,6 +196,15 @@
                     </span>
 
                     {{ form.password1 }}
+
+                    <button
+                        type="button"
+                        class="login-password-toggle"
+                        data-password-toggle="{{ form.password1.id_for_label }}"
+                        aria-label="パスワードを表示"
+                    >
+                        👁
+                    </button>
 
                 </div>
 
@@ -226,6 +243,15 @@
 
                     {{ form.password2 }}
 
+                    <button
+                        type="button"
+                        class="login-password-toggle"
+                        data-password-toggle="{{ form.password2.id_for_label }}"
+                        aria-label="パスワードを表示"
+                    >
+                        👁
+                    </button>
+
                 </div>
 
                 {% for error in form.password2.errors %}
@@ -257,6 +283,7 @@
             <button
                 type="submit"
                 class="login-button"
+                id="signup-submit"
             >
 
                 <span>
@@ -273,6 +300,17 @@
             </button>
 
         </form>
+
+        <div class="login-help">
+
+            <a
+                href="{% url 'portal:help' %}"
+                class="login-help-link"
+            >
+                登録やログインで困ったときは
+            </a>
+
+        </div>
 
 
         <!-- =============================================
@@ -330,5 +368,45 @@
     </main>
 
 </div>
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const form = document.getElementById("signup-form");
+            const button = document.getElementById("signup-submit");
+            document.querySelectorAll("[data-password-toggle]").forEach(function (toggle) {
+                const input = document.getElementById(toggle.dataset.passwordToggle);
+                if (!input) {
+                    return;
+                }
+                toggle.addEventListener("click", function () {
+                    const show = input.type === "password";
+                    input.type = show ? "text" : "password";
+                    toggle.textContent = show ? "🙈" : "👁";
+                    toggle.setAttribute("aria-label", show ? "パスワードを隠す" : "パスワードを表示");
+                });
+            });
+
+            // 二度押しで同じ登録が2回送られないように
+            if (form && button) {
+                form.addEventListener("submit", function () {
+                    button.disabled = true;
+                    button.querySelector("span").textContent = "作成しています…";
+                });
+
+                // 戻るボタンで戻ってきたときは押せる状態に戻す
+                window.addEventListener("pageshow", function () {
+                    button.disabled = false;
+                    button.querySelector("span").textContent = "新しいアカウントを作成";
+                });
+            }
+
+        }
+    );
+
+</script>
 
 {% endblock %}

@@ -32,6 +32,9 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("activity/", views.activity, name="activity"),
 
+    # ホーム画面に追加する方法
+    path("install/", views.install_guide, name="install"),
+
     # プッシュ通知
     path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
     path("push/unsubscribe/", views.push_unsubscribe, name="push_unsubscribe"),

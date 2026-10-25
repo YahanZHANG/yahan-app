@@ -169,8 +169,8 @@ class ResendVerificationForm(
 class SignupForm(UserCreationForm):
 
     email = forms.EmailField(
-        required=True,
-        label="メールアドレス",
+        required=False,
+        label="メールアドレス（任意）",
         widget=forms.EmailInput(
             attrs={
                 "placeholder": "example@email.com",
@@ -188,6 +188,18 @@ class SignupForm(UserCreationForm):
             "password2",
         ]
 
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        # スマホの自動大文字化・自動修正でIDが変わらないように
+        self.fields["username"].widget.attrs.update({
+            "autocapitalize": "none",
+            "autocorrect": "off",
+            "spellcheck": "false",
+            "autocomplete": "username",
+        })
+
     def clean_username(self):
 
         username = (
@@ -201,6 +213,8 @@ class SignupForm(UserCreationForm):
 
             raise forms.ValidationError(
                 "このユーザーIDはすでに使用されています。"
+                "先ほどの登録がすでに完了している可能性があります。"
+                "同じユーザーIDとパスワードでログインをお試しください。"
             )
 
         return username
@@ -213,12 +227,16 @@ class SignupForm(UserCreationForm):
             .lower()
         )
 
+        if not email:
+            return ""
+
         if User.objects.filter(
             email__iexact=email
         ).exists():
 
             raise forms.ValidationError(
                 "このメールアドレスはすでに登録されています。"
+                "このメールアドレスとパスワードでログインすることもできます。"
             )
 
         return email

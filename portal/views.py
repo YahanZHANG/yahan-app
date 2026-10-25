@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import (
+    authenticate,
     get_user_model,
     login,
     logout,
@@ -49,6 +50,7 @@ from .forms import (
 )
 from .models import (
     AppAccessRequest,
+    PortalAnnouncement,
     PortalAppPreference,
 )
 
@@ -396,6 +398,80 @@ def get_app_choices_for_user(user):
 # Public signup
 # =========================================================
 
+SIGNUP_RESUBMIT_WINDOW = timedelta(minutes=30)
+
+
+def start_signed_up_session(request, user, next_url):
+    """
+    作成したばかりのアカウントでログインし、
+    ニックネーム設定へ進める。
+    """
+
+    login(
+        request,
+        user,
+        backend=(
+            "portal.backends."
+            "EmailOrUsernameBackend"
+        ),
+    )
+
+    if next_url:
+        request.session[
+            "yapp_post_signup_next"
+        ] = next_url
+    else:
+        request.session.pop(
+            "yapp_post_signup_next",
+            None,
+        )
+
+    return redirect("portal:nickname_setup")
+
+
+def find_resubmitted_signup(request):
+    """
+    「作成」を2回押した・戻って再送信した場合、
+    直前に作られた同じアカウントを返す。
+    パスワードが一致したときだけ。
+    """
+
+    username = (
+        request.POST.get("username")
+        or ""
+    ).strip()
+
+    password = request.POST.get(
+        "password1"
+    ) or ""
+
+    if not username or not password:
+        return None
+
+    exists = (
+        get_user_model()
+        .objects
+        .filter(
+            username__iexact=username,
+            date_joined__gte=(
+                timezone.now()
+                - SIGNUP_RESUBMIT_WINDOW
+            ),
+        )
+        .exists()
+    )
+
+    if not exists:
+        return None
+
+    # axes の失敗回数にも数えられるよう、通常の認証を通す
+    return authenticate(
+        request,
+        username=username,
+        password=password,
+    )
+
+
 def signup(request):
 
     next_url = get_safe_next(
@@ -412,6 +488,18 @@ def signup(request):
 
     if request.method == "POST":
 
+        resubmitted_user = find_resubmitted_signup(
+            request
+        )
+
+        if resubmitted_user is not None:
+
+            return start_signed_up_session(
+                request,
+                resubmitted_user,
+                next_url,
+            )
+
         form = SignupForm(
             request.POST
         )
@@ -419,7 +507,7 @@ def signup(request):
         if form.is_valid():
 
             # =================================================
-            # Create inactive user
+            # Create user (すぐに使える状態で作成)
             # =================================================
 
             user = form.save(
@@ -432,9 +520,7 @@ def signup(request):
                 ]
             )
 
-            # メール確認が終わるまでは
-            # ログインできない状態にする
-            user.is_active = False
+            user.is_active = True
 
             user.save()
 
@@ -467,105 +553,22 @@ def signup(request):
             # Signup時にパスワードは設定済み
             profile.password_setup_completed = True
 
-            # メール認証後に設定
             profile.nickname_setup_completed = False
             profile.app_setup_completed = False
 
             profile.save()
 
 
-            # =================================================
-            # Email verification
-            # =================================================
-
-            uid = urlsafe_base64_encode(
-                force_bytes(
-                    user.pk
-                )
-            )
-
-            token = (
-                default_token_generator
-                .make_token(
-                    user
-                )
-            )
-
-
-            verification_url = request.build_absolute_uri(
-                reverse(
-                    "portal:verify_email",
-                    kwargs={
-                        "uidb64": uid,
-                        "token": token,
-                    },
-                )
-            )
-
-            return_token = make_signup_return_token(
+            messages.success(
                 request,
+                "アカウントを作成しました。Yappへようこそ！",
+            )
+
+            return start_signed_up_session(
+                request,
+                user,
                 next_url,
             )
-
-            if return_token:
-                verification_url += "?" + urlencode({
-                    "return_token": return_token,
-                })
-
-
-            subject = (
-                "【Yapp】"
-                "メールアドレスを確認してください"
-            )
-
-            message = (
-                "Yappへようこそ。\n\n"
-                "アカウント登録ありがとうございます。\n"
-                "以下のリンクを開いて、"
-                "メールアドレスを確認してください。\n\n"
-                f"{verification_url}\n\n"
-                "このメールに心当たりがない場合は、"
-                "そのまま破棄してください。\n\n"
-                "© 2026 Yapp"
-            )
-
-            try:
-
-                send_mail(
-                    subject=subject,
-                    message=message,
-                    from_email=(
-                        settings.DEFAULT_FROM_EMAIL
-                    ),
-                    recipient_list=[
-                        user.email
-                    ],
-                    fail_silently=False,
-                )
-
-            except Exception:
-
-                # メール送信に失敗した場合、
-                # 使えない未認証アカウントを残さない
-                user.delete()
-
-                form.add_error(
-                    None,
-                    (
-                        "確認メールを送信できませんでした。"
-                        "時間をおいてもう一度お試しください。"
-                    ),
-                )
-
-            else:
-
-                return render(
-                    request,
-                    "registration/signup_email_sent.html",
-                    {
-                        "email": user.email,
-                    },
-                )
 
     else:
 
@@ -1236,6 +1239,7 @@ def home(request):
         "portal/home.html",
         {
             "apps": apps,
+            "announcements": list(PortalAnnouncement.current()),
         },
     )
 

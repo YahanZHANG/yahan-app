@@ -98,6 +98,9 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
 
+    # ログイン中の人が開くたびに (1日1回) ログインの期限を延ばす
+    "portal.middleware.KeepLoginMiddleware",
+
     "portal.middleware.PublicUserAccessMiddleware",
 
     # App usage tracking
@@ -287,6 +290,10 @@ LOGIN_REDIRECT_URL = (
 
 LOGOUT_REDIRECT_URL = "login"
 
+# ログイン状態を保つ期間。ブラウザ (Chrome など) の上限が400日なので400日。
+# 開くたびに (1日1回) 期限を延ばすので、使い続けている限りログインしたまま。
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 400
+
 # ------------------------------------------------------------------------------
 # Authentication
 # ------------------------------------------------------------------------------
@@ -308,7 +315,16 @@ AXES_COOLOFF_TIME = timedelta(
 
 AXES_RESET_ON_SUCCESS = True
 
-AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+# 「同じIDを同じ端末から」6回間違えたときだけロックする。
+# （別々のリストだと、Render経由で全員が同じIPに見えたとき
+#  誰か1人の失敗で全員がロックされてしまう）
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+
+# Render のプロキシ越しでも本当の接続元IPを使う
+AXES_IPWARE_META_PRECEDENCE_ORDER = (
+    "HTTP_X_FORWARDED_FOR",
+    "REMOTE_ADDR",
+)
 
 AXES_USERNAME_CALLABLE = (
     "portal.axes_utils."

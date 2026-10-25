@@ -1,0 +1,57 @@
+{# スマホのブラウザで開いている人にだけ「ホーム画面に追加」を勧める細いバー。×で14日間出さない。 #}
+<a class="yapp-install-banner" href="{{ install_url }}" data-install-banner hidden>
+    <span aria-hidden="true">📲</span>
+    <span class="yapp-install-banner-text"><b>ホーム画面に追加</b>すると、ワンタップで開けます</span>
+    <span class="yapp-install-banner-more">方法 ›</span>
+    <button type="button" class="yapp-install-banner-close" aria-label="閉じる" data-install-banner-close>×</button>
+</a>
+<style>
+.yapp-install-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 8px 6px 8px 12px;
+    border-radius: 14px;
+    background: {{ banner_color|default:"#B5462E" }};
+    color: #FFFFFF;
+    font-size: 14px;
+    line-height: 1.4;
+    text-decoration: none;
+}
+.yapp-install-banner[hidden] { display: none; }
+.yapp-install-banner-text { flex: 1; }
+.yapp-install-banner-more { font-weight: 700; white-space: nowrap; }
+.yapp-install-banner-close {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #FFFFFF;
+    font-size: 20px;
+    opacity: 0.8;
+    cursor: pointer;
+}
+</style>
+<script>
+(function () {
+    var banner = document.querySelector("[data-install-banner]");
+    if (!banner) return;
+    var ua = navigator.userAgent;
+    var mobile = /iPhone|iPad|iPod|Android/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+        || (window.matchMedia("(pointer: coarse)").matches && window.innerWidth < 900);
+    var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    var key = "yapp_install_banner_closed";
+    var closedAt = 0;
+    try { closedAt = parseInt(localStorage.getItem(key), 10) || 0; } catch (error) {}
+    if (!mobile || standalone || Date.now() - closedAt < 14 * 24 * 60 * 60 * 1000) return;
+    banner.hidden = false;
+    banner.querySelector("[data-install-banner-close]").addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        banner.hidden = true;
+        try { localStorage.setItem(key, String(Date.now())); } catch (error) {}
+    });
+})();
+</script>

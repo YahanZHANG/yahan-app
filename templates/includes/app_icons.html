@@ -48,3 +48,18 @@
     name="application-name"
     content="{{ pwa_icons.name }}"
 >
+
+{% comment %}
+スマホのブラウザで開いている (まだホーム画面から開いていない) ときだけ html に yapp-installable を付ける。
+「ホーム画面に追加」の入り口 (.yapp-install-only) はそのときだけ出す。
+{% endcomment %}
+<style>html:not(.yapp-installable) .yapp-install-only { display: none !important; }</style>
+<script>
+(function () {
+    var ua = navigator.userAgent;
+    var mobile = /iPhone|iPad|iPod|Android/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+        || (window.matchMedia("(pointer: coarse)").matches && window.innerWidth < 900);
+    var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    if (mobile && !standalone) document.documentElement.classList.add("yapp-installable");
+})();
+</script>

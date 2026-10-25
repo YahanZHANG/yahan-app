@@ -1,0 +1,101 @@
+{% load static %}
+{# ホーム画面に追加する方法 (Swiss News・スイスで和食で共通)。各アプリの install.html から読み込む。 #}
+<link rel="stylesheet" href="{% static 'pwa/install_guide.css' %}">
+
+<div class="yapp-install" style="--install-color: {{ install_color|default:pwa_icons.theme_color }};" data-install-guide>
+
+    <header class="yapp-install-hero">
+        <img src="{% static pwa_icons.folder|add:'/apple-touch-icon.png' %}" alt="" width="88" height="88">
+        <h1>{{ pwa_icons.name }} を<br>ホーム画面に追加しよう</h1>
+        <p class="yapp-install-done" data-install-standalone hidden>🎉 もう追加済みです。ありがとうございます！</p>
+        <p class="yapp-install-inapp" data-install-inapp hidden>⚠️ LINE や Instagram などのアプリの中からは、ホーム画面に追加できません。メニューの「Safariで開く」「ブラウザで開く」から Safari や Chrome などのブラウザで開き、下の手順で追加してください。</p>
+    </header>
+
+    <ul class="yapp-install-merits">
+        <li><span aria-hidden="true">👆</span>アイコンからワンタップで開ける</li>
+        <li><span aria-hidden="true">🔔</span>通知が届く（iPhoneは追加した場合だけ）</li>
+        <li><span aria-hidden="true">📱</span>画面が広く、アプリのように使える</li>
+        <li><span aria-hidden="true">🆓</span>無料・ダウンロード不要</li>
+    </ul>
+
+    <div class="yapp-install-tabs" role="tablist" aria-label="お使いの端末">
+        <button type="button" role="tab" data-install-tab="ios-safari">iPhone（Safari）</button>
+        <button type="button" role="tab" data-install-tab="ios-chrome">iPhone（Chrome）</button>
+        <button type="button" role="tab" data-install-tab="android">Android</button>
+        <button type="button" role="tab" data-install-tab="pc">パソコン</button>
+    </div>
+
+    <section data-install-panel="ios-safari" hidden>
+        <ol class="yapp-install-steps">
+            <li>
+                <p>画面の下の <b>「…」</b> を押して <b>「共有」</b> を選ぶ<small>古いiPhoneは、下の共有ボタン <span class="yapp-install-key">□↑</span> をそのまま押します</small></p>
+                <img src="{% static 'pwa/guide/ios-safari-more.svg' %}" alt="画面の下の「…」ボタン" loading="lazy">
+            </li>
+            <li>
+                <p><b>「ホーム画面に追加」</b> を押す<small>見えないときは、下にスクロールするか「もっと見る」を押します</small></p>
+                <img src="{% static 'pwa/guide/ios-add-home.svg' %}" alt="共有メニューの「ホーム画面に追加」" loading="lazy">
+            </li>
+            <li>
+                <p>右上の <b>「追加」</b> を押す</p>
+                <img src="{% static 'pwa/guide/ios-confirm.svg' %}" alt="右上の「追加」ボタン" loading="lazy">
+            </li>
+        </ol>
+    </section>
+
+    <section data-install-panel="ios-chrome" hidden>
+        <ol class="yapp-install-steps">
+            <li>
+                <p>アドレスバーの右の共有ボタン <span class="yapp-install-key">□↑</span> を押す</p>
+                <img src="{% static 'pwa/guide/ios-chrome-share.svg' %}" alt="アドレスバーの共有ボタン" loading="lazy">
+            </li>
+            <li>
+                <p><b>「ホーム画面に追加」</b> を押す</p>
+                <img src="{% static 'pwa/guide/ios-add-home.svg' %}" alt="共有メニューの「ホーム画面に追加」" loading="lazy">
+            </li>
+            <li>
+                <p>右上の <b>「追加」</b> を押す</p>
+                <img src="{% static 'pwa/guide/ios-confirm.svg' %}" alt="右上の「追加」ボタン" loading="lazy">
+            </li>
+        </ol>
+    </section>
+
+    <section data-install-panel="android" hidden>
+        <p class="yapp-install-onetap" data-install-onetap hidden>
+            <button type="button" data-install-button>ホーム画面に追加する</button>
+        </p>
+        <ol class="yapp-install-steps">
+            <li>
+                <p>右上の <span class="yapp-install-key">⋮</span> を押す</p>
+                <img src="{% static 'pwa/guide/android-menu.svg' %}" alt="右上の︙メニュー" loading="lazy">
+            </li>
+            <li>
+                <p><b>「ホーム画面に追加」</b> か <b>「アプリをインストール」</b> を押す</p>
+                <img src="{% static 'pwa/guide/android-add.svg' %}" alt="メニューの「ホーム画面に追加」" loading="lazy">
+            </li>
+            <li>
+                <p><b>「インストール」</b> か <b>「追加」</b> を押す</p>
+            </li>
+        </ol>
+    </section>
+
+    <section data-install-panel="pc" hidden>
+        <p class="yapp-install-pc">スマホのカメラで読み取って開き、そこから追加してください。</p>
+        <div class="yapp-install-qr">{{ install_qr }}</div>
+        <p class="yapp-install-url">{{ request.get_host }}{{ app_url }}</p>
+    </section>
+
+    <section class="yapp-install-after">
+        <h2>追加したあとは</h2>
+        <div class="yapp-install-homescreen" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <img src="{% static pwa_icons.folder|add:'/apple-touch-icon.png' %}" alt="">
+            <span></span><span></span><span></span><span></span>
+        </div>
+        <p>ホーム画面の <b>{{ pwa_icons.name }}</b> のアイコンから開いてください。</p>
+        <p class="yapp-install-note">ホーム画面のアプリでは、ブラウザとは別にログインが必要です。お手数ですが、最初の1回だけログインしてください。</p>
+        <p><a class="yapp-install-back" href="{{ app_url }}">{{ pwa_icons.name }} に戻る</a></p>
+    </section>
+
+</div>
+
+<script src="{% static 'pwa/install_guide.js' %}" defer></script>

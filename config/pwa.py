@@ -270,3 +270,26 @@ def service_worker(request):
     response["Service-Worker-Allowed"] = "/"
 
     return response
+
+# =========================================================
+# ホーム画面に追加する方法のページ
+# =========================================================
+
+def install_guide_context(request, app_url):
+
+    """
+    Swiss News・スイスで和食の「ホーム画面に追加する方法」ページ用。
+    パソコンで開いた人がスマホで読み取るQRコード (SVG) も作る。
+    """
+
+    import qrcode
+    import qrcode.image.svg
+    from django.utils.safestring import mark_safe
+
+    url = request.build_absolute_uri(app_url)
+    image = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage, box_size=10, border=2)
+
+    return {
+        "app_url": app_url,
+        "install_qr": mark_safe(image.to_string(encoding="unicode")),
+    }

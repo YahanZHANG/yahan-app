@@ -5146,3 +5146,36 @@
 .news-announcement-close:hover {
     opacity: 1;
 }
+
+/* 最初のカードの出典の下に出す、元記事が開けないときのヒント */
+.news-card-footer:has(.news-source-help) {
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+.news-source-help {
+    flex-basis: 100%;
+    margin: 0;
+    color: #75817c;
+    font-size: .72rem;
+    line-height: 1.6;
+}
+
+/* スマホのブラウザで開いているときだけ: 右上の「アプリにする」 */
+.news-header {
+    position: relative;
+}
+
+.news-install-pill {
+    position: absolute;
+    top: 26px;
+    right: 16px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #5F7F6F;
+    box-shadow: 0 4px 12px rgba(70, 100, 85, 0.25);
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+}

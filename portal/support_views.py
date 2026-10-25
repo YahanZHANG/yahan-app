@@ -91,3 +91,23 @@ def support_contact(request, method):
         "config": METHODS[method],
         "origin": origin,
     })
+
+
+FEEDBACK_URLS = {
+    "news": "news:about",
+    "washoku": "washoku:about",
+}
+
+
+def help_page(request):
+    """困ったときは (ログインできない・ページが開けない など)。全アプリ共通。"""
+
+    origin = _origin(request)
+    feedback_url = None
+    if origin and origin["key"] in FEEDBACK_URLS:
+        feedback_url = reverse(FEEDBACK_URLS[origin["key"]]) + "#feedback"
+
+    return render(request, "portal/help.html", {
+        "origin": origin,
+        "feedback_url": feedback_url or reverse("news:about") + "#feedback",
+    })

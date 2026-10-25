@@ -542,6 +542,7 @@
                         <span class="ya-visit-meta">
                             <span class="ya-tag"><i class="ya-swatch ya-{{ visit.source.css }}"></i>{{ visit.source_label|default:visit.source.short }}</span>
                             {% for app in visit.app_list %}<span class="ya-tag">{{ app.emoji }} {{ app.name }}</span>{% endfor %}
+                            {% if visit.device %}<span class="ya-tag">{{ visit.device.icon }} {{ visit.device.name }}</span>{% endif %}
                             {% if visit.browser.key %}<span class="ya-tag">📲 {{ visit.browser.name }}</span>{% endif %}
                             <span class="ya-tag">{{ visit.pages }}ページ{% if visit.minutes %}・{{ visit.minutes }}分{% endif %}</span>
                         </span>

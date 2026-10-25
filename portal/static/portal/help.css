@@ -1,0 +1,63 @@
+/* 困ったときは */
+.yapp-help__item {
+    border-top: 1px solid var(--s-border);
+}
+
+.yapp-help__item:first-of-type {
+    margin-top: 8px;
+}
+
+.yapp-help__item summary {
+    position: relative;
+    padding: 14px 28px 14px 0;
+    font-weight: 700;
+    line-height: 1.5;
+    list-style: none;
+    cursor: pointer;
+}
+
+.yapp-help__item summary::-webkit-details-marker {
+    display: none;
+}
+
+.yapp-help__item summary::after {
+    content: "＋";
+    position: absolute;
+    top: 13px;
+    right: 2px;
+    color: var(--s-accent);
+}
+
+.yapp-help__item[open] summary::after {
+    content: "−";
+}
+
+.yapp-help__item > div {
+    padding: 0 0 14px;
+    color: var(--s-muted);
+    line-height: 1.8;
+}
+
+.yapp-help__item p {
+    margin: 0 0 8px;
+}
+
+.yapp-help__item ul {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.yapp-help__item a {
+    color: var(--s-accent);
+}
+
+.yapp-help__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-weight: 700;
+}
+
+.yapp-help .yapp-support__share {
+    text-decoration: none;
+}

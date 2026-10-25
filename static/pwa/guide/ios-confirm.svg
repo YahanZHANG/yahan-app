@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 170" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif">
+<rect x="1" y="1" width="278" height="168" rx="22" fill="#F4F4F6" stroke="#D8D8DE" stroke-width="2"/>
+
+<rect x="1" y="1" width="278" height="50" rx="22" fill="#FFFFFF"/>
+<rect x="1" y="30" width="278" height="21" fill="#FFFFFF"/>
+<rect x="1" y="50" width="278" height="1" fill="#D8D8DE"/>
+<text x="16" y="32" font-size="13" fill="#1A73E8">キャンセル</text>
+<text x="146" y="32" font-size="13" fill="#1C1C1E" font-weight="700" text-anchor="middle">ホーム画面に追加</text>
+<text x="248" y="32" font-size="15" fill="#1A73E8" font-weight="700" text-anchor="middle">追加</text>
+<rect x="222" y="11" width="52" height="30" rx="10" fill="none" stroke="#F08A24" stroke-width="4"/>
+<rect x="24" y="74" width="232" height="70" rx="12" fill="#FFFFFF"/>
+<rect x="36" y="84" width="50" height="50" rx="12" fill="#E2E2E8"/>
+<rect x="100" y="98" width="120" height="10" rx="5" fill="#C8C8CE"/>
+<rect x="100" y="116" width="80" height="8" rx="4" fill="#E2E2E8"/>
+
+</svg>

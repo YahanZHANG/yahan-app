@@ -3167,3 +3167,11 @@ def push_unsubscribe(request):
     PushSubscription.objects.filter(endpoint=endpoint, user=request.user).delete()
 
     return JsonResponse({"success": True})
+
+
+def install_guide(request):
+    """ホーム画面に追加する方法 (画像つき)。"""
+
+    from config.pwa import install_guide_context
+
+    return render(request, "washoku/install.html", install_guide_context(request, reverse("washoku:home")))

@@ -594,14 +594,15 @@
 }
 
 .login-help {
-    margin-top: 16px;
+    margin-top: 18px;
+    color: #788680;
     text-align: center;
 }
 
 
 .login-help-link {
-    color: #788680;
-    font-size: .75rem;
+    color: #536b5f;
+    font-size: .9rem;
     font-weight: 700;
     text-decoration: none;
 }
@@ -828,4 +829,9 @@
 
     font-size: 13px;
     font-weight: 900;
+}
+
+.login-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
 }

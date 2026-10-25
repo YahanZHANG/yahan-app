@@ -15,6 +15,12 @@ urlpatterns = [
     ),
 
     path(
+        "install/",
+        views.install_guide,
+        name="install",
+    ),
+
+    path(
         "topics/",
         views.topic_list,
         name="topic_list",

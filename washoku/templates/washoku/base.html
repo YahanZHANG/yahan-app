@@ -71,6 +71,7 @@
                 <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients find_by_nutrition random_recipe my_favorites family_favorites' %}active{% endif %}"><i class="bi bi-journal-richtext" aria-hidden="true"></i>レシピ</a>
                 <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit store_list store_detail' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
                 <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>コミュニティ</a>
+                <a href="{% url 'washoku:install' %}" class="{% if name == 'install' %}active{% endif %}"><i class="bi bi-phone" aria-hidden="true"></i>ホーム画面に追加</a>
             </nav>
 
             <a href="{% url 'washoku:search' %}" class="washoku-search-button{% if name == 'search' %} active{% endif %}" aria-label="アプリ全体を検索">
