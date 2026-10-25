@@ -539,8 +539,60 @@ class PollVoteAdmin(admin.ModelAdmin):
         return timezone.localtime(obj.voted_at).strftime("%Y/%m/%d %H:%M")
 
 
+class HomePhotoAdminForm(forms.ModelForm):
+    """注目・質問の HOME カードに出す写真を、管理画面からアップロードできるようにする。"""
+
+    home_photo_upload = forms.FileField(
+        label="HOMEの写真をアップロード",
+        required=False,
+        help_text="小さく変換して保存し、上の「HOMEの写真」を置きかえます。消すときは「HOMEの写真」を空にします。",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
+    )
+
+    def clean_home_photo_upload(self):
+
+        photo = self.cleaned_data.get("home_photo_upload")
+
+        if not photo:
+            return ""
+
+        try:
+            return upload_photo(photo, "home")
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages)
+
+
+class HomePhotoAdminMixin:
+    """HOMEの写真のアップロードとプレビュー。"""
+
+    @admin.display(description="HOMEの写真（いま）")
+    def home_photo_preview(self, obj):
+        if not obj.home_photo_url:
+            return "なし（文字だけ）"
+        return format_html('<img src="{}" alt="" style="width:160px;max-height:120px;object-fit:cover;border-radius:8px">', obj.home_photo_url)
+
+    def save_model(self, request, obj, form, change):
+        uploaded = form.cleaned_data.get("home_photo_upload")
+        if uploaded:
+            obj.home_photo_url = uploaded
+        super().save_model(request, obj, form, change)
+
+
+class PostAdminForm(HomePhotoAdminForm):
+    class Meta:
+        model = Post
+        fields = "__all__"
+
+
+class CommentAdminForm(HomePhotoAdminForm):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
 @admin.register(Post)
-class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
+class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin):
+    form = PostAdminForm
     inlines = (
         PollChoiceInline,
         PollVoteInline,
@@ -597,6 +649,7 @@ class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
 
     readonly_fields = (
         "updated_at",
+        "home_photo_preview",
     )
 
     actions = [
@@ -641,7 +694,12 @@ class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
 
 
 @admin.register(Comment)
-class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
+class CommentAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin):
+    form = CommentAdminForm
+    readonly_fields = (
+        "home_photo_preview",
+    )
+
     list_display = (
         "short_body",
         "target_label",

@@ -2125,6 +2125,13 @@ class AdminPickTests(TestCase):
         self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
         self.assertContains(home, "解決済")
         self.assertContains(home, 'class="is-solved"')
+
+        # 管理者が写真を足したときだけ、カードに写真が出る
+        self.assertNotContains(home, "https://example.com/q.jpg")
+        Comment.objects.filter(pk=open_q.pk).update(home_photo_url="https://example.com/q.jpg")
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, '<img src="https://example.com/q.jpg"')
+        self.assertContains(home, "data-slider-next")
         self.assertContains(home, "答えを募集中")
 
         # 3日たつと消える (未解決はずっと残る)

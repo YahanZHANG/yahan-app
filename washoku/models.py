@@ -1132,6 +1132,12 @@ class Post(models.Model):
     # コラムの写真 (2枚まで)
     photo_1 = models.URLField("写真1", max_length=500, blank=True)
     photo_2 = models.URLField("写真2", max_length=500, blank=True)
+    home_photo_url = models.URLField(
+        "HOMEの写真",
+        max_length=500,
+        blank=True,
+        help_text="HOME の注目・質問のカードに出す写真。空なら文字だけ。",
+    )
 
     # 買えるお店は複数選べる。SHOP_CHOICES のコードをカンマでつなげて入れる (例: "migros,coop")
     shop = models.CharField(
@@ -1377,6 +1383,12 @@ class Comment(models.Model):
         "写真",
         max_length=500,
         blank=True,
+    )
+    home_photo_url = models.URLField(
+        "HOMEの写真",
+        max_length=500,
+        blank=True,
+        help_text="HOME の注目・質問のカードに出す写真。空なら文字だけ。",
     )
 
     is_deleted = models.BooleanField(
