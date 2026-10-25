@@ -801,6 +801,31 @@ body {
     font-weight: 700;
 }
 
+/* 「みんな」は真ん中の丸いボタン */
+.washoku-tabbar a.washoku-tab-center {
+    padding-top: 0;
+    color: var(--washoku-accent);
+    font-weight: 700;
+}
+
+.washoku-tab-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    margin-top: -20px;
+    border: 3px solid var(--washoku-surface);
+    border-radius: 50%;
+    background: var(--washoku-accent);
+    box-shadow: 0 4px 12px rgba(160, 60, 20, 0.3);
+    color: #FFFFFF;
+}
+
+.washoku-tabbar .washoku-tab-circle i {
+    font-size: 24px;
+}
+
 .washoku-main {
     max-width: 960px;
     margin: 0 auto;

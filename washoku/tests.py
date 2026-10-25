@@ -932,7 +932,7 @@ class NutritionTests(TestCase):
         self.assertContains(response, "今日のごはん、何にする？")
         # 検索はヘッダーにあるので、HOME の検索欄はなし
         self.assertNotContains(response, 'placeholder="料理、食材、お店などを探す"')
-        self.assertNotContains(response, "みんなの知恵")
+        self.assertNotContains(response, "<h2>みんなの知恵")
 
         response = self.client.get(reverse("washoku:recipe_list"))
         self.assertContains(response, "ほかの探し方")

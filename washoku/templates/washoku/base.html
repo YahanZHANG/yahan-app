@@ -62,7 +62,7 @@
                 <img class="washoku-brand-icon" src="{% static 'pwa/washoku/icon-192.png' %}" alt="" width="36" height="36">
                 <span>
                     <strong>スイスで和食</strong>
-                    <small>スイスで作る、日本の家庭の味</small>
+                    <small>スイスの食卓に、みんなの知恵を。</small>
                 </span>
             </a>
 
@@ -127,6 +127,10 @@
             <i class="bi bi-journal-richtext" aria-hidden="true"></i>
             <span>レシピ</span>
         </a>
+        <a href="{% url 'washoku:question_list' %}" class="washoku-tab-center{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %} active{% endif %}">
+            <span class="washoku-tab-circle"><i class="bi bi-people{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i></span>
+            <span>みんな</span>
+        </a>
         <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit' %}active{% endif %}">
             <i class="bi bi-basket{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>食材</span>
@@ -134,10 +138,6 @@
         <a href="{% url 'washoku:store_list' %}" class="{% if name in 'store_list store_detail' %}active{% endif %}">
             <i class="bi bi-shop{% if name in 'store_list store_detail' %}-window{% endif %}" aria-hidden="true"></i>
             <span>お店</span>
-        </a>
-        <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}">
-            <i class="bi bi-people{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>みんな</span>
         </a>
     </nav>
 
