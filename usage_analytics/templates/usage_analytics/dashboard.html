@@ -75,6 +75,51 @@
         </ul>
     </section>
 
+    {% if behavior %}
+    <section class="ya-card ya-insights" aria-labelledby="ya-behavior-title">
+        <h3 id="ya-behavior-title">🔍 使い方の傾向と改善のヒント</h3>
+        <p class="ya-note">直近{{ behavior.days }}日間。よく使う人 = {{ behavior.regular_days }}日以上来た人（{{ behavior.regulars }}人）、すぐ帰った人 = 1回だけ来て{{ behavior.short_pages }}ページ以内で帰った人（{{ behavior.short_visitors }}人）</p>
+        <ul>
+            {% for line in behavior.advice %}
+                <li><span aria-hidden="true">{{ line.icon }}</span><span>{{ line.text }}</span></li>
+            {% endfor %}
+        </ul>
+
+        <div class="ya-grid ya-grid-3 ya-behavior">
+            <div>
+                <h4>⭐ よく使う人がよく見るページ</h4>
+                <ol class="ya-behavior-list">
+                    {% for row in behavior.regular_pages %}
+                        <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.count }}回・{{ row.visitors }}人</span></li>
+                    {% empty %}
+                        <li class="ya-empty">まだいません</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div>
+                <h4>🚪 すぐ帰った人が最後に見たページ</h4>
+                <ol class="ya-behavior-list">
+                    {% for row in behavior.exit_pages %}
+                        <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.visitors }}人・{{ row.share }}%</span></li>
+                    {% empty %}
+                        <li class="ya-empty">いません</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <div>
+                <h4>📈 最近よく見られ始めたページ</h4>
+                <ol class="ya-behavior-list">
+                    {% for row in behavior.rising_pages %}
+                        <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.before }}→{{ row.count }}回</span></li>
+                    {% empty %}
+                        <li class="ya-empty">目立った変化はありません</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <div class="ya-kpis">
         <div class="ya-kpi">
             <div class="ya-kpi-label">来た人</div>
@@ -115,6 +160,20 @@
     <section class="ya-section">
         <h2>👥 人の動き</h2>
         <p class="ya-lead">1人 = 1つのブラウザ（スマホとPCで見ると2人になります）。訪問は30分あくと次の訪問として数えます。</p>
+
+        <div class="ya-grid ya-grid-2">
+            <div class="ya-card">
+                <h3>来た人と訪問回数の推移</h3>
+                <p class="ya-note">{% if scope.bucket == "week" %}週ごと{% else %}日ごと{% endif %}（直近{{ scope.days }}日間）</p>
+                <div data-ya-chart="chart-traffic" data-label="来た人と訪問回数の推移"></div>
+            </div>
+
+            <div class="ya-card">
+                <h3>過去24時間</h3>
+                <p class="ya-note">15分ごとの、来た人と訪問回数</p>
+                <div data-ya-chart="chart-last-day" data-label="過去24時間の来た人と訪問回数"></div>
+            </div>
+        </div>
 
         <div class="ya-grid ya-grid-2">
             <div class="ya-card">
@@ -535,6 +594,8 @@
 </div>
 
 {{ charts.visitors|json_script:"chart-visitors" }}
+{{ charts.traffic|json_script:"chart-traffic" }}
+{{ charts.last_day|json_script:"chart-last-day" }}
 {{ charts.page_views|json_script:"chart-page-views" }}
 {{ charts.sources|json_script:"chart-sources" }}
 {% endblock %}

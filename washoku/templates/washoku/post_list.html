@@ -12,7 +12,14 @@
 <p class="washoku-lead">{{ text.lead }}</p>
 
 {% if kind != "poll" %}
-<p><a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+<p class="washoku-list-actions">
+    <a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a>
+    {% if kind == "column" and posts %}
+    <span class="washoku-sort-switch" role="group" aria-label="並べ替え">
+        {% for value, label in sort_choices %}<a href="?sort={{ value }}"{% if sort == value %} class="is-active" aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+    </span>
+    {% endif %}
+</p>
 {% elif user.is_staff %}
 <p><a class="washoku-button" href="{% url 'admin:washoku_post_add' %}?kind=poll&amp;status=published"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
 {% endif %}
@@ -32,7 +39,7 @@
 {% endif %}
 
 {% if posts %}
-    <ul class="washoku-posts">
+    <ul class="washoku-posts{% if kind == "column" %} washoku-posts-titles{% endif %}">
         {% for post in posts %}
             <li>
                 <a href="{{ post.get_absolute_url }}">
@@ -46,6 +53,14 @@
                     <strong>{{ post.title }}</strong>
                     {% if kind == "poll" %}
                     <small>{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                    {% elif kind == "column" %}
+                    <small class="washoku-column-meta">{% spaceless %}
+                        {% if display.column_show_author %}<span>{{ post.author|display_name }}</span>{% endif %}
+                        {% if display.column_show_date or display.column_show_time %}<span>{% if display.column_show_date %}{{ post.created_at|date:"n/j" }}{% endif %}{% if display.column_show_date and display.column_show_time %} {% endif %}{% if display.column_show_time %}{{ post.created_at|date:"H:i" }}{% endif %}</span>{% endif %}
+                        {% if display.column_show_comments and post.comment_count %}<span><i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}</span>{% endif %}
+                        {% if display.column_show_stamps and post.stamp_count %}<span title="スタンプ">😊 {{ post.stamp_count }}</span>{% endif %}
+                        {% if display.column_show_readers %}<span title="読んだ人"><i class="bi bi-eye" aria-hidden="true"></i> {{ post.reader_count }}人</span>{% endif %}
+                    {% endspaceless %}</small>
                     {% elif kind != "link" %}
                     <span class="washoku-post-excerpt">{{ post.body|truncatechars:70 }}</span>
                     <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>

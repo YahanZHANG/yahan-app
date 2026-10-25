@@ -59,6 +59,7 @@ urlpatterns = [
     path("photos/<str:target>/<int:pk>/", views.staff_photo, name="staff_photo"),
     path("photos/add/<str:target>/<int:pk>/", views.photo_add, name="photo_add"),
     path("photos/<int:pk>/", views.photo_manage, name="photo_manage"),
+    path("posts/<int:pk>/photo/", views.post_photo, name="post_photo"),
     path("posts/new/<str:kind>/", views.post_submit, name="post_submit"),
     path("me/posts/", views.my_posts, name="my_posts"),
     path("notifications/", views.notification_list, name="notification_list"),

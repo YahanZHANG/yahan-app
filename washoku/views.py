@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count, Exists, F, OuterRef, Prefetch, Q
+from django.db.models import BooleanField, Case, Count, Exists, F, Max, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from .alerts import send_admin_alert
 from .photos import delete_uploaded_photos, upload_photo
 from .push import send_reply_push, send_stamp_push
+from .templatetags.washoku_tags import display_name
 from .forms import (
     CommentEditForm,
     CommentForm,
@@ -33,6 +34,7 @@ from .models import (
     Comment,
     CommentReaction,
     CommentReport,
+    DisplaySettings,
     Feedback,
     Household,
     HouseholdInvite,
@@ -45,6 +47,7 @@ from .models import (
     PollVote,
     Post,
     PostReaction,
+    Stamp,
     PushSubscription,
     Recipe,
     RecipeFavorite,
@@ -54,8 +57,6 @@ from .models import (
     ShopType,
     Store,
     Substitute,
-    REACTION_CHOICES,
-    REACTION_EMOJI,
 )
 
 
@@ -180,6 +181,7 @@ def public_comment_targets():
 def questions_with_answer_state():
     """
     公開中の質問に、返信があるか (has_answer) と返信の数 (answer_count) を付ける。
+    管理者が「未解決に戻す」にした質問 (またはその返信) は、返信があっても未解決 (has_answer=False) にする。
     """
 
     answers = Comment.objects.filter(
@@ -198,12 +200,20 @@ def questions_with_answer_state():
         )
         .filter(public_comment_targets())
         .annotate(
-            has_answer=Exists(answers),
+            has_answer=Case(
+                When(reopened=True, then=Value(False)),
+                # 返信の行で「未解決に戻す」を押した場合も、その質問を未解決にする
+                When(Exists(answers.filter(reopened=True)), then=Value(False)),
+                default=Exists(answers),
+                output_field=BooleanField(),
+            ),
             answer_count=Count(
                 "replies",
                 filter=Q(replies__is_hidden=False, replies__is_deleted=False),
                 distinct=True,
             ),
+            # 最初の返信の日時 = 解決した日時
+            answered_at=Subquery(answers.order_by("created_at").values("created_at")[:1]),
         )
         .select_related("recipe", "ingredient", "store", "post", "author")
         .order_by("-created_at")
@@ -216,6 +226,35 @@ def open_questions():
     """
 
     return questions_with_answer_state().filter(has_answer=False)
+
+
+# HOME の「みんなの投稿・コメント」に出す新着の数
+HOME_ACTIVITY_COUNT = 15
+
+# 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
+HOME_SOLVED_DAYS = 2
+
+
+def home_questions(open_limit=3, solved_limit=2):
+    """
+    HOME の質問。未解決は (新しい順に) 残り続け、解決済みは解決から2日だけ「解決済」付きで残る。
+    管理画面の「HOMEに出さない」「HOMEに残す期限」で、手で調整できる。
+    """
+
+    now = timezone.now()
+    questions = questions_with_answer_state().filter(home_hidden=False)
+
+    solved = (
+        questions
+        .filter(has_answer=True)
+        .filter(
+            Q(home_until__gt=now)
+            | Q(home_until__isnull=True, answered_at__gte=now - timedelta(days=HOME_SOLVED_DAYS))
+        )
+        .order_by("-answered_at")
+    )
+
+    return list(questions.filter(has_answer=False)[:open_limit]) + list(solved[:solved_limit])
 
 
 # =========================================================
@@ -235,20 +274,74 @@ def latest_columns(exclude=None, limit=3):
     return columns[:limit]
 
 
+# 「注目」に出すもの: この日数のあいだにスタンプが付いたコラムとコメント
+FEATURED_DAYS = 30
+
+
+def featured_items(limit=3):
+    """
+    HOMEの「注目」。管理画面で選んだもの (is_featured、featured_order 順) を先に、残りを
+    最近スタンプを多くもらったコラムとコメントで埋める。スタンプがないものは出さない。
+    """
+
+    since = timezone.now() - timedelta(days=FEATURED_DAYS)
+    visible_comments = (
+        Comment.objects
+        .filter(is_hidden=False, is_deleted=False)
+        .filter(public_comment_targets())
+        .select_related("recipe", "ingredient", "store", "post", "author")
+    )
+
+    picked = [
+        {"kind": "post", "item": post, "count": None}
+        for post in Post.objects.filter(status="published", is_featured=True).order_by("featured_order", "-created_at")[:limit]
+    ]
+    picked += [
+        {"kind": "comment", "item": comment, "count": None}
+        for comment in visible_comments.filter(is_featured=True).order_by("featured_order", "-created_at")[:limit]
+    ]
+    picked.sort(key=lambda entry: (entry["item"].featured_order, -entry["item"].created_at.timestamp()))
+    picked = picked[:limit]
+
+    # スタンプの多いものは自動で入る。管理画面で「注目から外す」にしたものは出さない
+    columns = (
+        Post.objects
+        .filter(kind="column", status="published", is_featured=False, featured_hidden=False, reactions__created_at__gte=since)
+        .annotate(stamp_count=Count("reactions"))
+        .order_by("-stamp_count", "-created_at")[:limit]
+    )
+
+    comments = (
+        visible_comments
+        .filter(is_featured=False, featured_hidden=False, reactions__created_at__gte=since)
+        .annotate(stamp_count=Count("reactions"))
+        .order_by("-stamp_count", "-created_at")[:limit]
+    )
+
+    popular = [{"kind": "post", "item": post, "count": post.stamp_count} for post in columns]
+    popular += [{"kind": "comment", "item": comment, "count": comment.stamp_count} for comment in comments]
+    popular.sort(key=lambda entry: (entry["count"], entry["item"].created_at), reverse=True)
+
+    return (picked + popular)[:limit]
+
+
 def home(request):
 
     return render(
         request,
         "washoku/home.html",
         {
-            "latest_activity": activity_entries(comment_limit=5, post_limit=5)[:5],
-            "questions": open_questions()[:3],
+            "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
+            "questions": home_questions(),
+            # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
             "polls": (
                 Post.objects
-                .filter(kind="poll", status="published")
-                .annotate(vote_count=Count("votes"))
-                .order_by("-created_at")[:3]
+                .filter(status="published")
+                .filter(Q(kind="poll") | Q(kind="column", choices__isnull=False))
+                .annotate(vote_count=Count("votes", distinct=True), started=Max("choices__pk"))
+                .order_by(F("started").desc(nulls_last=True), "-created_at")[:3]
             ),
+            "featured": featured_items(),
             "announcements": list(Announcement.current()),
         },
     )
@@ -459,7 +552,7 @@ def find_by_mood(request):
                 if not request.user.is_staff else Q()
             ),
         )
-    )
+    ).order_by("display_order", "name")
 
     return render(
         request,
@@ -922,9 +1015,18 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
 
     attach_reactions(comments, request.user)
 
+    item = recipe or ingredient or store or post
+    target = "recipe" if recipe else "ingredient" if ingredient else "store" if store else "post"
+    draft = pop_comment_draft(request, f"{target}:{item.pk}") or {}
+    reply_draft = draft if draft.get("parent") else {}
+    main_draft = draft if not draft.get("parent") else {}
+
     return {
         "threads": comment_threads(comments, request.user),
-        "comment_form": CommentForm(),
+        "comment_form": CommentForm(initial={"body": main_draft.get("body", "")}),
+        "draft_kind": main_draft.get("kind", "tip"),
+        "reply_draft_parent": reply_draft.get("parent", ""),
+        "reply_draft_body": reply_draft.get("body", ""),
         "reported_ids": reported_ids,
     }
 
@@ -943,16 +1045,21 @@ def reaction_stamps(rows, user):
         if user.is_authenticated and user_id == user.pk:
             mine.add((target_id, kind))
 
+    stamps = list(Stamp.objects.all())
+
+    # 非表示のスタンプも、押されていれば結果には出す (選ぶ欄には出さない)
     def stamps_for(target_id):
         return [
             {
-                "kind": kind,
-                "label": label,
-                "emoji": REACTION_EMOJI[kind],
-                "count": counts[target_id, kind],
-                "mine": (target_id, kind) in mine,
+                "kind": stamp.key,
+                "label": stamp.label,
+                "emoji": stamp.emoji,
+                "count": counts[target_id, stamp.key],
+                "mine": (target_id, stamp.key) in mine,
+                "active": stamp.is_active,
             }
-            for kind, label in REACTION_CHOICES
+            for stamp in stamps
+            if stamp.is_active or counts[target_id, stamp.key]
         ]
 
     return stamps_for
@@ -999,7 +1106,7 @@ def comment_react(request, pk):
     kind = request.POST.get("kind", "")
 
     # 自分のコメントには押せない
-    if kind not in dict(REACTION_CHOICES) or comment.author_id == request.user.pk:
+    if not can_stamp(request.user, kind, comment=comment) or comment.author_id == request.user.pk:
         return redirect(comment_target_url(comment))
 
     created = toggle_reaction(CommentReaction, request.user, kind, comment=comment)
@@ -1031,7 +1138,7 @@ def post_react(request, pk):
     # 自分のコラムには押せない
     url = reverse("washoku:post_detail", args=[post.pk]) + "#stamps"
 
-    if kind in dict(REACTION_CHOICES) and post.author_id and post.author_id != request.user.pk:
+    if can_stamp(request.user, kind, post=post) and post.author_id and post.author_id != request.user.pk:
 
         created = toggle_reaction(PostReaction, request.user, kind, post=post)
 
@@ -1046,6 +1153,19 @@ def post_react(request, pk):
         )
 
     return redirect(url)
+
+
+def can_stamp(user, kind, **target):
+    """
+    表示中のスタンプなら押せる。非表示にしたものは、自分が押したぶんを取り消すことだけできる。
+    """
+
+    if Stamp.objects.filter(key=kind, is_active=True).exists():
+        return True
+
+    model = CommentReaction if "comment" in target else PostReaction
+
+    return model.objects.filter(user=user, kind=kind, **target).exists()
 
 
 def notify_stamp(created, actor, kind, recipient_id, target_text, url, **target):
@@ -1077,7 +1197,7 @@ def notify_stamp(created, actor, kind, recipient_id, target_text, url, **target)
     send_stamp_push(
         recipient_id,
         actor,
-        dict(REACTION_CHOICES)[kind],
+        Stamp.objects.filter(key=kind).values_list("label", flat=True).first() or kind,
         target_text,
         url,
         f"washoku-stamp-{next(iter(target))}-{target_id}",
@@ -1093,6 +1213,29 @@ def posted_too_recently(user):
         author=user,
         created_at__gte=timezone.now() - COMMENT_INTERVAL,
     ).exists()
+
+
+# 投稿に失敗したとき (写真が大きすぎるなど)、書いた文を消さずにフォームへ戻す
+COMMENT_DRAFT_KEY = "washoku_comment_draft"
+
+
+def keep_comment_draft(request, target, pk):
+    request.session[COMMENT_DRAFT_KEY] = {
+        "target": f"{target}:{pk}",
+        "body": request.POST.get("body", "")[:500],
+        "kind": request.POST.get("kind", "tip"),
+        "parent": request.POST.get("parent", ""),
+    }
+
+
+def pop_comment_draft(request, target):
+    draft = request.session.get(COMMENT_DRAFT_KEY)
+
+    if not draft or draft.get("target") != target:
+        return None
+
+    del request.session[COMMENT_DRAFT_KEY]
+    return draft
 
 
 @login_required
@@ -1119,10 +1262,12 @@ def comment_create(request, target, pk):
     form = CommentForm(request.POST, request.FILES)
 
     if not form.is_valid():
+        keep_comment_draft(request, target, pk)
         messages.error(request, "コメントを入力してください（500文字まで）。")
         return redirect(back + "#comments")
 
     if posted_too_recently(request.user):
+        keep_comment_draft(request, target, pk)
         messages.error(request, "続けて投稿するときは1分ほど空けてください。")
         return redirect(back + "#comments")
 
@@ -1132,7 +1277,8 @@ def comment_create(request, target, pk):
         try:
             photo_url = upload_photo(form.cleaned_data["photo"], "comments")
         except ValidationError as error:
-            messages.error(request, error.messages[0])
+            keep_comment_draft(request, target, pk)
+            messages.error(request, f"{error.messages[0]} 書いた文はそのまま残してあります。")
             return redirect(back + "#comments")
 
     parent = None
@@ -1172,6 +1318,9 @@ def comment_create(request, target, pk):
     if parent:
         notify_reply(comment)
 
+    if photo_url:
+        alert_new_photo(request, f"コメント「{comment.body[:30]}」", comment_target_url(comment))
+
     return redirect(comment_target_url(comment))
 
 
@@ -1209,6 +1358,20 @@ def photo_context(request, recipe=None, ingredient=None):
         "shown_photo": shown_photo,
         "photo_list": photos,
     }
+
+
+def alert_new_photo(request, what, page_url):
+    """
+    会員が写真を載せたら管理者にメールで知らせる (管理者自身の写真は知らせない)。
+    """
+
+    if request.user.is_staff:
+        return
+
+    send_admin_alert(
+        f"写真が投稿されました: {what}",
+        f"{display_name(request.user)} さん\n{request.build_absolute_uri(page_url)}",
+    )
 
 
 def show_photo(item, url):
@@ -1262,22 +1425,18 @@ def photo_add(request, target, pk):
         messages.error(request, error.messages[0])
         return redirect(back)
 
-    MemberPhoto.objects.create(user=request.user, url=url, **{target: item})
+    MemberPhoto.objects.create(user=request.user, url=url, admin_checked=request.user.is_staff, **{target: item})
 
     current = item.photo_1 if target == "recipe" else item.photo_url
 
     if not current:
         show_photo(item, url)
+        alert_new_photo(request, f"{item}（掲載中）", back)
         messages.success(request, "写真を載せました。ありがとうございます！")
         return redirect(back)
 
+    alert_new_photo(request, f"{item}（候補。ページの「写真を投稿」から載せる写真を選べます）", back)
     messages.success(request, "写真を受け付けました。ありがとうございます！載せる写真は管理者が選びます。")
-
-    if not request.user.is_staff:
-        send_admin_alert(
-            f"[スイスで和食] {item} に写真の候補が届きました",
-            f"{request.build_absolute_uri(back)}\nページの「写真」から、載せる写真を選べます。",
-        )
 
     return redirect(back)
 
@@ -1299,6 +1458,33 @@ def photo_manage(request, pk):
     if action == "show" and request.user.is_staff:
         show_photo(item, photo.url)
         messages.success(request, "この写真を載せました。")
+
+    elif action == "replace" and (request.user.is_staff or photo.user_id == request.user.pk):
+
+        upload = request.FILES.get("photo")
+
+        if not upload:
+            return redirect(back)
+
+        try:
+            url = upload_photo(upload, MEMBER_PHOTO_TARGETS[target][1])
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+
+        old_url = photo.url
+        was_shown = photo.is_shown
+
+        photo.url = url
+        photo.admin_checked = request.user.is_staff
+        photo.save(update_fields=["url", "admin_checked"])
+
+        if was_shown:
+            show_photo(item, url)
+
+        delete_uploaded_photos(old_url)
+        alert_new_photo(request, f"{item}（差し替え）", back)
+        messages.success(request, "写真を差し替えました。")
 
     elif action == "delete" and (request.user.is_staff or photo.user_id == request.user.pk):
 
@@ -1363,6 +1549,49 @@ def staff_photo(request, target, pk):
     delete_uploaded_photos(old)
 
     messages.success(request, "写真を保存しました。" if photo else "写真を外しました。")
+
+    return redirect(back)
+
+
+@login_required
+@require_POST
+def post_photo(request, pk):
+    """
+    コラムなどを書いた本人 (と管理者) が、あとから写真を差し替え・削除・追加する。
+    """
+
+    post = get_object_or_404(Post, pk=pk, kind__in=MEMBER_POST_KINDS)
+
+    if post.author_id != request.user.pk and not request.user.is_staff:
+        raise Http404
+
+    field = request.POST.get("field", "")
+
+    if field not in ("photo_1", "photo_2"):
+        raise Http404
+
+    back = reverse("washoku:post_detail", args=[post.pk]) + "#photos"
+    old = getattr(post, field)
+    upload = request.FILES.get("photo")
+
+    if upload:
+        try:
+            setattr(post, field, upload_photo(upload, "columns"))
+        except ValidationError as error:
+            messages.error(request, error.messages[0])
+            return redirect(back)
+    elif request.POST.get("remove"):
+        setattr(post, field, "")
+    else:
+        return redirect(back)
+
+    post.save(update_fields=[field])
+    delete_uploaded_photos(old)
+
+    if upload:
+        alert_new_photo(request, f"{post.get_kind_display()}「{post.title}」", back)
+
+    messages.success(request, "写真を保存しました。" if upload else "写真を消しました。")
 
     return redirect(back)
 
@@ -1456,6 +1685,9 @@ def comment_edit(request, pk):
 
             if old_photo != comment.photo_url:
                 delete_uploaded_photos(old_photo)
+
+                if comment.photo_url:
+                    alert_new_photo(request, f"コメント「{comment.body[:30]}」（差し替え）", comment_target_url(comment))
 
             return redirect(comment_target_url(comment))
 
@@ -2288,11 +2520,43 @@ def visible_posts(user):
     return posts.filter(status="published")
 
 
+COLUMN_SORTS = (
+    ("new", "新着順"),
+    ("popular", "人気順"),
+)
+
+
+def post_reader_counts():
+    """
+    {投稿のpk: ページを開いた人の数}。アクセス解析の記録から数える (集計から外したアカウントは除く)。
+    """
+
+    from usage_analytics.models import AnalyticsExclusion, PageView
+
+    views = PageView.objects.filter(path__startswith="/washoku/posts/")
+    excluded = AnalyticsExclusion.objects.values("user_id")
+    views = views.exclude(user_id__in=excluded).exclude(
+        visitor_id__in=PageView.objects.filter(user_id__in=excluded).values("visitor_id")
+    )
+
+    counts = {}
+
+    for path, readers in views.values("path").annotate(readers=Count("visitor_id", distinct=True)).values_list("path", "readers"):
+        parts = path.strip("/").split("/")
+        # /washoku/posts/<pk>/ だけ数える (写真・投票などのページは別)
+        if len(parts) == 3 and parts[2].isdigit():
+            counts[int(parts[2])] = counts.get(int(parts[2]), 0) + readers
+
+    return counts
+
+
 def post_list(request, kind):
 
+    # 集計 (annotate) すると Meta.ordering が使われないので、新しい順をここで指定する
     posts = (
         Post.objects
         .filter(kind=kind, status="published")
+        .order_by("-created_at", "-pk")
         .select_related("author")
         .annotate(
             comment_count=Count(
@@ -2301,6 +2565,7 @@ def post_list(request, kind):
                 distinct=True,
             ),
             vote_count=Count("votes", distinct=True),
+            stamp_count=Count("reactions", distinct=True),
         )
     )
 
@@ -2316,6 +2581,17 @@ def post_list(request, kind):
         if section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)
 
+    sort = request.GET.get("sort", "new")
+
+    if kind == "column":
+        readers = post_reader_counts()
+        posts = list(posts)
+        for post in posts:
+            post.reader_count = readers.get(post.pk, 0)
+        if sort == "popular":
+            # 並びは安定なので、同じ人数なら新しい順のまま
+            posts.sort(key=lambda post: post.reader_count, reverse=True)
+
     return render(
         request,
         "washoku/post_list.html",
@@ -2324,6 +2600,9 @@ def post_list(request, kind):
             "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
+            "display": DisplaySettings.load() if kind == "column" else None,
+            "sort": sort,
+            "sort_choices": COLUMN_SORTS,
             "shop": shop,
             "section": section,
             "shops": Post.SHOP_CHOICES,
@@ -2405,8 +2684,16 @@ def split_polls(user, posts):
     関連する投稿のうち、アンケートはその場で投票できるように分けて出す。
     """
 
+    polls = attach_poll_results([post for post in posts if post.kind == "poll"], user)
+
+    # アンケートについたコメントも、食材ページのアンケートの下に新しい順で少し見せる
+    for poll in polls:
+        comments = Comment.objects.filter(post=poll, parent__isnull=True, is_hidden=False, is_deleted=False)
+        poll.comment_total = comments.count()
+        poll.recent_comments = list(comments.select_related("author").order_by("-created_at", "-pk")[:3])
+
     return {
-        "polls": attach_poll_results([post for post in posts if post.kind == "poll"], user),
+        "polls": polls,
         "related_posts": [post for post in posts if post.kind != "poll"],
     }
 
@@ -2416,7 +2703,7 @@ def split_polls(user, posts):
 def poll_vote(request, pk):
 
     post = get_object_or_404(
-        Post.objects.filter(status="published", kind="poll"),
+        Post.objects.filter(status="published", kind__in=("poll", "column")),
         pk=pk,
     )
 
@@ -2448,6 +2735,10 @@ def post_detail(request, pk):
     )
 
     if post.kind == "poll":
+        attach_poll_results([post], request.user)
+
+    # コラムに選択肢があれば、最後にアンケートを付ける
+    if post.kind == "column" and post.choices.exists():
         attach_poll_results([post], request.user)
 
     return render(

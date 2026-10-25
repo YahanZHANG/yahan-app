@@ -18,6 +18,7 @@ from django.utils import timezone
 
 from .models import (
     Comment,
+    DisplaySettings,
     Feedback,
     HouseholdInvite,
     Ingredient,
@@ -1242,27 +1243,28 @@ class SearchAndActivityTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:search") + "?q=zzz"), "見つかりませんでした")
         self.assertContains(self.client.get(reverse("washoku:home")), reverse("washoku:search"))
 
-    def test_home_shows_five_latest_entries_and_links_to_all(self):
+    def test_home_shows_fifteen_latest_entries_and_links_to_all(self):
 
-        for number in range(5):
-            Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body=f"コメント{number}")
+        for number in range(15):
+            Comment.objects.create(author=self.member, recipe=self.recipe, kind="tip", body=f"コメント{number:02d}")
 
         Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published")
 
         home = self.client.get(reverse("washoku:home"))
 
-        # 新しい5件 = 商品1件 + コメント4〜1
+        # 新しい15件 = 商品1件 + コメント14〜01
+        self.assertEqual(len(home.context["latest_activity"]), 15)
         self.assertContains(home, "冷凍餃子")
-        self.assertContains(home, "コメント1")
-        self.assertNotContains(home, "コメント0")
+        self.assertContains(home, "コメント01")
+        self.assertNotContains(home, "コメント00")
         self.assertContains(home, reverse("washoku:activity"))
 
         activity = self.client.get(reverse("washoku:activity"))
 
-        self.assertContains(activity, "コメント0")
+        self.assertContains(activity, "コメント00")
         self.assertContains(activity, "冷凍餃子")
         html = activity.content.decode()
-        self.assertLess(html.index("冷凍餃子"), html.index("コメント3"))
+        self.assertLess(html.index("冷凍餃子"), html.index("コメント03"))
 
 
 class AnnouncementTests(TestCase):
@@ -1541,6 +1543,38 @@ class FavoriteNoteReactionTests(TestCase):
         self.assertNotContains(page, "スタンプを押す")
         self.assertContains(self.client.get(reverse("washoku:notification_list")), "「なるほど」を押しました: コラム「Rahm の選び方」")
 
+    def test_stamps_edited_in_admin(self):
+
+        from .models import Stamp
+
+        answer = Comment.objects.create(author=self.child, recipe=self.recipe, kind="tip", body="白ワインで代用できます")
+        detail = reverse("washoku:recipe_detail", args=[self.recipe.pk])
+        url = reverse("washoku:comment_react", args=[answer.pk])
+
+        Stamp.objects.create(key="onigiri", emoji="🍙", label="おにぎり食べたい", order=1)
+        Stamp.objects.filter(key="like").update(label="いいね！")
+
+        self.client.force_login(self.me)
+        self.client.post(url, {"kind": "onigiri"})
+        self.client.post(url, {"kind": "like"})
+        page = self.client.get(detail)
+        self.assertContains(page, "🍙 おにぎり食べたい <b>1</b>")
+        self.assertContains(page, "👍 いいね！ <b>1</b>")
+
+        # 非表示: 選ぶ欄から消え、新しく押せないが、押されたぶんは残り取り消せる
+        Stamp.objects.filter(key__in=["onigiri", "lol"]).update(is_active=False)
+        self.client.post(url, {"kind": "lol"})
+        self.assertFalse(CommentReaction.objects.filter(kind="lol").exists())
+        page = self.client.get(detail)
+        self.assertContains(page, "🍙 おにぎり食べたい <b>1</b>")
+        self.assertNotContains(page, "😂 笑った")
+        self.client.post(url, {"kind": "onigiri"})
+        self.assertFalse(CommentReaction.objects.filter(kind="onigiri").exists())
+        self.assertNotContains(self.client.get(detail), "おにぎり食べたい")
+
+        self.client.force_login(self.child)
+        self.assertContains(self.client.get(reverse("washoku:notification_list")), "「いいね！」を押しました")
+
     def test_filter_recipes_by_nutrition(self):
 
         url = reverse("washoku:recipe_list")
@@ -1662,6 +1696,22 @@ class PhotoTests(TestCase):
 
         self.assertContains(response, "画像を正常に読み込めませんでした。")
         self.assertFalse(Comment.objects.exists())
+        # 書いた文はフォームに残る (1回だけ)
+        self.assertContains(response, "写真つき</textarea>")
+        self.assertNotContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "写真つき</textarea>")
+
+    def test_failed_reply_keeps_the_draft_in_the_reply_form(self):
+
+        asker = get_user_model().objects.create_user("jiro", password="x")
+        question = Comment.objects.create(author=asker, recipe=self.recipe, kind="question", body="どこで買える？")
+        self.client.force_login(self.member)
+        url = reverse("washoku:comment_create", args=["recipe", self.recipe.pk])
+
+        with mock.patch("washoku.views.upload_photo", side_effect=ValidationError("画像は5MB以下にしてください。")):
+            response = self.client.post(url, {"kind": "tip", "parent": question.pk, "body": "Coop にあります", "photo": self.photo()}, follow=True)
+
+        self.assertContains(response, "Coop にあります</textarea>")
+        self.assertContains(response, "書いた文はそのまま残してあります。")
 
     def test_column_takes_two_photos_and_products_none(self):
 
@@ -1941,3 +1991,312 @@ class PollTests(TestCase):
         self.assertNotContains(page, "アンケートを作る")
 
         self.assertEqual(self.client.get(reverse("washoku:post_submit", args=["poll"])).status_code, 404)
+
+
+class FeaturedTests(TestCase):
+
+    def test_home_features_columns_and_comments_with_recent_stamps(self):
+
+        User = get_user_model()
+        author, fan, fan2 = (User.objects.create_user(name, password="x") for name in ("a", "b", "c"))
+        ingredient = Ingredient.objects.create(name="テスト食材", category="other")
+
+        column = Post.objects.create(kind="column", title="人気のコラム", body="本文です。", status="published", author=author)
+        quiet = Post.objects.create(kind="column", title="静かなコラム", body="本文です。", status="published", author=author)
+        comment = Comment.objects.create(ingredient=ingredient, author=author, body="人気のコメント")
+        old = Comment.objects.create(ingredient=ingredient, author=author, body="昔のコメント")
+
+        PostReaction.objects.create(post=column, user=fan, kind="thanks")
+        PostReaction.objects.create(post=column, user=fan2, kind="thanks")
+        CommentReaction.objects.create(comment=comment, user=fan, kind="thanks")
+        CommentReaction.objects.filter(
+            pk=CommentReaction.objects.create(comment=old, user=fan, kind="thanks").pk
+        ).update(created_at=timezone.now() - timedelta(days=60))
+
+        home = self.client.get(reverse("washoku:home"))
+
+        self.assertEqual(
+            [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
+            [(column.pk, 2), (comment.pk, 1)],
+        )
+        self.assertContains(home, "washoku-featured")
+
+
+class ColumnOrderTests(TestCase):
+
+    def test_column_list_is_newest_first_even_with_counts(self):
+
+        now = timezone.now()
+        old = Post.objects.create(kind="column", title="古いコラム", body="本文です。", status="published", created_at=now - timedelta(days=3))
+        new = Post.objects.create(kind="column", title="新しいコラム", body="本文です。", status="published", created_at=now)
+
+        page = self.client.get(reverse("washoku:column_list"))
+
+        self.assertEqual([post.pk for post in page.context["posts"]], [new.pk, old.pk])
+
+
+class AdminPickTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.author = User.objects.create_user("a", password="x")
+        self.other = User.objects.create_user("b", password="x")
+        self.ingredient = Ingredient.objects.create(name="テスト食材", category="other")
+
+    def test_picked_items_come_first_in_featured(self):
+
+        popular = Post.objects.create(kind="column", title="人気", body="本文です。", status="published", author=self.author)
+        PostReaction.objects.create(post=popular, user=self.other, kind="thanks")
+        picked = Comment.objects.create(ingredient=self.ingredient, author=self.author, body="選んだコメント", is_featured=True)
+        Post.objects.create(kind="column", title="下書き", body="本文です。", status="draft", is_featured=True)
+
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+
+        self.assertEqual([(entry["item"].pk, entry["count"]) for entry in featured], [(picked.pk, None), (popular.pk, 1)])
+
+    def test_reopened_question_stays_open_with_a_reply(self):
+
+        question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
+        Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します")
+
+        # 解決済みは2日間「解決済」付きで残る
+        questions = self.client.get(reverse("washoku:home")).context["questions"]
+        self.assertEqual([(q.pk, q.has_answer) for q in questions], [(question.pk, True)])
+
+        question.reopened = True
+        question.save()
+
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
+
+    def test_reopen_ticked_on_the_reply_reopens_the_question(self):
+
+        question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
+        Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=question, body="確認します", reopened=True)
+
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [question.pk])
+
+    def test_solved_questions_stay_on_home_for_two_days(self):
+
+        from datetime import timedelta
+        from django.utils import timezone
+
+        open_q = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="未解決の質問")
+        solved = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="解決した質問")
+        reply = Comment.objects.create(ingredient=self.ingredient, author=self.other, parent=solved, body="Coop にあります")
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
+        self.assertContains(home, "解決済")
+
+        # 3日たつと消える (未解決はずっと残る)
+        Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [open_q.pk])
+
+        # 管理画面で期限を延ばせる / HOMEから外せる
+        Comment.objects.filter(pk=solved.pk).update(home_until=timezone.now() + timedelta(days=1))
+        Comment.objects.filter(pk=open_q.pk).update(home_hidden=True)
+        self.assertEqual([q.pk for q in self.client.get(reverse("washoku:home")).context["questions"]], [solved.pk])
+
+    def test_featured_order_and_hidden(self):
+
+        link = Post.objects.create(kind="link", title="参考リンク", url="https://example.com", status="published", is_featured=True, featured_order=2)
+        first = Comment.objects.create(ingredient=self.ingredient, author=self.author, body="いちばん上", is_featured=True, featured_order=1)
+        popular = Post.objects.create(kind="column", title="人気", body="本文です。", status="published", author=self.author)
+        PostReaction.objects.create(post=popular, user=self.other, kind="thanks")
+
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+        self.assertEqual([entry["item"].pk for entry in featured], [first.pk, link.pk, popular.pk])
+
+        # 自動で入ったものも、管理画面で外せる
+        popular.featured_hidden = True
+        popular.save()
+        featured = self.client.get(reverse("washoku:home")).context["featured"]
+        self.assertEqual([entry["item"].pk for entry in featured], [first.pk, link.pk])
+
+        staff = get_user_model().objects.create_superuser("admin", password="x")
+        self.client.force_login(staff)
+        page = self.client.get(reverse("admin:washoku_post_changelist"))
+        self.assertContains(page, 'name="form-0-featured_order"')
+
+
+class PhotoReplaceTests(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.other = User.objects.create_user("jiro", password="x")
+        self.recipe = make_recipe()
+
+    def photo(self):
+        return SimpleUploadedFile("tofu.jpg", b"fake", content_type="image/jpeg")
+
+    def test_member_replaces_own_shown_photo_and_admin_is_told(self):
+
+        self.client.force_login(self.member)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/a.webp"), \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(reverse("washoku:photo_add", args=["recipe", self.recipe.pk]), {"photo": self.photo()})
+
+        alert.assert_called_once()
+        photo = MemberPhoto.objects.get()
+        self.assertFalse(photo.admin_checked)
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/b.webp"), \
+                mock.patch("washoku.views.delete_uploaded_photos") as delete, \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(reverse("washoku:photo_manage", args=[photo.pk]), {"action": "replace", "photo": self.photo()})
+
+        alert.assert_called_once()
+        delete.assert_called_once_with("https://example.com/a.webp")
+        self.recipe.refresh_from_db()
+        self.assertEqual(self.recipe.photo_1, "https://example.com/b.webp")
+
+        # ほかの人は差し替えられない
+        self.client.force_login(self.other)
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/c.webp"):
+            response = self.client.post(reverse("washoku:photo_manage", args=[photo.pk]), {"action": "replace", "photo": self.photo()})
+        self.assertEqual(response.status_code, 404)
+
+    def test_author_replaces_and_removes_column_photo(self):
+
+        post = Post.objects.create(author=self.member, kind="column", title="豆腐", body="本文です。", status="published", photo_1="https://example.com/1.webp")
+        url = reverse("washoku:post_photo", args=[post.pk])
+
+        self.client.force_login(self.member)
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[post.pk])), "写真を変える・消す")
+
+        with mock.patch("washoku.views.upload_photo", return_value="https://example.com/2.webp"), \
+                mock.patch("washoku.views.delete_uploaded_photos"), \
+                mock.patch("washoku.views.send_admin_alert") as alert:
+            self.client.post(url, {"field": "photo_1", "photo": self.photo()})
+            self.client.post(url, {"field": "photo_2", "photo": self.photo()})
+            self.client.post(url, {"field": "photo_1", "remove": "1"})
+
+        self.assertEqual(alert.call_count, 2)
+        post.refresh_from_db()
+        self.assertEqual(post.photos(), ["https://example.com/2.webp"])
+
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.post(url, {"field": "photo_2", "remove": "1"}).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("washoku:post_detail", args=[post.pk])), "写真を変える・消す")
+
+
+class PollCommentsOnIngredientTests(TestCase):
+
+    def test_poll_comments_show_under_ingredient_poll(self):
+
+        User = get_user_model()
+        member = User.objects.create_user("hanako", password="x")
+        potato = Ingredient.objects.create(name="じゃがいも", category="vegetable")
+        poll = Post.objects.create(kind="poll", title="何色の袋？", status="published")
+        poll.ingredients.add(potato)
+        PollChoice.objects.create(post=poll, label="緑", order=1)
+        Comment.objects.create(post=poll, author=member, body="いつも緑です")
+
+        page = self.client.get(reverse("washoku:ingredient_detail", args=[potato.pk]))
+        self.assertContains(page, "washoku-poll-inline")
+        self.assertContains(page, "いつも緑です")
+        self.assertContains(page, "コメント1件を見る・書く")
+
+
+class ColumnPollTests(TestCase):
+
+    def test_column_with_choices_shows_a_poll_at_the_end(self):
+
+        User = get_user_model()
+        member = User.objects.create_user("hanako", password="x")
+        column = Post.objects.create(kind="column", title="Rahm の選び方", body="本文です。", status="published", poll_question="どの Rahm を使う？")
+        plain = Post.objects.create(kind="column", title="ふつうのコラム", body="本文です。", status="published")
+        vollrahm = PollChoice.objects.create(post=column, label="Vollrahm", order=1)
+        PollChoice.objects.create(post=column, label="Halbrahm", order=2)
+
+        page = self.client.get(reverse("washoku:post_detail", args=[column.pk]))
+        self.assertContains(page, "どの Rahm を使う？")
+        self.assertContains(page, "Halbrahm")
+        self.assertNotContains(self.client.get(reverse("washoku:post_detail", args=[plain.pk])), "washoku-poll-rows")
+
+        self.client.force_login(member)
+        self.client.post(reverse("washoku:poll_vote", args=[column.pk]), {"choice": vollrahm.pk})
+        self.assertEqual(PollVote.objects.get().choice, vollrahm)
+        self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "100%")
+
+        # HOME のアンケート欄にも、新しいアンケートとして出る
+        polls = self.client.get(reverse("washoku:home")).context["polls"]
+        self.assertEqual([(poll.pk, poll.vote_count) for poll in polls], [(column.pk, 1)])
+        self.assertContains(self.client.get(reverse("washoku:home")), f"/washoku/posts/{column.pk}/#poll-{column.pk}")
+
+
+
+class PollVoteAdminTests(TestCase):
+
+    def test_admin_sees_who_answered_what(self):
+
+        User = get_user_model()
+        staff = User.objects.create_superuser("boss", password="x")
+        member = User.objects.create_user("hanako", password="x")
+        poll = Post.objects.create(kind="poll", title="何色の袋？", status="published")
+        green = PollChoice.objects.create(post=poll, label="緑", order=1)
+        PollVote.objects.create(post=poll, choice=green, user=member)
+
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("admin:washoku_post_change", args=[poll.pk])), "hanako")
+        page = self.client.get(reverse("admin:washoku_pollvote_changelist"))
+        self.assertContains(page, "hanako")
+        self.assertContains(page, "緑")
+
+
+class ColumnListDisplayTests(TestCase):
+
+    def test_column_list_shows_author_time_stamps_and_follows_settings(self):
+
+        User = get_user_model()
+        author = User.objects.create_user("hanako", password="x")
+        fan = User.objects.create_user("taro", password="x")
+        column = Post.objects.create(kind="column", title="薄切り肉のコツ", body="本文", author=author, status="published")
+        PostReaction.objects.create(post=column, user=fan, kind="insight")
+        PostReaction.objects.create(post=column, user=author, kind="like")
+        time_text = timezone.localtime(column.created_at).strftime("%H:%M")
+
+        page = self.client.get(reverse("washoku:column_list"))
+        self.assertContains(page, "hanako")
+        self.assertContains(page, time_text)
+        self.assertContains(page, "😊 2")
+
+        settings_row = DisplaySettings.load()
+        settings_row.column_show_author = False
+        settings_row.column_show_time = False
+        settings_row.column_show_stamps = False
+        settings_row.save()
+
+        page = self.client.get(reverse("washoku:column_list"))
+        self.assertNotContains(page, "hanako")
+        self.assertNotContains(page, time_text)
+        self.assertNotContains(page, "😊 2")
+
+    def test_admin_opens_the_single_settings_page(self):
+
+        User = get_user_model()
+        self.client.force_login(User.objects.create_superuser("boss", password="x"))
+        response = self.client.get(reverse("admin:washoku_displaysettings_changelist"))
+        self.assertRedirects(response, reverse("admin:washoku_displaysettings_change", args=[1]))
+
+    def test_columns_sort_by_newest_or_most_readers(self):
+
+        import uuid
+
+        from usage_analytics.models import PageView
+
+        older = Post.objects.create(kind="column", title="古いけど人気", body="x", status="published")
+        newer = Post.objects.create(kind="column", title="新しいコラム", body="x", status="published")
+        Post.objects.filter(pk=older.pk).update(created_at=timezone.now() - timedelta(days=3))
+        for _ in range(2):
+            PageView.objects.create(visitor_id=uuid.uuid4(), visit_id=uuid.uuid4(), app_key="washoku", path=f"/washoku/posts/{older.pk}/")
+        PageView.objects.create(visitor_id=uuid.uuid4(), visit_id=uuid.uuid4(), app_key="washoku", path=f"/washoku/posts/{newer.pk}/photo/")
+
+        titles = lambda response: [post.title for post in response.context["posts"]]
+
+        self.assertEqual(titles(self.client.get(reverse("washoku:column_list"))), ["新しいコラム", "古いけど人気"])
+        popular = self.client.get(reverse("washoku:column_list"), {"sort": "popular"})
+        self.assertEqual(titles(popular), ["古いけど人気", "新しいコラム"])
+        self.assertEqual([post.reader_count for post in popular.context["posts"]], [2, 0])

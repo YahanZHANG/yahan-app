@@ -894,6 +894,12 @@ class MemberPhoto(models.Model):
         related_name="washoku_photos",
     )
 
+    admin_checked = models.BooleanField(
+        "確認済み",
+        default=False,
+        help_text="管理画面の「対応待ち」に出さないようにするための印。",
+    )
+
     created_at = models.DateTimeField(
         "投稿日時",
         auto_now_add=True,
@@ -1187,6 +1193,31 @@ class Post(models.Model):
         help_text="選んだ食材（と同じ検索グループの食材）を使うレシピや食材のページに、この投稿が「関連する読みもの」として出ます。",
     )
 
+    poll_question = models.CharField(
+        "コラムのアンケートの質問",
+        max_length=200,
+        blank=True,
+        help_text="コラムだけ。下の「選択肢」も入れると、コラムの最後にアンケートが出ます（空なら「みなさんはどうですか？」）。",
+    )
+
+    is_featured = models.BooleanField(
+        "注目に出す",
+        default=False,
+        help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
+    featured_order = models.PositiveSmallIntegerField(
+        "注目の順番",
+        default=10,
+        help_text="「注目に出す」ものの並び順。小さい数ほど上（同じ数なら新しい順）。",
+    )
+
+    featured_hidden = models.BooleanField(
+        "注目から外す",
+        default=False,
+        help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
+    )
+
     publish_at = models.DateTimeField(
         "公開予約",
         null=True,
@@ -1228,8 +1259,25 @@ class Post(models.Model):
     def photos(self):
         return [url for url in (self.photo_1, self.photo_2) if url]
 
+    @property
+    def photo_slots(self):
+        """写真を変える欄: (項目, URL) を2枠"""
+        return [("photo_1", self.photo_1), ("photo_2", self.photo_2)]
+
     def get_absolute_url(self):
         return reverse("washoku:post_detail", args=[self.pk])
+
+    @property
+    def poll_title(self):
+        """HOME などに出すアンケートの文: アンケートはタイトル、コラムに付けたものはその質問"""
+        if self.kind == "poll":
+            return self.title
+        return self.poll_question or f"{self.title}：みなさんはどうですか？"
+
+    @property
+    def poll_url(self):
+        url = self.get_absolute_url()
+        return url if self.kind == "poll" else f"{url}#poll-{self.pk}"
 
 
 def publish_due_posts():
@@ -1343,6 +1391,43 @@ class Comment(models.Model):
         help_text="通報で自動的に、または管理者が非表示にしたもの。",
     )
 
+    is_featured = models.BooleanField(
+        "注目に出す",
+        default=False,
+        help_text="スタンプの数にかかわらず、HOMEの「注目」に出します（スタンプの多いものより先に）。",
+    )
+
+    featured_order = models.PositiveSmallIntegerField(
+        "注目の順番",
+        default=10,
+        help_text="「注目に出す」ものの並び順。小さい数ほど上（同じ数なら新しい順）。",
+    )
+
+    featured_hidden = models.BooleanField(
+        "注目から外す",
+        default=False,
+        help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
+    )
+
+    home_hidden = models.BooleanField(
+        "HOMEに出さない",
+        default=False,
+        help_text="質問だけ。HOMEの「質問」の欄から外します（質問の一覧には残ります）。",
+    )
+
+    home_until = models.DateTimeField(
+        "HOMEに残す期限",
+        null=True,
+        blank=True,
+        help_text="質問だけ。空なら自動（未解決のあいだ＋解決してから2日）。日時を入れると、解決済みでもその日時までHOMEに出します。",
+    )
+
+    reopened = models.BooleanField(
+        "未解決に戻す",
+        default=False,
+        help_text="「確認します」などの返信しかないとき、返信があっても「返事を待っている質問」に出します。質問とその返信のどちらにチェックしても同じです。",
+    )
+
     admin_checked = models.BooleanField(
         "管理者確認済み",
         default=False,
@@ -1439,32 +1524,80 @@ class CommentReport(models.Model):
         return f"{self.reporter} → {self.comment}"
 
 
-# コメントとコラムに押せるスタンプ (並び順もこのとおり)
-REACTION_CHOICES = [
-    ("thanks", "ありがとう"),
-    ("insight", "なるほど"),
-    ("like", "いいね"),
-    ("genius", "天才"),
-    ("lovely", "ステキ"),
-    ("check", "確認します"),
-]
+class Stamp(models.Model):
+    """
+    コメントとコラムに押せるスタンプ。管理画面で追加・編集・並べ替え・非表示できる。
+    """
 
-REACTION_EMOJI = {
-    "thanks": "🙏",
-    "insight": "💡",
-    "like": "👍",
-    "genius": "🤩",
-    "lovely": "✨",
-    "check": "👀",
-}
+    key = models.SlugField(
+        "ID（英字・あとから変えない）",
+        max_length=20,
+        unique=True,
+    )
+
+    emoji = models.CharField("絵文字", max_length=16)
+
+    label = models.CharField("言葉", max_length=20)
+
+    order = models.PositiveSmallIntegerField("並び順", default=100)
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+        help_text="外すと選べなくなります（押されたぶんは残ります）",
+    )
+
+    class Meta:
+        verbose_name = "スタンプ"
+        verbose_name_plural = "スタンプ"
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return f"{self.emoji} {self.label}"
+
+
+class DisplaySettings(models.Model):
+    """
+    画面の表示の切り替え (1件だけ)。管理画面の「表示設定」で変える。
+    """
+
+    column_show_author = models.BooleanField("コラム一覧: 投稿者", default=True)
+
+    column_show_date = models.BooleanField("コラム一覧: 日付", default=True)
+
+    column_show_time = models.BooleanField(
+        "コラム一覧: 時間",
+        default=True,
+        help_text="日付のうしろに 14:05 のように出します",
+    )
+
+    column_show_comments = models.BooleanField("コラム一覧: コメント数", default=True)
+
+    column_show_stamps = models.BooleanField("コラム一覧: スタンプ数", default=True)
+
+    column_show_readers = models.BooleanField(
+        "コラム一覧: 読んだ人の数",
+        default=False,
+        help_text="人気順のもとになる数です",
+    )
+
+    class Meta:
+        verbose_name = "表示設定"
+        verbose_name_plural = "表示設定"
+
+    def __str__(self):
+        return "表示設定"
+
+    @classmethod
+    def load(cls):
+        settings_row, _ = cls.objects.get_or_create(pk=1)
+        return settings_row
 
 
 class CommentReaction(models.Model):
     """
     コメントへのスタンプ。1人1種類につき1回。
     """
-
-    KIND_CHOICES = REACTION_CHOICES
 
     comment = models.ForeignKey(
         Comment,
@@ -1481,7 +1614,6 @@ class CommentReaction(models.Model):
     kind = models.CharField(
         "種類",
         max_length=20,
-        choices=KIND_CHOICES,
     )
 
     created_at = models.DateTimeField(
@@ -1579,8 +1711,6 @@ class PostReaction(models.Model):
     コラムへのスタンプ。1人1種類につき1回。
     """
 
-    KIND_CHOICES = REACTION_CHOICES
-
     post = models.ForeignKey(
         "Post",
         on_delete=models.CASCADE,
@@ -1596,7 +1726,6 @@ class PostReaction(models.Model):
     kind = models.CharField(
         "種類",
         max_length=20,
-        choices=KIND_CHOICES,
     )
 
     created_at = models.DateTimeField(
@@ -1668,7 +1797,6 @@ class Notification(models.Model):
     stamp = models.CharField(
         "スタンプ",
         max_length=20,
-        choices=REACTION_CHOICES,
         blank=True,
     )
 
@@ -1689,8 +1817,18 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.actor} → {self.recipient}"
 
+    def _stamp(self):
+        if not hasattr(self, "_stamp_cache"):
+            self._stamp_cache = Stamp.objects.filter(key=self.stamp).first()
+        return self._stamp_cache
+
     def stamp_emoji(self):
-        return REACTION_EMOJI.get(self.stamp, "")
+        stamp = self._stamp()
+        return stamp.emoji if stamp else ""
+
+    def stamp_label(self):
+        stamp = self._stamp()
+        return stamp.label if stamp else self.stamp
 
 
 # =========================================================

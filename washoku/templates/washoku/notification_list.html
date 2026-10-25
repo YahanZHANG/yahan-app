@@ -13,7 +13,7 @@
             <li class="{% if not notification.is_read %}is-unread{% endif %}">
                 <a href="{{ notification.url }}">
                     {% if notification.kind == "stamp" %}
-                        {{ notification.stamp_emoji }} {{ notification.actor|display_name }} さんが「{{ notification.get_stamp_display }}」を押しました: {% if notification.post_id %}コラム「{{ notification.post.title|truncatechars:40 }}」{% else %}{{ notification.comment.body|truncatechars:40 }}{% endif %}
+                        {{ notification.stamp_emoji }} {{ notification.actor|display_name }} さんが「{{ notification.stamp_label }}」を押しました: {% if notification.post_id %}コラム「{{ notification.post.title|truncatechars:40 }}」{% else %}{{ notification.comment.body|truncatechars:40 }}{% endif %}
                     {% elif notification.kind == "thanks" %}
                         🙏 {{ notification.actor|display_name }} さんが「ありがとう」を送りました: {{ notification.comment.body|truncatechars:40 }}
                     {% else %}

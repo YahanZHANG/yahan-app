@@ -8,10 +8,11 @@ Python に持ってくるのは「訪問ごと」「訪問者ごと」の小さ�
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta
+from datetime import timezone as dt_timezone
 from itertools import combinations
 
 from django.db.models import Count, Max, Min
-from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate, TruncWeek
 from django.utils import timezone
 
 from .browsers import browser_info
@@ -1047,3 +1048,91 @@ def activity_strip(views, days=56):
 
     return cells
 
+
+
+# =========================================================
+# 訪問者と訪問回数の推移 / 過去24時間
+# =========================================================
+
+def traffic_chart(scope):
+    """期間内の日ごと (長い期間は週ごと) の、来た人と訪問回数 (折れ線)。"""
+
+    tz = timezone.get_current_timezone()
+    trunc = TruncWeek("accessed_at", tzinfo=tz) if scope.bucket == "week" else local_day()
+
+    rows = (
+        scope.current()
+        .annotate(bucket=trunc)
+        .values("bucket")
+        .annotate(
+            visitors=Count("visitor_id", distinct=True),
+            visits=Count("visit_id", distinct=True),
+        )
+    )
+
+    by_bucket = {}
+    for row in rows:
+        key = row["bucket"]
+        if isinstance(key, datetime):
+            key = timezone.localtime(key, tz).date() if timezone.is_aware(key) else key.date()
+        by_bucket[key] = row
+
+    labels = bucket_labels(scope)
+
+    return {
+        "labels": [format_bucket(day, scope.bucket) for day in labels],
+        "series": [
+            {"name": "来た人", "color": "s1", "values": [by_bucket.get(day, {}).get("visitors", 0) for day in labels]},
+            {"name": "訪問回数", "color": "s3", "values": [by_bucket.get(day, {}).get("visits", 0) for day in labels]},
+        ],
+        "unit": "",
+        "mode": "line",
+    }
+
+
+DAY_SLOT_MINUTES = 15
+
+
+def last_day_chart(scope):
+    """過去24時間の、15分ごとの来た人と訪問回数 (折れ線。目盛りは1時間ごと)。"""
+
+    # 時刻の計算は UTC で (現地時間のまま引き算すると、夏時間の切り替え日に1時間ずれる)
+    end = scope.end.astimezone(dt_timezone.utc)
+    end = end.replace(minute=end.minute - end.minute % DAY_SLOT_MINUTES, second=0, microsecond=0)
+    slots = 24 * 60 // DAY_SLOT_MINUTES
+    start = end - timedelta(minutes=DAY_SLOT_MINUTES * (slots - 1))
+
+    visitors = defaultdict(set)
+    visits = defaultdict(set)
+
+    rows = (
+        scope.app_base()
+        .filter(accessed_at__gte=start, accessed_at__lte=scope.end)
+        .values_list("visitor_id", "visit_id", "accessed_at")
+    )
+
+    for visitor_id, visit_id, accessed_at in rows.iterator(chunk_size=2000):
+        index = int((accessed_at - start).total_seconds() // (DAY_SLOT_MINUTES * 60))
+        if 0 <= index < slots:
+            visitors[index].add(visitor_id)
+            visits[index].add(visit_id)
+
+    labels = [
+        timezone.localtime(start + timedelta(minutes=DAY_SLOT_MINUTES * i)).strftime("%H:%M")
+        for i in range(slots)
+    ]
+
+    # 目盛りは「ちょうどの時刻」から1時間ごと
+    first_hour = next((i for i, label in enumerate(labels) if label.endswith(":00")), 0)
+
+    return {
+        "labels": labels,
+        "series": [
+            {"name": "来た人", "color": "s1", "values": [len(visitors[i]) for i in range(slots)]},
+            {"name": "訪問回数", "color": "s3", "values": [len(visits[i]) for i in range(slots)]},
+        ],
+        "unit": "",
+        "mode": "line",
+        "tickStep": 60 // DAY_SLOT_MINUTES,
+        "tickOffset": first_hour,
+    }

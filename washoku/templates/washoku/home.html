@@ -22,15 +22,22 @@
         var key = "washoku_announcements_closed";
         var closed = [];
         try { closed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) {}
-        document.querySelectorAll("#washoku-announcements [data-announcement-id]").forEach(function (box) {
+        var area = document.getElementById("washoku-announcements");
+        // 全部閉じたら、お知らせの場所ごと消して上のすき間をなくす
+        function hideAreaIfEmpty() {
+            area.hidden = !area.querySelector("[data-announcement-id]:not([hidden])");
+        }
+        area.querySelectorAll("[data-announcement-id]").forEach(function (box) {
             var id = box.dataset.announcementId;
             if (closed.indexOf(id) !== -1) box.hidden = true;
             box.querySelector("[data-announcement-close]").addEventListener("click", function () {
                 box.hidden = true;
+                hideAreaIfEmpty();
                 closed.push(id);
                 try { localStorage.setItem(key, JSON.stringify(closed.slice(-30))); } catch (error) {}
             });
         });
+        hideAreaIfEmpty();
     })();
     </script>
 {% endif %}
@@ -66,27 +73,38 @@
     </a>
 </section>
 
-{% if questions %}
-<section class="washoku-section washoku-open-questions">
-    <h2>💬 返事を待っている質問</h2>
-    <ul class="washoku-question-lines">
-        {% for question in questions %}
-            <li><a href="{{ question.get_absolute_url }}">{{ question.body }}</a></li>
+{% if featured %}
+<section class="washoku-section washoku-open-questions washoku-side-box washoku-featured">
+    <h2 class="washoku-side-label"><span aria-hidden="true">⭐</span><span class="washoku-side-word">注目</span></h2>
+    <ul class="washoku-question-lines washoku-poll-lines">
+        {% for entry in featured %}
+            {% with item=entry.item %}
+            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span><small>{% if entry.kind == "post" %}{{ item.get_kind_display }}{% else %}コメント{% endif %}{% if entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></a></li>
+            {% endwith %}
         {% endfor %}
     </ul>
-    <p class="washoku-more"><a href="{% url 'washoku:question_list' %}">質問をすべて見る</a></p>
+</section>
+{% endif %}
+
+{% if questions %}
+<section class="washoku-section washoku-open-questions washoku-side-box">
+    <h2 class="washoku-side-label"><a href="{% url 'washoku:question_list' %}" title="質問をすべて見る"><span aria-hidden="true">💬</span><span class="washoku-side-word">質問</span></a></h2>
+    <ul class="washoku-question-lines">
+        {% for question in questions %}
+            <li>{% if question.has_answer %}<a class="is-solved" href="{{ question.get_absolute_url }}"><span>{{ question.body }}</span><small class="washoku-solved-tag">解決済</small></a>{% else %}<a href="{{ question.get_absolute_url }}">{{ question.body }}</a>{% endif %}</li>
+        {% endfor %}
+    </ul>
 </section>
 {% endif %}
 
 {% if polls %}
-<section class="washoku-section washoku-open-questions washoku-open-polls">
-    <h2>📊 みんなのアンケート</h2>
+<section class="washoku-section washoku-open-questions washoku-side-box washoku-open-polls">
+    <h2 class="washoku-side-label"><a href="{% url 'washoku:poll_list' %}" title="アンケートをすべて見る"><span aria-hidden="true">📊</span><span class="washoku-side-word">アンケート</span></a></h2>
     <ul class="washoku-question-lines washoku-poll-lines">
         {% for poll in polls %}
-            <li><a href="{{ poll.get_absolute_url }}"><span>{{ poll.title }}</span><small>{{ poll.vote_count }}票</small></a></li>
+            <li><a href="{{ poll.poll_url }}"><span>{{ poll.poll_title }}</span><small>{{ poll.vote_count }}票</small></a></li>
         {% endfor %}
     </ul>
-    <p class="washoku-more"><a href="{% url 'washoku:poll_list' %}">アンケートをすべて見る</a></p>
 </section>
 {% endif %}
 
@@ -116,7 +134,7 @@
 <section class="washoku-section">
     <h2>みんなの投稿・コメント</h2>
     {% if latest_activity %}
-        <ul class="washoku-activity">
+        <ul class="washoku-activity washoku-activity-compact">
             {% for entry in latest_activity %}
                 {% include "washoku/includes/activity_item.html" %}
             {% endfor %}

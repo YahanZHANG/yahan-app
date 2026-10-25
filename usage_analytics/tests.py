@@ -182,3 +182,55 @@ class DashboardTests(TestCase):
         self.assertEqual(response.context["live"]["visitors"], 2)
         self.assertEqual(response.context["live"]["anonymous"], 2)
         self.assertContains(response, "見ている人がいます")
+
+
+@override_settings(STORAGES=SIMPLE_STATIC)
+class BehaviorAndChartTests(TestCase):
+
+    def test_behavior_and_traffic_charts(self):
+
+        import uuid
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from . import stats
+        from .behavior import build_behavior
+
+        now = timezone.now()
+
+        # よく使う人: 3日来てコラムを見る
+        regular = uuid.uuid4()
+        for day in range(3):
+            visit = uuid.uuid4()
+            for path in ("/washoku/", "/washoku/columns/"):
+                PageView.objects.create(visitor_id=regular, visit_id=visit, app_key="washoku", path=path,
+                                        accessed_at=now - timedelta(days=day, minutes=5))
+
+        # すぐ帰った人: 1回だけ、レシピ一覧で帰る
+        for _ in range(2):
+            PageView.objects.create(visitor_id=uuid.uuid4(), visit_id=uuid.uuid4(), app_key="washoku",
+                                    path="/washoku/recipes/", accessed_at=now - timedelta(minutes=30))
+
+        scope = stats.Scope(days=7)
+        behavior = build_behavior(scope)
+
+        self.assertEqual(behavior["regulars"], 1)
+        self.assertEqual(behavior["short_visitors"], 2)
+        self.assertEqual(behavior["exit_pages"][0]["path"], "/washoku/recipes/")
+        self.assertEqual(behavior["exit_pages"][0]["title"], "レシピ一覧")
+        self.assertTrue(behavior["advice"])
+
+        traffic = stats.traffic_chart(scope)
+        self.assertEqual(len(traffic["labels"]), 7)
+        self.assertEqual(sum(traffic["series"][1]["values"]), 5)  # 訪問回数
+
+        last_day = stats.last_day_chart(scope)
+        self.assertEqual(len(last_day["labels"]), 96)
+        self.assertEqual(sum(last_day["series"][0]["values"]), 3)  # 過去24時間に来た人 (15分ごと)
+
+        User = get_user_model()
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "x"))
+        response = self.client.get("/analytics/", HTTP_USER_AGENT=BROWSER)
+        self.assertContains(response, "使い方の傾向と改善のヒント")
+        self.assertContains(response, "過去24時間")
