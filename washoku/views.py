@@ -359,13 +359,21 @@ def home_polls(request):
     """
 
     # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
-    polls = list(
+    base = (
         Post.objects
         .filter(status="published")
         .filter(poll_posts_q())
         .annotate(vote_count=respondent_count(), started=Max("choices__pk"))
-        .order_by(F("started").desc(nulls_last=True), "-created_at")[:HOME_POLL_SCAN]
     )
+    choice_polls = list(base.filter(started__isnull=False).order_by("-started")[:HOME_POLL_SCAN])
+    text_polls = list(base.filter(started__isnull=True).order_by("-created_at")[:HOME_POLL_SCAN])
+
+    # 自由記述のアンケートには選択肢がないので、公開した時点までに始まった選択肢アンケートのすぐ前に並べる
+    for poll in text_polls:
+        earlier = [other.started for other in choice_polls if other.created_at <= poll.created_at]
+        poll.started = max(earlier, default=0) + 0.5
+
+    polls = sorted(choice_polls + text_polls, key=lambda poll: poll.started, reverse=True)[:HOME_POLL_SCAN]
 
     if not polls:
         return None, []
