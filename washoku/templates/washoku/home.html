@@ -44,6 +44,8 @@
 
 <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
+<section class="washoku-pick-box" aria-labelledby="washoku-pick-title">
+<h2 id="washoku-pick-title" class="washoku-pick-title">🍚 今日のごはん、何にする？</h2>
 <nav class="washoku-pickers" aria-label="レシピを選ぶ">
     <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-picker">
         <span aria-hidden="true">🥕</span>
@@ -51,18 +53,19 @@
     </a>
     <a href="{% url 'washoku:random_recipe' %}" class="washoku-picker washoku-picker-random">
         <span aria-hidden="true">🎲</span>
-        <strong>ランダム</strong>
+        <strong>おまかせ</strong>
     </a>
     <a href="{% url 'washoku:find_by_nutrition' %}" class="washoku-picker">
         <span aria-hidden="true">🥗</span>
         <strong>栄養で選ぶ</strong>
     </a>
 </nav>
+</section>
 
 {% if main_poll %}
 <section class="washoku-home-poll" aria-labelledby="washoku-home-poll-label">
     <p class="washoku-home-poll-head">
-        <span id="washoku-home-poll-label" class="washoku-home-poll-badge">📊 みんなに聞きました</span>
+        <span id="washoku-home-poll-label" class="washoku-home-poll-badge">📊 みんなのアンケート</span>
         <a href="{% url 'washoku:poll_list' %}">すべて見る ›</a>
     </p>
     {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
@@ -77,27 +80,30 @@
 </section>
 {% endif %}
 
-{% if featured %}
-<section class="washoku-section washoku-open-questions washoku-side-box washoku-featured">
-    <h2 class="washoku-side-label"><span aria-hidden="true">⭐</span><span class="washoku-side-word">注目</span></h2>
-    <ul class="washoku-question-lines washoku-poll-lines">
+{% if featured or questions %}
+<section class="washoku-swipe-section" aria-label="注目と質問">
+    <div class="washoku-swipe" tabindex="0">
         {% for entry in featured %}
             {% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span>{% if display.home_featured_show_stamps and entry.count %}<small>😊{{ entry.count }}</small>{% endif %}</a></li>
+            <a class="washoku-swipe-card is-featured" href="{{ item.get_absolute_url }}">
+                <span class="washoku-swipe-tag">⭐ 注目</span>
+                <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</strong>
+                {% if display.home_featured_show_stamps and entry.count %}<small>😊{{ entry.count }}</small>{% endif %}
+            </a>
             {% endwith %}
         {% endfor %}
-    </ul>
-</section>
-{% endif %}
-
-{% if questions %}
-<section class="washoku-section washoku-open-questions washoku-side-box">
-    <h2 class="washoku-side-label"><a href="{% url 'washoku:question_list' %}" title="質問をすべて見る"><span aria-hidden="true">💬</span><span class="washoku-side-word">質問</span></a></h2>
-    <ul class="washoku-question-lines">
         {% for question in questions %}
-            <li>{% if question.has_answer %}<a class="is-solved" href="{{ question.get_absolute_url }}"><span>{{ question.body }}</span><small class="washoku-solved-tag">解決済</small></a>{% else %}<a href="{{ question.get_absolute_url }}">{{ question.body }}</a>{% endif %}</li>
+            <a class="washoku-swipe-card is-question{% if question.has_answer %} is-solved{% endif %}" href="{{ question.get_absolute_url }}">
+                <span class="washoku-swipe-tag">{% if question.has_answer %}✅ 解決済{% else %}💬 質問{% endif %}</span>
+                <strong>{{ question.body }}</strong>
+                {% if not question.has_answer %}<small>答えを待っています</small>{% endif %}
+            </a>
         {% endfor %}
-    </ul>
+        <a class="washoku-swipe-card is-more" href="{% url 'washoku:question_list' %}">
+            <span aria-hidden="true">💬</span>
+            <strong>質問をすべて見る</strong>
+        </a>
+    </div>
 </section>
 {% endif %}
 

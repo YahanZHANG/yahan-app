@@ -929,6 +929,7 @@ class NutritionTests(TestCase):
         self.assertContains(response, reverse("washoku:find_by_nutrition"))
         self.assertContains(response, reverse("washoku:find_by_ingredients"))
         self.assertContains(response, "washoku-picker-random")
+        self.assertContains(response, "今日のごはん、何にする？")
         # 検索はヘッダーにあるので、HOME の検索欄はなし
         self.assertNotContains(response, 'placeholder="料理、食材、お店などを探す"')
         self.assertNotContains(response, "みんなの知恵")
@@ -1924,9 +1925,10 @@ class PollTests(TestCase):
         self.vote(self.green)
         self.client.logout()
 
+        # 結果は投票したあとにだけ見える
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
-        self.assertContains(page, "100%")
-        self.assertContains(page, "1票")
+        self.assertNotContains(page, "100%")
+        self.assertContains(page, "投票すると結果が見られます")
         self.assertContains(page, 'name="choice"')
 
         # ログインしていない人も投票でき、同じブラウザなら選び直しになる
@@ -2033,7 +2035,7 @@ class FeaturedTests(TestCase):
             [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
             [(column.pk, 2), (comment.pk, 1)],
         )
-        self.assertContains(home, "washoku-featured")
+        self.assertContains(home, "washoku-swipe-card is-featured")
 
 
 class ColumnOrderTests(TestCase):
@@ -2106,6 +2108,8 @@ class AdminPickTests(TestCase):
         home = self.client.get(reverse("washoku:home"))
         self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
         self.assertContains(home, "解決済")
+        self.assertContains(home, 'class="washoku-swipe-card is-question is-solved"')
+        self.assertContains(home, "答えを待っています")
 
         # 3日たつと消える (未解決はずっと残る)
         Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))
