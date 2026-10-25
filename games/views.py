@@ -77,6 +77,7 @@ def normalise_level(
         GameScore.Game.TAP_STAR,
         GameScore.Game.MAZE_CHASE,
         GameScore.Game.MAAARIO,
+        GameScore.Game.SOMSOM,
     ):
 
         try:
@@ -332,6 +333,32 @@ def maaario(request):
     return render(
         request,
         "games/maaario/index.html",
+        context,
+    )
+
+
+# =========================================================
+# SomSom
+# =========================================================
+
+def somsom(request):
+
+    ranking = get_ranking_data(
+        request.user,
+        GameScore.Game.SOMSOM,
+        1,
+    )
+
+    context = {
+        "ranking_entries": ranking["entries"],
+        "personal_best": ranking["personal_best"],
+        "personal_rank": ranking["personal_rank"],
+        "login_url": resolve_url(settings.LOGIN_URL),
+    }
+
+    return render(
+        request,
+        "games/somsom/index.html",
         context,
     )
 
