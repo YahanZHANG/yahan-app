@@ -21,6 +21,7 @@ from washoku.models import (
     Comment as WashokuComment,
     Feedback as WashokuFeedback,
     MemberPhoto as WashokuMemberPhoto,
+    PollSuggestion as WashokuPollSuggestion,
     Post as WashokuPost,
     Recipe as WashokuRecipe,
     Substitute as WashokuSubstitute,
@@ -96,6 +97,12 @@ def _washoku_items():
             WashokuSubstitute.objects.filter(status="draft").count(),
             "admin:washoku_substitute_changelist",
             "status__exact=draft",
+        ),
+        _item(
+            "アンケートの提案",
+            WashokuPollSuggestion.objects.filter(status="new").count(),
+            "admin:washoku_pollsuggestion_changelist",
+            "status__exact=new",
         ),
         _item(
             "質問箱",

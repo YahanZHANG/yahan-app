@@ -42,70 +42,122 @@
     </script>
 {% endif %}
 
-<section class="washoku-hero">
-    <h1 class="washoku-visually-hidden">スイスで和食</h1>
+<h1 class="washoku-visually-hidden">スイスで和食</h1>
 
-    <form action="{% url 'washoku:search' %}" method="get" class="washoku-search">
-        <input type="search" name="q" placeholder="料理、食材、お店などを探す" aria-label="アプリ全体を検索">
-        <button type="submit">探す</button>
-    </form>
-</section>
-
-<section class="washoku-entry">
-    <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-entry-card">
-        <span>🥕</span>
+<section class="washoku-pick-box" aria-labelledby="washoku-pick-title">
+<h2 id="washoku-pick-title" class="washoku-pick-title">今日のごはん、何にする？</h2>
+<nav class="washoku-pickers" aria-label="レシピを選ぶ">
+    <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-picker">
+        <span aria-hidden="true">🥕</span>
         <strong>食材で選ぶ</strong>
-        <small>家にあるもので</small>
     </a>
-    <a href="{% url 'washoku:find_by_mood' %}" class="washoku-entry-card">
-        <span>😋</span>
-        <strong>気分で選ぶ</strong>
-        <small>さっぱり、がっつり…</small>
-    </a>
-    <a href="{% url 'washoku:find_by_nutrition' %}" class="washoku-entry-card">
-        <span>🥗</span>
-        <strong>栄養で選ぶ</strong>
-        <small>カロリー、PFC…</small>
-    </a>
-    <a href="{% url 'washoku:random_recipe' %}" class="washoku-entry-random">
+    <a href="{% url 'washoku:random_recipe' %}" class="washoku-picker washoku-picker-random">
         <span aria-hidden="true">🎲</span>
-        <strong>ランダムで決める</strong>
+        <strong>おまかせ</strong>
     </a>
+    <a href="{% url 'washoku:find_by_nutrition' %}" class="washoku-picker">
+        <span aria-hidden="true">🥗</span>
+        <strong>栄養で選ぶ</strong>
+    </a>
+</nav>
 </section>
 
-{% if featured %}
-<section class="washoku-section washoku-open-questions washoku-side-box washoku-featured">
-    <h2 class="washoku-side-label"><span aria-hidden="true">⭐</span><span class="washoku-side-word">注目</span></h2>
-    <ul class="washoku-question-lines washoku-poll-lines">
-        {% for entry in featured %}
-            {% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"><span>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</span>{% if display.home_featured_show_stamps and entry.count %}<small>😊{{ entry.count }}</small>{% endif %}</a></li>
-            {% endwith %}
+{% if main_poll or featured or questions %}
+<div class="washoku-home-slider-wrap" data-slider>
+<button type="button" class="washoku-slider-arrow is-prev" data-slider-prev aria-label="前のカード" hidden>‹</button>
+<button type="button" class="washoku-slider-arrow is-next" data-slider-next aria-label="次のカード">›</button>
+<div class="washoku-home-slider" data-slider-track tabindex="0" aria-label="アンケート・注目・質問（横にスワイプ）">
+
+{% if main_poll %}
+<section class="washoku-home-slide washoku-home-poll" aria-labelledby="washoku-home-poll-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-poll-label" class="washoku-home-poll-badge">📊 みんなのアンケート</span>
+        <a href="{% url 'washoku:poll_list' %}">すべて見る ›</a>
+    </p>
+    {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
+    {% if other_polls %}
+    <ul class="washoku-home-poll-more">
+        {% for poll in other_polls %}
+            <li><a href="{{ poll.poll_url }}"><span>{{ poll.poll_title }}</span><small>{{ poll.vote_count }}票</small></a></li>
         {% endfor %}
     </ul>
+    {% endif %}
+    <a class="washoku-home-poll-suggest" href="{% url 'washoku:poll_suggest' %}">💡 聞いてみたいことを提案する</a>
+</section>
+{% endif %}
+
+{% if featured %}
+<section class="washoku-home-slide washoku-home-featured" aria-labelledby="washoku-home-featured-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-featured-label" class="washoku-home-poll-badge">⭐ 注目</span>
+        <a href="{% url 'washoku:column_list' %}">コラム ›</a>
+    </p>
+    {% with entry=featured.0 %}{% with item=entry.item %}
+    <a class="washoku-featured-top" href="{{ item.get_absolute_url }}">
+        {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
+        <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:80 }}{% endif %}</strong>
+        {% if entry.kind == "post" %}<span class="washoku-featured-excerpt">{{ item.body|striptags|truncatechars:120 }}</span>{% endif %}
+        <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
+    </a>
+    {% endwith %}{% endwith %}
+    {% if featured|length > 1 %}
+    <ul class="washoku-featured-more">
+        {% for entry in featured|slice:"1:3" %}{% with item=entry.item %}
+            <li><a href="{{ item.get_absolute_url }}"{% if item.home_photo_url %} class="has-photo"{% endif %}>{% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}<span><strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:60 }}{% endif %}</strong><small>{{ item.author|display_name }}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></span></a></li>
+        {% endwith %}{% endfor %}
+    </ul>
+    {% endif %}
 </section>
 {% endif %}
 
 {% if questions %}
-<section class="washoku-section washoku-open-questions washoku-side-box">
-    <h2 class="washoku-side-label"><a href="{% url 'washoku:question_list' %}" title="質問をすべて見る"><span aria-hidden="true">💬</span><span class="washoku-side-word">質問</span></a></h2>
-    <ul class="washoku-question-lines">
+<section class="washoku-home-slide washoku-home-questions" aria-labelledby="washoku-home-questions-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-questions-label" class="washoku-home-poll-badge">💬 質問</span>
+        <a href="{% url 'washoku:question_list' %}">すべて見る ›</a>
+    </p>
+    <ul class="washoku-home-question-list">
         {% for question in questions %}
-            <li>{% if question.has_answer %}<a class="is-solved" href="{{ question.get_absolute_url }}"><span>{{ question.body }}</span><small class="washoku-solved-tag">解決済</small></a>{% else %}<a href="{{ question.get_absolute_url }}">{{ question.body }}</a>{% endif %}</li>
+            <li><a href="{{ question.get_absolute_url }}" class="{% if question.has_answer %}is-solved{% else %}is-open{% endif %}{% if question.home_photo_url %} has-photo{% endif %}">
+                {% if question.home_photo_url %}<img src="{{ question.home_photo_url }}" alt="" loading="lazy">{% endif %}
+                <span class="washoku-question-text"><span class="washoku-question-state">{% if question.has_answer %}✓ 解決済{% else %}答えを募集中{% endif %}</span>
+                <strong>{{ question.body|truncatechars:70 }}</strong>
+                <small>{{ question.target.name }}{% if question.answer_count %} ・ 返信{{ question.answer_count }}件{% endif %}</small></span>
+            </a></li>
         {% endfor %}
     </ul>
 </section>
 {% endif %}
 
-{% if polls %}
-<section class="washoku-section washoku-open-questions washoku-side-box washoku-open-polls">
-    <h2 class="washoku-side-label"><a href="{% url 'washoku:poll_list' %}" title="アンケートをすべて見る"><span aria-hidden="true">📊</span><span class="washoku-side-word">アンケート</span></a></h2>
-    <ul class="washoku-question-lines washoku-poll-lines">
-        {% for poll in polls %}
-            <li><a href="{{ poll.poll_url }}"><span>{{ poll.poll_title }}</span><small>{{ poll.vote_count }}票</small></a></li>
-        {% endfor %}
-    </ul>
-</section>
+</div>
+</div>
+<script>
+// スライドの左右の矢印: 1枚ずつ動かし、端では片方を隠す
+(function () {
+    var wrap = document.querySelector("[data-slider]");
+    if (!wrap) return;
+    var track = wrap.querySelector("[data-slider-track]");
+    var prev = wrap.querySelector("[data-slider-prev]");
+    var next = wrap.querySelector("[data-slider-next]");
+
+    function step() {
+        var card = track.children[0];
+        return card ? card.getBoundingClientRect().width + 12 : track.clientWidth * 0.8;
+    }
+
+    function update() {
+        var max = track.scrollWidth - track.clientWidth - 4;
+        prev.hidden = track.scrollLeft <= 4;
+        next.hidden = track.scrollLeft >= max;
+    }
+
+    prev.addEventListener("click", function () { track.scrollBy({ left: -step(), behavior: "smooth" }); });
+    next.addEventListener("click", function () { track.scrollBy({ left: step(), behavior: "smooth" }); });
+    track.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+})();
+</script>
 {% endif %}
 
 {% if not user.is_authenticated %}

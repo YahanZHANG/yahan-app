@@ -2,7 +2,7 @@
 <nav class="washoku-subtabs" aria-label="みんなのページ">
     <a href="{% url 'washoku:question_list' %}" class="{% if name == 'question_list' %}active{% endif %}">Q&amp;A</a>
     <a href="{% url 'washoku:column_list' %}" class="{% if name == 'column_list' or kind == 'column' %}active{% endif %}">コラム</a>
-    <a href="{% url 'washoku:poll_list' %}" class="{% if name == 'poll_list' or kind == 'poll' %}active{% endif %}">アンケート</a>
+    <a href="{% url 'washoku:poll_list' %}" class="{% if name == 'poll_list' or name == 'poll_suggest' or kind == 'poll' %}active{% endif %}">アンケート</a>
     <a href="{% url 'washoku:link_list' %}" class="{% if name == 'link_list' or kind == 'link' %}active{% endif %}">リンク</a>
 </nav>
 {% endwith %}

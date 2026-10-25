@@ -662,7 +662,7 @@ html {
 }
 
 body {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 .washoku-header {
@@ -772,7 +772,7 @@ body {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    padding: 10px 4px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--washoku-border);
     background: var(--washoku-surface);
 }
@@ -781,7 +781,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     padding: 4px 0;
     color: var(--washoku-muted);
     font-size: 11px;
@@ -799,6 +799,44 @@ body {
 .washoku-tabbar a.active {
     color: var(--washoku-accent);
     font-weight: 700;
+}
+
+/* 「コミュニティ」は真ん中の丸いボタン。丸だけメニューバーの上に少しはみ出し、文字の高さはほかとそろえる */
+.washoku-tabbar a i,
+.washoku-tabbar .washoku-me-icon {
+    display: block;
+    height: 26px;
+    line-height: 26px;
+}
+
+.washoku-tabbar a.washoku-tab-center {
+    position: relative;
+    padding-top: 36px;
+    color: var(--washoku-accent);
+    font-weight: 700;
+}
+
+.washoku-tab-circle {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: 3px solid var(--washoku-surface);
+    border-radius: 50%;
+    background: var(--washoku-accent);
+    box-shadow: 0 3px 10px rgba(160, 60, 20, 0.3);
+    color: #FFFFFF;
+    transform: translateX(-50%);
+}
+
+.washoku-tabbar .washoku-tab-circle i {
+    height: auto;
+    font-size: 26px;
+    line-height: 1;
 }
 
 .washoku-main {
@@ -2795,9 +2833,40 @@ a.washoku-favorite {
     white-space: nowrap;
 }
 
-/* 携帯は虫めがねのボタン、PC は入力欄 */
-.washoku-header-search {
+/* 携帯も PC も、ヘッダーに検索バー (携帯は短め) */
+.washoku-search-button {
     display: none;
+}
+
+.washoku-header-search {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 150px;
+    margin-left: auto;
+}
+
+.washoku-header-search i {
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    color: var(--washoku-muted);
+    font-size: 14px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.washoku-header-search input {
+    width: 100%;
+    min-height: 36px;
+    padding: 0 10px 0 30px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 16px;
 }
 
 @media (min-width: 800px) {
@@ -3578,4 +3647,480 @@ button.washoku-poll-row:hover {
 .washoku-quick.washoku-ingredient-kinds a {
     padding: 7px 13px;
     font-size: 15px;
+}
+
+/* ---------- HOME: 3つの入り口 (ランダムを真ん中に少し大きく) ---------- */
+.washoku-pickers {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    align-items: center;
+    gap: 10px;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.washoku-pick-box {
+    margin: 4px 0 18px;
+    padding: 12px 12px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 20px;
+    background: var(--washoku-surface-2);
+}
+
+.washoku-pick-title {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.washoku-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 76px;
+    padding: 8px 4px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 18px;
+    background: var(--washoku-surface);
+    box-shadow: var(--washoku-shadow);
+    color: var(--washoku-text);
+    text-decoration: none;
+    transition: transform 0.12s ease;
+}
+
+.washoku-picker span {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.washoku-picker strong {
+    font-size: 13.5px;
+    white-space: nowrap;
+}
+
+.washoku-picker:active {
+    transform: scale(0.97);
+}
+
+.washoku-picker.washoku-picker-random {
+    min-height: 92px;
+    border: 0;
+    background: linear-gradient(150deg, var(--washoku-random), var(--washoku-random-strong));
+    box-shadow: 0 6px 16px rgba(160, 90, 30, 0.25);
+    color: var(--washoku-random-text);
+}
+
+.washoku-picker-random span {
+    font-size: 34px;
+}
+
+.washoku-picker-random strong {
+    font-size: 15.5px;
+}
+
+/* ---------- HOME: いちばん目立つアンケート ---------- */
+.washoku-home-poll {
+    margin: 0 0 18px;
+    padding: 12px 14px 12px;
+    border-radius: 20px;
+    background: var(--washoku-poll-tint);
+    border: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 25%, transparent);
+}
+
+.washoku-home-poll-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+.washoku-home-poll-badge {
+    color: var(--washoku-poll-accent);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.washoku-home-poll-head a {
+    color: var(--washoku-muted);
+    text-decoration: none;
+}
+
+.washoku-home-poll .washoku-poll {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
+.washoku-home-poll-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    line-height: 1.45;
+}
+
+.washoku-home-poll-title a {
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-home-poll .washoku-poll-row {
+    background-color: var(--washoku-surface);
+}
+
+.washoku-home-poll-more {
+    margin: 8px 0 0;
+    padding: 6px 0 0;
+    border-top: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 20%, transparent);
+    list-style: none;
+}
+
+.washoku-home-poll-more a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 0;
+    color: var(--washoku-text);
+    font-size: 14.5px;
+    text-decoration: none;
+}
+
+.washoku-home-poll-more span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-home-poll-more small {
+    flex: none;
+    color: var(--washoku-muted);
+}
+
+.washoku-home-poll-suggest {
+    display: block;
+    margin-top: 8px;
+    padding: 9px;
+    border: 0;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--washoku-poll-accent) 22%, var(--washoku-poll-tint));
+    color: var(--washoku-text, inherit);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-home-poll .washoku-poll-rows {
+    gap: 7px;
+}
+
+.washoku-home-poll .washoku-poll-row {
+    min-height: 44px;
+    padding: 9px 14px;
+}
+
+@media (min-width: 700px) {
+    .washoku-home-poll .washoku-poll-rows {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* HOME：アンケート・注目・質問を横にスワイプ (次のカードが少し見える) */
+.washoku-home-slider {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin: 0 -16px 18px;
+    padding: 0 16px 6px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+    scrollbar-width: none;
+}
+
+.washoku-home-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.washoku-home-slide {
+    display: flex;
+    flex: 0 0 80%;
+    flex-direction: column;
+    min-width: 0;
+    scroll-snap-align: start;
+}
+
+.washoku-home-slider .washoku-home-poll {
+    margin: 0;
+}
+
+@media (min-width: 700px) {
+    .washoku-home-slider {
+        margin: 0 0 18px;
+        padding: 0 0 6px;
+        scroll-padding: 0;
+    }
+
+    .washoku-home-slide {
+        flex-basis: 46%;
+    }
+
+    .washoku-home-slider .washoku-home-poll .washoku-poll-rows {
+        grid-template-columns: 1fr;
+    }
+}
+
+.washoku-home-featured,
+.washoku-home-questions {
+    padding: 12px 14px;
+    border-radius: 20px;
+}
+
+/* 注目: 1番目を大きく (約6割)、残りを下に小さく */
+.washoku-home-featured {
+    --washoku-featured-accent: #B7791F;
+    border: 1px solid color-mix(in srgb, #E0B43A 40%, transparent);
+    background: color-mix(in srgb, #F6D77A 22%, var(--washoku-surface));
+}
+
+.washoku-home-featured .washoku-home-poll-badge {
+    color: var(--washoku-featured-accent);
+}
+
+.washoku-featured-top {
+    display: flex;
+    flex: 3 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-featured-top img {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.washoku-featured-top strong {
+    font-size: 24px;
+    line-height: 1.45;
+}
+
+.washoku-featured-excerpt {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--washoku-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.washoku-featured-top small,
+.washoku-featured-more small,
+.washoku-home-question-list small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-featured-top small {
+    margin-top: auto;
+}
+
+.washoku-featured-more {
+    display: flex;
+    flex: 2 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-featured-more li {
+    display: flex;
+    flex: 1 1 0;
+}
+
+.washoku-featured-more a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-featured-more strong {
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+/* 質問: 解決済は緑のチェックで、募集中はオレンジで */
+.washoku-home-questions {
+    border: 1px solid color-mix(in srgb, #E8894A 35%, transparent);
+    background: color-mix(in srgb, #F6B27A 16%, var(--washoku-surface));
+}
+
+.washoku-home-questions .washoku-home-poll-badge {
+    color: #C0612B;
+}
+
+.washoku-home-question-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-home-question-list li {
+    display: flex;
+    flex: 1 1 0;
+}
+
+.washoku-home-question-list a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border-left: 4px solid #E8894A;
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-home-question-list strong {
+    font-size: 18px;
+    line-height: 1.45;
+}
+
+.washoku-question-state {
+    align-self: flex-start;
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #F2A65A 28%, transparent);
+    color: #A44E1E;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.washoku-home-question-list a.is-solved {
+    border-left-color: var(--washoku-poll-accent);
+}
+
+.washoku-home-question-list a.is-solved strong {
+    color: var(--washoku-muted);
+    font-weight: 600;
+}
+
+.washoku-home-question-list a.is-solved .washoku-question-state {
+    background: var(--washoku-poll-tint);
+    color: var(--washoku-poll-accent);
+}
+
+/* スマホ: マイページは下のメニューにあるので、ヘッダーからは消す */
+@media (max-width: 799px) {
+    .washoku-header .washoku-me {
+        display: none;
+    }
+}
+
+.washoku-tabbar .washoku-me-icon {
+    font-size: 22px;
+}
+
+/* HOMEスライドの左右の矢印 */
+.washoku-home-slider-wrap {
+    position: relative;
+}
+
+.washoku-slider-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    min-height: 0;
+    height: 60px;
+    padding: 0 0 6px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(40, 30, 25, 0.35);
+    box-shadow: none;
+    color: #FFFFFF;
+    font-size: 46px;
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.washoku-slider-arrow[hidden] {
+    display: none;
+}
+
+.washoku-slider-arrow.is-prev {
+    left: -6px;
+}
+
+.washoku-slider-arrow.is-next {
+    right: -6px;
+}
+
+@media (min-width: 700px) {
+    .washoku-slider-arrow.is-prev {
+        left: -14px;
+    }
+
+    .washoku-slider-arrow.is-next {
+        right: -14px;
+    }
+}
+
+/* 管理者が足した写真 (なければ文字だけ) */
+.washoku-featured-more a.has-photo,
+.washoku-home-question-list a.has-photo {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.washoku-featured-more a > span,
+.washoku-question-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.washoku-featured-more a.has-photo img,
+.washoku-home-question-list a.has-photo img {
+    flex: none;
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 12px;
 }

@@ -22,6 +22,7 @@ from .models import (
     MoodTag,
     Notification,
     PollChoice,
+    PollSuggestion,
     PollVote,
     Post,
     PushSubscription,
@@ -491,6 +492,8 @@ class PollVoteInline(admin.TabularInline):
 
     @admin.display(description="回答した人")
     def user_name(self, obj):
+        if obj.user is None:
+            return "ゲスト（ログインなし）"
         return f"{display_name(obj.user)}（{obj.user.username}）"
 
     @admin.display(description="選んだ答え")
@@ -527,6 +530,8 @@ class PollVoteAdmin(admin.ModelAdmin):
 
     @admin.display(description="回答した人", ordering="user__username")
     def user_name(self, obj):
+        if obj.user is None:
+            return "ゲスト（ログインなし）"
         return f"{display_name(obj.user)}（{obj.user.username}）"
 
     @admin.display(description="回答日時", ordering="voted_at")
@@ -534,8 +539,60 @@ class PollVoteAdmin(admin.ModelAdmin):
         return timezone.localtime(obj.voted_at).strftime("%Y/%m/%d %H:%M")
 
 
+class HomePhotoAdminForm(forms.ModelForm):
+    """注目・質問の HOME カードに出す写真を、管理画面からアップロードできるようにする。"""
+
+    home_photo_upload = forms.FileField(
+        label="HOMEの写真をアップロード",
+        required=False,
+        help_text="小さく変換して保存し、上の「HOMEの写真」を置きかえます。消すときは「HOMEの写真」を空にします。",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
+    )
+
+    def clean_home_photo_upload(self):
+
+        photo = self.cleaned_data.get("home_photo_upload")
+
+        if not photo:
+            return ""
+
+        try:
+            return upload_photo(photo, "home")
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages)
+
+
+class HomePhotoAdminMixin:
+    """HOMEの写真のアップロードとプレビュー。"""
+
+    @admin.display(description="HOMEの写真（いま）")
+    def home_photo_preview(self, obj):
+        if not obj.home_photo_url:
+            return "なし（文字だけ）"
+        return format_html('<img src="{}" alt="" style="width:160px;max-height:120px;object-fit:cover;border-radius:8px">', obj.home_photo_url)
+
+    def save_model(self, request, obj, form, change):
+        uploaded = form.cleaned_data.get("home_photo_upload")
+        if uploaded:
+            obj.home_photo_url = uploaded
+        super().save_model(request, obj, form, change)
+
+
+class PostAdminForm(HomePhotoAdminForm):
+    class Meta:
+        model = Post
+        fields = "__all__"
+
+
+class CommentAdminForm(HomePhotoAdminForm):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
 @admin.register(Post)
-class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
+class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin):
+    form = PostAdminForm
     inlines = (
         PollChoiceInline,
         PollVoteInline,
@@ -592,6 +649,7 @@ class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
 
     readonly_fields = (
         "updated_at",
+        "home_photo_preview",
     )
 
     actions = [
@@ -636,7 +694,12 @@ class PostAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
 
 
 @admin.register(Comment)
-class CommentAdmin(NarrowFeaturedOrderMixin, admin.ModelAdmin):
+class CommentAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin):
+    form = CommentAdminForm
+    readonly_fields = (
+        "home_photo_preview",
+    )
+
     list_display = (
         "short_body",
         "target_label",
@@ -861,6 +924,58 @@ class MemberPhotoAdmin(admin.ModelAdmin):
                 photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
             delete_uploaded_photos(photo.url)
         queryset.delete()
+
+
+@admin.register(PollSuggestion)
+class PollSuggestionAdmin(admin.ModelAdmin):
+    """
+    みんなからのアンケートの提案。「アンケートの下書きを作る」で下書きにしてから、
+    文や選択肢を整えて公開する。
+    """
+
+    list_display = ("question", "status", "suggested_by", "created_at", "poll")
+    list_filter = ("status",)
+    search_fields = ("question", "choices", "note")
+    readonly_fields = ("user", "created_at", "poll")
+    fields = ("question", "choices", "note", "status", "user", "created_at", "poll")
+    actions = ("make_draft_polls", "mark_declined")
+
+    @admin.display(description="提案した人")
+    def suggested_by(self, obj):
+        return display_name(obj.user) if obj.user else "ゲスト"
+
+    @admin.action(description="アンケートの下書きを作る")
+    def make_draft_polls(self, request, queryset):
+
+        made = 0
+
+        for suggestion in queryset.filter(poll__isnull=True):
+
+            poll = Post.objects.create(
+                kind="poll",
+                title=suggestion.question,
+                body=suggestion.note,
+                status="draft",
+                author=request.user,
+            )
+
+            for order, label in enumerate(suggestion.choice_lines(), start=1):
+                PollChoice.objects.create(post=poll, label=label, order=order)
+
+            suggestion.poll = poll
+            suggestion.status = "adopted"
+            suggestion.save(update_fields=["poll", "status"])
+            made += 1
+
+        self.message_user(
+            request,
+            f"{made}件のアンケートを下書きで作りました。「みんなの投稿」で文と選択肢を整えて公開してください。",
+            messages.SUCCESS,
+        )
+
+    @admin.action(description="見送りにする")
+    def mark_declined(self, request, queryset):
+        queryset.update(status="declined")
 
 
 @admin.register(DisplaySettings)

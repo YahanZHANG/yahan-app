@@ -1,5 +1,6 @@
 import json
 import random
+import uuid
 
 from collections import defaultdict
 from datetime import timedelta
@@ -25,6 +26,7 @@ from .forms import (
     CommentEditForm,
     CommentForm,
     FeedbackForm,
+    PollSuggestionForm,
     PostForm,
     RecipeSubmissionForm,
     SubstituteForm,
@@ -231,6 +233,10 @@ def open_questions():
 # HOME の「みんなの投稿・コメント」に出す新着の数
 HOME_ACTIVITY_COUNT = 15
 
+# HOMEのアンケート: 新しい順にこの件数から「まだ答えていないもの」を探し、ほかに数件を並べる
+HOME_POLL_SCAN = 10
+HOME_OTHER_POLLS = 2
+
 # 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
 HOME_SOLVED_DAYS = 2
 
@@ -325,7 +331,40 @@ def featured_items(limit=3):
     return (picked + popular)[:limit]
 
 
+def home_polls(request):
+    """
+    HOMEのアンケート。大きく出す1つ (まだ答えていない中でいちばん新しいもの。
+    全部答えていたらいちばん新しいもの) と、ほかの新しいアンケート。
+    """
+
+    # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
+    polls = list(
+        Post.objects
+        .filter(status="published")
+        .filter(Q(kind="poll") | Q(kind="column", choices__isnull=False))
+        .annotate(vote_count=Count("votes", distinct=True), started=Max("choices__pk"))
+        .order_by(F("started").desc(nulls_last=True), "-created_at")[:HOME_POLL_SCAN]
+    )
+
+    if not polls:
+        return None, []
+
+    answered = my_votes(request, polls)
+    main = next((poll for poll in polls if poll.pk not in answered), polls[0])
+
+    # 投票した直後は、答えたアンケートの結果をそのまま見せる
+    just_voted = request.GET.get("poll", "")
+    main = next((poll for poll in polls if str(poll.pk) == just_voted), main)
+    attach_poll_results([main], request)
+
+    others = [poll for poll in polls if poll.pk != main.pk][:HOME_OTHER_POLLS]
+
+    return main, others
+
+
 def home(request):
+
+    main_poll, other_polls = home_polls(request)
 
     return render(
         request,
@@ -333,14 +372,8 @@ def home(request):
         {
             "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
-            # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
-            "polls": (
-                Post.objects
-                .filter(status="published")
-                .filter(Q(kind="poll") | Q(kind="column", choices__isnull=False))
-                .annotate(vote_count=Count("votes", distinct=True), started=Max("choices__pk"))
-                .order_by(F("started").desc(nulls_last=True), "-created_at")[:3]
-            ),
+            "main_poll": main_poll,
+            "other_polls": other_polls,
             "featured": featured_items(),
             "display": DisplaySettings.load(),
             "announcements": list(Announcement.current()),
@@ -945,7 +978,7 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
-            **split_polls(request.user, related_posts([ingredient])),
+            **split_polls(request, related_posts([ingredient])),
             **photo_context(request, ingredient=ingredient),
             **comment_context(request, ingredient=ingredient),
         },
@@ -2193,13 +2226,16 @@ FAVORITE_SORTS = [
 ]
 
 
-@login_required
 def my_favorites(request):
     """
     お気に入りに保存したレシピ。家族の評価順にも並べられる。
+    レシピの「お気に入り」タブなので、ログインしていない人には登録の案内を出す。
     """
 
     sort = request.GET.get("sort", "new")
+
+    if not request.user.is_authenticated:
+        return render(request, "washoku/my_favorites.html", {"recipes": [], "sort": sort, "sorts": FAVORITE_SORTS})
 
     favorites = list(
         RecipeFavorite.objects
@@ -2451,7 +2487,7 @@ POST_KIND_TEXT = {
     "poll": {
         "url_name": "washoku:poll_list",
         "heading": "みんなのアンケート",
-        "lead": "結果はだれでも見られます。投票は会員だけ。",
+        "lead": "ログイン不要で、誰でも投票できます。アンケートの提案も大歓迎！",
         "new_label": "アンケートを作る",
     },
 }
@@ -2632,7 +2668,88 @@ def poll_list(request):
     return post_list(request, "poll")
 
 
-def attach_poll_results(polls, user):
+POLL_SUGGEST_INTERVAL_SECONDS = 60
+
+
+def poll_suggest(request):
+    """
+    アンケートの提案。ログインしていなくても送れる。管理者が確認してからアンケートにする。
+    """
+
+    form = PollSuggestionForm()
+    url = reverse("washoku:poll_suggest")
+
+    if request.method == "POST":
+
+        form = PollSuggestionForm(request.POST)
+
+        last_sent = request.session.get("washoku_poll_suggest_sent_at", 0)
+
+        if timezone.now().timestamp() - last_sent < POLL_SUGGEST_INTERVAL_SECONDS:
+            return redirect(f"{url}?sent=wait")
+
+        if form.is_valid():
+
+            # 隠し項目 (website) が埋まっているのはボットなので保存しない
+            if not form.cleaned_data.get("website"):
+
+                suggestion = form.save(commit=False)
+                suggestion.user = request.user if request.user.is_authenticated else None
+                suggestion.save()
+
+                send_admin_alert(
+                    "アンケートの提案",
+                    f"{suggestion.question}\n{suggestion.choices}\n\n"
+                    + request.build_absolute_uri(
+                        reverse("admin:washoku_pollsuggestion_change", args=[suggestion.pk])
+                    ),
+                )
+
+            request.session["washoku_poll_suggest_sent_at"] = timezone.now().timestamp()
+
+            return redirect(f"{url}?sent=1")
+
+    return render(
+        request,
+        "washoku/poll_suggest.html",
+        {
+            "form": form,
+            "sent": request.GET.get("sent", ""),
+        },
+    )
+
+
+GUEST_VOTER_COOKIE = "washoku_voter"
+
+
+def guest_voter_key(request):
+    """ログインしていない人の票の目印 (ブラウザごとの cookie)。なければ空。"""
+
+    value = request.COOKIES.get(GUEST_VOTER_COOKIE, "")
+
+    try:
+        return str(uuid.UUID(value))
+    except ValueError:
+        return ""
+
+
+def my_votes(request, polls):
+    """{アンケートのpk: 自分が選んだ選択肢のpk}。会員は会員の票、それ以外はこのブラウザの票。"""
+
+    votes = PollVote.objects.filter(post__in=polls)
+
+    if request.user.is_authenticated:
+        votes = votes.filter(user=request.user)
+    else:
+        key = guest_voter_key(request)
+        if not key:
+            return {}
+        votes = votes.filter(user__isnull=True, voter_key=key)
+
+    return dict(votes.values_list("post_id", "choice_id"))
+
+
+def attach_poll_results(polls, request):
     """
     アンケートごとに、選択肢・票数・割合・自分の票を poll.results に入れる。
     """
@@ -2650,14 +2767,7 @@ def attach_poll_results(polls, user):
         .values_list("choice", "count")
     )
 
-    mine = {}
-
-    if user.is_authenticated:
-        mine = dict(
-            PollVote.objects
-            .filter(post__in=polls, user=user)
-            .values_list("post_id", "choice_id")
-        )
+    mine = my_votes(request, polls)
 
     choices = defaultdict(list)
 
@@ -2684,12 +2794,12 @@ def attach_poll_results(polls, user):
     return polls
 
 
-def split_polls(user, posts):
+def split_polls(request, posts):
     """
     関連する投稿のうち、アンケートはその場で投票できるように分けて出す。
     """
 
-    polls = attach_poll_results([post for post in posts if post.kind == "poll"], user)
+    polls = attach_poll_results([post for post in posts if post.kind == "poll"], request)
 
     # アンケートについたコメントも、食材ページのアンケートの下に新しい順で少し見せる
     for poll in polls:
@@ -2703,9 +2813,9 @@ def split_polls(user, posts):
     }
 
 
-@login_required
 @require_POST
 def poll_vote(request, pk):
+    """会員でもログインしていない人でも、1つのアンケートに1票 (あとから選び直せる)。"""
 
     post = get_object_or_404(
         Post.objects.filter(status="published", kind__in=("poll", "column")),
@@ -2718,18 +2828,35 @@ def poll_vote(request, pk):
         post=post,
     )
 
-    PollVote.objects.update_or_create(
-        post=post,
-        user=request.user,
-        defaults={"choice": choice},
-    )
+    key = ""
+
+    if request.user.is_authenticated:
+        PollVote.objects.update_or_create(post=post, user=request.user, defaults={"choice": choice})
+    else:
+        key = guest_voter_key(request) or str(uuid.uuid4())
+        PollVote.objects.update_or_create(post=post, user=None, voter_key=key, defaults={"choice": choice})
 
     url = request.POST.get("next", "")
 
     if not url_has_allowed_host_and_scheme(url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         url = reverse("washoku:post_detail", args=[post.pk])
 
-    return redirect(f"{url}#poll-{post.pk}")
+    if url == reverse("washoku:home"):
+        url = f"{url}?poll={post.pk}"
+
+    response = redirect(f"{url}#poll-{post.pk}")
+
+    if key:
+        response.set_cookie(
+            GUEST_VOTER_COOKIE,
+            key,
+            max_age=60 * 60 * 24 * 365 * 2,
+            httponly=True,
+            samesite="Lax",
+            secure=request.is_secure(),
+        )
+
+    return response
 
 
 def post_detail(request, pk):
@@ -2740,11 +2867,11 @@ def post_detail(request, pk):
     )
 
     if post.kind == "poll":
-        attach_poll_results([post], request.user)
+        attach_poll_results([post], request)
 
     # コラムに選択肢があれば、最後にアンケートを付ける
     if post.kind == "column" and post.choices.exists():
-        attach_poll_results([post], request.user)
+        attach_poll_results([post], request)
 
     return render(
         request,

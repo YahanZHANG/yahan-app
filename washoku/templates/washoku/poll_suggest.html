@@ -1,0 +1,43 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}アンケートを提案する | スイスで和食{% endblock %}
+
+{% block content %}
+
+{% include "washoku/includes/community_tabs.html" %}
+
+<h1>アンケートを提案する</h1>
+
+<p class="washoku-lead">みんなに聞いてみたいことを教えてください。管理者が確認してからアンケートにします。ログインしなくても送れます。</p>
+
+{% if sent == "1" %}
+    <p class="washoku-done" role="status">ありがとうございます。送信しました。</p>
+    <p><a href="{% url 'washoku:poll_list' %}">アンケート一覧へ</a></p>
+{% else %}
+    {% if sent == "wait" %}
+        <p class="washoku-message washoku-message-error" role="alert">続けて送信されました。少し時間をあけてからもう一度お試しください。</p>
+    {% endif %}
+
+    <form method="post" class="washoku-form" novalidate>
+        {% csrf_token %}
+
+        {% for field in form.visible_fields %}{% if field.name != "website" %}
+            <div class="washoku-field{% if field.errors %} has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="washoku-required">必須</span>{% endif %}
+                </label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <p class="washoku-field-error" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}{% endfor %}
+
+        {{ form.website }}
+
+        <button type="submit" class="washoku-button washoku-button-wide">送信する</button>
+    </form>
+{% endif %}
+
+{% endblock %}

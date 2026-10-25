@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from django import forms
 
-from .models import Comment, Feedback, Ingredient, MoodTag, Post, Recipe, Substitute
+from .models import Comment, Feedback, Ingredient, MoodTag, PollSuggestion, Post, Recipe, Substitute
 
 
 def photo_field(label="写真（なくてもOK）"):
@@ -94,6 +94,55 @@ class FeedbackForm(forms.ModelForm):
             raise forms.ValidationError("内容を入力してください。")
 
         return message
+
+
+class PollSuggestionForm(forms.ModelForm):
+
+    # 人には見えない項目。全部の項目を埋めるボットだけが入力する。
+    website = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "tabindex": "-1",
+                "autocomplete": "off",
+                "class": "washoku-trap",
+                "aria-hidden": "true",
+            }
+        ),
+    )
+
+    class Meta:
+        model = PollSuggestion
+        fields = ["question", "choices", "note"]
+        labels = {
+            "question": "聞いてみたいこと",
+            "choices": "選択肢（なくてもOK・1行に1つ）",
+            "note": "ひとこと（なくてもOK）",
+        }
+        help_texts = {"choices": ""}
+        widgets = {
+            "question": forms.TextInput(attrs={"maxlength": 120, "placeholder": "例: 納豆はどこで買っている？"}),
+            "choices": forms.Textarea(attrs={"rows": 4, "maxlength": 400, "placeholder": "例:\nアジア食材店\nネット通販\n自分で作る"}),
+            "note": forms.Textarea(attrs={"rows": 2, "maxlength": 300}),
+        }
+
+    def clean_question(self):
+
+        question = self.cleaned_data["question"].strip()
+
+        if not question:
+            raise forms.ValidationError("聞いてみたいことを入力してください。")
+
+        return question
+
+    def clean_choices(self):
+
+        lines = [line.strip()[:60] for line in self.cleaned_data["choices"].splitlines() if line.strip()]
+
+        if len(lines) > 8:
+            raise forms.ValidationError("選択肢は8つまでにしてください。")
+
+        return "\n".join(lines)
 
 
 class PostForm(forms.ModelForm):

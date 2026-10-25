@@ -53,6 +53,7 @@ urlpatterns = [
     path("products/", views.product_list, name="product_list"),
     path("links/", views.link_list, name="link_list"),
     path("polls/", views.poll_list, name="poll_list"),
+    path("polls/suggest/", views.poll_suggest, name="poll_suggest"),
     path("posts/<int:pk>/vote/", views.poll_vote, name="poll_vote"),
     path("posts/<int:pk>/", views.post_detail, name="post_detail"),
     path("posts/<int:pk>/react/", views.post_react, name="post_react"),

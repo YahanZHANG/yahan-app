@@ -27,6 +27,7 @@ from .models import (
     Notification,
     CommentReaction,
     PollChoice,
+    PollSuggestion,
     PollVote,
     Post,
     PostReaction,
@@ -636,9 +637,25 @@ class AboutAndMyPageTests(TestCase):
         # マイページはテーマ切り替えとログイン案内のため誰でも開ける
         self.assertContains(self.client.get(reverse("washoku:my_page")), "washoku-theme-toggle")
 
-        for name in ["my_favorites", "family_favorites", "my_notes", "my_comments"]:
+        for name in ["family_favorites", "my_notes", "my_comments"]:
             response = self.client.get(reverse(f"washoku:{name}"))
             self.assertEqual(response.status_code, 302, name)
+
+        # お気に入りはレシピのタブなので、ログインしていなくても開けて登録の案内が出る
+        response = self.client.get(reverse("washoku:my_favorites"))
+        self.assertContains(response, "お気に入りの保存は")
+        self.assertContains(response, "レシピを探す")
+
+    def test_menu_and_tabs(self):
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "<span>コミュニティ</span>", html=True)
+        self.assertContains(home, "<span>マイページ</span>", html=True)
+        self.assertNotContains(home, "<span>お店</span>", html=True)
+
+        stores = self.client.get(reverse("washoku:store_list"))
+        for label in ["食材", "代わり", "お店", "おすすめ"]:
+            self.assertContains(stores, f">{label}</a>")
 
     def test_my_pages_list_favorites_and_comments(self):
 
@@ -727,13 +744,14 @@ class RecipeSubmissionTests(TestCase):
 
 class MenuTests(TestCase):
 
-    def test_phone_tabbar_ends_with_community_and_header_links_my_page(self):
+    def test_phone_tabbar_has_community_and_my_page(self):
 
         html = self.client.get(reverse("washoku:home")).content.decode()
         tabbar = html[html.index('class="washoku-tabbar"'):]
 
         self.assertIn(reverse("washoku:question_list"), tabbar)
-        self.assertNotIn(reverse("washoku:my_page"), tabbar)
+        self.assertIn(reverse("washoku:my_page"), tabbar)
+        self.assertNotIn(reverse("washoku:store_list"), tabbar)
         self.assertIn('class="washoku-me', html)
         self.assertNotIn("家庭料理のレシピ集です", html)
 
@@ -926,14 +944,16 @@ class NutritionTests(TestCase):
         response = self.client.get(reverse("washoku:home"))
 
         self.assertContains(response, reverse("washoku:find_by_nutrition"))
-        self.assertContains(response, "washoku-entry-random")
-        self.assertContains(response, f'action="{reverse("washoku:search")}"')
-        self.assertNotContains(response, "みんなの知恵")
+        self.assertContains(response, reverse("washoku:find_by_ingredients"))
+        self.assertContains(response, "washoku-picker-random")
+        self.assertContains(response, "今日のごはん、何にする？")
+        # 検索はヘッダーにあるので、HOME の検索欄はなし
+        self.assertNotContains(response, 'placeholder="料理、食材、お店などを探す"')
+        self.assertNotContains(response, "<h2>みんなの知恵")
 
         response = self.client.get(reverse("washoku:recipe_list"))
         self.assertContains(response, "ほかの探し方")
         self.assertContains(response, reverse("washoku:my_favorites"))
-        self.assertContains(response, reverse("washoku:family_favorites"))
 
 
 class PostTests(TestCase):
@@ -1916,21 +1936,33 @@ class PollTests(TestCase):
         self.assertIn("ぶっちゃけ、スイスで生卵を食べたことある？", titles)
         self.assertIn("じゃがいもは、いつも何色の袋を買っている？", titles)
 
-    def test_results_are_public_but_voting_needs_login(self):
+    def test_guests_vote_once_per_browser_without_login(self):
 
         self.vote(self.green)
         self.client.logout()
 
+        # 結果は投票したあとにだけ見える
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertNotContains(page, "100%")
+        self.assertContains(page, "ログイン不要！投票すると結果が見られる")
+        self.assertContains(page, 'name="choice"')
 
-        self.assertContains(page, "100%")
-        self.assertContains(page, "1票")
-        self.assertContains(page, "ログインして投票")
-        self.assertNotContains(page, 'name="choice"')
+        # ログインしていない人も投票でき、同じブラウザなら選び直しになる
+        self.client.post(reverse("washoku:poll_vote", args=[self.poll.pk]), {"choice": self.red.pk})
+        self.client.post(reverse("washoku:poll_vote", args=[self.poll.pk]), {"choice": self.green.pk})
+        self.assertEqual(PollVote.objects.count(), 2)
+        guest_vote = PollVote.objects.get(user__isnull=True)
+        self.assertEqual(guest_vote.choice, self.green)
+        self.assertTrue(guest_vote.voter_key)
 
-        response = self.client.post(reverse("washoku:poll_vote", args=[self.poll.pk]), {"choice": self.red.pk})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(PollVote.objects.count(), 1)
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertContains(page, "✓ 緑")
+        self.assertContains(page, "2票")
+
+        # 別のブラウザ (cookie なし) は別の1票
+        self.client.cookies.clear()
+        self.client.post(reverse("washoku:poll_vote", args=[self.poll.pk]), {"choice": self.red.pk})
+        self.assertEqual(PollVote.objects.filter(user__isnull=True).count(), 2)
 
     def test_one_vote_per_member_and_it_can_be_changed(self):
 
@@ -2019,7 +2051,7 @@ class FeaturedTests(TestCase):
             [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
             [(column.pk, 2), (comment.pk, 1)],
         )
-        self.assertContains(home, "washoku-featured")
+        self.assertContains(home, "washoku-featured-top")
 
 
 class ColumnOrderTests(TestCase):
@@ -2092,6 +2124,15 @@ class AdminPickTests(TestCase):
         home = self.client.get(reverse("washoku:home"))
         self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
         self.assertContains(home, "解決済")
+        self.assertContains(home, 'class="is-solved"')
+
+        # 管理者が写真を足したときだけ、カードに写真が出る
+        self.assertNotContains(home, "https://example.com/q.jpg")
+        Comment.objects.filter(pk=open_q.pk).update(home_photo_url="https://example.com/q.jpg")
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, '<img src="https://example.com/q.jpg"')
+        self.assertContains(home, "data-slider-next")
+        self.assertContains(home, "答えを募集中")
 
         # 3日たつと消える (未解決はずっと残る)
         Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))
@@ -2226,10 +2267,10 @@ class ColumnPollTests(TestCase):
         self.assertEqual(PollVote.objects.get().choice, vollrahm)
         self.assertContains(self.client.get(reverse("washoku:post_detail", args=[column.pk])), "100%")
 
-        # HOME のアンケート欄にも、新しいアンケートとして出る
-        polls = self.client.get(reverse("washoku:home")).context["polls"]
-        self.assertEqual([(poll.pk, poll.vote_count) for poll in polls], [(column.pk, 1)])
-        self.assertContains(self.client.get(reverse("washoku:home")), f"/washoku/posts/{column.pk}/#poll-{column.pk}")
+        # HOME の大きいアンケート欄にも、新しいアンケートとして出る
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual(home.context["main_poll"].pk, column.pk)
+        self.assertContains(home, f"/washoku/posts/{column.pk}/#poll-{column.pk}")
 
 
 
@@ -2317,3 +2358,66 @@ class ColumnListDisplayTests(TestCase):
         self.assertContains(popular, "washoku-sort-switch")
         self.assertEqual(titles(popular), ["古いけど人気", "新しいコラム"])
         self.assertEqual([post.reader_count for post in popular.context["posts"]], [2, 0])
+
+
+class PollSuggestionTests(TestCase):
+
+    def test_guest_suggests_and_admin_makes_a_draft_poll(self):
+
+        url = reverse("washoku:poll_suggest")
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+        with mock.patch("washoku.views.send_admin_alert") as alert:
+            response = self.client.post(url, {"question": "納豆はどこで買っている？", "choices": "アジア食材店\n\nネット通販\n自分で作る", "note": ""})
+
+        self.assertRedirects(response, f"{url}?sent=1")
+        alert.assert_called_once()
+        suggestion = PollSuggestion.objects.get()
+        self.assertIsNone(suggestion.user)
+        self.assertEqual(suggestion.choice_lines(), ["アジア食材店", "ネット通販", "自分で作る"])
+
+        # ボット (隠し項目あり) は保存しない
+        session = self.client.session
+        session["washoku_poll_suggest_sent_at"] = 0
+        session.save()
+        self.client.post(url, {"question": "spam", "choices": "", "website": "http://spam"})
+        self.assertEqual(PollSuggestion.objects.count(), 1)
+
+        User = get_user_model()
+        boss = User.objects.create_superuser("boss", password="x")
+        self.client.force_login(boss)
+        self.client.post(
+            reverse("admin:washoku_pollsuggestion_changelist"),
+            {"action": "make_draft_polls", "_selected_action": [suggestion.pk]},
+        )
+
+        suggestion.refresh_from_db()
+        self.assertEqual(suggestion.status, "adopted")
+        self.assertEqual(suggestion.poll.status, "draft")
+        self.assertEqual(suggestion.poll.kind, "poll")
+        self.assertEqual(list(suggestion.poll.choices.values_list("label", flat=True)), ["アジア食材店", "ネット通販", "自分で作る"])
+
+
+class HomePollTests(TestCase):
+
+    def test_home_shows_the_newest_poll_not_yet_answered(self):
+
+        older = Post.objects.create(kind="poll", title="古いアンケート", status="published")
+        older_choice = PollChoice.objects.create(post=older, label="はい", order=1)
+        newer = Post.objects.create(kind="poll", title="新しいアンケート", status="published")
+        newer_choice = PollChoice.objects.create(post=newer, label="いいえ", order=1)
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual(home.context["main_poll"].pk, newer.pk)
+        self.assertEqual([poll.pk for poll in home.context["other_polls"]], [older.pk])
+        self.assertContains(home, "聞いてみたいことを提案する")
+
+        # 新しいほうに答えた直後はその結果を見せ、次に開いたときは、まだ答えていない古いほうが大きく出る
+        response = self.client.post(reverse("washoku:poll_vote", args=[newer.pk]), {"choice": newer_choice.pk, "next": "/washoku/"})
+        self.assertRedirects(response, f"/washoku/?poll={newer.pk}#poll-{newer.pk}", fetch_redirect_response=False)
+        self.assertEqual(self.client.get(f"/washoku/?poll={newer.pk}").context["main_poll"].pk, newer.pk)
+        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"].pk, older.pk)
+
+        # 全部答えたら、いちばん新しいもの
+        self.client.post(reverse("washoku:poll_vote", args=[older.pk]), {"choice": older_choice.pk, "next": "/washoku/"})
+        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"].pk, newer.pk)

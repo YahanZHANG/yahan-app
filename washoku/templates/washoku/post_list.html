@@ -20,8 +20,10 @@
     </span>
     {% endif %}
 </p>
-{% elif user.is_staff %}
-<p><a class="washoku-button" href="{% url 'admin:washoku_post_add' %}?kind=poll&amp;status=published"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a></p>
+{% else %}
+<p class="washoku-list-actions">
+    <a class="washoku-button" href="{% url 'washoku:poll_suggest' %}"><i class="bi bi-lightbulb" aria-hidden="true"></i> アンケートを提案する</a>
+</p>
 {% endif %}
 
 {% if kind == "product" %}
