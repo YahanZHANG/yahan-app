@@ -45,7 +45,7 @@
 <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
 <section class="washoku-pick-box" aria-labelledby="washoku-pick-title">
-<h2 id="washoku-pick-title" class="washoku-pick-title">🍚 今日のごはん、何にする？</h2>
+<h2 id="washoku-pick-title" class="washoku-pick-title">今日のごはん、何にする？</h2>
 <nav class="washoku-pickers" aria-label="レシピを選ぶ">
     <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-picker">
         <span aria-hidden="true">🥕</span>
@@ -62,8 +62,11 @@
 </nav>
 </section>
 
+{% if main_poll or featured or questions %}
+<div class="washoku-home-slider" tabindex="0" aria-label="アンケート・注目・質問（横にスワイプ）">
+
 {% if main_poll %}
-<section class="washoku-home-poll" aria-labelledby="washoku-home-poll-label">
+<section class="washoku-home-slide washoku-home-poll" aria-labelledby="washoku-home-poll-label">
     <p class="washoku-home-poll-head">
         <span id="washoku-home-poll-label" class="washoku-home-poll-badge">📊 みんなのアンケート</span>
         <a href="{% url 'washoku:poll_list' %}">すべて見る ›</a>
@@ -80,31 +83,49 @@
 </section>
 {% endif %}
 
-{% if featured or questions %}
-<section class="washoku-swipe-section" aria-label="注目と質問">
-    <div class="washoku-swipe" tabindex="0">
-        {% for entry in featured %}
-            {% with item=entry.item %}
-            <a class="washoku-swipe-card is-featured" href="{{ item.get_absolute_url }}">
-                <span class="washoku-swipe-tag">⭐ 注目</span>
-                <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body }}{% endif %}</strong>
-                {% if display.home_featured_show_stamps and entry.count %}<small>😊{{ entry.count }}</small>{% endif %}
-            </a>
-            {% endwith %}
-        {% endfor %}
-        {% for question in questions %}
-            <a class="washoku-swipe-card is-question{% if question.has_answer %} is-solved{% endif %}" href="{{ question.get_absolute_url }}">
-                <span class="washoku-swipe-tag">{% if question.has_answer %}✅ 解決済{% else %}💬 質問{% endif %}</span>
-                <strong>{{ question.body }}</strong>
-                {% if not question.has_answer %}<small>答えを待っています</small>{% endif %}
-            </a>
-        {% endfor %}
-        <a class="washoku-swipe-card is-more" href="{% url 'washoku:question_list' %}">
-            <span aria-hidden="true">💬</span>
-            <strong>質問をすべて見る</strong>
-        </a>
-    </div>
+{% if featured %}
+<section class="washoku-home-slide washoku-home-featured" aria-labelledby="washoku-home-featured-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-featured-label" class="washoku-home-poll-badge">⭐ 注目</span>
+        <a href="{% url 'washoku:column_list' %}">コラム ›</a>
+    </p>
+    {% with entry=featured.0 %}{% with item=entry.item %}
+    <a class="washoku-featured-top" href="{{ item.get_absolute_url }}">
+        {% if entry.kind == "post" and item.photo_1 %}<img src="{{ item.photo_1 }}" alt="" loading="lazy">{% elif entry.kind == "comment" and item.photo_url %}<img src="{{ item.photo_url }}" alt="" loading="lazy">{% endif %}
+        <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:80 }}{% endif %}</strong>
+        {% if entry.kind == "post" %}<span class="washoku-featured-excerpt">{{ item.body|striptags|truncatechars:120 }}</span>{% endif %}
+        <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
+    </a>
+    {% endwith %}{% endwith %}
+    {% if featured|length > 1 %}
+    <ul class="washoku-featured-more">
+        {% for entry in featured|slice:"1:3" %}{% with item=entry.item %}
+            <li><a href="{{ item.get_absolute_url }}"><strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:60 }}{% endif %}</strong><small>{{ item.author|display_name }}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></a></li>
+        {% endwith %}{% endfor %}
+    </ul>
+    {% endif %}
 </section>
+{% endif %}
+
+{% if questions %}
+<section class="washoku-home-slide washoku-home-questions" aria-labelledby="washoku-home-questions-label">
+    <p class="washoku-home-poll-head">
+        <span id="washoku-home-questions-label" class="washoku-home-poll-badge">💬 質問</span>
+        <a href="{% url 'washoku:question_list' %}">すべて見る ›</a>
+    </p>
+    <ul class="washoku-home-question-list">
+        {% for question in questions %}
+            <li><a href="{{ question.get_absolute_url }}" class="{% if question.has_answer %}is-solved{% else %}is-open{% endif %}">
+                <span class="washoku-question-state">{% if question.has_answer %}✓ 解決済{% else %}答えを募集中{% endif %}</span>
+                <strong>{{ question.body|truncatechars:70 }}</strong>
+                <small>{{ question.target.name }}{% if question.answer_count %} ・ 返信{{ question.answer_count }}件{% endif %}</small>
+            </a></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+</div>
 {% endif %}
 
 {% if not user.is_authenticated %}

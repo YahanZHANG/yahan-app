@@ -2226,13 +2226,16 @@ FAVORITE_SORTS = [
 ]
 
 
-@login_required
 def my_favorites(request):
     """
     お気に入りに保存したレシピ。家族の評価順にも並べられる。
+    レシピの「お気に入り」タブなので、ログインしていない人には登録の案内を出す。
     """
 
     sort = request.GET.get("sort", "new")
+
+    if not request.user.is_authenticated:
+        return render(request, "washoku/my_favorites.html", {"recipes": [], "sort": sort, "sorts": FAVORITE_SORTS})
 
     favorites = list(
         RecipeFavorite.objects

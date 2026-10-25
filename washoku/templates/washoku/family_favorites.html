@@ -5,9 +5,11 @@
 
 {% block content %}
 
-<h1>お気に入り</h1>
+{% include "washoku/includes/recipe_tabs.html" %}
 
-{% include "washoku/includes/favorite_tabs.html" %}
+<h1 class="washoku-visually-hidden">お気に入り</h1>
+
+{% if user.is_authenticated %}{% include "washoku/includes/favorite_tabs.html" %}{% endif %}
 
 <p class="washoku-lead">{% if has_family %}家族みんなの評価の平均が高い順です。{% else %}あなたの評価が高い順です。{% endif %}評価は、あなたと家族のメンバーにだけ見えます。</p>
 

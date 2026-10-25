@@ -1,0 +1,6 @@
+{% with name=request.resolver_match.url_name %}
+<nav class="washoku-subtabs" aria-label="レシピのページ">
+    <a href="{% url 'washoku:recipe_list' %}" class="{% if name == 'recipe_list' %}active{% endif %}">レシピを探す</a>
+    <a href="{% url 'washoku:my_favorites' %}?sort=new" class="{% if name == 'my_favorites' or name == 'family_favorites' %}active{% endif %}">お気に入り</a>
+</nav>
+{% endwith %}

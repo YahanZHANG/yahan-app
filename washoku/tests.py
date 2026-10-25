@@ -637,9 +637,25 @@ class AboutAndMyPageTests(TestCase):
         # マイページはテーマ切り替えとログイン案内のため誰でも開ける
         self.assertContains(self.client.get(reverse("washoku:my_page")), "washoku-theme-toggle")
 
-        for name in ["my_favorites", "family_favorites", "my_notes", "my_comments"]:
+        for name in ["family_favorites", "my_notes", "my_comments"]:
             response = self.client.get(reverse(f"washoku:{name}"))
             self.assertEqual(response.status_code, 302, name)
+
+        # お気に入りはレシピのタブなので、ログインしていなくても開けて登録の案内が出る
+        response = self.client.get(reverse("washoku:my_favorites"))
+        self.assertContains(response, "お気に入りの保存は")
+        self.assertContains(response, "レシピを探す")
+
+    def test_menu_and_tabs(self):
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "<span>コミュニティ</span>", html=True)
+        self.assertContains(home, "<span>マイページ</span>", html=True)
+        self.assertNotContains(home, "<span>お店</span>", html=True)
+
+        stores = self.client.get(reverse("washoku:store_list"))
+        for label in ["食材", "代わり", "お店", "おすすめ"]:
+            self.assertContains(stores, f">{label}</a>")
 
     def test_my_pages_list_favorites_and_comments(self):
 
@@ -728,13 +744,14 @@ class RecipeSubmissionTests(TestCase):
 
 class MenuTests(TestCase):
 
-    def test_phone_tabbar_ends_with_community_and_header_links_my_page(self):
+    def test_phone_tabbar_has_community_and_my_page(self):
 
         html = self.client.get(reverse("washoku:home")).content.decode()
         tabbar = html[html.index('class="washoku-tabbar"'):]
 
         self.assertIn(reverse("washoku:question_list"), tabbar)
-        self.assertNotIn(reverse("washoku:my_page"), tabbar)
+        self.assertIn(reverse("washoku:my_page"), tabbar)
+        self.assertNotIn(reverse("washoku:store_list"), tabbar)
         self.assertIn('class="washoku-me', html)
         self.assertNotIn("家庭料理のレシピ集です", html)
 
@@ -937,7 +954,6 @@ class NutritionTests(TestCase):
         response = self.client.get(reverse("washoku:recipe_list"))
         self.assertContains(response, "ほかの探し方")
         self.assertContains(response, reverse("washoku:my_favorites"))
-        self.assertContains(response, reverse("washoku:family_favorites"))
 
 
 class PostTests(TestCase):
@@ -2035,7 +2051,7 @@ class FeaturedTests(TestCase):
             [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
             [(column.pk, 2), (comment.pk, 1)],
         )
-        self.assertContains(home, "washoku-swipe-card is-featured")
+        self.assertContains(home, "washoku-featured-top")
 
 
 class ColumnOrderTests(TestCase):
@@ -2108,8 +2124,8 @@ class AdminPickTests(TestCase):
         home = self.client.get(reverse("washoku:home"))
         self.assertEqual([q.pk for q in home.context["questions"]], [open_q.pk, solved.pk])
         self.assertContains(home, "解決済")
-        self.assertContains(home, 'class="washoku-swipe-card is-question is-solved"')
-        self.assertContains(home, "答えを待っています")
+        self.assertContains(home, 'class="is-solved"')
+        self.assertContains(home, "答えを募集中")
 
         # 3日たつと消える (未解決はずっと残る)
         Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))

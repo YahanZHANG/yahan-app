@@ -5,11 +5,17 @@
 
 {% block content %}
 
-<h1>お気に入り</h1>
+{% include "washoku/includes/recipe_tabs.html" %}
 
-{% include "washoku/includes/favorite_tabs.html" %}
+<h1 class="washoku-visually-hidden">お気に入り</h1>
 
+{% if user.is_authenticated %}{% include "washoku/includes/favorite_tabs.html" %}{% endif %}
+
+{% if user.is_authenticated %}
 <p class="washoku-lead">レシピの「♡ お気に入り」で保存したものです。あなたにだけ見えます。</p>
+{% else %}
+{% include "washoku/includes/join_prompt.html" with reason="お気に入りの保存" %}
+{% endif %}
 
 {% if recipes %}
     <div class="washoku-grid">
@@ -17,7 +23,7 @@
             {% include "washoku/includes/recipe_card.html" %}
         {% endfor %}
     </div>
-{% else %}
+{% elif user.is_authenticated %}
     <p class="washoku-empty">まだお気に入りはありません。</p>
 {% endif %}
 

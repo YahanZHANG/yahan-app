@@ -3788,115 +3788,221 @@ button.washoku-poll-row:hover {
     }
 }
 
-/* HOME：注目と質問の横スワイプカード */
-.washoku-swipe-section {
-    margin: 18px 0;
-}
-
-.washoku-swipe {
+/* HOME：アンケート・注目・質問を横にスワイプ (次のカードが少し見える) */
+.washoku-home-slider {
     display: flex;
-    gap: 10px;
-    margin: 0 -16px;
-    padding: 2px 16px 8px;
+    align-items: stretch;
+    gap: 12px;
+    margin: 0 -16px 18px;
+    padding: 0 16px 6px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-padding: 0 16px;
     scrollbar-width: none;
 }
 
-.washoku-swipe::-webkit-scrollbar {
+.washoku-home-slider::-webkit-scrollbar {
     display: none;
 }
 
-.washoku-swipe-card {
+.washoku-home-slide {
     display: flex;
-    flex: 0 0 78%;
+    flex: 0 0 80%;
     flex-direction: column;
-    gap: 8px;
-    min-height: 96px;
-    padding: 12px 16px;
-    border: 1px solid var(--washoku-border);
-    border-radius: 18px;
-    background: var(--washoku-surface);
-    color: inherit;
-    text-decoration: none;
+    min-width: 0;
     scroll-snap-align: start;
 }
 
-.washoku-swipe-card strong {
-    display: -webkit-box;
-    overflow: hidden;
-    font-size: 16px;
-    line-height: 1.5;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+.washoku-home-slider .washoku-home-poll {
+    margin: 0;
 }
 
-.washoku-swipe-card small {
-    margin-top: auto;
+@media (min-width: 700px) {
+    .washoku-home-slider {
+        margin: 0 0 18px;
+        padding: 0 0 6px;
+        scroll-padding: 0;
+    }
+
+    .washoku-home-slide {
+        flex-basis: 46%;
+    }
+
+    .washoku-home-slider .washoku-home-poll .washoku-poll-rows {
+        grid-template-columns: 1fr;
+    }
+}
+
+.washoku-home-featured,
+.washoku-home-questions {
+    padding: 12px 14px;
+    border-radius: 20px;
+}
+
+/* 注目: 1番目を大きく (約6割)、残りを下に小さく */
+.washoku-home-featured {
+    --washoku-featured-accent: #B7791F;
+    border: 1px solid color-mix(in srgb, #E0B43A 40%, transparent);
+    background: color-mix(in srgb, #F6D77A 22%, var(--washoku-surface));
+}
+
+.washoku-home-featured .washoku-home-poll-badge {
+    color: var(--washoku-featured-accent);
+}
+
+.washoku-featured-top {
+    display: flex;
+    flex: 3 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-featured-top img {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.washoku-featured-top strong {
+    font-size: 24px;
+    line-height: 1.45;
+}
+
+.washoku-featured-excerpt {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--washoku-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.washoku-featured-top small,
+.washoku-featured-more small,
+.washoku-home-question-list small {
     color: var(--washoku-muted);
     font-size: 13px;
 }
 
-.washoku-swipe-tag {
+.washoku-featured-top small {
+    margin-top: auto;
+}
+
+.washoku-featured-more {
+    display: flex;
+    flex: 2 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-featured-more li {
+    display: flex;
+    flex: 1 1 0;
+}
+
+.washoku-featured-more a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-featured-more strong {
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+/* 質問: 解決済は緑のチェックで、募集中はオレンジで */
+.washoku-home-questions {
+    border: 1px solid color-mix(in srgb, #E8894A 35%, transparent);
+    background: color-mix(in srgb, #F6B27A 16%, var(--washoku-surface));
+}
+
+.washoku-home-questions .washoku-home-poll-badge {
+    color: #C0612B;
+}
+
+.washoku-home-question-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-home-question-list li {
+    display: flex;
+    flex: 1 1 0;
+}
+
+.washoku-home-question-list a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border-left: 4px solid #E8894A;
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-home-question-list strong {
+    font-size: 18px;
+    line-height: 1.45;
+}
+
+.washoku-question-state {
     align-self: flex-start;
-    padding: 2px 10px;
+    padding: 1px 9px;
     border-radius: 999px;
+    background: color-mix(in srgb, #F2A65A 28%, transparent);
+    color: #A44E1E;
     font-size: 12px;
     font-weight: 700;
 }
 
-.washoku-swipe-card.is-featured {
-    border-color: color-mix(in srgb, #E0B43A 45%, var(--washoku-border));
+.washoku-home-question-list a.is-solved {
+    border-left-color: var(--washoku-poll-accent);
 }
 
-.washoku-swipe-card.is-featured .washoku-swipe-tag {
-    background: color-mix(in srgb, #F2C94C 30%, transparent);
+.washoku-home-question-list a.is-solved strong {
+    color: var(--washoku-muted);
+    font-weight: 600;
 }
 
-.washoku-swipe-card.is-question {
-    border-color: color-mix(in srgb, #E8894A 45%, var(--washoku-border));
-}
-
-.washoku-swipe-card.is-question .washoku-swipe-tag {
-    background: color-mix(in srgb, #F2A65A 30%, transparent);
-}
-
-.washoku-swipe-card.is-solved {
-    border-color: color-mix(in srgb, var(--washoku-poll-accent) 40%, var(--washoku-border));
-}
-
-.washoku-swipe-card.is-solved .washoku-swipe-tag {
+.washoku-home-question-list a.is-solved .washoku-question-state {
     background: var(--washoku-poll-tint);
     color: var(--washoku-poll-accent);
 }
 
-.washoku-swipe-card.is-more {
-    flex-basis: 40%;
-    align-items: center;
-    justify-content: center;
-    background: var(--washoku-surface-2);
-    text-align: center;
-}
-
-.washoku-swipe-card.is-more span {
-    font-size: 24px;
-}
-
-.washoku-swipe-card.is-more strong {
-    font-size: 14px;
-}
-
-@media (min-width: 700px) {
-    .washoku-swipe {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        margin: 0;
-        padding: 0;
-        overflow: visible;
+/* スマホ: マイページは下のメニューにあるので、ヘッダーからは消す */
+@media (max-width: 799px) {
+    .washoku-header .washoku-me {
+        display: none;
     }
+}
 
-    .washoku-swipe-card.is-more {
-        min-height: 0;
-    }
+.washoku-tabbar .washoku-me-icon {
+    font-size: 22px;
 }
