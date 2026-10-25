@@ -668,6 +668,8 @@ class AboutAndMyPageTests(TestCase):
 
         self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
         self.assertContains(self.client.get(reverse("washoku:family_favorites")), recipe.name)
+        self.assertContains(self.client.get(reverse("washoku:family_favorites")), reverse("washoku:family"))
+        self.assertContains(self.client.get(reverse("washoku:my_favorites") + "?sort=family"), "家族を招待する")
         self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")
 
 
