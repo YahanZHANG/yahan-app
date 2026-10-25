@@ -1121,12 +1121,7 @@
    "supermarket"
   ],
   "buying_notes": "",
-  "substitutes_for": [
-   {
-    "original_name": "さやいんげん",
-    "tips": "細い「Fine Bohnen」を選ぶと、ごま和えや煮物で日本のいんげんに近い。"
-   }
-  ]
+  "substitutes_for": []
  },
  {
   "name": "枝豆",

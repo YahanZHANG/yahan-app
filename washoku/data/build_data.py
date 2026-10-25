@@ -215,8 +215,8 @@ INGREDIENTS = [
      "スイスでは「Kefen」。日本の絹さやとほぼ同じ。",
      {"さやえんどう": "「Kefen」がそのまま使える。筋を取ってさっと茹でる。",
       "スナップえんどう": "実の太い「Zuckerschoten」が近い。"}),
-    ("いんげん", "Bohnen, grün", "vegetable", "豆", "S", "",
-     {"さやいんげん": "細い「Fine Bohnen」を選ぶと、ごま和えや煮物で日本のいんげんに近い。"}),
+    # 「さやいんげん」の代用品は管理画面で消した (2026-10-25)。ここに戻さないこと
+    ("いんげん", "Bohnen, grün", "vegetable", "豆", "S", "", {}),
     ("枝豆", "Edamame, tiefgekühlt", "vegetable", "豆", "S",
      "Coop・Migros の冷凍コーナー。さや付きとむき身がある。", {}),
     ("パドロン", "Pimientos de Padrón", "vegetable", "ピーマン", "S",
