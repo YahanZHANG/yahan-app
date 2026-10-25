@@ -4279,3 +4279,20 @@ button.washoku-poll-row:hover {
     line-height: 1.6;
     white-space: pre-line;
 }
+
+/* お気に入り: だれの・種類・並べ替えを1ページで切り替える */
+.washoku-fav-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 16px;
+}
+
+.washoku-fav-filters .washoku-sort-switch a {
+    padding: 7px 12px;
+    font-size: min(14px, 3.6vw);
+}
+
+.washoku-fav-private {
+    margin-top: 20px;
+}

@@ -667,9 +667,9 @@ class AboutAndMyPageTests(TestCase):
         self.client.force_login(user)
 
         self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
-        self.assertContains(self.client.get(reverse("washoku:family_favorites")), recipe.name)
-        self.assertContains(self.client.get(reverse("washoku:family_favorites")), reverse("washoku:family"))
-        self.assertContains(self.client.get(reverse("washoku:my_favorites") + "?sort=family", follow=True), "家族を招待する")
+        self.assertContains(self.client.get(reverse("washoku:my_favorites")), recipe.name)
+        self.assertContains(self.client.get(reverse("washoku:my_favorites")), reverse("washoku:family"))
+        self.assertContains(self.client.get(reverse("washoku:family_favorites"), follow=True), "家族を招待する")
         self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")
 
 
@@ -1472,13 +1472,22 @@ class FavoriteNoteReactionTests(TestCase):
 
         RecipeRating.objects.create(user=self.me, recipe=self.other_recipe, rating=5)
 
-        # 前の「家族の評価順」の URL は、家族のお気に入りページへ
-        response = self.client.get(reverse("washoku:my_favorites") + "?sort=family")
-        self.assertRedirects(response, reverse("washoku:family_favorites"))
+        url = reverse("washoku:my_favorites")
 
-        # 評価した料理が上、♡ だけの料理も出る
-        html = self.client.get(reverse("washoku:family_favorites")).content.decode()
-        self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+        # 評価した料理が上、♡ だけの料理も出る (前の ?sort=family も評価順)
+        for query in ("", "?sort=family"):
+            html = self.client.get(url + query).content.decode()
+            self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+
+        # ★ 評価だけに絞る
+        html = self.client.get(url + "?kind=rated").content.decode()
+        self.assertIn("肉じゃが", html)
+        self.assertNotIn("照り焼きチキン", html)
+
+        # 新しい順: あとから ♡ したものが上
+        RecipeFavorite.objects.filter(recipe=self.recipe).update(created_at=timezone.now() + timedelta(minutes=5))
+        html = self.client.get(url + "?kind=fav&sort=new").content.decode()
+        self.assertLess(html.index("照り焼きチキン"), html.index("肉じゃが"))
 
         self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "保存済み")
         self.client.post(reverse("washoku:favorite_toggle", args=[self.recipe.pk]))
@@ -1498,9 +1507,11 @@ class FavoriteNoteReactionTests(TestCase):
         RecipeRating.objects.create(user=self.stranger, recipe=self.recipe, rating=5)
 
         self.client.force_login(self.me)
-        html = self.client.get(reverse("washoku:family_favorites")).content.decode()
+        family_url = reverse("washoku:my_favorites") + "?who=family"
+        self.assertRedirects(self.client.get(reverse("washoku:family_favorites")), family_url + "&kind=all&sort=score")
+        html = self.client.get(family_url).content.decode()
 
-        self.assertIn("家族のお気に入り", html)
+        self.assertIn("家族みんな", html)
         self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
         self.assertNotIn("other", html)
 
@@ -1521,11 +1532,15 @@ class FavoriteNoteReactionTests(TestCase):
         RecipeFavorite.objects.create(user=self.stranger, recipe=self.other_recipe)
 
         self.client.force_login(self.me)
-        html = self.client.get(reverse("washoku:family_favorites")).content.decode()
+        url = reverse("washoku:my_favorites")
+        html = self.client.get(url + "?who=family&kind=fav").content.decode()
 
         self.assertIn("照り焼きチキン", html)
         self.assertIn("♡ ken", html)
         self.assertNotIn("肉じゃが", html)
+
+        # 「わたし」には家族の ♡ は出ない
+        self.assertNotIn("照り焼きチキン", self.client.get(url + "?who=me").content.decode())
 
     def test_private_note(self):
 
