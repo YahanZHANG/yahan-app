@@ -2054,6 +2054,11 @@ class AdminPickTests(TestCase):
 
         self.assertEqual([(entry["item"].pk, entry["count"]) for entry in featured], [(picked.pk, None), (popular.pk, 1)])
 
+        # スタンプ数は表示設定でオンにしたときだけ出す
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "😊1")
+        DisplaySettings.objects.update_or_create(pk=1, defaults={"home_featured_show_stamps": True})
+        self.assertContains(self.client.get(reverse("washoku:home")), "😊1")
+
     def test_reopened_question_stays_open_with_a_reply(self):
 
         question = Comment.objects.create(ingredient=self.ingredient, author=self.author, kind="question", body="どこで買える？")
@@ -2261,9 +2266,13 @@ class ColumnListDisplayTests(TestCase):
         page = self.client.get(reverse("washoku:column_list"))
         self.assertContains(page, "hanako")
         self.assertContains(page, time_text)
-        self.assertContains(page, "😊 2")
+        self.assertNotContains(page, "😊 2")  # スタンプ数は最初は出さない
 
         settings_row = DisplaySettings.load()
+        settings_row.column_show_stamps = True
+        settings_row.save()
+        self.assertContains(self.client.get(reverse("washoku:column_list")), "😊 2")
+
         settings_row.column_show_author = False
         settings_row.column_show_time = False
         settings_row.column_show_stamps = False
@@ -2297,6 +2306,14 @@ class ColumnListDisplayTests(TestCase):
         titles = lambda response: [post.title for post in response.context["posts"]]
 
         self.assertEqual(titles(self.client.get(reverse("washoku:column_list"))), ["新しいコラム", "古いけど人気"])
+
+        # 切り替えは最初は出さず、人気順を指定しても新着順のまま
+        hidden = self.client.get(reverse("washoku:column_list"), {"sort": "popular"})
+        self.assertEqual(titles(hidden), ["新しいコラム", "古いけど人気"])
+        self.assertNotContains(hidden, "washoku-sort-switch")
+
+        DisplaySettings.objects.filter(pk=DisplaySettings.load().pk).update(column_show_sort=True)
         popular = self.client.get(reverse("washoku:column_list"), {"sort": "popular"})
+        self.assertContains(popular, "washoku-sort-switch")
         self.assertEqual(titles(popular), ["古いけど人気", "新しいコラム"])
         self.assertEqual([post.reader_count for post in popular.context["posts"]], [2, 0])

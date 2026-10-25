@@ -14,7 +14,7 @@
 {% if kind != "poll" %}
 <p class="washoku-list-actions">
     <a class="washoku-button" href="{% url 'washoku:post_submit' kind %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ text.new_label }}</a>
-    {% if kind == "column" and posts %}
+    {% if kind == "column" and posts and display.column_show_sort %}
     <span class="washoku-sort-switch" role="group" aria-label="並べ替え">
         {% for value, label in sort_choices %}<a href="?sort={{ value }}"{% if sort == value %} class="is-active" aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
     </span>

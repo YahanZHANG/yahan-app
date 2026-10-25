@@ -870,8 +870,14 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
     """
 
     fieldsets = (
+        ("HOMEに出すもの", {
+            "fields": (
+                "home_featured_show_stamps",
+            ),
+        }),
         ("コラム一覧（/washoku/columns/）に出すもの", {
             "fields": (
+                "column_show_sort",
                 "column_show_author",
                 "column_show_date",
                 "column_show_time",
