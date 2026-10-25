@@ -2272,6 +2272,13 @@ class ColumnPollTests(TestCase):
         # HOME の大きいアンケート欄にも、新しいアンケートとして出る
         home = self.client.get(reverse("washoku:home"))
         self.assertEqual(home.context["main_poll"].pk, column.pk)
+
+        # アンケート一覧にも、コラムのアンケートとして出る (アンケートのないコラムは出ない)
+        polls = self.client.get(reverse("washoku:poll_list"))
+        self.assertContains(polls, "どの Rahm を使う？")
+        self.assertContains(polls, "コラム「Rahm の選び方」より")
+        self.assertContains(polls, f"#poll-{column.pk}")
+        self.assertNotContains(polls, "ふつうのコラム")
         self.assertContains(home, f"/washoku/posts/{column.pk}/#poll-{column.pk}")
 
 

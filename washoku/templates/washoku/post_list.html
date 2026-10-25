@@ -44,7 +44,7 @@
     <ul class="washoku-posts{% if kind == "column" %} washoku-posts-titles{% endif %}">
         {% for post in posts %}
             <li>
-                <a href="{{ post.get_absolute_url }}">
+                <a href="{% if kind == "poll" %}{{ post.poll_url }}{% else %}{{ post.get_absolute_url }}{% endif %}">
                     {% if kind == "product" %}
                         <span class="washoku-chips">
                             {% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}
@@ -52,9 +52,9 @@
                             {% if post.resembles %}<span class="washoku-chip washoku-chip-shop">{{ post.resembles }}に近い</span>{% endif %}
                         </span>
                     {% endif %}
-                    <strong>{{ post.title }}</strong>
+                    <strong>{% if kind == "poll" %}{{ post.poll_title }}{% else %}{{ post.title }}{% endif %}</strong>
                     {% if kind == "poll" %}
-                    <small>{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                    <small>{% if post.kind == "column" %}コラム「{{ post.title }}」より ・ {% endif %}{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
                     {% elif kind == "column" %}
                     <small class="washoku-column-meta">{% spaceless %}
                         {% if display.column_show_author %}<span>{{ post.author|display_name }}</span>{% endif %}
