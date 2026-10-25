@@ -2,8 +2,24 @@ from django.contrib import admin
 
 from .models import (
     AppAccessRequest,
+    PortalAnnouncement,
     PortalAppPreference,
 )
+
+
+@admin.register(PortalAnnouncement)
+class PortalAnnouncementAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "message",
+        "link",
+        "is_active",
+        "created_at",
+    ]
+
+    list_editable = [
+        "is_active",
+    ]
 
 
 @admin.register(AppAccessRequest)

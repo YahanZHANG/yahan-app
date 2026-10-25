@@ -216,3 +216,53 @@ class AppAccessRequest(models.Model):
             f"{self.user.username} - "
             f"{self.get_app_key_display()}"
         )
+
+class PortalAnnouncement(models.Model):
+    """
+    Yappトップ (/) の一番上に出すお知らせ。管理画面から追加する。
+    新しい3件まで、追加から14日間表示し、×で閉じたものはその端末では出なくなる。
+    """
+
+    SHOW_DAYS = 14
+    MAX_SHOWN = 3
+
+    message = models.CharField(
+        "お知らせ",
+        max_length=200,
+    )
+
+    link = models.CharField(
+        "リンク先（なくてもOK）",
+        max_length=300,
+        blank=True,
+        help_text="例: /help/ （困ったときは）",
+    )
+
+    is_active = models.BooleanField(
+        "表示する",
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Yappトップのお知らせ"
+        verbose_name_plural = "Yappトップのお知らせ"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message
+
+    @classmethod
+    def current(cls):
+        """Yappトップに出すお知らせ (新しい順、最大 MAX_SHOWN 件)"""
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
+
+        return cls.objects.filter(is_active=True, created_at__gte=since)[:cls.MAX_SHOWN]

@@ -214,3 +214,18 @@ class KeepLoginTests(TestCase):
         third = self.client.get(reverse("portal:help"))
         self.assertIn("sessionid", third.cookies)
         self.assertEqual(third.cookies["sessionid"]["max-age"], 60 * 60 * 24 * 400)
+
+
+class PortalAnnouncementTests(TestCase):
+
+    def test_active_announcement_shows_on_top(self):
+
+        from portal.models import PortalAnnouncement
+
+        PortalAnnouncement.objects.create(message="ログインの不具合を直しました", link="/help/")
+        PortalAnnouncement.objects.create(message="非表示のお知らせ", is_active=False)
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "ログインの不具合を直しました")
+        self.assertNotContains(response, "非表示のお知らせ")

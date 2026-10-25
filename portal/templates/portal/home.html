@@ -96,6 +96,49 @@ yapp-public-home
 
 
     <!-- =============================================
+         Announcements (管理画面の「Yappトップのお知らせ」)
+         ============================================= -->
+
+    {% if announcements %}
+        <div class="yapp-public-announcements" id="yapp-announcements">
+            {% for announcement in announcements %}
+                <div class="yapp-public-announcement" data-announcement-id="{{ announcement.pk }}">
+                    {% if announcement.link %}
+                        <a href="{{ announcement.link }}">{{ announcement.message }} <span aria-hidden="true">›</span></a>
+                    {% else %}
+                        <span>{{ announcement.message }}</span>
+                    {% endif %}
+                    <button type="button" aria-label="お知らせを閉じる" data-announcement-close>×</button>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+        // ×で閉じたお知らせは、この端末では再表示しない
+        (function () {
+            var key = "yapp_portal_announcements_closed";
+            var closed = [];
+            try { closed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) {}
+            var area = document.getElementById("yapp-announcements");
+            function hideAreaIfEmpty() {
+                area.hidden = !area.querySelector("[data-announcement-id]:not([hidden])");
+            }
+            area.querySelectorAll("[data-announcement-id]").forEach(function (box) {
+                var id = box.dataset.announcementId;
+                if (closed.indexOf(id) !== -1) box.hidden = true;
+                box.querySelector("[data-announcement-close]").addEventListener("click", function () {
+                    box.hidden = true;
+                    hideAreaIfEmpty();
+                    closed.push(id);
+                    try { localStorage.setItem(key, JSON.stringify(closed.slice(-30))); } catch (error) {}
+                });
+            });
+            hideAreaIfEmpty();
+        })();
+        </script>
+    {% endif %}
+
+
+    <!-- =============================================
          Introduction
          ============================================= -->
 

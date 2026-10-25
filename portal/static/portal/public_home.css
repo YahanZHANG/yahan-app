@@ -648,3 +648,51 @@
     font-weight: 700;
     white-space: nowrap;
 }
+
+/* =========================================================
+   お知らせ (管理画面の「Yappトップのお知らせ」)
+   ========================================================= */
+
+.yapp-public-announcements {
+    display: grid;
+    gap: 8px;
+    margin: 4px 0 18px;
+}
+
+.yapp-public-announcements[hidden],
+.yapp-public-announcement[hidden] {
+    display: none;
+}
+
+.yapp-public-announcement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 6px 8px 14px;
+    border: 1px solid #c9dbe5;
+    border-radius: 12px;
+    background: #eef5f9;
+    color: #365f75;
+    font-size: .9rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.yapp-public-announcement > a,
+.yapp-public-announcement > span {
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+}
+
+.yapp-public-announcement > button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 1.2rem;
+    opacity: .7;
+    cursor: pointer;
+}

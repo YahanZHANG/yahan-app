@@ -50,6 +50,7 @@ from .forms import (
 )
 from .models import (
     AppAccessRequest,
+    PortalAnnouncement,
     PortalAppPreference,
 )
 
@@ -1238,6 +1239,7 @@ def home(request):
         "portal/home.html",
         {
             "apps": apps,
+            "announcements": list(PortalAnnouncement.current()),
         },
     )
 
