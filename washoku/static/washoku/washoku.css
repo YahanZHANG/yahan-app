@@ -3451,14 +3451,14 @@ button.washoku-poll-row:hover {
 
 /* HOME の「みんなの投稿・コメント」: 本文は1行、名前と日時は小さく、間隔を狭く */
 .washoku-activity-compact a {
-    padding: 6px 0;
+    padding: 7px 0;
 }
 
 .washoku-activity-compact .washoku-activity-body {
     display: block;
     overflow: hidden;
     margin-top: 1px;
-    font-size: 14px;
+    font-size: 15.5px;
     line-height: 1.45;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3467,12 +3467,13 @@ button.washoku-poll-row:hover {
 .washoku-activity-compact .washoku-activity-kind {
     float: left;
     margin-top: 2px;
+    font-size: 12px;
 }
 
 .washoku-activity-compact small {
     overflow: hidden;
     margin-top: 0;
-    font-size: 11px;
+    font-size: 12.5px;
     line-height: 1.4;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3564,4 +3565,16 @@ button.washoku-poll-row:hover {
     background: var(--washoku-surface);
     color: var(--washoku-accent-strong);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* お店ページの上の種類タグ (4つ) */
+.washoku-quick-fit.washoku-store-kinds a {
+    padding: 8px 6px;
+    font-size: min(15px, 3.8vw);
+}
+
+/* 食材ページの上のカテゴリータグ */
+.washoku-quick.washoku-ingredient-kinds a {
+    padding: 7px 13px;
+    font-size: 15px;
 }

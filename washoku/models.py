@@ -935,7 +935,7 @@ class Store(models.Model):
     KIND_CHOICES = [
         ("japanese", "日韓食材店"),
         ("asian", "中華食材店"),
-        ("southeast", "その他のアジア食材店"),
+        ("southeast", "アジア食材店"),
     ]
 
     name = models.CharField(
