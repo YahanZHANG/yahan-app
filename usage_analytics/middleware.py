@@ -82,7 +82,11 @@ def get_device_type(request):
 
     user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
 
-    if any(word in user_agent for word in ("ipad", "tablet", "kindle")):
+    if any(word in user_agent for word in ("ipad", "tablet", "kindle", "silk/")):
+        return "tablet"
+
+    # Android のタブレットは "mobile" が付かない
+    if "android" in user_agent and "mobile" not in user_agent:
         return "tablet"
 
     if any(word in user_agent for word in ("iphone", "android", "mobile")):

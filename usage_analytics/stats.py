@@ -16,6 +16,14 @@ from django.db.models.functions import TruncDate, TruncWeek
 from django.utils import timezone
 
 from .browsers import browser_info
+
+DEVICE_NAMES = {"mobile": "スマホ", "desktop": "パソコン", "tablet": "タブレット", "other": "その他"}
+DEVICE_ICONS = {"mobile": "📱", "desktop": "💻", "tablet": "📟", "other": "❔"}
+
+
+def device_info(key):
+    key = key or "other"
+    return {"key": key, "name": DEVICE_NAMES.get(key, key), "icon": DEVICE_ICONS.get(key, "❔")}
 from .catalog import app_info
 from .models import (
     AnalyticsExclusion,
@@ -422,10 +430,9 @@ def build_dashboard(scope):
     # ---------------------------------------------------
 
     device_counter = Counter(visit["device_type"] for visit in visits)
-    device_names = {"mobile": "スマホ", "desktop": "パソコン", "tablet": "タブレット", "other": "不明"}
     devices = [
         {
-            "name": device_names.get(key, key),
+            "name": DEVICE_NAMES.get(key, key),
             "visits": count,
             "share": round(count / total_visits * 100),
         }
@@ -563,6 +570,7 @@ def visit_rows(scope, current):
             "source_type": start.get("source_type", ""),
             "source_label": start.get("source_label", ""),
             "device_type": start.get("device_type", "other"),
+            "device": device_info(start.get("device_type", "other")),
             "browser": browser_info(start.get("browser", "")),
             "entry_app": start.get("app_key") or next(iter(apps_per_visit[visit_id]), "portal"),
             "entry_path": start.get("path", ""),
@@ -962,6 +970,7 @@ def person_timeline(views, limit=400):
             "source": source_info("unknown"),
             "source_label": "",
             "device_type": row["device_type"],
+            "device": device_info(row["device_type"]),
             "browser": browser_info(row["browser"]),
             "apps": [],
         })
@@ -970,6 +979,7 @@ def person_timeline(views, limit=400):
             visit["source"] = source_info(row["source_type"] or "unknown")
             visit["source_label"] = row["source_label"]
             visit["device_type"] = row["device_type"]
+            visit["device"] = device_info(row["device_type"])
             visit["browser"] = browser_info(row["browser"])
         info = app_info(row["app_key"])
         if info not in visit["apps"]:
