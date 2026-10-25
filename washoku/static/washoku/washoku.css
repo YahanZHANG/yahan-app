@@ -811,7 +811,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 18px;
+    gap: 8px 16px;
     padding: 24px 16px 32px;
     color: var(--washoku-muted);
     font-size: 13px;
@@ -819,6 +819,7 @@ body {
 
 .washoku-footer a {
     color: var(--washoku-muted);
+    white-space: nowrap;
 }
 
 .washoku-post-button {
