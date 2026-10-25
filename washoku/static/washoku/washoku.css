@@ -4291,6 +4291,12 @@ button.washoku-poll-row:hover {
 .washoku-fav-filters .washoku-sort-switch {
     display: flex;
     min-width: 0;
+    background: var(--washoku-green-soft);
+}
+
+/* 上のタブ (オレンジ) と区別しやすいように緑 */
+.washoku-fav-filters .washoku-sort-switch a.is-active {
+    color: var(--washoku-green);
 }
 
 .washoku-fav-filters .washoku-sort-switch:first-child {
