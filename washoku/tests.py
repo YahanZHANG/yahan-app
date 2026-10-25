@@ -2054,6 +2054,9 @@ class FeaturedTests(TestCase):
             [(column.pk, 2), (comment.pk, 1)],
         )
         self.assertContains(home, "washoku-featured-top")
+        # 投稿者と投稿した場所 (コラムは「コラム」、コメントは食材の名前) を出す
+        self.assertContains(home, f"{author.username} ・ コラム")
+        self.assertContains(home, f"{author.username} ・ {ingredient.name}")
 
 
 class ColumnOrderTests(TestCase):
@@ -2135,6 +2138,8 @@ class AdminPickTests(TestCase):
         self.assertContains(home, '<img src="https://example.com/q.jpg"')
         self.assertContains(home, "data-slider-next")
         self.assertContains(home, "答えを募集中")
+        # 注目と同じく、投稿者と投稿した場所を出す
+        self.assertContains(home, f"{open_q.author.username} ・ {self.ingredient.name}")
 
         # 3日たつと消える (未解決はずっと残る)
         Comment.objects.filter(pk=reply.pk).update(created_at=timezone.now() - timedelta(days=3))
