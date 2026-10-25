@@ -23,7 +23,6 @@
 {% else %}
 <p class="washoku-list-actions">
     <a class="washoku-button" href="{% url 'washoku:poll_suggest' %}"><i class="bi bi-lightbulb" aria-hidden="true"></i> アンケートを提案する</a>
-    {% if user.is_staff %}<a href="{% url 'admin:washoku_post_add' %}?kind=poll&amp;status=published">{{ text.new_label }}（管理者）</a>{% endif %}
 </p>
 {% endif %}
 

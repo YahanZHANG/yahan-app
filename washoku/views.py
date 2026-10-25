@@ -2484,7 +2484,7 @@ POST_KIND_TEXT = {
     "poll": {
         "url_name": "washoku:poll_list",
         "heading": "みんなのアンケート",
-        "lead": "結果はだれでも見られます。投票は会員だけ。",
+        "lead": "ログイン不要で、誰でも投票できます。アンケートの提案も大歓迎！",
         "new_label": "アンケートを作る",
     },
 }

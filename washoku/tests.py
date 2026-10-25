@@ -1928,7 +1928,7 @@ class PollTests(TestCase):
         # 結果は投票したあとにだけ見える
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
         self.assertNotContains(page, "100%")
-        self.assertContains(page, "投票すると結果が見られます")
+        self.assertContains(page, "ログイン不要！投票すると結果が見られる")
         self.assertContains(page, 'name="choice"')
 
         # ログインしていない人も投票でき、同じブラウザなら選び直しになる
