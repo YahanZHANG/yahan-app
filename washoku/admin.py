@@ -22,6 +22,7 @@ from .models import (
     MoodTag,
     Notification,
     PollChoice,
+    PollSuggestion,
     PollVote,
     Post,
     PushSubscription,
@@ -491,6 +492,8 @@ class PollVoteInline(admin.TabularInline):
 
     @admin.display(description="回答した人")
     def user_name(self, obj):
+        if obj.user is None:
+            return "ゲスト（ログインなし）"
         return f"{display_name(obj.user)}（{obj.user.username}）"
 
     @admin.display(description="選んだ答え")
@@ -527,6 +530,8 @@ class PollVoteAdmin(admin.ModelAdmin):
 
     @admin.display(description="回答した人", ordering="user__username")
     def user_name(self, obj):
+        if obj.user is None:
+            return "ゲスト（ログインなし）"
         return f"{display_name(obj.user)}（{obj.user.username}）"
 
     @admin.display(description="回答日時", ordering="voted_at")
@@ -861,6 +866,58 @@ class MemberPhotoAdmin(admin.ModelAdmin):
                 photo.target.__class__.objects.filter(pk=photo.target.pk).update(**{photo.target_field: ""})
             delete_uploaded_photos(photo.url)
         queryset.delete()
+
+
+@admin.register(PollSuggestion)
+class PollSuggestionAdmin(admin.ModelAdmin):
+    """
+    みんなからのアンケートの提案。「アンケートの下書きを作る」で下書きにしてから、
+    文や選択肢を整えて公開する。
+    """
+
+    list_display = ("question", "status", "suggested_by", "created_at", "poll")
+    list_filter = ("status",)
+    search_fields = ("question", "choices", "note")
+    readonly_fields = ("user", "created_at", "poll")
+    fields = ("question", "choices", "note", "status", "user", "created_at", "poll")
+    actions = ("make_draft_polls", "mark_declined")
+
+    @admin.display(description="提案した人")
+    def suggested_by(self, obj):
+        return display_name(obj.user) if obj.user else "ゲスト"
+
+    @admin.action(description="アンケートの下書きを作る")
+    def make_draft_polls(self, request, queryset):
+
+        made = 0
+
+        for suggestion in queryset.filter(poll__isnull=True):
+
+            poll = Post.objects.create(
+                kind="poll",
+                title=suggestion.question,
+                body=suggestion.note,
+                status="draft",
+                author=request.user,
+            )
+
+            for order, label in enumerate(suggestion.choice_lines(), start=1):
+                PollChoice.objects.create(post=poll, label=label, order=order)
+
+            suggestion.poll = poll
+            suggestion.status = "adopted"
+            suggestion.save(update_fields=["poll", "status"])
+            made += 1
+
+        self.message_user(
+            request,
+            f"{made}件のアンケートを下書きで作りました。「みんなの投稿」で文と選択肢を整えて公開してください。",
+            messages.SUCCESS,
+        )
+
+    @admin.action(description="見送りにする")
+    def mark_declined(self, request, queryset):
+        queryset.update(status="declined")
 
 
 @admin.register(DisplaySettings)

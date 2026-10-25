@@ -1693,10 +1693,21 @@ class PollVote(models.Model):
         related_name="votes",
     )
 
+    # 会員の票は user、ログインしていない人の票はブラウザごとの voter_key で1票にする
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="washoku_poll_votes",
+        null=True,
+        blank=True,
+    )
+
+    voter_key = models.CharField(
+        "ブラウザの目印",
+        max_length=36,
+        blank=True,
+        default="",
+        db_index=True,
     )
 
     voted_at = models.DateTimeField(
@@ -1709,12 +1720,73 @@ class PollVote(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["post", "user"],
+                condition=models.Q(user__isnull=False),
                 name="washoku_one_vote_per_poll",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["post", "voter_key"],
+                condition=~models.Q(voter_key=""),
+                name="washoku_one_guest_vote_per_poll",
+            ),
         ]
 
     def __str__(self):
-        return f"{self.user} → {self.choice}"
+        return f"{self.user or 'ゲスト'} → {self.choice}"
+
+
+class PollSuggestion(models.Model):
+    """
+    みんなからのアンケートの提案。管理者が確認して、アンケートにするか決める。
+    """
+
+    STATUS_CHOICES = [
+        ("new", "未確認"),
+        ("adopted", "アンケートにした"),
+        ("declined", "見送り"),
+    ]
+
+    question = models.CharField("質問", max_length=120)
+
+    choices = models.TextField(
+        "選択肢",
+        blank=True,
+        help_text="1行に1つ",
+    )
+
+    note = models.TextField("ひとこと", blank=True)
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="washoku_poll_suggestions",
+        verbose_name="提案した会員",
+    )
+
+    status = models.CharField("状態", max_length=10, choices=STATUS_CHOICES, default="new")
+
+    poll = models.ForeignKey(
+        "Post",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="作ったアンケート",
+    )
+
+    created_at = models.DateTimeField("提案日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "アンケートの提案"
+        verbose_name_plural = "アンケートの提案"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.question
+
+    def choice_lines(self):
+        return [line.strip() for line in self.choices.splitlines() if line.strip()]
 
 
 class PostReaction(models.Model):
