@@ -772,7 +772,7 @@ body {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    padding: 10px 4px calc(12px + env(safe-area-inset-bottom));
+    padding: 10px 4px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--washoku-border);
     background: var(--washoku-surface);
 }
@@ -781,7 +781,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     padding: 4px 0;
     color: var(--washoku-muted);
     font-size: 11px;
@@ -811,7 +811,7 @@ body {
 
 .washoku-tabbar a.washoku-tab-center {
     position: relative;
-    padding-top: 32px;
+    padding-top: 36px;
     color: var(--washoku-accent);
     font-weight: 700;
 }
