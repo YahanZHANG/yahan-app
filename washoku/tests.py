@@ -667,9 +667,9 @@ class AboutAndMyPageTests(TestCase):
         self.client.force_login(user)
 
         self.assertEqual(self.client.get(reverse("washoku:my_page")).status_code, 200)
-        self.assertContains(self.client.get(reverse("washoku:family_favorites")), recipe.name)
-        self.assertContains(self.client.get(reverse("washoku:family_favorites")), reverse("washoku:family"))
-        self.assertContains(self.client.get(reverse("washoku:my_favorites") + "?sort=family"), "家族を招待する")
+        self.assertContains(self.client.get(reverse("washoku:my_favorites")), recipe.name)
+        self.assertContains(self.client.get(reverse("washoku:my_favorites")), reverse("washoku:family"))
+        self.assertContains(self.client.get(reverse("washoku:family_favorites"), follow=True), "家族を招待する")
         self.assertContains(self.client.get(reverse("washoku:my_comments")), "みりんは少なめが好き")
 
 
@@ -1186,6 +1186,24 @@ class PostTests(TestCase):
 
 class SubstituteListTests(TestCase):
 
+    def test_shishito_and_satsumaimo_are_not_substitutes_any_more(self):
+
+        import importlib
+
+        from django.apps import apps
+
+        seeded = json.loads((Path(__file__).parent / "data" / "ingredients.json").read_text())
+        names = json.dumps(seeded, ensure_ascii=False)
+        kohlrabi = Ingredient.objects.create(name="コールラビ", category="vegetable")
+        for name in ("ししとう", "さつまいも", "かぶ"):
+            Substitute.objects.create(original_name=name, substitute=kohlrabi)
+
+        importlib.import_module("washoku.migrations.0044_remove_shishito_satsumaimo_substitutes").remove_substitutes(apps, None)
+
+        self.assertEqual(list(Substitute.objects.values_list("original_name", flat=True)), ["かぶ"])
+        self.assertNotIn('"original_name": "ししとう"', names)
+        self.assertNotIn('"original_name": "さつまいも"', names)
+
     def test_lists_japanese_vegetables_and_their_swiss_substitutes(self):
 
         kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
@@ -1454,8 +1472,17 @@ class FavoriteNoteReactionTests(TestCase):
 
         RecipeRating.objects.create(user=self.me, recipe=self.other_recipe, rating=5)
 
-        html = self.client.get(reverse("washoku:my_favorites") + "?sort=family").content.decode()
-        self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+        url = reverse("washoku:my_favorites")
+
+        # 評価した料理が上、♡ だけの料理も出る (前の ?sort=family も評価順)
+        for query in ("", "?sort=family"):
+            html = self.client.get(url + query).content.decode()
+            self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
+
+        # ★ 評価だけに絞る
+        html = self.client.get(url + "?kind=rated").content.decode()
+        self.assertIn("肉じゃが", html)
+        self.assertNotIn("照り焼きチキン", html)
 
         self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "保存済み")
         self.client.post(reverse("washoku:favorite_toggle", args=[self.recipe.pk]))
@@ -1475,9 +1502,11 @@ class FavoriteNoteReactionTests(TestCase):
         RecipeRating.objects.create(user=self.stranger, recipe=self.recipe, rating=5)
 
         self.client.force_login(self.me)
-        html = self.client.get(reverse("washoku:family_favorites")).content.decode()
+        family_url = reverse("washoku:my_favorites") + "?who=family"
+        self.assertRedirects(self.client.get(reverse("washoku:family_favorites")), family_url + "&kind=all")
+        html = self.client.get(family_url).content.decode()
 
-        self.assertIn("家族が喜ぶ料理", html)
+        self.assertIn("家族みんな", html)
         self.assertLess(html.index("肉じゃが"), html.index("照り焼きチキン"))
         self.assertNotIn("other", html)
 
@@ -1485,6 +1514,28 @@ class FavoriteNoteReactionTests(TestCase):
             self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])),
             "評価は、あなたと家族のメンバーにだけ見えます",
         )
+
+    def test_family_favorites_show_hearts_of_family_members(self):
+
+        from .models import Household, HouseholdMember
+
+        household = Household.objects.create(created_by=self.me)
+        HouseholdMember.objects.create(household=household, user=self.me)
+        HouseholdMember.objects.create(household=household, user=self.child)
+
+        RecipeFavorite.objects.create(user=self.child, recipe=self.recipe)
+        RecipeFavorite.objects.create(user=self.stranger, recipe=self.other_recipe)
+
+        self.client.force_login(self.me)
+        url = reverse("washoku:my_favorites")
+        html = self.client.get(url + "?who=family&kind=fav").content.decode()
+
+        self.assertIn("照り焼きチキン", html)
+        self.assertIn("♡ ken", html)
+        self.assertNotIn("肉じゃが", html)
+
+        # 「わたし」には家族の ♡ は出ない
+        self.assertNotIn("照り焼きチキン", self.client.get(url + "?who=me").content.decode())
 
     def test_private_note(self):
 
@@ -1959,7 +2010,7 @@ class PollTests(TestCase):
 
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
         self.assertContains(page, "✓ 緑")
-        self.assertContains(page, "2票")
+        self.assertContains(page, "2人が回答")
 
         # 別のブラウザ (cookie なし) は別の1票
         self.client.cookies.clear()
@@ -1977,7 +2028,63 @@ class PollTests(TestCase):
 
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
         self.assertContains(page, "✓ 赤")
-        self.assertContains(page, "2票")
+        self.assertContains(page, "2人が回答")
+
+    def test_multiple_choice_poll_keeps_every_ticked_choice(self):
+
+        self.poll.poll_type = "multiple"
+        self.poll.save()
+        url = reverse("washoku:poll_vote", args=[self.poll.pk])
+
+        self.client.force_login(self.member)
+        self.client.post(url, {"choice": [self.green.pk, self.red.pk]})
+        self.assertEqual(PollVote.objects.filter(user=self.member).count(), 2)
+
+        # 選び直すと、外したものは消える
+        self.client.post(url, {"choice": [self.red.pk]})
+        self.assertEqual(list(PollVote.objects.filter(user=self.member).values_list("choice", flat=True)), [self.red.pk])
+
+        self.client.force_login(self.other)
+        self.client.post(url, {"choice": [self.green.pk, self.red.pk]})
+
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertContains(page, 'type="checkbox"')
+        self.assertContains(page, "2人が回答")
+        self.assertContains(page, "100%")
+
+    def test_free_text_poll_shows_answers_after_answering(self):
+
+        from .models import PollAnswer
+
+        self.poll.poll_type = "text"
+        self.poll.save()
+        url = reverse("washoku:poll_vote", args=[self.poll.pk])
+
+        self.client.force_login(self.other)
+        self.client.post(url, {"answer": "Coop の緑の袋"})
+
+        self.client.force_login(self.member)
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertContains(page, 'name="answer"')
+        self.assertNotContains(page, "Coop の緑の袋")
+
+        self.client.post(url, {"answer": "Migros の赤"})
+        self.client.post(url, {"answer": "Migros の赤い袋"})
+        self.assertEqual(PollAnswer.objects.get(user=self.member).text, "Migros の赤い袋")
+
+        hidden = PollAnswer.objects.get(user=self.other)
+        page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
+        self.assertContains(page, "Coop の緑の袋")
+        self.assertContains(page, "2件の答え")
+
+        hidden.is_hidden = True
+        hidden.save()
+        self.assertNotContains(self.client.get(reverse("washoku:post_detail", args=[self.poll.pk])), "Coop の緑の袋")
+
+        # ログインしていない人も答えられる
+        self.client.logout()
+        self.client.post(url, {"answer": "見ないで買う"})
+        self.assertEqual(PollAnswer.objects.filter(user__isnull=True).count(), 1)
 
     def test_vote_needs_a_choice_of_this_published_poll(self):
 

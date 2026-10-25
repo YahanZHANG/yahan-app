@@ -46,6 +46,7 @@ from .models import (
     MoodTag,
     Notification,
     PollChoice,
+    PollAnswer,
     PollVote,
     Post,
     PostReaction,
@@ -331,6 +332,26 @@ def featured_items(limit=3):
     return (picked + popular)[:limit]
 
 
+def respondent_count():
+    """アンケートに答えた人数 (いくつでも選べるアンケートでも1人1人、自由記述の答えも含む)"""
+
+    return (
+        Count("votes__user", distinct=True)
+        + Count("votes__voter_key", filter=~Q(votes__voter_key=""), distinct=True)
+        + Count("answers", distinct=True)
+    )
+
+
+def poll_posts_q():
+    """アンケートと、最後にアンケートを付けたコラム"""
+
+    return (
+        Q(kind="poll")
+        | Q(kind="column", pk__in=PollChoice.objects.values("post"))
+        | Q(kind="column", poll_type="text")
+    )
+
+
 def home_polls(request):
     """
     HOMEのアンケート。大きく出す1つ (まだ答えていない中でいちばん新しいもの。
@@ -341,8 +362,8 @@ def home_polls(request):
     polls = list(
         Post.objects
         .filter(status="published")
-        .filter(Q(kind="poll") | Q(kind="column", choices__isnull=False))
-        .annotate(vote_count=Count("votes", distinct=True), started=Max("choices__pk"))
+        .filter(poll_posts_q())
+        .annotate(vote_count=respondent_count(), started=Max("choices__pk"))
         .order_by(F("started").desc(nulls_last=True), "-created_at")[:HOME_POLL_SCAN]
     )
 
@@ -2220,43 +2241,128 @@ def my_page(request):
     )
 
 
-FAVORITE_SORTS = [
-    ("new", "保存した順"),
-    ("family", "家族の評価順"),
-]
+# お気に入りページの絞り込み (1ページで、だれの・♡か★かを選ぶ)
+FAVORITE_FILTERS = {
+    "who": [("me", "自分"), ("family", "家族みんな")],
+    "kind": [("all", "全て"), ("fav", "♡お気に入り"), ("rated", "★評価")],
+}
+
+
+def favorite_rows(user, members, kind):
+    """
+    members が ♡ 保存したか評価したレシピを、レシピごとに1行にまとめる。
+    kind: all (両方) / fav (♡ だけ) / rated (評価だけ)。
+    """
+
+    recipes = visible_recipes(user)
+    by_recipe = {}
+
+    def entry_for(item):
+        return by_recipe.setdefault(
+            item.recipe_id,
+            {"recipe": item.recipe, "ratings": {}, "fans": set()},
+        )
+
+    if kind in ("all", "rated"):
+        for rating in RecipeRating.objects.filter(user__in=members, recipe__in=recipes).select_related("recipe"):
+            entry = entry_for(rating)
+            entry["ratings"][rating.user_id] = rating.rating
+
+    if kind in ("all", "fav"):
+        for favorite in RecipeFavorite.objects.filter(user__in=members, recipe__in=recipes).select_related("recipe"):
+            entry = entry_for(favorite)
+            entry["fans"].add(favorite.user_id)
+
+    # ♡ だけの表示でも、カードの星と並べ替えにはその人たちの評価を使う
+    if kind == "fav" and by_recipe:
+        for rating in RecipeRating.objects.filter(user__in=members, recipe_id__in=by_recipe):
+            by_recipe[rating.recipe_id]["ratings"][rating.user_id] = rating.rating
+
+    rows = []
+
+    for entry in by_recipe.values():
+        values = list(entry["ratings"].values())
+        average = round(sum(values) / len(values), 1) if values else None
+        entry["recipe"].family_average = average
+        rows.append(
+            {
+                "recipe": entry["recipe"],
+                "average": average,
+                "fans": [member for member in members if member.pk in entry["fans"]],
+                "members": [
+                    {"user": member, "rating": entry["ratings"][member.pk]}
+                    for member in members
+                    if member.pk in entry["ratings"]
+                ],
+            }
+        )
+
+    return rows
 
 
 def my_favorites(request):
     """
-    お気に入りに保存したレシピ。家族の評価順にも並べられる。
-    レシピの「お気に入り」タブなので、ログインしていない人には登録の案内を出す。
+    お気に入りと評価をまとめたページ。
+    だれの (わたし / 家族みんな)・何を (すべて / ♡ / ★) を切り替える。評価の高い順。
+    評価とお気に入りは、自分と家族のメンバーにしか見えない。
+    ログインしていない人には登録の案内を出す。
     """
 
-    sort = request.GET.get("sort", "new")
+    choice = {
+        key: request.GET.get(key) if request.GET.get(key) in dict(options) else options[0][0]
+        for key, options in FAVORITE_FILTERS.items()
+    }
+
+    # 以前の「家族の評価順」(?sort=family) は家族みんな
+    if request.GET.get("sort") == "family":
+        choice["who"] = "family"
 
     if not request.user.is_authenticated:
-        return render(request, "washoku/my_favorites.html", {"recipes": [], "sort": sort, "sorts": FAVORITE_SORTS})
+        return render(request, "washoku/my_favorites.html", {"rows": [], "filters": []})
 
-    favorites = list(
-        RecipeFavorite.objects
-        .filter(user=request.user, recipe__in=visible_recipes(request.user))
-        .select_related("recipe")
-    )
+    members = family_members(request.user)
+    has_family = len(members) > 1
 
-    recipes = attach_family_rating([favorite.recipe for favorite in favorites], request.user)
+    if choice["who"] == "me" or not has_family:
+        members = [request.user]
 
-    if sort == "family":
-        recipes.sort(
-            key=lambda recipe: (recipe.family_average is None, -(recipe.family_average or 0), recipe.name)
-        )
+    rows = favorite_rows(request.user, members, choice["kind"])
+
+    # 評価の高い順。評価がないもの (♡ だけ) は ♡ の多い順で後ろに
+    rows.sort(key=lambda row: (
+        row["average"] is None,
+        -(row["average"] or 0),
+        -len(row["fans"]),
+        -len(row["members"]),
+        row["recipe"].name,
+    ))
+
+    filters = []
+
+    for key, options in FAVORITE_FILTERS.items():
+        if key == "who" and not has_family:
+            continue
+        links = []
+        for value, label in options:
+            query = {**choice, key: value}
+            links.append(
+                {
+                    "label": label,
+                    "url": "?" + "&".join(f"{name}={query[name]}" for name in FAVORITE_FILTERS),
+                    "active": choice[key] == value,
+                }
+            )
+        filters.append({"key": key, "links": links})
 
     return render(
         request,
         "washoku/my_favorites.html",
         {
-            "recipes": recipes,
-            "sort": sort,
-            "sorts": FAVORITE_SORTS,
+            "rows": rows,
+            "filters": filters,
+            "choice": choice,
+            "has_family": has_family,
+            "show_names": choice["who"] == "family" and has_family,
         },
     )
 
@@ -2264,61 +2370,10 @@ def my_favorites(request):
 @login_required
 def family_favorites(request):
     """
-    家族の好きな料理を、家族の平均評価が高い順に。
-    評価は自分と家族のメンバーにしか見えない。
+    前の「家族のお気に入り」ページ。お気に入りページの「家族みんな」へ。
     """
 
-    members = family_members(request.user)
-
-    ratings = (
-        RecipeRating.objects
-        .filter(user__in=members, recipe__in=visible_recipes(request.user))
-        .select_related("recipe")
-    )
-
-    by_recipe = {}
-
-    for rating in ratings:
-        entry = by_recipe.setdefault(rating.recipe_id, {"recipe": rating.recipe, "ratings": {}})
-        entry["ratings"][rating.user_id] = rating.rating
-
-    favorite_ids = set(
-        RecipeFavorite.objects.filter(user=request.user).values_list("recipe_id", flat=True)
-    )
-
-    rows = []
-
-    for entry in by_recipe.values():
-
-        values = list(entry["ratings"].values())
-
-        rows.append(
-            {
-                "recipe": entry["recipe"],
-                "average": sum(values) / len(values),
-                "rated": len(values),
-                "members": [
-                    {"user": member, "rating": entry["ratings"].get(member.pk)}
-                    for member in members
-                ],
-                "is_favorite": entry["recipe"].pk in favorite_ids,
-            }
-        )
-
-    rows.sort(key=lambda row: (-row["average"], -row["rated"], row["recipe"].name))
-
-    # お気に入りの一覧と同じカードで出す (カードの星は家族の平均)
-    for row in rows:
-        row["recipe"].family_average = row["average"]
-
-    return render(
-        request,
-        "washoku/family_favorites.html",
-        {
-            "rows": rows,
-            "has_family": len(members) > 1,
-        },
-    )
+    return redirect(reverse("washoku:my_favorites") + "?who=family&kind=all")
 
 
 @login_required
@@ -2592,7 +2647,7 @@ def post_list(request, kind):
     # 集計 (annotate) すると Meta.ordering が使われないので、新しい順をここで指定する
     # アンケート一覧には、コラムの最後に付けたアンケートも出す
     if kind == "poll":
-        kinds = Q(kind="poll") | Q(kind="column", pk__in=PollChoice.objects.values("post"))
+        kinds = poll_posts_q()
     else:
         kinds = Q(kind=kind)
 
@@ -2607,7 +2662,7 @@ def post_list(request, kind):
                 filter=Q(comments__is_hidden=False, comments__is_deleted=False),
                 distinct=True,
             ),
-            vote_count=Count("votes", distinct=True),
+            vote_count=respondent_count(),
             stamp_count=Count("reactions", distinct=True),
         )
     )
@@ -2739,25 +2794,46 @@ def guest_voter_key(request):
         return ""
 
 
-def my_votes(request, polls):
-    """{アンケートのpk: 自分が選んだ選択肢のpk}。会員は会員の票、それ以外はこのブラウザの票。"""
-
-    votes = PollVote.objects.filter(post__in=polls)
+def my_voter_filter(request):
+    """自分の票・答えを探す条件。会員は会員の票、それ以外はこのブラウザの票。目印がなければ None"""
 
     if request.user.is_authenticated:
-        votes = votes.filter(user=request.user)
-    else:
-        key = guest_voter_key(request)
-        if not key:
-            return {}
-        votes = votes.filter(user__isnull=True, voter_key=key)
+        return {"user": request.user}
 
-    return dict(votes.values_list("post_id", "choice_id"))
+    key = guest_voter_key(request)
+
+    if not key:
+        return None
+
+    return {"user__isnull": True, "voter_key": key}
+
+
+def my_votes(request, polls):
+    """{アンケートのpk: 自分が選んだ選択肢のpkの集合}。自由記述は答えたものを空の集合で入れる。"""
+
+    voter = my_voter_filter(request)
+
+    if voter is None:
+        return {}
+
+    mine = defaultdict(set)
+
+    for post_id, choice_id in PollVote.objects.filter(post__in=polls, **voter).values_list("post_id", "choice_id"):
+        mine[post_id].add(choice_id)
+
+    for post_id in PollAnswer.objects.filter(post__in=polls, **voter).values_list("post_id", flat=True):
+        mine.setdefault(post_id, set())
+
+    return dict(mine)
+
+
+POLL_ANSWERS_SHOWN = 30
 
 
 def attach_poll_results(polls, request):
     """
-    アンケートごとに、選択肢・票数・割合・自分の票を poll.results に入れる。
+    アンケートごとに、選択肢・票数・割合・自分の票 (自由記述なら、みんなの答えと自分の答え) を poll.results に入れる。
+    割合は「答えた人」の中の割合 (いくつでも選べるアンケートでは合計が100%を超える)。
     """
 
     polls = list(polls)
@@ -2773,6 +2849,11 @@ def attach_poll_results(polls, request):
         .values_list("choice", "count")
     )
 
+    voters = defaultdict(set)
+
+    for post_id, user_id, key in PollVote.objects.filter(post__in=polls).values_list("post_id", "user_id", "voter_key"):
+        voters[post_id].add(user_id or key)
+
     mine = my_votes(request, polls)
 
     choices = defaultdict(list)
@@ -2780,18 +2861,38 @@ def attach_poll_results(polls, request):
     for choice in PollChoice.objects.filter(post__in=polls):
         choices[choice.post_id].append(choice)
 
+    voter = my_voter_filter(request)
+
     for poll in polls:
 
-        total = sum(counts.get(choice.pk, 0) for choice in choices[poll.pk])
+        my_choice_ids = mine.get(poll.pk, set())
+
+        if poll.poll_type == "text":
+
+            answers = PollAnswer.objects.filter(post=poll, is_hidden=False)
+            my_answer = PollAnswer.objects.filter(post=poll, **voter).first() if voter else None
+
+            poll.results = {
+                "type": "text",
+                "total": answers.count(),
+                "voted": my_answer is not None,
+                "my_answer": my_answer.text if my_answer else "",
+                "answers": list(answers.values_list("text", flat=True)[:POLL_ANSWERS_SHOWN]),
+            }
+            continue
+
+        total = len(voters[poll.pk])
 
         poll.results = {
+            "type": poll.poll_type,
             "total": total,
-            "my_choice_id": mine.get(poll.pk),
+            "voted": bool(my_choice_ids),
             "choices": [
                 {
                     "choice": choice,
                     "count": counts.get(choice.pk, 0),
                     "percent": round(counts.get(choice.pk, 0) * 100 / total) if total else 0,
+                    "mine": choice.pk in my_choice_ids,
                 }
                 for choice in choices[poll.pk]
             ],
@@ -2821,26 +2922,48 @@ def split_polls(request, posts):
 
 @require_POST
 def poll_vote(request, pk):
-    """会員でもログインしていない人でも、1つのアンケートに1票 (あとから選び直せる)。"""
+    """
+    会員でもログインしていない人でも答えられる (ログインしていない人はブラウザごと)。あとから選び直せる。
+    ひとつだけ選ぶ / いくつでも選べる / 自由に書く の3種類。
+    """
 
     post = get_object_or_404(
         Post.objects.filter(status="published", kind__in=("poll", "column")),
         pk=pk,
     )
 
-    choice = get_object_or_404(
-        PollChoice,
-        pk=request.POST.get("choice") or 0,
-        post=post,
-    )
-
     key = ""
 
     if request.user.is_authenticated:
-        PollVote.objects.update_or_create(post=post, user=request.user, defaults={"choice": choice})
+        voter = {"user": request.user}
     else:
         key = guest_voter_key(request) or str(uuid.uuid4())
-        PollVote.objects.update_or_create(post=post, user=None, voter_key=key, defaults={"choice": choice})
+        voter = {"user": None, "voter_key": key}
+
+    if post.poll_type == "text":
+
+        text = (request.POST.get("answer") or "").strip()[:300]
+
+        if text:
+            PollAnswer.objects.update_or_create(post=post, **voter, defaults={"text": text})
+
+    else:
+
+        ids = request.POST.getlist("choice")
+
+        if post.poll_type == "single":
+            ids = ids[:1]
+
+        chosen = list(PollChoice.objects.filter(post=post, pk__in=[i for i in ids if i.isdigit()]))
+
+        if post.poll_type == "single" and not chosen:
+            raise Http404
+
+        votes = PollVote.objects.filter(post=post, **voter)
+        votes.exclude(choice__in=chosen).delete()
+
+        for choice in chosen:
+            PollVote.objects.get_or_create(post=post, choice=choice, **voter)
 
     url = request.POST.get("next", "")
 
@@ -2875,8 +2998,8 @@ def post_detail(request, pk):
     if post.kind == "poll":
         attach_poll_results([post], request)
 
-    # コラムに選択肢があれば、最後にアンケートを付ける
-    if post.kind == "column" and post.choices.exists():
+    # コラムに選択肢 (か自由記述のアンケート) があれば、最後にアンケートを付ける
+    if post.kind == "column" and post.has_poll:
         attach_poll_results([post], request)
 
     return render(

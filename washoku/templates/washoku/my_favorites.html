@@ -9,22 +9,47 @@
 
 <h1 class="washoku-visually-hidden">お気に入り</h1>
 
-{% if user.is_authenticated %}{% include "washoku/includes/favorite_tabs.html" %}{% endif %}
-
 {% if user.is_authenticated %}
-<p class="washoku-lead">レシピの「♡ お気に入り」で保存したものです。あなたにだけ見えます。</p>
+
+<div class="washoku-fav-filters">
+    {% for filter in filters %}
+        <span class="washoku-sort-switch" role="group" aria-label="{% if filter.key == 'who' %}だれの{% else %}種類{% endif %}">
+            {% for link in filter.links %}<a href="{{ link.url }}"{% if link.active %} class="is-active" aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+        </span>
+    {% endfor %}
+</div>
+
+{% if not has_family %}
+    <p class="washoku-note"><a href="{% url 'washoku:family' %}">家族を招待</a>すると、家族のお気に入りや評価もここで見られます。</p>
+{% endif %}
+
 {% else %}
 {% include "washoku/includes/join_prompt.html" with reason="お気に入りの保存" %}
 {% endif %}
 
-{% if recipes %}
-    <div class="washoku-grid">
-        {% for recipe in recipes %}
-            {% include "washoku/includes/recipe_card.html" %}
+{% if rows %}
+    <ul class="washoku-fav-list">
+        {% for row in rows %}
+            <li>
+                <a href="{% url 'washoku:recipe_detail' row.recipe.pk %}">{{ row.recipe.name }}</a>
+                <small>
+                    {% if show_names %}
+                        {% if row.fans %}<span class="washoku-fav-heart">♡ {% for fan in row.fans %}{{ fan|display_name }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>{% endif %}
+                        {% for member in row.members %}<span>{{ member.user|display_name }} <span class="washoku-stars">{{ member.rating|stars }}</span></span>{% endfor %}
+                    {% else %}
+                        {% if row.fans %}<span class="washoku-fav-heart">♡</span>{% endif %}
+                        {% for member in row.members %}<span class="washoku-stars">{{ member.rating|stars }}</span>{% endfor %}
+                    {% endif %}
+                </small>
+            </li>
         {% endfor %}
-    </div>
+    </ul>
 {% elif user.is_authenticated %}
-    <p class="washoku-empty">まだお気に入りはありません。</p>
+    <p class="washoku-empty">まだありません。レシピのページで「♡ お気に入り」や「大好き」「好き」などを押すと、ここに並びます。</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <p class="washoku-note washoku-fav-private">お気に入りと評価は、あなたと家族にだけ見えます。 <a href="{% url 'washoku:family' %}">家族を招待する</a></p>
 {% endif %}
 
 {% endblock %}
