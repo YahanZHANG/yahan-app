@@ -4133,3 +4133,55 @@ button.washoku-poll-row:hover {
 .washoku-family-invite a {
     text-decoration: none;
 }
+
+/* PC：入り口カードを大きく、アンケート・注目・質問はスライドせず横並び */
+@media (min-width: 900px) {
+    .washoku-pickers {
+        max-width: 820px;
+        gap: 16px;
+    }
+
+    .washoku-pick-title {
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .washoku-picker {
+        min-height: 120px;
+        gap: 8px;
+    }
+
+    .washoku-picker span {
+        font-size: 40px;
+    }
+
+    .washoku-picker strong {
+        font-size: 18px;
+    }
+
+    .washoku-picker.washoku-picker-random {
+        min-height: 140px;
+    }
+
+    .washoku-picker-random span {
+        font-size: 48px;
+    }
+
+    .washoku-picker-random strong {
+        font-size: 20px;
+    }
+
+    .washoku-home-slider {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        gap: 16px;
+        overflow: visible;
+        scroll-snap-type: none;
+    }
+
+    .washoku-slider-arrow,
+    .washoku-slider-arrow[hidden] {
+        display: none;
+    }
+}
