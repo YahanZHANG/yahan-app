@@ -287,6 +287,9 @@ LOGIN_REDIRECT_URL = (
 
 LOGOUT_REDIRECT_URL = "login"
 
+# ログイン状態を半年保つ（ホーム画面アプリで何度もログインさせない）
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 180
+
 # ------------------------------------------------------------------------------
 # Authentication
 # ------------------------------------------------------------------------------
@@ -308,7 +311,16 @@ AXES_COOLOFF_TIME = timedelta(
 
 AXES_RESET_ON_SUCCESS = True
 
-AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+# 「同じIDを同じ端末から」6回間違えたときだけロックする。
+# （別々のリストだと、Render経由で全員が同じIPに見えたとき
+#  誰か1人の失敗で全員がロックされてしまう）
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+
+# Render のプロキシ越しでも本当の接続元IPを使う
+AXES_IPWARE_META_PRECEDENCE_ORDER = (
+    "HTTP_X_FORWARDED_FOR",
+    "REMOTE_ADDR",
+)
 
 AXES_USERNAME_CALLABLE = (
     "portal.axes_utils."

@@ -169,8 +169,8 @@ class ResendVerificationForm(
 class SignupForm(UserCreationForm):
 
     email = forms.EmailField(
-        required=True,
-        label="メールアドレス",
+        required=False,
+        label="メールアドレス（任意）",
         widget=forms.EmailInput(
             attrs={
                 "placeholder": "example@email.com",
@@ -187,6 +187,18 @@ class SignupForm(UserCreationForm):
             "password1",
             "password2",
         ]
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        # スマホの自動大文字化・自動修正でIDが変わらないように
+        self.fields["username"].widget.attrs.update({
+            "autocapitalize": "none",
+            "autocorrect": "off",
+            "spellcheck": "false",
+            "autocomplete": "username",
+        })
 
     def clean_username(self):
 
@@ -212,6 +224,9 @@ class SignupForm(UserCreationForm):
             .strip()
             .lower()
         )
+
+        if not email:
+            return ""
 
         if User.objects.filter(
             email__iexact=email

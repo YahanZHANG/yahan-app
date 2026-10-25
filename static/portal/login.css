@@ -829,3 +829,26 @@
     font-size: 13px;
     font-weight: 900;
 }
+
+/* =========================================================
+   Signup: show password
+   ========================================================= */
+
+.signup-show-password {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.signup-show-password input {
+    width: 18px;
+    height: 18px;
+}
+
+.login-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}

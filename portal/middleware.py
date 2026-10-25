@@ -65,6 +65,9 @@ ALLOWED_VIEW_NAMES = {
     "news_push_settings",
     "news_push_subscribe",
     "news_push_unsubscribe",
+
+    # SwissNews のまとめから元記事へ（クリックを記録してリダイレクト）
+    "usage_analytics:public_news_article_click",
 }
 
 

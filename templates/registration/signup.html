@@ -70,6 +70,7 @@
         <form
             method="post"
             class="login-form"
+            id="signup-form"
         >
 
                 
@@ -131,7 +132,7 @@
                 <label for="{{ form.email.id_for_label }}">
 
                     <span>
-                        メールアドレス
+                        メールアドレス（任意）
                     </span>
 
                     <small>
@@ -151,7 +152,7 @@
                 </div>
 
                 <p class="login-field-note">
-                    入力間違いにご注意ください。
+                    パスワードを忘れたときの再設定に使います。
                 </p>
 
                 {% for error in form.email.errors %}
@@ -254,9 +255,19 @@
             {% endif %}
 
 
+            <label class="signup-show-password">
+                <input
+                    type="checkbox"
+                    id="signup-show-password"
+                >
+                パスワードを表示
+            </label>
+
+
             <button
                 type="submit"
                 class="login-button"
+                id="signup-submit"
             >
 
                 <span>
@@ -330,5 +341,44 @@
     </main>
 
 </div>
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const form = document.getElementById("signup-form");
+            const button = document.getElementById("signup-submit");
+            const show = document.getElementById("signup-show-password");
+
+            if (show) {
+                show.addEventListener("change", function () {
+                    form.querySelectorAll(
+                        "input[name=password1], input[name=password2]"
+                    ).forEach(function (input) {
+                        input.type = show.checked ? "text" : "password";
+                    });
+                });
+            }
+
+            // 二度押しで同じ登録が2回送られないように
+            if (form && button) {
+                form.addEventListener("submit", function () {
+                    button.disabled = true;
+                    button.querySelector("span").textContent = "作成しています…";
+                });
+
+                // 戻るボタンで戻ってきたときは押せる状態に戻す
+                window.addEventListener("pageshow", function () {
+                    button.disabled = false;
+                    button.querySelector("span").textContent = "新しいアカウントを作成";
+                });
+            }
+
+        }
+    );
+
+</script>
 
 {% endblock %}
