@@ -8,6 +8,7 @@ Python に持ってくるのは「訪問ごと」「訪問者ごと」の小さ�
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta
+from datetime import timezone as dt_timezone
 from itertools import combinations
 
 from django.db.models import Count, Max, Min
@@ -1095,7 +1096,8 @@ DAY_SLOT_MINUTES = 15
 def last_day_chart(scope):
     """過去24時間の、15分ごとの来た人と訪問回数 (折れ線。目盛りは1時間ごと)。"""
 
-    end = timezone.localtime(scope.end)
+    # 時刻の計算は UTC で (現地時間のまま引き算すると、夏時間の切り替え日に1時間ずれる)
+    end = scope.end.astimezone(dt_timezone.utc)
     end = end.replace(minute=end.minute - end.minute % DAY_SLOT_MINUTES, second=0, microsecond=0)
     slots = 24 * 60 // DAY_SLOT_MINUTES
     start = end - timedelta(minutes=DAY_SLOT_MINUTES * (slots - 1))
@@ -1116,7 +1118,7 @@ def last_day_chart(scope):
             visits[index].add(visit_id)
 
     labels = [
-        (start + timedelta(minutes=DAY_SLOT_MINUTES * i)).strftime("%H:%M")
+        timezone.localtime(start + timedelta(minutes=DAY_SLOT_MINUTES * i)).strftime("%H:%M")
         for i in range(slots)
     ]
 
