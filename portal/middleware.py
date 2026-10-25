@@ -1,3 +1,5 @@
+import time
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import resolve
@@ -303,3 +305,23 @@ class PublicUserAccessMiddleware:
             },
             status=403,
         )
+
+class KeepLoginMiddleware:
+    """
+    ログイン中の人が開くたびに、ログインの期限 (SESSION_COOKIE_AGE) を
+    最初から数え直す。保存は1日1回だけにして、毎回書き込まないようにする。
+    """
+
+    KEY = "_login_refreshed_at"
+    INTERVAL = 60 * 60 * 24
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            now = int(time.time())
+            if now - request.session.get(self.KEY, 0) >= self.INTERVAL:
+                # 中身が変わると、セッションと cookie が新しい期限で保存し直される
+                request.session[self.KEY] = now
+        return self.get_response(request)

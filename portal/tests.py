@@ -191,3 +191,26 @@ class HelpPageTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:about")), reverse("portal:help"))
         self.assertContains(self.client.get(reverse("news:about")), reverse("portal:help"))
         self.assertContains(self.client.get(reverse("portal:home")), reverse("portal:help"))
+
+
+class KeepLoginTests(TestCase):
+
+    def test_login_is_extended_once_a_day(self):
+
+        user = User.objects.create_user("keeper", password="x")
+        self.client.force_login(user)
+
+        first = self.client.get(reverse("portal:help"))
+        self.assertIn("sessionid", first.cookies)
+
+        # 同じ日の2回目は保存し直さない
+        second = self.client.get(reverse("portal:help"))
+        self.assertNotIn("sessionid", second.cookies)
+
+        session = self.client.session
+        session["_login_refreshed_at"] = 0
+        session.save()
+
+        third = self.client.get(reverse("portal:help"))
+        self.assertIn("sessionid", third.cookies)
+        self.assertEqual(third.cookies["sessionid"]["max-age"], 60 * 60 * 24 * 400)

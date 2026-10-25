@@ -98,6 +98,9 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
 
+    # ログイン中の人が開くたびに (1日1回) ログインの期限を延ばす
+    "portal.middleware.KeepLoginMiddleware",
+
     "portal.middleware.PublicUserAccessMiddleware",
 
     # App usage tracking
@@ -287,8 +290,9 @@ LOGIN_REDIRECT_URL = (
 
 LOGOUT_REDIRECT_URL = "login"
 
-# ログイン状態を半年保つ（ホーム画面アプリで何度もログインさせない）
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 180
+# ログイン状態を保つ期間。ブラウザ (Chrome など) の上限が400日なので400日。
+# 開くたびに (1日1回) 期限を延ばすので、使い続けている限りログインしたまま。
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 400
 
 # ------------------------------------------------------------------------------
 # Authentication
