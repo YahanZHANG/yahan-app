@@ -4376,6 +4376,7 @@ button.washoku-poll-row:hover {
 }
 
 .washoku-halloween-moon {
+    animation: washoku-moon 4s ease-in-out infinite;
     position: absolute;
     top: 10px;
     right: 18px;
@@ -4404,9 +4405,21 @@ button.washoku-poll-row:hover {
     animation: washoku-bat 7s ease-in-out infinite;
 }
 
-.washoku-halloween-bat.is-1 { top: 8px; left: 18%; }
-.washoku-halloween-bat.is-2 { top: 26px; left: 70%; font-size: 13px; animation-delay: -2.5s; }
-.washoku-halloween-bat.is-3 { top: 4px; left: 52%; font-size: 11px; animation-delay: -4.5s; }
+/* コウモリは箱を横切って飛ぶ */
+.washoku-halloween-bat.is-1 { top: 8px; left: -10%; font-size: 18px; animation: washoku-bat-fly 9s linear infinite; }
+.washoku-halloween-bat.is-2 { top: 30px; left: -10%; font-size: 13px; animation: washoku-bat-fly 12s linear infinite -5s; }
+.washoku-halloween-bat.is-3 { top: 4px; left: 52%; font-size: 12px; }
+
+/* おばけが時々ふわっと通る */
+.washoku-halloween-ghost {
+    position: absolute;
+    z-index: 3;
+    top: 46%;
+    left: -12%;
+    font-size: 26px;
+    opacity: 0;
+    animation: washoku-ghost-pass 11s ease-in-out infinite 2s;
+}
 
 .washoku-halloween-web {
     position: absolute;
@@ -4437,6 +4450,7 @@ button.washoku-poll-row:hover {
     letter-spacing: 0.08em;
     text-align: center;
     text-shadow: 0 0 8px rgba(255, 120, 20, 0.7);
+    animation: washoku-spooky 3s ease-in-out infinite;
 }
 
 .washoku-season-halloween .washoku-pick-title {
@@ -4455,7 +4469,16 @@ button.washoku-poll-row:hover {
     color: #FFE9D2;
 }
 
+.washoku-season-halloween .washoku-picker span {
+    animation: washoku-pumpkin 2.2s ease-in-out infinite;
+}
+
+.washoku-season-halloween .washoku-picker:nth-child(3) span {
+    animation-delay: -1.1s;
+}
+
 .washoku-season-halloween .washoku-picker.washoku-picker-random {
+    animation: washoku-glow 2.4s ease-in-out infinite;
     border: 0;
     background: radial-gradient(circle at 50% 35%, #FFB347, #F07A1A 55%, #C2510A);
     box-shadow: 0 0 18px rgba(255, 140, 30, 0.65), 0 6px 16px rgba(0, 0, 0, 0.35);
@@ -4464,6 +4487,12 @@ button.washoku-poll-row:hover {
 
 .washoku-season-halloween .washoku-picker-random span {
     animation: washoku-ghost 2.6s ease-in-out infinite;
+}
+
+.washoku-halloween-ground span {
+    display: inline-block;
+    animation: washoku-hop 1.8s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.25s);
 }
 
 .washoku-halloween-ground {
@@ -4487,10 +4516,59 @@ button.washoku-poll-row:hover {
     50% { transform: translateY(-5px); }
 }
 
+@keyframes washoku-bat-fly {
+    0% { transform: translate(0, 0) scaleY(1); }
+    10% { transform: translate(12vw, -6px) scaleY(0.6); }
+    20% { transform: translate(24vw, 4px) scaleY(1); }
+    30% { transform: translate(36vw, -4px) scaleY(0.6); }
+    40% { transform: translate(48vw, 6px) scaleY(1); }
+    50% { transform: translate(60vw, -2px) scaleY(0.6); }
+    60% { transform: translate(72vw, 4px) scaleY(1); }
+    70% { transform: translate(84vw, -6px) scaleY(0.6); }
+    80%, 100% { transform: translate(120vw, 0) scaleY(1); }
+}
+
+@keyframes washoku-ghost-pass {
+    0% { transform: translate(0, 0); opacity: 0; }
+    8% { opacity: 0.75; }
+    25% { transform: translate(40vw, -14px); }
+    45% { transform: translate(80vw, 6px); opacity: 0.75; }
+    55%, 100% { transform: translate(120vw, -6px); opacity: 0; }
+}
+
+@keyframes washoku-moon {
+    0%, 100% { box-shadow: 0 0 14px 4px rgba(255, 220, 130, 0.35); }
+    50% { box-shadow: 0 0 26px 10px rgba(255, 220, 130, 0.6); }
+}
+
+@keyframes washoku-spooky {
+    0%, 100% { transform: rotate(-2deg); text-shadow: 0 0 6px rgba(255, 120, 20, 0.6); }
+    50% { transform: rotate(2deg) scale(1.06); text-shadow: 0 0 14px rgba(255, 120, 20, 1); }
+}
+
+@keyframes washoku-pumpkin {
+    0%, 100% { transform: rotate(-6deg); filter: drop-shadow(0 0 2px rgba(255, 140, 30, 0.4)); }
+    50% { transform: rotate(6deg) scale(1.08); filter: drop-shadow(0 0 8px rgba(255, 140, 30, 0.9)); }
+}
+
+@keyframes washoku-glow {
+    0%, 100% { box-shadow: 0 0 14px rgba(255, 140, 30, 0.5), 0 6px 16px rgba(0, 0, 0, 0.35); }
+    50% { box-shadow: 0 0 28px rgba(255, 140, 30, 0.9), 0 6px 16px rgba(0, 0, 0, 0.35); }
+}
+
+@keyframes washoku-hop {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .washoku-halloween-bat,
-    .washoku-season-halloween .washoku-picker-random span {
-        animation: none;
+    .washoku-season-halloween *,
+    .washoku-season-halloween {
+        animation: none !important;
+    }
+
+    .washoku-halloween-ghost {
+        display: none;
     }
 }
 
