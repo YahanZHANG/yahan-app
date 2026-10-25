@@ -2590,9 +2590,15 @@ def post_reader_counts():
 def post_list(request, kind):
 
     # 集計 (annotate) すると Meta.ordering が使われないので、新しい順をここで指定する
+    # アンケート一覧には、コラムの最後に付けたアンケートも出す
+    if kind == "poll":
+        kinds = Q(kind="poll") | Q(kind="column", pk__in=PollChoice.objects.values("post"))
+    else:
+        kinds = Q(kind=kind)
+
     posts = (
         Post.objects
-        .filter(kind=kind, status="published")
+        .filter(kinds, status="published")
         .order_by("-created_at", "-pk")
         .select_related("author")
         .annotate(
