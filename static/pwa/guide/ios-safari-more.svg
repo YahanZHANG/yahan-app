@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif">
+<rect x="1" y="1" width="278" height="198" rx="22" fill="#F4F4F6" stroke="#D8D8DE" stroke-width="2"/>
+<rect x="24" y="26" width="170" height="8" rx="4" fill="#E2E2E8"/><rect x="24" y="42" width="232" height="8" rx="4" fill="#E2E2E8"/><rect x="24" y="58" width="232" height="8" rx="4" fill="#E2E2E8"/><rect x="24" y="74" width="170" height="8" rx="4" fill="#E2E2E8"/><rect x="24" y="90" width="232" height="8" rx="4" fill="#E2E2E8"/>
+<rect x="16" y="140" width="200" height="40" rx="20" fill="#FFFFFF" stroke="#D8D8DE"/>
+<rect x="40" y="156" width="120" height="8" rx="4" fill="#C8C8CE"/>
+<circle cx="246" cy="160" r="20" fill="#FFFFFF" stroke="#D8D8DE"/>
+<circle cx="236" cy="160" r="2.6" fill="#1C1C1E"/><circle cx="246" cy="160" r="2.6" fill="#1C1C1E"/><circle cx="256" cy="160" r="2.6" fill="#1C1C1E"/>
+<circle cx="246" cy="160" r="24" fill="none" stroke="#F08A24" stroke-width="4"/><circle cx="246" cy="160" r="32" fill="none" stroke="#F08A24" stroke-width="2" opacity=".35"/>
+</svg>

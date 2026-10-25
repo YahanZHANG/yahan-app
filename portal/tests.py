@@ -168,3 +168,13 @@ class NewsArticleClickTests(TestCase):
         response = self.client.get(self.url + "?origin=/news/&beacon=1")
 
         self.assertEqual(response.status_code, 204)
+
+
+class InstallGuideTests(TestCase):
+
+    def test_install_pages_show_steps_and_qr(self):
+
+        for name in ("washoku:install", "news:install"):
+            response = self.client.get(reverse(name))
+            self.assertContains(response, "ホーム画面に追加しよう")
+            self.assertContains(response, "<svg", msg_prefix=name)

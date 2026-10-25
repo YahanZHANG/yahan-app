@@ -21,7 +21,7 @@
             </ol>
             <button type="button" class="washoku-button" data-install-button hidden>ホーム画面に追加する</button>
             <p class="washoku-install-desktop" data-install-desktop hidden>携帯で開くと、ホーム画面に追加できます。</p>
-            <p class="washoku-note">追加したら、ホーム画面のアイコンから開いてください。</p>
+            <p class="washoku-note">追加したら、ホーム画面のアイコンから開いてください。 <a href="{% url 'washoku:install' %}">画像つきの説明 ›</a></p>
         </section>
 
         {% if user.is_authenticated %}

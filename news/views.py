@@ -1755,3 +1755,10 @@ def support_contact(
             ),
         },
     )
+
+def install_guide(request):
+    """ホーム画面に追加する方法 (画像つき)。"""
+
+    from config.pwa import install_guide_context
+
+    return render(request, "news/install.html", install_guide_context(request, reverse("news:home")))
