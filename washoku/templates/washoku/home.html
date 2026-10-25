@@ -49,6 +49,37 @@
 
 <h1 class="washoku-visually-hidden">スイスで和食</h1>
 
+{% if season == "halloween" %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&display=swap">
+<section class="washoku-pick-box washoku-season-halloween" aria-labelledby="washoku-pick-title">
+<div class="washoku-halloween-sky" aria-hidden="true">
+    <span class="washoku-halloween-moon"></span>
+    <span class="washoku-halloween-bat is-1">🦇</span>
+    <span class="washoku-halloween-bat is-2">🦇</span>
+    <span class="washoku-halloween-bat is-3">🦇</span>
+    <svg class="washoku-halloween-web" viewBox="0 0 60 60"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0 60 60M0 0 30 60M0 0 60 30M0 0 0 60M0 0 60 0"/><path d="M0 14q8 2 14-14M0 28q16 4 28-28M0 42q24 6 42-42M0 56q32 8 56-56"/></g><path d="M44 0v20" stroke="currentColor"/><circle cx="44" cy="23" r="3" fill="currentColor"/></svg>
+    <span class="washoku-halloween-candy is-1">🍬</span>
+    <span class="washoku-halloween-candy is-2">🍭</span>
+</div>
+<p class="washoku-halloween-hello">Trick or Treat!</p>
+<h2 id="washoku-pick-title" class="washoku-pick-title">今日のごはん、何にする？</h2>
+<nav class="washoku-pickers" aria-label="レシピを選ぶ">
+    <a href="{% url 'washoku:find_by_ingredients' %}" class="washoku-picker">
+        <span aria-hidden="true">🎃</span>
+        <strong>食材で選ぶ</strong>
+    </a>
+    <a href="{% url 'washoku:random_recipe' %}" class="washoku-picker washoku-picker-random">
+        <span aria-hidden="true">👻</span>
+        <strong>おまかせ</strong>
+    </a>
+    <a href="{% url 'washoku:find_by_nutrition' %}" class="washoku-picker">
+        <span aria-hidden="true">🧪</span>
+        <strong>栄養で選ぶ</strong>
+    </a>
+</nav>
+<p class="washoku-halloween-ground" aria-hidden="true">🎃 🕯️ 🍬 👻 🍭 🕸️ 🎃</p>
+</section>
+{% else %}
 <section class="washoku-pick-box" aria-labelledby="washoku-pick-title">
 <h2 id="washoku-pick-title" class="washoku-pick-title">今日のごはん、何にする？</h2>
 <nav class="washoku-pickers" aria-label="レシピを選ぶ">
@@ -66,6 +97,7 @@
     </a>
 </nav>
 </section>
+{% endif %}
 
 {% if main_poll or featured or questions %}
 <div class="washoku-home-slider-wrap" data-slider>

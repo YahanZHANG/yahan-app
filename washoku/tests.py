@@ -1184,6 +1184,33 @@ class PostTests(TestCase):
         self.assertTrue(all(link.source for link in links))
 
 
+class SeasonDesignTests(TestCase):
+
+    def test_halloween_design_follows_the_date_and_the_admin_setting(self):
+
+        from datetime import date
+
+        from .models import DisplaySettings
+
+        display = DisplaySettings.load()
+
+        self.assertEqual(display.season(date(2026, 10, 25)), "halloween")
+        self.assertEqual(display.season(date(2026, 10, 10)), "")
+        self.assertEqual(display.season(date(2026, 11, 1)), "")
+
+        display.home_season = "none"
+        self.assertEqual(display.season(date(2026, 10, 25)), "")
+
+        display.home_season = "halloween"
+        display.save()
+        self.assertEqual(display.season(date(2026, 5, 1)), "halloween")
+        self.assertContains(self.client.get(reverse("washoku:home")), "Trick or Treat!")
+
+        display.home_season = "none"
+        display.save()
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "Trick or Treat!")
+
+
 class SubstituteListTests(TestCase):
 
     def test_shishito_and_satsumaimo_are_not_substitutes_any_more(self):

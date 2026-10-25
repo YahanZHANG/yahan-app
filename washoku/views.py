@@ -386,17 +386,19 @@ def home_polls(request):
 def home(request):
 
     main_poll, other_polls = home_polls(request)
+    display = DisplaySettings.load()
 
     return render(
         request,
         "washoku/home.html",
         {
+            "season": display.season(timezone.localdate()),
             "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
             "main_poll": main_poll,
             "other_polls": other_polls,
             "featured": featured_items(),
-            "display": DisplaySettings.load(),
+            "display": display,
             "announcements": list(Announcement.current()),
         },
     )

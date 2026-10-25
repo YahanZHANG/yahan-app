@@ -4355,3 +4355,149 @@ button.washoku-poll-row:hover {
 .washoku-fav-private {
     margin-top: 20px;
 }
+
+/* ---------- HOME上部: ハロウィン (表示設定の「季節のデザイン」) ---------- */
+.washoku-season-halloween {
+    position: relative;
+    overflow: hidden;
+    padding-top: 14px;
+    border: 2px solid #F07A1A;
+    background:
+        radial-gradient(120% 70% at 50% 120%, rgba(240, 122, 26, 0.45), transparent 60%),
+        linear-gradient(180deg, #1C0F2E 0%, #33184D 55%, #4A1F3A 100%);
+    box-shadow: 0 0 0 4px rgba(240, 122, 26, 0.15), 0 10px 26px rgba(40, 10, 60, 0.35);
+    color: #FFE9D2;
+}
+
+.washoku-halloween-sky {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.washoku-halloween-moon {
+    position: absolute;
+    top: 10px;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #FFE7A3;
+    box-shadow: 0 0 18px 6px rgba(255, 220, 130, 0.45);
+}
+
+.washoku-halloween-moon::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: 9px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1C0F2E;
+}
+
+.washoku-halloween-bat {
+    position: absolute;
+    font-size: 16px;
+    filter: brightness(0.2) drop-shadow(0 0 3px rgba(255, 150, 50, 0.95)) drop-shadow(0 0 6px rgba(255, 150, 50, 0.6));
+    animation: washoku-bat 7s ease-in-out infinite;
+}
+
+.washoku-halloween-bat.is-1 { top: 8px; left: 18%; }
+.washoku-halloween-bat.is-2 { top: 26px; left: 70%; font-size: 13px; animation-delay: -2.5s; }
+.washoku-halloween-bat.is-3 { top: 4px; left: 52%; font-size: 11px; animation-delay: -4.5s; }
+
+.washoku-halloween-web {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    color: rgba(255, 233, 210, 0.35);
+}
+
+.washoku-halloween-candy {
+    position: absolute;
+    bottom: 34px;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.washoku-halloween-candy.is-1 { left: 6px; transform: rotate(-20deg); }
+.washoku-halloween-candy.is-2 { right: 6px; transform: rotate(18deg); }
+
+.washoku-halloween-hello {
+    position: relative;
+    margin: 0;
+    color: #FF9A3C;
+    font-family: "Creepster", "Chalkduster", "Comic Sans MS", cursive;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(255, 120, 20, 0.7);
+}
+
+.washoku-season-halloween .washoku-pick-title {
+    position: relative;
+    color: #FFE9D2;
+}
+
+.washoku-season-halloween .washoku-pickers {
+    position: relative;
+}
+
+.washoku-season-halloween .washoku-picker {
+    border: 1px solid rgba(255, 154, 60, 0.55);
+    background: linear-gradient(180deg, #2B1640, #3B1C4F);
+    box-shadow: 0 0 12px rgba(160, 80, 255, 0.25);
+    color: #FFE9D2;
+}
+
+.washoku-season-halloween .washoku-picker.washoku-picker-random {
+    border: 0;
+    background: radial-gradient(circle at 50% 35%, #FFB347, #F07A1A 55%, #C2510A);
+    box-shadow: 0 0 18px rgba(255, 140, 30, 0.65), 0 6px 16px rgba(0, 0, 0, 0.35);
+    color: #2A0F04;
+}
+
+.washoku-season-halloween .washoku-picker-random span {
+    animation: washoku-ghost 2.6s ease-in-out infinite;
+}
+
+.washoku-halloween-ground {
+    position: relative;
+    margin: 10px 0 -4px;
+    font-size: 15px;
+    letter-spacing: 0.35em;
+    text-align: center;
+    opacity: 0.9;
+}
+
+@keyframes washoku-bat {
+    0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+    25% { transform: translate(14px, -4px) rotate(6deg); }
+    50% { transform: translate(26px, 3px) rotate(-4deg); }
+    75% { transform: translate(10px, 6px) rotate(5deg); }
+}
+
+@keyframes washoku-ghost {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .washoku-halloween-bat,
+    .washoku-season-halloween .washoku-picker-random span {
+        animation: none;
+    }
+}
+
+@media (min-width: 900px) {
+    .washoku-halloween-hello { font-size: 20px; }
+    .washoku-halloween-moon { width: 48px; height: 48px; right: 40px; }
+    .washoku-halloween-moon::after { width: 48px; height: 48px; left: 13px; }
+    .washoku-halloween-bat { font-size: 22px; }
+    .washoku-halloween-ground { font-size: 20px; }
+}

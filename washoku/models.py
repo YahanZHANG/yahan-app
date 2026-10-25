@@ -1625,6 +1625,20 @@ class DisplaySettings(models.Model):
         help_text="人気順のもとになる数です",
     )
 
+    SEASON_CHOICES = [
+        ("auto", "自動 (時期に合わせる)"),
+        ("none", "いつものデザイン"),
+        ("halloween", "ハロウィン"),
+    ]
+
+    home_season = models.CharField(
+        "HOME上部の季節のデザイン",
+        max_length=20,
+        choices=SEASON_CHOICES,
+        default="auto",
+        help_text="自動: ハロウィンは10月18日〜31日",
+    )
+
     class Meta:
         verbose_name = "表示設定"
         verbose_name_plural = "表示設定"
@@ -1636,6 +1650,20 @@ class DisplaySettings(models.Model):
     def load(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def season(self, today):
+        """HOME上部に使う季節のデザイン ("" ならいつもの)"""
+
+        if self.home_season == "none":
+            return ""
+
+        if self.home_season != "auto":
+            return self.home_season
+
+        if today.month == 10 and today.day >= 18:
+            return "halloween"
+
+        return ""
 
 
 class CommentReaction(models.Model):
