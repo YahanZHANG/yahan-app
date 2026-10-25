@@ -2244,7 +2244,7 @@ def my_page(request):
 # お気に入りページの絞り込み (1ページで、だれの・♡か★かを選ぶ)
 FAVORITE_FILTERS = {
     "who": [("me", "わたし"), ("family", "家族みんな")],
-    "kind": [("all", "すべて"), ("fav", "♡"), ("rated", "★ 評価")],
+    "kind": [("all", "全て"), ("fav", "♡お気に入り"), ("rated", "★評価")],
 }
 
 

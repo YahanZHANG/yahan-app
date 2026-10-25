@@ -4287,9 +4287,25 @@ button.washoku-poll-row:hover {
     margin: 14px 0 12px;
 }
 
+/* 2つのスイッチで1行の幅をぴったり使う (文字数に合わせて幅を配分) */
+.washoku-fav-filters .washoku-sort-switch {
+    display: flex;
+    min-width: 0;
+}
+
+.washoku-fav-filters .washoku-sort-switch:first-child {
+    flex: 8 1 0;
+}
+
+.washoku-fav-filters .washoku-sort-switch:last-child {
+    flex: 11 1 0;
+}
+
 .washoku-fav-filters .washoku-sort-switch a {
-    padding: 7px min(12px, 2.6vw);
-    font-size: min(14px, 3.5vw);
+    flex: auto;
+    padding: 7px 0;
+    font-size: min(15px, 3.55vw);
+    text-align: center;
     white-space: nowrap;
 }
 
