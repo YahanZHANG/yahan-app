@@ -772,7 +772,7 @@ body {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    padding: 10px 4px max(6px, calc(env(safe-area-inset-bottom) - 28px));
+    padding: 10px 4px max(6px, calc(env(safe-area-inset-bottom) - 22px));
     border-top: 1px solid var(--washoku-border);
     background: var(--washoku-surface);
 }
