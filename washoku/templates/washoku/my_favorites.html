@@ -13,7 +13,7 @@
 
 <div class="washoku-fav-filters">
     {% for filter in filters %}
-        <span class="washoku-sort-switch" role="group" aria-label="{% if filter.key == 'who' %}だれの{% elif filter.key == 'kind' %}種類{% else %}並べ替え{% endif %}">
+        <span class="washoku-sort-switch" role="group" aria-label="{% if filter.key == 'who' %}だれの{% else %}種類{% endif %}">
             {% for link in filter.links %}<a href="{{ link.url }}"{% if link.active %} class="is-active" aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
         </span>
     {% endfor %}
@@ -28,21 +28,22 @@
 {% endif %}
 
 {% if rows %}
-    <div class="washoku-grid">
+    <ul class="washoku-fav-list">
         {% for row in rows %}
-            <div class="washoku-family-card">
-                {% include "washoku/includes/recipe_card.html" with recipe=row.recipe %}
-                {% if show_names and row.fans or show_names and row.members %}
-                    <small>
-                        {% if row.fans %}<span class="washoku-family-fans">♡ {% for fan in row.fans %}{{ fan|display_name }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>{% endif %}
-                        {% if row.members %}{% if row.fans %} ・ {% endif %}{% for member in row.members %}{{ member.user|display_name }} {{ member.rating|stars }}{% if not forloop.last %} ・ {% endif %}{% endfor %}{% endif %}
-                    </small>
-                {% elif not show_names and row.fans %}
-                    <small><span class="washoku-family-fans">♡ お気に入り</span></small>
-                {% endif %}
-            </div>
+            <li>
+                <a href="{% url 'washoku:recipe_detail' row.recipe.pk %}">{{ row.recipe.name }}</a>
+                <small>
+                    {% if show_names %}
+                        {% if row.fans %}<span class="washoku-fav-heart">♡ {% for fan in row.fans %}{{ fan|display_name }}{% if not forloop.last %}、{% endif %}{% endfor %}</span>{% endif %}
+                        {% for member in row.members %}<span>{{ member.user|display_name }} <span class="washoku-stars">{{ member.rating|stars }}</span></span>{% endfor %}
+                    {% else %}
+                        {% if row.fans %}<span class="washoku-fav-heart">♡</span>{% endif %}
+                        {% for member in row.members %}<span class="washoku-stars">{{ member.rating|stars }}</span>{% endfor %}
+                    {% endif %}
+                </small>
+            </li>
         {% endfor %}
-    </div>
+    </ul>
 {% elif user.is_authenticated %}
     <p class="washoku-empty">まだありません。レシピのページで「♡ お気に入り」や「大好き」「好き」などを押すと、ここに並びます。</p>
 {% endif %}

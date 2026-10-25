@@ -2241,11 +2241,10 @@ def my_page(request):
     )
 
 
-# お気に入りページの絞り込みと並べ替え (1ページで、だれの・♡か★か・順番を選ぶ)
+# お気に入りページの絞り込み (1ページで、だれの・♡か★かを選ぶ)
 FAVORITE_FILTERS = {
     "who": [("me", "わたし"), ("family", "家族みんな")],
-    "kind": [("all", "すべて"), ("fav", "♡ お気に入り"), ("rated", "★ 評価")],
-    "sort": [("score", "評価が高い順"), ("new", "新しい順")],
+    "kind": [("all", "すべて"), ("fav", "♡"), ("rated", "★ 評価")],
 }
 
 
@@ -2261,23 +2260,18 @@ def favorite_rows(user, members, kind):
     def entry_for(item):
         return by_recipe.setdefault(
             item.recipe_id,
-            {"recipe": item.recipe, "ratings": {}, "fans": set(), "latest": item_time(item)},
+            {"recipe": item.recipe, "ratings": {}, "fans": set()},
         )
-
-    def item_time(item):
-        return getattr(item, "created_at", None) or item.updated_at
 
     if kind in ("all", "rated"):
         for rating in RecipeRating.objects.filter(user__in=members, recipe__in=recipes).select_related("recipe"):
             entry = entry_for(rating)
             entry["ratings"][rating.user_id] = rating.rating
-            entry["latest"] = max(entry["latest"], rating.updated_at)
 
     if kind in ("all", "fav"):
         for favorite in RecipeFavorite.objects.filter(user__in=members, recipe__in=recipes).select_related("recipe"):
             entry = entry_for(favorite)
             entry["fans"].add(favorite.user_id)
-            entry["latest"] = max(entry["latest"], favorite.created_at)
 
     # ♡ だけの表示でも、カードの星と並べ替えにはその人たちの評価を使う
     if kind == "fav" and by_recipe:
@@ -2294,7 +2288,6 @@ def favorite_rows(user, members, kind):
             {
                 "recipe": entry["recipe"],
                 "average": average,
-                "latest": entry["latest"],
                 "fans": [member for member in members if member.pk in entry["fans"]],
                 "members": [
                     {"user": member, "rating": entry["ratings"][member.pk]}
@@ -2310,7 +2303,7 @@ def favorite_rows(user, members, kind):
 def my_favorites(request):
     """
     お気に入りと評価をまとめたページ。
-    だれの (わたし / 家族みんな)・何を (すべて / ♡ / ★)・順番 (評価順 / 新しい順) を切り替える。
+    だれの (わたし / 家族みんな)・何を (すべて / ♡ / ★) を切り替える。評価の高い順。
     評価とお気に入りは、自分と家族のメンバーにしか見えない。
     ログインしていない人には登録の案内を出す。
     """
@@ -2320,11 +2313,9 @@ def my_favorites(request):
         for key, options in FAVORITE_FILTERS.items()
     }
 
-    # 以前の「家族の評価順」(?sort=family) は家族みんなの評価順
+    # 以前の「家族の評価順」(?sort=family) は家族みんな
     if request.GET.get("sort") == "family":
-        choice.update(who="family", sort="score")
-
-    # 前の並べ替え ?sort=new (保存した順) はそのまま新しい順
+        choice["who"] = "family"
 
     if not request.user.is_authenticated:
         return render(request, "washoku/my_favorites.html", {"rows": [], "filters": []})
@@ -2337,17 +2328,14 @@ def my_favorites(request):
 
     rows = favorite_rows(request.user, members, choice["kind"])
 
-    if choice["sort"] == "new":
-        rows.sort(key=lambda row: row["latest"], reverse=True)
-    else:
-        # 評価の高い順。評価がないもの (♡ だけ) は ♡ の多い順で後ろに
-        rows.sort(key=lambda row: (
-            row["average"] is None,
-            -(row["average"] or 0),
-            -len(row["fans"]),
-            -len(row["members"]),
-            row["recipe"].name,
-        ))
+    # 評価の高い順。評価がないもの (♡ だけ) は ♡ の多い順で後ろに
+    rows.sort(key=lambda row: (
+        row["average"] is None,
+        -(row["average"] or 0),
+        -len(row["fans"]),
+        -len(row["members"]),
+        row["recipe"].name,
+    ))
 
     filters = []
 
@@ -2385,7 +2373,7 @@ def family_favorites(request):
     前の「家族のお気に入り」ページ。お気に入りページの「家族みんな」へ。
     """
 
-    return redirect(reverse("washoku:my_favorites") + "?who=family&kind=all&sort=score")
+    return redirect(reverse("washoku:my_favorites") + "?who=family&kind=all")
 
 
 @login_required

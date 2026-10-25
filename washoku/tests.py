@@ -1484,11 +1484,6 @@ class FavoriteNoteReactionTests(TestCase):
         self.assertIn("肉じゃが", html)
         self.assertNotIn("照り焼きチキン", html)
 
-        # 新しい順: あとから ♡ したものが上
-        RecipeFavorite.objects.filter(recipe=self.recipe).update(created_at=timezone.now() + timedelta(minutes=5))
-        html = self.client.get(url + "?kind=fav&sort=new").content.decode()
-        self.assertLess(html.index("照り焼きチキン"), html.index("肉じゃが"))
-
         self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[self.recipe.pk])), "保存済み")
         self.client.post(reverse("washoku:favorite_toggle", args=[self.recipe.pk]))
         self.assertEqual(list(RecipeFavorite.objects.values_list("recipe__name", flat=True)), ["肉じゃが"])
@@ -1508,7 +1503,7 @@ class FavoriteNoteReactionTests(TestCase):
 
         self.client.force_login(self.me)
         family_url = reverse("washoku:my_favorites") + "?who=family"
-        self.assertRedirects(self.client.get(reverse("washoku:family_favorites")), family_url + "&kind=all&sort=score")
+        self.assertRedirects(self.client.get(reverse("washoku:family_favorites")), family_url + "&kind=all")
         html = self.client.get(family_url).content.decode()
 
         self.assertIn("家族みんな", html)

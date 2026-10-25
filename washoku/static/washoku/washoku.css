@@ -4283,14 +4283,51 @@ button.washoku-poll-row:hover {
 /* お気に入り: だれの・種類・並べ替えを1ページで切り替える */
 .washoku-fav-filters {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 14px 0 16px;
+    gap: 6px;
+    margin: 14px 0 12px;
 }
 
 .washoku-fav-filters .washoku-sort-switch a {
-    padding: 7px 12px;
-    font-size: min(14px, 3.6vw);
+    padding: 7px min(12px, 2.6vw);
+    font-size: min(14px, 3.5vw);
+    white-space: nowrap;
+}
+
+/* お気に入り: レシピ名と ♡・評価だけの一覧 */
+.washoku-fav-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--washoku-border);
+}
+
+.washoku-fav-list li {
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--washoku-border);
+}
+
+.washoku-fav-list a {
+    color: var(--washoku-text);
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.washoku-fav-list small {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    margin-top: 2px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-fav-list small:empty {
+    display: none;
+}
+
+.washoku-fav-heart {
+    color: var(--washoku-accent-strong);
 }
 
 .washoku-fav-private {
