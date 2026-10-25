@@ -662,7 +662,7 @@ html {
 }
 
 body {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 .washoku-header {
@@ -772,7 +772,7 @@ body {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    padding: 10px 4px calc(12px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--washoku-border);
     background: var(--washoku-surface);
 }
@@ -4062,16 +4062,16 @@ button.washoku-poll-row:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
+    width: 60px;
     min-height: 0;
-    height: 34px;
-    padding: 0 0 3px;
-    border: 1px solid var(--washoku-border);
+    height: 60px;
+    padding: 0 0 6px;
+    border: 0;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--washoku-surface) 92%, transparent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    color: var(--washoku-text);
-    font-size: 24px;
+    background: rgba(40, 30, 25, 0.35);
+    box-shadow: none;
+    color: #FFFFFF;
+    font-size: 46px;
     line-height: 1;
     cursor: pointer;
     transform: translateY(-50%);
