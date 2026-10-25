@@ -5146,3 +5146,17 @@
 .news-announcement-close:hover {
     opacity: 1;
 }
+
+/* 最初のカードの出典の下に出す、元記事が開けないときのヒント */
+.news-card-footer:has(.news-source-help) {
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+.news-source-help {
+    flex-basis: 100%;
+    margin: 0;
+    color: #75817c;
+    font-size: .72rem;
+    line-height: 1.6;
+}

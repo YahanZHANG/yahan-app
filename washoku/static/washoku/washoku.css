@@ -4185,3 +4185,16 @@ button.washoku-poll-row:hover {
         display: none;
     }
 }
+
+/* PCだけに出す「スマホ向けです」のお知らせ */
+.washoku-pc-note {
+    display: none;
+}
+
+@media (min-width: 900px) {
+    .washoku-pc-note {
+        display: block;
+        margin: 0 0 12px;
+        padding: 8px 12px;
+    }
+}

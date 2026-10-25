@@ -190,6 +190,15 @@
 
                     {{ form.password1 }}
 
+                    <button
+                        type="button"
+                        class="login-password-toggle"
+                        data-password-toggle="{{ form.password1.id_for_label }}"
+                        aria-label="パスワードを表示"
+                    >
+                        👁
+                    </button>
+
                 </div>
 
                 {% for error in form.password1.errors %}
@@ -227,6 +236,15 @@
 
                     {{ form.password2 }}
 
+                    <button
+                        type="button"
+                        class="login-password-toggle"
+                        data-password-toggle="{{ form.password2.id_for_label }}"
+                        aria-label="パスワードを表示"
+                    >
+                        👁
+                    </button>
+
                 </div>
 
                 {% for error in form.password2.errors %}
@@ -253,15 +271,6 @@
                 </div>
 
             {% endif %}
-
-
-            <label class="signup-show-password">
-                <input
-                    type="checkbox"
-                    id="signup-show-password"
-                >
-                パスワードを表示
-            </label>
 
 
             <button
@@ -350,17 +359,18 @@
 
             const form = document.getElementById("signup-form");
             const button = document.getElementById("signup-submit");
-            const show = document.getElementById("signup-show-password");
-
-            if (show) {
-                show.addEventListener("change", function () {
-                    form.querySelectorAll(
-                        "input[name=password1], input[name=password2]"
-                    ).forEach(function (input) {
-                        input.type = show.checked ? "text" : "password";
-                    });
+            document.querySelectorAll("[data-password-toggle]").forEach(function (toggle) {
+                const input = document.getElementById(toggle.dataset.passwordToggle);
+                if (!input) {
+                    return;
+                }
+                toggle.addEventListener("click", function () {
+                    const show = input.type === "password";
+                    input.type = show ? "text" : "password";
+                    toggle.textContent = show ? "🙈" : "👁";
+                    toggle.setAttribute("aria-label", show ? "パスワードを隠す" : "パスワードを表示");
                 });
-            }
+            });
 
             // 二度押しで同じ登録が2回送られないように
             if (form && button) {
