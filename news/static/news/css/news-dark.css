@@ -793,3 +793,26 @@
     background: #5F7F6F;
     color: #ffffff;
 }
+
+/* 設定：暮らしのお知らせカード / 下メニューの外枠 */
+
+.news-dark .news-life-settings-lead {
+    color: var(--news-dark-muted, #b7c2bc);
+}
+
+.news-dark .news-life-settings-selected {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-text, #e8eee9);
+}
+
+.news-dark .news-life-settings-head a {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-life-settings-locked {
+    color: #F0A36F;
+}
+
+.news-dark .news-bottom-nav {
+    border: 2px solid rgba(143, 179, 160, .6);
+}

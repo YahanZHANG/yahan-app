@@ -5634,3 +5634,82 @@
     background: #5F7F6F;
     color: #ffffff;
 }
+
+/* =========================================================
+   設定：暮らしのお知らせカード / 下メニューの外枠
+   ========================================================= */
+
+.news-life-settings {
+    border-left: 4px solid #E07B39;
+}
+
+.news-life-settings-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.news-life-settings-head h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.news-life-settings-head a {
+    flex-shrink: 0;
+    color: #5F7F6F;
+    font-size: .8rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.news-life-settings-lead {
+    margin: 0 0 12px;
+    color: #63706a;
+    font-size: .82rem;
+    line-height: 1.7;
+}
+
+.news-life-settings-selected {
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #f1f5f2;
+    color: #2f3b35;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.news-life-settings .news-push-region span {
+    padding: 8px 14px;
+    font-size: .82rem;
+}
+
+.news-life-settings-locked {
+    display: none;
+    margin: 10px 0 0;
+    color: #A35A27;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.news-life-settings.is-locked .news-life-settings-locked {
+    display: block;
+}
+
+.news-life-settings.is-locked .news-life-settings-selected,
+.news-life-settings.is-locked .news-push-region-list {
+    opacity: .45;
+}
+
+.news-life-settings.is-locked .news-push-region span {
+    cursor: not-allowed;
+}
+
+.news-bottom-nav {
+    border: 2px solid rgba(95, 127, 111, .55);
+}

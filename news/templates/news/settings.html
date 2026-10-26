@@ -81,30 +81,6 @@
 
             </label>
 
-            <fieldset class="news-push-regions">
-
-                <legend>
-                    <span class="news-life-tag">暮らし</span>のお知らせ
-                </legend>
-
-                <div
-                    id="news-push-regions"
-                    class="news-push-region-list"
-                >
-                    {% for region in regions %}
-                        <label class="news-push-region">
-                            <input type="checkbox" value="{{ region.slug }}">
-                            <span>{{ region.name }}</span>
-                        </label>
-                    {% endfor %}
-                </div>
-
-            </fieldset>
-
-            <small class="news-push-option-help">
-                選んだ地域（住んでいる所や通勤先など、いくつでも）と全国の、スト・運休・締め切りなどをすぐにお知らせします。
-            </small>
-
             <p
                 id="news-push-options-status"
                 class="news-push-inline-status"
@@ -112,6 +88,67 @@
             ></p>
 
         </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         暮らしのお知らせ（この端末）
+    ====================================================== -->
+
+    <section
+        class="news-settings-card news-life-settings is-locked"
+        id="news-life-settings"
+    >
+
+        <div class="news-life-settings-head">
+
+            <h3>
+                <span class="news-life-tag">暮らし</span>
+                暮らしのお知らせ
+            </h3>
+
+            <a href="{% url 'news:life_alerts' %}">一覧を見る</a>
+
+        </div>
+
+        <p class="news-life-settings-lead">
+            スト、電車の運休、手続きの期限、祝日の営業時間などをすぐに通知します。住んでいる地域や通勤先を選んでください（いくつでも選べます）。スイス全国のお知らせは、いつでも届きます。
+        </p>
+
+        <p
+            class="news-life-settings-selected"
+            id="news-life-selected"
+        >
+            まだ地域を選んでいません
+        </p>
+
+        <div
+            id="news-push-regions"
+            class="news-push-region-list"
+            role="group"
+            aria-label="暮らしのお知らせの地域"
+        >
+            {% for region in regions %}
+                <label class="news-push-region">
+                    <input type="checkbox" value="{{ region.slug }}" disabled>
+                    <span>{{ region.name }}</span>
+                </label>
+            {% endfor %}
+        </div>
+
+        <p
+            class="news-life-settings-locked"
+            id="news-life-locked"
+        >
+            上の「新着ニュースのPush通知」を ON にすると選べます。
+        </p>
+
+        <p
+            id="news-life-status"
+            class="news-push-inline-status"
+            aria-live="polite"
+        ></p>
 
     </section>
 
