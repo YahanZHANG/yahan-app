@@ -788,3 +788,13 @@
     background: var(--news-dark-surface-alt);
     color: var(--news-dark-accent);
 }
+
+.news-dark .news-topbar {
+    border-top-color: #C81E28;
+    background: rgba(23, 29, 26, .96);
+}
+
+.news-dark .news-bottom-nav .news-nav-item.is-active {
+    background: #5F7F6F;
+    color: #ffffff;
+}
