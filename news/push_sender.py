@@ -514,60 +514,106 @@ def send_life_alerts(
             "reason": "No life alerts.",
         }
 
-    region_ids = (
+    # 同じ地域の組み合わせを選んだ端末には、同じ通知をまとめて送る
+    groups = {}
+
+    for subscription in (
         NewsPushSubscription.objects
         .filter(
-            alert_region__isnull=False,
-        )
-        .values_list(
-            "alert_region_id",
-            flat=True,
+            alert_regions__isnull=False,
         )
         .distinct()
-    )
+        .prefetch_related(
+            "alert_regions",
+        )
+    ):
+
+        regions = tuple(
+            sorted(
+                subscription.alert_regions.all(),
+                key=lambda region: region.pk,
+            )
+        )
+
+        groups.setdefault(
+            regions,
+            [],
+        ).append(
+            subscription.pk
+        )
 
     today = timezone.localdate()
 
     sent = 0
 
-    for region_id in list(region_ids):
+    for regions, subscription_ids in groups.items():
 
-        matching = [
-            article
-            for article in alerts
-            if any(
-                region.pk == region_id
-                or region.slug == NATIONWIDE_REGION_SLUG
-                for region in article.regions.all()
+        region_ids = {
+            region.pk
+            for region in regions
+        }
+
+        matching = []
+        matched_names = []
+
+        for article in alerts:
+
+            article_regions = list(
+                article.regions.all()
             )
-        ]
+
+            local = [
+                region
+                for region in article_regions
+                if region.pk in region_ids
+            ]
+
+            nationwide = any(
+                region.slug == NATIONWIDE_REGION_SLUG
+                for region in article_regions
+            )
+
+            if not local and not nationwide:
+                continue
+
+            matching.append(
+                article
+            )
+
+            for region in local:
+                if region.name not in matched_names:
+                    matched_names.append(region.name)
+
+            if nationwide and "スイス全国" not in matched_names:
+                matched_names.append("スイス全国")
 
         if not matching:
             continue
 
         first = matching[0]
 
-        region_name = (
-            NewsPushSubscription.objects
-            .filter(alert_region_id=region_id)
-            .values_list("alert_region__name", flat=True)
-            .first()
-        )
-
         body = first.title_ja or first.title_original
 
         if len(matching) > 1:
             body += f"\nほか{len(matching) - 1}件"
 
+        group_key = "-".join(
+            str(region.pk)
+            for region in regions
+        )
+
         result = send_news_push_for_batch(
             batch_key=(
-                f"{today:%Y-%m-%d}-{period}-life-{region_id}"
-            ),
+                f"{today:%Y-%m-%d}-{period}-life-{group_key}"
+            )[:150],
             new_articles_count=len(matching),
             subscriptions=NewsPushSubscription.objects.filter(
-                alert_region_id=region_id,
+                pk__in=subscription_ids,
             ),
-            title=f"📌 暮らしのお知らせ（{region_name}）",
+            title=(
+                "📌 暮らしのお知らせ"
+                f"（{'・'.join(matched_names)}）"
+            ),
             body=body,
             url=(
                 f"/news/a/{first.pk}/"

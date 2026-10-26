@@ -792,14 +792,14 @@ class LifeAlertTests(NewsTestCase):
             data={
                 "endpoint": subscription.endpoint,
                 "frequency": "daily",
-                "alert_region": "zurich",
+                "alert_regions": ["zurich", "bern"],
             },
             content_type="application/json",
         )
 
         self.assertEqual(
             response.json(),
-            {"frequency": "daily", "alert_region": "zurich"},
+            {"frequency": "daily", "alert_regions": ["bern", "zurich"]},
         )
 
         # 全国は地域として選べない
@@ -807,7 +807,7 @@ class LifeAlertTests(NewsTestCase):
             url,
             data={
                 "endpoint": subscription.endpoint,
-                "alert_region": "switzerland",
+                "alert_regions": ["switzerland"],
             },
             content_type="application/json",
         )
@@ -843,12 +843,22 @@ class LifeAlertTests(NewsTestCase):
         )
         zurich_user = NewsPushSubscription.objects.create(
             endpoint="https://push.example/zurich", p256dh="k", auth="a",
-            frequency="daily", alert_region=self.zurich,
+            frequency="daily",
         )
+        zurich_user.alert_regions.add(self.zurich)
+
         bern_user = NewsPushSubscription.objects.create(
             endpoint="https://push.example/bern", p256dh="k", auth="a",
-            frequency="daily", alert_region=self.bern,
+            frequency="daily",
         )
+        bern_user.alert_regions.add(self.bern)
+
+        # 住まいはベルン、通勤先はチューリッヒ
+        commuter = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/commuter", p256dh="k", auth="a",
+            frequency="daily",
+        )
+        commuter.alert_regions.add(self.bern, self.zurich)
 
         alert = self.make_article(
             self.srf, "strike", life_alert=True,
@@ -870,8 +880,18 @@ class LifeAlertTests(NewsTestCase):
         # 午後: 「更新のたび」と、チューリッヒの暮らしのお知らせだけ
         self.assertIn(every.endpoint, endpoints)
         self.assertIn(zurich_user.endpoint, endpoints)
+        self.assertIn(commuter.endpoint, endpoints)
         self.assertNotIn(daily.endpoint, endpoints)
         self.assertNotIn(bern_user.endpoint, endpoints)
+
+        titles = [
+            call.kwargs["data"]
+            for call in webpush.call_args_list
+            if call.kwargs["subscription_info"]["endpoint"]
+            == commuter.endpoint
+        ]
+
+        self.assertIn("チューリッヒ", titles[0])
 
         with mock.patch("news.push_sender.webpush") as webpush:
             send_scheduled_pushes("morning", started_at)
@@ -881,6 +901,35 @@ class LifeAlertTests(NewsTestCase):
         # 朝: 1日1回の人にも届く
         self.assertIn(daily.endpoint, endpoints)
         self.assertIn(bern_user.endpoint, endpoints)
+
+
+class FlagLifeAlertsTests(NewsTestCase):
+
+    def test_marks_selected_articles(self):
+
+        from config.services.ai_client import AIResult
+
+        strike = self.make_article(self.srf, "strike")
+        other = self.make_article(self.srf, "other")
+
+        with mock.patch(
+            "news.management.commands.flag_life_alerts.generate_json",
+            return_value=AIResult(
+                data={"life_alert_ids": [strike.pk, 99999]},
+                model="m",
+            ),
+        ) as generate:
+            call_command(
+                "flag_life_alerts",
+                stdout=mock.MagicMock(),
+            )
+
+        strike.refresh_from_db()
+        other.refresh_from_db()
+
+        generate.assert_called_once()
+        self.assertTrue(strike.life_alert)
+        self.assertFalse(other.life_alert)
 
 
 class CleanupPromotionTests(NewsTestCase):

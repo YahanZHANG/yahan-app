@@ -232,13 +232,17 @@ class NewsPushSubscriptionAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "frequency",
-        "alert_region",
+        "region_names",
         "updated_at",
     ]
 
     list_filter = [
         "frequency",
-        "alert_region",
+        "alert_regions",
+    ]
+
+    filter_horizontal = [
+        "alert_regions",
     ]
 
     readonly_fields = [
@@ -248,3 +252,19 @@ class NewsPushSubscriptionAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     ]
+
+    def get_queryset(self, request):
+
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("alert_regions")
+        )
+
+    @admin.display(description="暮らしのお知らせの地域")
+    def region_names(self, obj):
+
+        return "、".join(
+            region.name
+            for region in obj.alert_regions.all()
+        )

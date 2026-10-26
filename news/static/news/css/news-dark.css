@@ -749,3 +749,18 @@
 .news-dark .news-push-options {
     border-color: var(--news-dark-border-soft);
 }
+
+.news-dark .news-push-regions legend {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-push-region span {
+    border-color: var(--news-dark-border-soft);
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-push-region input:checked + span {
+    background: #5F7F6F;
+    color: #ffffff;
+}

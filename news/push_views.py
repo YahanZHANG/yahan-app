@@ -341,7 +341,7 @@ def push_options(request):
     endpoint は端末ごとに推測できないURLなので、それを鍵にする。
 
     送るもの: {"endpoint": "...", "frequency"?: "every"|"daily",
-              "alert_region"?: "<slug>"|""}
+              "alert_regions"?: ["<slug>", ...]}
     """
 
     try:
@@ -388,9 +388,6 @@ def push_options(request):
         .filter(
             endpoint=endpoint,
         )
-        .select_related(
-            "alert_region",
-        )
         .first()
     )
 
@@ -428,40 +425,41 @@ def push_options(request):
             "frequency"
         )
 
-    if "alert_region" in data:
+    regions = None
 
-        slug = data["alert_region"] or ""
+    if "alert_regions" in data:
 
-        if slug:
+        slugs = data["alert_regions"]
 
-            region = (
-                alert_regions()
-                .filter(
-                    slug=slug,
-                )
-                .first()
+        if (
+            not isinstance(slugs, list)
+            or not all(isinstance(slug, str) for slug in slugs)
+        ):
+
+            return JsonResponse(
+                {
+                    "error": "Invalid regions.",
+                },
+                status=400,
             )
 
-            if region is None:
-
-                return JsonResponse(
-                    {
-                        "error": "Invalid region.",
-                    },
-                    status=400,
-                )
-
-        else:
-
-            region = None
-
-        subscription.alert_region = region
-
-        update_fields.append(
-            "alert_region"
+        regions = list(
+            alert_regions()
+            .filter(
+                slug__in=slugs,
+            )
         )
 
-    if update_fields:
+        if len(regions) != len(set(slugs)):
+
+            return JsonResponse(
+                {
+                    "error": "Invalid region.",
+                },
+                status=400,
+            )
+
+    if update_fields or regions is not None:
 
         subscription.save(
             update_fields=[
@@ -470,13 +468,20 @@ def push_options(request):
             ]
         )
 
+    if regions is not None:
+
+        subscription.alert_regions.set(
+            regions
+        )
+
     return JsonResponse(
         {
             "frequency": subscription.frequency,
-            "alert_region": (
-                subscription.alert_region.slug
-                if subscription.alert_region
-                else ""
+            "alert_regions": sorted(
+                subscription.alert_regions.values_list(
+                    "slug",
+                    flat=True,
+                )
             ),
         }
     )

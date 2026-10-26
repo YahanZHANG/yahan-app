@@ -81,23 +81,28 @@
 
             </label>
 
-            <label class="news-push-option">
+            <fieldset class="news-push-regions">
 
-                <span>
+                <legend>
                     📌 暮らしのお知らせ
-                </span>
+                </legend>
 
-                <select id="news-push-region">
-                    <option value="">受け取らない</option>
+                <div
+                    id="news-push-regions"
+                    class="news-push-region-list"
+                >
                     {% for region in regions %}
-                        <option value="{{ region.slug }}">{{ region.name }}</option>
+                        <label class="news-push-region">
+                            <input type="checkbox" value="{{ region.slug }}">
+                            <span>{{ region.name }}</span>
+                        </label>
                     {% endfor %}
-                </select>
+                </div>
 
-            </label>
+            </fieldset>
 
             <small class="news-push-option-help">
-                地域を選ぶと、その地域と全国のスト・運休・締め切りなどをすぐにお知らせします。
+                選んだ地域（住んでいる所や通勤先など、いくつでも）と全国の、スト・運休・締め切りなどをすぐにお知らせします。
             </small>
 
             <p

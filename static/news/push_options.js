@@ -17,7 +17,11 @@
     }
 
     const frequency = document.getElementById("news-push-frequency");
-    const region = document.getElementById("news-push-region");
+    const regionBox = document.getElementById("news-push-regions");
+
+    const regionInputs = Array.from(
+        regionBox.querySelectorAll("input[type=checkbox]")
+    );
     const status = document.getElementById("news-push-options-status");
 
     let endpoint = null;
@@ -58,7 +62,9 @@
             const options = await send({});
 
             frequency.value = options.frequency;
-            region.value = options.alert_region;
+            regionInputs.forEach((input) => {
+                input.checked = options.alert_regions.includes(input.value);
+            });
             box.hidden = false;
         } catch (error) {
             console.warn(error);
@@ -84,8 +90,12 @@
         save({ frequency: frequency.value });
     });
 
-    region.addEventListener("change", () => {
-        save({ alert_region: region.value });
+    regionBox.addEventListener("change", () => {
+        save({
+            alert_regions: regionInputs
+                .filter((input) => input.checked)
+                .map((input) => input.value),
+        });
     });
 
     document.addEventListener("swissnews:push-changed", (event) => {

@@ -462,11 +462,10 @@ class NewsPushSubscription(django_models.Model):
         default="every",
     )
 
-    # 暮らしのお知らせを受け取る地域（空 = 受け取らない）
-    alert_region = django_models.ForeignKey(
+    # 暮らしのお知らせを受け取る地域（なし = 受け取らない）。
+    # 住んでいる所と通勤先など、いくつでも選べる。
+    alert_regions = django_models.ManyToManyField(
         Region,
-        on_delete=django_models.SET_NULL,
-        null=True,
         blank=True,
         related_name="push_subscriptions",
         verbose_name="暮らしのお知らせの地域",
