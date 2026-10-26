@@ -5764,10 +5764,9 @@
     content: "";
     position: absolute;
     top: 0;
-    left: 50%;
-    width: 28px;
+    right: 16%;
+    left: 16%;
     height: 3px;
-    margin-left: -14px;
     border-radius: 0 0 3px 3px;
     background: #5F7F6F;
 }
