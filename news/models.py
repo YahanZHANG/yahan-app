@@ -659,6 +659,16 @@ class NewsAnnouncement(models.Model):
         max_length=200,
     )
 
+    link = models.CharField(
+        "リンク先（なくてもOK）",
+        max_length=300,
+        blank=True,
+        help_text=(
+            "例: /news/life/ （暮らしのお知らせ）、/news/settings/ （設定）、"
+            "https://… （ほかのサイト）"
+        ),
+    )
+
     is_active = models.BooleanField(
         "表示する",
         default=True,

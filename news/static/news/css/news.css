@@ -5779,3 +5779,116 @@
 .news-push-prompt {
     bottom: calc(66px + env(safe-area-inset-bottom, 0px));
 }
+
+/* =========================================================
+   検索：ヘッダーの検索欄（PC）・🔍で開く検索欄（スマホ）・検索ページ
+   ========================================================= */
+
+.news-search-form {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.news-search-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 14px;
+    border: 1px solid #dfe5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #263238;
+    font-size: 16px;
+}
+
+.news-search-form input:focus {
+    border-color: #5F7F6F;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(95, 127, 111, .15);
+}
+
+.news-search-form button {
+    flex-shrink: 0;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 12px;
+    background: #5F7F6F;
+    color: #ffffff;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.news-topbar-searchbar {
+    padding: 0 14px 10px;
+}
+
+.news-topbar-searchbar .news-search-form {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.news-topbar-search {
+    display: none;
+}
+
+.news-search-matches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 14px;
+}
+
+.news-search-count,
+.news-search-hint {
+    margin: 0 0 12px;
+    color: #63706a;
+    font-size: .85rem;
+}
+
+.news-search-browse {
+    margin: 20px 0 0;
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.news-search-browse a {
+    color: #5F7F6F;
+    text-decoration: none;
+}
+
+@media screen and (min-width: 900px) {
+
+    .news-topbar-search {
+        display: block;
+    }
+
+    .news-topbar-search input {
+        width: 220px;
+        padding: 8px 14px 8px 34px;
+        border: 1px solid #dfe5e1;
+        border-radius: 999px;
+        background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2363706a' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center / 15px;
+        color: #263238;
+        font-size: .88rem;
+    }
+
+    .news-topbar-search input:focus {
+        border-color: #5F7F6F;
+        outline: none;
+    }
+
+    .news-topbar-search-toggle,
+    .news-topbar-searchbar {
+        display: none;
+    }
+
+}
+
+.news-announcement-link {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
