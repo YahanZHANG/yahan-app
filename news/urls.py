@@ -15,6 +15,18 @@ urlpatterns = [
     ),
 
     path(
+        "a/<int:article_id>/",
+        views.article_detail,
+        name="article_detail",
+    ),
+
+    path(
+        "life/",
+        views.life_alerts,
+        name="life_alerts",
+    ),
+
+    path(
         "install/",
         views.install_guide,
         name="install",

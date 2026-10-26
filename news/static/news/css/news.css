@@ -5179,3 +5179,178 @@
     font-weight: 700;
     text-decoration: none;
 }
+
+/* =========================================================
+   シェア
+   ========================================================= */
+
+.news-card-footer:has(.news-share-button) {
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.news-share-button {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border: 1px solid #dfe5e1;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #5F7F6F;
+    font-size: .72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.news-share-menu {
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.news-share-menu a,
+.news-share-menu button {
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.news-share-line {
+    background: #06C755;
+    color: #ffffff;
+}
+
+.news-share-facebook {
+    background: #1877F2;
+    color: #ffffff;
+}
+
+.news-share-copy {
+    background: #edf3ef;
+    color: #46534d;
+}
+
+.news-article-share {
+    margin: 18px 0 0;
+    text-align: center;
+}
+
+.news-article-share h3 {
+    margin: 0 0 10px;
+    color: #46534d;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.news-article-share .news-share-menu {
+    justify-content: center;
+}
+
+.news-article-more {
+    margin: 28px 0 8px;
+    text-align: center;
+    color: #75817c;
+    font-size: .8rem;
+}
+
+.news-article-more-button {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: #5F7F6F;
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* =========================================================
+   暮らしのお知らせ
+   ========================================================= */
+
+.news-life-badge {
+    background: #fff4e0;
+    color: #9a5b00;
+}
+
+.news-life-regions {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0 8px;
+    scrollbar-width: none;
+}
+
+.news-life-region {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f1f4f1;
+    color: #63706a;
+    font-size: .76rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.news-life-region.is-active {
+    background: #5F7F6F;
+    color: #ffffff;
+}
+
+.news-life-push-hint {
+    margin: 4px 0 14px;
+    color: #75817c;
+    font-size: .76rem;
+}
+
+.news-life-push-hint a {
+    color: #5F7F6F;
+    font-weight: 700;
+}
+
+/* 設定: 通知の頻度・地域 */
+.news-push-options {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f1ef;
+}
+
+.news-push-options[hidden] {
+    display: none;
+}
+
+.news-push-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: #46534d;
+}
+
+.news-push-option select {
+    max-width: 60%;
+    padding: 6px 8px;
+    border: 1px solid #dfe5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: inherit;
+    font-size: .84rem;
+}
+
+.news-push-option-help {
+    color: #75817c;
+    font-size: .74rem;
+    line-height: 1.6;
+}

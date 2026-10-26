@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from news.services.deduplicator import (
     WINDOW,
-    embed_articles,
+    Similarity,
     find_duplicate_root,
     ready_articles,
 )
@@ -46,7 +46,7 @@ class Command(BaseCommand):
             "--no-ai",
             action="store_true",
             help=(
-                "Use only embedding similarity "
+                "Use only word similarity "
                 "(no AI confirmation)."
             ),
         )
@@ -80,18 +80,20 @@ class Command(BaseCommand):
             )
         )
 
-        # 埋め込みがない記事 = まだ重複チェックしていない記事
+        recent = list(recent)
+
+        # まだ重複チェックしていない記事
         new_articles = [
             article
             for article in recent
-            if article.embedding is None
+            if article.dedupe_checked_at is None
             and article.published_at >= since
         ]
 
         candidates = [
             article
             for article in recent
-            if article.embedding is not None
+            if article.dedupe_checked_at is not None
         ]
 
         if not new_articles:
@@ -104,20 +106,39 @@ class Command(BaseCommand):
 
             return
 
-        embed_articles(
-            new_articles,
-            save=not dry_run,
+        # 言葉の重みは、比べる記事全体から作る
+        similarity = Similarity(
+            recent
         )
 
+        now = timezone.now()
+
         merged = 0
+        failed = 0
 
         for article in new_articles:
 
-            root, score = find_duplicate_root(
-                article,
-                candidates,
-                use_ai=not options["no_ai"],
-            )
+            try:
+
+                root, score = find_duplicate_root(
+                    article,
+                    candidates,
+                    similarity,
+                    use_ai=not options["no_ai"],
+                )
+
+            except Exception as exc:
+
+                # AI が使えないときは次回の更新でもう一度確認する
+                failed += 1
+
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"  ! check failed: {exc}"
+                    )
+                )
+
+                continue
 
             if root is not None:
 
@@ -136,13 +157,16 @@ class Command(BaseCommand):
 
                 article.duplicate_of = root
 
-                if not dry_run:
+            article.dedupe_checked_at = now
 
-                    article.save(
-                        update_fields=[
-                            "duplicate_of",
-                        ]
-                    )
+            if not dry_run:
+
+                article.save(
+                    update_fields=[
+                        "duplicate_of",
+                        "dedupe_checked_at",
+                    ]
+                )
 
             candidates.append(
                 article
@@ -152,7 +176,8 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 (
                     f"Checked: {len(new_articles)}, "
-                    f"Merged: {merged}"
+                    f"Merged: {merged}, "
+                    f"Failed: {failed}"
                     + (" (dry run)" if dry_run else "")
                 )
             )

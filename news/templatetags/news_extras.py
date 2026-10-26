@@ -69,3 +69,37 @@ def day_label(value):
         f"{day.month}月{day.day}日"
         f"（{WEEKDAYS_JA[day.weekday()]}）"
     )
+
+
+@register.simple_tag(takes_context=True)
+def absolute_url(context, path):
+    """
+    Facebook・LINE のプレビュー用に、https から始まる完全なURLを返す。
+    Render はプロキシの後ろなので、本番では https に固定する。
+    """
+
+    request = context.get("request")
+
+    if request is None:
+        return path
+
+    scheme = (
+        "http"
+        if settings.DEBUG
+        else "https"
+    )
+
+    return f"{scheme}://{request.get_host()}{path}"
+
+
+@register.simple_tag
+def alert_region_choices():
+    """
+    暮らしのお知らせで選べる地域。
+    """
+
+    from news.push_views import alert_regions
+
+    return list(
+        alert_regions()
+    )

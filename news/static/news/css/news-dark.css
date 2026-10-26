@@ -721,3 +721,31 @@
 .news-dark .news-announcement-label {
     color: #93ab9f;
 }
+
+/* シェア・暮らしのお知らせ */
+.news-dark .news-share-button,
+.news-dark .news-push-option select {
+    border-color: var(--news-dark-border-soft);
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-share-copy,
+.news-dark .news-life-region {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-topic-badge.news-life-badge {
+    background: #514425;
+    color: #ffdf85;
+}
+
+.news-dark .news-push-option,
+.news-dark .news-article-share h3 {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-push-options {
+    border-color: var(--news-dark-border-soft);
+}

@@ -1,11 +1,10 @@
-import json
 from datetime import timedelta
 
 from django.db.models import Q
 from django.utils import timezone
 
-from config.services.openai_client import (
-    get_openai_client,
+from config.services.ai_client import (
+    generate_json,
 )
 
 from news.models import (
@@ -13,8 +12,6 @@ from news.models import (
     NewsDigest,
 )
 
-
-MODEL = "gpt-5.6-luna"
 
 MAX_ARTICLES = 100
 
@@ -108,10 +105,10 @@ def generate_news_digest(
         if hour < 9:
             period = "morning"
 
-        elif hour < 13:
+        elif hour < 14:
             period = "late_morning"
 
-        elif hour < 18:
+        elif hour < 19:
             period = "afternoon"
 
         else:
@@ -247,38 +244,12 @@ SUMMARY:
     )
 
 
-    client = get_openai_client()
-
-
-    response = client.responses.create(
-
-        model=MODEL,
-
-        reasoning={
-            "effort": "none",
-        },
-
+    result = generate_json(
         instructions=INSTRUCTIONS,
-
-        input=input_text,
-
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": "news_digest",
-                "strict": True,
-                "schema": OUTPUT_SCHEMA,
-            }
-        },
-
-        max_output_tokens=1200,
-
-        store=False,
-    )
-
-
-    result = json.loads(
-        response.output_text
+        input_text=input_text,
+        schema=OUTPUT_SCHEMA,
+        name="news_digest",
+        max_tokens=1200,
     )
 
 
@@ -293,7 +264,7 @@ SUMMARY:
             defaults={
 
                 "summary_ja":
-                    result["summary_ja"],
+                    result.data["summary_ja"],
 
                 "highlights": [],
 
@@ -307,13 +278,13 @@ SUMMARY:
                     now,
 
                 "ai_model":
-                    MODEL,
+                    result.model,
 
                 "input_tokens":
-                    response.usage.input_tokens,
+                    result.input_tokens,
 
                 "output_tokens":
-                    response.usage.output_tokens,
+                    result.output_tokens,
             },
         )
     )

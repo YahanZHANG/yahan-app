@@ -53,6 +53,7 @@ ARTICLE_FIELDS = [
     "is_featured",
     "ai_model",
     "ai_error",
+    "life_alert",
 ]
 
 DIGEST_FIELDS = [
@@ -222,10 +223,12 @@ def import_payload(data):
 
     for item in data["articles"]:
 
+        # 古い本番データにない項目は飛ばす
         defaults = {
             field: item[field]
             for field in ARTICLE_FIELDS
             if field != "source_url"
+            and field in item
         }
 
         defaults.update({

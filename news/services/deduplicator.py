@@ -1,32 +1,48 @@
-import json
+"""
+同じ出来事を報じた記事を1つにまとめる。
+
+1. 日本語タイトル・要約の「言葉の重なり」で候補を探す（無料・アプリ内）
+   よくある言葉（スイス、した…）は重みを小さくする。
+2. とても似ていればそのまままとめる。
+   ある程度似ている候補だけ AI に同じ出来事か確認する（1回ごく少額）。
+"""
+
 import math
+import re
+import unicodedata
+from collections import Counter
 from datetime import timedelta
 
 from django.db.models import Count, F, Q
 
-from config.services.openai_client import (
-    get_openai_client,
+from config.services.ai_client import (
+    generate_json,
 )
 
 from news.models import Article
 
 
-EMBEDDING_MODEL = "text-embedding-3-small"
+# この似ている度以上なら AI に聞かずに同じニュースとみなす
+SAME_THRESHOLD = 0.6
 
-EMBEDDING_DIMENSIONS = 512
+# この範囲は AI に同じ出来事か確認する
+CANDIDATE_THRESHOLD = 0.2
 
-CONFIRM_MODEL = "gpt-5.6-luna"
-
-# この類似度以上なら同じニュースとみなす
-SAME_THRESHOLD = 0.88
-
-# この範囲はAIに同じ出来事か確認する
-CANDIDATE_THRESHOLD = 0.75
+# 1記事あたり AI に確認する候補の数
+MAX_AI_CHECKS = 3
 
 # 前後この時間内に公開された記事だけ比較する
 WINDOW = timedelta(hours=48)
 
-EMBED_BATCH_SIZE = 100
+SUMMARY_CHARS = 300
+
+CJK_RUN = re.compile(
+    r"[\u3040-\u30ff\u3400-\u9fff\uff66-\uff9f]+"
+)
+
+LATIN_WORD = re.compile(
+    r"[a-z0-9\u00c0-\u024f]{2,}"
+)
 
 
 CONFIRM_SCHEMA = {
@@ -53,7 +69,7 @@ CONFIRM_INSTRUCTIONS = """
 """
 
 
-def _embedding_text(article):
+def _article_text(article):
 
     title = (
         article.title_ja
@@ -63,30 +79,142 @@ def _embedding_text(article):
     summary = (
         article.summary_ja
         or article.summary_original
+        or ""
     )
 
-    return f"{title}\n{summary}"[:4000]
+    return title, summary[:SUMMARY_CHARS]
 
 
-def _cosine(a, b):
+def shingles(text):
+    """
+    文章を比べやすい単位に分ける。
+    日本語は2文字ずつ、英数字は単語ごと。
+    """
 
-    dot = sum(
-        x * y
-        for x, y in zip(a, b)
+    text = unicodedata.normalize(
+        "NFKC",
+        text or "",
+    ).lower()
+
+    result = set()
+
+    for run in CJK_RUN.findall(text):
+
+        if len(run) == 1:
+            result.add(run)
+            continue
+
+        for index in range(len(run) - 1):
+            result.add(
+                run[index:index + 2]
+            )
+
+    for word in LATIN_WORD.findall(text):
+        result.add(
+            "w:" + word
+        )
+
+    return result
+
+
+def article_shingles(article):
+
+    title, summary = _article_text(
+        article
     )
 
-    norm_a = math.sqrt(
-        sum(x * x for x in a)
+    # タイトルの言葉は要約の言葉より重く見る
+    return (
+        {("t", item) for item in shingles(title)}
+        | {("s", item) for item in shingles(summary)}
     )
 
-    norm_b = math.sqrt(
-        sum(y * y for y in b)
-    )
 
-    if not norm_a or not norm_b:
-        return 0.0
+class Similarity:
+    """
+    比べる記事の集まりから、言葉ごとの重み（珍しいほど重い）を作る。
+    """
 
-    return dot / (norm_a * norm_b)
+    def __init__(self, articles):
+
+        self.shingles = {
+            article.pk: article_shingles(article)
+            for article in articles
+        }
+
+        frequency = Counter()
+
+        for items in self.shingles.values():
+            frequency.update(
+                {item[1] for item in items}
+            )
+
+        total = max(
+            len(self.shingles),
+            1,
+        )
+
+        self.weights = {
+            word: math.log(
+                (total + 1) / (count + 0.5)
+            )
+            for word, count in frequency.items()
+        }
+
+    def add(self, article):
+
+        if article.pk not in self.shingles:
+            self.shingles[article.pk] = article_shingles(
+                article
+            )
+
+    def _weight(self, item):
+
+        kind, word = item
+
+        weight = self.weights.get(
+            word,
+            math.log(2),
+        )
+
+        return weight * (2 if kind == "t" else 1)
+
+    def score(self, article, other):
+
+        a = self.shingles[article.pk]
+        b = self.shingles[other.pk]
+
+        if not a or not b:
+            return 0.0
+
+        # タイトル同士・要約同士を同じ言葉として扱う
+        words_a = {item[1]: item for item in a}
+        words_b = {item[1]: item for item in b}
+
+        shared = sum(
+            max(
+                self._weight(words_a[word]),
+                self._weight(words_b[word]),
+            )
+            for word in words_a.keys() & words_b.keys()
+        )
+
+        total_a = sum(
+            self._weight(item)
+            for item in words_a.values()
+        )
+
+        total_b = sum(
+            self._weight(item)
+            for item in words_b.values()
+        )
+
+        if not total_a or not total_b:
+            return 0.0
+
+        return shared / math.sqrt(
+            total_a * total_b
+        )
 
 
 def ready_articles():
@@ -105,68 +233,7 @@ def ready_articles():
     )
 
 
-def embed_articles(
-    articles,
-    save=True,
-):
-    """
-    埋め込みがない記事にまとめて埋め込みを付ける。
-    """
-
-    articles = [
-        article
-        for article in articles
-        if article.embedding is None
-    ]
-
-    if not articles:
-        return 0
-
-    client = get_openai_client()
-
-    for start in range(
-        0,
-        len(articles),
-        EMBED_BATCH_SIZE,
-    ):
-
-        batch = articles[
-            start:start + EMBED_BATCH_SIZE
-        ]
-
-        response = client.embeddings.create(
-            model=EMBEDDING_MODEL,
-            dimensions=EMBEDDING_DIMENSIONS,
-            input=[
-                _embedding_text(article)
-                for article in batch
-            ],
-        )
-
-        for article, item in zip(
-            batch,
-            response.data,
-        ):
-
-            article.embedding = [
-                round(value, 6)
-                for value in item.embedding
-            ]
-
-            if save:
-
-                article.save(
-                    update_fields=[
-                        "embedding",
-                    ]
-                )
-
-    return len(articles)
-
-
 def confirm_same_event(article, other):
-
-    client = get_openai_client()
 
     def block(item):
 
@@ -176,55 +243,35 @@ def confirm_same_event(article, other):
             f"内容: {(item.summary_ja or item.summary_original)[:1500]}"
         )
 
-    response = client.responses.create(
-        model=CONFIRM_MODEL,
-
-        reasoning={
-            "effort": "none",
-        },
-
+    result = generate_json(
         instructions=CONFIRM_INSTRUCTIONS,
-
-        input=(
+        input_text=(
             "記事A\n"
             f"{block(article)}\n\n"
             "記事B\n"
             f"{block(other)}"
         ),
-
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": "same_event",
-                "strict": True,
-                "schema": CONFIRM_SCHEMA,
-            }
-        },
-
-        max_output_tokens=50,
-
-        store=False,
-    )
-
-    result = json.loads(
-        response.output_text
+        schema=CONFIRM_SCHEMA,
+        name="same_event",
+        max_tokens=100,
     )
 
     return bool(
-        result["same_event"]
+        result.data["same_event"]
     )
 
 
 def find_duplicate_root(
     article,
     candidates,
+    similarity,
     use_ai=True,
 ):
     """
     article と同じ出来事を扱う代表記事を返す。
-    見つからなければ None。
+    見つからなければ (None, None)。
 
-    戻り値: (代表記事, 類似度)
+    戻り値: (代表記事, 似ている度)
     """
 
     scored = []
@@ -234,18 +281,15 @@ def find_duplicate_root(
         if other.pk == article.pk:
             continue
 
-        if other.embedding is None:
-            continue
-
         if abs(
             other.published_at
             - article.published_at
         ) > WINDOW:
             continue
 
-        score = _cosine(
-            article.embedding,
-            other.embedding,
+        score = similarity.score(
+            article,
+            other,
         )
 
         if score >= CANDIDATE_THRESHOLD:
@@ -259,7 +303,7 @@ def find_duplicate_root(
         reverse=True,
     )
 
-    for score, other in scored[:3]:
+    for score, other in scored[:MAX_AI_CHECKS]:
 
         if score >= SAME_THRESHOLD:
             same = True

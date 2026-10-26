@@ -4,14 +4,10 @@ from django.utils import timezone
 
 from news.models import Article
 from news.push_sender import (
-    send_news_push_for_batch,
+    send_scheduled_pushes,
 )
 from news.services.alerts import (
     send_admin_alert,
-)
-from news.services.deduplicator import (
-    ready_articles,
-    with_source_count,
 )
 
 # この件数以上の翻訳失敗があれば管理者に知らせる
@@ -410,45 +406,9 @@ class Command(BaseCommand):
 
         try:
 
-            new_articles = (
-                ready_articles()
-                .filter(
-                    fetched_at__gte=started_at,
-                    duplicate_of__isnull=True,
-                )
-            )
-
-            new_articles_count = (
-                new_articles.count()
-            )
-
-            # 一番多くの媒体が報じた新着を見出しにする
-            top_article = (
-                with_source_count(
-                    new_articles
-                )
-                .order_by(
-                    "-source_count",
-                    "-published_at",
-                )
-                .first()
-            )
-
-            headline = (
-                top_article.title_ja
-                if top_article
-                else ""
-            )
-
-            batch_key = (
-                f"{timezone.localdate():%Y-%m-%d}"
-                f"-{period}"
-            )
-
-            result = send_news_push_for_batch(
-                batch_key=batch_key,
-                new_articles_count=new_articles_count,
-                headline=headline,
+            result = send_scheduled_pushes(
+                period,
+                started_at,
             )
 
             self.stdout.write(

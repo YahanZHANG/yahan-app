@@ -3,6 +3,23 @@
 {% load static news_extras %}
 
 
+{% block head_meta %}
+{% with default_description="スイスのニュースを日本語で。主要メディアの記事をAIが日本語に要約して、1日4回お届けします。" %}
+    <meta name="description" content="{{ og_description|default:default_description }}">
+    <meta property="og:type" content="{{ og_type|default:'website' }}">
+    <meta property="og:site_name" content="Swiss News">
+    <meta property="og:locale" content="ja_JP">
+    <meta property="og:title" content="{{ og_title|default:'Swiss News｜スイスのニュースを日本語で' }}">
+    <meta property="og:description" content="{{ og_description|default:default_description }}">
+    <meta property="og:url" content="{% absolute_url request.path %}">
+    <meta property="og:image" content="{% static 'news/img/og-default.png' as og_image_path %}{% absolute_url og_image_path %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+{% endwith %}
+{% endblock %}
+
+
 {% block main_class %}
 page-content news-site-container
 {% endblock %}
@@ -382,6 +399,7 @@ page-content news-site-container
     data-csrf-token="{{ csrf_token }}"
     data-subscribe-url="{% url 'news_push_subscribe' %}"
     data-unsubscribe-url="{% url 'news_push_unsubscribe' %}"
+    data-options-url="{% url 'news_push_options' %}"
 ></div>
 
 <script>
@@ -401,6 +419,8 @@ document.addEventListener("click", function (event) {
 <script src="{% static 'news/push_client.js' %}"></script>
 <script src="{% static 'news/push_toggle.js' %}" defer></script>
 <script src="{% static 'news/push_prompt.js' %}" defer></script>
+<script src="{% static 'news/share.js' %}" defer></script>
+<script src="{% static 'news/push_options.js' %}" defer></script>
 
 
 

@@ -189,10 +189,18 @@ class Article(models.Model):
         default=0,
     )
 
-    # 重複判定用の埋め込みベクトル
-    embedding = models.JSONField(
+    # 重複チェックをした日時（まだなら空）
+    dedupe_checked_at = models.DateTimeField(
         null=True,
         blank=True,
+    )
+
+    # 暮らしのお知らせ（スト・運休・締め切り・営業時間など）。
+    # AI が翻訳のときに判定する。
+    life_alert = models.BooleanField(
+        "暮らしのお知らせ",
+        default=False,
+        db_index=True,
     )
 
     # 同じ出来事を扱う代表記事。
@@ -425,6 +433,11 @@ from django.db import models as django_models
 
 class NewsPushSubscription(django_models.Model):
 
+    FREQUENCY_CHOICES = [
+        ("every", "更新のたび（1日4回）"),
+        ("daily", "1日1回（朝）"),
+    ]
+
     # 未ログインの端末も登録できるよう null を許可
     user = django_models.ForeignKey(
         django_settings.AUTH_USER_MODEL,
@@ -441,6 +454,23 @@ class NewsPushSubscription(django_models.Model):
     p256dh = django_models.TextField()
 
     auth = django_models.TextField()
+
+    frequency = django_models.CharField(
+        "通知の頻度",
+        max_length=10,
+        choices=FREQUENCY_CHOICES,
+        default="every",
+    )
+
+    # 暮らしのお知らせを受け取る地域（空 = 受け取らない）
+    alert_region = django_models.ForeignKey(
+        Region,
+        on_delete=django_models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="push_subscriptions",
+        verbose_name="暮らしのお知らせの地域",
+    )
 
     created_at = django_models.DateTimeField(
         auto_now_add=True,

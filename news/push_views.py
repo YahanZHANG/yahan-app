@@ -13,7 +13,10 @@ from django.views.decorators.http import (
     require_POST,
 )
 
-from .models import NewsPushSubscription
+from .models import (
+    NewsPushSubscription,
+    Region,
+)
 
 
 # =========================================================
@@ -302,5 +305,178 @@ def unsubscribe(request):
     return JsonResponse(
         {
             "success": True,
+        }
+    )
+
+
+# =========================================================
+# Options (frequency / life alert region)
+# =========================================================
+
+# 暮らしのお知らせで選べない地域
+NON_ALERT_REGION_SLUGS = {
+    "switzerland",
+    "other",
+    "unknown",
+}
+
+
+def alert_regions():
+
+    return (
+        Region.objects
+        .filter(
+            is_active=True,
+        )
+        .exclude(
+            slug__in=NON_ALERT_REGION_SLUGS,
+        )
+    )
+
+
+@require_POST
+def push_options(request):
+    """
+    この端末の通知の頻度と、暮らしのお知らせの地域を読む・変える。
+    endpoint は端末ごとに推測できないURLなので、それを鍵にする。
+
+    送るもの: {"endpoint": "...", "frequency"?: "every"|"daily",
+              "alert_region"?: "<slug>"|""}
+    """
+
+    try:
+
+        data = json.loads(
+            request.body
+        )
+
+    except (
+        ValueError,
+        UnicodeDecodeError,
+    ):
+
+        data = None
+
+    if not isinstance(data, dict):
+
+        return JsonResponse(
+            {
+                "error": "Invalid request.",
+            },
+            status=400,
+        )
+
+    endpoint = data.get(
+        "endpoint"
+    )
+
+    if (
+        not isinstance(endpoint, str)
+        or not endpoint
+        or len(endpoint) > 2048
+    ):
+
+        return JsonResponse(
+            {
+                "error": "Invalid endpoint.",
+            },
+            status=400,
+        )
+
+    subscription = (
+        NewsPushSubscription.objects
+        .filter(
+            endpoint=endpoint,
+        )
+        .select_related(
+            "alert_region",
+        )
+        .first()
+    )
+
+    if subscription is None:
+
+        return JsonResponse(
+            {
+                "error": "Not subscribed.",
+            },
+            status=404,
+        )
+
+    update_fields = []
+
+    frequency = data.get(
+        "frequency"
+    )
+
+    if frequency is not None:
+
+        if frequency not in dict(
+            NewsPushSubscription.FREQUENCY_CHOICES
+        ):
+
+            return JsonResponse(
+                {
+                    "error": "Invalid frequency.",
+                },
+                status=400,
+            )
+
+        subscription.frequency = frequency
+
+        update_fields.append(
+            "frequency"
+        )
+
+    if "alert_region" in data:
+
+        slug = data["alert_region"] or ""
+
+        if slug:
+
+            region = (
+                alert_regions()
+                .filter(
+                    slug=slug,
+                )
+                .first()
+            )
+
+            if region is None:
+
+                return JsonResponse(
+                    {
+                        "error": "Invalid region.",
+                    },
+                    status=400,
+                )
+
+        else:
+
+            region = None
+
+        subscription.alert_region = region
+
+        update_fields.append(
+            "alert_region"
+        )
+
+    if update_fields:
+
+        subscription.save(
+            update_fields=[
+                *update_fields,
+                "updated_at",
+            ]
+        )
+
+    return JsonResponse(
+        {
+            "frequency": subscription.frequency,
+            "alert_region": (
+                subscription.alert_region.slug
+                if subscription.alert_region
+                else ""
+            ),
         }
     )

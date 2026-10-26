@@ -1,5 +1,5 @@
 {% extends "news/base.html" %}
-{% load static %}
+{% load static news_extras %}
 
 
 {% block title %}
@@ -40,7 +40,7 @@
                 </strong>
 
                 <small>
-                    1日4回の更新で新着があるときにお知らせします
+                    新着ニュースをお知らせします
                 </small>
 
             </span>
@@ -59,6 +59,54 @@
             class="news-push-inline-status"
             aria-live="polite"
         ></p>
+
+        {% alert_region_choices as regions %}
+
+        <div
+            id="news-push-options"
+            class="news-push-options"
+            hidden
+        >
+
+            <label class="news-push-option">
+
+                <span>
+                    通知の頻度
+                </span>
+
+                <select id="news-push-frequency">
+                    <option value="every">更新のたび（1日4回）</option>
+                    <option value="daily">1日1回（朝）</option>
+                </select>
+
+            </label>
+
+            <label class="news-push-option">
+
+                <span>
+                    📌 暮らしのお知らせ
+                </span>
+
+                <select id="news-push-region">
+                    <option value="">受け取らない</option>
+                    {% for region in regions %}
+                        <option value="{{ region.slug }}">{{ region.name }}</option>
+                    {% endfor %}
+                </select>
+
+            </label>
+
+            <small class="news-push-option-help">
+                地域を選ぶと、その地域と全国のスト・運休・締め切りなどをすぐにお知らせします。
+            </small>
+
+            <p
+                id="news-push-options-status"
+                class="news-push-inline-status"
+                aria-live="polite"
+            ></p>
+
+        </div>
 
     </section>
 
