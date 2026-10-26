@@ -82,6 +82,11 @@
         <p class="yapp-install-pc">スマホのカメラで読み取って開き、そこから追加してください。</p>
         <div class="yapp-install-qr">{{ install_qr }}</div>
         <p class="yapp-install-url">{{ request.get_host }}{{ app_url }}</p>
+
+        <div class="yapp-install-bookmark">
+            <h2><span aria-hidden="true">⭐</span> パソコンでは、ブックマークに保存</h2>
+            <p><a href="{{ app_url }}">{{ pwa_icons.name }} のトップページ</a>を開いて、<span class="yapp-install-key">Ctrl</span> + <span class="yapp-install-key">D</span><span class="yapp-install-nowrap">（Mac は <span class="yapp-install-key">⌘</span> + <span class="yapp-install-key">D</span>）</span>を押すと、ブックマークに保存できます。次からは、ブックマークからすぐに開けます。</p>
+        </div>
     </section>
 
     <section class="yapp-install-after">

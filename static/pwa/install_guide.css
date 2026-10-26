@@ -241,3 +241,30 @@
     line-height: 1.6;
     text-align: left;
 }
+
+/* パソコン: ブックマークのすすめ */
+.yapp-install-bookmark {
+    margin-top: 22px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--install-color) 8%, transparent);
+}
+
+.yapp-install-bookmark h2 {
+    margin: 0 0 6px;
+    font-size: 16px;
+}
+
+.yapp-install-bookmark p {
+    margin: 0;
+    line-height: 1.8;
+}
+
+.yapp-install-bookmark a {
+    color: var(--install-color);
+    font-weight: 700;
+}
+
+.yapp-install-nowrap {
+    white-space: nowrap;
+}

@@ -1184,6 +1184,33 @@ class PostTests(TestCase):
         self.assertTrue(all(link.source for link in links))
 
 
+class SeasonDesignTests(TestCase):
+
+    def test_halloween_design_follows_the_date_and_the_admin_setting(self):
+
+        from datetime import date
+
+        from .models import DisplaySettings
+
+        display = DisplaySettings.load()
+
+        self.assertEqual(display.season(date(2026, 10, 25)), "halloween")
+        self.assertEqual(display.season(date(2026, 10, 10)), "")
+        self.assertEqual(display.season(date(2026, 11, 1)), "")
+
+        display.home_season = "none"
+        self.assertEqual(display.season(date(2026, 10, 25)), "")
+
+        display.home_season = "halloween"
+        display.save()
+        self.assertEqual(display.season(date(2026, 5, 1)), "halloween")
+        self.assertContains(self.client.get(reverse("washoku:home")), "Trick or Treat!")
+
+        display.home_season = "none"
+        display.save()
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "Trick or Treat!")
+
+
 class SubstituteListTests(TestCase):
 
     def test_shishito_and_satsumaimo_are_not_substitutes_any_more(self):
@@ -2029,6 +2056,22 @@ class PollTests(TestCase):
         page = self.client.get(reverse("washoku:post_detail", args=[self.poll.pk]))
         self.assertContains(page, "✓ 赤")
         self.assertContains(page, "2人が回答")
+
+    def test_home_shows_newest_unanswered_poll_including_free_text(self):
+
+        text_poll = Post.objects.create(kind="poll", title="恋しい日本の味は？", status="published", poll_type="text")
+
+        # 新しい自由記述のアンケートが大きく出る
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], text_poll)
+
+        # 答えたら、まだ答えていないアンケートへ
+        self.client.post(reverse("washoku:poll_vote", args=[text_poll.pk]), {"answer": "おでん"})
+        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], self.poll)
+
+        # 全部答えたら、いちばん新しいもの
+        self.vote(self.green)
+        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], text_poll)
 
     def test_multiple_choice_poll_keeps_every_ticked_choice(self):
 

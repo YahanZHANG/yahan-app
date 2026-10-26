@@ -1033,6 +1033,7 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
     fieldsets = (
         ("HOMEに出すもの", {
             "fields": (
+                "home_season",
                 "home_featured_show_stamps",
             ),
         }),
