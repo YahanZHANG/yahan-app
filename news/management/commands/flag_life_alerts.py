@@ -152,7 +152,7 @@ class Command(BaseCommand):
                     flagged += 1
 
                     self.stdout.write(
-                        f"  📌 {article.title_ja or article.title_original}"
+                        f"  [暮らし] {article.title_ja or article.title_original}"
                     )
 
         self.stdout.write(

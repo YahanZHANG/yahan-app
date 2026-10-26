@@ -61,125 +61,97 @@ page-content news-site-container
 
     <!-- =====================================================
          Header
+         左: アイコンとアプリ名 / 中央(PC): メニュー / 右: アプリにする・Yapp・設定
          ===================================================== -->
 
-    <header class="news-header">
+    {% with url_name=request.resolver_match.url_name %}
 
-        {% if request.user.is_authenticated %}
+    <header class="news-topbar">
+
+        <div class="news-topbar-inner">
 
             <a
-                href="{% url 'portal:home' %}"
-                class="news-back-link"
+                href="{% url 'news:home' %}"
+                class="news-topbar-brand"
             >
-                ← Portalに戻る
+                <img
+                    src="{% static 'pwa/news/icon-192.png' %}"
+                    alt=""
+                    width="30"
+                    height="30"
+                >
+                <span>Swiss News</span>
             </a>
 
-        {% endif %}
 
-
-        <div class="news-header-inner">
-
-            <div class="news-brand">
-
-                <div class="news-eyebrow"></div>
-
-                <h1>
-                    Swiss News
-                </h1>
-
-                <p class="news-site-description">
-                    スイスのニュースを日本語で読もう
-                </p>
-
-            </div>
-
-
-            {% if request.resolver_match.url_name != 'install' %}
-            <a
-                href="{% url 'news:install' %}"
-                class="news-install-pill yapp-install-only"
-            >
-                📲 アプリにする
-            </a>
-            {% endif %}
-
-
-            <!-- =============================================
-                 Desktop navigation
-                 ============================================= -->
-
-            <nav class="news-desktop-nav">
+            <nav class="news-topbar-nav" aria-label="メニュー">
 
                 <a
                     href="{% url 'news:home' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'home' %}
-                        is-active
-                    {% endif %}"
-                >
-                    HOME
-                </a>
-
+                    class="news-topbar-nav-item{% if url_name == 'home' %} is-active{% endif %}"
+                >HOME</a>
 
                 <a
                     href="{% url 'news:topic_list' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
-                        is-active
-                    {% endif %}"
-                >
-                    探す
-                </a>
+                    class="news-topbar-nav-item{% if url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
+                >探す</a>
 
+                <a
+                    href="{% url 'news:life_alerts' %}"
+                    class="news-topbar-nav-item{% if url_name == 'life_alerts' %} is-active{% endif %}"
+                >暮らし</a>
 
                 <a
                     href="{% url 'news:digest_list' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'digest_list' %}
-                        is-active
-                    {% endif %}"
-                >
-                    過去のまとめ
-                </a>
+                    class="news-topbar-nav-item{% if url_name == 'digest_list' %} is-active{% endif %}"
+                >まとめ</a>
+
+            </nav>
 
 
-                <a
-                    href="{% url 'news:settings' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'settings' %}
-                        is-active
-                    {% endif %}"
-                >
-                    設定
-                </a>
+            <div class="news-topbar-actions">
 
-
-                <a
-                    href="{% url 'news:about' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
-                        is-active
-                    {% endif %}"
-                >
-                    Yappについて
-                </a>
-
+                {% if url_name != 'install' %}
+                    <a
+                        href="{% url 'news:install' %}"
+                        class="news-install-pill yapp-install-only"
+                    >
+                        📲 アプリにする
+                    </a>
+                {% endif %}
 
                 <a
                     href="{% url 'news:install' %}"
-                    class="news-desktop-nav-item
-                    {% if request.resolver_match.url_name == 'install' %}
-                        is-active
-                    {% endif %}"
+                    class="news-topbar-link news-topbar-pc-only{% if url_name == 'install' %} is-active{% endif %}"
+                >ホーム画面に追加</a>
+
+                <a
+                    href="{% url 'news:about' %}"
+                    class="news-topbar-icon{% if url_name == 'about' or url_name == 'services' %} is-active{% endif %}"
+                    aria-label="Yappについて"
+                    title="Yappについて"
                 >
-                    📲 ホーム画面に追加
+                    <span aria-hidden="true">ⓘ</span>
+                    <small>Yapp</small>
                 </a>
 
-            </nav>
+                <a
+                    href="{% url 'news:settings' %}"
+                    class="news-topbar-icon{% if url_name == 'settings' %} is-active{% endif %}"
+                    aria-label="設定"
+                    title="設定"
+                >
+                    <span aria-hidden="true">⚙</span>
+                    <small>設定</small>
+                </a>
+
+            </div>
 
         </div>
 
     </header>
+
+    {% endwith %}
 
 
 
@@ -318,6 +290,28 @@ page-content news-site-container
 
 
 
+        <!-- 暮らしのお知らせ -->
+
+        <a
+            href="{% url 'news:life_alerts' %}"
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'life_alerts' %}
+                is-active
+            {% endif %}"
+        >
+
+            <span class="news-nav-icon">
+                📢
+            </span>
+
+            <span>
+                暮らし
+            </span>
+
+        </a>
+
+
+
         <!-- 過去のまとめ -->
 
         <a
@@ -340,49 +334,7 @@ page-content news-site-container
 
 
 
-        <!-- 設定 -->
-
-        <a
-            href="{% url 'news:settings' %}"
-            class="news-nav-item
-            {% if request.resolver_match.url_name == 'settings' %}
-                is-active
-            {% endif %}"
-        >
-
-            <span class="news-nav-icon">
-                ⚙
-            </span>
-
-            <span>
-                設定
-            </span>
-
-        </a>
-
-
-
-        <!-- Yappについて -->
-
-        <a
-            href="{% url 'news:about' %}"
-            class="news-nav-item
-            {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'services' %}
-                is-active
-            {% endif %}"
-        >
-
-            <span class="news-nav-icon">
-                ✦
-            </span>
-
-            <span>
-                Yappについて
-            </span>
-
-        </a>
-
-    </nav>
+</nav>
 
 </div>
 

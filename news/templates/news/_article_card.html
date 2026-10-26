@@ -4,6 +4,7 @@
     <div class="news-card-meta">
 
         <span class="news-source">
+            {% if article.life_alert %}<a href="{% url 'news:life_alerts' %}" class="news-life-tag">暮らし</a>{% endif %}
             {{ article.source.name }}{% with source_count=article.source_articles|length %}{% if source_count > 1 %} ほか{{ source_count|add:"-1" }}社{% endif %}{% endwith %}
         </span>
 
@@ -32,14 +33,6 @@
 
     <div class="news-topic-row">
 
-        {% if article.life_alert %}
-            <a
-                href="{% url 'news:life_alerts' %}"
-                class="news-topic-badge news-life-badge"
-            >
-                📌 暮らしのお知らせ
-            </a>
-        {% endif %}
 
         {% for topic in article.topics.all %}
 

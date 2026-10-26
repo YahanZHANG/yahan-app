@@ -764,3 +764,27 @@
     background: #5F7F6F;
     color: #ffffff;
 }
+
+/* ヘッダー */
+.news-dark .news-topbar {
+    border-color: var(--news-dark-border-soft);
+    background: rgba(23, 29, 26, .92);
+}
+
+.news-dark .news-topbar-brand {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-topbar-nav-item,
+.news-dark .news-topbar-link,
+.news-dark .news-topbar-icon {
+    color: var(--news-dark-body);
+}
+
+.news-dark .news-topbar-nav-item.is-active,
+.news-dark .news-topbar-nav-item:hover,
+.news-dark .news-topbar-link:hover,
+.news-dark .news-topbar-icon:hover {
+    background: var(--news-dark-surface-alt);
+    color: var(--news-dark-accent);
+}

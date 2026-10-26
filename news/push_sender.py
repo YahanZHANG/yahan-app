@@ -611,7 +611,7 @@ def send_life_alerts(
                 pk__in=subscription_ids,
             ),
             title=(
-                "📌 暮らしのお知らせ"
+                "暮らしのお知らせ"
                 f"（{'・'.join(matched_names)}）"
             ),
             body=body,

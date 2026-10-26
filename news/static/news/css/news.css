@@ -5405,3 +5405,220 @@
     outline: 2px solid #5F7F6F;
     outline-offset: 2px;
 }
+
+/* =========================================================
+   ヘッダー（細い・上に固定）と4つのメニュー
+   ========================================================= */
+
+.news-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    padding-top: env(safe-area-inset-top);
+    border-bottom: 1px solid rgba(73, 87, 80, .08);
+    background: rgba(247, 248, 246, .92);
+    backdrop-filter: blur(14px);
+}
+
+.news-topbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1180px;
+    height: 56px;
+    margin: 0 auto;
+    padding: 0 14px;
+}
+
+.news-topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1f2933;
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.news-topbar-brand img {
+    border-radius: 8px;
+}
+
+.news-topbar-nav {
+    display: none;
+}
+
+.news-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+
+/* 以前の「右上に浮かぶ」位置指定を打ち消して、ヘッダーの中に置く */
+.news-topbar .news-install-pill {
+    position: static;
+    margin-right: 4px;
+    padding: 6px 12px;
+    box-shadow: none;
+    font-size: .78rem;
+    white-space: nowrap;
+}
+
+.news-topbar-pc-only {
+    display: none;
+}
+
+.news-topbar-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 40px;
+    height: 44px;
+    border-radius: 12px;
+    color: #63706a;
+    text-decoration: none;
+}
+
+.news-topbar-icon > span {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.news-topbar-icon small {
+    font-size: .55rem;
+    font-weight: 700;
+}
+
+.news-topbar-icon.is-active,
+.news-topbar-link.is-active {
+    color: #5F7F6F;
+}
+
+.news-topbar-link {
+    padding: 8px 10px;
+    border-radius: 999px;
+    color: #63706a;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* スマホの下のメニューは4つ */
+.news-bottom-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media screen and (max-width: 899px) {
+
+    .news-bottom-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .news-bottom-nav .news-nav-item {
+        font-size: .62rem;
+    }
+
+}
+
+@media screen and (min-width: 900px) {
+
+    .news-topbar-inner {
+        height: 64px;
+        padding: 0 32px;
+    }
+
+    .news-topbar-nav {
+        display: flex;
+        gap: 4px;
+        margin-left: 28px;
+    }
+
+    .news-topbar-nav-item {
+        padding: 8px 14px;
+        border-radius: 999px;
+        color: #63706a;
+        font-size: .9rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .news-topbar-nav-item:hover,
+    .news-topbar-link:hover,
+    .news-topbar-icon:hover {
+        background: #edf3ef;
+    }
+
+    .news-topbar-nav-item.is-active {
+        background: #edf3ef;
+        color: #5F7F6F;
+    }
+
+    .news-topbar-pc-only {
+        display: inline-block;
+    }
+
+    .news-topbar-icon {
+        flex-direction: row;
+        gap: 5px;
+        height: auto;
+        padding: 8px 10px;
+        border-radius: 999px;
+    }
+
+    .news-topbar-icon > span {
+        font-size: 1rem;
+    }
+
+    .news-topbar-icon small {
+        font-size: .82rem;
+    }
+
+    .news-main {
+        padding-top: 28px;
+    }
+
+}
+
+/* 暮らしのお知らせのタグ（「未読」のような小さなラベル） */
+.news-life-tag {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #E07B39;
+    color: #ffffff;
+    font-size: .68rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: .02em;
+    text-decoration: none;
+    vertical-align: 1px;
+}
+
+@media screen and (max-width: 360px) {
+
+    .news-topbar-inner {
+        gap: 6px;
+        padding: 0 10px;
+    }
+
+    .news-topbar-brand {
+        font-size: .95rem;
+    }
+
+    .news-topbar .news-install-pill {
+        padding: 5px 9px;
+        font-size: .72rem;
+    }
+
+    .news-topbar-icon {
+        min-width: 34px;
+    }
+
+}
