@@ -2610,6 +2610,31 @@ a.washoku-favorite {
     font-size: 14px;
 }
 
+.washoku-join-new {
+    margin-bottom: 8px !important;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.washoku-join-new span {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #FFFFFF;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+}
+
+.washoku-join-easy {
+    margin-bottom: 12px !important;
+    color: var(--washoku-muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
 .washoku-join-actions {
     display: flex;
     align-items: center;
