@@ -134,6 +134,11 @@ def _get_public_settings(request):
             "dark_mode",
             False,
         ),
+
+        "show_life_on_home": settings.get(
+            "show_life_on_home",
+            True,
+        ),
     }
 
 def _apply_public_news_settings(
@@ -553,6 +558,19 @@ def home(request):
                 articles,
                 public_settings,
             )
+        )
+
+    show_life = (
+        preference.show_life_on_home
+        if preference is not None
+        else public_settings["show_life_on_home"]
+    )
+
+    if not show_life:
+
+        # 設定で「HOMEに暮らしのニュースを表示」を OFF にした人には出さない。
+        articles = articles.exclude(
+            life_alert=True,
         )
 
     featured_articles = _featured_articles(
@@ -987,7 +1005,7 @@ def article_detail(
 
 def life_alerts(request):
     """
-    暮らしのお知らせ（スト・運休・締め切り・営業時間など）の一覧。
+    暮らしのお知らせ（スト・運休・手続きの期限・営業時間など）の一覧。
     ?region=<slug> でその地域と全国の分だけにしぼる。
     """
 
@@ -1041,9 +1059,94 @@ def life_alerts(request):
             "public_settings": public_settings,
             "og_title": "暮らしのお知らせ｜Swiss News",
             "og_description": (
-                "スト、電車の運休、締め切り、祝日の営業時間など、"
+                "スト、電車の運休、手続きの期限、祝日の営業時間など、"
                 "スイスで暮らす人に役立つお知らせを日本語でまとめています。"
             ),
+        },
+    )
+
+
+SEARCH_LIMIT = 50
+
+
+def search(request):
+    """
+    ヘッダーの検索欄から、SwissNews 全体を探す。
+    記事（日本語・元の言語のタイトルと要約、ニュースソース名）と、
+    テーマ・地域・ニュースソースの名前を対象にする。
+    言葉をスペースで区切ると、すべてを含むものだけを出す。
+    表示設定で隠したテーマなども、検索では見つかるようにする。
+    """
+
+    preference, public_settings = (
+        _display_settings(request)
+    )
+
+    query = " ".join(
+        request.GET.get("q", "").split()
+    )[:100]
+
+    words = query.split()
+
+    articles = []
+    topics = []
+    regions = []
+    sources = []
+
+    if words:
+
+        article_filter = Q()
+        topic_filter = Q()
+        region_filter = Q()
+        source_filter = Q()
+
+        for word in words:
+
+            article_filter &= (
+                Q(title_ja__icontains=word)
+                | Q(summary_ja__icontains=word)
+                | Q(title_original__icontains=word)
+                | Q(summary_original__icontains=word)
+                | Q(source__name__icontains=word)
+            )
+
+            topic_filter &= Q(name__icontains=word)
+            region_filter &= Q(name__icontains=word)
+            source_filter &= Q(name__icontains=word)
+
+        articles = (
+            _article_queryset(request.user)
+            .filter(article_filter)
+            .order_by("-published_at")[:SEARCH_LIMIT]
+        )
+
+        topics = Topic.objects.filter(
+            topic_filter,
+            is_active=True,
+        ).order_by("display_order", "name")
+
+        regions = Region.objects.filter(
+            region_filter,
+            is_active=True,
+        ).order_by("display_order", "name")
+
+        sources = NewsSource.objects.filter(
+            source_filter,
+            is_active=True,
+        ).order_by("display_order", "name")
+
+    return render(
+        request,
+        "news/search.html",
+        {
+            "query": query,
+            "articles": articles,
+            "topics": topics,
+            "regions": regions,
+            "sources": sources,
+            "search_limit": SEARCH_LIMIT,
+            "preference": preference,
+            "public_settings": public_settings,
         },
     )
 
@@ -1436,6 +1539,10 @@ def settings_view(request):
                 "dark_mode": (
                     form.cleaned_data["dark_mode"]
                 ),
+
+                "show_life_on_home": (
+                    form.cleaned_data["show_life_on_home"]
+                ),
             }
 
 
@@ -1508,6 +1615,11 @@ def settings_view(request):
                 "dark_mode": public_settings.get(
                     "dark_mode",
                     False,
+                ),
+
+                "show_life_on_home": public_settings.get(
+                    "show_life_on_home",
+                    True,
                 ),
             }
         )

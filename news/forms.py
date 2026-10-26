@@ -41,6 +41,7 @@ class NewsSettingsForm(forms.ModelForm):
             "display_language",
             "font_size",
             "dark_mode",
+            "show_life_on_home",
         ]
 
         widgets = {
@@ -55,6 +56,8 @@ class NewsSettingsForm(forms.ModelForm):
                     "class": "news-dark-checkbox",
                 }
             ),
+
+            "show_life_on_home": forms.CheckboxInput,
         }
 
         labels = {
@@ -65,6 +68,9 @@ class NewsSettingsForm(forms.ModelForm):
                 "文字サイズ",
 
              "dark_mode": "ダークモード",
+
+            "show_life_on_home":
+                "HOMEに暮らしのニュースを表示",
         }
 
 

@@ -833,3 +833,21 @@
 .news-dark .news-bottom-nav .news-nav-item.is-active::before {
     background: #9BC4AE;
 }
+
+/* 検索 */
+
+.news-dark .news-search-form input,
+.news-dark .news-topbar-search input {
+    border-color: var(--news-dark-border);
+    background-color: var(--news-dark-surface-alt);
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-search-count,
+.news-dark .news-search-hint {
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-search-browse a {
+    color: var(--news-dark-accent);
+}

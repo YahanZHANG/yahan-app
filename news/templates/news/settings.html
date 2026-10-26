@@ -284,6 +284,44 @@
 
 
         <!-- =================================================
+            HOMEに暮らしのニュースを表示
+            ================================================= -->
+
+        <section class="news-settings-card news-dark-setting">
+
+            <label class="news-dark-setting-row">
+
+                <span class="news-dark-setting-copy">
+
+                    <strong>
+                        <span class="news-life-tag">暮らし</span>
+                        HOMEにも表示する
+                    </strong>
+
+                    <small>
+                        OFF にすると、スト・運休などのお知らせは「暮らし」のページだけに表示されます。
+                    </small>
+
+                </span>
+
+                <span class="news-switch">
+
+                    {{ form.show_life_on_home }}
+
+                    <span
+                        class="news-slider"
+                        aria-hidden="true"
+                    ></span>
+
+                </span>
+
+            </label>
+
+        </section>
+
+
+
+        <!-- =================================================
              表示するニューステーマ
         ================================================== -->
 

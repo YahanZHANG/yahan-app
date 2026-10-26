@@ -333,6 +333,11 @@ class NewsPreference(models.Model):
         verbose_name="ダークモード",
     )
 
+    show_life_on_home = models.BooleanField(
+        default=True,
+        verbose_name="HOMEに暮らしのニュースを表示",
+    )
+
     hidden_topics = models.ManyToManyField(
         Topic,
         blank=True,
@@ -652,6 +657,16 @@ class NewsAnnouncement(models.Model):
     message = models.CharField(
         "お知らせ",
         max_length=200,
+    )
+
+    link = models.CharField(
+        "リンク先（なくてもOK）",
+        max_length=300,
+        blank=True,
+        help_text=(
+            "例: /news/life/ （暮らしのお知らせ）、/news/settings/ （設定）、"
+            "https://… （ほかのサイト）"
+        ),
     )
 
     is_active = models.BooleanField(

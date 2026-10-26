@@ -1,0 +1,19 @@
+<form
+    action="{% url 'news:search' %}"
+    method="get"
+    class="news-search-form"
+    role="search"
+>
+    <input
+        type="search"
+        name="q"
+        id="{{ search_id }}"
+        value="{{ query|default:'' }}"
+        placeholder="ニュースを検索（例：スト、健康保険）"
+        aria-label="ニュースを検索"
+        enterkeyhint="search"
+        autocomplete="off"
+        {% if autofocus and not query %}autofocus{% endif %}
+    >
+    <button type="submit">検索</button>
+</form>

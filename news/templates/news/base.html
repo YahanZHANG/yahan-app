@@ -125,11 +125,33 @@ page-content news-site-container
                     class="news-topbar-link news-topbar-pc-only{% if url_name == 'install' %} is-active{% endif %}"
                 >ホーム画面に追加</a>
 
+                <!-- PC: ヘッダーの中に検索欄 -->
+                <form
+                    action="{% url 'news:search' %}"
+                    method="get"
+                    class="news-topbar-search"
+                    role="search"
+                >
+                    <input
+                        type="search"
+                        name="q"
+                        value="{% if url_name == 'search' %}{{ query }}{% endif %}"
+                        placeholder="ニュースを検索"
+                        aria-label="ニュースを検索"
+                        enterkeyhint="search"
+                        autocomplete="off"
+                    >
+                </form>
+
+                <!-- スマホ: 押すとヘッダーの下に検索欄が開く -->
                 <a
-                    href="{% url 'news:topic_list' %}"
-                    class="news-topbar-icon{% if url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
+                    href="{% url 'news:search' %}"
+                    class="news-topbar-icon news-topbar-search-toggle{% if url_name == 'search' or url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
                     aria-label="探す"
+                    aria-controls="news-topbar-searchbar"
+                    aria-expanded="false"
                     title="探す"
+                    data-search-toggle
                 >
                     <span aria-hidden="true">🔍</span>
                     <small>探す</small>
@@ -148,6 +170,41 @@ page-content news-site-container
             </div>
 
         </div>
+
+        {% if url_name != 'search' %}
+            <div
+                class="news-topbar-searchbar"
+                id="news-topbar-searchbar"
+                hidden
+            >
+                {% include "news/_search_form.html" with search_id="news-topbar-search-input" %}
+            </div>
+
+            <script>
+                // スマホ: 🔍 を押すと、ヘッダーの下に検索欄を開いてすぐ入力できるようにする
+                (() => {
+                    const toggle = document.querySelector("[data-search-toggle]");
+                    const bar = document.getElementById("news-topbar-searchbar");
+
+                    if (!toggle || !bar) {
+                        return;
+                    }
+
+                    toggle.addEventListener("click", (event) => {
+                        event.preventDefault();
+
+                        const open = bar.hidden;
+
+                        bar.hidden = !open;
+                        toggle.setAttribute("aria-expanded", String(open));
+
+                        if (open) {
+                            bar.querySelector("input").focus();
+                        }
+                    });
+                })();
+            </script>
+        {% endif %}
 
     </header>
 
@@ -195,9 +252,18 @@ page-content news-site-container
                 data-announcement-id="{{ announcement.id }}"
             >
                 <span class="news-announcement-label">お知らせ</span>
-                <span class="news-announcement-text">
-                    {{ announcement.message }}
-                </span>
+                {% if announcement.link %}
+                    <a
+                        class="news-announcement-text news-announcement-link"
+                        href="{{ announcement.link }}"
+                    >
+                        {{ announcement.message }} <span aria-hidden="true">›</span>
+                    </a>
+                {% else %}
+                    <span class="news-announcement-text">
+                        {{ announcement.message }}
+                    </span>
+                {% endif %}
                 <button
                     type="button"
                     class="news-announcement-close"

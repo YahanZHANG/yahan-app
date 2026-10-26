@@ -903,6 +903,125 @@ class LifeAlertTests(NewsTestCase):
         self.assertIn(bern_user.endpoint, endpoints)
 
 
+class HomeLifeToggleTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        self.make_article(self.srf, "normal")
+        self.make_article(self.srf, "strike", life_alert=True)
+
+    def test_life_articles_on_home_by_default(self):
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+    def test_anonymous_can_hide_life_articles(self):
+
+        session = self.client.session
+        session["news_public_settings"] = {"show_life_on_home": False}
+        session.save()
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+        # 「暮らし」のページには出る
+        self.assertContains(
+            self.client.get(reverse("news:life_alerts")),
+            "日本語 strike",
+        )
+
+    def test_logged_in_user_can_hide_life_articles(self):
+
+        from django.contrib.auth import get_user_model
+        from news.models import NewsPreference
+
+        user = get_user_model().objects.create_user(
+            username="taro",
+            password="pw-12345678",
+        )
+        NewsPreference.objects.create(user=user, show_life_on_home=False)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+
+class SearchTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        self.make_article(self.srf, "a", title_ja="チューリッヒでスト　電車が運休")
+        self.make_article(self.srf, "b", title_ja="健康保険料が上昇")
+        self.make_article(self.rts, "c", title_ja="ベルンでスト")
+        self.make_article(self.srf, "d", title_ja="未翻訳", processed=False)
+
+    def search(self, q):
+
+        return self.client.get(reverse("news:search"), {"q": q})
+
+    def test_finds_by_word(self):
+
+        response = self.search("スト")
+
+        self.assertContains(response, "チューリッヒでスト")
+        self.assertContains(response, "ベルンでスト")
+        self.assertNotContains(response, "健康保険料")
+
+    def test_all_words_must_match(self):
+
+        response = self.search("スト  チューリッヒ")
+
+        self.assertContains(response, "チューリッヒでスト")
+        self.assertNotContains(response, "ベルンでスト")
+
+    def test_source_name_and_chip(self):
+
+        response = self.search("RTS")
+
+        self.assertContains(response, "ベルンでスト")
+        self.assertNotContains(response, "健康保険料")
+        self.assertContains(
+            response,
+            reverse("news:source_detail", args=[self.rts.id]),
+        )
+
+    def test_untranslated_articles_are_not_shown(self):
+
+        self.assertNotContains(self.search("Original d"), "Original summary d")
+
+    def test_empty_query_shows_form_only(self):
+
+        response = self.search("")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="q"')
+        self.assertNotContains(response, "チューリッヒでスト")
+
+
+class AnnouncementLinkTests(NewsTestCase):
+
+    def test_link_is_rendered(self):
+
+        from news.models import NewsAnnouncement
+
+        NewsAnnouncement.objects.create(message="暮らしのお知らせを始めました", link="/news/life/")
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, 'href="/news/life/"')
+        self.assertContains(response, "news-announcement-link")
+
+
 class FlagLifeAlertsTests(NewsTestCase):
 
     def test_marks_selected_articles(self):
