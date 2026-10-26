@@ -814,5 +814,22 @@
 }
 
 .news-dark .news-bottom-nav {
-    border: 2px solid rgba(143, 179, 160, .6);
+    border: 0;
+    border-top: 1px solid var(--news-dark-border);
+    background: rgba(30, 38, 34, .97);
+    box-shadow: none;
+}
+
+.news-dark .news-bottom-nav .news-nav-item {
+    background: transparent;
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-bottom-nav .news-nav-item.is-active {
+    background: transparent;
+    color: #9BC4AE;
+}
+
+.news-dark .news-bottom-nav .news-nav-item.is-active::before {
+    background: #9BC4AE;
 }

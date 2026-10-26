@@ -5714,19 +5714,68 @@
     border: 2px solid rgba(95, 127, 111, .55);
 }
 
-/* 携帯メニュー（ライトモード）：緑の背景でアクセント */
+/* =========================================================
+   携帯メニュー：画面の下にぴったり付く、低くてシンプルなバー
+   線のアイコン＋選択中だけ緑（上に短い緑の線）
+   ========================================================= */
+
+.news-app {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
 
 .news-bottom-nav {
-    border: 2px solid #4D6B5C;
-    background: #5F7F6F;
-    box-shadow: 0 10px 30px rgba(35, 49, 43, .28);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-width: none;
+    gap: 0;
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    border: 0;
+    border-top: 1px solid #dfe5e1;
+    border-radius: 0;
+    background: rgba(255, 255, 255, .97);
+    box-shadow: 0 -4px 16px rgba(35, 49, 43, .06);
 }
 
 .news-bottom-nav .news-nav-item {
-    color: rgba(255, 255, 255, .82);
+    position: relative;
+    gap: 1px;
+    min-height: 52px;
+    padding: 6px 2px 4px;
+    border-radius: 0;
+    background: transparent;
+    color: #8a948f;
+    font-size: .64rem;
+    font-weight: 700;
+}
+
+.news-bottom-nav .news-nav-icon {
+    display: flex;
+    font-size: 0;
+    line-height: 0;
 }
 
 .news-bottom-nav .news-nav-item.is-active {
-    background: #ffffff;
+    background: transparent;
     color: #4D6B5C;
+}
+
+.news-bottom-nav .news-nav-item.is-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 28px;
+    height: 3px;
+    margin-left: -14px;
+    border-radius: 0 0 3px 3px;
+    background: #5F7F6F;
+}
+
+.news-bottom-nav .news-nav-item.is-active .news-nav-icon svg {
+    stroke-width: 2.2;
+}
+
+.news-push-prompt {
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
 }
