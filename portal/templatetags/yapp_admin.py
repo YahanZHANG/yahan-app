@@ -138,9 +138,10 @@ def yapp_admin_inbox(admin_attention=None):
         for item in group["items"]:
             found[(group["app"], item["label"])] = item
 
-    def tile(emoji, title, app, label, url_name, query):
+    def tile(tone, emoji, title, app, label, url_name, query):
         item = found.get((app, label))
         return {
+            "tone": tone,
             "emoji": emoji,
             "title": title,
             "count": item["count"] if item else 0,
@@ -152,15 +153,16 @@ def yapp_admin_inbox(admin_attention=None):
 
     tiles = [
         {
+            "tone": "washoku",
             "emoji": "🍙",
             "title": "和食の対応待ち",
             "count": sum(item["count"] for item in washoku_items),
             "url": washoku_items[0]["url"] if washoku_items else _changelist("admin:washoku_comment_changelist"),
             "chips": washoku_items,
         },
-        tile("💌", "Yapp 応援メッセージ", "Swiss News", "応援の問い合わせ", "admin:news_supportrequest_changelist", "is_read__exact=0"),
-        tile("📰", "Swiss News 質問箱", "Swiss News", "ご意見・ご要望", "admin:news_newsfeedback_changelist", "is_read__exact=0"),
-        tile("🍙", "和食 質問箱", "スイスで和食", "質問箱", "admin:washoku_feedback_changelist", "is_read__exact=0"),
+        tile("support", "💌", "Yapp 応援メッセージ", "Swiss News", "応援の問い合わせ", "admin:news_supportrequest_changelist", "is_read__exact=0"),
+        tile("news", "📰", "Swiss News 質問箱", "Swiss News", "ご意見・ご要望", "admin:news_newsfeedback_changelist", "is_read__exact=0"),
+        tile("question", "💬", "和食 質問箱", "スイスで和食", "質問箱", "admin:washoku_feedback_changelist", "is_read__exact=0"),
     ]
 
     shown = {("Swiss News", "応援の問い合わせ"), ("Swiss News", "ご意見・ご要望")}

@@ -11,53 +11,173 @@
 .yapp-home #content {
     width: auto;
     max-width: 1180px;
+    padding-top: 24px;
 }
 
 .yh {
-    --yh-accent: #c4431c;
-    --yh-accent-soft: #fde4d7;
-    --yh-line: var(--hairline-color, #e1e7eb);
-    --yh-soft: var(--darkened-bg, #f6f8fa);
+    --yh-accent: #d2541f;
+    --yh-line: var(--hairline-color, #e4e8ec);
+    --yh-card: var(--body-bg, #fff);
+    --yh-soft: var(--darkened-bg, #f5f7f9);
+    --yh-ink: var(--body-fg, #25313b);
     --yh-quiet: var(--body-quiet-color, #78838e);
-    max-width: 1180px;
-    margin: 0 auto;
+    --yh-shadow: 0 1px 2px rgba(20, 30, 40, 0.05), 0 6px 18px rgba(20, 30, 40, 0.06);
+
+    /* アプリごとの色 */
+    --yh-washoku: #e07a3f;
+    --yh-news: #4f8a6b;
+    --yh-portal: #7a63d1;
+    --yh-auth: #3f7fbf;
+    --yh-support: #d24f7c;
+    --yh-question: #c98a12;
+    --yh-other: #7d8a96;
+
     float: none !important;
     width: auto !important;
+    max-width: 1180px;
+    margin: 0 auto;
+    color: var(--yh-ink);
 }
 
 .yh a {
     text-decoration: none;
 }
 
+/* ---------- あいさつ + さがす ---------- */
+
+.yh-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    margin-bottom: 18px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--yh-washoku) 22%, transparent), transparent 45%),
+        linear-gradient(135deg, color-mix(in srgb, var(--yh-portal) 14%, var(--yh-card)), var(--yh-card) 70%);
+    border: 1px solid var(--yh-line);
+}
+
+.yh-hero-date {
+    margin: 0 0 2px;
+    padding: 0;
+    color: var(--yh-quiet);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.yh-hero h1 {
+    margin: 0 0 6px;
+    padding: 0;
+    color: var(--yh-ink);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.yh-hero-lead {
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+}
+
+.yh-hero-lead b {
+    color: var(--yh-accent);
+    font-size: 18px;
+}
+
+.yh-search {
+    position: relative;
+    flex: 1 1 320px;
+    max-width: 460px;
+}
+
+.yh-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.yh-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px 14px 44px !important;
+    border: 1px solid var(--yh-line) !important;
+    border-radius: 999px !important;
+    background: var(--yh-card) !important;
+    box-shadow: var(--yh-shadow);
+    font-size: 15px !important;
+}
+
+.yh-filter:focus {
+    outline: 3px solid color-mix(in srgb, var(--yh-portal) 35%, transparent);
+    border-color: var(--yh-portal) !important;
+}
+
 /* ---------- いつも見るところ ---------- */
 
 .yh-inbox {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 12px;
-    margin: 4px 0 10px;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 12px;
 }
 
 .yh-tile {
+    --tone: var(--yh-other);
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 14px 16px;
+    gap: 10px;
+    padding: 16px;
     border: 1px solid var(--yh-line);
-    border-radius: 14px;
-    background: var(--body-bg, #fff);
+    border-radius: 18px;
+    background: var(--yh-card);
+    box-shadow: var(--yh-shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
 }
 
+.yh-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(20, 30, 40, 0.12);
+}
+
+.yh-tone-washoku { --tone: var(--yh-washoku); }
+.yh-tone-support { --tone: var(--yh-support); }
+.yh-tone-news { --tone: var(--yh-news); }
+.yh-tone-question { --tone: var(--yh-question); }
+
 .yh-tile.has-news {
-    border-color: var(--yh-accent);
-    box-shadow: inset 4px 0 0 var(--yh-accent);
+    border-color: color-mix(in srgb, var(--tone) 55%, transparent);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--tone) 13%, var(--yh-card)), var(--yh-card) 65%);
 }
 
 .yh-tile-main {
     display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--yh-ink) !important;
+}
+
+.yh-tile-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--tone) 16%, var(--yh-card));
+    font-size: 24px;
+}
+
+.yh-tile-text {
+    display: flex;
     flex-direction: column;
-    gap: 6px;
-    color: var(--body-fg, #25313b) !important;
+    gap: 4px;
+    min-width: 0;
 }
 
 .yh-tile-title {
@@ -66,15 +186,15 @@
 }
 
 .yh-tile-count {
-    color: var(--yh-accent);
-    font-size: 30px;
+    color: var(--tone);
+    font-size: 32px;
     font-weight: 800;
     line-height: 1;
 }
 
 .yh-tile-count small {
-    margin-left: 2px;
-    font-size: 13px;
+    margin-left: 3px;
+    font-size: 14px;
 }
 
 .yh-tile-done {
@@ -94,12 +214,13 @@
 .yh-others a {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 4px 3px 10px;
+    gap: 6px;
+    padding: 5px 5px 5px 12px;
     border: 1px solid var(--yh-line);
     border-radius: 999px;
-    color: var(--body-fg, #25313b) !important;
-    font-size: 12px;
+    background: var(--yh-card);
+    color: var(--yh-ink) !important;
+    font-size: 13px;
     white-space: nowrap;
 }
 
@@ -111,18 +232,19 @@
 .yh-tile-items b,
 .yh-others b,
 .yh-badge {
-    min-width: 18px;
-    padding: 1px 6px;
+    min-width: 20px;
+    padding: 1px 7px;
     border-radius: 999px;
-    background: var(--yh-accent-soft);
-    color: var(--yh-accent);
+    background: var(--yh-accent);
+    color: #fff;
     font-size: 12px;
+    font-weight: 700;
     text-align: center;
 }
 
 .yh-others {
     align-items: center;
-    margin: 0 0 12px;
+    margin: 4px 0 12px;
     font-size: 13px;
 }
 
@@ -131,50 +253,60 @@
     font-weight: 700;
 }
 
-/* ---------- さがす + ショートカット ---------- */
+/* ---------- ショートカット ---------- */
 
 .yh-tools {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 16px;
-    margin: 14px 0;
-}
-
-.yh-filter {
-    flex: 1 1 280px;
-    max-width: 440px;
-    padding: 9px 12px !important;
-    border-radius: 10px !important;
-    font-size: 14px !important;
+    margin: 16px 0 20px;
 }
 
 .yh-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 14px;
-    font-size: 13px;
+    gap: 8px;
+}
+
+.yh-links a {
+    padding: 9px 16px;
+    border: 1px solid var(--yh-line);
+    border-radius: 999px;
+    background: var(--yh-card);
+    color: var(--yh-ink) !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.yh-links a:hover {
+    border-color: var(--yh-portal);
+    color: var(--yh-portal) !important;
 }
 
 .yh-no-hit {
     color: var(--yh-quiet);
+    font-size: 15px;
 }
 
 /* ---------- アプリ ---------- */
 
 .yh-apps {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     align-items: start;
-    gap: 12px;
+    gap: 14px;
 }
 
 .yh-app {
+    --tone: var(--yh-other);
     border: 1px solid var(--yh-line);
-    border-radius: 14px;
-    background: var(--body-bg, #fff);
+    border-radius: 18px;
+    background: var(--yh-card);
+    box-shadow: var(--yh-shadow);
     overflow: hidden;
 }
+
+.yh-app.app-washoku { --tone: var(--yh-washoku); }
+.yh-app.app-news { --tone: var(--yh-news); }
+.yh-app.app-portal { --tone: var(--yh-portal); }
+.yh-app.app-auth { --tone: var(--yh-auth); }
 
 /* 和食はモデルが多いので横いっぱいに */
 .yh-app.app-washoku[open] {
@@ -186,8 +318,8 @@
 .yh-recent > summary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 14px 18px;
     cursor: pointer;
     list-style: none;
     user-select: none;
@@ -202,25 +334,45 @@
 .yh-app > summary::after,
 .yh-rare > summary::after,
 .yh-recent > summary::after {
-    content: "▾";
+    content: "";
+    flex: none;
+    width: 9px;
+    height: 9px;
     margin-left: auto;
-    color: var(--yh-quiet);
+    border-right: 2px solid var(--yh-quiet);
+    border-bottom: 2px solid var(--yh-quiet);
+    transform: rotate(45deg) translateY(-3px);
     transition: transform 0.15s;
 }
 
 .yh-app:not([open]) > summary::after,
 .yh-rare:not([open]) > summary::after,
 .yh-recent:not([open]) > summary::after {
-    transform: rotate(-90deg);
+    transform: rotate(-45deg);
+}
+
+.yh-app > summary:hover {
+    background: color-mix(in srgb, var(--tone) 6%, var(--yh-card));
 }
 
 .yh-app[open] > summary {
     border-bottom: 1px solid var(--yh-line);
-    background: var(--yh-soft);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 12%, var(--yh-card)), var(--yh-card));
+}
+
+.yh-app-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tone) 18%, var(--yh-card));
+    font-size: 19px;
 }
 
 .yh-app-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
 }
 
@@ -231,111 +383,147 @@
 
 .yh-app-body {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 4px 18px;
-    padding: 10px 16px 14px;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 8px 18px;
+    padding: 12px 16px 16px;
 }
 
 .yh-group h3 {
-    margin: 6px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 8px;
     padding: 0;
     background: none;
     color: var(--yh-quiet);
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    font-weight: 800;
+    letter-spacing: 0.04em;
     text-transform: none;
 }
 
-.yh-group ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.yh-group h3::before {
+    content: "";
+    width: 4px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--tone);
 }
 
-.yh-model {
-    display: flex;
-    align-items: center;
+.yh-group ul {
+    display: grid;
     gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+/* モデルは押しやすいボタンに */
+.yh-model {
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--yh-line);
+    border-radius: 12px;
+    background: var(--yh-soft);
+    list-style: none;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.yh-model:hover {
+    border-color: color-mix(in srgb, var(--tone) 60%, transparent);
+    background: color-mix(in srgb, var(--tone) 8%, var(--yh-card));
 }
 
 .yh-model-link {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
-    border-radius: 8px;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 12px;
+    color: var(--yh-ink) !important;
     font-size: 14px;
+    font-weight: 600;
 }
 
-a.yh-model-link:hover {
-    background: var(--yh-soft);
+.yh-model-link .yh-badge {
+    margin-left: auto;
 }
 
 .yh-add {
     flex: none;
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
+    width: 42px;
+    border-left: 1px solid var(--yh-line);
     color: var(--yh-quiet) !important;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .yh-add:hover {
-    background: var(--yh-soft);
-    color: var(--link-fg, #417690) !important;
+    background: var(--tone);
+    color: #fff !important;
 }
 
 .yh-heading {
-    margin: 24px 0 10px;
+    margin: 30px 0 12px;
     padding: 0;
     background: none;
     color: var(--yh-quiet);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: 0.04em;
     text-transform: none;
 }
 
 .yh-rare,
 .yh-recent {
-    margin-top: 24px;
+    margin-top: 28px;
     border: 1px dashed var(--yh-line);
-    border-radius: 14px;
+    border-radius: 18px;
 }
 
 .yh-rare > summary,
 .yh-recent > summary {
     color: var(--yh-quiet);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
+}
+
+.yh-rare > summary:hover,
+.yh-recent > summary:hover {
+    color: var(--yh-ink);
 }
 
 .yh-rare-names {
     overflow: hidden;
     font-weight: 400;
+    font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .yh-rare > .yh-apps {
-    padding: 0 12px 12px;
+    padding: 0 14px 14px;
+}
+
+/* 使わないアプリは少し控えめに */
+.yh-rare .yh-app {
+    box-shadow: none;
 }
 
 .yh-recent ul {
     margin: 0;
-    padding: 0 16px 14px;
+    padding: 0 18px 14px;
     list-style: none;
 }
 
 .yh-recent li {
     margin: 0;
-    padding: 5px 0;
+    padding: 8px 0;
     border-top: 1px solid var(--yh-line);
     font-size: 13px;
     list-style: none;
@@ -354,7 +542,7 @@ a.yh-model-link:hover {
 }
 
 .yh-recent > p {
-    padding: 0 16px 12px;
+    padding: 0 18px 12px;
 }
 
 /* さがしているときに見つからなかったもの */
@@ -365,28 +553,61 @@ a.yh-model-link:hover {
 @media (max-width: 900px) {
     .yh-inbox {
         grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .yh-inbox .yh-tile:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .yh-search {
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .yapp-home #content {
+        padding-top: 14px;
+    }
+
+    .yh-hero {
+        padding: 18px;
+    }
+
+    .yh-hero h1 {
+        font-size: 20px;
+    }
+
+    .yh-apps {
+        grid-template-columns: 1fr;
+    }
+
+    /* 小さい3枚はアイコンを上に */
+    .yh-inbox .yh-tile:not(:first-child) {
+        padding: 12px;
+    }
+
+    .yh-inbox .yh-tile:not(:first-child) .yh-tile-main {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
     }
 
-    .yh-tile {
-        padding: 12px;
+    .yh-tile-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
     }
 
     .yh-tile-title {
         font-size: 13px;
     }
 
-    .yh-inbox .yh-tile:first-child {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (max-width: 480px) {
-    .yh-apps {
-        grid-template-columns: 1fr;
-    }
-
     .yh-tile-count {
         font-size: 26px;
+    }
+
+    .yh-app-body {
+        grid-template-columns: 1fr;
     }
 }

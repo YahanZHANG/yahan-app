@@ -29,19 +29,44 @@
 <div id="content-main" class="yh">
 
     <!-- =====================================================
+         あいさつ + さがす
+         ===================================================== -->
+
+    <header class="yh-hero">
+        <div class="yh-hero-text">
+            <p class="yh-hero-date">{% now "n月j日（D）" %}</p>
+            <h1>おかえりなさい、{{ user.get_short_name|default:user.get_username }}さん</h1>
+            <p class="yh-hero-lead">
+                {% if admin_attention.total %}
+                    対応待ちが <b>{{ admin_attention.total }}件</b> あります。
+                {% else %}
+                    対応待ちはありません。ゆっくりどうぞ ☕
+                {% endif %}
+            </p>
+        </div>
+        <div class="yh-search">
+            <span class="yh-search-icon" aria-hidden="true">🔍</span>
+            <input type="search" id="yh-filter" class="yh-filter" placeholder="管理するものをさがす（例: レシピ、お知らせ）" aria-label="管理するものをさがす" autocomplete="off">
+        </div>
+    </header>
+
+    <!-- =====================================================
          いつも見るところ
          ===================================================== -->
 
     <section class="yh-inbox" aria-label="いつも見るところ">
         {% for tile in inbox.tiles %}
-            <div class="yh-tile{% if tile.count %} has-news{% endif %}">
+            <div class="yh-tile yh-tone-{{ tile.tone }}{% if tile.count %} has-news{% endif %}">
                 <a class="yh-tile-main" href="{{ tile.url }}">
-                    <span class="yh-tile-title"><span aria-hidden="true">{{ tile.emoji }}</span> {{ tile.title }}</span>
-                    {% if tile.count %}
-                        <span class="yh-tile-count">{{ tile.count }}<small>件</small></span>
-                    {% else %}
-                        <span class="yh-tile-done">✓ なし</span>
-                    {% endif %}
+                    <span class="yh-tile-icon" aria-hidden="true">{{ tile.emoji }}</span>
+                    <span class="yh-tile-text">
+                        <span class="yh-tile-title">{{ tile.title }}</span>
+                        {% if tile.count %}
+                            <span class="yh-tile-count">{{ tile.count }}<small>件</small></span>
+                        {% else %}
+                            <span class="yh-tile-done">✓ なし</span>
+                        {% endif %}
+                    </span>
                 </a>
                 {% if tile.chips %}
                     <div class="yh-tile-items">
@@ -64,11 +89,10 @@
     {% endif %}
 
     <!-- =====================================================
-         さがす + ショートカット
+         ショートカット
          ===================================================== -->
 
     <div class="yh-tools">
-        <input type="search" id="yh-filter" class="yh-filter" placeholder="🔍 管理するものをさがす（例: レシピ、お知らせ）" aria-label="管理するものをさがす" autocomplete="off">
         <nav class="yh-links" aria-label="ショートカット">
             <a href="/analytics/">📊 アクセス解析</a>
             <a href="/washoku/">🍙 和食を開く</a>

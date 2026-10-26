@@ -967,12 +967,13 @@ line.ya-axis {
 
 .ya-jump-link {
     flex: none;
-    padding: 5px 11px;
+    padding: 9px 16px;
     border: 1px solid var(--ya-border);
     border-radius: 999px;
     background: var(--ya-surface);
     color: var(--ya-ink-2) !important;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
+    font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
 }
@@ -990,7 +991,7 @@ line.ya-axis {
 
 /* 目次で飛んだとき、見出しが目次バーの下に隠れないように */
 .ya-anchor {
-    scroll-margin-top: 60px;
+    scroll-margin-top: 72px;
 }
 
 .ya-fold > summary {
@@ -1031,32 +1032,56 @@ line.ya-axis {
 
 .ya-float {
     position: fixed;
-    right: max(14px, env(safe-area-inset-right));
-    bottom: max(18px, env(safe-area-inset-bottom));
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
     z-index: 30;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
+/* 指で押しやすいよう大きめ (64px) に。アイコンの下に短い文字 */
 .ya-float-btn {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid var(--ya-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--ya-brand);
     border-radius: 50%;
     background: var(--ya-surface);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+    box-shadow: 0 6px 20px rgba(40, 30, 90, 0.22);
     color: var(--ya-brand) !important;
-    font-size: 1.15rem;
-    font-weight: 800;
     text-decoration: none;
-    transition: opacity 0.2s, transform 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ya-float-btn b {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ya-float-btn span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ya-float-btn.is-main {
+    background: var(--ya-brand);
+    color: #fff !important;
 }
 
 .ya-float-btn:hover {
-    border-color: var(--ya-brand);
+    transform: scale(1.06);
+}
+
+.ya-float-btn:active {
+    transform: scale(0.94);
 }
 
 .ya-float-btn.is-hidden {
