@@ -4,14 +4,10 @@ from django.utils import timezone
 
 from news.models import Article
 from news.push_sender import (
-    send_news_push_for_batch,
+    send_scheduled_pushes,
 )
 from news.services.alerts import (
     send_admin_alert,
-)
-from news.services.deduplicator import (
-    ready_articles,
-    with_source_count,
 )
 
 # この件数以上の翻訳失敗があれば管理者に知らせる
@@ -183,6 +179,18 @@ class Command(BaseCommand):
 
 
         # ========================================
+        # 3b. SBB 運行情報
+        #
+        # まだ続いている大きめの運休・工事だけ。
+        # ========================================
+
+        self._run_step(
+            "3b/10 Fetch SBB traffic information",
+            "fetch_sbb_info",
+        )
+
+
+        # ========================================
         # 4. Remove ads / promotions
         # ========================================
 
@@ -227,6 +235,21 @@ class Command(BaseCommand):
             "7/10 Translate and classify news",
             "enrich_news",
             limit=options["ai_limit"],
+        )
+
+
+        # ========================================
+        # 7b. 暮らしのお知らせ（日本語の記事）
+        #
+        # 外国語の記事は翻訳のときに判定済み。
+        # 日本語の記事だけ見出しと要約で判定する。
+        # ========================================
+
+        self._run_step(
+            "7b/10 Mark life alerts (Japanese news)",
+            "flag_life_alerts",
+            days=1,
+            japanese_only=True,
         )
 
 
@@ -410,45 +433,9 @@ class Command(BaseCommand):
 
         try:
 
-            new_articles = (
-                ready_articles()
-                .filter(
-                    fetched_at__gte=started_at,
-                    duplicate_of__isnull=True,
-                )
-            )
-
-            new_articles_count = (
-                new_articles.count()
-            )
-
-            # 一番多くの媒体が報じた新着を見出しにする
-            top_article = (
-                with_source_count(
-                    new_articles
-                )
-                .order_by(
-                    "-source_count",
-                    "-published_at",
-                )
-                .first()
-            )
-
-            headline = (
-                top_article.title_ja
-                if top_article
-                else ""
-            )
-
-            batch_key = (
-                f"{timezone.localdate():%Y-%m-%d}"
-                f"-{period}"
-            )
-
-            result = send_news_push_for_batch(
-                batch_key=batch_key,
-                new_articles_count=new_articles_count,
-                headline=headline,
+            result = send_scheduled_pushes(
+                period,
+                started_at,
             )
 
             self.stdout.write(

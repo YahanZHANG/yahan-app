@@ -44,6 +44,13 @@
             : "この端末では通知がOFFになっているよ。";
 
         button.disabled = false;
+
+        // 頻度・地域の設定（push_options.js）に知らせる
+        document.dispatchEvent(
+            new CustomEvent("swissnews:push-changed", {
+                detail: { isOn: isOn },
+            })
+        );
     }
 
 

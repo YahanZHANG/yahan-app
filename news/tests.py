@@ -135,94 +135,213 @@ class ArticleListTests(NewsTestCase):
         self.assertNotContains(response, "日本語要約 a")
 
 
-def fake_embeddings(vectors):
-
-    def create(**kwargs):
-
-        return SimpleNamespace(
-            data=[
-                SimpleNamespace(
-                    embedding=vectors[text.split("\n")[0]]
-                )
-                for text in kwargs["input"]
-            ]
-        )
-
-    return SimpleNamespace(
-        embeddings=SimpleNamespace(
-            create=create,
-        )
-    )
-
-
 class DedupeTests(NewsTestCase):
 
-    def test_similar_articles_are_merged(self):
+    def setUp(self):
 
-        first = self.make_article(
+        super().setUp()
+
+        self.first = self.make_article(
             self.srf,
             "a",
+            title_ja="来年の健康保険料、平均4.2%上昇へ　連邦政府が発表",
+            summary_ja="スイス連邦政府は来年の健康保険料が平均で4.2%上昇すると発表した。",
             published_at=timezone.now() - timedelta(hours=2),
         )
 
-        second = self.make_article(self.rts, "b")
-        other = self.make_article(self.rts, "c")
-
-        client = fake_embeddings({
-            "日本語 a": [1.0, 0.0, 0.0],
-            "日本語 b": [0.99, 0.05, 0.0],
-            "日本語 c": [0.0, 0.0, 1.0],
-        })
-
-        with mock.patch(
-            "news.services.deduplicator.get_openai_client",
-            return_value=client,
-        ):
-            call_command(
-                "dedupe_news",
-                stdout=mock.MagicMock(),
-            )
-
-        first.refresh_from_db()
-        second.refresh_from_db()
-        other.refresh_from_db()
-
-        self.assertIsNone(first.duplicate_of)
-        self.assertEqual(second.duplicate_of, first)
-        self.assertIsNone(other.duplicate_of)
-        self.assertIsNotNone(other.embedding)
-
-    def test_borderline_similarity_asks_ai(self):
-
-        first = self.make_article(
-            self.srf,
-            "a",
-            published_at=timezone.now() - timedelta(hours=2),
+        self.second = self.make_article(
+            self.rts,
+            "b",
+            title_ja="連邦参事会、来年の健康保険料は平均4.2%上昇と発表",
+            summary_ja="連邦参事会は、来年の健康保険料が平均4.2%上がると発表した。",
         )
 
-        second = self.make_article(self.rts, "b")
+        self.other = self.make_article(
+            self.rts,
+            "c",
+            title_ja="バーゼルで住宅火災、けが人なし",
+            summary_ja="バーゼルの住宅で火災が発生したが、けが人はいなかった。",
+        )
 
-        client = fake_embeddings({
-            "日本語 a": [1.0, 0.0],
-            "日本語 b": [0.8, 0.6],
-        })
+    def test_similar_articles_are_merged_after_ai_check(self):
 
         with mock.patch(
-            "news.services.deduplicator.get_openai_client",
-            return_value=client,
-        ), mock.patch(
             "news.services.deduplicator.confirm_same_event",
-            return_value=False,
+            return_value=True,
         ) as confirm:
             call_command(
                 "dedupe_news",
                 stdout=mock.MagicMock(),
             )
 
-        second.refresh_from_db()
+        for article in (self.first, self.second, self.other):
+            article.refresh_from_db()
+            self.assertIsNotNone(article.dedupe_checked_at)
 
+        self.assertIsNone(self.first.duplicate_of)
+        self.assertEqual(self.second.duplicate_of, self.first)
+        self.assertIsNone(self.other.duplicate_of)
+
+        # 似ていない記事（火災）は AI に聞かない
         confirm.assert_called_once()
-        self.assertIsNone(second.duplicate_of)
+
+    def test_ai_says_different(self):
+
+        with mock.patch(
+            "news.services.deduplicator.confirm_same_event",
+            return_value=False,
+        ):
+            call_command(
+                "dedupe_news",
+                stdout=mock.MagicMock(),
+            )
+
+        self.second.refresh_from_db()
+
+        self.assertIsNone(self.second.duplicate_of)
+
+    def test_ai_error_retries_next_time(self):
+
+        with mock.patch(
+            "news.services.deduplicator.confirm_same_event",
+            side_effect=RuntimeError("down"),
+        ):
+            call_command(
+                "dedupe_news",
+                stdout=mock.MagicMock(),
+            )
+
+        self.second.refresh_from_db()
+
+        self.assertIsNone(self.second.dedupe_checked_at)
+
+    def test_checked_articles_are_skipped(self):
+
+        Article.objects.update(
+            dedupe_checked_at=timezone.now(),
+        )
+
+        with mock.patch(
+            "news.services.deduplicator.confirm_same_event",
+        ) as confirm:
+            call_command(
+                "dedupe_news",
+                stdout=mock.MagicMock(),
+            )
+
+        confirm.assert_not_called()
+
+
+class AIClientTests(TestCase):
+
+    SCHEMA = {
+        "type": "object",
+        "properties": {"ok": {"type": "boolean"}},
+        "required": ["ok"],
+        "additionalProperties": False,
+    }
+
+    def test_openai_is_default(self):
+
+        from config.services import ai_client
+
+        response = SimpleNamespace(
+            status="completed",
+            output_text='{"ok": true}',
+            usage=SimpleNamespace(input_tokens=10, output_tokens=2),
+        )
+
+        client = SimpleNamespace(
+            responses=SimpleNamespace(
+                create=mock.MagicMock(return_value=response),
+            )
+        )
+
+        with mock.patch.dict(
+            "os.environ",
+            {},
+            clear=False,
+        ), mock.patch(
+            "config.services.openai_client.get_openai_client",
+            return_value=client,
+        ):
+            import os
+            os.environ.pop("AI_PROVIDER", None)
+
+            result = ai_client.generate_json(
+                "inst", "input", self.SCHEMA, "x", 100,
+            )
+
+        self.assertEqual(result.data, {"ok": True})
+        self.assertEqual(result.model, "gpt-5.6-luna")
+
+    def test_claude_when_switched(self):
+
+        from config.services import ai_client
+
+        response = SimpleNamespace(
+            stop_reason="end_turn",
+            content=[SimpleNamespace(type="text", text='{"ok": false}')],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=2),
+        )
+
+        client = SimpleNamespace(
+            messages=SimpleNamespace(
+                create=mock.MagicMock(return_value=response),
+            )
+        )
+
+        with mock.patch.dict(
+            "os.environ",
+            {"AI_PROVIDER": "claude"},
+        ), mock.patch.object(
+            ai_client,
+            "_claude_client",
+            return_value=client,
+        ):
+            result = ai_client.generate_json(
+                "inst", "input", self.SCHEMA, "x", 100,
+            )
+
+        self.assertEqual(result.data, {"ok": False})
+        self.assertEqual(result.model, "claude-haiku-5-5")
+
+        kwargs = client.messages.create.call_args.kwargs
+
+        self.assertEqual(kwargs["system"], "inst")
+        self.assertEqual(
+            kwargs["output_config"]["format"]["schema"],
+            self.SCHEMA,
+        )
+
+    def test_claude_cut_off_raises(self):
+
+        from config.services import ai_client
+
+        response = SimpleNamespace(
+            stop_reason="max_tokens",
+            content=[],
+            usage=SimpleNamespace(input_tokens=1, output_tokens=1),
+        )
+
+        client = SimpleNamespace(
+            messages=SimpleNamespace(
+                create=mock.MagicMock(return_value=response),
+            )
+        )
+
+        with mock.patch.dict(
+            "os.environ",
+            {"AI_PROVIDER": "claude"},
+        ), mock.patch.object(
+            ai_client,
+            "_claude_client",
+            return_value=client,
+        ):
+            with self.assertRaises(RuntimeError):
+                ai_client.generate_json(
+                    "inst", "input", self.SCHEMA, "x", 100,
+                )
 
 
 class EnrichTests(NewsTestCase):
@@ -536,3 +655,394 @@ class CleanupTests(NewsTestCase):
             list(NewsDigest.objects.values_list("summary_ja", flat=True)),
             ["new"],
         )
+
+
+class ShareAndOgpTests(NewsTestCase):
+
+    def test_article_page_has_preview_and_share(self):
+
+        article = self.make_article(self.srf, "a")
+
+        response = self.client.get(
+            reverse("news:article_detail", args=[article.pk])
+        )
+
+        self.assertContains(
+            response,
+            '<meta property="og:title" content="日本語 a">',
+            html=False,
+        )
+        self.assertContains(response, "og-default")
+        self.assertContains(response, "data-share-links")
+
+    def test_duplicate_redirects_to_main_article(self):
+
+        main = self.make_article(self.srf, "a")
+        duplicate = self.make_article(self.rts, "b", duplicate_of=main)
+
+        response = self.client.get(
+            reverse("news:article_detail", args=[duplicate.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("news:article_detail", args=[main.pk]),
+        )
+
+    def test_missing_article_shows_friendly_page(self):
+
+        response = self.client.get(
+            reverse("news:article_detail", args=[999])
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(
+            response,
+            "掲載期間が終わりました",
+            status_code=404,
+        )
+
+    def test_home_cards_have_share_button(self):
+
+        self.make_article(self.srf, "a")
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, "news-share-button")
+        self.assertContains(response, 'property="og:image"')
+
+
+class LifeAlertTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        from news.models import Region
+
+        self.zurich = Region.objects.create(name="チューリッヒ", slug="zurich")
+        self.bern = Region.objects.create(name="ベルン", slug="bern")
+        self.swiss = Region.objects.create(name="スイス全国", slug="switzerland")
+
+    def test_enrich_saves_life_alert(self):
+
+        from config.services.ai_client import AIResult
+        from news.services.ai_enricher import enrich_article
+
+        article = self.make_article(self.srf, "a", processed=False)
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=AIResult(
+                data={
+                    "title_ja": "SBBがスト",
+                    "summary_ja": "要約",
+                    "topics": [],
+                    "life_alert": True,
+                },
+                model="m",
+            ),
+        ), mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="text",
+        ):
+            enrich_article(article)
+
+        article.refresh_from_db()
+
+        self.assertTrue(article.life_alert)
+        self.assertEqual(article.ai_model, "m")
+
+    def test_life_page_filters_by_region(self):
+
+        zurich = self.make_article(self.srf, "z", life_alert=True)
+        zurich.regions.add(self.zurich)
+
+        bern = self.make_article(self.srf, "b", life_alert=True)
+        bern.regions.add(self.bern)
+
+        national = self.make_article(self.srf, "n", life_alert=True)
+        national.regions.add(self.swiss)
+
+        self.make_article(self.srf, "x")
+
+        response = self.client.get(
+            reverse("news:life_alerts") + "?region=zurich"
+        )
+
+        self.assertContains(response, "日本語 z")
+        self.assertContains(response, "日本語 n")
+        self.assertNotContains(response, "日本語 b")
+        self.assertNotContains(response, "日本語 x")
+
+    def test_push_options_endpoint(self):
+
+        from news.models import NewsPushSubscription
+
+        subscription = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/1",
+            p256dh="k",
+            auth="a",
+        )
+
+        url = reverse("news_push_options")
+
+        response = self.client.post(
+            url,
+            data={
+                "endpoint": subscription.endpoint,
+                "frequency": "daily",
+                "alert_regions": ["zurich", "bern"],
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(
+            response.json(),
+            {"frequency": "daily", "alert_regions": ["bern", "zurich"]},
+        )
+
+        # 全国は地域として選べない
+        response = self.client.post(
+            url,
+            data={
+                "endpoint": subscription.endpoint,
+                "alert_regions": ["switzerland"],
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post(
+            url,
+            data={"endpoint": "https://push.example/none"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    @override_settings(
+        VAPID_PUBLIC_KEY="pub",
+        VAPID_PRIVATE_KEY="priv",
+        VAPID_CONTACT_EMAIL="a@example.com",
+    )
+    def test_scheduled_pushes_respect_frequency_and_region(self):
+
+        from news.models import NewsPushSubscription
+        from news.push_sender import send_scheduled_pushes
+
+        started_at = timezone.now() - timedelta(minutes=5)
+
+        every = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/every", p256dh="k", auth="a",
+        )
+        daily = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/daily", p256dh="k", auth="a",
+            frequency="daily",
+        )
+        zurich_user = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/zurich", p256dh="k", auth="a",
+            frequency="daily",
+        )
+        zurich_user.alert_regions.add(self.zurich)
+
+        bern_user = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/bern", p256dh="k", auth="a",
+            frequency="daily",
+        )
+        bern_user.alert_regions.add(self.bern)
+
+        # 住まいはベルン、通勤先はチューリッヒ
+        commuter = NewsPushSubscription.objects.create(
+            endpoint="https://push.example/commuter", p256dh="k", auth="a",
+            frequency="daily",
+        )
+        commuter.alert_regions.add(self.bern, self.zurich)
+
+        alert = self.make_article(
+            self.srf, "strike", life_alert=True,
+            title_ja="チューリッヒでスト",
+        )
+        alert.regions.add(self.zurich)
+
+        def sent_to(webpush):
+            return [
+                call.kwargs["subscription_info"]["endpoint"]
+                for call in webpush.call_args_list
+            ]
+
+        with mock.patch("news.push_sender.webpush") as webpush:
+            send_scheduled_pushes("afternoon", started_at)
+
+        endpoints = sent_to(webpush)
+
+        # 午後: 「更新のたび」と、チューリッヒの暮らしのお知らせだけ
+        self.assertIn(every.endpoint, endpoints)
+        self.assertIn(zurich_user.endpoint, endpoints)
+        self.assertIn(commuter.endpoint, endpoints)
+        self.assertNotIn(daily.endpoint, endpoints)
+        self.assertNotIn(bern_user.endpoint, endpoints)
+
+        titles = [
+            call.kwargs["data"]
+            for call in webpush.call_args_list
+            if call.kwargs["subscription_info"]["endpoint"]
+            == commuter.endpoint
+        ]
+
+        self.assertIn("チューリッヒ", titles[0])
+
+        with mock.patch("news.push_sender.webpush") as webpush:
+            send_scheduled_pushes("morning", started_at)
+
+        endpoints = sent_to(webpush)
+
+        # 朝: 1日1回の人にも届く
+        self.assertIn(daily.endpoint, endpoints)
+        self.assertIn(bern_user.endpoint, endpoints)
+
+
+class FlagLifeAlertsTests(NewsTestCase):
+
+    def test_marks_selected_articles(self):
+
+        from config.services.ai_client import AIResult
+
+        strike = self.make_article(self.srf, "strike")
+        other = self.make_article(self.srf, "other")
+
+        with mock.patch(
+            "news.management.commands.flag_life_alerts.generate_json",
+            return_value=AIResult(
+                data={"life_alert_ids": [strike.pk, 99999]},
+                model="m",
+            ),
+        ) as generate:
+            call_command(
+                "flag_life_alerts",
+                stdout=mock.MagicMock(),
+            )
+
+        strike.refresh_from_db()
+        other.refresh_from_db()
+
+        generate.assert_called_once()
+        self.assertTrue(strike.life_alert)
+        self.assertFalse(other.life_alert)
+
+
+class CleanupPromotionTests(NewsTestCase):
+
+    def test_surviving_duplicate_becomes_main(self):
+
+        old = self.make_article(
+            self.srf, "old",
+            published_at=timezone.now() - timedelta(days=8),
+        )
+        newer = self.make_article(
+            self.rts, "new",
+            published_at=timezone.now() - timedelta(days=6),
+            duplicate_of=old,
+        )
+        newest = self.make_article(
+            self.rts, "newest",
+            duplicate_of=old,
+        )
+
+        call_command("cleanup_news", stdout=mock.MagicMock())
+
+        newer.refresh_from_db()
+        newest.refresh_from_db()
+
+        self.assertFalse(Article.objects.filter(pk=old.pk).exists())
+        self.assertIsNone(newer.duplicate_of)
+        self.assertEqual(newest.duplicate_of, newer)
+
+
+class SbbInfoTests(NewsTestCase):
+
+    def test_only_long_active_disruptions_are_imported(self):
+
+        now = timezone.now()
+
+        def iso(delta):
+            return (now + delta).isoformat()
+
+        records = [
+            {
+                "title": "Zürich HB – Zug: Einschränkungen",
+                "description": "Wegen Bauarbeiten<br />fallen Züge aus.",
+                "link": "https://www.sbb.ch/x",
+                "published": iso(timedelta(hours=-1)),
+                "startdatetime": iso(timedelta(hours=-1)),
+                "enddatetime": iso(timedelta(hours=5)),
+            },
+            {
+                "title": "Bern: kurze Störung",
+                "description": "",
+                "published": iso(timedelta(minutes=-20)),
+                "startdatetime": iso(timedelta(minutes=-20)),
+                "enddatetime": iso(timedelta(minutes=30)),
+            },
+            {
+                "title": "Basel: vorbei",
+                "description": "",
+                "published": iso(timedelta(hours=-8)),
+                "startdatetime": iso(timedelta(hours=-8)),
+                "enddatetime": iso(timedelta(hours=-1)),
+            },
+        ]
+
+        response = mock.MagicMock()
+        response.json.return_value = {"results": records}
+
+        with mock.patch(
+            "news.management.commands.fetch_sbb_info.requests.get",
+            return_value=response,
+        ):
+            call_command("fetch_sbb_info", stdout=mock.MagicMock())
+            call_command("fetch_sbb_info", stdout=mock.MagicMock())
+
+        articles = Article.objects.filter(source__name="SBB 運行情報")
+
+        self.assertEqual(articles.count(), 1)
+
+        article = articles.get()
+
+        self.assertIn("fallen Züge aus", article.summary_original)
+        self.assertIn("#sbb-", article.source_url)
+
+    def test_sbb_articles_are_always_life_alerts(self):
+
+        from config.services.ai_client import AIResult
+        from news.management.commands.fetch_sbb_info import get_source
+        from news.services.ai_enricher import enrich_article
+
+        article = self.make_article(
+            get_source(),
+            "sbb",
+            processed=False,
+            source_url="https://www.sbb.ch/x#sbb-abc",
+        )
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=AIResult(
+                data={
+                    "title_ja": "運休",
+                    "summary_ja": "要約",
+                    "topics": ["life"],
+                    "life_alert": False,
+                },
+                model="m",
+            ),
+        ), mock.patch(
+            "news.services.article_text.fetch_article_body",
+        ) as fetch_body:
+            enrich_article(article)
+
+        article.refresh_from_db()
+
+        self.assertTrue(article.life_alert)
+        fetch_body.assert_not_called()

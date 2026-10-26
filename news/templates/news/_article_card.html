@@ -1,8 +1,10 @@
+{% load news_extras %}
 <article class="news-card">
 
     <div class="news-card-meta">
 
         <span class="news-source">
+            {% if article.life_alert %}<a href="{% url 'news:life_alerts' %}" class="news-life-tag">暮らし</a>{% endif %}
             {{ article.source.name }}{% with source_count=article.source_articles|length %}{% if source_count > 1 %} ほか{{ source_count|add:"-1" }}社{% endif %}{% endwith %}
         </span>
 
@@ -30,6 +32,7 @@
 
 
     <div class="news-topic-row">
+
 
         {% for topic in article.topics.all %}
 
@@ -87,6 +90,18 @@
             {% endfor %}
 
         </div>
+
+        {% url 'news:article_detail' article.id as share_path %}
+        <button
+            type="button"
+            class="news-share-button"
+            data-share-url="{% absolute_url share_path %}"
+            data-share-title="{{ article.title_ja|default:article.title_original }}"
+            aria-label="この記事をシェア"
+        >
+            <i class="bi bi-share" aria-hidden="true"></i>
+            シェア
+        </button>
 
         {% if forloop.first %}
             <p class="news-source-help">

@@ -1,9 +1,7 @@
-import json
-
 from django.utils import timezone
 
-from config.services.openai_client import (
-    get_openai_client,
+from config.services.ai_client import (
+    generate_json,
 )
 
 from news.models import Topic
@@ -12,12 +10,14 @@ from news.services.article_text import (
     article_input_text,
 )
 
+from news.management.commands.fetch_sbb_info import (
+    SOURCE_NAME as SBB_SOURCE_NAME,
+)
+
 from news.services.japanese_classifier import (
     get_other_topic,
 )
 
-
-MODEL = "gpt-5.6-luna"
 
 MAX_INPUT_CHARS = 10000
 
@@ -57,16 +57,41 @@ OUTPUT_SCHEMA = {
                 "enum": TOPIC_SLUGS,
             },
         },
+
+        "life_alert": {
+            "type": "boolean",
+        },
     },
 
     "required": [
         "title_ja",
         "summary_ja",
         "topics",
+        "life_alert",
     ],
 
     "additionalProperties": False,
 }
+
+
+# 「暮らしのお知らせ」の判定基準（後から付け直すコマンドでも使う）
+LIFE_ALERT_RULES = """
+【life_alert（暮らしのお知らせ）】
+
+スイスに住む人が「知らないと困る・予定を変える」
+具体的な生活情報なら true にする。例:
+
+・ストライキ、デモによる交通規制
+・電車、バス、道路、空港の運休・遅延・通行止め・工事
+・税金、保険、手続きなどの期限や制度の変更日
+・祝日や行事の日の店・役所の営業時間
+・停電、断水、悪天候や自然災害の警報、避難
+・料金や運賃の変更（いつから・いくら）
+
+一般的な政治・経済の話題、事件、事故の報道、
+スポーツ、文化、意見記事は false にする。
+迷う場合は false にする。
+"""
 
 
 INSTRUCTIONS = """
@@ -182,11 +207,10 @@ sports
 
 記事に明確に関連するテーマだけを選択してください。
 複数選択可能です。
-"""
+""" + LIFE_ALERT_RULES
+
 
 def enrich_article(article):
-
-    client = get_openai_client()
 
     article_text = article_input_text(
         article
@@ -208,64 +232,39 @@ def enrich_article(article):
     上記の情報だけを使って処理してください。
     """
 
-    response = client.responses.create(
-        model=MODEL,
-
-        reasoning={
-            "effort": "none",
-        },
-
+    result = generate_json(
         instructions=INSTRUCTIONS,
-
-        input=input_text,
-
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": "news_enrichment",
-                "strict": True,
-                "schema": OUTPUT_SCHEMA,
-            }
-        },
-
+        input_text=input_text,
+        schema=OUTPUT_SCHEMA,
+        name="news_enrichment",
         # 日本語の長い要約（最大10文）でも
         # 途中で切れないよう余裕を持たせる。
-        max_output_tokens=MAX_OUTPUT_TOKENS,
-
-        store=False,
+        max_tokens=MAX_OUTPUT_TOKENS,
     )
 
-    if response.status == "incomplete":
-
-        reason = getattr(
-            response.incomplete_details,
-            "reason",
-            "unknown",
-        )
-
-        raise RuntimeError(
-            f"OpenAI response incomplete: {reason}"
-        )
-
-    result = json.loads(
-        response.output_text
-    )
+    data = result.data
 
     article.title_ja = (
-        result["title_ja"].strip()
+        data["title_ja"].strip()
     )
 
     article.summary_ja = (
-        result["summary_ja"].strip()
+        data["summary_ja"].strip()
     )
 
     article.ai_processed_at = (
         timezone.now()
     )
 
-    article.ai_model = MODEL
+    article.ai_model = result.model
 
     article.ai_error = ""
+
+    # SBB の運行情報はいつも暮らしのお知らせ
+    article.life_alert = bool(
+        data.get("life_alert")
+        or article.source.name == SBB_SOURCE_NAME
+    )
 
     article.save(
         update_fields=[
@@ -274,6 +273,7 @@ def enrich_article(article):
             "ai_processed_at",
             "ai_model",
             "ai_error",
+            "life_alert",
         ]
     )
 
@@ -283,7 +283,7 @@ def enrich_article(article):
 
     topics = list(
         Topic.objects.filter(
-            slug__in=result["topics"],
+            slug__in=data["topics"],
             is_active=True,
         )
     )
@@ -308,5 +308,6 @@ def enrich_article(article):
             topic.name
             for topic in topics
         ],
-        "usage": response.usage,
+        "life_alert": article.life_alert,
+        "usage": result,
     }

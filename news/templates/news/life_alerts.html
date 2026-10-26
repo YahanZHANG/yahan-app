@@ -1,0 +1,88 @@
+{% extends "news/base.html" %}
+{% load news_extras %}
+
+{% block title %}
+暮らしのお知らせ | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            LIFE
+        </div>
+
+        <h2>
+            暮らしのお知らせ
+        </h2>
+
+        <p class="news-source-detail-meta">
+            スト・運休・手続きの期限・祝日の営業時間など
+        </p>
+
+    </div>
+
+</section>
+
+
+<nav class="news-life-regions" aria-label="地域">
+
+    <a
+        href="{% url 'news:life_alerts' %}"
+        class="news-life-region{% if not region %} is-active{% endif %}"
+    >
+        すべて
+    </a>
+
+    {% for item in regions %}
+        <a
+            href="{% url 'news:life_alerts' %}?region={{ item.slug }}"
+            class="news-life-region{% if region == item %} is-active{% endif %}"
+        >
+            {{ item.name }}
+        </a>
+    {% endfor %}
+
+</nav>
+
+
+<p class="news-life-push-hint">
+    <a href="{% url 'news:settings' %}">設定</a>で地域を選ぶと、その地域と全国のお知らせが通知で届きます。
+</p>
+
+
+<div class="news-list">
+
+    {% for article in articles %}
+
+        {% ifchanged article.published_at|day_label %}
+            <h2 class="news-day-heading">
+                {{ article.published_at|day_label }}
+            </h2>
+        {% endifchanged %}
+
+        {% include "news/_article_card.html" %}
+
+    {% empty %}
+
+        <div class="news-empty">
+
+            <div class="news-empty-icon">
+                📢
+            </div>
+
+            <h3>
+                いまはお知らせがありません
+            </h3>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

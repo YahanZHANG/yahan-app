@@ -32,9 +32,58 @@ class Command(BaseCommand):
             .distinct()
         )
 
-        count = old_articles.count()
+        old_ids = set(
+            old_articles.values_list(
+                "id",
+                flat=True,
+            )
+        )
 
-        old_articles.delete()
+        # まとめ役の記事を消すと、残った同じ出来事の記事が
+        # バラバラに表示されてしまう。残る記事の1つを新しいまとめ役にする。
+        roots = Article.objects.filter(
+            id__in=old_ids,
+            duplicates__isnull=False,
+        ).distinct()
+
+        for root in roots:
+
+            survivors = list(
+                root.duplicates
+                .exclude(
+                    id__in=old_ids,
+                )
+                .order_by(
+                    "published_at",
+                    "id",
+                )
+            )
+
+            if not survivors:
+                continue
+
+            new_root = survivors[0]
+
+            Article.objects.filter(
+                pk=new_root.pk,
+            ).update(
+                duplicate_of=None,
+            )
+
+            Article.objects.filter(
+                pk__in=[
+                    article.pk
+                    for article in survivors[1:]
+                ],
+            ).update(
+                duplicate_of=new_root,
+            )
+
+        count = len(old_ids)
+
+        Article.objects.filter(
+            id__in=old_ids,
+        ).delete()
 
         digest_count, _ = (
             NewsDigest.objects

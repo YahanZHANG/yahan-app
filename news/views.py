@@ -264,10 +264,6 @@ def _article_queryset(
             "regions",
             _duplicates_prefetch(),
         )
-        # 重複チェック用の大きなデータは一覧では使わない
-        .defer(
-            "embedding"
-        )
     )
 
 
@@ -452,9 +448,6 @@ def _duplicates_prefetch():
             Article.objects
             .select_related(
                 "source"
-            )
-            .defer(
-                "embedding"
             )
             .order_by(
                 "published_at"
@@ -900,6 +893,161 @@ def source_detail(
         },
     )
 
+def _display_settings(request):
+    """
+    (preference, public_settings) を返す。
+    """
+
+    if request.user.is_authenticated:
+
+        return (
+            _get_preference(request.user),
+            None,
+        )
+
+    return (
+        None,
+        _get_public_settings(request),
+    )
+
+
+def article_detail(
+    request,
+    article_id,
+):
+    """
+    1記事のページ。シェアしたリンクはここに届く。
+    Facebook・LINE のプレビューにこの記事の見出しと要約が出る。
+    """
+
+    preference, public_settings = (
+        _display_settings(request)
+    )
+
+    article = (
+        _article_queryset(
+            include_duplicates=True,
+        )
+        .filter(
+            pk=article_id,
+        )
+        .first()
+    )
+
+    # 同じ出来事の別の媒体の記事なら、まとめた記事へ
+    if article is not None and article.duplicate_of_id:
+
+        return redirect(
+            "news:article_detail",
+            article.duplicate_of_id,
+        )
+
+    if article is None:
+
+        # 掲載期間（7日）が終わった記事など
+        return render(
+            request,
+            "news/article_detail.html",
+            {
+                "article": None,
+                "preference": preference,
+                "public_settings": public_settings,
+            },
+            status=404,
+        )
+
+    title = (
+        article.title_ja
+        or article.title_original
+    )
+
+    summary = (
+        article.summary_ja
+        or article.summary_original
+        or ""
+    )
+
+    return render(
+        request,
+        "news/article_detail.html",
+        {
+            "article": article,
+            "preference": preference,
+            "public_settings": public_settings,
+            "og_type": "article",
+            "og_title": title,
+            "og_description": (
+                summary[:110] + "…"
+                if len(summary) > 110
+                else summary
+            ),
+        },
+    )
+
+
+def life_alerts(request):
+    """
+    暮らしのお知らせ（スト・運休・締め切り・営業時間など）の一覧。
+    ?region=<slug> でその地域と全国の分だけにしぼる。
+    """
+
+    from .push_views import alert_regions
+
+    preference, public_settings = (
+        _display_settings(request)
+    )
+
+    articles = (
+        _article_queryset()
+        .filter(
+            life_alert=True,
+        )
+    )
+
+    regions = list(
+        alert_regions()
+    )
+
+    region = next(
+        (
+            item
+            for item in regions
+            if item.slug == request.GET.get("region")
+        ),
+        None,
+    )
+
+    if region is not None:
+
+        articles = (
+            articles
+            .filter(
+                Q(regions=region)
+                | Q(regions__slug="switzerland")
+            )
+            .distinct()
+        )
+
+    return render(
+        request,
+        "news/life_alerts.html",
+        {
+            "articles": articles.order_by(
+                "-published_at"
+            )[:100],
+            "regions": regions,
+            "region": region,
+            "preference": preference,
+            "public_settings": public_settings,
+            "og_title": "暮らしのお知らせ｜Swiss News",
+            "og_description": (
+                "スト、電車の運休、締め切り、祝日の営業時間など、"
+                "スイスで暮らす人に役立つお知らせを日本語でまとめています。"
+            ),
+        },
+    )
+
+
 def region_detail(
     request,
     slug,
@@ -988,9 +1136,6 @@ def favorites(request):
         )
         .select_related(
             "source"
-        )
-        .defer(
-            "embedding"
         )
         .prefetch_related(
             "topics",

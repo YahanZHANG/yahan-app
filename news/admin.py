@@ -7,6 +7,7 @@ from .models import (
     NewsAnnouncement,
     NewsFeedback,
     NewsPreference,
+    NewsPushSubscription,
     NewsSource,
     NewsFeedback,
     SupportRequest,
@@ -55,9 +56,16 @@ class ArticleAdmin(admin.ModelAdmin):
         "source",
         "published_at",
         "is_featured",
+        "life_alert",
+    ]
+
+    # AI の「暮らしのお知らせ」判定が違うときは一覧で直せる
+    list_editable = [
+        "life_alert",
     ]
 
     list_filter = [
+        "life_alert",
         "source",
         "topics",
         "is_featured",
@@ -216,3 +224,47 @@ class NewsAnnouncementAdmin(admin.ModelAdmin):
     list_editable = [
         "is_active",
     ]
+
+
+
+@admin.register(NewsPushSubscription)
+class NewsPushSubscriptionAdmin(admin.ModelAdmin):
+    list_display = [
+        "__str__",
+        "frequency",
+        "region_names",
+        "updated_at",
+    ]
+
+    list_filter = [
+        "frequency",
+        "alert_regions",
+    ]
+
+    filter_horizontal = [
+        "alert_regions",
+    ]
+
+    readonly_fields = [
+        "endpoint",
+        "p256dh",
+        "auth",
+        "created_at",
+        "updated_at",
+    ]
+
+    def get_queryset(self, request):
+
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("alert_regions")
+        )
+
+    @admin.display(description="暮らしのお知らせの地域")
+    def region_names(self, obj):
+
+        return "、".join(
+            region.name
+            for region in obj.alert_regions.all()
+        )

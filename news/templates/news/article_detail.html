@@ -1,0 +1,71 @@
+{% extends "news/base.html" %}
+{% load news_extras %}
+
+{% block title %}
+{% if article %}{{ article.title_ja|default:article.title_original }} | {% endif %}Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+{% if article %}
+
+    <div class="news-list news-article-page">
+
+        {% include "news/_article_card.html" %}
+
+    </div>
+
+
+    <section class="news-article-share">
+
+        <h3>
+            この記事をシェア
+        </h3>
+
+        {% url 'news:article_detail' article.id as share_path %}
+        <div
+            data-share-links
+            data-share-url="{% absolute_url share_path %}"
+            data-share-title="{{ article.title_ja|default:article.title_original }}"
+        ></div>
+
+    </section>
+
+{% else %}
+
+    <div class="news-empty">
+
+        <div class="news-empty-icon">
+            📰
+        </div>
+
+        <h3>
+            この記事は掲載期間が終わりました
+        </h3>
+
+        <p>
+            ニュースは1週間ほどで入れ替わります。
+        </p>
+
+    </div>
+
+{% endif %}
+
+
+<section class="news-article-more">
+
+    <p>
+        Swiss News は、スイスのニュースを日本語に要約してお届けする無料のアプリです。
+    </p>
+
+    <a
+        href="{% url 'news:home' %}"
+        class="news-article-more-button"
+    >
+        最新のニュースを見る
+    </a>
+
+</section>
+
+{% endblock %}

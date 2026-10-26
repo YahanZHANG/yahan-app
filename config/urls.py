@@ -116,6 +116,12 @@ urlpatterns = [
     ),
 
     path(
+        "news/push/options/",
+        push_views.push_options,
+        name="news_push_options",
+    ),
+
+    path(
         "travel/",
         include(
             "travel.urls",

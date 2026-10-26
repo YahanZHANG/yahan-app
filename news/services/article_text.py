@@ -108,6 +108,10 @@ def article_input_text(article):
     if len(summary) >= ENOUGH_SUMMARY_CHARS:
         return summary
 
+    # SBB の運行情報はリンク先が共通ページなので、本文を取りに行かない
+    if "#sbb-" in article.source_url:
+        return summary
+
     body = fetch_article_body(
         article.source_url
     )
