@@ -958,3 +958,91 @@ class CleanupPromotionTests(NewsTestCase):
         self.assertFalse(Article.objects.filter(pk=old.pk).exists())
         self.assertIsNone(newer.duplicate_of)
         self.assertEqual(newest.duplicate_of, newer)
+
+
+class SbbInfoTests(NewsTestCase):
+
+    def test_only_long_active_disruptions_are_imported(self):
+
+        now = timezone.now()
+
+        def iso(delta):
+            return (now + delta).isoformat()
+
+        records = [
+            {
+                "title": "Zürich HB – Zug: Einschränkungen",
+                "description": "Wegen Bauarbeiten<br />fallen Züge aus.",
+                "link": "https://www.sbb.ch/x",
+                "published": iso(timedelta(hours=-1)),
+                "startdatetime": iso(timedelta(hours=-1)),
+                "enddatetime": iso(timedelta(hours=5)),
+            },
+            {
+                "title": "Bern: kurze Störung",
+                "description": "",
+                "published": iso(timedelta(minutes=-20)),
+                "startdatetime": iso(timedelta(minutes=-20)),
+                "enddatetime": iso(timedelta(minutes=30)),
+            },
+            {
+                "title": "Basel: vorbei",
+                "description": "",
+                "published": iso(timedelta(hours=-8)),
+                "startdatetime": iso(timedelta(hours=-8)),
+                "enddatetime": iso(timedelta(hours=-1)),
+            },
+        ]
+
+        response = mock.MagicMock()
+        response.json.return_value = {"results": records}
+
+        with mock.patch(
+            "news.management.commands.fetch_sbb_info.requests.get",
+            return_value=response,
+        ):
+            call_command("fetch_sbb_info", stdout=mock.MagicMock())
+            call_command("fetch_sbb_info", stdout=mock.MagicMock())
+
+        articles = Article.objects.filter(source__name="SBB 運行情報")
+
+        self.assertEqual(articles.count(), 1)
+
+        article = articles.get()
+
+        self.assertIn("fallen Züge aus", article.summary_original)
+        self.assertIn("#sbb-", article.source_url)
+
+    def test_sbb_articles_are_always_life_alerts(self):
+
+        from config.services.ai_client import AIResult
+        from news.management.commands.fetch_sbb_info import get_source
+        from news.services.ai_enricher import enrich_article
+
+        article = self.make_article(
+            get_source(),
+            "sbb",
+            processed=False,
+            source_url="https://www.sbb.ch/x#sbb-abc",
+        )
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=AIResult(
+                data={
+                    "title_ja": "運休",
+                    "summary_ja": "要約",
+                    "topics": ["life"],
+                    "life_alert": False,
+                },
+                model="m",
+            ),
+        ), mock.patch(
+            "news.services.article_text.fetch_article_body",
+        ) as fetch_body:
+            enrich_article(article)
+
+        article.refresh_from_db()
+
+        self.assertTrue(article.life_alert)
+        fetch_body.assert_not_called()

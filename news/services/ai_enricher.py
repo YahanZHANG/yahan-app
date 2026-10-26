@@ -10,6 +10,10 @@ from news.services.article_text import (
     article_input_text,
 )
 
+from news.management.commands.fetch_sbb_info import (
+    SOURCE_NAME as SBB_SOURCE_NAME,
+)
+
 from news.services.japanese_classifier import (
     get_other_topic,
 )
@@ -256,8 +260,10 @@ def enrich_article(article):
 
     article.ai_error = ""
 
+    # SBB の運行情報はいつも暮らしのお知らせ
     article.life_alert = bool(
         data.get("life_alert")
+        or article.source.name == SBB_SOURCE_NAME
     )
 
     article.save(
