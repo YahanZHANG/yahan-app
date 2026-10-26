@@ -1,16 +1,16 @@
 {% load i18n yapp_admin %}
-{% yapp_sidebar_apps available_apps as sidebar %}
+{% yapp_split_apps available_apps as apps %}
 <button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="{% translate 'Toggle navigation' %}"></button>
 <nav class="sticky" id="nav-sidebar" aria-label="{% translate 'Sidebar' %}">
   <input type="search" id="nav-filter"
          placeholder="{% translate 'Start typing to filter…' %}"
          aria-label="{% translate 'Filter navigation items' %}">
-  {% include 'admin/app_list.html' with app_list=sidebar.main show_changelinks=False %}
-  {% if sidebar.rest %}
+  {% include 'admin/app_list.html' with app_list=apps.main show_changelinks=False %}
+  {% if apps.rare %}
     {# いま見ているアプリがこの中なら開いておく #}
-    <details class="yapp-nav-more"{% for app in sidebar.rest %}{% if app.app_url in request.path|urlencode %} open{% endif %}{% endfor %}>
-      <summary>ほかのアプリ（{{ sidebar.rest|length }}）</summary>
-      {% include 'admin/app_list.html' with app_list=sidebar.rest show_changelinks=False %}
+    <details class="yapp-nav-more"{% for app in apps.rare %}{% if app.app_url in request.path|urlencode %} open{% endif %}{% endfor %}>
+      <summary>ほとんど使わないアプリ（{{ apps.rare|length }}）</summary>
+      {% include 'admin/app_list.html' with app_list=apps.rare show_changelinks=False %}
     </details>
   {% endif %}
 </nav>
@@ -24,7 +24,7 @@
   }
 </style>
 <script>
-  // 左メニューで絞り込むときは「ほかのアプリ」も開いて探せるようにする
+  // 左メニューで絞り込むときは折りたたんだアプリも開いて探せるようにする
   (() => {
     const input = document.getElementById("nav-filter");
     const more = document.querySelector(".yapp-nav-more");

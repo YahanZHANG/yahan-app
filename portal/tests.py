@@ -231,26 +231,21 @@ class PortalAnnouncementTests(TestCase):
         self.assertNotContains(response, "非表示のお知らせ")
 
 
-class AdminHomeTests(TestCase):
+class AdminRareAppsTests(TestCase):
 
-    def test_admin_home_puts_inbox_first_and_folds_rare_apps(self):
+    def test_admin_folds_rarely_used_apps(self):
         from django.contrib.auth import get_user_model
         from django.urls import reverse
 
-        from washoku.models import Feedback
-
         admin = get_user_model().objects.create_user("boss", password="x", is_staff=True, is_superuser=True)
-        Feedback.objects.create(message="要望")
-
         self.client.force_login(admin)
+
         response = self.client.get(reverse("admin:index"))
+        html = response.content.decode()
+        self.assertIn("ほとんど使わないアプリ", html)
+        self.assertLess(html.index("app-washoku"), html.index("yapp-admin-rare"))
+        self.assertGreater(html.index("app-feeding"), html.index("yapp-admin-rare"))
 
-        self.assertContains(response, "和食 質問箱")
-        self.assertContains(response, "Yapp 応援メッセージ")
-        self.assertContains(response, "ほとんど使わないアプリ")
-        self.assertContains(response, 'data-yh-key="app-washoku" open')
-        self.assertContains(response, 'data-yh-key="app-feeding">')
-
-        # 一覧ページの左メニューも「ほかのアプリ」にまとまる
+        # 一覧ページの左メニューも同じ
         response = self.client.get(reverse("admin:washoku_feedback_changelist"))
-        self.assertContains(response, "ほかのアプリ")
+        self.assertContains(response, "yapp-nav-more")
