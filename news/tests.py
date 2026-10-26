@@ -903,6 +903,57 @@ class LifeAlertTests(NewsTestCase):
         self.assertIn(bern_user.endpoint, endpoints)
 
 
+class HomeLifeToggleTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        self.make_article(self.srf, "normal")
+        self.make_article(self.srf, "strike", life_alert=True)
+
+    def test_life_articles_on_home_by_default(self):
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+    def test_anonymous_can_hide_life_articles(self):
+
+        session = self.client.session
+        session["news_public_settings"] = {"show_life_on_home": False}
+        session.save()
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+        # 「暮らし」のページには出る
+        self.assertContains(
+            self.client.get(reverse("news:life_alerts")),
+            "日本語 strike",
+        )
+
+    def test_logged_in_user_can_hide_life_articles(self):
+
+        from django.contrib.auth import get_user_model
+        from news.models import NewsPreference
+
+        user = get_user_model().objects.create_user(
+            username="taro",
+            password="pw-12345678",
+        )
+        NewsPreference.objects.create(user=user, show_life_on_home=False)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+
 class FlagLifeAlertsTests(NewsTestCase):
 
     def test_marks_selected_articles(self):

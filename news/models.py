@@ -333,6 +333,11 @@ class NewsPreference(models.Model):
         verbose_name="ダークモード",
     )
 
+    show_life_on_home = models.BooleanField(
+        default=True,
+        verbose_name="HOMEに暮らしのニュースを表示",
+    )
+
     hidden_topics = models.ManyToManyField(
         Topic,
         blank=True,

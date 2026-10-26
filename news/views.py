@@ -134,6 +134,11 @@ def _get_public_settings(request):
             "dark_mode",
             False,
         ),
+
+        "show_life_on_home": settings.get(
+            "show_life_on_home",
+            True,
+        ),
     }
 
 def _apply_public_news_settings(
@@ -553,6 +558,19 @@ def home(request):
                 articles,
                 public_settings,
             )
+        )
+
+    show_life = (
+        preference.show_life_on_home
+        if preference is not None
+        else public_settings["show_life_on_home"]
+    )
+
+    if not show_life:
+
+        # 設定で「HOMEに暮らしのニュースを表示」を OFF にした人には出さない。
+        articles = articles.exclude(
+            life_alert=True,
         )
 
     featured_articles = _featured_articles(
@@ -1436,6 +1454,10 @@ def settings_view(request):
                 "dark_mode": (
                     form.cleaned_data["dark_mode"]
                 ),
+
+                "show_life_on_home": (
+                    form.cleaned_data["show_life_on_home"]
+                ),
             }
 
 
@@ -1508,6 +1530,11 @@ def settings_view(request):
                 "dark_mode": public_settings.get(
                     "dark_mode",
                     False,
+                ),
+
+                "show_life_on_home": public_settings.get(
+                    "show_life_on_home",
+                    True,
                 ),
             }
         )
