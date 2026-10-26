@@ -92,11 +92,6 @@ page-content news-site-container
                 >HOME</a>
 
                 <a
-                    href="{% url 'news:topic_list' %}"
-                    class="news-topbar-nav-item{% if url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
-                >探す</a>
-
-                <a
                     href="{% url 'news:life_alerts' %}"
                     class="news-topbar-nav-item{% if url_name == 'life_alerts' %} is-active{% endif %}"
                 >暮らし</a>
@@ -105,6 +100,11 @@ page-content news-site-container
                     href="{% url 'news:digest_list' %}"
                     class="news-topbar-nav-item{% if url_name == 'digest_list' %} is-active{% endif %}"
                 >まとめ</a>
+
+                <a
+                    href="{% url 'news:settings' %}"
+                    class="news-topbar-nav-item{% if url_name == 'settings' %} is-active{% endif %}"
+                >設定</a>
 
             </nav>
 
@@ -126,6 +126,16 @@ page-content news-site-container
                 >ホーム画面に追加</a>
 
                 <a
+                    href="{% url 'news:topic_list' %}"
+                    class="news-topbar-icon{% if url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
+                    aria-label="探す"
+                    title="探す"
+                >
+                    <span aria-hidden="true">🔍</span>
+                    <small>探す</small>
+                </a>
+
+                <a
                     href="{% url 'news:about' %}"
                     class="news-topbar-icon{% if url_name == 'about' or url_name == 'services' %} is-active{% endif %}"
                     aria-label="Yappについて"
@@ -133,16 +143,6 @@ page-content news-site-container
                 >
                     <span aria-hidden="true">ⓘ</span>
                     <small>Yapp</small>
-                </a>
-
-                <a
-                    href="{% url 'news:settings' %}"
-                    class="news-topbar-icon{% if url_name == 'settings' %} is-active{% endif %}"
-                    aria-label="設定"
-                    title="設定"
-                >
-                    <span aria-hidden="true">⚙</span>
-                    <small>設定</small>
                 </a>
 
             </div>
@@ -268,28 +268,6 @@ page-content news-site-container
 
 
 
-        <!-- 探す -->
-
-        <a
-            href="{% url 'news:topic_list' %}"
-            class="news-nav-item
-            {% if request.resolver_match.url_name == 'topic_list' or request.resolver_match.url_name == 'topic_detail' or request.resolver_match.url_name == 'region_detail' or request.resolver_match.url_name == 'source_detail' %}
-                is-active
-            {% endif %}"
-        >
-
-            <span class="news-nav-icon">
-                🔍
-            </span>
-
-            <span>
-                探す
-            </span>
-
-        </a>
-
-
-
         <!-- 暮らしのお知らせ -->
 
         <a
@@ -334,7 +312,27 @@ page-content news-site-container
 
 
 
-</nav>
+        <!-- 設定 -->
+
+        <a
+            href="{% url 'news:settings' %}"
+            class="news-nav-item
+            {% if request.resolver_match.url_name == 'settings' %}
+                is-active
+            {% endif %}"
+        >
+
+            <span class="news-nav-icon">
+                ⚙
+            </span>
+
+            <span>
+                設定
+            </span>
+
+        </a>
+
+    </nav>
 
 </div>
 
