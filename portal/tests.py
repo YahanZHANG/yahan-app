@@ -229,3 +229,28 @@ class PortalAnnouncementTests(TestCase):
 
         self.assertContains(response, "ログインの不具合を直しました")
         self.assertNotContains(response, "非表示のお知らせ")
+
+
+class AdminHomeTests(TestCase):
+
+    def test_admin_home_puts_inbox_first_and_folds_rare_apps(self):
+        from django.contrib.auth import get_user_model
+        from django.urls import reverse
+
+        from washoku.models import Feedback
+
+        admin = get_user_model().objects.create_user("boss", password="x", is_staff=True, is_superuser=True)
+        Feedback.objects.create(message="要望")
+
+        self.client.force_login(admin)
+        response = self.client.get(reverse("admin:index"))
+
+        self.assertContains(response, "和食 質問箱")
+        self.assertContains(response, "Yapp 応援メッセージ")
+        self.assertContains(response, "ほとんど使わないアプリ")
+        self.assertContains(response, 'data-yh-key="app-washoku" open')
+        self.assertContains(response, 'data-yh-key="app-feeding">')
+
+        # 一覧ページの左メニューも「ほかのアプリ」にまとまる
+        response = self.client.get(reverse("admin:washoku_feedback_changelist"))
+        self.assertContains(response, "ほかのアプリ")

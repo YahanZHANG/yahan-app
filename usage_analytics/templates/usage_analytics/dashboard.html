@@ -62,11 +62,24 @@
          Now + insights
          ===================================================== -->
 
+    <!-- 目次: 長いページの好きな場所へすぐ飛べるように -->
+    <nav class="ya-jump" aria-label="ページ内の移動">
+        <a class="ya-jump-link is-main" href="#ya-sec-visits">🚶 最近の訪問</a>
+        <a class="ya-jump-link" href="#ya-sec-users">👤 ログインした人</a>
+        <a class="ya-jump-link" href="#ya-sec-trend">📝 傾向</a>
+        <a class="ya-jump-link" href="#ya-sec-people">👥 人の動き</a>
+        <a class="ya-jump-link" href="#ya-sec-views">👀 閲覧</a>
+        <a class="ya-jump-link" href="#ya-sec-sources">🧭 どこから</a>
+        <a class="ya-jump-link" href="#ya-sec-apps">🧩 アプリ別</a>
+        <a class="ya-jump-link" href="#ya-sec-time">🕒 時間帯</a>
+        <a class="ya-jump-link" href="#ya-sec-popular">⭐ 人気</a>
+    </nav>
+
     <section class="ya-card ya-live" id="ya-live" data-url="{% url 'usage_analytics:live_status' %}" aria-live="polite">
         {% include "usage_analytics/_live.html" %}
     </section>
 
-    <section class="ya-card ya-insights" aria-labelledby="ya-insights-title">
+    <section class="ya-card ya-insights ya-anchor" id="ya-sec-trend" aria-labelledby="ya-insights-title">
         <h3 id="ya-insights-title">📝 最近の傾向</h3>
         <ul>
             {% for line in insights %}
@@ -76,8 +89,8 @@
     </section>
 
     {% if behavior %}
-    <section class="ya-card ya-insights" aria-labelledby="ya-behavior-title">
-        <h3 id="ya-behavior-title">🔍 使い方の傾向と改善のヒント</h3>
+    <details class="ya-card ya-insights ya-fold">
+        <summary><h3>🔍 使い方の傾向と改善のヒント</h3><span class="ya-fold-hint">開く</span></summary>
         <p class="ya-note">直近{{ behavior.days }}日間。よく使う人 = {{ behavior.regular_days }}日以上来た人（{{ behavior.regulars }}人）、すぐ帰った人 = 1回だけ来て{{ behavior.short_pages }}ページ以内で帰った人（{{ behavior.short_visitors }}人）</p>
         <ul>
             {% for line in behavior.advice %}
@@ -117,7 +130,7 @@
                 </ol>
             </div>
         </div>
-    </section>
+    </details>
     {% endif %}
 
     <div class="ya-kpis">
@@ -157,7 +170,7 @@
          People
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-people">
         <h2>👥 人の動き</h2>
         <p class="ya-lead">1人 = 1つのブラウザ（スマホとPCで見ると2人になります）。訪問は30分あくと次の訪問として数えます。</p>
 
@@ -259,7 +272,7 @@
          Page views
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-views">
         <h2>👀 閲覧回数の推移</h2>
         <p class="ya-lead">どのアプリのページが何回見られたか</p>
         <div class="ya-card">
@@ -271,7 +284,7 @@
          Sources
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-sources">
         <h2>🧭 どこから来たか</h2>
         <p class="ya-lead">訪問の最初のページで、どのサイト・アプリから来たかを見ています。</p>
 
@@ -383,7 +396,7 @@
          Apps
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-apps">
         <h2>🧩 アプリ別の関心</h2>
         <p class="ya-lead">カードを押すと、そのアプリだけに絞って見られます。バーは来た人の数です。</p>
 
@@ -429,7 +442,7 @@
          When
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-time">
         <h2>🕒 いつ来ているか</h2>
         <p class="ya-lead">曜日と時間（スイス時間）ごとの訪問回数。濃いほど多い。</p>
         <div class="ya-card">
@@ -460,7 +473,7 @@
          Pages / articles / devices
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-popular">
         <h2>⭐ よく見られているもの</h2>
 
         <div class="ya-grid ya-grid-2">
@@ -529,7 +542,7 @@
          Recent visits
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-visits">
         <h2>🚶 最近の訪問</h2>
         <p class="ya-lead">新しい順に30件。押すとその人の足あと（過去の訪問の流れ）が見られます。</p>
 
@@ -558,7 +571,7 @@
          Signed-in users
          ===================================================== -->
 
-    <section class="ya-section">
+    <section class="ya-section ya-anchor" id="ya-sec-users">
         <h2>👤 ログインして使っている人</h2>
         <div class="ya-card">
             <div class="ya-table-wrap">
@@ -594,6 +607,14 @@
 
 </div>
 
+<!-- ページの一番上・一番下へ -->
+<div class="ya-float" aria-label="ページ内の移動">
+    <a class="ya-float-btn" href="#top" data-ya-scroll="top" aria-label="いちばん上へ">↑</a>
+    <a class="ya-float-btn" href="#ya-sec-visits" data-ya-scroll="visits" aria-label="最近の訪問へ">🚶</a>
+    <a class="ya-float-btn" href="#ya-end" data-ya-scroll="bottom" aria-label="いちばん下へ">↓</a>
+</div>
+<span id="ya-end"></span>
+
 {{ charts.visitors|json_script:"chart-visitors" }}
 {{ charts.traffic|json_script:"chart-traffic" }}
 {{ charts.last_day|json_script:"chart-last-day" }}
@@ -604,4 +625,5 @@
 {% block extra_js %}
 <script src="{% static 'usage_analytics/charts.js' %}"></script>
 <script src="{% static 'usage_analytics/live.js' %}"></script>
+<script src="{% static 'usage_analytics/jump.js' %}"></script>
 {% endblock %}

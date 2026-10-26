@@ -1,0 +1,29 @@
+{% load i18n %}
+<details class="yh-app app-{{ app.label }}" data-yh-key="app-{{ app.label }}"{% if open %} open{% endif %}>
+    <summary>
+        <span class="yh-app-title"><span aria-hidden="true">{{ app.emoji }}</span> {{ app.title }}</span>
+        {% if app.pending %}<span class="yh-badge">{{ app.pending }}</span>{% endif %}
+        <span class="yh-app-count">{{ app.count }}</span>
+    </summary>
+    <div class="yh-app-body">
+        {% for group in app.groups %}
+            <div class="yh-group">
+                {% if group.title %}<h3>{{ group.title }}</h3>{% endif %}
+                <ul>
+                    {% for model in group.models %}
+                        <li class="yh-model" data-yh-name="{{ model.name }} {{ model.object_name }}">
+                            {% if model.admin_url %}
+                                <a class="yh-model-link" href="{{ model.admin_url }}">{{ model.name }}{% if model.pending %} <b class="yh-badge">{{ model.pending }}</b>{% endif %}</a>
+                            {% else %}
+                                <span class="yh-model-link">{{ model.name }}</span>
+                            {% endif %}
+                            {% if model.add_url %}
+                                <a class="yh-add" href="{{ model.add_url }}" title="{{ model.name }}を追加" aria-label="{{ model.name }}を追加">＋</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+</details>

@@ -1,0 +1,38 @@
+{% load i18n yapp_admin %}
+{% yapp_sidebar_apps available_apps as sidebar %}
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="{% translate 'Toggle navigation' %}"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="{% translate 'Sidebar' %}">
+  <input type="search" id="nav-filter"
+         placeholder="{% translate 'Start typing to filter…' %}"
+         aria-label="{% translate 'Filter navigation items' %}">
+  {% include 'admin/app_list.html' with app_list=sidebar.main show_changelinks=False %}
+  {% if sidebar.rest %}
+    {# いま見ているアプリがこの中なら開いておく #}
+    <details class="yapp-nav-more"{% for app in sidebar.rest %}{% if app.app_url in request.path|urlencode %} open{% endif %}{% endfor %}>
+      <summary>ほかのアプリ（{{ sidebar.rest|length }}）</summary>
+      {% include 'admin/app_list.html' with app_list=sidebar.rest show_changelinks=False %}
+    </details>
+  {% endif %}
+</nav>
+<style>
+  .yapp-nav-more > summary {
+    padding: 8px 10px;
+    color: var(--body-quiet-color);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+</style>
+<script>
+  // 左メニューで絞り込むときは「ほかのアプリ」も開いて探せるようにする
+  (() => {
+    const input = document.getElementById("nav-filter");
+    const more = document.querySelector(".yapp-nav-more");
+    if (!input || !more) return;
+    const wasOpen = more.open;
+    const sync = () => { more.open = input.value.trim() ? true : wasOpen; };
+    input.addEventListener("input", sync);
+    sync();
+    window.addEventListener("load", sync);
+  })();
+</script>

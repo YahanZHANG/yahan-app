@@ -1,0 +1,392 @@
+/* =====================================================
+   Yapp Admin のトップ
+   (Django admin の色の変数を使うので、ダークモードでもそのまま見える)
+   ===================================================== */
+
+.yapp-home .yapp-attention {
+    /* トップでは下の「いつも見るところ」に同じ内容を大きく出す */
+    display: none;
+}
+
+.yapp-home #content {
+    width: auto;
+    max-width: 1180px;
+}
+
+.yh {
+    --yh-accent: #c4431c;
+    --yh-accent-soft: #fde4d7;
+    --yh-line: var(--hairline-color, #e1e7eb);
+    --yh-soft: var(--darkened-bg, #f6f8fa);
+    --yh-quiet: var(--body-quiet-color, #78838e);
+    max-width: 1180px;
+    margin: 0 auto;
+    float: none !important;
+    width: auto !important;
+}
+
+.yh a {
+    text-decoration: none;
+}
+
+/* ---------- いつも見るところ ---------- */
+
+.yh-inbox {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 4px 0 10px;
+}
+
+.yh-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--yh-line);
+    border-radius: 14px;
+    background: var(--body-bg, #fff);
+}
+
+.yh-tile.has-news {
+    border-color: var(--yh-accent);
+    box-shadow: inset 4px 0 0 var(--yh-accent);
+}
+
+.yh-tile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--body-fg, #25313b) !important;
+}
+
+.yh-tile-title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.yh-tile-count {
+    color: var(--yh-accent);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.yh-tile-count small {
+    margin-left: 2px;
+    font-size: 13px;
+}
+
+.yh-tile-done {
+    color: var(--yh-quiet);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.yh-tile-items,
+.yh-others {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.yh-tile-items a,
+.yh-others a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 4px 3px 10px;
+    border: 1px solid var(--yh-line);
+    border-radius: 999px;
+    color: var(--body-fg, #25313b) !important;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.yh-tile-items a:hover,
+.yh-others a:hover {
+    border-color: var(--yh-accent);
+}
+
+.yh-tile-items b,
+.yh-others b,
+.yh-badge {
+    min-width: 18px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--yh-accent-soft);
+    color: var(--yh-accent);
+    font-size: 12px;
+    text-align: center;
+}
+
+.yh-others {
+    align-items: center;
+    margin: 0 0 12px;
+    font-size: 13px;
+}
+
+.yh-others > span {
+    color: var(--yh-quiet);
+    font-weight: 700;
+}
+
+/* ---------- さがす + ショートカット ---------- */
+
+.yh-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin: 14px 0;
+}
+
+.yh-filter {
+    flex: 1 1 280px;
+    max-width: 440px;
+    padding: 9px 12px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+}
+
+.yh-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 13px;
+}
+
+.yh-no-hit {
+    color: var(--yh-quiet);
+}
+
+/* ---------- アプリ ---------- */
+
+.yh-apps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    align-items: start;
+    gap: 12px;
+}
+
+.yh-app {
+    border: 1px solid var(--yh-line);
+    border-radius: 14px;
+    background: var(--body-bg, #fff);
+    overflow: hidden;
+}
+
+/* 和食はモデルが多いので横いっぱいに */
+.yh-app.app-washoku[open] {
+    grid-column: 1 / -1;
+}
+
+.yh-app > summary,
+.yh-rare > summary,
+.yh-recent > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.yh-app > summary::-webkit-details-marker,
+.yh-rare > summary::-webkit-details-marker,
+.yh-recent > summary::-webkit-details-marker {
+    display: none;
+}
+
+.yh-app > summary::after,
+.yh-rare > summary::after,
+.yh-recent > summary::after {
+    content: "▾";
+    margin-left: auto;
+    color: var(--yh-quiet);
+    transition: transform 0.15s;
+}
+
+.yh-app:not([open]) > summary::after,
+.yh-rare:not([open]) > summary::after,
+.yh-recent:not([open]) > summary::after {
+    transform: rotate(-90deg);
+}
+
+.yh-app[open] > summary {
+    border-bottom: 1px solid var(--yh-line);
+    background: var(--yh-soft);
+}
+
+.yh-app-title {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.yh-app-count {
+    color: var(--yh-quiet);
+    font-size: 12px;
+}
+
+.yh-app-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 4px 18px;
+    padding: 10px 16px 14px;
+}
+
+.yh-group h3 {
+    margin: 6px 0 4px;
+    padding: 0;
+    background: none;
+    color: var(--yh-quiet);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+}
+
+.yh-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.yh-model {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.yh-model-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+a.yh-model-link:hover {
+    background: var(--yh-soft);
+}
+
+.yh-add {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    color: var(--yh-quiet) !important;
+    font-size: 14px;
+}
+
+.yh-add:hover {
+    background: var(--yh-soft);
+    color: var(--link-fg, #417690) !important;
+}
+
+.yh-heading {
+    margin: 24px 0 10px;
+    padding: 0;
+    background: none;
+    color: var(--yh-quiet);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.yh-rare,
+.yh-recent {
+    margin-top: 24px;
+    border: 1px dashed var(--yh-line);
+    border-radius: 14px;
+}
+
+.yh-rare > summary,
+.yh-recent > summary {
+    color: var(--yh-quiet);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.yh-rare-names {
+    overflow: hidden;
+    font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.yh-rare > .yh-apps {
+    padding: 0 12px 12px;
+}
+
+.yh-recent ul {
+    margin: 0;
+    padding: 0 16px 14px;
+    list-style: none;
+}
+
+.yh-recent li {
+    margin: 0;
+    padding: 5px 0;
+    border-top: 1px solid var(--yh-line);
+    font-size: 13px;
+    list-style: none;
+}
+
+.yh-recent-kind {
+    display: inline-block;
+    min-width: 2.6em;
+    color: var(--yh-quiet);
+    font-size: 12px;
+}
+
+.yh-quiet {
+    color: var(--yh-quiet);
+    font-size: 12px;
+}
+
+.yh-recent > p {
+    padding: 0 16px 12px;
+}
+
+/* さがしているときに見つからなかったもの */
+.yh .is-filtered-out {
+    display: none !important;
+}
+
+@media (max-width: 900px) {
+    .yh-inbox {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .yh-tile {
+        padding: 12px;
+    }
+
+    .yh-tile-title {
+        font-size: 13px;
+    }
+
+    .yh-inbox .yh-tile:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .yh-apps {
+        grid-template-columns: 1fr;
+    }
+
+    .yh-tile-count {
+        font-size: 26px;
+    }
+}

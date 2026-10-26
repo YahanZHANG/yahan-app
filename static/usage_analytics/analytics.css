@@ -150,9 +150,7 @@ html[data-yapp-resolved-theme="dark"] body {
 /* ---------- Filters ---------- */
 
 .ya-filters {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    /* 上に貼りつくのは下の目次 (.ya-jump) だけにする */
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -945,4 +943,124 @@ line.ya-axis {
 
 .ya-insights + .ya-insights {
     margin-top: 12px;
+}
+
+/* ---------- ページ内の移動 (目次・↑↓ボタン) ---------- */
+
+.ya-jump {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    gap: 6px;
+    margin: 0 -4px 14px;
+    padding: 8px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: color-mix(in srgb, var(--ya-page) 92%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+.ya-jump::-webkit-scrollbar {
+    display: none;
+}
+
+.ya-jump-link {
+    flex: none;
+    padding: 5px 11px;
+    border: 1px solid var(--ya-border);
+    border-radius: 999px;
+    background: var(--ya-surface);
+    color: var(--ya-ink-2) !important;
+    font-size: 0.82rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ya-jump-link:hover,
+.ya-jump-link.is-main {
+    border-color: var(--ya-brand);
+    color: var(--ya-brand) !important;
+}
+
+.ya-jump-link.is-main {
+    background: var(--ya-brand-soft);
+    font-weight: 700;
+}
+
+/* 目次で飛んだとき、見出しが目次バーの下に隠れないように */
+.ya-anchor {
+    scroll-margin-top: 60px;
+}
+
+.ya-fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.ya-fold > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ya-fold > summary h3 {
+    margin: 0;
+}
+
+.ya-fold-hint {
+    flex: none;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--ya-surface);
+    color: var(--ya-brand);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.ya-fold[open] .ya-fold-hint {
+    font-size: 0;
+}
+
+.ya-fold[open] .ya-fold-hint::after {
+    content: "閉じる";
+    font-size: 0.8rem;
+}
+
+.ya-float {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ya-float-btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--ya-border);
+    border-radius: 50%;
+    background: var(--ya-surface);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+    color: var(--ya-brand) !important;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.ya-float-btn:hover {
+    border-color: var(--ya-brand);
+}
+
+.ya-float-btn.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
 }

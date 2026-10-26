@@ -1,0 +1,149 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static log yapp_admin %}
+
+{% comment %}
+    Admin のトップ。
+    いつも見る受信箱を大きく上に出し、使うアプリだけ開いておく。
+    ほとんど使わないアプリは折りたたんでおき、必要なときだけ開く。
+{% endcomment %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'yapp_admin/home.css' %}">
+{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard yapp-home{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+{% yapp_admin_inbox admin_attention as inbox %}
+{% yapp_admin_sections app_list admin_attention as sections %}
+
+<div id="content-main" class="yh">
+
+    <!-- =====================================================
+         いつも見るところ
+         ===================================================== -->
+
+    <section class="yh-inbox" aria-label="いつも見るところ">
+        {% for tile in inbox.tiles %}
+            <div class="yh-tile{% if tile.count %} has-news{% endif %}">
+                <a class="yh-tile-main" href="{{ tile.url }}">
+                    <span class="yh-tile-title"><span aria-hidden="true">{{ tile.emoji }}</span> {{ tile.title }}</span>
+                    {% if tile.count %}
+                        <span class="yh-tile-count">{{ tile.count }}<small>件</small></span>
+                    {% else %}
+                        <span class="yh-tile-done">✓ なし</span>
+                    {% endif %}
+                </a>
+                {% if tile.chips %}
+                    <div class="yh-tile-items">
+                        {% for item in tile.chips %}
+                            <a href="{{ item.url }}">{{ item.label }} <b>{{ item.count }}</b></a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </section>
+
+    {% if inbox.others %}
+        <p class="yh-others">
+            <span>ほかの対応待ち</span>
+            {% for item in inbox.others %}
+                <a href="{{ item.url }}">{{ item.app }}・{{ item.label }} <b>{{ item.count }}</b></a>
+            {% endfor %}
+        </p>
+    {% endif %}
+
+    <!-- =====================================================
+         さがす + ショートカット
+         ===================================================== -->
+
+    <div class="yh-tools">
+        <input type="search" id="yh-filter" class="yh-filter" placeholder="🔍 管理するものをさがす（例: レシピ、お知らせ）" aria-label="管理するものをさがす" autocomplete="off">
+        <nav class="yh-links" aria-label="ショートカット">
+            <a href="/analytics/">📊 アクセス解析</a>
+            <a href="/washoku/">🍙 和食を開く</a>
+            <a href="/news/">📰 News を開く</a>
+            <a href="/">🏠 Yapp トップ</a>
+        </nav>
+    </div>
+    <p class="yh-no-hit" id="yh-no-hit" hidden>見つかりませんでした。</p>
+
+    <!-- =====================================================
+         アプリ
+         ===================================================== -->
+
+    <div class="yh-apps">
+        {% for app in sections.main %}
+            {% include "admin/yapp_app_card.html" with app=app open=True %}
+        {% endfor %}
+    </div>
+
+    {% if sections.other %}
+        <h2 class="yh-heading">ときどき使うアプリ</h2>
+        <div class="yh-apps">
+            {% for app in sections.other %}
+                {% include "admin/yapp_app_card.html" with app=app open=False %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if sections.rare %}
+        <details class="yh-rare" data-yh-key="rare">
+            <summary>
+                <span>ほとんど使わないアプリ（{{ sections.rare|length }}）</span>
+                <span class="yh-rare-names">{% for app in sections.rare %}{{ app.title }}{% if not forloop.last %}・{% endif %}{% endfor %}</span>
+            </summary>
+            <div class="yh-apps">
+                {% for app in sections.rare %}
+                    {% include "admin/yapp_app_card.html" with app=app open=False %}
+                {% endfor %}
+            </div>
+        </details>
+    {% endif %}
+
+    {% if not app_list %}
+        <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+    {% endif %}
+
+    <!-- =====================================================
+         最近の操作
+         ===================================================== -->
+
+    <details class="yh-recent" data-yh-key="recent">
+        <summary>🕘 最近の自分の操作</summary>
+        {% get_admin_log 10 as admin_log for_user user %}
+        {% if not admin_log %}
+            <p class="yh-quiet">まだありません。</p>
+        {% else %}
+            <ul>
+                {% for entry in admin_log %}
+                    <li>
+                        <span class="yh-recent-kind">{% if entry.is_addition %}追加{% elif entry.is_change %}変更{% elif entry.is_deletion %}削除{% endif %}</span>
+                        {% if entry.is_deletion or not entry.get_admin_url %}
+                            {{ entry.object_repr }}
+                        {% else %}
+                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                        {% endif %}
+                        <span class="yh-quiet">{% if entry.content_type %}{{ entry.content_type.name }}{% endif %}・{{ entry.action_time|date:"n/j H:i" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </details>
+
+</div>
+
+<script src="{% static 'yapp_admin/home.js' %}"></script>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
