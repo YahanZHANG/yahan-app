@@ -5713,3 +5713,20 @@
 .news-bottom-nav {
     border: 2px solid rgba(95, 127, 111, .55);
 }
+
+/* 携帯メニュー（ライトモード）：緑の背景でアクセント */
+
+.news-bottom-nav {
+    border: 2px solid #4D6B5C;
+    background: #5F7F6F;
+    box-shadow: 0 10px 30px rgba(35, 49, 43, .28);
+}
+
+.news-bottom-nav .news-nav-item {
+    color: rgba(255, 255, 255, .82);
+}
+
+.news-bottom-nav .news-nav-item.is-active {
+    background: #ffffff;
+    color: #4D6B5C;
+}
