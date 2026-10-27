@@ -113,7 +113,7 @@ def dashboard(request):
     data = stats.build_dashboard(scope)
     pages = stats.top_pages(current)
     clicks = stats.top_news_clicks(scope) if scope.app in ("", "news") else []
-    news_reads = stats.top_news_reads(scope) if scope.app in ("", "news") else []
+    news_reads = stats.top_news_reads() if scope.app in ("", "news") else []
     users = stats.signed_in_users(current)
 
     names = display_names(

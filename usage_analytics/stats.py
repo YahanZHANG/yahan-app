@@ -904,12 +904,17 @@ def top_news_clicks(scope, limit=10):
 # 元記事クリックは、要約を読んだうえで「もっと知りたい」と思った強い反応なので重めにする
 CLICK_WEIGHT = 3
 
+# ニュースは新しさが大事なので、解析画面の期間に関係なく直近3日間 (今日を含む) で数える
+NEWS_RANKING_DAYS = 3
 
-def top_news_reads(scope, limit=15):
+
+def top_news_reads(limit=15):
     """
     要約の閲覧 (推定) と元記事クリックを合わせた、よく読まれた記事の順位。
     点数 = 要約の閲覧 (重みの合計) + 元記事クリック × CLICK_WEIGHT
     """
+
+    scope = Scope(days=NEWS_RANKING_DAYS)
 
     reads = NewsSummaryRead.objects.filter(
         read_at__gte=scope.start, read_at__lte=scope.end

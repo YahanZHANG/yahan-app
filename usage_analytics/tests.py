@@ -307,3 +307,22 @@ class NewsSummaryReadTests(TestCase):
         self.assertEqual([row["title"] for row in ranking], ["日本語 1", "日本語 0"])
         self.assertEqual((ranking[0]["reads"], ranking[0]["clicks"], ranking[0]["score"]), (0.5, 1, 3.5))
         self.assertContains(response, "要約がよく読まれた記事")
+
+    def test_ranking_counts_only_the_last_three_days(self):
+
+        import uuid
+        from datetime import timedelta
+        from django.utils import timezone
+        from . import stats
+
+        old = timezone.now() - timedelta(days=5)
+        NewsSummaryRead.objects.create(
+            visitor_id=uuid.uuid4(), article_id=self.articles[0].pk,
+            article_title="古い", day=old.date(), read_at=old,
+        )
+        NewsSummaryRead.objects.create(
+            visitor_id=uuid.uuid4(), article_id=self.articles[1].pk,
+            article_title="新しい", day=timezone.localdate(),
+        )
+
+        self.assertEqual([row["title"] for row in stats.top_news_reads()], ["新しい"])
