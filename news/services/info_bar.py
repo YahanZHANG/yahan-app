@@ -123,7 +123,7 @@ def fx_rates():
 
 def weather(slugs):
     """
-    地域ごとの今の天気と3日分の予報。
+    地域ごとの今の天気と、12時間分・今日と明日の予報。
     [{"slug", "temp", "emoji", "label", "days": [{"label", "emoji", "max", "min"}]}]
     """
 
@@ -146,7 +146,7 @@ def weather(slugs):
                 "hourly": "temperature_2m,weather_code",
                 "daily": "weather_code,temperature_2m_max,temperature_2m_min",
                 "timezone": "Europe/Zurich",
-                "forecast_days": 3,
+                "forecast_days": 2,
             },
             timeout=TIMEOUT,
         )

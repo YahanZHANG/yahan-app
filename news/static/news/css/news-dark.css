@@ -914,3 +914,8 @@
 .news-dark .news-weather-reset {
     color: var(--news-dark-accent);
 }
+
+.news-dark .news-info-block {
+    border-color: var(--news-dark-border-soft);
+    background: var(--news-dark-surface);
+}
