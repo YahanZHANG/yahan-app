@@ -5892,3 +5892,235 @@
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
 }
+
+/* =========================================================
+   HOME の為替・天気バー（スクロールすると一緒に流れる）
+   ========================================================= */
+
+.news-info-bar {
+    margin: 0 0 12px;
+    border: 1px solid #e4e9e6;
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.news-info-strip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 8px 6px 8px 8px;
+    border: 0;
+    background: none;
+    color: #2f3b35;
+    font: inherit;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.news-info-strip:active {
+    background: #f4f7f5;
+}
+
+.news-info-items {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.news-info-items::-webkit-scrollbar {
+    display: none;
+}
+
+/* 押すと開くことが分かるように、右端に丸いボタン（⌄） */
+.news-info-toggle {
+    position: relative;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #edf3ef;
+    transition: transform .2s;
+}
+
+.news-info-toggle::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 7px;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid #4D6B5C;
+    border-bottom: 2px solid #4D6B5C;
+    transform: rotate(45deg);
+}
+
+.news-info-bar.is-open .news-info-toggle {
+    transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+
+    .news-info-strip:hover .news-info-toggle {
+        background: #dfeae3;
+    }
+
+}
+
+/* 1時間ごとの天気（横にスクロール） */
+.news-info-hours {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+}
+
+.news-info-hour {
+    display: flex;
+    flex: 0 0 44px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: .72rem;
+}
+
+.news-info-hour > span:first-child {
+    color: #63706a;
+}
+
+.news-info-hour-emoji {
+    font-size: 1rem;
+    line-height: 1.2;
+}
+
+.news-weather-reset {
+    margin: 12px 0 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #5F7F6F;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.news-weather-settings {
+    border-left-color: #5F7F6F;
+}
+
+.news-push-region input:disabled + span {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.news-info-sep {
+    flex-shrink: 0;
+    width: 1px;
+    height: 12px;
+    margin: 0 3px;
+    background: #d5ddd8;
+}
+
+.news-info-change {
+    font-size: .68rem;
+}
+
+.news-info-change.is-up {
+    color: #2f7d4f;
+}
+
+.news-info-change.is-down {
+    color: #c0392b;
+}
+
+.news-info-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid #eef2ef;
+    font-size: .85rem;
+}
+
+/* 地域ごと・為替を、それぞれ薄い枠で分ける */
+.news-info-block {
+    min-width: 0;
+    padding: 10px 12px 6px;
+    border: 1px solid #e1e8e3;
+    border-radius: 10px;
+    background: #f1f5f2;
+}
+
+.news-info-block h3 {
+    margin: 0 0 8px;
+    color: #4D6B5C;
+    font-size: .8rem;
+}
+
+.news-info-block tr:last-child th,
+.news-info-block tr:last-child td {
+    border-bottom: 0;
+}
+
+.news-info-detail > .news-info-note {
+    margin: 0 2px;
+}
+
+.news-info-block table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.news-info-block th,
+.news-info-block td {
+    padding: 5px 0;
+    border-bottom: 1px solid #dde5df;
+    text-align: left;
+    font-weight: 400;
+}
+
+.news-info-block th {
+    width: 6.5em;
+    color: #63706a;
+}
+
+.news-info-block td:last-child {
+    text-align: right;
+}
+
+.news-info-max {
+    color: #c0392b;
+    font-weight: 700;
+}
+
+.news-info-min {
+    color: #2c6db5;
+    font-weight: 700;
+}
+
+.news-info-note {
+    margin: 8px 0 0;
+    color: #8a948f;
+    font-size: .72rem;
+    line-height: 1.6;
+}
+
+.news-info-note a {
+    color: #5F7F6F;
+}

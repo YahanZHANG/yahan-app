@@ -243,6 +243,29 @@ page-content news-site-container
 
     <main class="news-main">
 
+        {% if request.resolver_match.url_name == 'home' %}
+            <!-- 為替・天気のバー（static/news/info_bar.js が中身を入れる） -->
+            <section
+                class="news-info-bar"
+                id="news-info-bar"
+                data-url="{% url 'news:info_bar' %}"
+                aria-label="為替と天気"
+                hidden
+            >
+                <button
+                    type="button"
+                    class="news-info-strip"
+                    aria-expanded="false"
+                    aria-controls="news-info-detail"
+                ></button>
+                <div
+                    class="news-info-detail"
+                    id="news-info-detail"
+                    hidden
+                ></div>
+            </section>
+        {% endif %}
+
         {% latest_announcement as announcement %}
 
         {% if announcement %}
@@ -437,6 +460,7 @@ document.addEventListener("click", function (event) {
 <script src="{% static 'news/push_prompt.js' %}" defer></script>
 <script src="{% static 'news/share.js' %}" defer></script>
 <script src="{% static 'news/push_options.js' %}" defer></script>
+<script src="{% static 'news/info_bar.js' %}" defer></script>
 
 
 

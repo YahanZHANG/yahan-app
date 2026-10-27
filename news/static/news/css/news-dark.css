@@ -851,3 +851,71 @@
 .news-dark .news-search-browse a {
     color: var(--news-dark-accent);
 }
+
+/* 為替・天気バー */
+
+.news-dark .news-info-bar {
+    border-color: var(--news-dark-border);
+    background: var(--news-dark-surface-alt);
+}
+
+.news-dark .news-info-strip {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-info-detail,
+.news-dark .news-info-block th,
+.news-dark .news-info-block td {
+    border-color: var(--news-dark-border-soft);
+}
+
+.news-dark .news-info-block th,
+.news-dark .news-info-note {
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-info-block h3,
+.news-dark .news-info-note a {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-info-change.is-up {
+    color: #7fcf9c;
+}
+
+.news-dark .news-info-change.is-down,
+.news-dark .news-info-max {
+    color: #f08a7e;
+}
+
+.news-dark .news-info-min {
+    color: #8db8ef;
+}
+.news-dark .news-info-sep { background: var(--news-dark-border); }
+.news-dark .news-info-detail { color: var(--news-dark-text); }
+
+.news-dark .news-info-toggle,
+.news-dark .news-info-hour {
+    background: var(--news-dark-hover);
+}
+
+.news-dark .news-info-toggle::before {
+    border-color: var(--news-dark-accent);
+}
+
+.news-dark .news-info-hour > span:first-child {
+    color: var(--news-dark-muted);
+}
+
+.news-dark .news-info-strip:active {
+    background: var(--news-dark-hover);
+}
+
+.news-dark .news-weather-reset {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-info-block {
+    border-color: var(--news-dark-border-soft);
+    background: var(--news-dark-header);
+}

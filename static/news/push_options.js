@@ -122,11 +122,23 @@
     regionBox.addEventListener("change", () => {
         showSelected();
 
+        // HOME の天気バーが新しい地域を読み直すように
+        try {
+            sessionStorage.removeItem("swissnews_info_regions");
+        } catch (error) {
+            // 保存できない環境では何もしない
+        }
+
         save({
             alert_regions: regionInputs
                 .filter((input) => input.checked)
                 .map((input) => input.value),
-        }, lifeStatus);
+        }, lifeStatus).then(() => {
+            // 天気の地域（まだ自分で選んでいない人）も一緒に変える
+            document.dispatchEvent(
+                new CustomEvent("swissnews:life-regions-changed")
+            );
+        });
     });
 
     document.addEventListener("swissnews:push-changed", (event) => {
