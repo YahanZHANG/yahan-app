@@ -34,6 +34,12 @@ urlpatterns = [
         views.home,
         name="home",
     ),
+
+    path(
+        "ideas/",
+        views.send_app_idea,
+        name="send_app_idea",
+    ),
     path(
         "support/",
         support_views.support,

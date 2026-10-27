@@ -266,3 +266,44 @@ class PortalAnnouncement(models.Model):
         since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
 
         return cls.objects.filter(is_active=True, created_at__gte=since)[:cls.MAX_SHOWN]
+
+
+class AppIdea(models.Model):
+    """Yappトップの「アプリのアイデア募集」から届いたアイデア。"""
+
+    idea = models.TextField(
+        "アイデア",
+        max_length=1000,
+    )
+
+    contact = models.CharField(
+        "お名前・連絡先（任意）",
+        max_length=200,
+        blank=True,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="送信したアカウント",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    handled = models.BooleanField(
+        "確認済み",
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        "送信日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "アプリのアイデア"
+        verbose_name_plural = "アプリのアイデア"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.idea[:40]

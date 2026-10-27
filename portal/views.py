@@ -22,6 +22,7 @@ from django.db.models import Count, Q
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.utils.encoding import (
     force_bytes,
     force_str,
@@ -50,6 +51,7 @@ from .forms import (
 )
 from .models import (
     AppAccessRequest,
+    AppIdea,
     PortalAnnouncement,
     PortalAppPreference,
 )
@@ -1166,46 +1168,76 @@ def manage_apps(request):
 # Public Portal Home
 # =========================================================
 
-# portal/views.py の「def home(request):」から、次の
-# 「# Delete account」の直前までを、この関数で置き換える。
-# 既存の imports に timezone / render / reverse / PortalAnnouncement はある。
+def portal_season(today):
+    """日付から、Yappトップの季節デザインを決める。"""
+
+    if today.month == 10 and today.day >= 15:
+        return (
+            "halloween",
+            "HALLOWEEN IN SWITZERLAND",
+            "秋の夜に、スイス暮らしの小さな魔法を。",
+        )
+    if (today.month == 11 and today.day >= 20) or today.month in (12, 1, 2):
+        return (
+            "winter",
+            "WINTER IN SWITZERLAND",
+            "寒い季節も、楽しい発見を。",
+        )
+    if today.month in (3, 4, 5):
+        return (
+            "spring",
+            "SPRING IN SWITZERLAND",
+            "新しい季節、新しい楽しみ方。",
+        )
+    if today.month in (6, 7, 8):
+        return (
+            "summer",
+            "SUMMER IN SWITZERLAND",
+            "スイスの夏を、もっと楽しもう。",
+        )
+    return (
+        "autumn",
+        "AUTUMN IN SWITZERLAND",
+        "秋のスイスに、素敵な発見を。",
+    )
+
+
+def portal_card_photo(key):
+    """
+    static/portal/images/cards/<key>.jpg (または .webp) を置くと、
+    アプリカードの背景が写真になる。なければイラストのまま。
+    """
+
+    from django.contrib.staticfiles import finders
+    from django.templatetags.static import static
+
+    for extension in ("webp", "jpg"):
+        path = f"portal/images/cards/{key}.{extension}"
+        if finders.find(path):
+            return static(path)
+    return ""
 
 
 def home(request):
     """季節で表情が変わる、公開Yappポータル。"""
     from zoneinfo import ZoneInfo
 
+    from django.templatetags.static import static
+
     # DjangoのTIME_ZONE設定にかかわらず、スイス現地の日付を使う。
     today = timezone.localtime(
         timezone.now(), ZoneInfo("Europe/Zurich")
     ).date()
+    season, season_label, season_message = portal_season(today)
 
-    if today.month == 10 and today.day >= 15:
-        season = "halloween"
-        season_label = "HALLOWEEN IN SWITZERLAND"
-    elif (today.month == 11 and today.day >= 20) or today.month in (12, 1, 2):
-        season = "winter"
-        season_label = "WINTER IN SWITZERLAND"
-    elif today.month in (3, 4, 5):
-        season = "spring"
-        season_label = "SPRING IN SWITZERLAND"
-    elif today.month in (6, 7, 8):
-        season = "summer"
-        season_label = "SUMMER IN SWITZERLAND"
-    else:
-        season = "autumn"
-        season_label = "AUTUMN IN SWITZERLAND"
-
-    # まだ一般向けPortalから案内したくない場合は False のまま。
-    # True にするとカードに「先行版を試す」リンクが出る。
-    WASHOKU_PREVIEW_ENABLED = False
+    # True にするとカードに「開発版をのぞく」リンクが出る。
     OUTINGS_PREVIEW_ENABLED = False
 
     featured_apps = [
         {
             "key": "news",
             "name": "Swiss News",
-            "icon": "📰",
+            "icon_url": static("pwa/news/icon-192.png"),
             "badge": "公開中",
             "status_class": "live",
             "eyebrow": "SWISS NEWS",
@@ -1218,30 +1250,33 @@ def home(request):
         {
             "key": "washoku",
             "name": "スイスで和食",
-            "icon": "🍚",
+            "icon_url": static("pwa/washoku/icon-192.png"),
             "badge": "まもなく公開",
             "status_class": "soon",
             "eyebrow": "WASHOKU",
             "headline": "スイスでつながる、和食の輪。",
             "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
-            "url": "/washoku/" if WASHOKU_PREVIEW_ENABLED else None,
-            "action": "先行版を試す",
+            "url": reverse("washoku:home"),
+            "action": "ひと足先にのぞく",
             "features": ["レシピ", "食材情報", "みんなの投稿"],
         },
         {
             "key": "outings",
             "name": "お出かけ",
-            "icon": "🏔️",
+            "icon_url": static("pwa/outings/icon-192.png"),
             "badge": "絶賛準備中",
             "status_class": "building",
             "eyebrow": "OUTINGS",
             "headline": "週末のスイスに、次のワクワクを。",
             "description": "季節のイベントや、ちょっと出かけたくなる場所。お出かけのアイデアを準備中。",
-            "url": "/outings/" if OUTINGS_PREVIEW_ENABLED else None,
+            "url": reverse("outings:home") if OUTINGS_PREVIEW_ENABLED else None,
             "action": "開発版をのぞく",
             "features": ["週末イベント", "季節の楽しみ", "お出かけ情報"],
         },
     ]
+
+    for app in featured_apps:
+        app["photo_url"] = portal_card_photo(app["key"])
 
     other_apps = [
         {
@@ -1265,6 +1300,14 @@ def home(request):
             "description": "みんなの予定を、ひとつに。",
             "url": reverse("event_scheduler:event_list"),
         },
+        {
+            "key": "board",
+            "name": "暮らしの掲示板",
+            "icon": "💬",
+            "description": "生活の知恵や口コミを、みんなで。",
+            "url": None,
+            "badge": "準備中",
+        },
     ]
 
     return render(
@@ -1273,11 +1316,45 @@ def home(request):
         {
             "season": season,
             "season_label": season_label,
+            "season_message": season_message,
             "featured_apps": featured_apps,
             "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),
+            "idea_sent": request.GET.get("idea") == "sent",
         },
     )
+
+
+@require_POST
+def send_app_idea(request):
+    """Yappトップの「アイデア募集」フォーム。保存して管理者にメールする。"""
+
+    idea_text = (request.POST.get("idea") or "").strip()[:1000]
+    contact = (request.POST.get("contact") or "").strip()[:200]
+
+    # website はボット対策の見えない項目。入力されていたら保存しない。
+    if idea_text and not request.POST.get("website"):
+        idea = AppIdea.objects.create(
+            idea=idea_text,
+            contact=contact,
+            user=request.user if request.user.is_authenticated else None,
+        )
+        recipient = getattr(settings, "ADMIN_NOTIFICATION_EMAIL", "")
+        if recipient:
+            send_mail(
+                subject="【Yapp】アプリのアイデアが届きました",
+                message=(
+                    f"{idea.idea}\n\n"
+                    f"お名前・連絡先：{idea.contact or 'なし'}\n"
+                    f"アカウント：{idea.user or 'ログインなし'}\n\n"
+                    "Yapp Adminの「アプリのアイデア」から確認できます。"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[recipient],
+                fail_silently=True,
+            )
+
+    return redirect(reverse("portal:home") + "?idea=sent#ideas")
 
 
 # =========================================================

@@ -229,3 +229,27 @@ class PortalAnnouncementTests(TestCase):
 
         self.assertContains(response, "ログインの不具合を直しました")
         self.assertNotContains(response, "非表示のお知らせ")
+
+
+class AppIdeaTests(TestCase):
+
+    def test_idea_is_saved_and_thanked(self):
+
+        from portal.models import AppIdea
+
+        response = self.client.post(
+            reverse("portal:send_app_idea"),
+            {"idea": "病院を日本語で探せるアプリ", "contact": "たろう"},
+        )
+
+        self.assertRedirects(response, reverse("portal:home") + "?idea=sent#ideas", fetch_redirect_response=False)
+        self.assertEqual(AppIdea.objects.get().contact, "たろう")
+        self.assertContains(self.client.get(reverse("portal:home") + "?idea=sent"), "アイデアを受け取りました")
+
+    def test_bot_trap_is_not_saved(self):
+
+        from portal.models import AppIdea
+
+        self.client.post(reverse("portal:send_app_idea"), {"idea": "spam", "website": "http://spam"})
+
+        self.assertFalse(AppIdea.objects.exists())

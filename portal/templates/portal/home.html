@@ -57,6 +57,7 @@
         <div class="landing-hero__inner landing-container">
             <div class="landing-hero__copy">
                 <div class="landing-hero__season"><span class="landing-season-dot"></span>{{ season_label }}</div>
+                <p class="landing-hero__season-message">{{ season_message }}</p>
                 <h1 id="landing-title">スイス生活を<span class="landing-hero__spark">✦</span></h1>
                 <p class="landing-hero__headline">もっと楽しく。</p>
                 
@@ -66,6 +67,12 @@
                     アプリを見つける
                     <i class="bi bi-arrow-down-right" aria-hidden="true"></i>
                 </a>
+                {% if not user.is_authenticated %}
+                    <p class="landing-hero__free">
+                        <span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> ログインなしで使えます</span>
+                        <a href="{% url 'portal:signup' %}">無料登録（30秒）›</a>
+                    </p>
+                {% endif %}
             </div>
         </div>
 
@@ -135,11 +142,11 @@
                     <article class="landing-featured-card landing-featured-card--{{ app.key }} landing-featured-card--unlinked">
                 {% endif %}
 
-                    <span class="landing-featured-card__art" aria-hidden="true"></span>
+                    <span class="landing-featured-card__art{% if app.photo_url %} landing-featured-card__art--photo{% endif %}" aria-hidden="true"{% if app.photo_url %} style="background-image: url('{{ app.photo_url }}')"{% endif %}></span>
                     <span class="landing-featured-card__tint" aria-hidden="true"></span>
                     <span class="landing-featured-card__content">
                         <span class="landing-featured-card__head">
-                            <span class="landing-featured-card__name"><span aria-hidden="true">{{ app.icon }}</span> {{ app.name }}</span>
+                            <span class="landing-featured-card__name"><img class="landing-featured-card__icon" src="{{ app.icon_url }}" alt="" width="34" height="34"> {{ app.name }}</span>
                             <span class="landing-featured-card__badge landing-featured-card__badge--{{ app.status_class }}">{{ app.badge }}</span>
                         </span>
                         <span class="landing-featured-card__eyebrow">{{ app.eyebrow }}</span>
@@ -149,7 +156,7 @@
                         {% if app.url %}
                             <span class="landing-featured-card__action">{{ app.action }} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
                         {% else %}
-                            <span class="landing-featured-card__waiting"><i class="bi bi-hourglass-split" aria-hidden="true"></i> お楽しみに！</span>
+                            <span class="landing-featured-card__waiting"><i class="bi bi-hourglass-split" aria-hidden="true"></i> 公開まで、もう少しお待ちください</span>
                         {% endif %}
                         <span class="landing-featured-card__features">
                             {% for feature in app.features %}
@@ -172,28 +179,82 @@
             </div>
             <div class="landing-more__grid">
                 {% for app in other_apps %}
+                {% if app.url %}
                 <a class="landing-mini-card landing-mini-card--{{ app.key }}" href="{{ app.url }}" aria-label="{{ app.name }}を開く">
+                {% else %}
+                <div class="landing-mini-card landing-mini-card--{{ app.key }} landing-mini-card--soon">
+                {% endif %}
                     <span class="landing-mini-card__icon" aria-hidden="true">{{ app.icon }}</span>
                     <span class="landing-mini-card__body">
-                        <strong>{{ app.name }}</strong>
+                        <strong>{{ app.name }}{% if app.badge %} <em class="landing-mini-card__badge">{{ app.badge }}</em>{% endif %}</strong>
                         <small>{{ app.description }}</small>
                     </span>
-                    <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
-                </a>
+                    {% if app.url %}<i class="bi bi-arrow-up-right" aria-hidden="true"></i>{% endif %}
+                {% if app.url %}</a>{% else %}</div>{% endif %}
                 {% endfor %}
+            </div>
+
+            <div class="landing-idea" id="ideas">
+                <div class="landing-idea__text">
+                    <p class="landing-idea__title">💡 こんなアプリがほしい！を募集中</p>
+                    <p>スイスの暮らしで困っていること、あったら便利なもの。ひとことでも大歓迎です。</p>
+                </div>
+                {% if idea_sent %}
+                    <p class="landing-idea__thanks" role="status">ありがとうございます！アイデアを受け取りました。</p>
+                {% else %}
+                    <form class="landing-idea__form" method="post" action="{% url 'portal:send_app_idea' %}">
+                        {% csrf_token %}
+                        <label class="landing-visually-hidden" for="idea-text">アイデア</label>
+                        <textarea id="idea-text" name="idea" rows="2" maxlength="1000" required placeholder="例：スイスの病院を日本語で探せるアプリ"></textarea>
+                        <div class="landing-idea__row">
+                            <label class="landing-visually-hidden" for="idea-contact">お名前・連絡先（任意）</label>
+                            <input id="idea-contact" type="text" name="contact" maxlength="200" placeholder="お名前・連絡先（任意）">
+                            <input class="landing-idea__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+                            <button type="submit">送る</button>
+                        </div>
+                    </form>
+                {% endif %}
             </div>
         </section>
 
         <section class="landing-about" id="about" aria-label="Yappについて">
             <div>
                 <p class="landing-kicker">HELLO FROM SWITZERLAND</p>
-                <h2>スイスの暮らしを、<br>もっと自分らしく。</h2>
+                <h2>わからないことだらけの<br>スイス暮らしから、<br>Yappは生まれました。</h2>
             </div>
             <div class="landing-about__right">
-                <p>Yappは、スイスでの暮らしを便利に、楽しくする小さなアプリの集まり。気になるものから自由に使ってみてね。</p>
-                <p class="landing-about__note"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                多くのサービスはログイン不要。アカウントを作れば、対応サービスで共通して使える。</p>
+                <p>スイスに住んで5年ほど。毎日いろいろなことが起きているはずなのに、ドイツ語やフランス語のニュースでは、なかなか頭に入ってきませんでした。</p>
+                <p>そこでふと思い立って作ったのが、スイスのニュースをAIで日本語に要約する <strong>Swiss News</strong> です。使いやすいようにアプリにして友人に紹介したところ、いつの間にかたくさんの方に使っていただけるようになりました。</p>
+                <p>みんなの知恵をシェアし合えば、スイスの暮らしはもっと良くなるはず。そう思って、皆さんのご要望や困りごとを聞きながら、<strong>和食</strong>や<strong>お出かけ</strong>のアプリも作っています。</p>
+                <p class="landing-about__sign">— Yapp 運営者より</p>
             </div>
+        </section>
+
+        <section class="landing-join" aria-labelledby="landing-join-title">
+            {% if user.is_authenticated %}
+                <div class="landing-join__text">
+                    <p class="landing-kicker">MY ACCOUNT</p>
+                    <h2 id="landing-join-title">ログイン中です</h2>
+                    <p>表示するアプリやニックネームは、My Account から変更できます。</p>
+                </div>
+                <div class="landing-join__actions">
+                    <a class="landing-join__primary" href="{% url 'portal:manage_apps' %}"><i class="bi bi-person-circle" aria-hidden="true"></i> My Account</a>
+                </div>
+            {% else %}
+                <div class="landing-join__text">
+                    <p class="landing-kicker">JOIN YAPP</p>
+                    <h2 id="landing-join-title">アカウントは、IDとパスワードだけ。<br>30秒で作れます。</h2>
+                    <ul>
+                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> ログインなしでも、多くのサービスが使えます</li>
+                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> 1つのアカウントで、すべてのアプリに</li>
+                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> メール認証なし。メールアドレスも任意です</li>
+                    </ul>
+                </div>
+                <div class="landing-join__actions">
+                    <a class="landing-join__primary" href="{% url 'portal:signup' %}">無料でアカウントを作る</a>
+                    <a class="landing-join__secondary" href="{% url 'login' %}">ログインはこちら</a>
+                </div>
+            {% endif %}
         </section>
     </main>
 
@@ -202,6 +263,11 @@
             <span class="landing-footer__brand">✦ Yapp</span>
             <span>© 2026 Yapp</span>
             <div class="landing-footer__links">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'portal:manage_apps' %}">My Account</a>
+                {% else %}
+                    <a href="{% url 'login' %}">ログイン</a>
+                {% endif %}
                 <a href="{% url 'portal:help' %}">困ったときは</a>
                 <a href="{% url 'news:about' %}">お問い合わせ</a>
             </div>

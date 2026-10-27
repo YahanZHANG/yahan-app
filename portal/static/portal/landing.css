@@ -177,16 +177,17 @@
 #yapp-landing .landing-featured-card__tint { position: absolute; inset: 0; z-index: -1; }
 #yapp-landing .landing-featured-card__art { background-size: cover; background-position: center; transition: transform .5s ease; }
 #yapp-landing a.landing-featured-card:hover .landing-featured-card__art { transform: scale(1.06); }
-#yapp-landing .landing-featured-card__tint { background: linear-gradient(180deg, rgba(18,24,45,.57), rgba(11,17,32,.34) 43%,rgba(5,12,24,.89) 100%); }
+#yapp-landing .landing-featured-card__tint { background: linear-gradient(180deg, rgba(14,20,40,.86), rgba(14,20,40,.66) 48%, rgba(11,17,32,.3) 66%, rgba(5,12,24,.9) 100%); }
 #yapp-landing .landing-featured-card--news .landing-featured-card__art { background-image: url("images/swiss-news.svg"); }
 #yapp-landing .landing-featured-card--washoku .landing-featured-card__art { background-image: url("images/washoku.svg"); }
 #yapp-landing .landing-featured-card--outings .landing-featured-card__art { background-image: url("images/outings.svg"); }
-#yapp-landing .landing-featured-card--washoku .landing-featured-card__tint { background: linear-gradient(180deg,rgba(47,21,10,.72),rgba(36,15,8,.17) 49%,rgba(31,11,6,.94) 100%); }
-#yapp-landing .landing-featured-card--outings .landing-featured-card__tint { background: linear-gradient(180deg,rgba(24,23,55,.75),rgba(19,22,56,.20) 46%,rgba(14,21,49,.94) 100%); }
+#yapp-landing .landing-featured-card--washoku .landing-featured-card__tint { background: linear-gradient(180deg,rgba(47,21,10,.88),rgba(47,21,10,.7) 48%,rgba(36,15,8,.25) 66%,rgba(31,11,6,.94) 100%); }
+#yapp-landing .landing-featured-card--outings .landing-featured-card__tint { background: linear-gradient(180deg,rgba(24,23,55,.88),rgba(24,23,55,.68) 48%,rgba(19,22,56,.25) 66%,rgba(14,21,49,.94) 100%); }
 #yapp-landing .landing-featured-card__content { display: flex; flex-direction: column; min-height: 444px; height: 100%; padding: 23px 21px 18px; position: relative; z-index: 1; }
 #yapp-landing .landing-featured-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 7px; margin-bottom: 34px; }
 #yapp-landing .landing-featured-card__name { color: white; font-size: clamp(17px,1.8vw,23px); line-height: 1.4; font-weight: 900; letter-spacing: -.035em; }
-#yapp-landing .landing-featured-card__name > span { font-size: .95em; }
+#yapp-landing .landing-featured-card__name { display: inline-flex; align-items: center; gap: 9px; }
+#yapp-landing .landing-featured-card__icon { flex: none; width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 3px 10px rgba(0,0,0,.25); }
 #yapp-landing .landing-featured-card__badge { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 950; color: #fff; }
 #yapp-landing .landing-featured-card__badge--live { background: #079b65; }
 #yapp-landing .landing-featured-card__badge--soon { background: #ffd271; color: #5f3909; }
@@ -197,8 +198,7 @@
 #yapp-landing .landing-featured-card__spacer { flex: 1; min-height: 20px; }
 #yapp-landing .landing-featured-card__action,
 #yapp-landing .landing-featured-card__waiting { align-self: flex-start; display: inline-flex; align-items: center; gap: 15px; padding: 9px 20px; border-radius: 99px; min-height: 40px; color: white; background: #f8733d; font-weight: 900; font-size: 12px; box-shadow: 0 7px 20px rgba(0,0,0,.16); }
-#yapp-landing .landing-featured-card__waiting { color: #fff9f4; background: rgba(58,45,83,.54); border: 1px solid rgba(255,255,255,.68); box-shadow: none; }
-#yapp-landing .landing-featured-card--washoku .landing-featured-card__waiting { background: rgba(141,82,36,.62); }
+#yapp-landing .landing-featured-card__waiting { gap: 7px; padding: 0; min-height: 0; color: #e6dcf5; background: none; box-shadow: none; font-weight: 800; }
 #yapp-landing .landing-featured-card__features { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.25); }
 #yapp-landing .landing-featured-card__features span { font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; }
 #yapp-landing .landing-featured-card__features span:not(:last-child)::after { content: "✦"; font-size: 7px; color: #ffddbb; margin-left: 8px; }
@@ -210,7 +210,7 @@
 #yapp-landing .landing-more__intro h2 { font-size: 23px; line-height: 1.3; margin: 0; letter-spacing: -.05em; font-weight: 900; }
 #yapp-landing .landing-more__intro h2 span { color: #f5bd68; }
 #yapp-landing .landing-more__intro > p { margin: 0; font-size: 13px; color: #927f78; }
-#yapp-landing .landing-more__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+#yapp-landing .landing-more__grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 13px; }
 #yapp-landing .landing-mini-card { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 102px; padding: 17px; border-radius: 17px; background: #fffaf7; border: 1px solid #f0e7de; color: #39343c; transition: transform .2s ease,background .2s ease; }
 #yapp-landing .landing-mini-card:hover { transform: translateY(-3px); background: #fff3e5; color: #39343c; }
 #yapp-landing .landing-mini-card__icon { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px; background: #f7eaf3; font-size: 29px; }
@@ -222,13 +222,59 @@
 #yapp-landing .landing-mini-card__body small { font-size: 12px; line-height: 1.5; color: #8c7c79; }
 #yapp-landing .landing-mini-card > i { align-self: start; font-size: 12px; color: #b9a9a1; }
 
+/* Hero: login-free note */
+#yapp-landing .landing-hero__season-message { margin: -10px 0 16px; color: #fde8cf; font-size: 13px; font-weight: 700; }
+#yapp-landing .landing-hero__free { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 16px 0 0; font-size: 13px; font-weight: 800; color: #f5eae6; }
+#yapp-landing .landing-hero__free i { color: #7fe0b0; margin-right: 3px; }
+#yapp-landing .landing-hero__free a { color: #ffd59b; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Card photos (static/portal/images/cards/<key>.jpg) */
+#yapp-landing .landing-featured-card__art--photo { background-position: center; }
+
+/* Other apps: a bit louder */
+#yapp-landing .landing-mini-card--games { background: #f3f0ff; border-color: #dcd4fb; }
+#yapp-landing .landing-mini-card--colorcheck { background: #fff1f1; border-color: #fbd5d5; }
+#yapp-landing .landing-mini-card--events { background: #eef5ff; border-color: #d2e2fa; }
+#yapp-landing .landing-mini-card--board { background: #effaf4; border-color: #cdebd9; border-style: dashed; }
+#yapp-landing .landing-mini-card--board .landing-mini-card__icon { background: #d9f3e4; }
+#yapp-landing .landing-mini-card__badge { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 99px; background: #2c9d77; color: #fff; font-size: 10px; font-style: normal; font-weight: 900; vertical-align: 2px; }
+#yapp-landing .landing-mini-card--soon { cursor: default; }
+#yapp-landing .landing-mini-card--soon:hover { transform: none; background: #effaf4; }
+
+/* Idea box */
+#yapp-landing .landing-idea { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px 28px; align-items: center; margin-top: 18px; padding: 20px 22px; border-radius: 18px; background: linear-gradient(120deg, #fff4dd, #ffe6d6); border: 1px solid #f6d6b5; }
+#yapp-landing .landing-idea__title { margin: 0 0 4px; font-size: 17px; font-weight: 900; color: #5b3417; }
+#yapp-landing .landing-idea__text p:last-child { margin: 0; font-size: 13px; color: #7d5a45; }
+#yapp-landing .landing-idea__form { display: grid; gap: 8px; }
+#yapp-landing .landing-idea textarea,
+#yapp-landing .landing-idea input[type="text"] { width: 100%; border: 1px solid #ebc9a6; border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; background: #fff; color: var(--ink); }
+#yapp-landing .landing-idea textarea { resize: vertical; min-height: 64px; }
+#yapp-landing .landing-idea__row { display: flex; gap: 8px; }
+#yapp-landing .landing-idea__row input[type="text"] { flex: 1; min-width: 0; }
+#yapp-landing .landing-idea button { flex: none; border: none; border-radius: 12px; padding: 0 22px; min-height: 44px; background: var(--orange); color: #fff; font-weight: 900; cursor: pointer; }
+#yapp-landing .landing-idea__thanks { margin: 0; font-weight: 800; color: #2c7d5f; }
+#yapp-landing .landing-idea__trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+#yapp-landing .landing-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Join / My Account band */
+#yapp-landing .landing-join { display: flex; align-items: center; justify-content: space-between; gap: 22px 40px; margin-bottom: 56px; padding: 30px 34px; border-radius: 24px; color: #fff; background: linear-gradient(130deg, #2b2147, #4a2f6b); box-shadow: 0 12px 30px rgba(43,33,71,.22); }
+#yapp-landing .landing-join .landing-kicker { color: #ffcf9a; }
+#yapp-landing .landing-join h2 { margin: 0 0 10px; font-size: clamp(21px, 2.3vw, 28px); line-height: 1.5; font-weight: 900; letter-spacing: -.04em; }
+#yapp-landing .landing-join p { margin: 0; color: #e8def3; font-size: 14px; }
+#yapp-landing .landing-join ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: #f1eaf8; }
+#yapp-landing .landing-join li i { color: #7fe0b0; margin-right: 6px; }
+#yapp-landing .landing-join__actions { display: grid; gap: 10px; flex: none; justify-items: center; }
+#yapp-landing .landing-join__primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 99px; background: var(--orange); color: #fff; font-weight: 900; font-size: 15px; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
+#yapp-landing .landing-join__primary:hover { color: #fff; filter: brightness(1.06); }
+#yapp-landing .landing-join__secondary { color: #ffd59b; font-size: 13px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+
 /* About and footer */
 #yapp-landing .landing-about { display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; margin-top: 44px; padding: 42px 4px 58px; border-top: 1px solid #ecddce; }
 #yapp-landing .landing-about h2 { font-weight: 900; font-size: clamp(24px,2.5vw,32px); line-height: 1.5; letter-spacing: -.055em; margin: 0; }
 #yapp-landing .landing-about__right { align-self: center; }
 #yapp-landing .landing-about__right p { margin: 0 0 14px; color: #675d5d; line-height: 1.95; font-size: 14px; }
-#yapp-landing .landing-about__right p.landing-about__note { color: #8b6848; font-size: 12px; font-weight: 700; }
-#yapp-landing .landing-about__note i { margin-right: 5px; color: #2c9d77; }
+#yapp-landing .landing-about__right strong { color: #3a2f3a; }
+#yapp-landing .landing-about__right p.landing-about__sign { color: #8b6848; font-size: 13px; font-weight: 800; text-align: right; }
 #yapp-landing .landing-footer { background: #221e30; color: #e5dce5; }
 #yapp-landing .landing-footer__inner { display: flex; align-items: center; gap: 35px; min-height: 98px; font-size: 12px; }
 #yapp-landing .landing-footer__brand { font-weight: 900; font-size: 18px; color: white; margin-right: 5px; }
@@ -261,6 +307,7 @@
     #yapp-landing .landing-featured-card--news { grid-column: 1 / -1; min-height: 380px; }
     #yapp-landing .landing-featured-card--news .landing-featured-card__content { min-height: 380px; }
     #yapp-landing .landing-featured-card__content { min-height: 420px; }
+    #yapp-landing .landing-more__grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
     #yapp-landing .landing-container { width: min(100% - 32px, 650px); }
@@ -311,6 +358,11 @@
     #yapp-landing .landing-mini-card__body strong { font-size: 13px; }
     #yapp-landing .landing-mini-card__body small { font-size: 11px; }
     #yapp-landing .landing-about { grid-template-columns: 1fr; gap: 17px; margin-top: 30px; padding: 31px 0 40px; }
+    #yapp-landing .landing-idea { grid-template-columns: 1fr; padding: 18px 16px; }
+    #yapp-landing .landing-join { flex-direction: column; align-items: stretch; padding: 24px 20px; margin-bottom: 40px; }
+    #yapp-landing .landing-join__actions { justify-items: stretch; text-align: center; }
+    #yapp-landing .landing-join__primary { justify-content: center; }
+    #yapp-landing .landing-hero__season-message { margin-top: -6px; font-size: 12px; }
     #yapp-landing .landing-footer__inner { flex-wrap: wrap; gap: 9px 18px; justify-content: space-between; padding-block: 19px; }
     #yapp-landing .landing-footer__links { margin-left: 0; }
 }

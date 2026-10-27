@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     AppAccessRequest,
+    AppIdea,
     PortalAnnouncement,
     PortalAppPreference,
 )
@@ -129,3 +130,22 @@ class AppAccessRequestAdmin(admin.ModelAdmin):
             ).update(
                 is_visible=False,
             )
+
+@admin.register(AppIdea)
+class AppIdeaAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "idea",
+        "contact",
+        "user",
+        "handled",
+        "created_at",
+    ]
+
+    list_editable = [
+        "handled",
+    ]
+
+    list_filter = [
+        "handled",
+    ]
