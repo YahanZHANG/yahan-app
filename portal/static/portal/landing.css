@@ -390,13 +390,12 @@
 #yapp-landing .landing-hero__inner { flex: 1; }
 
 /* Bigger status badges */
-#yapp-landing .landing-featured-card__badges { position: relative; display: inline-flex; flex: none; }
+#yapp-landing .landing-featured-card__badges { display: inline-flex; align-items: center; gap: 6px; flex: none; }
 #yapp-landing .landing-featured-card__name { white-space: nowrap; }
 #yapp-landing .landing-featured-card__badge { padding: 7px 14px; font-size: 13px; letter-spacing: .02em; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 #yapp-landing .landing-featured-card__badge--live { background: #0aa66d; }
 #yapp-landing .landing-featured-card__badge--live::before { content: ""; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #b8ffd9; box-shadow: 0 0 0 3px rgba(184,255,217,.35); }
 #yapp-landing .landing-featured-card__new {
-    position: absolute; top: calc(100% + 8px); right: -4px;
     display: inline-flex; align-items: center; padding: 6px 11px; border-radius: 999px;
     background: #ffde3b; color: #6b2d00; font-size: 12px; font-weight: 950; letter-spacing: .04em;
     transform: rotate(-6deg); box-shadow: 0 4px 12px rgba(0,0,0,.28);
@@ -500,3 +499,4 @@
 #yapp-landing .landing-featured-card--news .landing-featured-card__art--photo { background-position: 68% center; }
 #yapp-landing .landing-featured-card--washoku .landing-featured-card__art--photo { background-position: 62% center; }
 #yapp-landing .landing-featured-card--outings .landing-featured-card__art--photo { background-position: 78% center; }
+#yapp-landing .landing-featured-card__head { flex-wrap: wrap; row-gap: 10px; }

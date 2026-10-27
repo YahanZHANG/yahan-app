@@ -1234,7 +1234,7 @@ def home(request):
             "key": "washoku",
             "name": "スイスで和食",
             "icon_url": static("pwa/washoku/icon-192.png"),
-            "badge": "公開中",
+            "badge": "先行公開中",
             "status_class": "live",
             "is_new": True,
             "eyebrow": "WASHOKU",

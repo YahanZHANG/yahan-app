@@ -186,8 +186,8 @@
                         <span class="landing-featured-card__head">
                             <span class="landing-featured-card__name"><img class="landing-featured-card__icon" src="{{ app.icon_url }}" alt="" width="34" height="34"> {{ app.name }}</span>
                             <span class="landing-featured-card__badges">
-                                <span class="landing-featured-card__badge landing-featured-card__badge--{{ app.status_class }}">{{ app.badge }}</span>
                                 {% if app.is_new %}<span class="landing-featured-card__new">NEW!</span>{% endif %}
+                                <span class="landing-featured-card__badge landing-featured-card__badge--{{ app.status_class }}">{{ app.badge }}</span>
                             </span>
                         </span>
                         <span class="landing-featured-card__eyebrow">{{ app.eyebrow }}</span>
