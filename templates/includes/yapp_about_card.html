@@ -1,0 +1,23 @@
+{% load static %}
+{# アプリの about ページの最後に置く、Yapp の紹介カード (Swiss News・スイスで和食で共通)。 #}
+<style>
+.yapp-about-card { display: flex; align-items: center; gap: 16px; margin: 8px 0; padding: 16px 18px; border-radius: 18px; background: #fff8ef; border: 1px solid #f0dcc6; color: #3a2f3a; text-decoration: none; }
+.yapp-about-card:hover { background: #fff1e0; color: #3a2f3a; }
+.yapp-about-card__face { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(60,40,30,.15); }
+.yapp-about-card__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.yapp-about-card__body strong { font-size: 15px; font-weight: 900; }
+.yapp-about-card__body span { font-size: 13px; line-height: 1.7; color: #6b5d5d; }
+.yapp-about-card__body em { font-style: normal; font-size: 13px; font-weight: 800; color: #c4572c; }
+html[data-washoku-theme="dark"] .yapp-about-card,
+.news-dark .yapp-about-card { background: #2a2530; border-color: #3d3545; color: #f3ecf5; }
+html[data-washoku-theme="dark"] .yapp-about-card__body span,
+.news-dark .yapp-about-card__body span { color: #c9bccb; }
+</style>
+<a class="yapp-about-card" href="{% url 'portal:home' %}#about">
+    <img class="yapp-about-card__face" src="{% static 'portal/images/founder.webp' %}" alt="" width="64" height="64">
+    <span class="yapp-about-card__body">
+        <strong>スイス在住の開発者が、ひとりで作っています</strong>
+        <span>ほかのアプリや、作った人の話はこちらから。</span>
+        <em>Yappのトップを見る ›</em>
+    </span>
+</a>

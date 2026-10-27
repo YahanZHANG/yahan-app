@@ -872,9 +872,10 @@ class TrialAccessTests(TestCase):
 
         self.assert_can_view()
 
-    def test_hidden_from_search_engines_until_launch(self):
+    def test_search_engines_can_be_turned_off(self):
 
-        self.assertContains(self.client.get(self.urls[0]), '<meta name="robots" content="noindex, nofollow">')
+        with self.settings(WASHOKU_ALLOW_SEARCH_ENGINES=False):
+            self.assertContains(self.client.get(self.urls[0]), '<meta name="robots" content="noindex, nofollow">')
 
         with self.settings(WASHOKU_ALLOW_SEARCH_ENGINES=True):
             self.assertNotContains(self.client.get(self.urls[0]), 'name="robots"')
