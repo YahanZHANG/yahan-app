@@ -93,6 +93,12 @@ urlpatterns = [
     ),
 
     path(
+        "info/",
+        views.info_bar,
+        name="info_bar",
+    ),
+
+    path(
         "search/",
         views.search,
         name="search",

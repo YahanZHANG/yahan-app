@@ -1069,6 +1069,28 @@ def life_alerts(request):
 SEARCH_LIMIT = 50
 
 
+def info_bar(request):
+    """
+    HOME の為替・天気バー（JSON）。?regions=zurich,zug
+    ページを遅くしないよう、HOME を表示したあとに JS から読み込む。
+    """
+
+    from django.http import JsonResponse
+
+    from .services.info_bar import info_bar as build_info_bar
+
+    slugs = [
+        slug
+        for slug in request.GET.get("regions", "").split(",")
+        if slug
+    ][:10]
+
+    response = JsonResponse(build_info_bar(slugs))
+    response["Cache-Control"] = "public, max-age=600"
+
+    return response
+
+
 def search(request):
     """
     ヘッダーの検索欄から、SwissNews 全体を探す。

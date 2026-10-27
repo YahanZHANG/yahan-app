@@ -122,6 +122,13 @@
     regionBox.addEventListener("change", () => {
         showSelected();
 
+        // HOME の天気バーが新しい地域を読み直すように
+        try {
+            sessionStorage.removeItem("swissnews_info_regions");
+        } catch (error) {
+            // 保存できない環境では何もしない
+        }
+
         save({
             alert_regions: regionInputs
                 .filter((input) => input.checked)

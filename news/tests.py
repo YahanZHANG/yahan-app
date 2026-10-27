@@ -1022,6 +1022,90 @@ class AnnouncementLinkTests(NewsTestCase):
         self.assertContains(response, "news-announcement-link")
 
 
+class InfoBarTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        from django.core.cache import cache
+        from news.models import Region
+
+        cache.clear()
+
+        Region.objects.create(name="チューリッヒ", slug="zurich", display_order=10)
+        Region.objects.create(name="ツーク", slug="zug", display_order=20)
+        Region.objects.create(name="ベルン", slug="bern", display_order=30)
+
+    def fake_get(self, url, params=None, timeout=None):
+
+        response = mock.Mock()
+        response.raise_for_status.return_value = None
+
+        if "frankfurter" in url:
+            response.json.return_value = {
+                "rates": {
+                    "2026-10-23": {"JPY": 170.0, "EUR": 1.07, "USD": 1.25},
+                    "2026-10-26": {"JPY": 171.7, "EUR": 1.071, "USD": 1.24},
+                }
+            }
+        else:
+            count = len(params["latitude"].split(","))
+            place = {
+                "current": {"temperature_2m": 12.4, "weather_code": 0},
+                "daily": {
+                    "time": ["2026-10-27", "2026-10-28", "2026-10-29"],
+                    "weather_code": [0, 61, 3],
+                    "temperature_2m_max": [14.2, 11.0, 10.6],
+                    "temperature_2m_min": [5.1, 6.0, 4.4],
+                },
+            }
+            response.json.return_value = place if count == 1 else [place] * count
+
+        return response
+
+    def test_default_region_and_fx(self):
+
+        with mock.patch("news.services.info_bar.requests.get", side_effect=self.fake_get):
+            data = self.client.get(reverse("news:info_bar")).json()
+
+        self.assertEqual(data["fx"]["rates"]["JPY"]["rate"], 171.7)
+        self.assertEqual(data["fx"]["rates"]["JPY"]["change"], 1.0)
+        self.assertEqual([place["name"] for place in data["weather"]], ["チューリッヒ"])
+        self.assertEqual(data["weather"][0]["temp"], 12)
+        self.assertEqual(data["weather"][0]["days"][1]["label"], "明日")
+
+    def test_first_two_regions_in_settings_order(self):
+
+        with mock.patch("news.services.info_bar.requests.get", side_effect=self.fake_get):
+            data = self.client.get(
+                reverse("news:info_bar") + "?regions=bern,zug,zurich"
+            ).json()
+
+        self.assertEqual(
+            [place["slug"] for place in data["weather"]],
+            ["zurich", "zug"],
+        )
+
+    def test_network_failure_returns_empty(self):
+
+        import requests
+
+        with mock.patch(
+            "news.services.info_bar.requests.get",
+            side_effect=requests.ConnectionError("down"),
+        ):
+            data = self.client.get(reverse("news:info_bar")).json()
+
+        self.assertIsNone(data["fx"])
+        self.assertEqual(data["weather"], [])
+
+    def test_bar_only_on_home(self):
+
+        self.assertContains(self.client.get(reverse("news:home")), 'id="news-info-bar"')
+        self.assertNotContains(self.client.get(reverse("news:life_alerts")), 'id="news-info-bar"')
+
+
 class FlagLifeAlertsTests(NewsTestCase):
 
     def test_marks_selected_articles(self):
