@@ -102,6 +102,7 @@
 }
 #yapp-landing .landing-account__primary:hover { background: #fff1db; }
 #yapp-landing .landing-mobile-menu { display: none; }
+#yapp-landing .landing-mobile-account { display: none; }
 
 #yapp-landing .landing-hero__inner { position: relative; display: flex; align-items: center; min-height: 495px; padding-bottom: 40px; }
 #yapp-landing .landing-hero__copy { position: relative; z-index: 2; max-width: 585px; padding: 28px 0 46px; }
@@ -325,7 +326,9 @@
     #yapp-landing .landing-header { min-height: 73px; gap: 10px; }
     #yapp-landing .landing-brand { font-size: 25px; }
     #yapp-landing .landing-nav, #yapp-landing .landing-account { display: none; }
-    #yapp-landing .landing-mobile-menu { display: block; margin-left: auto; position: relative; }
+    #yapp-landing .landing-mobile-account { display: grid; place-items: center; margin-left: auto; min-width: 43px; height: 43px; padding: 0 4px; border-radius: 12px; background: rgba(28,25,46,.66); color: #fff; font-size: 25px; }
+    #yapp-landing .landing-mobile-account--signup { padding: 0 14px; border-radius: 99px; background: #fff; color: #2a253c; font-size: 13px; font-weight: 900; }
+    #yapp-landing .landing-mobile-menu { display: block; position: relative; }
     #yapp-landing .landing-mobile-menu summary { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; list-style: none; background: rgba(28,25,46,.66); color: white; font-size: 25px; cursor: pointer; }
     #yapp-landing .landing-mobile-menu summary::-webkit-details-marker { display: none; }
     #yapp-landing .landing-mobile-menu nav { position: absolute; top: 50px; right: 0; min-width: 208px; padding: 12px; z-index: 10; display: grid; gap: 2px; border-radius: 14px; box-shadow: 0 15px 36px rgba(0,0,0,.3); background: #fffaf2; }
