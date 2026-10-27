@@ -283,6 +283,7 @@
 #yapp-landing .landing-about__right { align-self: center; }
 #yapp-landing .landing-about__right p { margin: 0 0 14px; color: #675d5d; line-height: 1.95; font-size: 14px; }
 #yapp-landing .landing-about__right strong { color: #3a2f3a; }
+#yapp-landing .landing-about__right a { color: #c4572c; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 #yapp-landing .landing-about__right p.landing-about__sign { color: #8b6848; font-size: 13px; font-weight: 800; text-align: right; }
 #yapp-landing .landing-footer { background: #221e30; color: #e5dce5; }
 #yapp-landing .landing-footer__inner { display: flex; align-items: center; gap: 35px; min-height: 98px; font-size: 12px; }
