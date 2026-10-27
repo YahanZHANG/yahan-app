@@ -307,3 +307,36 @@ class AppIdea(models.Model):
 
     def __str__(self):
         return self.idea[:40]
+
+
+class PortalSettings(models.Model):
+    """Yappトップの表示設定。1件だけ。"""
+
+    SEASON_CHOICES = [
+        ("auto", "自動 (日付に合わせる)"),
+        ("halloween", "ハロウィン"),
+        ("winter", "冬"),
+        ("spring", "春"),
+        ("summer", "夏"),
+        ("autumn", "秋"),
+    ]
+
+    season = models.CharField(
+        "季節のデザイン",
+        max_length=20,
+        choices=SEASON_CHOICES,
+        default="auto",
+        help_text="試しに見たいときや、時期をずらしたいときに固定できます。ふだんは「自動」のままで大丈夫です。",
+    )
+
+    class Meta:
+        verbose_name = "Yappトップの表示設定"
+        verbose_name_plural = "Yappトップの表示設定"
+
+    def __str__(self):
+        return "Yappトップの表示設定"
+
+    @classmethod
+    def load(cls):
+        settings_row, _ = cls.objects.get_or_create(pk=1)
+        return settings_row

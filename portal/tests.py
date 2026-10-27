@@ -253,3 +253,34 @@ class AppIdeaTests(TestCase):
         self.client.post(reverse("portal:send_app_idea"), {"idea": "spam", "website": "http://spam"})
 
         self.assertFalse(AppIdea.objects.exists())
+
+
+class PortalHomeTests(TestCase):
+
+    def test_latest_news_and_share_tags(self):
+
+        source = NewsSource.objects.create(name="SRF", website_url="https://www.srf.ch", language="de")
+        Article.objects.create(
+            source=source,
+            source_url="https://www.srf.ch/a1",
+            original_language="ja",
+            title_original="チューリッヒで初雪",
+            published_at=timezone.now(),
+        )
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "チューリッヒで初雪")
+        self.assertContains(response, 'property="og:image"')
+
+    def test_season_can_be_fixed_in_admin(self):
+
+        from portal.models import PortalSettings
+
+        settings_row = PortalSettings.load()
+        settings_row.season = "winter"
+        settings_row.save()
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "season-winter")

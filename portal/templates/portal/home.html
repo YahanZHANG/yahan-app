@@ -1,5 +1,21 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static news_extras %}
+
+{% block head_meta %}
+{% with description="スイスのニュースを日本語で読める Swiss News をはじめ、スイス暮らしに役立つアプリをお届けします。多くのサービスはログインなしで使えます。" %}
+    <meta name="description" content="{{ description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Yapp">
+    <meta property="og:locale" content="ja_JP">
+    <meta property="og:title" content="Yapp｜スイス生活を、もっと楽しく。">
+    <meta property="og:description" content="{{ description }}">
+    <meta property="og:url" content="{% absolute_url request.path %}">
+    <meta property="og:image" content="{% static 'portal/images/og-yapp.png' as og_image_path %}{% absolute_url og_image_path %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+{% endwith %}
+{% endblock %}
 
 {% block title %}Yapp | スイス生活を、もっと楽しく。{% endblock %}
 
@@ -56,8 +72,6 @@
 
         <div class="landing-hero__inner landing-container">
             <div class="landing-hero__copy">
-                <div class="landing-hero__season"><span class="landing-season-dot"></span>{{ season_label }}</div>
-                <p class="landing-hero__season-message">{{ season_message }}</p>
                 <h1 id="landing-title">スイス生活を<span class="landing-hero__spark">✦</span></h1>
                 <p class="landing-hero__headline">もっと楽しく。</p>
                 
@@ -152,6 +166,16 @@
                         <span class="landing-featured-card__eyebrow">{{ app.eyebrow }}</span>
                         <span class="landing-featured-card__title">{{ app.headline }}</span>
                         <span class="landing-featured-card__desc">{{ app.description }}</span>
+                        {% if app.key == "news" and latest_news %}
+                            <span class="landing-news-heads" aria-label="最新のニュース">
+                                {% for article in latest_news %}
+                                    <span class="landing-news-heads__item">
+                                        <small>{{ article.published_at|date:"n/j H:i" }}</small>
+                                        <span class="landing-news-heads__title">{{ article.title_ja|default:article.title_original }}</span>
+                                    </span>
+                                {% endfor %}
+                            </span>
+                        {% endif %}
                         <span class="landing-featured-card__spacer"></span>
                         {% if app.url %}
                             <span class="landing-featured-card__action">{{ app.action }} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
@@ -205,7 +229,7 @@
                     <form class="landing-idea__form" method="post" action="{% url 'portal:send_app_idea' %}">
                         {% csrf_token %}
                         <label class="landing-visually-hidden" for="idea-text">アイデア</label>
-                        <textarea id="idea-text" name="idea" rows="2" maxlength="1000" required placeholder="例：スイスの病院を日本語で探せるアプリ"></textarea>
+                        <textarea id="idea-text" name="idea" rows="2" maxlength="1000" required placeholder="自由に書いてください"></textarea>
                         <div class="landing-idea__row">
                             <label class="landing-visually-hidden" for="idea-contact">お名前・連絡先（任意）</label>
                             <input id="idea-contact" type="text" name="contact" maxlength="200" placeholder="お名前・連絡先（任意）">
@@ -218,14 +242,17 @@
         </section>
 
         <section class="landing-about" id="about" aria-label="Yappについて">
-            <div>
-                <p class="landing-kicker">HELLO FROM SWITZERLAND</p>
-                <h2>わからないことだらけの<br>スイス暮らしから、<br>Yappは生まれました。</h2>
+            <div class="landing-about__left">
+                <img class="landing-about__face" src="{% static 'portal/images/founder.svg' %}" alt="Yapp 運営者のイラスト" width="180" height="180">
+                <div>
+                    <p class="landing-kicker">HELLO FROM SWITZERLAND</p>
+                    <h2>わからんことだらけの<br>スイス暮らしから、<br>Yappは生まれてん。</h2>
+                </div>
             </div>
             <div class="landing-about__right">
-                <p>スイスに住んで5年ほど。毎日いろいろなことが起きているはずなのに、ドイツ語やフランス語のニュースでは、なかなか頭に入ってきませんでした。</p>
-                <p>そこでふと思い立って作ったのが、スイスのニュースをAIで日本語に要約する <strong>Swiss News</strong> です。使いやすいようにアプリにして友人に紹介したところ、いつの間にかたくさんの方に使っていただけるようになりました。</p>
-                <p>みんなの知恵をシェアし合えば、スイスの暮らしはもっと良くなるはず。そう思って、皆さんのご要望や困りごとを聞きながら、<strong>和食</strong>や<strong>お出かけ</strong>のアプリも作っています。</p>
+                <p>スイスに住んで、もう5年くらいになるねん。毎日いろんなことが起きてるはずやのに、ドイツ語やフランス語のニュースは、なかなか頭に入ってこえへんかった。</p>
+                <p>ほんで、ある日ふと思い立って作ったんが、スイスのニュースをAIで日本語に要約する <strong>Swiss News</strong>。使いやすいようにアプリにして友だちに紹介したら、いつの間にか、ぎょうさんの人に使ってもらえるようになってん。</p>
+                <p>みんなの知恵をシェアし合うたら、スイスの暮らしはもっと良うなるはず。そう思て、みんなの要望や困りごとを聞きながら、<strong>和食</strong>や<strong>お出かけ</strong>のアプリも作ってるとこやで。</p>
                 <p class="landing-about__sign">— Yapp 運営者より</p>
             </div>
         </section>

@@ -53,6 +53,7 @@ from .models import (
     AppAccessRequest,
     AppIdea,
     PortalAnnouncement,
+    PortalSettings,
     PortalAppPreference,
 )
 
@@ -1168,37 +1169,32 @@ def manage_apps(request):
 # Public Portal Home
 # =========================================================
 
+PORTAL_SEASONS = {key for key, _ in PortalSettings.SEASON_CHOICES} - {"auto"}
+
+
 def portal_season(today):
     """日付から、Yappトップの季節デザインを決める。"""
 
     if today.month == 10 and today.day >= 15:
-        return (
-            "halloween",
-            "HALLOWEEN IN SWITZERLAND",
-            "秋の夜に、スイス暮らしの小さな魔法を。",
-        )
+        return "halloween"
     if (today.month == 11 and today.day >= 20) or today.month in (12, 1, 2):
-        return (
-            "winter",
-            "WINTER IN SWITZERLAND",
-            "寒い季節も、楽しい発見を。",
-        )
+        return "winter"
     if today.month in (3, 4, 5):
-        return (
-            "spring",
-            "SPRING IN SWITZERLAND",
-            "新しい季節、新しい楽しみ方。",
-        )
+        return "spring"
     if today.month in (6, 7, 8):
-        return (
-            "summer",
-            "SUMMER IN SWITZERLAND",
-            "スイスの夏を、もっと楽しもう。",
-        )
-    return (
-        "autumn",
-        "AUTUMN IN SWITZERLAND",
-        "秋のスイスに、素敵な発見を。",
+        return "summer"
+    return "autumn"
+
+
+def portal_latest_news(limit=3):
+    """ニュースカードに出す最新の見出し。"""
+
+    from news.services.deduplicator import ready_articles
+
+    return list(
+        ready_articles()
+        .filter(duplicate_of__isnull=True)
+        .order_by("-published_at")[:limit]
     )
 
 
@@ -1228,7 +1224,9 @@ def home(request):
     today = timezone.localtime(
         timezone.now(), ZoneInfo("Europe/Zurich")
     ).date()
-    season, season_label, season_message = portal_season(today)
+    season = PortalSettings.load().season
+    if season not in PORTAL_SEASONS:
+        season = portal_season(today)
 
     # True にするとカードに「開発版をのぞく」リンクが出る。
     OUTINGS_PREVIEW_ENABLED = False
@@ -1241,11 +1239,11 @@ def home(request):
             "badge": "公開中",
             "status_class": "live",
             "eyebrow": "SWISS NEWS",
-            "headline": "スイスの今がわかる、日本語ニュース。",
+            "headline": "日本語でスイスの出来事を把握しよう。",
             "description": "スイスのニュースや暮らしに役立つ情報を、日本語で。毎日の情報収集をもっと身近に。",
             "url": reverse("news:home"),
             "action": "今すぐ読む",
-            "features": ["現地ニュース", "暮らし", "コラム"],
+            "features": ["ニュース", "暮らしのお知らせ"],
         },
         {
             "key": "washoku",
@@ -1254,7 +1252,7 @@ def home(request):
             "badge": "まもなく公開",
             "status_class": "soon",
             "eyebrow": "WASHOKU",
-            "headline": "スイスでつながる、和食の輪。",
+            "headline": "スイスの台所に、みんなの知恵を。",
             "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
             "url": reverse("washoku:home"),
             "action": "ひと足先にのぞく",
@@ -1267,7 +1265,7 @@ def home(request):
             "badge": "絶賛準備中",
             "status_class": "building",
             "eyebrow": "OUTINGS",
-            "headline": "週末のスイスに、次のワクワクを。",
+            "headline": "次のお休み、どこへ行こう？",
             "description": "季節のイベントや、ちょっと出かけたくなる場所。お出かけのアイデアを準備中。",
             "url": reverse("outings:home") if OUTINGS_PREVIEW_ENABLED else None,
             "action": "開発版をのぞく",
@@ -1283,21 +1281,21 @@ def home(request):
             "key": "games",
             "name": "ミニゲーム",
             "icon": "🎮",
-            "description": "ちょっとひと息、気軽に遊ぼう。",
+            "description": "ちょっとした空き時間に遊べるゲーム。",
             "url": reverse("games:game_list"),
         },
         {
             "key": "colorcheck",
             "name": "色判定",
             "icon": "🎨",
-            "description": "気になる色を、わかりやすく。",
+            "description": "色覚異常の方のお助けアプリ。気になる色を簡単に確認。",
             "url": reverse("colorcheck:index"),
         },
         {
             "key": "events",
             "name": "イベント調整",
             "icon": "📅",
-            "description": "みんなの予定を、ひとつに。",
+            "description": "みんなの予定を簡単に調整。",
             "url": reverse("event_scheduler:event_list"),
         },
         {
@@ -1315,8 +1313,7 @@ def home(request):
         "portal/home.html",
         {
             "season": season,
-            "season_label": season_label,
-            "season_message": season_message,
+            "latest_news": portal_latest_news(),
             "featured_apps": featured_apps,
             "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),

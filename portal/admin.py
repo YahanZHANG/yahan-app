@@ -1,10 +1,12 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 
 from .models import (
     AppAccessRequest,
     AppIdea,
     PortalAnnouncement,
     PortalAppPreference,
+    PortalSettings,
 )
 
 
@@ -149,3 +151,18 @@ class AppIdeaAdmin(admin.ModelAdmin):
     list_filter = [
         "handled",
     ]
+
+
+@admin.register(PortalSettings)
+class PortalSettingsAdmin(admin.ModelAdmin):
+    """1件だけの設定。一覧を開くとすぐその設定の画面になる。"""
+
+    def changelist_view(self, request, extra_context=None):
+        settings_row = PortalSettings.load()
+        return redirect("admin:portal_portalsettings_change", settings_row.pk)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="t">
+  <title id="t">Yapp 運営者のイラスト</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe3c4"/>
+      <stop offset="1" stop-color="#ffc9a3"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b2730"/>
+      <stop offset="1" stop-color="#121016"/>
+    </linearGradient>
+    <clipPath id="circle"><circle cx="160" cy="160" r="150"/></clipPath>
+  </defs>
+
+  <circle cx="160" cy="160" r="150" fill="url(#bg)"/>
+
+  <g clip-path="url(#circle)">
+    <!-- mountains in the back -->
+    <path d="M10 250 L90 150 L130 195 L185 120 L270 230 L320 200 L320 330 L0 330 Z" fill="#fff4e6" opacity=".75"/>
+    <path d="M150 156 L185 120 L214 160 L198 152 L186 162 L172 150 Z" fill="#ffffff"/>
+
+    <!-- hair behind (straight, shoulder length) -->
+    <path d="M92 150 C88 92 120 58 162 58 C206 58 236 92 232 150 L236 262 C210 272 112 272 88 262 Z" fill="url(#hair)"/>
+
+    <!-- body: navy blazer, white top -->
+    <path d="M58 330 C62 270 100 246 160 244 C220 246 258 270 262 330 Z" fill="#2f3a63"/>
+    <path d="M132 246 L160 300 L188 246 C178 242 142 242 132 246 Z" fill="#ffffff"/>
+    <path d="M132 246 L150 292 L122 268 Z" fill="#253055"/>
+    <path d="M188 246 L170 292 L198 268 Z" fill="#253055"/>
+    <circle cx="202" cy="284" r="5" fill="#f8733d"/>
+
+    <!-- neck -->
+    <path d="M142 214 L142 246 C150 254 170 254 178 246 L178 214 Z" fill="#f0bf9c"/>
+
+    <!-- face -->
+    <ellipse cx="160" cy="160" rx="54" ry="64" fill="#f8d2b4"/>
+    <ellipse cx="106" cy="166" rx="9" ry="13" fill="#f0bf9c"/>
+    <ellipse cx="214" cy="166" rx="9" ry="13" fill="#f0bf9c"/>
+
+    <!-- straight bangs -->
+    <path d="M104 140 C100 92 128 72 162 72 C196 72 222 94 218 140 C204 120 196 112 190 108 C176 120 140 124 118 118 C112 126 108 132 104 140 Z" fill="url(#hair)"/>
+    <!-- side hair in front of the ears -->
+    <path d="M104 132 C98 170 100 222 106 262 L92 262 C86 214 88 168 96 134 Z" fill="url(#hair)"/>
+    <path d="M216 132 C222 170 220 222 214 262 L228 262 C234 214 232 168 224 134 Z" fill="url(#hair)"/>
+    <path d="M150 80 C140 96 128 106 118 112" stroke="#4a4452" stroke-width="2" fill="none" opacity=".6"/>
+
+    <!-- eyebrows -->
+    <path d="M124 136 C132 131 142 131 148 134" stroke="#2b2730" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M172 134 C178 131 188 131 196 136" stroke="#2b2730" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- smiling eyes -->
+    <path d="M128 160 C133 153 143 153 147 160" stroke="#2b2730" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M173 160 C177 153 187 153 192 160" stroke="#2b2730" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- glasses -->
+    <rect x="116" y="144" width="40" height="30" rx="11" fill="#ffffff" fill-opacity=".18" stroke="#3a2f3a" stroke-width="4"/>
+    <rect x="164" y="144" width="40" height="30" rx="11" fill="#ffffff" fill-opacity=".18" stroke="#3a2f3a" stroke-width="4"/>
+    <path d="M156 156 C158 153 162 153 164 156" stroke="#3a2f3a" stroke-width="4" fill="none"/>
+    <path d="M116 154 L106 150" stroke="#3a2f3a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M204 154 L214 150" stroke="#3a2f3a" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- cheeks -->
+    <ellipse cx="128" cy="186" rx="10" ry="6" fill="#f59b8a" opacity=".45"/>
+    <ellipse cx="192" cy="186" rx="10" ry="6" fill="#f59b8a" opacity=".45"/>
+
+    <!-- nose and big smile -->
+    <path d="M160 168 C158 176 157 180 162 182" stroke="#d99a7c" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M140 194 C150 210 170 210 180 194 Z" fill="#b8434a"/>
+    <path d="M144 196 C152 201 168 201 176 196 L176 194 L144 194 Z" fill="#ffffff"/>
+  </g>
+
+  <!-- waving hand -->
+  <g transform="translate(252 214) rotate(-14)">
+    <rect x="-14" y="4" width="28" height="44" rx="12" fill="#2f3a63"/>
+    <rect x="-16" y="-34" width="32" height="40" rx="14" fill="#f8d2b4"/>
+    <rect x="-15" y="-52" width="8" height="24" rx="4" fill="#f8d2b4"/>
+    <rect x="-5" y="-56" width="8" height="26" rx="4" fill="#f8d2b4"/>
+    <rect x="5" y="-52" width="8" height="24" rx="4" fill="#f8d2b4"/>
+    <rect x="12" y="-28" width="8" height="18" rx="4" fill="#f8d2b4" transform="rotate(30 16 -19)"/>
+  </g>
+  <path d="M286 162 C294 170 296 180 292 190" stroke="#f8733d" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <path d="M296 152 C308 164 310 182 302 196" stroke="#f8733d" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>
+</svg>
