@@ -43,6 +43,7 @@ from feeding.models import BabyMembership
 from travel.models import UserProfile
 from usage_analytics.permissions import can_view_analytics
 
+from . import seasons
 from .forms import (
     AppSelectionForm,
     NicknameForm,
@@ -1169,79 +1170,6 @@ def manage_apps(request):
 # Public Portal Home
 # =========================================================
 
-PORTAL_SEASONS = {key for key, _ in PortalSettings.SEASON_CHOICES} - {"auto"}
-
-
-def portal_season(today):
-    """日付から、Yappトップの季節デザインを決める。"""
-
-    if today.month == 10 and today.day >= 15:
-        return "halloween"
-    if (today.month == 11 and today.day >= 20) or today.month in (12, 1, 2):
-        return "winter"
-    if today.month in (3, 4, 5):
-        return "spring"
-    if today.month in (6, 7, 8):
-        return "summer"
-    return "autumn"
-
-
-# 季節ごとのキャッチと、ヒーローに舞う飾り
-PORTAL_SEASON_THEMES = {
-    "halloween": {
-        "title": "スイスの秋の夜を",
-        "headline": "もっと楽しく。",
-        "particle": "halloween",
-        "symbols": ["🦇", "🍂", "🎃", "🍁", "👻", "🍂"],
-    },
-    "winter": {
-        "title": "雪の日も",
-        "headline": "スイスを楽しもう。",
-        "particle": "snow",
-        "symbols": ["❄", "•", "❅", "•", "❆", "•"],
-    },
-    "spring": {
-        "title": "花ひらく季節を",
-        "headline": "スイスで楽しもう。",
-        "particle": "petal",
-        "symbols": ["", "", "", "", "", ""],
-    },
-    "summer": {
-        "title": "まぶしい夏を",
-        "headline": "スイスで楽しもう。",
-        "particle": "firework",
-        "symbols": ["", "", "", "", "", ""],
-    },
-    "autumn": {
-        "title": "実りの秋を",
-        "headline": "スイスで楽しもう。",
-        "particle": "leaf",
-        "symbols": ["🍁", "🍂", "🍁", "🍂", "🌰", "🍂"],
-    },
-}
-
-
-def portal_particles(theme, count=22):
-    """ヒーローに舞う飾り。毎回同じ並びになるよう、乱数の種を固定する。"""
-
-    import random
-
-    rng = random.Random(theme["particle"])
-    symbols = theme["symbols"]
-    particles = []
-    for index in range(count):
-        particles.append({
-            "symbol": symbols[index % len(symbols)],
-            "left": rng.randint(0, 100),
-            "top": rng.randint(5, 70),
-            "size": rng.randint(12, 34),
-            "delay": round(rng.uniform(0, 12), 1),
-            "duration": round(rng.uniform(9, 18), 1),
-            "drift": rng.randint(-60, 60),
-        })
-    return particles
-
-
 def portal_latest_news(limit=3):
     """ニュースカードに出す最新の見出し。"""
 
@@ -1281,9 +1209,9 @@ def home(request):
         timezone.now(), ZoneInfo("Europe/Zurich")
     ).date()
     season = PortalSettings.load().season
-    if season not in PORTAL_SEASONS:
-        season = portal_season(today)
-    theme = PORTAL_SEASON_THEMES[season]
+    if season not in seasons.THEMES:
+        season = seasons.theme_for(today)
+    theme = seasons.THEMES[season]
 
     # True にするとカードに「開発版をのぞく」リンクが出る。
     OUTINGS_PREVIEW_ENABLED = False
@@ -1372,7 +1300,8 @@ def home(request):
         {
             "season": season,
             "theme": theme,
-            "particles": portal_particles(theme),
+            "theme_shadow": seasons.accent_shadow(theme["accent"]),
+            "particles": seasons.particles(season),
             "latest_news": portal_latest_news(),
             "featured_apps": featured_apps,
             "other_apps": other_apps,

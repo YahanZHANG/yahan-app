@@ -26,7 +26,7 @@
 {% block main_class %}yapp-public-home{% endblock %}
 
 {% block content %}
-<div id="yapp-landing" class="yapp-landing season-{{ season }}">
+<div id="yapp-landing" class="yapp-landing season-{{ season }}" style="--orange: {{ theme.accent }}; --orange-shadow: {{ theme_shadow }}; --kicker: {{ theme.accent }}; --sky-1: {{ theme.sky.0 }}; --sky-2: {{ theme.sky.1 }}; --sky-3: {{ theme.sky.2 }};">
 
     <section class="landing-hero" aria-labelledby="landing-title">
         <div class="landing-hero__backdrop" aria-hidden="true"></div>
@@ -100,6 +100,19 @@
                 <span style="--x: {{ particle.left }}%; --y: {{ particle.top }}%; --size: {{ particle.size }}px; --delay: -{{ particle.delay }}s; --duration: {{ particle.duration }}s; --drift: {{ particle.drift }}px;">{{ particle.symbol }}</span>
             {% endfor %}
         </div>
+
+        {% if season != "halloween" %}
+            <svg class="landing-hero__mountains" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+                <path class="landing-hero__mountains-far" d="M0 220 L140 120 L230 170 L380 60 L520 180 L640 110 L780 190 L930 70 L1080 170 L1200 100 L1320 160 L1440 110 L1440 320 L0 320 Z"/>
+                <path class="landing-hero__mountains-snow" d="M380 60 L420 95 L400 92 L380 110 L362 92 L345 96 Z M930 70 L972 108 L950 104 L930 124 L910 104 L888 110 Z"/>
+                <path class="landing-hero__mountains-near" d="M0 260 L180 200 L320 245 L470 180 L640 250 L820 195 L1000 255 L1180 205 L1320 240 L1440 215 L1440 320 L0 320 Z"/>
+            </svg>
+            {% if theme.motif %}
+                <div class="landing-hero__motif" aria-hidden="true">
+                    {% for symbol in theme.motif %}<span>{{ symbol }}</span>{% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
 
         <div class="landing-hero__ornaments" aria-hidden="true">
             <span class="landing-hero__bat">✦</span>
@@ -257,7 +270,7 @@
 
         <section class="landing-about" id="about" aria-label="Yappについて">
             <div class="landing-about__left">
-                <img class="landing-about__face" src="{% static 'portal/images/founder.svg' %}" alt="Yapp 開発者のイラスト" width="180" height="180">
+                <img class="landing-about__face" src="{% static 'portal/images/founder.webp' %}" alt="Yapp 開発者のイラスト" width="180" height="180">
                 <div>
                     <p class="landing-kicker">HELLO FROM THE DEVELOPER</p>
                     <h2>わからんことだらけの<br>スイス暮らしから、<br>Yappは生まれました。</h2>

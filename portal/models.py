@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from .seasons import THEMES
+
 
 class PortalAppPreference(models.Model):
     """
@@ -312,13 +314,8 @@ class AppIdea(models.Model):
 class PortalSettings(models.Model):
     """Yappトップの表示設定。1件だけ。"""
 
-    SEASON_CHOICES = [
-        ("auto", "自動 (日付に合わせる)"),
-        ("halloween", "ハロウィン"),
-        ("winter", "冬"),
-        ("spring", "春"),
-        ("summer", "夏"),
-        ("autumn", "秋"),
+    SEASON_CHOICES = [("auto", "自動 (日付に合わせる)")] + [
+        (key, theme["name"]) for key, theme in THEMES.items()
     ]
 
     season = models.CharField(

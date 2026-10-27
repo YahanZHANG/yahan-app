@@ -284,3 +284,26 @@ class PortalHomeTests(TestCase):
         response = self.client.get(reverse("portal:home"))
 
         self.assertContains(response, "season-winter")
+
+
+class SeasonCalendarTests(TestCase):
+
+    def test_events_and_seasons_by_date(self):
+
+        from datetime import date
+
+        from portal.seasons import easter_sunday, theme_for
+
+        self.assertEqual(easter_sunday(2027), date(2027, 3, 28))
+        self.assertEqual(theme_for(date(2027, 1, 3)), "newyear")
+        self.assertEqual(theme_for(date(2026, 12, 31)), "newyear")
+        self.assertEqual(theme_for(date(2026, 12, 28)), "winter")
+        self.assertEqual(theme_for(date(2027, 3, 27)), "easter")  # 桜の期間より短いイースターを優先
+        self.assertEqual(theme_for(date(2027, 3, 20)), "sakura")
+        self.assertEqual(theme_for(date(2027, 4, 19)), "sechselaeuten")
+        self.assertEqual(theme_for(date(2027, 6, 3)), "early_summer")
+        self.assertEqual(theme_for(date(2027, 8, 10)), "midsummer")
+        self.assertEqual(theme_for(date(2026, 10, 27)), "halloween")
+        self.assertEqual(theme_for(date(2026, 11, 27)), "blackfriday")
+        self.assertEqual(theme_for(date(2026, 11, 10)), "late_autumn")
+        self.assertEqual(theme_for(date(2026, 12, 24)), "christmas")
