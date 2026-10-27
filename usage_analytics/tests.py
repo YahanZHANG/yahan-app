@@ -1,9 +1,11 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
 from .catalog import app_for_path
 from .middleware import IGNORE_COOKIE, VISIT_COOKIE, VISITOR_COOKIE
-from .models import AnalyticsExclusion, PageView
+from .models import AnalyticsExclusion, NewsSummaryRead, PageView
 from .sources import classify_source
 
 
@@ -234,3 +236,74 @@ class BehaviorAndChartTests(TestCase):
         response = self.client.get("/analytics/", HTTP_USER_AGENT=BROWSER)
         self.assertContains(response, "使い方の傾向と改善のヒント")
         self.assertContains(response, "過去24時間")
+
+
+@override_settings(ALLOWED_HOSTS=["testserver"], STORAGES=SIMPLE_STATIC)
+class NewsSummaryReadTests(TestCase):
+
+    def setUp(self):
+
+        from django.utils import timezone
+        from news.models import Article, NewsSource
+
+        source = NewsSource.objects.create(name="SRF", website_url="https://www.srf.ch", language="de")
+        self.articles = [
+            Article.objects.create(
+                source=source,
+                source_url=f"https://example.com/{n}",
+                original_language="de",
+                title_original=f"Original {n}",
+                title_ja=f"日本語 {n}",
+                published_at=timezone.now(),
+            )
+            for n in range(2)
+        ]
+        self.admin = get_user_model().objects.create_superuser("boss", "boss@example.com", "x")
+
+    def send(self, reads):
+
+        return self.client.post(
+            "/analytics/news-reads/",
+            data=json.dumps({"reads": reads}),
+            content_type="application/json",
+            HTTP_USER_AGENT=BROWSER,
+        )
+
+    def test_reads_are_saved_once_per_day_with_the_bigger_weight(self):
+
+        first, second = self.articles
+        self.client.get("/news/", HTTP_USER_AGENT=BROWSER)  # 訪問者 cookie
+
+        self.assertEqual(self.send([{"id": first.pk, "w": 0.33}, {"id": 999999, "w": 1}]).status_code, 204)
+        self.send([{"id": first.pk, "w": 1}, {"id": second.pk, "w": 0.25}])
+        self.send([{"id": first.pk, "w": 0.5}])
+
+        self.assertEqual(NewsSummaryRead.objects.count(), 2)
+        self.assertEqual(NewsSummaryRead.objects.get(article_id=first.pk).weight, 1)
+        self.assertEqual(NewsSummaryRead.objects.get(article_id=second.pk).weight, 0.25)
+
+    def test_no_visitor_cookie_or_bad_body(self):
+
+        self.assertEqual(self.send([{"id": self.articles[0].pk}]).status_code, 204)
+        self.assertFalse(NewsSummaryRead.objects.exists())
+
+        self.client.get("/news/", HTTP_USER_AGENT=BROWSER)
+        self.assertEqual(self.send([{"id": "x"}]).status_code, 400)
+
+    def test_dashboard_ranks_reads_and_clicks(self):
+
+        first, second = self.articles
+        self.client.get("/news/", HTTP_USER_AGENT=BROWSER)
+        self.send([{"id": first.pk, "w": 1}, {"id": second.pk, "w": 0.5}])
+        self.client.get(
+            f"/analytics/public-news/articles/{second.pk}/click/?beacon=1",
+            HTTP_USER_AGENT=BROWSER,
+        )
+
+        self.client.force_login(self.admin)
+        response = self.client.get("/analytics/?app=news", HTTP_USER_AGENT=BROWSER)
+
+        ranking = response.context["news_reads"]
+        self.assertEqual([row["title"] for row in ranking], ["日本語 1", "日本語 0"])
+        self.assertEqual((ranking[0]["reads"], ranking[0]["clicks"], ranking[0]["score"]), (0.5, 1, 3.5))
+        self.assertContains(response, "要約がよく読まれた記事")

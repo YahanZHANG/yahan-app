@@ -11,7 +11,7 @@ from datetime import datetime, time, timedelta
 from datetime import timezone as dt_timezone
 from itertools import combinations
 
-from django.db.models import Count, Max, Min
+from django.db.models import Count, Max, Min, Sum
 from django.db.models.functions import TruncDate, TruncWeek
 from django.utils import timezone
 
@@ -27,6 +27,7 @@ def device_info(key):
 from .catalog import app_info
 from .models import (
     AnalyticsExclusion,
+    NewsSummaryRead,
     PageView,
     PublicNewsArticleClick,
     UserNewsArticleClick,
@@ -891,12 +892,72 @@ def top_news_clicks(scope, limit=10):
 
     return [
         {
+            "article_id": article_id,
             "title": info[article_id]["article_title"],
             "source": info[article_id]["source_name"],
             "clicks": clicks,
         }
         for article_id, clicks in counter.most_common(limit)
     ]
+
+
+# 元記事クリックは、要約を読んだうえで「もっと知りたい」と思った強い反応なので重めにする
+CLICK_WEIGHT = 3
+
+
+def top_news_reads(scope, limit=15):
+    """
+    要約の閲覧 (推定) と元記事クリックを合わせた、よく読まれた記事の順位。
+    点数 = 要約の閲覧 (重みの合計) + 元記事クリック × CLICK_WEIGHT
+    """
+
+    reads = NewsSummaryRead.objects.filter(
+        read_at__gte=scope.start, read_at__lte=scope.end
+    )
+
+    if scope.excluded_user_ids:
+        excluded_visitors = (
+            PageView.objects
+            .filter(user_id__in=scope.excluded_user_ids)
+            .values("visitor_id")
+        )
+        reads = (
+            reads
+            .exclude(user_id__in=scope.excluded_user_ids)
+            .exclude(visitor_id__in=excluded_visitors)
+        )
+
+    rows = {}
+
+    for row in (
+        reads.values("article_id", "article_title", "source_name")
+        .annotate(total=Sum("weight"), people=Count("visitor_id", distinct=True))
+    ):
+        rows[row["article_id"]] = {
+            "title": row["article_title"],
+            "source": row["source_name"],
+            "reads": row["total"] or 0,
+            "people": row["people"],
+            "clicks": 0,
+        }
+
+    for click in top_news_clicks(scope, limit=None):
+        row = rows.setdefault(click["article_id"], {
+            "title": click["title"],
+            "source": click["source"],
+            "reads": 0,
+            "people": 0,
+            "clicks": 0,
+        })
+        row["clicks"] = click["clicks"]
+
+    for row in rows.values():
+        row["reads"] = round(row["reads"], 1)
+        row["score"] = round(row["reads"] + row["clicks"] * CLICK_WEIGHT, 1)
+
+    ranked = sorted(rows.values(), key=lambda row: row["score"], reverse=True)
+
+    return ranked[:limit]
 
 
 # =========================================================
