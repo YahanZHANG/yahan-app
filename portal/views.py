@@ -1186,6 +1186,62 @@ def portal_season(today):
     return "autumn"
 
 
+# 季節ごとのキャッチと、ヒーローに舞う飾り
+PORTAL_SEASON_THEMES = {
+    "halloween": {
+        "title": "スイスの秋の夜を",
+        "headline": "もっと楽しく。",
+        "particle": "halloween",
+        "symbols": ["🦇", "🍂", "🎃", "🍁", "👻", "🍂"],
+    },
+    "winter": {
+        "title": "雪の日も",
+        "headline": "スイスを楽しもう。",
+        "particle": "snow",
+        "symbols": ["❄", "•", "❅", "•", "❆", "•"],
+    },
+    "spring": {
+        "title": "花ひらく季節を",
+        "headline": "スイスで楽しもう。",
+        "particle": "petal",
+        "symbols": ["", "", "", "", "", ""],
+    },
+    "summer": {
+        "title": "まぶしい夏を",
+        "headline": "スイスで楽しもう。",
+        "particle": "firework",
+        "symbols": ["", "", "", "", "", ""],
+    },
+    "autumn": {
+        "title": "実りの秋を",
+        "headline": "スイスで楽しもう。",
+        "particle": "leaf",
+        "symbols": ["🍁", "🍂", "🍁", "🍂", "🌰", "🍂"],
+    },
+}
+
+
+def portal_particles(theme, count=22):
+    """ヒーローに舞う飾り。毎回同じ並びになるよう、乱数の種を固定する。"""
+
+    import random
+
+    rng = random.Random(theme["particle"])
+    symbols = theme["symbols"]
+    particles = []
+    for index in range(count):
+        particles.append({
+            "symbol": symbols[index % len(symbols)],
+            "left": rng.randint(0, 100),
+            "top": rng.randint(5, 70),
+            "size": rng.randint(12, 34),
+            "delay": round(rng.uniform(0, 12), 1),
+            "duration": round(rng.uniform(9, 18), 1),
+            "drift": rng.randint(-60, 60),
+        })
+    return particles
+
+
 def portal_latest_news(limit=3):
     """ニュースカードに出す最新の見出し。"""
 
@@ -1227,6 +1283,7 @@ def home(request):
     season = PortalSettings.load().season
     if season not in PORTAL_SEASONS:
         season = portal_season(today)
+    theme = PORTAL_SEASON_THEMES[season]
 
     # True にするとカードに「開発版をのぞく」リンクが出る。
     OUTINGS_PREVIEW_ENABLED = False
@@ -1249,13 +1306,14 @@ def home(request):
             "key": "washoku",
             "name": "スイスで和食",
             "icon_url": static("pwa/washoku/icon-192.png"),
-            "badge": "まもなく公開",
-            "status_class": "soon",
+            "badge": "公開中",
+            "status_class": "live",
+            "is_new": True,
             "eyebrow": "WASHOKU",
             "headline": "スイスの台所に\nみんなの知恵を。",
             "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
             "url": reverse("washoku:home"),
-            "action": "ひと足先にのぞく",
+            "action": "今すぐ使う",
             "features": ["レシピ", "食材情報", "みんなの投稿"],
         },
         {
@@ -1313,6 +1371,8 @@ def home(request):
         "portal/home.html",
         {
             "season": season,
+            "theme": theme,
+            "particles": portal_particles(theme),
             "latest_news": portal_latest_news(),
             "featured_apps": featured_apps,
             "other_apps": other_apps,

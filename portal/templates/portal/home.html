@@ -77,9 +77,9 @@
 
         <div class="landing-hero__inner landing-container">
             <div class="landing-hero__copy">
-                <h1 id="landing-title">スイス生活を<span class="landing-hero__spark">✦</span></h1>
-                <p class="landing-hero__headline">もっと楽しく。</p>
-                
+                <h1 id="landing-title">{{ theme.title }}<span class="landing-hero__spark">✦</span></h1>
+                <p class="landing-hero__headline">{{ theme.headline }}</p>
+
                 <p class="landing-hero__desc">ニュースも、和食も、お出かけも。<br>スイスの毎日に、役立つ発見を。</p>
                 <a class="landing-hero__cta" href="#apps">
                     <i class="bi bi-grid-fill" aria-hidden="true"></i>
@@ -93,6 +93,12 @@
                     </p>
                 {% endif %}
             </div>
+        </div>
+
+        <div class="landing-particles landing-particles--{{ theme.particle }}" aria-hidden="true">
+            {% for particle in particles %}
+                <span style="--x: {{ particle.left }}%; --y: {{ particle.top }}%; --size: {{ particle.size }}px; --delay: -{{ particle.delay }}s; --duration: {{ particle.duration }}s; --drift: {{ particle.drift }}px;">{{ particle.symbol }}</span>
+            {% endfor %}
         </div>
 
         <div class="landing-hero__ornaments" aria-hidden="true">
@@ -166,7 +172,10 @@
                     <span class="landing-featured-card__content">
                         <span class="landing-featured-card__head">
                             <span class="landing-featured-card__name"><img class="landing-featured-card__icon" src="{{ app.icon_url }}" alt="" width="34" height="34"> {{ app.name }}</span>
-                            <span class="landing-featured-card__badge landing-featured-card__badge--{{ app.status_class }}">{{ app.badge }}</span>
+                            <span class="landing-featured-card__badges">
+                                <span class="landing-featured-card__badge landing-featured-card__badge--{{ app.status_class }}">{{ app.badge }}</span>
+                                {% if app.is_new %}<span class="landing-featured-card__new">NEW!</span>{% endif %}
+                            </span>
                         </span>
                         <span class="landing-featured-card__eyebrow">{{ app.eyebrow }}</span>
                         <span class="landing-featured-card__title">{{ app.headline|linebreaksbr }}</span>

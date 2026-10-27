@@ -293,22 +293,104 @@
 #yapp-landing .landing-footer__links a { color: #e5dce5; }
 #yapp-landing .landing-footer__links a:hover { color: #fff; text-decoration: underline; }
 
-/* Seasonal variants: Halloween is active Oct 15-31; all others use neutral Swiss artwork. */
+/* Seasonal themes: colours, artwork and moving decorations */
+#yapp-landing.season-halloween { --orange: #ff7439; --orange-shadow: rgba(210,59,20,.4); --kicker: #b06b47; }
+#yapp-landing.season-winter { --orange: #2f86c4; --orange-shadow: rgba(10,58,105,.35); --kicker: #4f7fa6; --focus: #aad8ff; --cream: #f4f8fd; }
+#yapp-landing.season-spring { --orange: #e05a87; --orange-shadow: rgba(170,40,90,.32); --kicker: #c0577b; --focus: #ffc6da; --cream: #fff7f9; }
+#yapp-landing.season-summer { --orange: #0f9fb5; --orange-shadow: rgba(8,96,120,.35); --kicker: #1c8396; --focus: #a8eef7; --cream: #f5fcfd; }
+#yapp-landing.season-autumn { --orange: #d0612b; --orange-shadow: rgba(150,60,20,.35); --kicker: #a85a32; --cream: #fff8f0; }
+
+#yapp-landing .landing-hero__cta,
+#yapp-landing .landing-featured-card__action { background: var(--orange); box-shadow: 0 12px 27px var(--orange-shadow, rgba(0,0,0,.2)); }
+#yapp-landing .landing-hero__cta:hover { background: var(--orange); filter: brightness(1.08); }
+#yapp-landing .landing-kicker { color: var(--kicker, #b06b47); }
+#yapp-landing .landing-section-heading__decoration,
+#yapp-landing .landing-more__intro h2 span { color: var(--orange); opacity: .55; }
+#yapp-landing .landing-season-dot { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+
+#yapp-landing:not(.season-halloween) .landing-hero__ornaments { display: none; }
 #yapp-landing:not(.season-halloween) .landing-hero__backdrop {
     background: linear-gradient(90deg, rgba(8,21,45,.83), rgba(18,30,53,.5) 45%, rgba(27,30,41,.16) 100%), url("images/alpine-hero.svg") center / cover no-repeat;
 }
-#yapp-landing:not(.season-halloween) .landing-hero__ornaments { display: none; }
-#yapp-landing.season-winter { --orange: #649bca; --focus: #aad8ff; --cream: #f5f9ff; }
-#yapp-landing.season-winter .landing-hero__backdrop { filter: hue-rotate(17deg) saturate(.8); }
-#yapp-landing.season-winter .landing-hero__cta { background: #3c89bd; box-shadow: 0 12px 26px rgba(10,58,105,.26); }
-#yapp-landing.season-winter .landing-season-dot { background: #98cfff; box-shadow: 0 0 14px #98cfff; }
-#yapp-landing.season-spring { --cream: #f7fcf5; --focus: #b9e4ac; }
-#yapp-landing.season-spring .landing-hero__backdrop { filter: hue-rotate(55deg) saturate(.9); }
-#yapp-landing.season-spring .landing-hero__cta { background: #328d75; box-shadow: 0 12px 24px rgba(15,81,62,.28); }
-#yapp-landing.season-summer { --cream: #fffdf3; --focus: #e5df8c; }
-#yapp-landing.season-summer .landing-hero__backdrop { filter: saturate(1.3) brightness(1.09); }
-#yapp-landing.season-summer .landing-hero__cta { background: #f57938; }
-#yapp-landing.season-autumn { --cream: #fff9f2; }
+#yapp-landing.season-winter .landing-hero__backdrop {
+    background: linear-gradient(90deg, rgba(10,30,60,.82), rgba(40,80,120,.45) 50%, rgba(220,235,250,.15)), url("images/alpine-hero.svg") center / cover no-repeat;
+    filter: hue-rotate(15deg) saturate(.7) brightness(1.1);
+}
+#yapp-landing.season-spring .landing-hero__backdrop {
+    background: linear-gradient(90deg, rgba(70,20,50,.78), rgba(150,60,100,.4) 50%, rgba(255,200,220,.15)), url("images/alpine-hero.svg") center / cover no-repeat;
+    filter: saturate(1.1);
+}
+#yapp-landing.season-summer .landing-hero__backdrop {
+    background: linear-gradient(90deg, rgba(5,40,70,.8), rgba(10,110,150,.42) 50%, rgba(255,220,120,.18)), url("images/alpine-hero.svg") center / cover no-repeat;
+    filter: saturate(1.3) brightness(1.1);
+}
+#yapp-landing.season-autumn .landing-hero__backdrop {
+    background: linear-gradient(90deg, rgba(50,20,10,.82), rgba(130,60,20,.45) 50%, rgba(255,170,80,.18)), url("images/alpine-hero.svg") center / cover no-repeat;
+}
+
+/* Moving decorations (snow, petals, leaves, bats, fireworks) */
+#yapp-landing .landing-particles { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+#yapp-landing .landing-particles span {
+    position: absolute; left: var(--x); top: -10%;
+    font-size: var(--size); line-height: 1;
+    animation: landing-fall var(--duration) linear var(--delay) infinite;
+    will-change: transform;
+}
+@keyframes landing-fall {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+    8% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate3d(var(--drift), 115vh, 0) rotate(320deg); opacity: 0; }
+}
+#yapp-landing .landing-particles--snow span { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.8); opacity: .9; }
+#yapp-landing .landing-particles--petal span {
+    width: calc(var(--size) * .6); height: calc(var(--size) * .45);
+    background: linear-gradient(135deg, #ffd7e4, #f59ab8);
+    border-radius: 100% 0 100% 0; box-shadow: 0 2px 6px rgba(160,40,80,.25);
+}
+#yapp-landing .landing-particles--halloween span:nth-child(3n) { animation-name: landing-flutter; top: var(--y); }
+@keyframes landing-flutter {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(.9); opacity: .85; }
+    50% { transform: translate3d(var(--drift), -30px, 0) scale(1.1); opacity: 1; }
+}
+#yapp-landing .landing-particles--firework span {
+    top: var(--y); width: calc(var(--size) * 5); height: calc(var(--size) * 5);
+    margin: calc(var(--size) * -2.5) 0 0 calc(var(--size) * -2.5);
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 38%, var(--spark, #ffd36b) 40%, transparent 46%),
+                repeating-conic-gradient(var(--spark, #ffd36b) 0 4deg, transparent 4deg 24deg);
+    -webkit-mask: radial-gradient(circle, transparent 20%, #000 22%, #000 48%, transparent 50%);
+            mask: radial-gradient(circle, transparent 20%, #000 22%, #000 48%, transparent 50%);
+    animation: landing-burst calc(var(--duration) / 3) ease-out var(--delay) infinite;
+}
+#yapp-landing .landing-particles--firework span:nth-child(3n) { --spark: #ff7aa8; }
+#yapp-landing .landing-particles--firework span:nth-child(3n+1) { --spark: #7fe8ff; }
+#yapp-landing .landing-particles--firework span:nth-child(n+9) { display: none; }
+@keyframes landing-burst {
+    0% { transform: scale(.1); opacity: 0; }
+    15% { opacity: 1; }
+    70% { opacity: .8; }
+    100% { transform: scale(1.15); opacity: 0; }
+}
+
+/* Full-screen hero */
+#yapp-landing .landing-hero { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; overflow: hidden; }
+#yapp-landing .landing-hero__inner { flex: 1; }
+
+/* Bigger status badges */
+#yapp-landing .landing-featured-card__badges { position: relative; display: inline-flex; flex: none; }
+#yapp-landing .landing-featured-card__name { white-space: nowrap; }
+#yapp-landing .landing-featured-card__badge { padding: 7px 14px; font-size: 13px; letter-spacing: .02em; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+#yapp-landing .landing-featured-card__badge--live { background: #0aa66d; }
+#yapp-landing .landing-featured-card__badge--live::before { content: ""; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #b8ffd9; box-shadow: 0 0 0 3px rgba(184,255,217,.35); }
+#yapp-landing .landing-featured-card__new {
+    position: absolute; top: calc(100% + 8px); right: -4px;
+    display: inline-flex; align-items: center; padding: 6px 11px; border-radius: 999px;
+    background: #ffde3b; color: #6b2d00; font-size: 12px; font-weight: 950; letter-spacing: .04em;
+    transform: rotate(-6deg); box-shadow: 0 4px 12px rgba(0,0,0,.28);
+    animation: landing-pop 2.4s ease-in-out infinite;
+}
+@keyframes landing-pop { 0%, 100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(-6deg) scale(1.1); } }
 
 @media (max-width: 1140px) {
     #yapp-landing .landing-container { width: min(100% - 50px, 1050px); }
@@ -322,7 +404,6 @@
 }
 @media (max-width: 760px) {
     #yapp-landing .landing-container { width: min(100% - 32px, 650px); }
-    #yapp-landing .landing-hero { min-height: 520px; }
     #yapp-landing .landing-header { min-height: 73px; gap: 10px; }
     #yapp-landing .landing-brand { font-size: 25px; }
     #yapp-landing .landing-nav, #yapp-landing .landing-account { display: none; }
@@ -382,7 +463,6 @@
 }
 @media (max-width: 420px) {
     #yapp-landing .landing-container { width: calc(100% - 26px); }
-    #yapp-landing .landing-hero { min-height: 494px; }
     #yapp-landing .landing-hero__inner { min-height: 420px; }
     #yapp-landing .landing-hero__backdrop { background-position: 59% center; }
     #yapp-landing .landing-hero__cta { min-height: 46px; padding: 12px 19px; }
@@ -394,8 +474,15 @@
     #yapp-landing .landing-footer__links { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
+    #yapp-landing .landing-particles { display: none; }
+    #yapp-landing .landing-featured-card__new { animation: none; }
     #yapp-landing .landing-featured-card,
     #yapp-landing .landing-featured-card__art,
     #yapp-landing .landing-mini-card,
     #yapp-landing .landing-hero__cta { transition: none; }
 }
+
+/* Focus point of each card photo (cards are taller than the photos) */
+#yapp-landing .landing-featured-card--news .landing-featured-card__art--photo { background-position: 68% center; }
+#yapp-landing .landing-featured-card--washoku .landing-featured-card__art--photo { background-position: 62% center; }
+#yapp-landing .landing-featured-card--outings .landing-featured-card__art--photo { background-position: 78% center; }
