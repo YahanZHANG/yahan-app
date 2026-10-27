@@ -1,0 +1,112 @@
+[
+  {
+    "spot_id": 19,
+    "title": "Basilika der Abtei – Klosterschatz",
+    "score": 91,
+    "candidates": []
+  },
+  {
+    "spot_id": 50,
+    "title": "Arosa",
+    "score": 91,
+    "candidates": [
+      {
+        "file_title": "File:Arosa2007 12 15 001.JPG",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Arosa2007_12_15_001.JPG/960px-Arosa2007_12_15_001.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Arosa2007_12_15_001.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Arosa2007_12_15_001.JPG",
+        "license": "CC BY 3.0",
+        "license_url": "https://creativecommons.org/licenses/by/3.0",
+        "author": "Ch-info.ch",
+        "description": "Arosa Dorf Richtung Davos/Parsenn rechts unten Untersee\n\n mit alter Badi",
+        "needs_review": true
+      },
+      {
+        "file_title": "File:00 0977 Arosa (CH) -Alphornbläser.jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/00_0977_Arosa_%28CH%29_-Alphornbl%C3%A4ser.jpg/960px-00_0977_Arosa_%28CH%29_-Alphornbl%C3%A4ser.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/16/00_0977_Arosa_%28CH%29_-Alphornbl%C3%A4ser.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:00_0977_Arosa_(CH)_-Alphornbl%C3%A4ser.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "author": "W. Bulach",
+        "description": "Alphornblowers in Arosa, Switzerland. The Alphorn is a Swiss national symbol.",
+        "needs_review": true
+      },
+      {
+        "file_title": "File:Arosa - panoramio (2).jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/Arosa_-_panoramio_%282%29.jpg/960px-Arosa_-_panoramio_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/3/32/Arosa_-_panoramio_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Arosa_-_panoramio_(2).jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "author": "Patrick Nouhailler's…",
+        "description": "Arosa",
+        "needs_review": true
+      }
+    ]
+  },
+  {
+    "spot_id": 9,
+    "title": "Bobbahn – das gibt’s nur im Schongi!",
+    "score": 88,
+    "candidates": []
+  },
+  {
+    "spot_id": 3,
+    "title": "Treno Gottardo",
+    "score": 87,
+    "candidates": [
+      {
+        "file_title": "File:Treno Gottardo-inside-1.jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Treno_Gottardo-inside-1.jpg/960px-Treno_Gottardo-inside-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/67/Treno_Gottardo-inside-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Treno_Gottardo-inside-1.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "author": "MHM55",
+        "description": "Intérieur du \"Treno Gottardo\".",
+        "needs_review": true
+      },
+      {
+        "file_title": "File:Treno Gottardo-inside-2.jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Treno_Gottardo-inside-2.jpg/960px-Treno_Gottardo-inside-2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Treno_Gottardo-inside-2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Treno_Gottardo-inside-2.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "author": "MHM55",
+        "description": "Intérieur du \"Treno Gottardo\".",
+        "needs_review": true
+      },
+      {
+        "file_title": "File:Treno Gottardo-inside-3.jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Treno_Gottardo-inside-3.jpg/960px-Treno_Gottardo-inside-3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Treno_Gottardo-inside-3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Treno_Gottardo-inside-3.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "author": "MHM55",
+        "description": "Intérieur du \"Treno Gottardo\".",
+        "needs_review": true
+      }
+    ]
+  },
+  {
+    "spot_id": 7,
+    "title": "Seilpark Balmberg",
+    "score": 87,
+    "candidates": [
+      {
+        "file_title": "File:Seilpark Balmberg.jpg",
+        "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Seilpark_Balmberg.jpg/960px-Seilpark_Balmberg.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "original_url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Seilpark_Balmberg.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Seilpark_Balmberg.jpg",
+        "license": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0",
+        "author": "Arkelin",
+        "description": "Seilpark Balmberg",
+        "needs_review": true
+      }
+    ]
+  }
+]

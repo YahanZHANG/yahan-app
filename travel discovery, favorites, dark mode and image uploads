@@ -1,0 +1,39 @@
+ outings/admin.py                                   | 101 [32m+++[m
+ outings/discovery_views.py                         | 641 [32m+++++++++++++++[m
+ outings/forms.py                                   |  51 [32m++[m
+ .../management/commands/approve_tourist_image.py   | 246 [32m++++++[m
+ .../commands/auto_assign_tourist_images.py         | 214 [32m+++++[m
+ .../management/commands/enrich_tourist_spots.py    | 866 [32m+++++++++++++++++++++[m
+ outings/management/commands/find_tourist_images.py | 403 [32m++++++++++[m
+ .../management/commands/import_myswitzerland.py    | 211 [32m+++++[m
+ .../management/commands/repair_eventfrog_urls.py   | 322 [32m++++++[m[31m--[m
+ outings/migrations/0011_touristspot.py             |  43 [32m+[m
+ .../migrations/0012_alter_touristspot_status.py    |  18 [32m+[m
+ .../0013_touristspot_ai_quality_score_and_more.py  |  28 [32m+[m
+ .../0014_touristspotcomment_touristspotheart.py    |  48 [32m++[m
+ outings/models.py                                  | 263 [32m+++++++[m
+ outings/services/myswitzerland.py                  | 323 [32m++++++++[m
+ outings/services/user_event_cloudinary.py          | 101 [32m+++[m
+ outings/services/user_event_images.py              |  88 [32m+++[m
+ outings/static/outings/css/outings-dark.css        | 320 [32m++++++++[m
+ outings/static/outings/css/outings-discovery.css   | 650 [32m++++++++++++++++[m
+ outings/static/outings/css/outings.css             | 250 [32m+++++[m[31m-[m
+ outings/static/outings/images/ai/arosa.webp        | Bin [31m0[m -> [32m2252310[m bytes
+ outings/templates/outings/about.html               | 255 [32m++++++[m
+ outings/templates/outings/base.html                | 260 [32m+++++[m[31m--[m
+ outings/templates/outings/event_detail.html        |  25 [32m+[m[31m-[m
+ outings/templates/outings/event_form.html          |  96 [32m++[m[31m-[m
+ outings/templates/outings/event_home.html          | 655 [32m++++++++++++++++[m
+ outings/templates/outings/home.html                | 654 [32m+++++[m[31m-----------[m
+ .../templates/outings/includes/discovery_card.html | 114 [32m+++[m
+ outings/templates/outings/my_page.html             |  42 [32m+[m[31m-[m
+ outings/templates/outings/saved_all.html           | 201 [32m+++++[m
+ outings/templates/outings/tourist_spot_detail.html | 418 [32m++++++++++[m
+ outings/templates/outings/tourist_spot_list.html   | 737 [32m++++++++++++++++++[m
+ outings/templatetags/__init__.py                   |   0
+ outings/templatetags/outings_names.py              |  65 [32m++[m
+ outings/tourist_urls.py                            |  24 [32m+[m
+ outings/tourist_views.py                           | 426 [32m++++++++++[m
+ outings/urls.py                                    |  30 [32m+[m[31m-[m
+ outings/views.py                                   | 269 [32m+++[m[31m----[m
+ 38 files changed, 8658 insertions(+), 800 deletions(-)

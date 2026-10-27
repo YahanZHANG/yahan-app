@@ -1166,71 +1166,104 @@ def manage_apps(request):
 # Public Portal Home
 # =========================================================
 
-def home(request):
+# portal/views.py の「def home(request):」から、次の
+# 「# Delete account」の直前までを、この関数で置き換える。
+# 既存の imports に timezone / render / reverse / PortalAnnouncement はある。
 
-    apps = [
+
+def home(request):
+    """季節で表情が変わる、公開Yappポータル。"""
+    from zoneinfo import ZoneInfo
+
+    # DjangoのTIME_ZONE設定にかかわらず、スイス現地の日付を使う。
+    today = timezone.localtime(
+        timezone.now(), ZoneInfo("Europe/Zurich")
+    ).date()
+
+    if today.month == 10 and today.day >= 15:
+        season = "halloween"
+        season_label = "HALLOWEEN IN SWITZERLAND"
+    elif (today.month == 11 and today.day >= 20) or today.month in (12, 1, 2):
+        season = "winter"
+        season_label = "WINTER IN SWITZERLAND"
+    elif today.month in (3, 4, 5):
+        season = "spring"
+        season_label = "SPRING IN SWITZERLAND"
+    elif today.month in (6, 7, 8):
+        season = "summer"
+        season_label = "SUMMER IN SWITZERLAND"
+    else:
+        season = "autumn"
+        season_label = "AUTUMN IN SWITZERLAND"
+
+    # まだ一般向けPortalから案内したくない場合は False のまま。
+    # True にするとカードに「先行版を試す」リンクが出る。
+    WASHOKU_PREVIEW_ENABLED = False
+    OUTINGS_PREVIEW_ENABLED = False
+
+    featured_apps = [
         {
+            "key": "news",
             "name": "Swiss News",
-            "label": "SWISS NEWS",
             "icon": "📰",
-            "description": "スイスのニュースを日本語でチェック。",
+            "badge": "公開中",
+            "status_class": "live",
+            "eyebrow": "SWISS NEWS",
+            "headline": "スイスの今がわかる、日本語ニュース。",
+            "description": "スイスのニュースや暮らしに役立つ情報を、日本語で。毎日の情報収集をもっと身近に。",
             "url": reverse("news:home"),
-            "status": "ログイン不要",
-            "coming_soon": False,
-            "card_class": "portal-news-card",
+            "action": "今すぐ読む",
+            "features": ["現地ニュース", "暮らし", "コラム"],
         },
         {
-            "name": "ミニゲーム",
-            "label": "MINI GAMES",
-            "icon": "🎮",
-            "description": "ちょっとした空き時間に遊べるゲーム。",
-            "url": reverse("games:game_list"),
-            "status": "ランキング登録時にログイン必要",
-            "coming_soon": False,
-            "card_class": "portal-games-card",
-        },
-        {
-            "name": "イベント・日程調整",
-            "label": "EVENT SCHEDULER",
-            "icon": "📅",
-            "description": "みんなの予定を簡単に調整。",
-            "url": reverse("event_scheduler:event_list"),
-            "status": "イベント作成時にログイン必要",
-            "coming_soon": False,
-            "card_class": "portal-events-card",
-        },
-        {
-            "name": "色判定",
-            "label": "COLOR CHECKER",
-            "icon": "🎨",
-            "description": "色覚異常の方のお助けアプリ。気になる色を簡単に確認。",
-            "url": reverse("colorcheck:index"),
-            "status": "ログイン不要",
-            "coming_soon": False,
-            "card_class": "portal-colorcheck-card",
-        },
-        {
+            "key": "washoku",
             "name": "スイスで和食",
-            "label": "WASHOKU IN SWITZERLAND",
             "icon": "🍚",
-            "description": (
-                "食卓の「困った」と「おいしい」を、"
-                "みんなで分け合う。和食のレシピも。"
-            ),
-            "url": None,
-            "status": "COMING SOON",
-            "coming_soon": True,
-            "card_class": "portal-recipes-card",
+            "badge": "まもなく公開",
+            "status_class": "soon",
+            "eyebrow": "WASHOKU",
+            "headline": "スイスでつながる、和食の輪。",
+            "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
+            "url": "/washoku/" if WASHOKU_PREVIEW_ENABLED else None,
+            "action": "先行版を試す",
+            "features": ["レシピ", "食材情報", "みんなの投稿"],
         },
         {
-            "name": "おでかけ",
-            "label": "OUTINGS",
-            "icon": "🎈",
-            "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
-            "url": None,
-            "status": "COMING SOON",
-            "coming_soon": True,
-            "card_class": "portal-outings-card",
+            "key": "outings",
+            "name": "お出かけ",
+            "icon": "🏔️",
+            "badge": "絶賛準備中",
+            "status_class": "building",
+            "eyebrow": "OUTINGS",
+            "headline": "週末のスイスに、次のワクワクを。",
+            "description": "季節のイベントや、ちょっと出かけたくなる場所。お出かけのアイデアを準備中。",
+            "url": "/outings/" if OUTINGS_PREVIEW_ENABLED else None,
+            "action": "開発版をのぞく",
+            "features": ["週末イベント", "季節の楽しみ", "お出かけ情報"],
+        },
+    ]
+
+    other_apps = [
+        {
+            "key": "games",
+            "name": "ミニゲーム",
+            "icon": "🎮",
+            "description": "ちょっとひと息、気軽に遊ぼう。",
+            "url": reverse("games:game_list"),
+        },
+        {
+            "key": "colorcheck",
+            "name": "色判定",
+            "icon": "🎨",
+            "description": "気になる色を、わかりやすく。",
+            "url": reverse("colorcheck:index"),
+        },
+        {
+            "key": "events",
+            "name": "イベント調整",
+            "icon": "📅",
+            "description": "みんなの予定を、ひとつに。",
+            "url": reverse("event_scheduler:event_list"),
         },
     ]
 
@@ -1238,7 +1271,10 @@ def home(request):
         request,
         "portal/home.html",
         {
-            "apps": apps,
+            "season": season,
+            "season_label": season_label,
+            "featured_apps": featured_apps,
+            "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),
         },
     )

@@ -1,0 +1,335 @@
+/* ========================================================
+   Yapp Portal Landing 2026 - isolated from My Account CSS
+   Images are relative to static/portal/landing.css
+   ======================================================== */
+
+.yapp-public-home {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff9f1;
+}
+
+#yapp-landing,
+#yapp-landing * { box-sizing: border-box; }
+
+#yapp-landing {
+    --ink: #20223c;
+    --cream: #fff9f1;
+    --orange: #fa733f;
+    --focus: #fed36c;
+    overflow: clip;
+    min-height: 100vh;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+#yapp-landing a { text-decoration: none; }
+#yapp-landing a:focus-visible,
+#yapp-landing button:focus-visible,
+#yapp-landing summary:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 4px;
+}
+#yapp-landing [hidden] { display: none !important; }
+#yapp-landing .landing-container { width: min(1320px, calc(100% - 72px)); margin-inline: auto; }
+
+/* Hero: image, atmosphere, navigation */
+#yapp-landing .landing-brand__logo { width: 143px; height: auto; max-height: 59px; object-fit: contain; }
+#yapp-landing .landing-hero {
+    position: relative;
+    min-height: 610px;
+    isolation: isolate;
+    color: #fff;
+    background: #17152e;
+}
+#yapp-landing .landing-hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+        linear-gradient(90deg, rgba(13, 12, 32, .82) 0%, rgba(17, 12, 35, .64) 35%, rgba(25, 14, 40, .16) 75%),
+        url("images/halloween-hero.svg") center 49% / cover no-repeat;
+}
+#yapp-landing .landing-hero::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 125px;
+    pointer-events: none;
+    background: linear-gradient(transparent, rgba(22, 17, 31, .42));
+    z-index: -1;
+}
+#yapp-landing .landing-header {
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    position: relative;
+    z-index: 4;
+}
+#yapp-landing .landing-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -.075em;
+}
+#yapp-landing .landing-brand__mountain { font-size: 22px; line-height: 1; letter-spacing: -.22em; transform: translateY(1px); }
+#yapp-landing .landing-brand__swiss {
+    font-size: 9px; display: grid; place-items: center; width: 17px; height: 17px;
+    color: white; background: #e94347; border-radius: 3px; transform: translateY(-8px);
+}
+#yapp-landing .landing-nav { display: flex; align-items: center; gap: 31px; margin-left: 48px; }
+#yapp-landing .landing-nav a { color: rgba(255,255,255,.85); font-size: 14px; font-weight: 800; padding: 12px 0; white-space: nowrap; }
+#yapp-landing .landing-nav a:hover, #yapp-landing .landing-nav a[aria-current] { color: #fff; }
+#yapp-landing .landing-nav a[aria-current] { border-bottom: 2px solid #fff; }
+#yapp-landing .landing-account { margin-left: auto; display: flex; align-items: center; gap: 15px; }
+#yapp-landing .landing-account__login { color: #fff; font-size: 13px; font-weight: 800; }
+#yapp-landing .landing-account__primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    border-radius: 999px; min-height: 43px; padding: 10px 21px;
+    background: white; color: #2a253c; font-size: 13px; font-weight: 900;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+#yapp-landing .landing-account__primary:hover { background: #fff1db; }
+#yapp-landing .landing-mobile-menu { display: none; }
+
+#yapp-landing .landing-hero__inner { position: relative; display: flex; align-items: center; min-height: 495px; padding-bottom: 40px; }
+#yapp-landing .landing-hero__copy { position: relative; z-index: 2; max-width: 585px; padding: 28px 0 46px; }
+#yapp-landing .landing-hero__season {
+    display: inline-flex; align-items: center; gap: 9px; color: #fddcab;
+    font-size: 12px; font-weight: 850; letter-spacing: .18em; margin-bottom: 20px;
+}
+#yapp-landing .landing-season-dot { background: #ff9a5e; width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 12px #ff9a5e; }
+#yapp-landing .landing-hero h1 {
+    margin: 0; font-size: clamp(40px, 4.0vw, 78px); line-height: .95;
+    font-weight: 950; letter-spacing: -.085em; color: #fff7e9;
+    text-shadow: 0 9px 35px rgba(0,0,0,.18);
+}
+#yapp-landing .landing-hero__spark { color: #ffcb70; font-size: .25em; vertical-align: top; letter-spacing: 0; margin-left: 5px; }
+#yapp-landing .landing-hero__headline {
+    font-size: clamp(43px, 6vw, 76px);
+    line-height: 1.2;
+    letter-spacing: -.04em;
+    font-weight: 900; margin: 10px 0 13px; color: #fff;
+}
+#yapp-landing .landing-hero__desc { max-width: 420px; font-size: 15px; line-height: 1.95; color: #f5eae6; margin: 0 0 26px; }
+#yapp-landing .landing-hero__cta {
+    display: inline-flex; align-items: center; gap: 12px; padding: 14px 26px;
+    border-radius: 100px; background: #ff7439; box-shadow: 0 12px 27px rgba(210,59,20,.4);
+    color: white; font-weight: 900; font-size: 14px; min-height: 51px;
+    transition: transform .2s ease, background .2s ease;
+}
+#yapp-landing .landing-hero__cta:hover { transform: translateY(-3px); color: #fff; background: #f55e29; }
+#yapp-landing .landing-hero__note {
+    position: absolute; right: 40px; top: 86px; width: 246px;
+    font-weight: 850; color: #fff1e2; font-size: 16px; line-height: 1.9;
+    text-align: center; transform: rotate(-6deg); text-shadow: 0 4px 14px #251528;
+}
+#yapp-landing .landing-hero__note-en { display: block; margin-top: 5px; font: italic 16px Georgia,serif; color: #ffdd98; }
+#yapp-landing .landing-hero__ornaments { position: absolute; bottom: 16px; right: 7%; pointer-events: none; display: flex; align-items: center; gap: 13px; filter: drop-shadow(0 7px 12px rgba(0,0,0,.2)); }
+#yapp-landing .landing-hero__ghost { font-size: 42px; transform: rotate(10deg); }
+#yapp-landing .landing-hero__pumpkin { font-size: 50px; }
+#yapp-landing .landing-hero__bat { color: #ffd99c; font-size: 20px; transform: translateY(-35px); }
+
+/* Announcements (existing localStorage behavior preserved) */
+#yapp-landing .landing-announcements { margin-top: 25px; display: grid; gap: 10px; }
+#yapp-landing .landing-announcement {
+    display: flex; align-items: center; gap: 13px; border-radius: 13px;
+    padding: 11px 12px 11px 15px; border: 1px solid #f3d8bd;
+    background: #fff0df; font-size: 14px; font-weight: 700; color: #734a32;
+}
+#yapp-landing .landing-announcement__icon { color: #eb713e; font-size: 19px; }
+#yapp-landing .landing-announcement__message,
+#yapp-landing .landing-announcement a { color: inherit; flex: 1; }
+#yapp-landing .landing-announcement a:hover { text-decoration: underline; }
+#yapp-landing .landing-announcement button {
+    width: 36px; height: 36px; display: grid; place-items: center; border: none;
+    background: transparent; color: #815f4a; cursor: pointer; font-size: 22px;
+}
+
+/* Featured app card hierarchy */
+#yapp-landing .landing-main { padding-top: 54px; }
+#yapp-landing .landing-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 25px; }
+#yapp-landing .landing-kicker { display: flex; align-items: center; gap: 10px; margin: 0 0 9px; color: #b06b47; font-weight: 900; font-size: 10px; letter-spacing: .19em; }
+#yapp-landing .landing-kicker__dash { display: inline-block; width: 26px; height: 2px; border-radius: 4px; background: currentColor; }
+#yapp-landing .landing-section-heading h2 { margin: 0; color: #332c34; font-weight: 900; font-size: clamp(23px, 2.5vw, 34px); letter-spacing: -.045em; line-height: 1.5; }
+#yapp-landing .landing-section-heading p:last-child { margin: 6px 0 0; color: #8b7772; font-size: 14px; }
+#yapp-landing .landing-section-heading__decoration { font-size: 60px; color: #eedcc7; line-height: 1; }
+#yapp-landing .landing-featured-grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 18px; align-items: stretch; }
+#yapp-landing .landing-featured-card {
+    position: relative; display: block; isolation: isolate; overflow: hidden; min-width: 0;
+    min-height: 444px; border-radius: 23px; background: #222c49; color: white;
+    border: 3px solid #fff8eb; box-shadow: 0 9px 30px rgba(67,48,45,.16);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+#yapp-landing a.landing-featured-card:hover { color: #fff; transform: translateY(-6px); box-shadow: 0 19px 35px rgba(67,48,45,.21); }
+#yapp-landing .landing-featured-card__art,
+#yapp-landing .landing-featured-card__tint { position: absolute; inset: 0; z-index: -1; }
+#yapp-landing .landing-featured-card__art { background-size: cover; background-position: center; transition: transform .5s ease; }
+#yapp-landing a.landing-featured-card:hover .landing-featured-card__art { transform: scale(1.06); }
+#yapp-landing .landing-featured-card__tint { background: linear-gradient(180deg, rgba(18,24,45,.57), rgba(11,17,32,.34) 43%,rgba(5,12,24,.89) 100%); }
+#yapp-landing .landing-featured-card--news .landing-featured-card__art { background-image: url("images/swiss-news.svg"); }
+#yapp-landing .landing-featured-card--washoku .landing-featured-card__art { background-image: url("images/washoku.svg"); }
+#yapp-landing .landing-featured-card--outings .landing-featured-card__art { background-image: url("images/outings.svg"); }
+#yapp-landing .landing-featured-card--washoku .landing-featured-card__tint { background: linear-gradient(180deg,rgba(47,21,10,.72),rgba(36,15,8,.17) 49%,rgba(31,11,6,.94) 100%); }
+#yapp-landing .landing-featured-card--outings .landing-featured-card__tint { background: linear-gradient(180deg,rgba(24,23,55,.75),rgba(19,22,56,.20) 46%,rgba(14,21,49,.94) 100%); }
+#yapp-landing .landing-featured-card__content { display: flex; flex-direction: column; min-height: 444px; height: 100%; padding: 23px 21px 18px; position: relative; z-index: 1; }
+#yapp-landing .landing-featured-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 7px; margin-bottom: 34px; }
+#yapp-landing .landing-featured-card__name { color: white; font-size: clamp(17px,1.8vw,23px); line-height: 1.4; font-weight: 900; letter-spacing: -.035em; }
+#yapp-landing .landing-featured-card__name > span { font-size: .95em; }
+#yapp-landing .landing-featured-card__badge { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 950; color: #fff; }
+#yapp-landing .landing-featured-card__badge--live { background: #079b65; }
+#yapp-landing .landing-featured-card__badge--soon { background: #ffd271; color: #5f3909; }
+#yapp-landing .landing-featured-card__badge--building { background: #7860b2; }
+#yapp-landing .landing-featured-card__eyebrow { font-size: 10px; font-weight: 900; color: #ffdbb6; letter-spacing: .2em; margin-bottom: 5px; }
+#yapp-landing .landing-featured-card__title { display: block; font-size: clamp(21px, 2.05vw, 27px); line-height: 1.46; font-weight: 950; letter-spacing: -.045em; max-width: 300px; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
+#yapp-landing .landing-featured-card__desc { margin-top: 10px; display: block; font-weight: 650; font-size: 13px; line-height: 1.85; color: #fff5ee; max-width: 280px; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
+#yapp-landing .landing-featured-card__spacer { flex: 1; min-height: 20px; }
+#yapp-landing .landing-featured-card__action,
+#yapp-landing .landing-featured-card__waiting { align-self: flex-start; display: inline-flex; align-items: center; gap: 15px; padding: 9px 20px; border-radius: 99px; min-height: 40px; color: white; background: #f8733d; font-weight: 900; font-size: 12px; box-shadow: 0 7px 20px rgba(0,0,0,.16); }
+#yapp-landing .landing-featured-card__waiting { color: #fff9f4; background: rgba(58,45,83,.54); border: 1px solid rgba(255,255,255,.68); box-shadow: none; }
+#yapp-landing .landing-featured-card--washoku .landing-featured-card__waiting { background: rgba(141,82,36,.62); }
+#yapp-landing .landing-featured-card__features { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.25); }
+#yapp-landing .landing-featured-card__features span { font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; }
+#yapp-landing .landing-featured-card__features span:not(:last-child)::after { content: "✦"; font-size: 7px; color: #ffddbb; margin-left: 8px; }
+
+/* Quiet secondary app shelf */
+#yapp-landing .landing-more { margin-top: 45px; padding: 31px 32px 34px; border-radius: 24px; background: #fff; border: 1px solid #f1e4d8; box-shadow: 0 8px 26px rgba(93,62,42,.06); }
+#yapp-landing .landing-more__intro { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 21px; }
+#yapp-landing .landing-more__intro .landing-kicker { color: #ac827a; }
+#yapp-landing .landing-more__intro h2 { font-size: 23px; line-height: 1.3; margin: 0; letter-spacing: -.05em; font-weight: 900; }
+#yapp-landing .landing-more__intro h2 span { color: #f5bd68; }
+#yapp-landing .landing-more__intro > p { margin: 0; font-size: 13px; color: #927f78; }
+#yapp-landing .landing-more__grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+#yapp-landing .landing-mini-card { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 102px; padding: 17px; border-radius: 17px; background: #fffaf7; border: 1px solid #f0e7de; color: #39343c; transition: transform .2s ease,background .2s ease; }
+#yapp-landing .landing-mini-card:hover { transform: translateY(-3px); background: #fff3e5; color: #39343c; }
+#yapp-landing .landing-mini-card__icon { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px; background: #f7eaf3; font-size: 29px; }
+#yapp-landing .landing-mini-card--games .landing-mini-card__icon { background: #eae6fb; }
+#yapp-landing .landing-mini-card--colorcheck .landing-mini-card__icon { background: #ffebeb; }
+#yapp-landing .landing-mini-card--events .landing-mini-card__icon { background: #e5efff; }
+#yapp-landing .landing-mini-card__body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+#yapp-landing .landing-mini-card__body strong { font-size: 15px; font-weight: 900; }
+#yapp-landing .landing-mini-card__body small { font-size: 12px; line-height: 1.5; color: #8c7c79; }
+#yapp-landing .landing-mini-card > i { align-self: start; font-size: 12px; color: #b9a9a1; }
+
+/* About and footer */
+#yapp-landing .landing-about { display: grid; grid-template-columns: 1fr 1.15fr; gap: 50px; margin-top: 44px; padding: 42px 4px 58px; border-top: 1px solid #ecddce; }
+#yapp-landing .landing-about h2 { font-weight: 900; font-size: clamp(24px,2.5vw,32px); line-height: 1.5; letter-spacing: -.055em; margin: 0; }
+#yapp-landing .landing-about__right { align-self: center; }
+#yapp-landing .landing-about__right p { margin: 0 0 14px; color: #675d5d; line-height: 1.95; font-size: 14px; }
+#yapp-landing .landing-about__right p.landing-about__note { color: #8b6848; font-size: 12px; font-weight: 700; }
+#yapp-landing .landing-about__note i { margin-right: 5px; color: #2c9d77; }
+#yapp-landing .landing-footer { background: #221e30; color: #e5dce5; }
+#yapp-landing .landing-footer__inner { display: flex; align-items: center; gap: 35px; min-height: 98px; font-size: 12px; }
+#yapp-landing .landing-footer__brand { font-weight: 900; font-size: 18px; color: white; margin-right: 5px; }
+#yapp-landing .landing-footer__links { margin-left: auto; display: flex; align-items: center; gap: 26px; }
+#yapp-landing .landing-footer__links a { color: #e5dce5; }
+#yapp-landing .landing-footer__links a:hover { color: #fff; text-decoration: underline; }
+
+/* Seasonal variants: Halloween is active Oct 15-31; all others use neutral Swiss artwork. */
+#yapp-landing:not(.season-halloween) .landing-hero__backdrop {
+    background: linear-gradient(90deg, rgba(8,21,45,.83), rgba(18,30,53,.5) 45%, rgba(27,30,41,.16) 100%), url("images/alpine-hero.svg") center / cover no-repeat;
+}
+#yapp-landing:not(.season-halloween) .landing-hero__ornaments { display: none; }
+#yapp-landing.season-winter { --orange: #649bca; --focus: #aad8ff; --cream: #f5f9ff; }
+#yapp-landing.season-winter .landing-hero__backdrop { filter: hue-rotate(17deg) saturate(.8); }
+#yapp-landing.season-winter .landing-hero__cta { background: #3c89bd; box-shadow: 0 12px 26px rgba(10,58,105,.26); }
+#yapp-landing.season-winter .landing-season-dot { background: #98cfff; box-shadow: 0 0 14px #98cfff; }
+#yapp-landing.season-spring { --cream: #f7fcf5; --focus: #b9e4ac; }
+#yapp-landing.season-spring .landing-hero__backdrop { filter: hue-rotate(55deg) saturate(.9); }
+#yapp-landing.season-spring .landing-hero__cta { background: #328d75; box-shadow: 0 12px 24px rgba(15,81,62,.28); }
+#yapp-landing.season-summer { --cream: #fffdf3; --focus: #e5df8c; }
+#yapp-landing.season-summer .landing-hero__backdrop { filter: saturate(1.3) brightness(1.09); }
+#yapp-landing.season-summer .landing-hero__cta { background: #f57938; }
+#yapp-landing.season-autumn { --cream: #fff9f2; }
+
+@media (max-width: 1140px) {
+    #yapp-landing .landing-container { width: min(100% - 50px, 1050px); }
+    #yapp-landing .landing-nav { margin-left: 8px; gap: 20px; }
+    #yapp-landing .landing-hero__note { right: 20px; top: 75px; width: 205px; }
+    #yapp-landing .landing-featured-grid { grid-template-columns: 1fr 1fr; }
+    #yapp-landing .landing-featured-card--news { grid-column: 1 / -1; min-height: 380px; }
+    #yapp-landing .landing-featured-card--news .landing-featured-card__content { min-height: 380px; }
+    #yapp-landing .landing-featured-card__content { min-height: 420px; }
+}
+@media (max-width: 760px) {
+    #yapp-landing .landing-container { width: min(100% - 32px, 650px); }
+    #yapp-landing .landing-hero { min-height: 520px; }
+    #yapp-landing .landing-header { min-height: 73px; gap: 10px; }
+    #yapp-landing .landing-brand { font-size: 25px; }
+    #yapp-landing .landing-nav, #yapp-landing .landing-account { display: none; }
+    #yapp-landing .landing-mobile-menu { display: block; margin-left: auto; position: relative; }
+    #yapp-landing .landing-mobile-menu summary { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; list-style: none; background: rgba(28,25,46,.66); color: white; font-size: 25px; cursor: pointer; }
+    #yapp-landing .landing-mobile-menu summary::-webkit-details-marker { display: none; }
+    #yapp-landing .landing-mobile-menu nav { position: absolute; top: 50px; right: 0; min-width: 208px; padding: 12px; z-index: 10; display: grid; gap: 2px; border-radius: 14px; box-shadow: 0 15px 36px rgba(0,0,0,.3); background: #fffaf2; }
+    #yapp-landing .landing-mobile-menu nav a { border-radius: 8px; display: block; color: #30233f; padding: 10px 11px; font-weight: 800; font-size: 13px; }
+    #yapp-landing .landing-mobile-menu nav a:hover { background: #ffeee0; }
+    #yapp-landing .landing-hero__inner { min-height: 431px; align-items: center; padding-bottom: 20px; }
+    #yapp-landing .landing-hero__copy { padding: 16px 0 27px; }
+    #yapp-landing .landing-hero__backdrop { background-position: 62% center; }
+    #yapp-landing .landing-hero__season { font-size: 10px; margin-bottom: 12px; }
+    #yapp-landing .landing-hero h1 {
+        font-size: clamp(30px, 7.5vw, 38px);
+        line-height: 1;
+    }
+
+    #yapp-landing .landing-hero__headline {
+        font-size: clamp(36px, 10vw, 46px);
+        line-height: 1.1;
+        margin-top: 3;
+    }
+    #yapp-landing .landing-hero__desc { font-size: 13px; }
+    #yapp-landing .landing-hero__note { display: none; }
+    #yapp-landing .landing-hero__ornaments { right: 5%; bottom: 7px; opacity: .85; }
+    #yapp-landing .landing-hero__ghost { font-size: 28px; }
+    #yapp-landing .landing-hero__pumpkin { font-size: 30px; }
+    #yapp-landing .landing-main { padding-top: 39px; }
+    #yapp-landing .landing-section-heading__decoration { display: none; }
+    #yapp-landing .landing-featured-grid { grid-template-columns: 1fr; gap: 13px; }
+    #yapp-landing .landing-featured-card--news { grid-column: auto; }
+    #yapp-landing .landing-featured-card, #yapp-landing .landing-featured-card__content,
+    #yapp-landing .landing-featured-card--news,
+    #yapp-landing .landing-featured-card--news .landing-featured-card__content { min-height: 350px; }
+    #yapp-landing .landing-featured-card__head { margin-bottom: 24px; }
+    #yapp-landing .landing-featured-card__title { font-size: 23px; }
+    #yapp-landing .landing-featured-card__desc { max-width: 330px; }
+    #yapp-landing .landing-more { padding: 24px 18px; margin-top: 29px; }
+    #yapp-landing .landing-more__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    #yapp-landing .landing-more__intro > p { display: none; }
+    #yapp-landing .landing-mini-card { min-height: 94px; padding: 11px; gap: 9px; }
+    #yapp-landing .landing-mini-card__icon { width: 43px; height: 43px; font-size: 25px; border-radius: 13px; }
+    #yapp-landing .landing-mini-card__body strong { font-size: 13px; }
+    #yapp-landing .landing-mini-card__body small { font-size: 11px; }
+    #yapp-landing .landing-about { grid-template-columns: 1fr; gap: 17px; margin-top: 30px; padding: 31px 0 40px; }
+    #yapp-landing .landing-footer__inner { flex-wrap: wrap; gap: 9px 18px; justify-content: space-between; padding-block: 19px; }
+    #yapp-landing .landing-footer__links { margin-left: 0; }
+}
+@media (max-width: 420px) {
+    #yapp-landing .landing-container { width: calc(100% - 26px); }
+    #yapp-landing .landing-hero { min-height: 494px; }
+    #yapp-landing .landing-hero__inner { min-height: 420px; }
+    #yapp-landing .landing-hero__backdrop { background-position: 59% center; }
+    #yapp-landing .landing-hero__cta { min-height: 46px; padding: 12px 19px; }
+    #yapp-landing .landing-featured-card__content { padding: 19px 16px 16px; }
+    #yapp-landing .landing-featured-card__head { gap: 7px; }
+    #yapp-landing .landing-featured-card__badge { font-size: 10px; padding: 5px 9px; }
+    #yapp-landing .landing-more__grid { grid-template-columns: 1fr; }
+    #yapp-landing .landing-mini-card { min-height: 75px; }
+    #yapp-landing .landing-footer__links { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #yapp-landing .landing-featured-card,
+    #yapp-landing .landing-featured-card__art,
+    #yapp-landing .landing-mini-card,
+    #yapp-landing .landing-hero__cta { transition: none; }
+}

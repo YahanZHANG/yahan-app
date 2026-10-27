@@ -1,0 +1,308 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Yapp | 毎日を、ちょっと便利に。
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'portal/public_home.css' %}"
+>
+<link
+    rel="stylesheet"
+    href="{% static 'portal/theme.css' %}"
+>
+{% endblock %}
+
+{% block main_class %}
+yapp-public-home
+{% endblock %}
+
+{% block content %}
+
+<div class="yapp-public-page">
+
+    <!-- =============================================
+         Header
+         ============================================= -->
+
+    <header class="yapp-public-header">
+
+        <a
+            href="{% url 'portal:home' %}"
+            class="yapp-public-brand"
+            aria-label="Yapp ホーム"
+        >                
+            <img
+                src="{% static 'portal/yapp-logo.png' %}"
+                alt="Yapp"
+                class="yapp-logo-light"
+            >
+
+            <img
+                src="{% static 'portal/yapp-logo-dark.png' %}"
+                alt="Yapp"
+                class="yapp-logo-dark"
+            >
+
+        </a>
+
+        <nav
+            class="yapp-public-account-nav"
+            aria-label="アカウント"
+        >
+
+            <a
+                href="{% url 'portal:help' %}"
+                class="yapp-public-login yapp-public-help"
+            >
+                困ったときは
+            </a>
+
+            {% if user.is_authenticated %}
+
+                <a
+                    href="{% url 'portal:manage_apps' %}"
+                    class="yapp-public-account-button"
+                >
+                    <i class="bi bi-person-circle"></i>
+                    My Account
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}"
+                    class="yapp-public-login"
+                >
+                    ログイン
+                </a>
+
+                <a
+                    href="{% url 'portal:signup' %}"
+                    class="yapp-public-signup"
+                >
+                    アカウント作成
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+    </header>
+
+
+    <!-- =============================================
+         Announcements (管理画面の「Yappトップのお知らせ」)
+         ============================================= -->
+
+    {% if announcements %}
+        <div class="yapp-public-announcements" id="yapp-announcements">
+            {% for announcement in announcements %}
+                <div class="yapp-public-announcement" data-announcement-id="{{ announcement.pk }}">
+                    {% if announcement.link %}
+                        <a href="{{ announcement.link }}">{{ announcement.message }} <span aria-hidden="true">›</span></a>
+                    {% else %}
+                        <span>{{ announcement.message }}</span>
+                    {% endif %}
+                    <button type="button" aria-label="お知らせを閉じる" data-announcement-close>×</button>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+        // ×で閉じたお知らせは、この端末では再表示しない
+        (function () {
+            var key = "yapp_portal_announcements_closed";
+            var closed = [];
+            try { closed = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) {}
+            var area = document.getElementById("yapp-announcements");
+            function hideAreaIfEmpty() {
+                area.hidden = !area.querySelector("[data-announcement-id]:not([hidden])");
+            }
+            area.querySelectorAll("[data-announcement-id]").forEach(function (box) {
+                var id = box.dataset.announcementId;
+                if (closed.indexOf(id) !== -1) box.hidden = true;
+                box.querySelector("[data-announcement-close]").addEventListener("click", function () {
+                    box.hidden = true;
+                    hideAreaIfEmpty();
+                    closed.push(id);
+                    try { localStorage.setItem(key, JSON.stringify(closed.slice(-30))); } catch (error) {}
+                });
+            });
+            hideAreaIfEmpty();
+        })();
+        </script>
+    {% endif %}
+
+
+    <!-- =============================================
+         Introduction
+         ============================================= -->
+
+    <section class="yapp-public-intro">
+
+        <h1>
+            スイスの毎日を、もっと便利に。
+        </h1>
+        
+        <p>
+            スイスのニュースや暮らしの情報交換など、毎日の生活に役立つサービスをお届けします。
+        </p>
+
+        <div class="yapp-public-account-note">
+            <i class="bi bi-person-check"></i>
+
+            <span>
+                アカウントなしでも多くのサービスを利用できます。アカウントは全サービス共通で使えます。
+                <a href="{% url 'portal:help' %}" class="yapp-public-note-help">ログインで困ったときは ›</a>
+            </span>
+        </div>
+
+    </section>
+
+
+    <!-- =============================================
+         Services
+         ============================================= -->
+
+    <main class="yapp-public-main">
+
+        <div class="yapp-public-section-header">
+
+            <div>
+
+                <p class="yapp-public-eyebrow">
+                    EXPLORE SERVICES
+                </p>
+
+                <h2>
+                    サービス一覧
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="yapp-public-grid">
+
+            {% for app in apps %}
+
+                {% if app.coming_soon %}
+
+                    <article
+                        class="yapp-public-card yapp-public-coming"
+                    >
+
+                {% else %}
+
+                    <a
+                        href="{{ app.url }}"
+                        class="yapp-public-card yapp-public-card-link"
+                        aria-label="{{ app.name }}を開く"
+                    >
+
+                {% endif %}
+
+
+                                    
+                <!-- =============================================
+                    Main card content
+                    ============================================= -->
+
+                <div class="yapp-public-card-main">
+
+                    <div
+                        class="yapp-public-card-icon"
+                        aria-hidden="true"
+                    >
+                        {{ app.icon }}
+                    </div>
+
+                    <div class="yapp-public-card-body">
+
+                        <h3>
+                            {{ app.name }}
+                        </h3>
+
+                        <p class="yapp-public-card-label">
+                            {{ app.label }}
+                        </p>
+
+                        <p class="yapp-public-card-description">
+                            {{ app.description }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                    <div class="yapp-public-card-bottom">
+
+                        {% if app.coming_soon %}
+
+                            <span class="yapp-public-coming-label">
+                                COMING SOON
+                            </span>
+
+                        {% else %}
+
+                            <span class="yapp-public-access">
+                                {{ app.status }}
+                            </span>
+
+                            <i
+                                class="bi bi-arrow-up-right"
+                                aria-hidden="true"
+                            ></i>
+
+                        {% endif %}
+
+                    </div>
+
+
+                {% if app.coming_soon %}
+
+                    </article>
+
+                {% else %}
+
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+    </main>
+
+
+    <!-- =============================================
+         Footer
+         ============================================= -->
+
+    <footer class="yapp-public-footer">
+
+        <span>
+            © 2026 Yapp
+        </span>
+
+        <a href="{% url 'portal:help' %}">
+            困ったときは
+        </a>
+
+        <a href="{% url 'news:about' %}">
+            お問い合わせ
+        </a>
+
+    </footer>
+
+</div>
+
+{% endblock %}

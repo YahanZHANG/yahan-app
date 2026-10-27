@@ -1,0 +1,41 @@
+[33mafa6f8c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m automation
+ .gitignore                                         |  17 [32m+[m[31m-[m
+ outings/admin.py                                   |  66 [32m+++[m
+ outings/collectors/__init__.py                     |   0
+ outings/collectors/base.py                         |  24 [32m+[m
+ outings/collectors/ggg_basel.py                    | 329 [32m++++++++++++[m
+ outings/collectors/pbz.py                          | 161 [32m++++++[m
+ outings/collectors/storage.py                      | 132 [32m+++++[m
+ outings/management/__init__.py                     |   0
+ outings/management/commands/__init__.py            |   0
+ .../management/commands/audit_outings_sources.py   | 474 [32m+++++++++++++++++[m
+ .../management/commands/collect_outings_events.py  | 149 [32m++++++[m
+ .../management/commands/discover_outings_events.py | 480 [32m++++++++++++++++++[m
+ outings/management/commands/eventfrog_quality.py   |  96 [32m++++[m
+ .../commands/export_eventfrog_candidates.py        | 562 [32m+++++++++++++++++++++[m
+ .../commands/import_eventfrog_japanese.py          | 164 [32m++++++[m
+ outings/management/commands/import_pbz_events.py   | 375 [32m++++++++++++++[m
+ .../management/commands/import_verified_outings.py | 255 [32m++++++++++[m
+ outings/management/commands/inspect_pbz_ajax.py    | 130 [32m+++++[m
+ .../management/commands/inspect_pbz_pagination.py  | 232 [32m+++++++++[m
+ .../commands/organize_eventfrog_regions.py         | 327 [32m++++++++++++[m
+ .../management/commands/outings_audit_batch02.py   |  70 [32m+++[m
+ .../commands/prepare_eventfrog_review.py           | 169 [32m+++++++[m
+ .../management/commands/preview_eventfrog_api.py   | 142 [32m++++++[m
+ outings/management/commands/preview_pbz_events.py  | 433 [32m++++++++++++++++[m
+ .../commands/refine_eventfrog_candidates.py        | 194 [32m+++++++[m
+ .../management/commands/scan_eventfrog_future.py   | 284 [32m+++++++++++[m
+ .../management/commands/seed_outings_sources.py    |  59 [32m+++[m
+ .../management/commands/sync_eventfrog_outings.py  | 193 [32m+++++++[m
+ .../commands/translate_eventfrog_batch.py          | 202 [32m++++++++[m
+ .../commands/translate_eventfrog_batch_filtered.py | 202 [32m++++++++[m
+ .../commands/verify_outings_candidates.py          | 400 [32m+++++++++++++++[m
+ .../0007_alter_eventoccurrence_end_at.py           |  18 [32m+[m
+ outings/models.py                                  |   5 [32m+[m[31m-[m
+ outings/static/outings/css/outings.css             | 100 [32m++++[m
+ outings/templates/outings/event_detail.html        |  31 [32m+[m[31m-[m
+ outings/templates/outings/home.html                | 126 [32m++++[m[31m-[m
+ outings/views.py                                   | 114 [32m++++[m[31m-[m
+ portal/context_processors.py                       |  56 [32m+[m[31m-[m
+ templates/admin/base_site.html                     | 334 [32m++++++++[m[31m----[m
+ 39 files changed, 6979 insertions(+), 126 deletions(-)
