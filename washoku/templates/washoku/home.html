@@ -212,6 +212,7 @@
 
 {% if not user.is_authenticated %}
 <section class="washoku-join-card">
+    <p class="washoku-join-new"><span>NEW</span>アカウント作成が簡単になりました！</p>
     <p><strong>無料の会員登録でできること</strong></p>
     <ul>
         <li>❤️ お気に入りを保存</li>
@@ -219,6 +220,7 @@
         <li>💬 質問・コメント</li>
         <li>🔔 返信の通知</li>
     </ul>
+    <p class="washoku-join-easy">✨ 好きなIDとパスワードを決めるだけで、すぐに使えます。メールアドレスも確認メールも必要ありません。</p>
     <p class="washoku-join-actions">
         <a class="washoku-button" href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">会員登録する</a>
         <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>

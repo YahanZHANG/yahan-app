@@ -34,6 +34,7 @@
             <section data-welcome-step="join" hidden>
                 <h2>👤 無料の会員登録</h2>
                 <p>お気に入り、家族で好みの記録、質問やコメント、返信の通知が使えます。</p>
+                <p class="washoku-join-easy">✨ 登録は、好きなIDとパスワードを決めるだけ。メールアドレスも確認メールも必要ありません。</p>
                 <p class="washoku-join-actions">
                     <a class="washoku-button" href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">会員登録する</a>
                     <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>

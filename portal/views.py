@@ -1214,8 +1214,8 @@ def home(request):
             "label": "WASHOKU IN SWITZERLAND",
             "icon": "🍚",
             "description": (
-                "スイスで買える食材だけで作る、"
-                "日本人の舌に合うレシピ。"
+                "食卓の「困った」と「おいしい」を、"
+                "みんなで分け合う。和食のレシピも。"
             ),
             "url": None,
             "status": "COMING SOON",
