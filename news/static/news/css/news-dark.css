@@ -917,5 +917,5 @@
 
 .news-dark .news-info-block {
     border-color: var(--news-dark-border-soft);
-    background: var(--news-dark-surface);
+    background: var(--news-dark-header);
 }

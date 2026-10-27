@@ -6062,9 +6062,9 @@
 .news-info-block {
     min-width: 0;
     padding: 10px 12px 6px;
-    border: 1px solid #e8eeea;
+    border: 1px solid #e1e8e3;
     border-radius: 10px;
-    background: #fafbfa;
+    background: #f1f5f2;
 }
 
 .news-info-block h3 {
@@ -6090,7 +6090,7 @@
 .news-info-block th,
 .news-info-block td {
     padding: 5px 0;
-    border-bottom: 1px solid #f1f4f2;
+    border-bottom: 1px solid #dde5df;
     text-align: left;
     font-weight: 400;
 }
