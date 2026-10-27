@@ -133,7 +133,12 @@
             alert_regions: regionInputs
                 .filter((input) => input.checked)
                 .map((input) => input.value),
-        }, lifeStatus);
+        }, lifeStatus).then(() => {
+            // 天気の地域（まだ自分で選んでいない人）も一緒に変える
+            document.dispatchEvent(
+                new CustomEvent("swissnews:life-regions-changed")
+            );
+        });
     });
 
     document.addEventListener("swissnews:push-changed", (event) => {

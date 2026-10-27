@@ -1052,7 +1052,12 @@ class InfoBarTests(NewsTestCase):
         else:
             count = len(params["latitude"].split(","))
             place = {
-                "current": {"temperature_2m": 12.4, "weather_code": 0},
+                "current": {"time": "2026-10-27T08:15", "temperature_2m": 12.4, "weather_code": 0},
+                "hourly": {
+                    "time": [f"2026-10-27T{hour:02d}:00" for hour in range(24)],
+                    "temperature_2m": [float(hour) for hour in range(24)],
+                    "weather_code": [0] * 24,
+                },
                 "daily": {
                     "time": ["2026-10-27", "2026-10-28", "2026-10-29"],
                     "weather_code": [0, 61, 3],
@@ -1074,6 +1079,11 @@ class InfoBarTests(NewsTestCase):
         self.assertEqual([place["name"] for place in data["weather"]], ["チューリッヒ"])
         self.assertEqual(data["weather"][0]["temp"], 12)
         self.assertEqual(data["weather"][0]["days"][1]["label"], "明日")
+
+        hours = data["weather"][0]["hours"]
+        self.assertEqual(len(hours), 12)
+        self.assertEqual(hours[0], {"label": "今", "emoji": "☀️", "temp": 8})
+        self.assertEqual(hours[1]["label"], "9時")
 
     def test_first_two_regions_in_settings_order(self):
 

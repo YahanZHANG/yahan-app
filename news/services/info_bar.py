@@ -57,6 +57,8 @@ REGION_COORDS = {
 
 WEEKDAYS = "月火水木金土日"
 
+HOURLY_COUNT = 12
+
 
 def weather_slugs(slugs):
     """天気を出す地域（座標があるものの最初の2つ。なければチューリッヒ）。"""
@@ -141,6 +143,7 @@ def weather(slugs):
                 "latitude": ",".join(str(REGION_COORDS[slug][0]) for slug in slugs),
                 "longitude": ",".join(str(REGION_COORDS[slug][1]) for slug in slugs),
                 "current": "temperature_2m,weather_code",
+                "hourly": "temperature_2m,weather_code",
                 "daily": "weather_code,temperature_2m_max,temperature_2m_min",
                 "timezone": "Europe/Zurich",
                 "forecast_days": 3,
@@ -172,11 +175,28 @@ def weather(slugs):
                     "min": round(daily["temperature_2m_min"][index]),
                 })
 
+            # 今の時間から12時間分（時刻はスイス時間の "2026-10-27T08:00"）
+            now_hour = current["time"][:13]
+            hourly = place["hourly"]
+            hours = []
+            for index, time in enumerate(hourly["time"]):
+                if time[:13] < now_hour:
+                    continue
+                hour_emoji, _ = WEATHER_CODES.get(hourly["weather_code"][index], ("🌡️", ""))
+                hours.append({
+                    "label": "今" if not hours else f"{int(time[11:13])}時",
+                    "emoji": hour_emoji,
+                    "temp": round(hourly["temperature_2m"][index]),
+                })
+                if len(hours) == HOURLY_COUNT:
+                    break
+
             result.append({
                 "slug": slug,
                 "temp": round(current["temperature_2m"]),
                 "emoji": emoji,
                 "label": label,
+                "hours": hours,
                 "days": days,
             })
 

@@ -5910,30 +5910,130 @@
     align-items: center;
     gap: 4px;
     width: 100%;
-    padding: 9px 8px 9px 10px;
+    padding: 8px 6px 8px 8px;
     border: 0;
     background: none;
     color: #2f3b35;
     font: inherit;
     font-size: .74rem;
-    letter-spacing: -.01em;
     font-weight: 700;
+    letter-spacing: -.01em;
     text-align: left;
     white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.news-info-strip:active {
+    background: #f4f7f5;
+}
+
+.news-info-items {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
+}
+
+.news-info-items::-webkit-scrollbar {
+    display: none;
+}
+
+/* 押すと開くことが分かるように、右端に丸いボタン（⌄） */
+.news-info-toggle {
+    position: relative;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #edf3ef;
+    transition: transform .2s;
+}
+
+.news-info-toggle::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 7px;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid #4D6B5C;
+    border-bottom: 2px solid #4D6B5C;
+    transform: rotate(45deg);
+}
+
+.news-info-bar.is-open .news-info-toggle {
+    transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+
+    .news-info-strip:hover .news-info-toggle {
+        background: #dfeae3;
+    }
+
+}
+
+/* 1時間ごとの天気（横にスクロール） */
+.news-info-hours {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+}
+
+.news-info-hour {
+    display: flex;
+    flex: 0 0 44px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    border-radius: 10px;
+    background: #f4f7f5;
+    font-size: .72rem;
+}
+
+.news-info-hour > span:first-child {
+    color: #63706a;
+}
+
+.news-info-hour-emoji {
+    font-size: 1rem;
+    line-height: 1.2;
+}
+
+.news-weather-reset {
+    margin: 12px 0 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #5F7F6F;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: underline;
     cursor: pointer;
 }
 
-.news-info-strip::-webkit-scrollbar {
-    display: none;
+.news-weather-settings {
+    border-left-color: #5F7F6F;
+}
+
+.news-push-region input:disabled + span {
+    opacity: .45;
+    cursor: not-allowed;
 }
 
 .news-info-sep {
     flex-shrink: 0;
     width: 1px;
     height: 12px;
-    margin: 0 4px;
+    margin: 0 3px;
     background: #d5ddd8;
 }
 
