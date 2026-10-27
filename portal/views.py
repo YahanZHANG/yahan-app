@@ -55,6 +55,7 @@ from .models import (
     AppIdea,
     PortalAnnouncement,
     PortalSettings,
+    PortalThemeText,
     PortalAppPreference,
 )
 
@@ -1211,7 +1212,11 @@ def home(request):
     season = PortalSettings.load().season
     if season not in seasons.THEMES:
         season = seasons.theme_for(today)
-    theme = seasons.THEMES[season]
+    theme = dict(seasons.THEMES[season])
+    custom = PortalThemeText.objects.filter(theme=season).first()
+    if custom:
+        theme["title"] = custom.title or theme["title"]
+        theme["headline"] = custom.headline or theme["headline"]
 
     # True にするとカードに「開発版をのぞく」リンクが出る。
     OUTINGS_PREVIEW_ENABLED = False

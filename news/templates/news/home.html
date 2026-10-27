@@ -58,7 +58,7 @@ Swiss News
 </section>
 
 {% url 'news:install' as install_url %}
-{% include "includes/install_banner.html" with install_url=install_url banner_color="#5F7F6F" %}
+{% include "includes/install_banner.html" with install_url=install_url banner_color="#5F7F6F" banner_key="news" %}
 
 
 {% if latest_digest %}

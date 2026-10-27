@@ -42,7 +42,8 @@
     var mobile = /iPhone|iPad|iPod|Android/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
         || (window.matchMedia("(pointer: coarse)").matches && window.innerWidth < 900);
     var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-    var key = "yapp_install_banner_closed";
+    // アプリごとに別々に覚える (ニュースで閉じても和食では出す)
+    var key = "yapp_install_banner_closed{% if banner_key %}_{{ banner_key }}{% endif %}";
     var closedAt = 0;
     try { closedAt = parseInt(localStorage.getItem(key), 10) || 0; } catch (error) {}
     if (!mobile || standalone || Date.now() - closedAt < 14 * 24 * 60 * 60 * 1000) return;

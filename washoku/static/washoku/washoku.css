@@ -4604,3 +4604,27 @@ button.washoku-poll-row:hover {
     .washoku-halloween-bat { font-size: 22px; }
     .washoku-halloween-ground { font-size: 20px; }
 }
+
+/* スマホのブラウザで開いている人にだけ出す「アプリにする」 (Swiss News と同じ形) */
+.washoku-install-pill {
+    flex: none;
+    margin-left: auto;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #C8552D;
+    color: #FFFFFF;
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.washoku-install-pill:hover {
+    color: #FFFFFF;
+    filter: brightness(1.06);
+}
+
+.washoku-install-pill + .washoku-search-button,
+.washoku-install-pill ~ .washoku-header-search {
+    margin-left: 8px;
+}

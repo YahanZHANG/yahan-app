@@ -7,6 +7,7 @@ from .models import (
     PortalAnnouncement,
     PortalAppPreference,
     PortalSettings,
+    PortalThemeText,
 )
 
 
@@ -160,6 +161,26 @@ class PortalSettingsAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         settings_row = PortalSettings.load()
         return redirect("admin:portal_portalsettings_change", settings_row.pk)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PortalThemeText)
+class PortalThemeTextAdmin(admin.ModelAdmin):
+    """季節・イベントごとのキャッチ。一覧でそのまま書き換えられる。"""
+
+    list_display = ["theme", "title", "headline"]
+    list_editable = ["title", "headline"]
+    list_display_links = ["theme"]
+    readonly_fields = ["theme"]
+
+    def changelist_view(self, request, extra_context=None):
+        PortalThemeText.ensure_all()
+        return super().changelist_view(request, extra_context)
 
     def has_add_permission(self, request):
         return False

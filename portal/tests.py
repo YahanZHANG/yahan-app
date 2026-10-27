@@ -307,3 +307,20 @@ class SeasonCalendarTests(TestCase):
         self.assertEqual(theme_for(date(2026, 11, 27)), "blackfriday")
         self.assertEqual(theme_for(date(2026, 11, 10)), "late_autumn")
         self.assertEqual(theme_for(date(2026, 12, 24)), "christmas")
+
+
+class PortalThemeTextTests(TestCase):
+
+    def test_catch_can_be_changed_in_admin(self):
+
+        from portal.models import PortalSettings, PortalThemeText
+
+        settings_row = PortalSettings.load()
+        settings_row.season = "winter"
+        settings_row.save()
+        PortalThemeText.objects.create(theme="winter", title="寒い日は", headline="")
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "寒い日は")
+        self.assertContains(response, "スイスを楽しもう。")  # 空の行は元の文言のまま
