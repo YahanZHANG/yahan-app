@@ -249,3 +249,96 @@ class AdminRareAppsTests(TestCase):
         # 一覧ページの左メニューも同じ
         response = self.client.get(reverse("admin:washoku_feedback_changelist"))
         self.assertContains(response, "yapp-nav-more")
+class AppIdeaTests(TestCase):
+
+    def test_idea_is_saved_and_thanked(self):
+
+        from portal.models import AppIdea
+
+        response = self.client.post(
+            reverse("portal:send_app_idea"),
+            {"idea": "病院を日本語で探せるアプリ", "contact": "たろう"},
+        )
+
+        self.assertRedirects(response, reverse("portal:home") + "?idea=sent#ideas", fetch_redirect_response=False)
+        self.assertEqual(AppIdea.objects.get().contact, "たろう")
+        self.assertContains(self.client.get(reverse("portal:home") + "?idea=sent"), "アイデアを受け取りました")
+
+    def test_bot_trap_is_not_saved(self):
+
+        from portal.models import AppIdea
+
+        self.client.post(reverse("portal:send_app_idea"), {"idea": "spam", "website": "http://spam"})
+
+        self.assertFalse(AppIdea.objects.exists())
+
+
+class PortalHomeTests(TestCase):
+
+    def test_latest_news_and_share_tags(self):
+
+        source = NewsSource.objects.create(name="SRF", website_url="https://www.srf.ch", language="de")
+        Article.objects.create(
+            source=source,
+            source_url="https://www.srf.ch/a1",
+            original_language="ja",
+            title_original="チューリッヒで初雪",
+            published_at=timezone.now(),
+        )
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "チューリッヒで初雪")
+        self.assertContains(response, 'property="og:image"')
+
+    def test_season_can_be_fixed_in_admin(self):
+
+        from portal.models import PortalSettings
+
+        settings_row = PortalSettings.load()
+        settings_row.season = "winter"
+        settings_row.save()
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "season-winter")
+
+
+class SeasonCalendarTests(TestCase):
+
+    def test_events_and_seasons_by_date(self):
+
+        from datetime import date
+
+        from portal.seasons import easter_sunday, theme_for
+
+        self.assertEqual(easter_sunday(2027), date(2027, 3, 28))
+        self.assertEqual(theme_for(date(2027, 1, 3)), "newyear")
+        self.assertEqual(theme_for(date(2026, 12, 31)), "newyear")
+        self.assertEqual(theme_for(date(2026, 12, 28)), "winter")
+        self.assertEqual(theme_for(date(2027, 3, 27)), "easter")  # 桜の期間より短いイースターを優先
+        self.assertEqual(theme_for(date(2027, 3, 20)), "sakura")
+        self.assertEqual(theme_for(date(2027, 4, 19)), "sechselaeuten")
+        self.assertEqual(theme_for(date(2027, 6, 3)), "early_summer")
+        self.assertEqual(theme_for(date(2027, 8, 10)), "midsummer")
+        self.assertEqual(theme_for(date(2026, 10, 27)), "halloween")
+        self.assertEqual(theme_for(date(2026, 11, 27)), "blackfriday")
+        self.assertEqual(theme_for(date(2026, 11, 10)), "late_autumn")
+        self.assertEqual(theme_for(date(2026, 12, 24)), "christmas")
+
+
+class PortalThemeTextTests(TestCase):
+
+    def test_catch_can_be_changed_in_admin(self):
+
+        from portal.models import PortalSettings, PortalThemeText
+
+        settings_row = PortalSettings.load()
+        settings_row.season = "winter"
+        settings_row.save()
+        PortalThemeText.objects.create(theme="winter", title="寒い日は", headline="")
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "寒い日は")
+        self.assertContains(response, "スイスを楽しもう。")  # 空の行は元の文言のまま

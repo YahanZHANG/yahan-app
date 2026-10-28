@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from .seasons import THEMES
+
 
 class PortalAppPreference(models.Model):
     """
@@ -266,3 +268,115 @@ class PortalAnnouncement(models.Model):
         since = timezone.now() - timedelta(days=cls.SHOW_DAYS)
 
         return cls.objects.filter(is_active=True, created_at__gte=since)[:cls.MAX_SHOWN]
+
+
+class AppIdea(models.Model):
+    """Yappトップの「アプリのアイデア募集」から届いたアイデア。"""
+
+    idea = models.TextField(
+        "アイデア",
+        max_length=1000,
+    )
+
+    contact = models.CharField(
+        "お名前・連絡先（任意）",
+        max_length=200,
+        blank=True,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="送信したアカウント",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    handled = models.BooleanField(
+        "確認済み",
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        "送信日時",
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "アプリのアイデア"
+        verbose_name_plural = "アプリのアイデア"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.idea[:40]
+
+
+class PortalSettings(models.Model):
+    """Yappトップの表示設定。1件だけ。"""
+
+    SEASON_CHOICES = [("auto", "自動 (日付に合わせる)")] + [
+        (key, theme["name"]) for key, theme in THEMES.items()
+    ]
+
+    season = models.CharField(
+        "季節のデザイン",
+        max_length=20,
+        choices=SEASON_CHOICES,
+        default="auto",
+        help_text="試しに見たいときや、時期をずらしたいときに固定できます。ふだんは「自動」のままで大丈夫です。",
+    )
+
+    class Meta:
+        verbose_name = "Yappトップの表示設定"
+        verbose_name_plural = "Yappトップの表示設定"
+
+    def __str__(self):
+        return "Yappトップの表示設定"
+
+    @classmethod
+    def load(cls):
+        settings_row, _ = cls.objects.get_or_create(pk=1)
+        return settings_row
+
+
+class PortalThemeText(models.Model):
+    """Yappトップの大きなキャッチ。季節・イベントごとに管理画面から変えられる。"""
+
+    theme = models.CharField(
+        "季節・イベント",
+        max_length=30,
+        unique=True,
+        choices=[(key, theme["name"]) for key, theme in THEMES.items()],
+    )
+
+    title = models.CharField(
+        "1行目",
+        max_length=40,
+        blank=True,
+        help_text="空にすると、元の文言に戻ります",
+    )
+
+    headline = models.CharField(
+        "2行目（大きい文字）",
+        max_length=40,
+        blank=True,
+        help_text="空にすると、元の文言に戻ります",
+    )
+
+    class Meta:
+        verbose_name = "Yappトップのキャッチ"
+        verbose_name_plural = "Yappトップのキャッチ"
+
+    def __str__(self):
+        return self.get_theme_display()
+
+    @classmethod
+    def ensure_all(cls):
+        """まだ行がない季節・イベントの行を、元の文言で作る。"""
+
+        existing = set(cls.objects.values_list("theme", flat=True))
+        cls.objects.bulk_create([
+            cls(theme=key, title=theme["title"], headline=theme["headline"])
+            for key, theme in THEMES.items()
+            if key not in existing
+        ])

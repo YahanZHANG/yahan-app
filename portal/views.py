@@ -22,6 +22,7 @@ from django.db.models import Count, Q
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.utils.encoding import (
     force_bytes,
     force_str,
@@ -42,6 +43,7 @@ from feeding.models import BabyMembership
 from travel.models import UserProfile
 from usage_analytics.permissions import can_view_analytics
 
+from . import seasons
 from .forms import (
     AppSelectionForm,
     NicknameForm,
@@ -50,7 +52,10 @@ from .forms import (
 )
 from .models import (
     AppAccessRequest,
+    AppIdea,
     PortalAnnouncement,
+    PortalSettings,
+    PortalThemeText,
     PortalAppPreference,
 )
 
@@ -1166,71 +1171,131 @@ def manage_apps(request):
 # Public Portal Home
 # =========================================================
 
-def home(request):
+def portal_latest_news(limit=3):
+    """ニュースカードに出す最新の見出し。"""
 
-    apps = [
+    from news.services.deduplicator import ready_articles
+
+    return list(
+        ready_articles()
+        .filter(duplicate_of__isnull=True)
+        .order_by("-published_at")[:limit]
+    )
+
+
+def portal_card_photo(key):
+    """
+    static/portal/images/cards/<key>.jpg (または .webp) を置くと、
+    アプリカードの背景が写真になる。なければイラストのまま。
+    """
+
+    from django.contrib.staticfiles import finders
+    from django.templatetags.static import static
+
+    for extension in ("webp", "jpg"):
+        path = f"portal/images/cards/{key}.{extension}"
+        if finders.find(path):
+            return static(path)
+    return ""
+
+
+def home(request):
+    """季節で表情が変わる、公開Yappポータル。"""
+    from zoneinfo import ZoneInfo
+
+    from django.templatetags.static import static
+
+    # DjangoのTIME_ZONE設定にかかわらず、スイス現地の日付を使う。
+    today = timezone.localtime(
+        timezone.now(), ZoneInfo("Europe/Zurich")
+    ).date()
+    season = PortalSettings.load().season
+    if season not in seasons.THEMES:
+        season = seasons.theme_for(today)
+    theme = dict(seasons.THEMES[season])
+    custom = PortalThemeText.objects.filter(theme=season).first()
+    if custom:
+        theme["title"] = custom.title or theme["title"]
+        theme["headline"] = custom.headline or theme["headline"]
+
+    # True にするとカードに「開発版をのぞく」リンクが出る。
+    OUTINGS_PREVIEW_ENABLED = False
+
+    featured_apps = [
         {
+            "key": "news",
             "name": "Swiss News",
-            "label": "SWISS NEWS",
-            "icon": "📰",
-            "description": "スイスのニュースを日本語でチェック。",
+            "icon_url": static("pwa/news/icon-192.png"),
+            "badge": "公開中",
+            "status_class": "live",
+            "eyebrow": "SWISS NEWS",
+            "headline": "スイスの出来事を\n日本語で把握しよう。",
+            "description": "スイスのニュースや暮らしに役立つ情報を、日本語で。毎日の情報収集をもっと身近に。",
             "url": reverse("news:home"),
-            "status": "ログイン不要",
-            "coming_soon": False,
-            "card_class": "portal-news-card",
+            "action": "今すぐ読む",
+            "features": ["ニュース", "暮らしのお知らせ"],
         },
         {
+            "key": "washoku",
+            "name": "スイスで和食",
+            "icon_url": static("pwa/washoku/icon-192.png"),
+            "badge": "先行公開中",
+            "status_class": "live",
+            "is_new": True,
+            "eyebrow": "WASHOKU",
+            "headline": "スイスの台所に\nみんなの知恵を。",
+            "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
+            "url": reverse("washoku:home"),
+            "action": "今すぐ使う",
+            "features": ["レシピ", "食材情報", "みんなの投稿"],
+        },
+        {
+            "key": "outings",
+            "name": "お出かけ",
+            "icon_url": static("pwa/outings/icon-192.png"),
+            "badge": "絶賛準備中",
+            "status_class": "building",
+            "eyebrow": "OUTINGS",
+            "headline": "次のお休みの日\nどこへ行こう？",
+            "description": "季節のイベントや、ちょっと出かけたくなる場所。お出かけのアイデアを準備中。",
+            "url": reverse("outings:home") if OUTINGS_PREVIEW_ENABLED else None,
+            "action": "開発版をのぞく",
+            "features": ["週末イベント", "季節の楽しみ", "お出かけ情報"],
+        },
+    ]
+
+    for app in featured_apps:
+        app["photo_url"] = portal_card_photo(app["key"])
+
+    other_apps = [
+        {
+            "key": "games",
             "name": "ミニゲーム",
-            "label": "MINI GAMES",
             "icon": "🎮",
             "description": "ちょっとした空き時間に遊べるゲーム。",
             "url": reverse("games:game_list"),
-            "status": "ランキング登録時にログイン必要",
-            "coming_soon": False,
-            "card_class": "portal-games-card",
         },
         {
-            "name": "イベント・日程調整",
-            "label": "EVENT SCHEDULER",
-            "icon": "📅",
-            "description": "みんなの予定を簡単に調整。",
-            "url": reverse("event_scheduler:event_list"),
-            "status": "イベント作成時にログイン必要",
-            "coming_soon": False,
-            "card_class": "portal-events-card",
-        },
-        {
+            "key": "colorcheck",
             "name": "色判定",
-            "label": "COLOR CHECKER",
             "icon": "🎨",
             "description": "色覚異常の方のお助けアプリ。気になる色を簡単に確認。",
             "url": reverse("colorcheck:index"),
-            "status": "ログイン不要",
-            "coming_soon": False,
-            "card_class": "portal-colorcheck-card",
         },
         {
-            "name": "スイスで和食",
-            "label": "WASHOKU IN SWITZERLAND",
-            "icon": "🍚",
-            "description": (
-                "スイスで買える食材だけで作る、"
-                "日本人の舌に合うレシピ。"
-            ),
-            "url": None,
-            "status": "COMING SOON",
-            "coming_soon": True,
-            "card_class": "portal-recipes-card",
+            "key": "events",
+            "name": "イベント調整",
+            "icon": "📅",
+            "description": "みんなの予定を簡単に調整。",
+            "url": reverse("event_scheduler:event_list"),
         },
         {
-            "name": "おでかけ",
-            "label": "OUTINGS",
-            "icon": "🎈",
-            "description": "スイスの週末イベントや旅行先を日本語で。天気もわかる。",
+            "key": "board",
+            "name": "暮らしの掲示板",
+            "icon": "💬",
+            "description": "生活の知恵や口コミを、みんなで。",
             "url": None,
-            "status": "COMING SOON",
-            "coming_soon": True,
-            "card_class": "portal-outings-card",
+            "badge": "準備中",
         },
     ]
 
@@ -1238,10 +1303,49 @@ def home(request):
         request,
         "portal/home.html",
         {
-            "apps": apps,
+            "season": season,
+            "theme": theme,
+            "theme_shadow": seasons.accent_shadow(theme["accent"]),
+            "particles": seasons.particles(season),
+            "latest_news": portal_latest_news(),
+            "featured_apps": featured_apps,
+            "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),
+            "idea_sent": request.GET.get("idea") == "sent",
         },
     )
+
+
+@require_POST
+def send_app_idea(request):
+    """Yappトップの「アイデア募集」フォーム。保存して管理者にメールする。"""
+
+    idea_text = (request.POST.get("idea") or "").strip()[:1000]
+    contact = (request.POST.get("contact") or "").strip()[:200]
+
+    # website はボット対策の見えない項目。入力されていたら保存しない。
+    if idea_text and not request.POST.get("website"):
+        idea = AppIdea.objects.create(
+            idea=idea_text,
+            contact=contact,
+            user=request.user if request.user.is_authenticated else None,
+        )
+        recipient = getattr(settings, "ADMIN_NOTIFICATION_EMAIL", "")
+        if recipient:
+            send_mail(
+                subject="【Yapp】アプリのアイデアが届きました",
+                message=(
+                    f"{idea.idea}\n\n"
+                    f"お名前・連絡先：{idea.contact or 'なし'}\n"
+                    f"アカウント：{idea.user or 'ログインなし'}\n\n"
+                    "Yapp Adminの「アプリのアイデア」から確認できます。"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[recipient],
+                fail_silently=True,
+            )
+
+    return redirect(reverse("portal:home") + "?idea=sent#ideas")
 
 
 # =========================================================

@@ -2610,6 +2610,31 @@ a.washoku-favorite {
     font-size: 14px;
 }
 
+.washoku-join-new {
+    margin-bottom: 8px !important;
+    color: var(--washoku-accent-strong);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.washoku-join-new span {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--washoku-accent);
+    color: #FFFFFF;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+}
+
+.washoku-join-easy {
+    margin-bottom: 12px !important;
+    color: var(--washoku-muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
 .washoku-join-actions {
     display: flex;
     align-items: center;
@@ -2833,14 +2858,14 @@ a.washoku-favorite {
     white-space: nowrap;
 }
 
-/* 携帯も PC も、ヘッダーに検索バー (携帯は短め) */
+/* 携帯は🔍ボタン (押すと検索ページへ)、PC はヘッダーに検索バー */
 .washoku-search-button {
-    display: none;
+    display: inline-flex;
 }
 
 .washoku-header-search {
     position: relative;
-    display: flex;
+    display: none;
     flex: 1 1 auto;
     min-width: 0;
     max-width: 150px;
@@ -4578,4 +4603,68 @@ button.washoku-poll-row:hover {
     .washoku-halloween-moon::after { width: 48px; height: 48px; left: 13px; }
     .washoku-halloween-bat { font-size: 22px; }
     .washoku-halloween-ground { font-size: 20px; }
+}
+
+/* スマホのブラウザで開いている人にだけ出す「アプリにする」 (Swiss News と同じ形) */
+.washoku-install-pill {
+    flex: none;
+    margin-left: auto;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #C8552D;
+    color: #FFFFFF;
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.washoku-install-pill:hover {
+    color: #FFFFFF;
+    filter: brightness(1.06);
+}
+
+html.yapp-installable .washoku-install-pill + .washoku-search-button,
+html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
+    margin-left: 8px;
+}
+
+/* スマホ: ロゴ・「アプリにする」・🔍 を1行に収める (入りきらないときはサブタイトルを…で省略) */
+@media (max-width: 799px) {
+
+    html.yapp-installable .washoku-header-inner {
+        gap: 6px;
+    }
+
+    html.yapp-installable .washoku-brand {
+        flex: 0 1 auto;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    html.yapp-installable .washoku-brand > span,
+    html.yapp-installable .washoku-brand small {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    html.yapp-installable .washoku-brand strong {
+        white-space: nowrap;
+    }
+
+    html.yapp-installable .washoku-brand small {
+        font-size: 10px;
+        letter-spacing: -0.02em;
+    }
+
+    html.yapp-installable .washoku-install-pill {
+        padding: 6px 9px;
+    }
+
+    html.yapp-installable .washoku-install-pill + .washoku-search-button {
+        min-width: 32px;
+        margin-left: 0;
+        font-size: 20px;
+    }
 }

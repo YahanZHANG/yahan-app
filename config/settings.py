@@ -369,11 +369,11 @@ SWISS_NEWS_TWINT_URL = os.getenv(
     "",
 )
 
-# スイスで和食: テスト運用中は検索エンジンに載せない (URL を知っている人だけが見る)。
-# 一般公開するときに Render で WASHOKU_ALLOW_SEARCH_ENGINES=true にする。
+# スイスで和食: 先行公開中なので検索エンジンにも載せる。
+# 隠したいときは Render で WASHOKU_ALLOW_SEARCH_ENGINES=false にする。
 WASHOKU_ALLOW_SEARCH_ENGINES = os.getenv(
     "WASHOKU_ALLOW_SEARCH_ENGINES",
-    "false",
+    "true",
 ).lower() == "true"
 
 # Phone number for TWINT transfers on the support page. Kept out of

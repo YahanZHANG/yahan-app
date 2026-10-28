@@ -1,0 +1,114 @@
+{% extends "news/base.html" %}
+{% load news_extras %}
+
+{% block title %}
+{% if query %}「{{ query }}」の検索結果{% else %}検索{% endif %} | Swiss News
+{% endblock %}
+
+
+{% block news_content %}
+
+<section class="news-page-heading">
+
+    <div>
+
+        <div class="news-page-kicker">
+            SEARCH
+        </div>
+
+        <h2>
+            ニュースを検索
+        </h2>
+
+    </div>
+
+</section>
+
+
+{% include "news/_search_form.html" with search_id="news-search-page" autofocus=True %}
+
+
+{% if query %}
+
+    {% if topics or regions or sources %}
+        <nav class="news-search-matches" aria-label="テーマ・地域・ニュースソース">
+
+            {% for topic in topics %}
+                <a href="{% url 'news:topic_detail' topic.slug %}" class="news-life-region">
+                    {{ topic.icon }} {{ topic.name }}
+                </a>
+            {% endfor %}
+
+            {% for region in regions %}
+                <a href="{% url 'news:region_detail' region.slug %}" class="news-life-region">
+                    {{ region.icon }} {{ region.name }}
+                </a>
+            {% endfor %}
+
+            {% for source in sources %}
+                <a href="{% url 'news:source_detail' source.id %}" class="news-life-region">
+                    📰 {{ source.name }}
+                </a>
+            {% endfor %}
+
+        </nav>
+    {% endif %}
+
+
+    <p class="news-search-count">
+        {% if articles|length >= search_limit %}
+            新しい順に {{ search_limit }} 件を表示しています。
+        {% else %}
+            記事 {{ articles|length }} 件
+        {% endif %}
+    </p>
+
+
+    <div class="news-list">
+
+        {% for article in articles %}
+
+            {% ifchanged article.published_at|day_label %}
+                <h2 class="news-day-heading">
+                    {{ article.published_at|day_label }}
+                </h2>
+            {% endifchanged %}
+
+            {% include "news/_article_card.html" %}
+
+        {% empty %}
+
+            <div class="news-empty">
+
+                <div class="news-empty-icon">
+                    🔍
+                </div>
+
+                <h3>
+                    「{{ query }}」に合う記事はありませんでした
+                </h3>
+
+                <p>
+                    別の言葉や、ドイツ語・フランス語でも試してみてください。
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <p class="news-search-hint">
+        記事のタイトルや要約から探します。言葉をスペースで区切ると、すべてを含む記事だけが出ます。
+    </p>
+
+{% endif %}
+
+
+<p class="news-search-browse">
+    <a href="{% url 'news:topic_list' %}">テーマ・地域・ニュースソースから探す ›</a>
+</p>
+
+{% endblock %}

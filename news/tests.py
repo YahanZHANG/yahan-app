@@ -903,6 +903,219 @@ class LifeAlertTests(NewsTestCase):
         self.assertIn(bern_user.endpoint, endpoints)
 
 
+class HomeLifeToggleTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        self.make_article(self.srf, "normal")
+        self.make_article(self.srf, "strike", life_alert=True)
+
+    def test_life_articles_on_home_by_default(self):
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+    def test_anonymous_can_hide_life_articles(self):
+
+        session = self.client.session
+        session["news_public_settings"] = {"show_life_on_home": False}
+        session.save()
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+        # 「暮らし」のページには出る
+        self.assertContains(
+            self.client.get(reverse("news:life_alerts")),
+            "日本語 strike",
+        )
+
+    def test_logged_in_user_can_hide_life_articles(self):
+
+        from django.contrib.auth import get_user_model
+        from news.models import NewsPreference
+
+        user = get_user_model().objects.create_user(
+            username="taro",
+            password="pw-12345678",
+        )
+        NewsPreference.objects.create(user=user, show_life_on_home=False)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertNotContains(response, "日本語 strike")
+        self.assertContains(response, "日本語 normal")
+
+
+class SearchTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        self.make_article(self.srf, "a", title_ja="チューリッヒでスト　電車が運休")
+        self.make_article(self.srf, "b", title_ja="健康保険料が上昇")
+        self.make_article(self.rts, "c", title_ja="ベルンでスト")
+        self.make_article(self.srf, "d", title_ja="未翻訳", processed=False)
+
+    def search(self, q):
+
+        return self.client.get(reverse("news:search"), {"q": q})
+
+    def test_finds_by_word(self):
+
+        response = self.search("スト")
+
+        self.assertContains(response, "チューリッヒでスト")
+        self.assertContains(response, "ベルンでスト")
+        self.assertNotContains(response, "健康保険料")
+
+    def test_all_words_must_match(self):
+
+        response = self.search("スト  チューリッヒ")
+
+        self.assertContains(response, "チューリッヒでスト")
+        self.assertNotContains(response, "ベルンでスト")
+
+    def test_source_name_and_chip(self):
+
+        response = self.search("RTS")
+
+        self.assertContains(response, "ベルンでスト")
+        self.assertNotContains(response, "健康保険料")
+        self.assertContains(
+            response,
+            reverse("news:source_detail", args=[self.rts.id]),
+        )
+
+    def test_untranslated_articles_are_not_shown(self):
+
+        self.assertNotContains(self.search("Original d"), "Original summary d")
+
+    def test_empty_query_shows_form_only(self):
+
+        response = self.search("")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="q"')
+        self.assertNotContains(response, "チューリッヒでスト")
+
+
+class AnnouncementLinkTests(NewsTestCase):
+
+    def test_link_is_rendered(self):
+
+        from news.models import NewsAnnouncement
+
+        NewsAnnouncement.objects.create(message="暮らしのお知らせを始めました", link="/news/life/")
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, 'href="/news/life/"')
+        self.assertContains(response, "news-announcement-link")
+
+
+class InfoBarTests(NewsTestCase):
+
+    def setUp(self):
+
+        super().setUp()
+
+        from django.core.cache import cache
+        from news.models import Region
+
+        cache.clear()
+
+        Region.objects.create(name="チューリッヒ", slug="zurich", display_order=10)
+        Region.objects.create(name="ツーク", slug="zug", display_order=20)
+        Region.objects.create(name="ベルン", slug="bern", display_order=30)
+
+    def fake_get(self, url, params=None, timeout=None):
+
+        response = mock.Mock()
+        response.raise_for_status.return_value = None
+
+        if "frankfurter" in url:
+            response.json.return_value = {
+                "rates": {
+                    "2026-10-23": {"JPY": 170.0, "EUR": 1.07, "USD": 1.25},
+                    "2026-10-26": {"JPY": 171.7, "EUR": 1.071, "USD": 1.24},
+                }
+            }
+        else:
+            count = len(params["latitude"].split(","))
+            place = {
+                "current": {"time": "2026-10-27T08:15", "temperature_2m": 12.4, "weather_code": 0},
+                "hourly": {
+                    "time": [f"2026-10-27T{hour:02d}:00" for hour in range(24)],
+                    "temperature_2m": [float(hour) for hour in range(24)],
+                    "weather_code": [0] * 24,
+                },
+                "daily": {
+                    "time": ["2026-10-27", "2026-10-28", "2026-10-29"],
+                    "weather_code": [0, 61, 3],
+                    "temperature_2m_max": [14.2, 11.0, 10.6],
+                    "temperature_2m_min": [5.1, 6.0, 4.4],
+                },
+            }
+            response.json.return_value = place if count == 1 else [place] * count
+
+        return response
+
+    def test_default_region_and_fx(self):
+
+        with mock.patch("news.services.info_bar.requests.get", side_effect=self.fake_get):
+            data = self.client.get(reverse("news:info_bar")).json()
+
+        self.assertEqual(data["fx"]["rates"]["JPY"]["rate"], 171.7)
+        self.assertEqual(data["fx"]["rates"]["JPY"]["change"], 1.0)
+        self.assertEqual([place["name"] for place in data["weather"]], ["チューリッヒ"])
+        self.assertEqual(data["weather"][0]["temp"], 12)
+        self.assertEqual(data["weather"][0]["days"][1]["label"], "明日")
+
+        hours = data["weather"][0]["hours"]
+        self.assertEqual(len(hours), 12)
+        self.assertEqual(hours[0], {"label": "今", "emoji": "☀️", "temp": 8})
+        self.assertEqual(hours[1]["label"], "9時")
+
+    def test_first_two_regions_in_settings_order(self):
+
+        with mock.patch("news.services.info_bar.requests.get", side_effect=self.fake_get):
+            data = self.client.get(
+                reverse("news:info_bar") + "?regions=bern,zug,zurich"
+            ).json()
+
+        self.assertEqual(
+            [place["slug"] for place in data["weather"]],
+            ["zurich", "zug"],
+        )
+
+    def test_network_failure_returns_empty(self):
+
+        import requests
+
+        with mock.patch(
+            "news.services.info_bar.requests.get",
+            side_effect=requests.ConnectionError("down"),
+        ):
+            data = self.client.get(reverse("news:info_bar")).json()
+
+        self.assertIsNone(data["fx"])
+        self.assertEqual(data["weather"], [])
+
+    def test_bar_only_on_home(self):
+
+        self.assertContains(self.client.get(reverse("news:home")), 'id="news-info-bar"')
+        self.assertNotContains(self.client.get(reverse("news:life_alerts")), 'id="news-info-bar"')
+
+
 class FlagLifeAlertsTests(NewsTestCase):
 
     def test_marks_selected_articles(self):

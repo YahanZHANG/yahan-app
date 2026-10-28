@@ -153,6 +153,61 @@
     </section>
 
 
+    <!-- =====================================================
+         天気を表示する地域（この端末に保存。static/news/info_bar.js）
+    ====================================================== -->
+
+    <section
+        class="news-settings-card news-life-settings news-weather-settings"
+        id="news-weather-settings"
+    >
+
+        <div class="news-life-settings-head">
+
+            <h3>☀️ 天気を表示する地域</h3>
+
+        </div>
+
+        <p class="news-life-settings-lead">
+            HOME の上のバーに出す天気の地域です（2つまで）。最初は「暮らしのお知らせ」で選んだ地域と同じです。
+        </p>
+
+        <p
+            class="news-life-settings-selected"
+            id="news-weather-selected"
+        >
+            読み込み中…
+        </p>
+
+        <div
+            class="news-push-region-list"
+            role="group"
+            aria-label="天気を表示する地域"
+        >
+            {% for region in regions %}
+                <label class="news-push-region">
+                    <input type="checkbox" value="{{ region.slug }}">
+                    <span>{{ region.name }}</span>
+                </label>
+            {% endfor %}
+        </div>
+
+        <button
+            type="button"
+            class="news-weather-reset"
+            id="news-weather-reset"
+            hidden
+        >暮らしのお知らせと同じにもどす</button>
+
+        <p
+            id="news-weather-status"
+            class="news-push-inline-status"
+            aria-live="polite"
+        ></p>
+
+    </section>
+
+
     <form
         method="post"
         action="{% url 'news:settings' %}"
@@ -278,6 +333,44 @@
                     {{ error }}
                 </p>
             {% endfor %}
+
+        </section>
+
+
+
+        <!-- =================================================
+            HOMEに暮らしのニュースを表示
+            ================================================= -->
+
+        <section class="news-settings-card news-dark-setting">
+
+            <label class="news-dark-setting-row">
+
+                <span class="news-dark-setting-copy">
+
+                    <strong>
+                        <span class="news-life-tag">暮らし</span>
+                        HOMEにも表示する
+                    </strong>
+
+                    <small>
+                        OFF にすると、スト・運休などのお知らせは「暮らし」のページだけに表示されます。
+                    </small>
+
+                </span>
+
+                <span class="news-switch">
+
+                    {{ form.show_life_on_home }}
+
+                    <span
+                        class="news-slider"
+                        aria-hidden="true"
+                    ></span>
+
+                </span>
+
+            </label>
 
         </section>
 
@@ -653,11 +746,11 @@
             <span class="news-settings-about-copy">
 
                 <strong>
-                    Yappについて
+                    Swiss Newsについて
                 </strong>
 
                 <small>
-                    Swiss Newsの仕組み、Yappのほかのサービス、ご意見・ご要望など
+                    しくみ、ご意見・ご要望、Yappのほかのアプリなど
                 </small>
 
             </span>

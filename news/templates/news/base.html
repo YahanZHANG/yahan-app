@@ -125,11 +125,33 @@ page-content news-site-container
                     class="news-topbar-link news-topbar-pc-only{% if url_name == 'install' %} is-active{% endif %}"
                 >ホーム画面に追加</a>
 
+                <!-- PC: ヘッダーの中に検索欄 -->
+                <form
+                    action="{% url 'news:search' %}"
+                    method="get"
+                    class="news-topbar-search"
+                    role="search"
+                >
+                    <input
+                        type="search"
+                        name="q"
+                        value="{% if url_name == 'search' %}{{ query }}{% endif %}"
+                        placeholder="ニュースを検索"
+                        aria-label="ニュースを検索"
+                        enterkeyhint="search"
+                        autocomplete="off"
+                    >
+                </form>
+
+                <!-- スマホ: 押すとヘッダーの下に検索欄が開く -->
                 <a
-                    href="{% url 'news:topic_list' %}"
-                    class="news-topbar-icon{% if url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
+                    href="{% url 'news:search' %}"
+                    class="news-topbar-icon news-topbar-search-toggle{% if url_name == 'search' or url_name == 'topic_list' or url_name == 'topic_detail' or url_name == 'region_detail' or url_name == 'source_detail' %} is-active{% endif %}"
                     aria-label="探す"
+                    aria-controls="news-topbar-searchbar"
+                    aria-expanded="false"
                     title="探す"
+                    data-search-toggle
                 >
                     <span aria-hidden="true">🔍</span>
                     <small>探す</small>
@@ -138,16 +160,51 @@ page-content news-site-container
                 <a
                     href="{% url 'news:about' %}"
                     class="news-topbar-icon{% if url_name == 'about' or url_name == 'services' %} is-active{% endif %}"
-                    aria-label="Yappについて"
-                    title="Yappについて"
+                    aria-label="Swiss Newsについて"
+                    title="Swiss Newsについて"
                 >
                     <span aria-hidden="true">ⓘ</span>
-                    <small>Yapp</small>
+                    <small>About</small>
                 </a>
 
             </div>
 
         </div>
+
+        {% if url_name != 'search' %}
+            <div
+                class="news-topbar-searchbar"
+                id="news-topbar-searchbar"
+                hidden
+            >
+                {% include "news/_search_form.html" with search_id="news-topbar-search-input" %}
+            </div>
+
+            <script>
+                // スマホ: 🔍 を押すと、ヘッダーの下に検索欄を開いてすぐ入力できるようにする
+                (() => {
+                    const toggle = document.querySelector("[data-search-toggle]");
+                    const bar = document.getElementById("news-topbar-searchbar");
+
+                    if (!toggle || !bar) {
+                        return;
+                    }
+
+                    toggle.addEventListener("click", (event) => {
+                        event.preventDefault();
+
+                        const open = bar.hidden;
+
+                        bar.hidden = !open;
+                        toggle.setAttribute("aria-expanded", String(open));
+
+                        if (open) {
+                            bar.querySelector("input").focus();
+                        }
+                    });
+                })();
+            </script>
+        {% endif %}
 
     </header>
 
@@ -186,6 +243,29 @@ page-content news-site-container
 
     <main class="news-main">
 
+        {% if request.resolver_match.url_name == 'home' %}
+            <!-- 為替・天気のバー（static/news/info_bar.js が中身を入れる） -->
+            <section
+                class="news-info-bar"
+                id="news-info-bar"
+                data-url="{% url 'news:info_bar' %}"
+                aria-label="為替と天気"
+                hidden
+            >
+                <button
+                    type="button"
+                    class="news-info-strip"
+                    aria-expanded="false"
+                    aria-controls="news-info-detail"
+                ></button>
+                <div
+                    class="news-info-detail"
+                    id="news-info-detail"
+                    hidden
+                ></div>
+            </section>
+        {% endif %}
+
         {% latest_announcement as announcement %}
 
         {% if announcement %}
@@ -195,9 +275,18 @@ page-content news-site-container
                 data-announcement-id="{{ announcement.id }}"
             >
                 <span class="news-announcement-label">お知らせ</span>
-                <span class="news-announcement-text">
-                    {{ announcement.message }}
-                </span>
+                {% if announcement.link %}
+                    <a
+                        class="news-announcement-text news-announcement-link"
+                        href="{{ announcement.link }}"
+                    >
+                        {{ announcement.message }} <span aria-hidden="true">›</span>
+                    </a>
+                {% else %}
+                    <span class="news-announcement-text">
+                        {{ announcement.message }}
+                    </span>
+                {% endif %}
                 <button
                     type="button"
                     class="news-announcement-close"
@@ -370,7 +459,10 @@ document.addEventListener("click", function (event) {
 <script src="{% static 'news/push_toggle.js' %}" defer></script>
 <script src="{% static 'news/push_prompt.js' %}" defer></script>
 <script src="{% static 'news/share.js' %}" defer></script>
+<div id="news-read-config" hidden data-url="{% url 'usage_analytics:news_summary_reads' %}"></div>
+<script src="{% static 'news/read_tracker.js' %}" defer></script>
 <script src="{% static 'news/push_options.js' %}" defer></script>
+<script src="{% static 'news/info_bar.js' %}" defer></script>
 
 
 

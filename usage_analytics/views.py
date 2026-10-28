@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib import messages
@@ -10,7 +11,9 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
 from news.models import Article
@@ -20,9 +23,10 @@ from . import stats
 from .catalog import app_info
 from .behavior import build_behavior
 from .insights import build_insights
-from .middleware import IGNORE_COOKIE, visitor_of
+from .middleware import IGNORE_COOKIE, get_device_type, is_bot, visitor_of
 from .models import (
     AnalyticsExclusion,
+    NewsSummaryRead,
     PageView,
     PublicNewsArticleClick,
     UserNewsArticleClick,
@@ -109,6 +113,7 @@ def dashboard(request):
     data = stats.build_dashboard(scope)
     pages = stats.top_pages(current)
     clicks = stats.top_news_clicks(scope) if scope.app in ("", "news") else []
+    news_reads = stats.top_news_reads() if scope.app in ("", "news") else []
     users = stats.signed_in_users(current)
 
     names = display_names(
@@ -131,6 +136,7 @@ def dashboard(request):
         "insights": build_insights(scope, data, pages, clicks),
         "pages": pages,
         "clicks": clicks,
+        "news_reads": news_reads,
         "users": users,
         "behavior": build_behavior(scope),
         "charts": {
@@ -489,6 +495,71 @@ def public_news_article_click(
     return redirect(
         destination_url
     )
+
+
+# =========================================================
+# Swiss News summary reads (要約の閲覧, news/read_tracker.js)
+# =========================================================
+
+MAX_READS_PER_REQUEST = 40
+
+
+@csrf_exempt
+@require_POST
+def news_summary_reads(request):
+    """
+    画面に3秒以上映った要約カードを、まとめて受け取って記録する。
+
+    本文: {"reads": [{"id": 記事ID, "w": 重み0〜1}, ...]}
+    sendBeacon で送るので CSRF トークンは付けられない (記録するだけ)。
+    """
+
+    if request.COOKIES.get(IGNORE_COOKIE) or is_bot(request):
+        return HttpResponse(status=204)
+
+    visitor_id, _ = visitor_of(request)
+
+    if not visitor_id:
+        return HttpResponse(status=204)
+
+    try:
+        reads = json.loads(request.body or b"{}").get("reads", [])
+        weights = {}
+        for item in reads[:MAX_READS_PER_REQUEST]:
+            article_id = int(item["id"])
+            weights[article_id] = max(0.05, min(1.0, float(item.get("w", 1))))
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return HttpResponseBadRequest()
+
+    if not weights:
+        return HttpResponse(status=204)
+
+    user = request.user if request.user.is_authenticated else None
+    day = timezone.localdate()
+    device = get_device_type(request)
+
+    try:
+        articles = Article.objects.select_related("source").filter(pk__in=weights)
+        for article in articles:
+            read, created = NewsSummaryRead.objects.get_or_create(
+                visitor_id=visitor_id,
+                article_id=article.pk,
+                day=day,
+                defaults={
+                    "user": user,
+                    "article_title": (article.title_ja or article.title_original)[:500],
+                    "source_name": article.source.name[:200],
+                    "weight": weights[article.pk],
+                    "device_type": device,
+                },
+            )
+            if not created and weights[article.pk] > read.weight:
+                read.weight = weights[article.pk]
+                read.save(update_fields=["weight"])
+    except DatabaseError:
+        logger.exception("Failed to save news summary reads.")
+
+    return HttpResponse(status=204)
 
 
 # =========================================================

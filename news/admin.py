@@ -217,6 +217,7 @@ class SupportRequestAdmin(
 class NewsAnnouncementAdmin(admin.ModelAdmin):
     list_display = [
         "message",
+        "link",
         "is_active",
         "created_at",
     ]
