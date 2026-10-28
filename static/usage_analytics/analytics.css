@@ -150,9 +150,7 @@ html[data-yapp-resolved-theme="dark"] body {
 /* ---------- Filters ---------- */
 
 .ya-filters {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    /* 上に貼りつくのは下の目次 (.ya-jump) だけにする */
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -945,4 +943,149 @@ line.ya-axis {
 
 .ya-insights + .ya-insights {
     margin-top: 12px;
+}
+
+/* ---------- ページ内の移動 (目次・↑↓ボタン) ---------- */
+
+.ya-jump {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    gap: 6px;
+    margin: 0 -4px 14px;
+    padding: 8px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: color-mix(in srgb, var(--ya-page) 92%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+.ya-jump::-webkit-scrollbar {
+    display: none;
+}
+
+.ya-jump-link {
+    flex: none;
+    padding: 9px 16px;
+    border: 1px solid var(--ya-border);
+    border-radius: 999px;
+    background: var(--ya-surface);
+    color: var(--ya-ink-2) !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ya-jump-link:hover,
+.ya-jump-link.is-main {
+    border-color: var(--ya-brand);
+    color: var(--ya-brand) !important;
+}
+
+.ya-jump-link.is-main {
+    background: var(--ya-brand-soft);
+    font-weight: 700;
+}
+
+/* 目次で飛んだとき、見出しが目次バーの下に隠れないように */
+.ya-anchor {
+    scroll-margin-top: 72px;
+}
+
+.ya-fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.ya-fold > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ya-fold > summary h3 {
+    margin: 0;
+}
+
+.ya-fold-hint {
+    flex: none;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--ya-surface);
+    color: var(--ya-brand);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.ya-fold[open] .ya-fold-hint {
+    font-size: 0;
+}
+
+.ya-fold[open] .ya-fold-hint::after {
+    content: "閉じる";
+    font-size: 0.8rem;
+}
+
+.ya-float {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 指で押しやすいよう大きめ (64px) に。アイコンの下に短い文字 */
+.ya-float-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--ya-brand);
+    border-radius: 50%;
+    background: var(--ya-surface);
+    box-shadow: 0 6px 20px rgba(40, 30, 90, 0.22);
+    color: var(--ya-brand) !important;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ya-float-btn b {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.ya-float-btn span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ya-float-btn.is-main {
+    background: var(--ya-brand);
+    color: #fff !important;
+}
+
+.ya-float-btn:hover {
+    transform: scale(1.06);
+}
+
+.ya-float-btn:active {
+    transform: scale(0.94);
+}
+
+.ya-float-btn.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
 }

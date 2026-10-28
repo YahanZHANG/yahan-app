@@ -231,6 +231,24 @@ class PortalAnnouncementTests(TestCase):
         self.assertNotContains(response, "非表示のお知らせ")
 
 
+class AdminRareAppsTests(TestCase):
+
+    def test_admin_folds_rarely_used_apps(self):
+        from django.contrib.auth import get_user_model
+        from django.urls import reverse
+
+        admin = get_user_model().objects.create_user("boss", password="x", is_staff=True, is_superuser=True)
+        self.client.force_login(admin)
+
+        response = self.client.get(reverse("admin:index"))
+        html = response.content.decode()
+        self.assertIn("ほとんど使わないアプリ", html)
+        self.assertLess(html.index("app-washoku"), html.index("yapp-admin-rare"))
+        self.assertGreater(html.index("app-feeding"), html.index("yapp-admin-rare"))
+
+        # 一覧ページの左メニューも同じ
+        response = self.client.get(reverse("admin:washoku_feedback_changelist"))
+        self.assertContains(response, "yapp-nav-more")
 class AppIdeaTests(TestCase):
 
     def test_idea_is_saved_and_thanked(self):

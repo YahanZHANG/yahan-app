@@ -1,0 +1,28 @@
+{% extends "admin/index.html" %}
+{% load yapp_admin %}
+
+{% comment %}
+    Django の Admin トップのまま、ほとんど使わないアプリだけを下に折りたたむ。
+{% endcomment %}
+
+{% block content %}
+{% yapp_split_apps app_list as apps %}
+<div id="content-main">
+  {% include "admin/app_list.html" with app_list=apps.main show_changelinks=True %}
+  {% if apps.rare %}
+    <details class="yapp-admin-rare">
+      <summary>ほとんど使わないアプリ（{{ apps.rare|length }}）</summary>
+      {% include "admin/app_list.html" with app_list=apps.rare show_changelinks=True %}
+    </details>
+  {% endif %}
+</div>
+<style>
+  .yapp-admin-rare > summary {
+    margin-bottom: 12px;
+    padding: 8px 0;
+    color: var(--body-quiet-color);
+    font-weight: 700;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
