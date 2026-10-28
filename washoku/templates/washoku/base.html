@@ -74,6 +74,10 @@
                 <a href="{% url 'washoku:install' %}" class="{% if name == 'install' %}active{% endif %}"><i class="bi bi-phone" aria-hidden="true"></i>ホーム画面に追加</a>
             </nav>
 
+            {% if name != 'install' %}
+                <a href="{% url 'washoku:install' %}" class="washoku-install-pill yapp-install-only">📲 アプリにする</a>
+            {% endif %}
+
             <a href="{% url 'washoku:search' %}" class="washoku-search-button{% if name == 'search' %} active{% endif %}" aria-label="アプリ全体を検索">
                 <i class="bi bi-search" aria-hidden="true"></i>
             </a>

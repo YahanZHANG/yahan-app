@@ -1,9 +1,13 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 
 from .models import (
     AppAccessRequest,
+    AppIdea,
     PortalAnnouncement,
     PortalAppPreference,
+    PortalSettings,
+    PortalThemeText,
 )
 
 
@@ -129,3 +133,57 @@ class AppAccessRequestAdmin(admin.ModelAdmin):
             ).update(
                 is_visible=False,
             )
+
+@admin.register(AppIdea)
+class AppIdeaAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "idea",
+        "contact",
+        "user",
+        "handled",
+        "created_at",
+    ]
+
+    list_editable = [
+        "handled",
+    ]
+
+    list_filter = [
+        "handled",
+    ]
+
+
+@admin.register(PortalSettings)
+class PortalSettingsAdmin(admin.ModelAdmin):
+    """1件だけの設定。一覧を開くとすぐその設定の画面になる。"""
+
+    def changelist_view(self, request, extra_context=None):
+        settings_row = PortalSettings.load()
+        return redirect("admin:portal_portalsettings_change", settings_row.pk)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PortalThemeText)
+class PortalThemeTextAdmin(admin.ModelAdmin):
+    """季節・イベントごとのキャッチ。一覧でそのまま書き換えられる。"""
+
+    list_display = ["theme", "title", "headline"]
+    list_editable = ["title", "headline"]
+    list_display_links = ["theme"]
+    readonly_fields = ["theme"]
+
+    def changelist_view(self, request, extra_context=None):
+        PortalThemeText.ensure_all()
+        return super().changelist_view(request, extra_context)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

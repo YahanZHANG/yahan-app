@@ -47,6 +47,8 @@ urlpatterns = [
         name="public_news_article_click",
     ),
 
+    path("news-reads/", views.news_summary_reads, name="news_summary_reads"),
+
     # =====================================================
     # Old URLs (前の解析ページ)
     # =====================================================

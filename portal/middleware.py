@@ -70,6 +70,8 @@ ALLOWED_VIEW_NAMES = {
 
     # SwissNews のまとめから元記事へ（クリックを記録してリダイレクト）
     "usage_analytics:public_news_article_click",
+    # SwissNews の要約の閲覧 (画面に映った時間) の記録
+    "usage_analytics:news_summary_reads",
 }
 
 

@@ -3,7 +3,7 @@
 
 
 {% block title %}
-Yappについて | Swiss News
+Swiss Newsについて | Swiss News
 {% endblock %}
 
 
@@ -18,17 +18,16 @@ Yappについて | Swiss News
     <header class="news-about-hero">
 
         <div class="news-page-kicker">
-            ABOUT YAPP
+            ABOUT SWISS NEWS
         </div>
 
         <h2>
-            Yappについて
+            Swiss Newsについて
         </h2>
 
         <p class="news-about-lead">
-            日常をちょっと便利に、楽しく。
-            Yappは、スイス在住の個人が企画・開発・運営している
-            Webサービスです。
+            スイスのニュースを、日本語で。
+            しくみや更新時間、ご意見の送り先をまとめています。
         </p>
 
     </header>
@@ -188,46 +187,8 @@ Yappについて | Swiss News
                     Yappについて
                 </h3>
 
-                <p>
-                    Yappは、日常生活を少し便利に、
-                    楽しくするために個人で開発している
-                    Webサービスです。
-                </p>
+                {% include "includes/yapp_about_card.html" %}
 
-                <p>
-                    Swiss Newsのほかにも、
-                    イベントの日程調整、レシピ提案、色判定など、
-                    さまざまなサービスを提供しています。
-                </p>
-
-
-                <!-- Other services -->
-
-                <a
-                    href="{% url 'news:services' %}"
-                    class="news-about-services-link"
-                >
-
-                    <span class="news-about-services-copy">
-
-                        <strong>
-                            ほかのサービスを見る
-                        </strong>
-
-                        <small>
-                            Yappで使えるサービスをご紹介します
-                        </small>
-
-                    </span>
-
-                    <span
-                        class="news-about-services-arrow"
-                        aria-hidden="true"
-                    >
-                        →
-                    </span>
-
-                </a>
 
             </div>
 

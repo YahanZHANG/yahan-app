@@ -1,0 +1,23 @@
+{% load static %}
+{# アプリの about ページに置く、Yapp トップへの案内カード (Swiss News・スイスで和食で共通)。 #}
+<style>
+.yapp-about-card { position: relative; display: block; margin: 8px 0; padding: 20px 20px 18px; border-radius: 20px; overflow: hidden; color: #fff; text-decoration: none; background: linear-gradient(135deg, #2b2147 0%, #4a2f6b 55%, #c0567a 100%); box-shadow: 0 10px 24px rgba(43,33,71,.22); }
+.yapp-about-card:hover { color: #fff; filter: brightness(1.05); }
+.yapp-about-card__icons { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.yapp-about-card__icons img { width: 38px; height: 38px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,.25); }
+.yapp-about-card__icons span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.16); font-size: 20px; }
+.yapp-about-card strong { display: block; margin-bottom: 6px; font-size: 17px; font-weight: 900; line-height: 1.5; }
+.yapp-about-card p { margin: 0 0 14px; font-size: 13.5px; line-height: 1.8; color: #f1e8f6; }
+.yapp-about-card em { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 99px; background: #fff; color: #3a2a5a; font-style: normal; font-size: 13px; font-weight: 900; }
+</style>
+<a class="yapp-about-card" href="{% url 'portal:home' %}">
+    <span class="yapp-about-card__icons" aria-hidden="true">
+        <img src="{% static 'pwa/news/icon-192.png' %}" alt="" width="38" height="38">
+        <img src="{% static 'pwa/washoku/icon-192.png' %}" alt="" width="38" height="38">
+        <img src="{% static 'pwa/outings/icon-192.png' %}" alt="" width="38" height="38">
+        <span>🎮</span><span>🎨</span><span>📅</span>
+    </span>
+    <strong>Yappには、<br>ほかにもアプリがいっぱい！</strong>
+    <p>スイスのニュース、和食、お出かけ、ちょっとしたゲームまで。季節ごとに表情が変わる Yapp のトップを、のぞいてみてください。</p>
+    <em>Yappのトップへ ›</em>
+</a>

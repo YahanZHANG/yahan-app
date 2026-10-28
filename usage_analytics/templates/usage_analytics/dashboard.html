@@ -487,6 +487,30 @@
                 </div>
             </div>
 
+            {% if news_reads %}
+                <div class="ya-card">
+                    <h3>📰 Swiss News 要約がよく読まれた記事（推定）</h3>
+                    <p class="ya-note">直近3日間（上の期間の選択とは関係なし）。要約が3秒以上画面に映った回数（PCは同時に映った件数で割る）＋元記事クリック×3 の順。数字は目安です。</p>
+                    <div class="ya-table-wrap">
+                        <table class="ya-table">
+                            <thead>
+                                <tr><th>記事</th><th class="ya-num">要約</th><th class="ya-num">クリック</th><th class="ya-num">点数</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for article in news_reads %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}. {{ article.title }}<span class="ya-sub">{{ article.source }}{% if article.people %} ・ {{ article.people }}人{% endif %}</span></td>
+                                        <td class="ya-num">{{ article.reads }}</td>
+                                        <td class="ya-num">{{ article.clicks }}</td>
+                                        <td class="ya-num">{{ article.score }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="ya-grid">
                 {% if clicks %}
                     <div class="ya-card">

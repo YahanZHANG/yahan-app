@@ -160,11 +160,11 @@ page-content news-site-container
                 <a
                     href="{% url 'news:about' %}"
                     class="news-topbar-icon{% if url_name == 'about' or url_name == 'services' %} is-active{% endif %}"
-                    aria-label="Yappについて"
-                    title="Yappについて"
+                    aria-label="Swiss Newsについて"
+                    title="Swiss Newsについて"
                 >
                     <span aria-hidden="true">ⓘ</span>
-                    <small>Yapp</small>
+                    <small>About</small>
                 </a>
 
             </div>
@@ -459,6 +459,8 @@ document.addEventListener("click", function (event) {
 <script src="{% static 'news/push_toggle.js' %}" defer></script>
 <script src="{% static 'news/push_prompt.js' %}" defer></script>
 <script src="{% static 'news/share.js' %}" defer></script>
+<div id="news-read-config" hidden data-url="{% url 'usage_analytics:news_summary_reads' %}"></div>
+<script src="{% static 'news/read_tracker.js' %}" defer></script>
 <script src="{% static 'news/push_options.js' %}" defer></script>
 <script src="{% static 'news/info_bar.js' %}" defer></script>
 

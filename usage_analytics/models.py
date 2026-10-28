@@ -692,3 +692,58 @@ class AnalyticsExclusion(models.Model):
     def __str__(self):
 
         return self.user.username
+
+
+class NewsSummaryRead(models.Model):
+    """
+    Swiss News の要約を読んだ (と推定した) 記録。
+
+    カードの6割以上が3秒以上画面に映ったら1回。
+    PCのように何件も同時に映るときは、その件数で割った重み (weight) にする。
+    同じブラウザ・同じ記事・同じ日は1行だけ (重みは大きいほう)。
+    """
+
+    visitor_id = models.UUIDField("訪問者ID")
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="news_summary_reads",
+        verbose_name="ユーザー",
+    )
+
+    article_id = models.PositiveBigIntegerField("記事ID")
+
+    article_title = models.CharField("記事タイトル", max_length=500)
+
+    source_name = models.CharField("ニュースソース", max_length=200, blank=True)
+
+    day = models.DateField("日付")
+
+    weight = models.FloatField("重み", default=1)
+
+    device_type = models.CharField("デバイス", max_length=20, default="other")
+
+    read_at = models.DateTimeField("日時", default=timezone.now)
+
+    class Meta:
+
+        verbose_name = "ニュース要約の閲覧"
+        verbose_name_plural = "ニュース要約の閲覧"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["visitor_id", "article_id", "day"],
+                name="unique_news_summary_read_per_day",
+            ),
+        ]
+
+        indexes = [
+            models.Index(fields=["read_at"]),
+        ]
+
+    def __str__(self):
+
+        return f"{self.article_title} | {self.day} | {self.weight:.2f}"
