@@ -404,7 +404,7 @@ HOME_COLUMN_COUNT = 5
 # HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
 HOME_TABS = (
     ("week", "注目"),
-    ("poll", "アンケート"),
+    ("poll", "今週のアンケート"),
     ("question", "質問"),
     ("review", "口コミ"),
     ("column", "コラム"),

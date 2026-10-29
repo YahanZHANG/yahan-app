@@ -2014,7 +2014,7 @@ class AskAnywhereTests(TestCase):
 
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, "編集部より")
-        for label in ["アンケート", "質問", "口コミ", "コラム", "新着"]:
+        for label in ["今週のアンケート", "質問", "口コミ", "コラム", "新着"]:
             self.assertContains(home, f">{label}</button>")
 
 

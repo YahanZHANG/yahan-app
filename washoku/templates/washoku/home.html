@@ -103,7 +103,7 @@
 <div class="washoku-home-tabs" data-home-tabs>
 <nav class="washoku-home-tabnav" role="tablist" aria-label="HOMEのページ（左右にスワイプでも切り替えられます）">
     {% for value, label in home_tabs %}
-        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{% if value == "week" %}<span aria-hidden="true">✨</span>{% endif %}{{ label }}</button>
+        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{% if value == "week" %}<span aria-hidden="true">★</span>{% elif value == "poll" %}<span aria-hidden="true">📊</span>{% endif %}{{ label }}</button>
     {% endfor %}
 </nav>
 <div class="washoku-home-panels" data-home-panels>
@@ -159,11 +159,10 @@
     {% endif %}
 </section>
 
-<section class="washoku-home-panel" id="home-panel-poll" role="tabpanel" aria-labelledby="home-tab-poll">
+<section class="washoku-home-panel washoku-home-panel-poll" id="home-panel-poll" role="tabpanel" aria-labelledby="home-tab-poll">
     {% if main_poll or home_question %}
     {% if main_poll %}
     <div class="washoku-home-card washoku-home-poll">
-        <p class="washoku-home-poll-kind">📊 今週のアンケート</p>
         {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
     </div>
     {% endif %}

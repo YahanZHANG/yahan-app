@@ -5165,13 +5165,24 @@ html.washoku-say-open {
     color: #E3C766;
 }
 
-/* HOMEのタブ: 「今週」だけ金色 */
+/* HOMEのタブ: 「注目」は金色、「今週のアンケート」は緑 (ほかのタブと雰囲気を変える) */
 .washoku-home-tabnav button.is-week {
     color: #A86F00;
 }
 
-.washoku-home-tabnav button.is-week span {
+.washoku-home-tabnav button.is-week span,
+.washoku-home-tabnav button.is-poll span {
     margin-right: 2px;
+}
+
+.washoku-home-tabnav button.is-poll {
+    color: var(--washoku-poll-accent);
+    font-weight: 700;
+}
+
+.washoku-home-tabnav button.is-poll[aria-selected="true"] {
+    border-bottom-color: var(--washoku-poll-accent);
+    color: var(--washoku-poll-accent);
 }
 
 .washoku-home-tabnav button.is-week[aria-selected="true"] {
@@ -5430,4 +5441,12 @@ html.washoku-say-open {
 .washoku-home-question-more {
     margin: 8px 0 0;
     font-size: 13px;
+}
+
+/* 「今週のアンケート」タブの中身: 「注目」と同じく、色つきの枠で囲む */
+.washoku-home-panel-poll {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 35%, transparent);
+    border-radius: 20px;
+    background: linear-gradient(180deg, var(--washoku-poll-tint), var(--washoku-surface) 70%);
 }
