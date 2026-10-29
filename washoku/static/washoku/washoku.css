@@ -5154,3 +5154,229 @@ html.washoku-say-open {
 .washoku-field[hidden] {
     display: none;
 }
+
+.washoku-chip.washoku-verdict.is-ok {
+    background: color-mix(in srgb, #C9A227 18%, var(--washoku-surface));
+    color: #8A6D0B;
+    font-weight: 700;
+}
+
+[data-washoku-theme="dark"] .washoku-chip.washoku-verdict.is-ok {
+    color: #E3C766;
+}
+
+/* HOMEのタブ: 絵文字つきの丸いボタン。選んでいるものは色で塗る。「今週」は金色 */
+.washoku-home-tabnav {
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 0;
+    scroll-padding: 0 16px;
+}
+
+.washoku-home-tabnav button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14.5px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.washoku-home-tabnav button span {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.washoku-home-tabnav button[aria-selected="true"] {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent);
+    color: #FFFFFF;
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
+}
+
+.washoku-home-tabnav button.is-week {
+    border-color: #E0B43A;
+    background: linear-gradient(135deg, #FFF4CC, #FBDB82);
+    color: #6B4A00;
+}
+
+.washoku-home-tabnav button.is-week[aria-selected="true"] {
+    border-color: #C99A1C;
+    background: linear-gradient(135deg, #F6C744, #E39B1B);
+    color: #3A2400;
+    box-shadow: 0 3px 12px rgba(214, 150, 20, 0.45);
+}
+
+@media (min-width: 900px) {
+    .washoku-home-tabnav {
+        padding: 10px 0;
+    }
+
+    .washoku-home-tabnav button {
+        padding: 9px 18px;
+        font-size: 15.5px;
+    }
+}
+
+/* 「今週」タブの中身 */
+.washoku-week {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, #E0B43A 45%, transparent);
+    border-radius: 20px;
+    background: linear-gradient(180deg, color-mix(in srgb, #F6D77A 26%, var(--washoku-surface)), var(--washoku-surface) 70%);
+}
+
+.washoku-week-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.washoku-week-head span {
+    color: #9A6A00;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+[data-washoku-theme="dark"] .washoku-week-head span,
+[data-washoku-theme="dark"] .washoku-week-label {
+    color: #F0C766;
+}
+
+.washoku-week-head small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-week-label {
+    margin: 0 0 6px;
+    color: #9A6A00;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.washoku-week-pick,
+.washoku-week-poll,
+.washoku-week-stats {
+    margin: 0 0 14px;
+}
+
+.washoku-week-message {
+    margin: 0 0 10px;
+    line-height: 1.6;
+}
+
+.washoku-week-pick-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border: 2px solid #E0B43A;
+    border-radius: 16px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-week-pick-card img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.washoku-week-pick-card strong {
+    font-size: 18px;
+    line-height: 1.45;
+}
+
+.washoku-week-pick-card small {
+    color: var(--washoku-muted);
+    line-height: 1.6;
+}
+
+.washoku-week-poll {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--washoku-surface);
+}
+
+.washoku-week-poll h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    line-height: 1.45;
+}
+
+.washoku-week-poll h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-week-results {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-week-results li {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--washoku-poll-accent) 28%, transparent) var(--poll-percent), var(--washoku-surface-2) var(--poll-percent));
+    font-size: 15px;
+}
+
+.washoku-week-answers {
+    margin: 0;
+    padding-left: 1.2em;
+    line-height: 1.7;
+}
+
+.washoku-week-total {
+    margin: 8px 0 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-week-stats ul {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-week-stats li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border-radius: 12px;
+    background: var(--washoku-surface);
+}
+
+.washoku-week-stats b {
+    font-size: 20px;
+}
+
+.washoku-week-stats small {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+.washoku-home-panel {
+    box-sizing: border-box;
+}

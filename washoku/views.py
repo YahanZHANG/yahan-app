@@ -394,14 +394,66 @@ def home_polls(request):
 # HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
 HOME_COLUMN_COUNT = 6
 
-# HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
+# HOMEのタブ (この順に並ぶ。最初のものを最初に開く): (値, 名前, 絵文字)
 HOME_TABS = (
-    ("poll", "アンケート"),
-    ("question", "質問"),
-    ("review", "口コミ"),
-    ("column", "コラム"),
-    ("new", "新着"),
+    ("week", "今週", "✨"),
+    ("poll", "アンケート", "📊"),
+    ("question", "質問", "💬"),
+    ("review", "口コミ", "👍"),
+    ("column", "コラム", "✍️"),
+    ("new", "新着", "🆕"),
 )
+
+# 「先週のアンケート」: 始まってからこの日数がたったもの (答えが集まったもの) から選ぶ
+WEEKLY_POLL_MIN_DAYS = 3
+WEEKLY_POLL_MAX_DAYS = 21
+
+
+def weekly_context(request, display):
+    """
+    HOMEの「今週」タブ。管理者が選んだ一押しとひとこと、先週のアンケートの結果 (自動)、この1週間の動き。
+    """
+
+    now = timezone.now()
+    today = timezone.localdate()
+    monday = today - timedelta(days=today.weekday())
+
+    pick = display.weekly_pick
+
+    if pick and pick.status != "published":
+        pick = None
+
+    last_poll = (
+        Post.objects
+        .filter(status="published")
+        .filter(poll_posts_q())
+        .filter(
+            created_at__lte=now - timedelta(days=WEEKLY_POLL_MIN_DAYS),
+            created_at__gte=now - timedelta(days=WEEKLY_POLL_MAX_DAYS),
+        )
+        .exclude(pk=pick.pk if pick else None)
+        .order_by("-created_at", "-pk")
+        .first()
+    )
+
+    if last_poll:
+        attach_poll_results([last_poll], request)
+
+    week_ago = now - timedelta(days=7)
+    published = Post.objects.filter(status="published", created_at__gte=week_ago)
+
+    return {
+        "week_start": monday,
+        "weekly_pick": pick,
+        "weekly_message": display.weekly_message,
+        "last_poll": last_poll,
+        "week_counts": [
+            ("💬", "質問", questions_with_answer_state().filter(created_at__gte=week_ago).count()),
+            ("👍", "口コミ", published.filter(kind="product").count()),
+            ("✍️", "コラム", published.filter(kind__in=("column", "link")).count()),
+            ("📊", "投票", PollVote.objects.filter(voted_at__gte=week_ago).values("post", "user", "voter_key").distinct().count()),
+        ],
+    }
 
 
 def home(request):
@@ -433,6 +485,7 @@ def home(request):
             "home_columns": home_columns,
             "home_reviews": Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT],
             "home_tabs": HOME_TABS,
+            **weekly_context(request, display),
             "display": display,
             "announcements": list(Announcement.current()),
         },

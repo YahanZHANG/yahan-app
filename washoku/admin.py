@@ -1031,6 +1031,13 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
     """
 
     fieldsets = (
+        ("HOMEの「今週」タブ", {
+            "description": "先週のアンケートの結果は自動で出ます。一押しとひとことは、入れた週だけ出ます。",
+            "fields": (
+                "weekly_message",
+                "weekly_pick",
+            ),
+        }),
         ("HOMEに出すもの", {
             "fields": (
                 "home_season",

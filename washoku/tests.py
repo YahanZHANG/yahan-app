@@ -1897,6 +1897,42 @@ class AskAnywhereTests(TestCase):
             self.assertContains(home, f">{label}</button>")
 
 
+class WeeklyTabTests(TestCase):
+    """HOMEの「今週」タブ: 編集部のひとこと・一押し、先週のアンケートの結果 (自動)"""
+
+    def test_week_tab_shows_pick_message_and_last_weeks_poll(self):
+
+        column = Post.objects.create(kind="column", title="冬の鍋はこれ", body="白菜はMigrosで。", status="published")
+        poll = Post.objects.create(kind="poll", title="お米はどこで買う？", status="published")
+        Post.objects.filter(pk=poll.pk).update(created_at=timezone.now() - timedelta(days=8))
+        rice = PollChoice.objects.create(post=poll, label="アジア食材店", order=0)
+        PollChoice.objects.create(post=poll, label="Migros", order=1)
+        PollVote.objects.create(post=poll, choice=rice, voter_key="a")
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, ">今週</button>")
+        self.assertContains(home, "お米はどこで買う？")
+        self.assertContains(home, "100%")
+        self.assertNotContains(home, "今週の一押し")
+
+        display = DisplaySettings.load()
+        display.weekly_pick = column
+        display.weekly_message = "今週は鍋の特集です"
+        display.save()
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "今週の一押し")
+        self.assertContains(home, "冬の鍋はこれ")
+        self.assertContains(home, "今週は鍋の特集です")
+
+    def test_neutral_review(self):
+
+        post = Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつうの味噌です。", status="published")
+        reviews = self.client.get(reverse("washoku:product_list") + "?verdict=ok")
+        self.assertContains(reviews, "😐 ふつう")
+        self.assertContains(reviews, post.title)
+
+
 class PhotoTests(TestCase):
 
     def setUp(self):

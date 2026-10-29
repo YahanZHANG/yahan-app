@@ -207,6 +207,7 @@ class PostForm(forms.ModelForm):
             self.fields["verdict"].required = True
             self.fields["verdict"].choices = [
                 ("good", "👍 よかった"),
+                ("ok", "😐 ふつう"),
                 ("bad", "👎 いまいちだった"),
             ]
             self.fields["title"].label = "買ったもの"

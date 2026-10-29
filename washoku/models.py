@@ -1091,7 +1091,8 @@ class Post(models.Model):
     ]
 
     VERDICT_CHOICES = [
-        ("good", "買ってよかった"),
+        ("good", "よかった"),
+        ("ok", "ふつう"),
         ("bad", "いまいちだった"),
     ]
 
@@ -1661,6 +1662,25 @@ class DisplaySettings(models.Model):
         choices=SEASON_CHOICES,
         default="auto",
         help_text="自動: ハロウィンは10月18日〜31日",
+    )
+
+    # HOMEの「今週」タブ。先週のアンケートの結果は自動で出る
+    weekly_pick = models.ForeignKey(
+        "Post",
+        verbose_name="今週の一押し",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        limit_choices_to={"status": "published"},
+        help_text="HOMEの「今週」タブのいちばん上に大きく出す投稿（コラム・口コミ・アンケートなど）。空なら出しません。",
+    )
+
+    weekly_message = models.CharField(
+        "今週のひとこと（編集部より）",
+        max_length=200,
+        blank=True,
+        help_text="「今週」タブの一押しの上に出す短い文。空なら出しません。",
     )
 
     class Meta:

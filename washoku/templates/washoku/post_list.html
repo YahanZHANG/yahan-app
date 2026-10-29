@@ -30,6 +30,7 @@
 <p class="washoku-verdict-switch" role="group" aria-label="感想で絞り込む">
     <a href="?{% if shop %}shop={{ shop }}&amp;{% endif %}{% if section %}section={{ section }}{% endif %}"{% if not verdict %} class="is-active" aria-current="true"{% endif %}>すべて</a>
     <a href="?verdict=good{% if shop %}&amp;shop={{ shop }}{% endif %}{% if section %}&amp;section={{ section }}{% endif %}"{% if verdict == "good" %} class="is-active" aria-current="true"{% endif %}>👍 よかった</a>
+    <a href="?verdict=ok{% if shop %}&amp;shop={{ shop }}{% endif %}{% if section %}&amp;section={{ section }}{% endif %}"{% if verdict == "ok" %} class="is-active" aria-current="true"{% endif %}>😐 ふつう</a>
     <a href="?verdict=bad{% if shop %}&amp;shop={{ shop }}{% endif %}{% if section %}&amp;section={{ section }}{% endif %}"{% if verdict == "bad" %} class="is-active" aria-current="true"{% endif %}>👎 いまいち</a>
 </p>
 <form method="get" class="washoku-filter">
