@@ -399,7 +399,7 @@ def home_polls(request):
 
 
 # HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
-HOME_COLUMN_COUNT = 6
+HOME_COLUMN_COUNT = 5
 
 # HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
 HOME_TABS = (
