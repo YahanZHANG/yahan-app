@@ -588,25 +588,26 @@ class StoreTests(TestCase):
         self.assertContains(response, 'data-lat="47.360100"')
         self.assertContains(response, "現在地から近い順")
 
-    def test_store_comment_shows_on_the_store_and_home(self):
+    def test_store_page_takes_questions_and_reviews_go_to_the_review_list(self):
 
         self.client.force_login(self.user)
         self.client.post(
             reverse("washoku:comment_create", args=["store", self.store.pk]),
-            {"kind": "tip", "body": "納豆の品ぞろえが多い"},
+            {"kind": "tip", "body": "日曜は開いていますか？"},
         )
 
+        # お店のページの書き込み欄は質問だけ
         comment = Comment.objects.get()
-        self.assertEqual(comment.store, self.store)
+        self.assertEqual(comment.kind, "question")
         self.assertEqual(
             comment.get_absolute_url(),
             reverse("washoku:store_detail", args=[self.store.pk]) + f"#comment-{comment.pk}",
         )
+        page = self.client.get(reverse("washoku:store_detail", args=[self.store.pk]))
+        self.assertContains(page, "このお店への質問")
+        self.assertNotContains(page, 'name="kind" value="tip"> ')
 
-        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])), "納豆の品ぞろえ")
-        self.assertContains(self.client.get(reverse("washoku:home")), comment.get_absolute_url())
-
-        # お店の一覧の「口コミ」は、口コミ (投稿) だけを数える。口コミの一覧では「お店の口コミ」で絞り込める
+        # お店の一覧の「口コミ」は口コミだけを数える。口コミの一覧では「お店の口コミ」で絞り込める
         self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 0件")
         Post.objects.create(kind="product", store=self.store, title=self.store.name, verdict="good", body="店員さんが親切", status="published", author=self.user)
         Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつう", status="published")
@@ -614,6 +615,27 @@ class StoreTests(TestCase):
         reviews = self.client.get(reverse("washoku:product_list") + "?section=store")
         self.assertContains(reviews, "店員さんが親切")
         self.assertNotContains(reviews, "Coop の味噌")
+
+    def test_old_store_comments_become_reviews(self):
+
+        import importlib
+        from django.apps import apps as django_apps
+
+        other = get_user_model().objects.create_user("jiro", password="x")
+        old = Comment.objects.create(author=self.user, store=self.store, kind="tip", body="納豆の品ぞろえが多い")
+        reply = Comment.objects.create(author=other, store=self.store, kind="tip", body="本当に！", parent=old)
+        CommentReaction.objects.create(comment=old, user=other, kind="thanks")
+        question = Comment.objects.create(author=self.user, store=self.store, kind="question", body="駐車場は？")
+
+        importlib.import_module("washoku.migrations.0051_store_comments_to_reviews").store_comments_to_reviews(django_apps, None)
+
+        review = Post.objects.get(store=self.store)
+        self.assertEqual((review.kind, review.status, review.body, review.author), ("product", "published", "納豆の品ぞろえが多い", self.user))
+        reply.refresh_from_db()
+        self.assertEqual((reply.post, reply.parent, reply.store), (review, None, None))
+        self.assertTrue(review.reactions.filter(user=other).exists())
+        self.assertTrue(Comment.objects.filter(pk=question.pk).exists())
+        self.assertFalse(Comment.objects.filter(pk=old.pk).exists())
 
     def test_hidden_stores_are_not_shown(self):
 

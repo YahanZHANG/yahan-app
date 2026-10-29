@@ -1482,6 +1482,9 @@ def comment_create(request, target, pk):
 
     if parent:
         comment.kind = "tip"
+    elif store:
+        # お店のページの書き込み欄は質問だけ (感想は「口コミ」に書く)
+        comment.kind = "question"
 
     comment.save()
 
