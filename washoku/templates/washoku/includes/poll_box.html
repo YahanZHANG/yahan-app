@@ -62,7 +62,7 @@
     {% if results.type == "text" and results.voted and results.answers and not home_question %}
         <ul class="washoku-poll-answers">
             {% for answer in results.answers %}
-                <li>{{ answer }}</li>
+                <li>{{ answer|linkify }}</li>
             {% endfor %}
         </ul>
     {% endif %}

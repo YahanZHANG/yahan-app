@@ -40,7 +40,7 @@
 {% for substitute in ingredient.substitutes_for.all %}
 <section class="washoku-tips">
     <h2>「{{ substitute.original_name }}」の代わりに</h2>
-    {% if substitute.tips %}<p>{{ substitute.tips|linebreaksbr }}</p>{% endif %}
+    {% if substitute.tips %}<p>{{ substitute.tips|linkify|linebreaksbr }}</p>{% endif %}
 </section>
 {% endfor %}
 

@@ -5515,3 +5515,15 @@ html.washoku-say-open {
     object-fit: cover;
     border-radius: 12px;
 }
+
+/* 本文中の URL (自動でリンクになる): 長くても画面からはみ出さない */
+.washoku-comment-text a,
+.washoku-post-body a,
+.washoku-poll-answers a {
+    overflow-wrap: anywhere;
+}
+
+/* HOMEのタブ: 上の「今日のごはん」とのあいだを少し空ける */
+.washoku-home-tabs {
+    margin-top: 28px;
+}

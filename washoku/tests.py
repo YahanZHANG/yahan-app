@@ -1622,6 +1622,17 @@ class PushTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:my_page")), "月曜のお知らせ")
 
 
+class LinkifyTests(TestCase):
+
+    def test_urls_in_comments_become_links_and_html_stays_escaped(self):
+
+        from washoku.templatetags.washoku_tags import linkify
+
+        html = linkify("Coop の記事 https://www.coop.ch/de/rezepte/ <b>太字</b>")
+        self.assertIn('<a href="https://www.coop.ch/de/rezepte/" rel="nofollow noopener" target="_blank">', html)
+        self.assertIn("&lt;b&gt;", html)
+
+
 class WeeklyPushTests(TestCase):
     """毎週月曜16時の「今週」のお知らせ"""
 

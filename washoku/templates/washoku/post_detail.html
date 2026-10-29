@@ -24,7 +24,7 @@
     {% if post.resembles %}<p class="washoku-lead">日本の「{{ post.resembles }}」に近い</p>{% endif %}
 
     {% if post.kind == "link" %}
-        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+        <div class="washoku-post-body">{{ post.body|linkify|linebreaks }}</div>
 
         <p class="washoku-credit">出典: {% if post.source %}{{ post.source }}{% else %}{{ post.url }}{% endif %}</p>
 
@@ -32,12 +32,12 @@
 
         {% if post.author %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> 紹介: {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>{% endif %}
     {% elif post.kind == "board" %}
-        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+        <div class="washoku-post-body">{{ post.body|linkify|linebreaks }}</div>
         <p><a class="washoku-button" href="{% url 'washoku:question_new' %}"><i class="bi bi-chat-dots" aria-hidden="true"></i> 質問する</a></p>
     {% else %}
         <p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>
 
-        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+        <div class="washoku-post-body">{{ post.body|linkify|linebreaks }}</div>
     {% endif %}
 
     {% if post.kind == "poll" %}
