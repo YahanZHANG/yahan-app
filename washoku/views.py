@@ -3253,12 +3253,24 @@ def post_submit(request, kind):
         post.kind = kind
         post.photo_1, post.photo_2 = (photos + ["", ""])[:2]
         post.author = request.user
-        # 管理者の投稿はそのまま公開する
-        post.status = "published" if request.user.is_staff else "draft"
+        # 管理者の投稿と口コミはそのまま公開する (口コミは問題があれば管理画面で下書きに戻す)
+        post.status = "published" if request.user.is_staff or kind == "product" else "draft"
         post.save()
 
         if ingredient:
             post.ingredients.add(ingredient)
+
+        if kind == "product" and not request.user.is_staff:
+
+            send_admin_alert(
+                "新しい口コミ（掲載済み）",
+                f"{post.title}（{request.user.username} さん）\n\n{post.body[:300]}\n\n"
+                + request.build_absolute_uri(
+                    reverse("admin:washoku_post_change", args=[post.pk])
+                ),
+            )
+
+            messages.success(request, "口コミありがとうございます！掲載しました。")
 
         if post.status == "draft":
 

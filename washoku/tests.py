@@ -1024,6 +1024,8 @@ class PostTests(TestCase):
         )
         review = Post.objects.get()
         self.assertEqual(review.verdict, "bad")
+        # 口コミは確認なしですぐ載る
+        self.assertEqual(review.status, "published")
         self.assertEqual(list(review.ingredients.all()), [ingredient])
 
         review.status = "published"
