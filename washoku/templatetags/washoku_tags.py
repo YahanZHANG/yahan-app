@@ -60,3 +60,10 @@ def thumb(url, size=160):
     """Cloudinary の写真なら小さく切り抜いた版にする。"""
     from ..photos import thumbnail_url
     return thumbnail_url(url, int(size))
+
+
+@register.simple_tag
+def vapid_public_key():
+    """プッシュ通知の公開鍵 (未設定なら空)"""
+
+    return settings.VAPID_PUBLIC_KEY or ""

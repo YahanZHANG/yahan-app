@@ -308,10 +308,11 @@
     window.addEventListener("resize", function () { show(current, false); });
     if (window.ResizeObserver) panels.forEach(function (panel) { new ResizeObserver(fit).observe(panel); });
 
-    // 戻ってきたときは、前に開いていたタブを開く
+    // ?tab=week などで開いたら、そのタブ (月曜の通知から)。戻ってきたときは、前に開いていたタブ
     var saved = 0;
     try { saved = parseInt(sessionStorage.getItem(KEY) || "0", 10) || 0; } catch (error) {}
-    show(Math.min(saved, panels.length - 1), false);
+    var asked = tabs.findIndex(function (tab) { return tab.dataset.homeTab === new URLSearchParams(location.search).get("tab"); });
+    show(Math.min(asked === -1 ? saved : asked, panels.length - 1), false);
 })();
 </script>
 

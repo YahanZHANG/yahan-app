@@ -2147,6 +2147,12 @@ class PushSubscription(models.Model):
 
     auth = models.TextField()
 
+    weekly = models.BooleanField(
+        "月曜のお知らせ",
+        default=True,
+        help_text="毎週月曜16時の「今週」のお知らせ (先週のアンケートの結果など) も受け取る",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )

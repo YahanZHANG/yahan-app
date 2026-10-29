@@ -1,5 +1,5 @@
 """
-コメントに返信が来たことを、登録した端末にプッシュ通知で知らせる。
+コメントに返信が来たこと、毎週月曜の「今週」のお知らせを、登録した端末にプッシュ通知で知らせる。
 送信の仕組み (VAPID の鍵、Service Worker) は Swiss News と共通。
 """
 
@@ -32,8 +32,21 @@ def send_push(user_ids, title, body, url, tag):
     送れなくても、コメントの投稿は止めない。
     """
 
-    if not user_ids or not is_configured():
+    if not user_ids:
         return 0
+
+    sent, _failed = send_to(PushSubscription.objects.filter(user_id__in=user_ids), title, body, url, tag)
+    return sent
+
+
+def send_to(subscriptions, title, body, url, tag):
+    """
+    登録した端末に送る。(送れた件数, 送れなかった端末の [(pk, HTTP ステータス)]) を返す。
+    期限切れ・解除済みの端末 (404 / 410) は消す。
+    """
+
+    if not is_configured():
+        return 0, []
 
     payload = json.dumps(
         {
@@ -46,8 +59,9 @@ def send_push(user_ids, title, body, url, tag):
     )
 
     sent = 0
+    failed = []
 
-    for subscription in PushSubscription.objects.filter(user_id__in=user_ids):
+    for subscription in subscriptions:
 
         try:
             webpush(
@@ -71,17 +85,18 @@ def send_push(user_ids, title, body, url, tag):
         except WebPushException as error:
 
             status = error.response.status_code if error.response is not None else None
+            failed.append((subscription.pk, status))
 
-            # 期限切れ・解除済みの端末は消す
             if status in (404, 410):
                 subscription.delete()
 
             logger.warning("和食の Push 送信に失敗: subscription=%s status=%s", subscription.pk, status)
 
         except Exception:
+            failed.append((subscription.pk, None))
             logger.exception("和食の Push 送信で予期しないエラー: subscription=%s", subscription.pk)
 
-    return sent
+    return sent, failed
 
 
 def send_reply_push(comment, recipient_ids):

@@ -10,6 +10,8 @@ Run the Outings daily update inside the Render Web Service.
 - The update runs in a child process, so the memory it uses (Eventfrog
   pages, AI replies) is given back when it ends instead of staying in this
   long-lived process.
+- The same loop also sends the スイスで和食 weekly push (Mondays 16:00
+  Zurich), so no extra process is needed.
 - Linux/Render only (uses fcntl).
 """
 
@@ -27,6 +29,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from outings.services.alerts import send_admin_alert
+from washoku.weekly_push import run_if_due as run_washoku_weekly_push
 
 
 RUN_HOUR_UTC = 1
@@ -128,7 +131,15 @@ class Command(BaseCommand):
                 if attempt is not None:
                     self.run(state_dir, now, attempt)
                     prune(state_dir, now)
+                self.washoku_weekly_push(db_path.parent / "washoku_scheduler")
                 time.sleep(CHECK_INTERVAL_SECONDS)
+
+    def washoku_weekly_push(self, state_dir):
+        # 和食の通知が失敗しても、Outings の更新は止めない
+        try:
+            run_washoku_weekly_push(state_dir, write=self.stdout.write)
+        except Exception as exc:
+            self.stderr.write(f"Washoku weekly push FAILED: {type(exc).__name__}: {exc}")
 
     def run(self, state_dir, now, attempt):
         day = now.strftime("%Y-%m-%d")

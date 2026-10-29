@@ -1555,6 +1555,94 @@ class PushTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Comment.objects.count(), 2)
 
+    @mock.patch("washoku.push.is_configured", return_value=True)
+    @mock.patch("washoku.push.webpush")
+    def test_test_push_and_weekly_switch(self, webpush, _configured):
+
+        from .models import PushSubscription
+
+        self.subscribe(self.asker)
+        body = json.dumps({"endpoint": self.ENDPOINT})
+
+        self.assertEqual(self.client.post(reverse("washoku:push_test"), data=body, content_type="application/json").status_code, 200)
+        self.assertIn("テスト通知", json.loads(webpush.call_args.kwargs["data"])["title"])
+
+        self.client.post(reverse("washoku:push_weekly"), data=json.dumps({"endpoint": self.ENDPOINT, "weekly": False}), content_type="application/json")
+        self.assertFalse(PushSubscription.objects.get().weekly)
+        # 送り直しても (アプリを開くたびの同期)、オフのまま
+        self.assertFalse(json.loads(self.subscribe(self.asker).content)["weekly"])
+
+        # ほかの人の端末は操作できない
+        self.client.force_login(self.answerer)
+        self.assertEqual(self.client.post(reverse("washoku:push_test"), data=body, content_type="application/json").status_code, 404)
+
+    def test_push_script_is_on_every_page_for_members(self):
+
+        self.assertNotContains(self.client.get(reverse("washoku:home")), "washoku-push-config")
+        self.client.force_login(self.asker)
+        self.assertContains(self.client.get(reverse("washoku:home")), "washoku-push-config")
+        self.assertContains(self.client.get(reverse("washoku:my_page")), "月曜のお知らせ")
+
+
+class WeeklyPushTests(TestCase):
+    """毎週月曜16時の「今週」のお知らせ"""
+
+    def setUp(self):
+        from .models import PushSubscription
+
+        user = get_user_model().objects.create_user("hanako", password="x")
+        PushSubscription.objects.create(user=user, endpoint="https://push.example/on", p256dh="p", auth="a")
+        PushSubscription.objects.create(user=user, endpoint="https://push.example/off", p256dh="p", auth="a", weekly=False)
+
+    def monday(self, hour):
+        from washoku.views import poll_week_start
+        return poll_week_start() + timedelta(days=7, hours=hour - 3)
+
+    def make_polls(self, now):
+        from washoku.views import poll_week_start
+
+        week_start = poll_week_start(now)
+        last = Post.objects.create(kind="poll", title="お米はどこで買う？", status="published")
+        Post.objects.filter(pk=last.pk).update(created_at=week_start - timedelta(days=2))
+        rice = PollChoice.objects.create(post=last, label="アジア食材店", order=0)
+        PollChoice.objects.create(post=last, label="Migros", order=1)
+        PollVote.objects.create(post=last, choice=rice, voter_key="a")
+        new = Post.objects.create(kind="poll", title="お味噌は何味？", status="published")
+        Post.objects.filter(pk=new.pk).update(created_at=week_start + timedelta(hours=1))
+
+    def test_message(self):
+
+        from washoku.weekly_push import weekly_message
+
+        now = self.monday(16)
+        self.assertIsNone(weekly_message(now))
+
+        self.make_polls(now)
+        title, body = weekly_message(now)
+        self.assertEqual(title, "今週のアンケートが始まりました")
+        self.assertIn("「アジア食材店」が1位（100%）", body)
+        self.assertIn("今週のアンケートは「お味噌は何味？」です。", body)
+
+    @mock.patch("washoku.push.is_configured", return_value=True)
+    @mock.patch("washoku.push.webpush")
+    def test_sent_once_on_monday_afternoon_to_weekly_devices_only(self, webpush, _configured):
+
+        from washoku.weekly_push import run_if_due
+
+        now = self.monday(16)
+        self.make_polls(now)
+
+        with tempfile.TemporaryDirectory() as folder:
+            state = Path(folder)
+            self.assertFalse(run_if_due(state, now - timedelta(hours=1), write=lambda line: None))
+            self.assertFalse(run_if_due(state, now + timedelta(days=1), write=lambda line: None))
+            self.assertTrue(run_if_due(state, now, write=lambda line: None))
+            self.assertFalse(run_if_due(state, now + timedelta(minutes=1), write=lambda line: None))
+
+        webpush.assert_called_once()
+        self.assertEqual(webpush.call_args.kwargs["subscription_info"]["endpoint"], "https://push.example/on")
+        self.assertEqual(json.loads(webpush.call_args.kwargs["data"])["url"], "/washoku/?tab=week")
+
 
 class FavoriteNoteReactionTests(TestCase):
 

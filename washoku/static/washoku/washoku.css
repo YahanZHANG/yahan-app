@@ -5378,3 +5378,10 @@ html.washoku-say-open {
 .washoku-home-panel {
     box-sizing: border-box;
 }
+
+/* マイページ: テスト通知の結果 */
+#washoku-push-test [role="status"] {
+    display: block;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}

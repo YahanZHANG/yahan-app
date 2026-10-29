@@ -450,7 +450,21 @@ def weekly_context(request, display):
 
     week_start = poll_week_start()
 
-    last_polls = attach_poll_results(
+    return {
+        "week_start": week_start,
+        "weekly_message": display.weekly_message,
+        "featured": featured_items(limit=WEEKLY_FEATURED_COUNT),
+        "last_polls": last_week_polls(request, week_start),
+    }
+
+
+def last_week_polls(request, week_start):
+    """
+    先週のアンケートの結果 (票の多い順)。アンケートが多くなりすぎないよう、
+    いちばん答えが集まった1つだけ。月曜のプッシュ通知でも使う。
+    """
+
+    polls = attach_poll_results(
         Post.objects
         .filter(status="published")
         .filter(poll_posts_q())
@@ -459,13 +473,7 @@ def weekly_context(request, display):
         request,
     )
 
-    return {
-        "week_start": week_start,
-        "weekly_message": display.weekly_message,
-        "featured": featured_items(limit=WEEKLY_FEATURED_COUNT),
-        # アンケートが多くなりすぎないよう、先週のものはいちばん答えが集まった1つだけ
-        "last_polls": [sorted_results(poll) for poll in sorted(last_polls, key=lambda poll: poll.results["total"], reverse=True)[:1]],
-    }
+    return [sorted_results(poll) for poll in sorted(polls, key=lambda poll: poll.results["total"], reverse=True)[:1]]
 
 
 def home(request):
@@ -2366,11 +2374,7 @@ def about(request):
 
 def my_page(request):
 
-    from django.conf import settings
-
-    context = {
-        "vapid_public_key": settings.VAPID_PUBLIC_KEY or "",
-    }
+    context = {}
 
     if request.user.is_authenticated:
         context.update(
@@ -3490,7 +3494,7 @@ def push_subscribe(request):
     if data is None:
         return JsonResponse({"error": "Invalid subscription."}, status=400)
 
-    PushSubscription.objects.update_or_create(
+    subscription, _created = PushSubscription.objects.update_or_create(
         endpoint=data["endpoint"],
         defaults={
             "user": request.user,
@@ -3498,6 +3502,65 @@ def push_subscribe(request):
             "auth": data["auth"],
         },
     )
+
+    return JsonResponse({"success": True, "weekly": subscription.weekly})
+
+
+def own_subscription(request):
+    """送られてきた endpoint の、自分の端末の登録。なければ None"""
+
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return None, {}
+
+    if not isinstance(data, dict) or not isinstance(data.get("endpoint"), str):
+        return None, {}
+
+    return PushSubscription.objects.filter(endpoint=data["endpoint"], user=request.user).first(), data
+
+
+@login_required
+@require_POST
+def push_weekly(request):
+    """この端末で、月曜の「今週」のお知らせを受け取るかどうか"""
+
+    subscription, data = own_subscription(request)
+
+    if subscription is None:
+        return JsonResponse({"error": "Not subscribed."}, status=404)
+
+    subscription.weekly = bool(data.get("weekly"))
+    subscription.save(update_fields=["weekly"])
+
+    return JsonResponse({"success": True, "weekly": subscription.weekly})
+
+
+@login_required
+@require_POST
+def push_test(request):
+    """この端末にテスト通知を送る (届かないときの確認用)"""
+
+    from .push import is_configured, send_to
+
+    subscription, _data = own_subscription(request)
+
+    if subscription is None:
+        return JsonResponse({"error": "Not subscribed."}, status=404)
+
+    if not is_configured():
+        return JsonResponse({"error": "Push is not configured."}, status=503)
+
+    sent, failed = send_to(
+        [subscription],
+        "テスト通知です",
+        "この通知が見えていれば、スイスで和食の通知は届きます。",
+        reverse("washoku:my_page"),
+        "washoku-test",
+    )
+
+    if not sent:
+        return JsonResponse({"error": "Send failed.", "status": failed[0][1] if failed else None}, status=502)
 
     return JsonResponse({"success": True})
 
