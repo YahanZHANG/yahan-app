@@ -102,61 +102,62 @@
 
 <div class="washoku-home-tabs" data-home-tabs>
 <nav class="washoku-home-tabnav" role="tablist" aria-label="HOMEのページ（左右にスワイプでも切り替えられます）">
-    {% for value, label, icon in home_tabs %}
-        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"><span aria-hidden="true">{{ icon }}</span>{{ label }}</button>
+    {% for value, label in home_tabs %}
+        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{% if value == "week" %}<span aria-hidden="true">✨</span>{% endif %}{{ label }}</button>
     {% endfor %}
 </nav>
 <div class="washoku-home-panels" data-home-panels>
 
 <section class="washoku-home-panel washoku-week" id="home-panel-week" role="tabpanel" aria-labelledby="home-tab-week">
-    <p class="washoku-week-head"><span>✨ 今週のスイスで和食</span><small>{{ week_start|date:"n月j日" }}の週</small></p>
+    <p class="washoku-week-head"><span>✨ 今週のスイスで和食</span><small>{{ week_start|date:"n月j日" }}〜</small></p>
 
-    {% if weekly_message or weekly_pick %}
-    <div class="washoku-week-pick">
-        {% if weekly_message %}<p class="washoku-week-message"><span class="washoku-editor-tag">編集部より</span> {{ weekly_message }}</p>{% endif %}
-        {% if weekly_pick %}
-        <a class="washoku-week-pick-card" href="{% if weekly_pick.kind == "poll" %}{{ weekly_pick.poll_url }}{% else %}{{ weekly_pick.get_absolute_url }}{% endif %}">
-            <span class="washoku-week-label">🏆 今週の一押し ・ {{ weekly_pick.get_kind_display }}</span>
-            {% if weekly_pick.home_photo_url %}<img src="{{ weekly_pick.home_photo_url }}" alt="" loading="lazy">{% endif %}
-            <strong>{{ weekly_pick.title }}</strong>
-            {% if weekly_pick.body %}<small>{{ weekly_pick.body|striptags|truncatechars:90 }}</small>{% endif %}
-        </a>
-        {% endif %}
-    </div>
+    {% if weekly_message %}<p class="washoku-week-message"><span class="washoku-editor-tag">編集部より</span> {{ weekly_message }}</p>{% endif %}
+
+    {% if featured %}
+    <ul class="washoku-week-picks">
+        {% for entry in featured %}{% with item=entry.item %}
+        <li><a href="{% if entry.kind == "post" and item.kind == "poll" %}{{ item.poll_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" class="{% if forloop.first %}is-top{% endif %}{% if item.home_photo_url %} has-photo{% endif %}">
+            {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
+            <span>
+                <span class="washoku-week-kind">{% if entry.kind == "comment" %}{% if item.kind == "question" %}Q&amp;A{% else %}コメント{% endif %}{% else %}{{ item.get_kind_display }}{% endif %}</span>
+                <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:70 }}{% endif %}</strong>
+                {% if forloop.first and entry.kind == "post" and item.body %}<small>{{ item.body|striptags|truncatechars:90 }}</small>{% endif %}
+                <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
+            </span>
+        </a></li>
+        {% endwith %}{% endfor %}
+    </ul>
     {% endif %}
 
-    {% if last_poll %}
-    <section class="washoku-week-poll" aria-labelledby="week-poll-title">
+    {% for poll in last_polls %}
+    <section class="washoku-week-poll" aria-labelledby="week-poll-{{ poll.pk }}">
         <p class="washoku-week-label">📊 先週のアンケートの結果</p>
-        <h3 id="week-poll-title"><a href="{{ last_poll.poll_url }}">{{ last_poll.poll_title }}</a></h3>
-        {% with results=last_poll.results %}
+        <h3 id="week-poll-{{ poll.pk }}">{{ poll.poll_title }}</h3>
+        {% with results=poll.results %}
         {% if results.type == "text" %}
-            {% if results.answers %}
             <ul class="washoku-week-answers">
                 {% for answer in results.answers|slice:":4" %}<li>{{ answer|truncatechars:80 }}</li>{% endfor %}
             </ul>
-            {% endif %}
-            <p class="washoku-week-total">{{ results.total }}件の答え</p>
+            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">答えを書く ›</a></p>
         {% else %}
-            <ul class="washoku-week-results">
+            <ul class="washoku-week-chart">
                 {% for row in results.choices %}
-                <li style="--poll-percent: {{ row.percent }}%"><span>{{ row.choice.label }}</span><b>{{ row.percent }}%</b></li>
+                <li class="{% if row.top %}is-top{% endif %}">
+                    <span class="washoku-week-chart-label">{% if row.top %}👑 {% endif %}{{ row.choice.label }}</span>
+                    <b>{{ row.percent }}%</b>
+                    <span class="washoku-week-chart-bar" style="--poll-percent: {{ row.percent }}%"><span></span></span>
+                </li>
                 {% endfor %}
             </ul>
-            <p class="washoku-week-total">{{ results.total }}人が回答{% if not results.voted %} ・ <a href="{{ last_poll.poll_url }}">まだ投票できます</a>{% endif %}</p>
+            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">{% if results.voted %}アンケートのページへ{% else %}まだ投票できます{% endif %} ›</a></p>
         {% endif %}
         {% endwith %}
     </section>
-    {% endif %}
+    {% endfor %}
 
-    <section class="washoku-week-stats" aria-label="この1週間の動き">
-        <p class="washoku-week-label">📈 この1週間のみんなの動き</p>
-        <ul>
-            {% for icon, label, count in week_counts %}
-            <li><span aria-hidden="true">{{ icon }}</span><b>{{ count }}</b><small>{{ label }}</small></li>
-            {% endfor %}
-        </ul>
-    </section>
+    {% if not weekly_message and not featured and not last_polls %}
+        <p class="washoku-empty">今週のおすすめは準備中です。</p>
+    {% endif %}
 </section>
 
 <section class="washoku-home-panel" id="home-panel-poll" role="tabpanel" aria-labelledby="home-tab-poll">
@@ -172,7 +173,7 @@
     </ul>
     {% endif %}
     {% else %}
-    <p class="washoku-empty">いまはアンケートがありません。</p>
+    <p class="washoku-empty">今週のアンケートは準備中です。これまでのアンケートには、アンケートのページから投票できます。</p>
     {% endif %}
     <p class="washoku-home-panel-actions">
         <a class="washoku-home-poll-suggest" href="{% url 'washoku:poll_suggest' %}">💡 聞いてみたいことを提案する</a>
@@ -222,26 +223,7 @@
 </section>
 
 <section class="washoku-home-panel" id="home-panel-column" role="tabpanel" aria-labelledby="home-tab-column">
-    {% if featured %}
-    <p class="washoku-home-panel-label">⭐ 注目</p>
-    {% with entry=featured.0 %}{% with item=entry.item %}
-    <a class="washoku-featured-top" href="{{ item.get_absolute_url }}">
-        {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
-        <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:80 }}{% endif %}</strong>
-        {% if entry.kind == "post" %}<span class="washoku-featured-excerpt">{{ item.body|striptags|truncatechars:120 }}</span>{% endif %}
-        <small>{{ item.author|display_name }} ・ {% if entry.kind == "comment" %}{{ item.target.name }}{% else %}{{ item.get_kind_display }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
-    </a>
-    {% endwith %}{% endwith %}
-    {% if featured|length > 1 %}
-    <ul class="washoku-featured-more">
-        {% for entry in featured|slice:"1:3" %}{% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"{% if item.home_photo_url %} class="has-photo"{% endif %}>{% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}<span><strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:60 }}{% endif %}</strong><small>{{ item.author|display_name }} ・ {% if entry.kind == "comment" %}{{ item.target.name }}{% else %}{{ item.get_kind_display }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></span></a></li>
-        {% endwith %}{% endfor %}
-    </ul>
-    {% endif %}
-    {% endif %}
     {% if home_columns %}
-    <p class="washoku-home-panel-label">新しいコラム</p>
     <ul class="washoku-home-post-list">
         {% for post in home_columns %}
             <li><a href="{{ post.get_absolute_url }}">
@@ -252,7 +234,7 @@
         {% endfor %}
     </ul>
     {% endif %}
-    {% if not featured and not home_columns %}<p class="washoku-empty">まだコラムはありません。</p>{% endif %}
+    {% if not home_columns %}<p class="washoku-empty">まだコラムはありません。</p>{% endif %}
     <p class="washoku-home-panel-actions">
         <a class="washoku-button" href="{% url 'washoku:post_submit' 'column' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> コラムを書く</a>
         <a href="{% url 'washoku:column_list' %}">すべて見る ›</a>

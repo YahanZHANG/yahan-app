@@ -1902,28 +1902,32 @@ class AskAnywhereTests(TestCase):
 class WeeklyTabTests(TestCase):
     """HOMEの「今週」タブ: 編集部のひとこと・一押し、先週のアンケートの結果 (自動)"""
 
-    def test_week_tab_shows_pick_message_and_last_weeks_poll(self):
+    def test_week_tab_shows_picks_message_and_last_weeks_poll(self):
+
+        from washoku.views import poll_week_start
 
         column = Post.objects.create(kind="column", title="冬の鍋はこれ", body="白菜はMigrosで。", status="published")
         poll = Post.objects.create(kind="poll", title="お米はどこで買う？", status="published")
-        Post.objects.filter(pk=poll.pk).update(created_at=timezone.now() - timedelta(days=8))
+        Post.objects.filter(pk=poll.pk).update(created_at=poll_week_start() - timedelta(days=1))
         rice = PollChoice.objects.create(post=poll, label="アジア食材店", order=0)
         PollChoice.objects.create(post=poll, label="Migros", order=1)
         PollVote.objects.create(post=poll, choice=rice, voter_key="a")
 
         home = self.client.get(reverse("washoku:home"))
-        self.assertContains(home, ">今週</button>")
-        self.assertContains(home, "お米はどこで買う？")
-        self.assertContains(home, "100%")
-        self.assertNotContains(home, "今週の一押し")
+        self.assertContains(home, "今週</button>")
+        self.assertContains(home, "先週のアンケートの結果")
+        self.assertContains(home, "👑 アジア食材店")
+        # 先週のアンケートは、HOMEでは投票できない (結果とアンケートのページへのリンクだけ)
+        self.assertIsNone(home.context["main_poll"])
+        self.assertContains(home, "まだ投票できます")
 
+        column.is_featured = True
+        column.save()
         display = DisplaySettings.load()
-        display.weekly_pick = column
         display.weekly_message = "今週は鍋の特集です"
         display.save()
 
         home = self.client.get(reverse("washoku:home"))
-        self.assertContains(home, "今週の一押し")
         self.assertContains(home, "冬の鍋はこれ")
         self.assertContains(home, "今週は鍋の特集です")
 
@@ -2381,9 +2385,9 @@ class FeaturedTests(TestCase):
             [(entry["item"].pk, entry["count"]) for entry in home.context["featured"]],
             [(column.pk, 2), (comment.pk, 1)],
         )
-        self.assertContains(home, "washoku-featured-top")
-        # 投稿者と投稿した場所 (コラムは「コラム」、コメントは食材の名前) を出す
-        self.assertContains(home, f"{author.username} ・ コラム")
+        self.assertContains(home, "washoku-week-picks")
+        # 種類 (コラムなど) と投稿者、コメントは投稿した場所 (食材の名前) を出す
+        self.assertContains(home, '<span class="washoku-week-kind">コラム</span>')
         self.assertContains(home, f"{author.username} ・ {ingredient.name}")
 
 

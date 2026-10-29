@@ -359,9 +359,10 @@ def home_polls(request):
     """
 
     # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
+    # HOMEで投票できるのは、今週 (月曜日3時から) 始まったアンケートだけ。それより前のものはアンケートのページで
     base = (
         Post.objects
-        .filter(status="published")
+        .filter(status="published", created_at__gte=poll_week_start())
         .filter(poll_posts_q())
         .annotate(vote_count=respondent_count(), started=Max("choices__pk"))
     )
@@ -394,65 +395,76 @@ def home_polls(request):
 # HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
 HOME_COLUMN_COUNT = 6
 
-# HOMEのタブ (この順に並ぶ。最初のものを最初に開く): (値, 名前, 絵文字)
+# HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
 HOME_TABS = (
-    ("week", "今週", "✨"),
-    ("poll", "アンケート", "📊"),
-    ("question", "質問", "💬"),
-    ("review", "口コミ", "👍"),
-    ("column", "コラム", "✍️"),
-    ("new", "新着", "🆕"),
+    ("week", "今週"),
+    ("poll", "アンケート"),
+    ("question", "質問"),
+    ("review", "口コミ"),
+    ("column", "コラム"),
+    ("new", "新着"),
 )
 
-# 「先週のアンケート」: 始まってからこの日数がたったもの (答えが集まったもの) から選ぶ
-WEEKLY_POLL_MIN_DAYS = 3
-WEEKLY_POLL_MAX_DAYS = 21
+# 「今週」に出す、管理者が選んだもの (注目) の数
+WEEKLY_FEATURED_COUNT = 5
+
+# アンケートの週の区切り: 月曜日の3時 (日曜日の夜の終わり)
+WEEK_START_HOUR = 3
+
+
+def poll_week_start(now=None):
+    """
+    いまのアンケートの週が始まった日時 (直近の月曜日3時)。
+    HOMEで投票できるのは、この日時より後に始まったアンケートだけ。
+    """
+
+    local = timezone.localtime(now or timezone.now())
+    monday = local.replace(hour=WEEK_START_HOUR, minute=0, second=0, microsecond=0) - timedelta(days=local.weekday())
+
+    if local < monday:
+        monday -= timedelta(days=7)
+
+    return monday
+
+
+def sorted_results(poll):
+    """結果を、票の多い順に並べ替える (グラフ用)。いちばん多いものに top を付ける"""
+
+    if poll.results["type"] == "text":
+        return poll
+
+    rows = sorted(poll.results["choices"], key=lambda row: row["count"], reverse=True)
+
+    for row in rows:
+        row["top"] = bool(rows[0]["count"]) and row["count"] == rows[0]["count"]
+
+    poll.results["choices"] = rows
+    return poll
 
 
 def weekly_context(request, display):
     """
-    HOMEの「今週」タブ。管理者が選んだ一押しとひとこと、先週のアンケートの結果 (自動)、この1週間の動き。
+    HOMEの「今週」タブ。編集部のひとこと、管理者が選んだもの (注目: コラム・Q&A・口コミなど)、
+    先週のアンケートの結果 (自動)。
     """
 
-    now = timezone.now()
-    today = timezone.localdate()
-    monday = today - timedelta(days=today.weekday())
+    week_start = poll_week_start()
 
-    pick = display.weekly_pick
-
-    if pick and pick.status != "published":
-        pick = None
-
-    last_poll = (
+    last_polls = attach_poll_results(
         Post.objects
         .filter(status="published")
         .filter(poll_posts_q())
-        .filter(
-            created_at__lte=now - timedelta(days=WEEKLY_POLL_MIN_DAYS),
-            created_at__gte=now - timedelta(days=WEEKLY_POLL_MAX_DAYS),
-        )
-        .exclude(pk=pick.pk if pick else None)
-        .order_by("-created_at", "-pk")
-        .first()
+        .filter(created_at__gte=week_start - timedelta(days=7), created_at__lt=week_start)
+        .order_by("-created_at", "-pk"),
+        request,
     )
 
-    if last_poll:
-        attach_poll_results([last_poll], request)
-
-    week_ago = now - timedelta(days=7)
-    published = Post.objects.filter(status="published", created_at__gte=week_ago)
-
     return {
-        "week_start": monday,
-        "weekly_pick": pick,
+        "week_start": week_start,
         "weekly_message": display.weekly_message,
-        "last_poll": last_poll,
-        "week_counts": [
-            ("💬", "質問", questions_with_answer_state().filter(created_at__gte=week_ago).count()),
-            ("👍", "口コミ", published.filter(kind="product").count()),
-            ("✍️", "コラム", published.filter(kind__in=("column", "link")).count()),
-            ("📊", "投票", PollVote.objects.filter(voted_at__gte=week_ago).values("post", "user", "voter_key").distinct().count()),
-        ],
+        "featured": featured_items(limit=WEEKLY_FEATURED_COUNT),
+        # アンケートが多くなりすぎないよう、先週のものはいちばん答えが集まった1つだけ
+        "last_polls": [sorted_results(poll) for poll in sorted(last_polls, key=lambda poll: poll.results["total"], reverse=True)[:1]],
     }
 
 
@@ -460,17 +472,6 @@ def home(request):
 
     main_poll, other_polls = home_polls(request)
     display = DisplaySettings.load()
-    featured = featured_items()
-    featured_posts = {entry["item"].pk for entry in featured if entry["kind"] == "post"}
-
-    home_columns = [
-        post
-        for post in Post.objects
-        .filter(kind__in=("column", "link"), status="published")
-        .select_related("author")
-        .order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT + len(featured_posts)]
-        if post.pk not in featured_posts
-    ][:HOME_COLUMN_COUNT]
 
     return render(
         request,
@@ -481,8 +482,12 @@ def home(request):
             "questions": home_questions(),
             "main_poll": main_poll,
             "other_polls": other_polls,
-            "featured": featured,
-            "home_columns": home_columns,
+            "home_columns": (
+                Post.objects
+                .filter(kind__in=("column", "link"), status="published")
+                .select_related("author")
+                .order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT]
+            ),
             "home_reviews": Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT],
             "home_tabs": HOME_TABS,
             **weekly_context(request, display),

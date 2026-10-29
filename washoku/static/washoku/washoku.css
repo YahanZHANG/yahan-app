@@ -5165,62 +5165,23 @@ html.washoku-say-open {
     color: #E3C766;
 }
 
-/* HOMEのタブ: 絵文字つきの丸いボタン。選んでいるものは色で塗る。「今週」は金色 */
-.washoku-home-tabnav {
-    gap: 8px;
-    padding: 10px 16px;
-    border-bottom: 0;
-    scroll-padding: 0 16px;
-}
-
-.washoku-home-tabnav button {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 14px;
-    border: 1.5px solid var(--washoku-border);
-    border-radius: 999px;
-    background: var(--washoku-surface);
-    color: var(--washoku-text);
-    font-size: 14.5px;
-    transition: background .15s ease, color .15s ease, border-color .15s ease;
-}
-
-.washoku-home-tabnav button span {
-    font-size: 16px;
-    line-height: 1;
-}
-
-.washoku-home-tabnav button[aria-selected="true"] {
-    border-color: var(--washoku-accent);
-    background: var(--washoku-accent);
-    color: #FFFFFF;
-    box-shadow: 0 3px 10px color-mix(in srgb, var(--washoku-accent) 35%, transparent);
-}
-
+/* HOMEのタブ: 「今週」だけ金色 */
 .washoku-home-tabnav button.is-week {
-    border-color: #E0B43A;
-    background: linear-gradient(135deg, #FFF4CC, #FBDB82);
-    color: #6B4A00;
+    color: #A86F00;
+}
+
+.washoku-home-tabnav button.is-week span {
+    margin-right: 2px;
 }
 
 .washoku-home-tabnav button.is-week[aria-selected="true"] {
-    border-color: #C99A1C;
-    background: linear-gradient(135deg, #F6C744, #E39B1B);
-    color: #3A2400;
-    box-shadow: 0 3px 12px rgba(214, 150, 20, 0.45);
+    border-bottom-color: #E0A81E;
+    color: #8A5A00;
 }
 
-@media (min-width: 900px) {
-    .washoku-home-tabnav {
-        padding: 10px 0;
-    }
-
-    .washoku-home-tabnav button {
-        padding: 9px 18px;
-        font-size: 15.5px;
-    }
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week,
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week[aria-selected="true"] {
+    color: #F0C766;
 }
 
 /* 「今週」タブの中身 */
@@ -5245,11 +5206,6 @@ html.washoku-say-open {
     font-weight: 800;
 }
 
-[data-washoku-theme="dark"] .washoku-week-head span,
-[data-washoku-theme="dark"] .washoku-week-label {
-    color: #F0C766;
-}
-
 .washoku-week-head small {
     color: var(--washoku-muted);
     font-size: 13px;
@@ -5262,79 +5218,149 @@ html.washoku-say-open {
     font-weight: 800;
 }
 
-.washoku-week-pick,
-.washoku-week-poll,
-.washoku-week-stats {
-    margin: 0 0 14px;
+[data-washoku-theme="dark"] .washoku-week-head span,
+[data-washoku-theme="dark"] .washoku-week-label {
+    color: #F0C766;
 }
 
 .washoku-week-message {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     line-height: 1.6;
 }
 
-.washoku-week-pick-card {
+.washoku-week-picks {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-week-picks a {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px;
-    border: 2px solid #E0B43A;
-    border-radius: 16px;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid color-mix(in srgb, #E0B43A 35%, var(--washoku-border));
+    border-radius: 14px;
     background: var(--washoku-surface);
     color: inherit;
     text-decoration: none;
 }
 
-.washoku-week-pick-card img {
-    width: 100%;
-    max-height: 180px;
-    object-fit: cover;
-    border-radius: 12px;
+.washoku-week-picks a > span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
 }
 
-.washoku-week-pick-card strong {
-    font-size: 18px;
+.washoku-week-picks a.is-top {
+    flex-direction: column;
+    align-items: stretch;
+    border: 2px solid #E0B43A;
+}
+
+.washoku-week-picks img {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.washoku-week-picks a.is-top img {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+}
+
+.washoku-week-picks strong {
+    font-size: 16px;
     line-height: 1.45;
 }
 
-.washoku-week-pick-card small {
+.washoku-week-picks a.is-top strong {
+    font-size: 18px;
+}
+
+.washoku-week-picks small {
     color: var(--washoku-muted);
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.washoku-week-kind {
+    align-self: flex-start;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #F6D77A 45%, transparent);
+    color: #7A5200;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .washoku-week-poll {
-    padding: 12px 14px;
+    margin: 0 0 12px;
+    padding: 14px;
     border-radius: 16px;
     background: var(--washoku-surface);
 }
 
 .washoku-week-poll h3 {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     font-size: 17px;
     line-height: 1.45;
 }
 
-.washoku-week-poll h3 a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.washoku-week-results {
+.washoku-week-chart {
     display: grid;
-    gap: 6px;
+    gap: 10px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.washoku-week-results li {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--washoku-poll-accent) 28%, transparent) var(--poll-percent), var(--washoku-surface-2) var(--poll-percent));
+.washoku-week-chart li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4px 10px;
+}
+
+.washoku-week-chart-label {
+    font-size: 14.5px;
+}
+
+.washoku-week-chart b {
+    color: var(--washoku-muted);
     font-size: 15px;
+}
+
+.washoku-week-chart-bar {
+    grid-column: 1 / -1;
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+}
+
+.washoku-week-chart-bar span {
+    display: block;
+    width: var(--poll-percent);
+    height: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--washoku-poll-accent) 55%, var(--washoku-surface));
+}
+
+.washoku-week-chart li.is-top .washoku-week-chart-label,
+.washoku-week-chart li.is-top b {
+    color: var(--washoku-text);
+    font-weight: 800;
+}
+
+.washoku-week-chart li.is-top .washoku-week-chart-bar span {
+    background: var(--washoku-poll-accent);
 }
 
 .washoku-week-answers {
@@ -5344,37 +5370,9 @@ html.washoku-say-open {
 }
 
 .washoku-week-total {
-    margin: 8px 0 0;
+    margin: 10px 0 0;
     color: var(--washoku-muted);
     font-size: 13px;
-}
-
-.washoku-week-stats ul {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.washoku-week-stats li {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 8px 4px;
-    border-radius: 12px;
-    background: var(--washoku-surface);
-}
-
-.washoku-week-stats b {
-    font-size: 20px;
-}
-
-.washoku-week-stats small {
-    color: var(--washoku-muted);
-    font-size: 12px;
 }
 
 .washoku-home-panel {
