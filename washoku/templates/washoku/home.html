@@ -141,11 +141,11 @@
             <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">答えを書く ›</a></p>
         {% else %}
             <ul class="washoku-week-chart">
-                {% for row in results.choices %}
+                {% for row in results.choices|slice:":3" %}
                 <li class="{% if row.top %}is-top{% endif %}">
                     <span class="washoku-week-chart-label">{% if row.top %}👑 {% endif %}{{ row.choice.label }}</span>
-                    <b>{{ row.percent }}%</b>
                     <span class="washoku-week-chart-bar" style="--poll-percent: {{ row.percent }}%"><span></span></span>
+                    <b>{{ row.percent }}%</b>
                 </li>
                 {% endfor %}
             </ul>

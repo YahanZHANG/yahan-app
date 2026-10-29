@@ -5301,21 +5301,22 @@ html.washoku-say-open {
 }
 
 .washoku-week-poll {
-    margin: 0 0 12px;
-    padding: 14px;
-    border-radius: 16px;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
     background: var(--washoku-surface);
 }
 
 .washoku-week-poll h3 {
-    margin: 0 0 12px;
-    font-size: 17px;
-    line-height: 1.45;
+    margin: 0 0 8px;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
+/* 先週の結果: 上位3つだけ、1行に「名前・バー・%」 */
 .washoku-week-chart {
     display: grid;
-    gap: 10px;
+    gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -5323,23 +5324,26 @@ html.washoku-say-open {
 
 .washoku-week-chart li {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 42%) 1fr 3em;
     align-items: center;
-    gap: 4px 10px;
+    gap: 8px;
+    font-size: 13.5px;
 }
 
 .washoku-week-chart-label {
-    font-size: 14.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .washoku-week-chart b {
     color: var(--washoku-muted);
-    font-size: 15px;
+    font-size: 13.5px;
+    text-align: right;
 }
 
 .washoku-week-chart-bar {
-    grid-column: 1 / -1;
-    height: 12px;
+    height: 8px;
     overflow: hidden;
     border-radius: 999px;
     background: var(--washoku-surface-2);
@@ -5370,7 +5374,7 @@ html.washoku-say-open {
 }
 
 .washoku-week-total {
-    margin: 10px 0 0;
+    margin: 6px 0 0;
     color: var(--washoku-muted);
     font-size: 13px;
 }
