@@ -103,7 +103,7 @@
 <div class="washoku-home-tabs" data-home-tabs>
 <nav class="washoku-home-tabnav" role="tablist" aria-label="HOMEのページ（左右にスワイプでも切り替えられます）">
     {% for value, label in home_tabs %}
-        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{% if value == "week" %}<span aria-hidden="true">⭐</span>{% endif %}{{ label }}</button>
+        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ label }}</button>
     {% endfor %}
 </nav>
 <div class="washoku-home-panels" data-home-panels>
@@ -118,7 +118,7 @@
         <li><a href="{% if entry.kind == "post" and item.kind == "poll" %}{{ item.poll_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" class="{% if forloop.first %}is-top{% endif %}{% if item.home_photo_url %} has-photo{% endif %}">
             {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
             <span>
-                <span class="washoku-week-kind">{% if entry.kind == "comment" %}{% if item.kind == "question" %}Q&amp;A{% else %}コメント{% endif %}{% else %}{{ item.get_kind_display }}{% endif %}</span>
+                <span class="washoku-week-kind{% if entry.kind == "post" %} kind-{{ item.kind }}{% endif %}">{% if entry.kind == "comment" %}{% if item.kind == "question" %}Q&amp;A{% else %}コメント{% endif %}{% else %}{{ item.get_kind_display }}{% endif %}</span>
                 <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:70 }}{% endif %}</strong>
                 {% if forloop.first and entry.kind == "post" and item.body %}<small>{{ item.body|striptags|truncatechars:90 }}</small>{% endif %}
                 <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>

@@ -2643,7 +2643,7 @@ class FeaturedTests(TestCase):
         )
         self.assertContains(home, "washoku-week-picks")
         # 種類 (コラムなど) と投稿者、コメントは投稿した場所 (食材の名前) を出す
-        self.assertContains(home, '<span class="washoku-week-kind">コラム</span>')
+        self.assertContains(home, '<span class="washoku-week-kind kind-column">コラム</span>')
         self.assertContains(home, f"{author.username} ・ {ingredient.name}")
 
 

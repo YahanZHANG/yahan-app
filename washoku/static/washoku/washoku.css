@@ -5688,9 +5688,9 @@ html.washoku-swipe-tabs body {
 .washoku-find-banner {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin: 0 0 14px;
-    padding: 10px 14px;
+    padding: 7px 14px;
     border: 1px solid var(--washoku-border);
     border-radius: 14px;
     background: var(--washoku-surface-2);
@@ -5699,7 +5699,7 @@ html.washoku-swipe-tabs body {
 }
 
 .washoku-find-banner > span:first-child {
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .washoku-find-banner strong,
@@ -5744,4 +5744,125 @@ html.washoku-swipe-tabs body {
     position: absolute;
     opacity: 0;
     pointer-events: none;
+}
+
+/* HOME の注目: コラムのタグは「みんなの投稿・コメント」と同じ色 */
+.washoku-week-kind.kind-column {
+    background: #FBE3D3;
+    color: #A4461C;
+}
+
+/* HOME の質問「答えを募集中」: ダークモードでも読めるように */
+[data-washoku-theme="dark"] .washoku-question-state {
+    background: rgba(242, 166, 90, 0.22);
+    color: #F7B783;
+}
+
+/* ヘッダー右上のアイコン (Swiss News と同じ形: 上に絵文字、下に小さな文字) */
+.washoku-header .washoku-header-icon {
+    display: inline-flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 40px;
+    min-height: 0;
+    height: 44px;
+    padding: 0 2px;
+    border-radius: 12px;
+    background: none;
+    color: var(--washoku-muted);
+    font-size: inherit;
+    text-decoration: none;
+}
+
+.washoku-header .washoku-header-icon > span {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.washoku-header .washoku-header-icon small {
+    font-size: .55rem;
+    font-weight: 700;
+}
+
+.washoku-header .washoku-header-icon.active {
+    color: var(--washoku-accent);
+}
+
+.washoku-header .washoku-about-icon {
+    margin-left: 0;
+}
+
+/* スマホ: ヘッダーの検索欄は出さず、🔍 で下に開く */
+@media (max-width: 799px) {
+    .washoku-header .washoku-header-search {
+        display: none;
+    }
+}
+
+/* PC: 検索欄はヘッダーにあるので 🔍 は出さない。About は文字を横に */
+@media (min-width: 800px) {
+    .washoku-header .washoku-search-button {
+        display: none;
+    }
+
+    .washoku-header .washoku-about-icon {
+        flex-direction: row;
+        gap: 5px;
+        height: auto;
+        padding: 8px 10px;
+        border-radius: 999px;
+    }
+
+    .washoku-header .washoku-about-icon small {
+        font-size: 13px;
+    }
+
+    .washoku-header .washoku-about-icon:hover {
+        background: var(--washoku-surface-2);
+    }
+
+    /* About が入るぶん、すきまと検索欄を少し詰める */
+    .washoku-header .washoku-header-inner {
+        gap: 14px;
+    }
+
+    .washoku-header .washoku-header-search {
+        min-width: 120px;
+        max-width: 220px;
+    }
+}
+
+/* 🔍 で開く検索欄 (ヘッダーのすぐ下) */
+.washoku-searchbar {
+    padding: 0 16px 10px;
+}
+
+.washoku-searchbar form {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.washoku-searchbar i {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    color: var(--washoku-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.washoku-searchbar input {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 12px 0 34px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 16px;
 }

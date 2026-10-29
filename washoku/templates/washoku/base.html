@@ -78,14 +78,21 @@
                 <a href="{% url 'washoku:install' %}" class="washoku-install-pill yapp-install-only">📲 アプリにする</a>
             {% endif %}
 
-            <a href="{% url 'washoku:search' %}" class="washoku-search-button{% if name == 'search' %} active{% endif %}" aria-label="アプリ全体を検索">
-                <i class="bi bi-search" aria-hidden="true"></i>
+            {# スマホ: Swiss News と同じく右上に「探す」と「About」のアイコン。探すは押すとヘッダーの下に検索欄が開く #}
+            <a href="{% url 'washoku:search' %}" class="washoku-search-button washoku-header-icon{% if name == 'search' %} active{% endif %}" aria-label="探す" title="探す" aria-controls="washoku-searchbar" aria-expanded="false"{% if name != 'search' %} data-search-toggle{% endif %}>
+                <span aria-hidden="true">🔍</span>
+                <small>探す</small>
             </a>
 
             <form class="washoku-header-search" method="get" action="{% url 'washoku:search' %}" role="search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search" name="q" value="{% if name == 'search' %}{{ request.GET.q }}{% endif %}" placeholder="検索" aria-label="アプリ全体を検索">
             </form>
+
+            <a href="{% url 'washoku:about' %}" class="washoku-header-icon washoku-about-icon{% if name == 'about' %} active{% endif %}" aria-label="スイスで和食について" title="スイスで和食について">
+                <span aria-hidden="true">ⓘ</span>
+                <small>About</small>
+            </a>
 
             <a
                 href="{% url 'washoku:my_page' %}"
@@ -100,6 +107,30 @@
             </a>
 
         </div>
+
+        {% if name != 'search' %}
+            <div class="washoku-searchbar" id="washoku-searchbar" hidden>
+                <form method="get" action="{% url 'washoku:search' %}" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" name="q" placeholder="料理、食材、お店などを探す" aria-label="アプリ全体を検索" enterkeyhint="search">
+                </form>
+            </div>
+            <script>
+                // スマホ: 🔍 を押すと、ヘッダーの下に検索欄を開いてすぐ入力できるようにする
+                (function () {
+                    var toggle = document.querySelector("[data-search-toggle]");
+                    var bar = document.getElementById("washoku-searchbar");
+                    if (!toggle || !bar) return;
+                    toggle.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        var open = bar.hidden;
+                        bar.hidden = !open;
+                        toggle.setAttribute("aria-expanded", String(open));
+                        if (open) bar.querySelector("input").focus();
+                    });
+                })();
+            </script>
+        {% endif %}
 
     </header>
 
