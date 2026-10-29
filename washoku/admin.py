@@ -1083,3 +1083,7 @@ class StampAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # 消すと押されたぶんが表示できなくなるので「表示する」を外して隠す
         return False
+
+
+# コラム・アンケート・口コミ・Q&A などを種類ごとに分けた管理画面
+from . import admin_community  # noqa: E402,F401

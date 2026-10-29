@@ -9,9 +9,17 @@ from portal.views import (
     YappPasswordChangeDoneView,
 )
 from portal.forms import YappAuthenticationForm
+from portal.admin_search import admin_search
 
 
 urlpatterns = [
+    # 管理画面全体の検索 (admin/ より前に置く)
+    path(
+        "admin/search/",
+        admin_search,
+        name="admin_search",
+    ),
+
     path(
         "admin/",
         admin.site.urls,

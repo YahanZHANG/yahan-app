@@ -20,6 +20,10 @@
                     {{ post.get_kind_display }}
                     {% if post.status == "published" %}
                         <span class="washoku-chip washoku-chip-shop">掲載中</span>
+                    {% elif post.status == "hold" %}
+                        <span class="washoku-chip washoku-chip-draft">非公開（確認中）</span>
+                    {% elif post.status == "rejected" %}
+                        <span class="washoku-chip washoku-chip-draft">非公開</span>
                     {% else %}
                         <span class="washoku-chip washoku-chip-draft">確認待ち</span>
                     {% endif %}

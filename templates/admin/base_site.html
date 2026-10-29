@@ -12,6 +12,12 @@
             Yapp administration
         </a>
     </h1>
+    {% if user.is_active and user.is_staff %}
+        {# どの画面からでも、管理画面全体をまとめて検索できる #}
+        <form class="yapp-header-search" method="get" action="{% url 'admin_search' %}" role="search">
+            <input type="search" name="q" value="{{ query|default:'' }}" placeholder="🔍 管理画面をまとめて検索" aria-label="管理画面をまとめて検索">
+        </form>
+    {% endif %}
 {% endblock %}
 
 
@@ -96,7 +102,187 @@
             text-align: center;
         }
 
+        /* ヘッダーの検索 */
+        #branding {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 18px;
+        }
+
+        .yapp-header-search input {
+            width: 280px;
+            max-width: 60vw;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #25313b;
+            font-size: 14px;
+        }
+
+        /* 検索のページ */
+        .yapp-search-big {
+            display: flex;
+            gap: 8px;
+            max-width: 720px;
+            margin: 0 0 14px;
+        }
+
+        .yapp-search-big input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .yapp-search-big button {
+            padding: 0 20px;
+            border: 0;
+            border-radius: 10px;
+            background: #c4431c;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .yapp-search-summary {
+            color: var(--body-quiet-color, #78838e);
+        }
+
+        .yapp-search-group {
+            max-width: 720px;
+            margin: 0 0 14px;
+            padding: 12px 16px;
+            border: 1px solid var(--hairline-color, #e1e7eb);
+            border-radius: 12px;
+            background: var(--body-bg, #fff);
+        }
+
+        .yapp-search-group h2 {
+            margin: 0 0 6px;
+            padding: 0;
+            background: none;
+            color: var(--body-fg, #25313b);
+            font-size: 15px;
+        }
+
+        .yapp-search-group h2 b {
+            margin-left: 4px;
+            padding: 1px 8px;
+            border-radius: 999px;
+            background: #fde4d7;
+            color: #c4431c;
+            font-size: 12px;
+        }
+
+        .yapp-search-app {
+            display: block;
+            color: var(--body-quiet-color, #78838e);
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .yapp-search-group ul {
+            margin: 0 0 4px;
+            padding-left: 18px;
+        }
+
+        .yapp-search-group li {
+            padding: 3px 0;
+            font-size: 14px;
+            list-style: disc;
+        }
+
+        .yapp-search-more {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* 種類ごとの一覧: 状態のタブ */
+        .yapp-section-note {
+            margin: -6px 0 10px;
+            color: var(--body-quiet-color, #78838e);
+            font-size: 13px;
+        }
+
+        .yapp-state-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 0 0 14px;
+        }
+
+        .yapp-state-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 6px 6px 12px;
+            border: 1px solid var(--hairline-color, #d6dde2);
+            border-radius: 999px;
+            background: var(--body-bg, #fff);
+            color: var(--body-fg, #25313b) !important;
+            font-size: 13px;
+            text-decoration: none !important;
+            white-space: nowrap;
+        }
+
+        .yapp-state-tab b {
+            min-width: 18px;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: var(--darkened-bg, #f0f2f4);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .yapp-state-tab.is-empty {
+            opacity: 0.55;
+        }
+
+        .yapp-state-tab:hover {
+            border-color: #c4431c;
+        }
+
+        .yapp-state-tab.is-active {
+            border-color: #c4431c;
+            background: #c4431c;
+            color: #fff !important;
+            font-weight: 700;
+        }
+
+        .yapp-state-tab.is-active b {
+            background: #fff;
+            color: #c4431c;
+        }
+
+        /* 一覧の「状態」 */
+        .yapp-state {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--darkened-bg, #f0f2f4);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .yapp-state-scheduled { background: #e3ecfb; color: #2b5797; }
+        .yapp-state-pending,
+        .yapp-state-unchecked,
+        .yapp-state-open { background: #fde4d7; color: #b03a14; }
+        .yapp-state-checked { background: #e3f1dc; color: #3e6b2a; }
+        .yapp-state-hold,
+        .yapp-state-old { background: #fbf0cf; color: #7a5a00; }
+        .yapp-state-rejected,
+        .yapp-state-hidden,
+        .yapp-state-deleted { background: #ececec; color: #666; }
+
         @media (max-width: 767px) {
+            .yapp-header-search input {
+                width: 100%;
+                max-width: none;
+            }
+
             .yapp-attention {
                 padding: 10px 16px;
             }

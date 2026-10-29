@@ -16,7 +16,7 @@
             {% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}
             {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
         {% endif %}
-        {% if post.status == "draft" %}<span class="washoku-chip washoku-chip-draft">{% if post.author_id == user.pk and not user.is_staff %}確認待ち（あなたにだけ表示）{% else %}確認待ち（管理者だけに表示）{% endif %}</span>{% endif %}
+        {% if post.status != "published" %}<span class="washoku-chip washoku-chip-draft">{% if post.status == "hold" %}非公開・確認中{% elif post.status == "rejected" %}非公開{% else %}確認待ち{% endif %}（{% if post.author_id == user.pk and not user.is_staff %}あなたにだけ表示{% else %}管理者だけに表示{% endif %}）</span>{% endif %}
     </p>
 
     <h1>{{ post.title }}</h1>

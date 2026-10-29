@@ -3415,6 +3415,8 @@ def post_submit(request, kind):
         post.author = request.user
         # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
         post.status = "published"
+        # 管理者自身の投稿は「未確認」に出さない
+        post.admin_checked = request.user.is_staff
         post.save()
 
         if ingredient:

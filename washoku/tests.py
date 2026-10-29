@@ -855,18 +855,19 @@ class AdminAttentionTests(TestCase):
         washoku = next(group for group in attention["groups"] if group["app"] == "スイスで和食")
         counts = {item["label"]: item["count"] for item in washoku["items"]}
 
-        self.assertEqual(counts, {"投稿レシピ": 1, "レシピへのコメント": 2, "お店の口コミ": 1, "質問箱": 1})
+        self.assertEqual(counts, {"投稿レシピ": 1, "レシピへのコメント": 1, "Q&A": 1, "お店の口コミ": 1, "質問箱": 1})
         self.assertEqual(attention["total"], 5)
 
-        Post.objects.create(kind="column", title="薄切り肉", body="x" * 20, author=self.member)
-        published = Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published")
+        Post.objects.create(kind="column", title="薄切り肉", body="x" * 20, author=self.member, status="published")
+        published = Post.objects.create(kind="product", title="冷凍餃子", body="x" * 20, shop="migros", status="published", admin_checked=True)
         Comment.objects.create(author=self.member, post=published, kind="tip", body="おいしい")
 
         washoku = next(group for group in self.attention()["groups"] if group["app"] == "スイスで和食")
         counts = {item["label"]: item["count"] for item in washoku["items"]}
 
-        self.assertEqual(counts["コラム・商品の投稿"], 1)
-        self.assertEqual(counts["コラム・商品へのコメント"], 1)
+        self.assertEqual(counts["コラム"], 1)
+        self.assertNotIn("口コミ（買ったもの）", counts)
+        self.assertEqual(counts["コラム・口コミへのコメント"], 1)
 
     def test_admins_own_comments_are_not_pending(self):
 
@@ -887,11 +888,97 @@ class AdminAttentionTests(TestCase):
         response = self.client.get(reverse("admin:index"))
 
         self.assertContains(response, "お店の口コミ")
-        self.assertContains(response, "admin_checked__exact=0&amp;target=store")
+        self.assertContains(response, reverse("admin:washoku_storereview_changelist") + "?state=unchecked")
         self.assertContains(
-            self.client.get(reverse("admin:washoku_comment_changelist") + "?admin_checked__exact=0&target=store"),
-            "お店: Nishi",
+            self.client.get(reverse("admin:washoku_storereview_changelist") + "?state=unchecked"),
+            "Nishi",
         )
+
+
+class AdminSectionTests(TestCase):
+    """管理画面: 種類ごとの一覧、状態のタブ、まとめて検索"""
+
+    def setUp(self):
+        User = get_user_model()
+        self.admin = User.objects.create_user("admin", password="x", is_staff=True, is_superuser=True)
+        self.member = User.objects.create_user("hanako", password="x")
+        self.client.force_login(self.admin)
+
+    def test_each_kind_has_its_own_list_with_state_tabs(self):
+
+        later = timezone.now() + timedelta(days=1)
+        Post.objects.create(kind="column", title="予約のコラム", body="x", status="draft", publish_at=later)
+        Post.objects.create(kind="column", title="未確認のコラム", body="x", status="published", author=self.member)
+        Post.objects.create(kind="column", title="確認済みのコラム", body="x", status="published", admin_checked=True)
+        Post.objects.create(kind="column", title="保留のコラム", body="x", status="hold")
+        Post.objects.create(kind="poll", title="お米はどこで買う？", status="published")
+
+        url = reverse("admin:washoku_columnpost_changelist")
+        page = self.client.get(url)
+        self.assertContains(page, "予約のコラム")
+        self.assertNotContains(page, "お米はどこで買う？")
+        self.assertContains(page, "⏰ 予約投稿 <b>1</b>", html=False)
+        self.assertContains(page, "🆕 公開中・未確認 <b>1</b>", html=False)
+
+        page = self.client.get(url + "?state=unchecked")
+        self.assertContains(page, "未確認のコラム")
+        self.assertNotContains(page, "確認済みのコラム")
+
+        self.assertContains(self.client.get(reverse("admin:washoku_pollpost_changelist")), "お米はどこで買う？")
+
+    def test_hold_and_reject_actions_hide_the_post(self):
+
+        post = Post.objects.create(kind="column", title="薄切り肉", body="x", status="published", author=self.member)
+        url = reverse("admin:washoku_columnpost_changelist")
+
+        self.client.post(url, {"action": "hold", "_selected_action": [post.pk]})
+        post.refresh_from_db()
+        self.assertEqual((post.status, post.admin_checked), ("hold", True))
+        self.client.logout()
+        self.assertEqual(self.client.get(post.get_absolute_url()).status_code, 404)
+
+        self.client.force_login(self.admin)
+        self.client.post(url, {"action": "reject", "_selected_action": [post.pk]})
+        post.refresh_from_db()
+        self.assertEqual(post.status, "rejected")
+
+        self.client.post(url, {"action": "publish", "_selected_action": [post.pk]})
+        post.refresh_from_db()
+        self.assertEqual(post.status, "published")
+
+    def test_member_posts_start_unchecked(self):
+
+        self.client.force_login(self.member)
+        self.client.post(reverse("washoku:post_submit", args=["column"]), {"title": "冬の鍋", "body": "白菜はMigrosで買えます。"})
+        self.assertFalse(Post.objects.get().admin_checked)
+
+    def test_questions_and_store_reviews_lists(self):
+
+        recipe = make_recipe()
+        store = Store.objects.create(name="Nishi", kind="japanese", address="Seefeldstrasse 12, 8008 Zürich")
+        open_question = Comment.objects.create(author=self.member, recipe=recipe, kind="question", body="新しい質問")
+        old = Comment.objects.create(author=self.member, recipe=recipe, kind="question", body="古い質問")
+        Comment.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=30))
+        Comment.objects.create(author=self.member, store=store, kind="tip", verdict="good", body="品ぞろえが多い")
+
+        url = reverse("admin:washoku_questioncomment_changelist")
+        page = self.client.get(url + "?state=old")
+        self.assertContains(page, "古い質問")
+        self.assertNotContains(page, open_question.body)
+
+        page = self.client.get(reverse("admin:washoku_storereview_changelist"))
+        self.assertContains(page, "品ぞろえが多い")
+        self.assertNotContains(page, "古い質問")
+
+    def test_search_everything(self):
+
+        Post.objects.create(kind="column", title="味噌の選び方", body="x", status="published")
+        Store.objects.create(name="Miso Shop", kind="japanese", address="Bahnhofstrasse 1, 8001 Zürich")
+
+        page = self.client.get(reverse("admin_search") + "?q=味噌")
+        self.assertContains(page, "味噌の選び方")
+        self.assertContains(page, "コラム")
+        self.assertContains(self.client.get(reverse("admin:index")), "管理画面をまとめて検索")
 
 
 class IngredientGermanNameTests(TestCase):

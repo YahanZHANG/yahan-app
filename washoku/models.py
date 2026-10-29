@@ -1097,8 +1097,10 @@ class Post(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ("draft", "確認待ち"),
+        ("draft", "確認待ち・予約"),
         ("published", "公開"),
+        ("hold", "保留"),
+        ("rejected", "却下"),
     ]
 
     SHOP_CHOICES = [
@@ -1261,6 +1263,19 @@ class Post(models.Model):
         "注目から外す",
         default=False,
         help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
+    )
+
+    admin_checked = models.BooleanField(
+        "確認済み",
+        default=False,
+        db_index=True,
+        help_text="管理者が中身を確認したもの。会員の投稿はすぐ公開されるので、あとから確認してチェックします。",
+    )
+
+    admin_note = models.TextField(
+        "管理メモ",
+        blank=True,
+        help_text="管理者だけが見るメモ（保留・却下の理由など）。会員には見えません。",
     )
 
     show_result = models.BooleanField(
@@ -2177,3 +2192,55 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.pk}"
+
+
+# =========================================================
+# 管理画面で種類ごとに分けて扱うための代理モデル (テーブルは Post / Comment と同じ)
+# =========================================================
+
+class ColumnPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "コラム"
+        verbose_name_plural = "コラム"
+
+
+class PollPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "アンケート"
+        verbose_name_plural = "アンケート"
+
+
+class ReviewPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "口コミ（買ったもの）"
+        verbose_name_plural = "口コミ（買ったもの）"
+
+
+class LinkPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "参考リンク"
+        verbose_name_plural = "参考リンク"
+
+
+class QuestionComment(Comment):
+
+    class Meta:
+        proxy = True
+        verbose_name = "Q&A（質問）"
+        verbose_name_plural = "Q&A（質問）"
+
+
+class StoreReview(Comment):
+
+    class Meta:
+        proxy = True
+        verbose_name = "お店の口コミ"
+        verbose_name_plural = "お店の口コミ"
