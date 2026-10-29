@@ -5165,34 +5165,51 @@ html.washoku-say-open {
     color: #E3C766;
 }
 
-/* HOMEのタブ: 「注目」は金色、「今週のアンケート」は緑 (ほかのタブと雰囲気を変える) */
-.washoku-home-tabnav button.is-week {
-    color: #A86F00;
-}
-
-.washoku-home-tabnav button.is-week span,
-.washoku-home-tabnav button.is-poll span {
-    margin-right: 2px;
-}
-
+/* HOMEのタブ: 「注目」(金) と「今週のアンケート」(緑) だけ、下線ではなく色つきのボタンにして、ほかのタブと雰囲気を変える */
+.washoku-home-tabnav button.is-week,
 .washoku-home-tabnav button.is-poll {
-    color: var(--washoku-poll-accent);
-    font-weight: 700;
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 6px 2px;
+    padding: 7px 14px;
+    border-bottom: 0;
+    border-radius: 999px;
 }
 
-.washoku-home-tabnav button.is-poll[aria-selected="true"] {
-    border-bottom-color: var(--washoku-poll-accent);
-    color: var(--washoku-poll-accent);
-}
-
-.washoku-home-tabnav button.is-week[aria-selected="true"] {
-    border-bottom-color: #E0A81E;
+.washoku-home-tabnav button.is-week {
+    background: #FFF1C7;
     color: #8A5A00;
 }
 
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week,
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week[aria-selected="true"] {
+.washoku-home-tabnav button.is-week span {
+    margin-right: 3px;
+}
+
+.washoku-home-tabnav button.is-week[aria-selected="true"] {
+    background: #F3C64A;
+    color: #4A3000;
+    box-shadow: 0 2px 6px color-mix(in srgb, #E0A81E 40%, transparent);
+}
+
+.washoku-home-tabnav button.is-poll {
+    background: var(--washoku-surface);
+    color: var(--washoku-poll-accent);
+    box-shadow: inset 0 0 0 1.5px var(--washoku-poll-accent);
+}
+
+.washoku-home-tabnav button.is-poll[aria-selected="true"] {
+    background: var(--washoku-poll-accent);
+    color: #FFFFFF;
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week {
+    background: color-mix(in srgb, #F3C64A 20%, var(--washoku-bg));
     color: #F0C766;
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week[aria-selected="true"] {
+    background: #E0B43A;
+    color: #2A1C00;
 }
 
 /* 「今週」タブの中身 */
@@ -5449,4 +5466,8 @@ html.washoku-say-open {
     border: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 35%, transparent);
     border-radius: 20px;
     background: linear-gradient(180deg, var(--washoku-poll-tint), var(--washoku-surface) 70%);
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll[aria-selected="true"] {
+    color: #0E2A25;
 }

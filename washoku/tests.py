@@ -637,6 +637,24 @@ class StoreTests(TestCase):
         self.assertTrue(Comment.objects.filter(pk=question.pk).exists())
         self.assertFalse(Comment.objects.filter(pk=old.pk).exists())
 
+    def test_editor_tips_are_added_once_as_yapp_editor(self):
+
+        import importlib
+        from django.apps import apps as django_apps
+        from washoku.templatetags.washoku_tags import display_name
+
+        recipe = make_recipe("豚汁")
+        add_tips = importlib.import_module("washoku.migrations.0052_editor_tips").add_editor_tips
+
+        add_tips(django_apps, None)
+        add_tips(django_apps, None)
+
+        comment = Comment.objects.get(recipe=recipe)
+        self.assertEqual(display_name(comment.author), "Yapp編集部")
+        self.assertIn("Kohlrabi", comment.body)
+        self.assertEqual(timezone.localtime(comment.created_at).strftime("%m-%d %H:%M"), "10-25 19:47")
+        self.assertEqual(Post.objects.filter(kind="column", author=comment.author).count(), 3)
+
     def test_hidden_stores_are_not_shown(self):
 
         self.store.is_active = False
