@@ -1281,7 +1281,7 @@ class Post(models.Model):
     show_result = models.BooleanField(
         "結果をHOMEに出す",
         default=False,
-        help_text="アンケートだけ。HOMEの「締め切ったアンケートの結果」に出します（新しいもの2つまで）。どれも選ばない週は、先週いちばん答えが集まったものを自動で出します。",
+        help_text="アンケートだけ。HOMEの「人気アンケートの結果」に出します（新しいもの2つまで）。どれも選ばない週は、先週いちばん答えが集まったものを自動で出します。",
     )
 
     publish_at = models.DateTimeField(

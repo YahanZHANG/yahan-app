@@ -130,14 +130,14 @@
 
     {% for poll in last_polls %}
     <section class="washoku-week-poll" aria-labelledby="week-poll-{{ poll.pk }}">
-        {% if forloop.first %}<p class="washoku-week-label">📊 締め切ったアンケートの結果</p>{% endif %}
+        {% if forloop.first %}<p class="washoku-week-label">📊 人気アンケートの結果</p>{% endif %}
         <h3 id="week-poll-{{ poll.pk }}">{{ poll.poll_title }}</h3>
         {% with results=poll.results %}
         {% if results.type == "text" %}
             <ul class="washoku-week-answers">
                 {% for answer in results.answers|slice:":4" %}<li>{{ answer|truncatechars:80 }}</li>{% endfor %}
             </ul>
-            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">くわしく見る ›</a></p>
+            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">私も投票する！ ›</a></p>
         {% else %}
             <ul class="washoku-week-chart">
                 {% for row in results.choices|slice:":3" %}
@@ -148,7 +148,7 @@
                 </li>
                 {% endfor %}
             </ul>
-            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">くわしく見る ›</a></p>
+            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">私も投票する！ ›</a></p>
         {% endif %}
         {% endwith %}
     </section>
@@ -187,7 +187,7 @@
     </ul>
     {% endif %}
     {% else %}
-    <p class="washoku-empty">今週のアンケートは準備中です。これまでのアンケートには、アンケートのページから投票できます。</p>
+    <p class="washoku-empty">新着のアンケートは準備中です。これまでのアンケートには、アンケートのページから投票できます。</p>
     {% endif %}
     <p class="washoku-home-panel-actions">
         <a class="washoku-home-poll-suggest" href="{% url 'washoku:poll_suggest' %}">💡 聞いてみたいことを提案する</a>
@@ -255,7 +255,11 @@
     </p>
 </section>
 
-<section class="washoku-home-panel" id="home-panel-new" role="tabpanel" aria-labelledby="home-tab-new">
+</div>
+</div>
+
+<section class="washoku-section">
+    <h2>みんなの投稿・コメント</h2>
     {% if latest_activity %}
         <ul class="washoku-activity washoku-activity-compact">
             {% for entry in latest_activity %}
@@ -263,15 +267,11 @@
             {% endfor %}
         </ul>
     {% else %}
-        <p class="washoku-empty">まだ投稿はありません。</p>
+        <p class="washoku-empty">まだ投稿はありません。レシピや食材のページから、工夫や質問を書いてみてください。</p>
     {% endif %}
-    <p class="washoku-home-panel-actions">
-        <a href="{% url 'washoku:activity' %}">すべて見る ›</a>
-    </p>
+    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">投稿・コメントをすべて見る</a></p>
 </section>
 
-</div>
-</div>
 <script>
 // HOMEのタブ: タブを押すか、左右にスワイプして切り替える。高さは開いているページに合わせる
 (function () {

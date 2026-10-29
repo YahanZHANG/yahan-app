@@ -285,7 +285,7 @@ class ColumnPostAdmin(PostSectionAdmin):
 @admin.register(PollPost)
 class PollPostAdmin(PostSectionAdmin):
     section_kind = "poll"
-    section_note = "「結果をHOMEに出す」にチェックしたもの（新しい順に2つまで）が、HOMEの「締め切ったアンケートの結果」に出ます。"
+    section_note = "「結果をHOMEに出す」にチェックしたもの（新しい順に2つまで）が、HOMEの「人気アンケートの結果」に出ます。"
     inlines = (PollChoiceInline, PollVoteInline, PollAnswerInline)
 
     list_display = ("title", "poll_type", "state", "respondents", "show_result", "when")

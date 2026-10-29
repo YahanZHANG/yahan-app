@@ -2126,7 +2126,7 @@ class AskAnywhereTests(TestCase):
 
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, "編集部より")
-        for label in ["今週のアンケート", "質問", "口コミ", "コラム", "新着"]:
+        for label in ["新着のアンケート", "質問", "口コミ", "コラム"]:
             self.assertContains(home, f">{label}</button>")
 
 
@@ -2146,7 +2146,7 @@ class WeeklyTabTests(TestCase):
 
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, "注目</button>")
-        self.assertContains(home, "締め切ったアンケートの結果")
+        self.assertContains(home, "人気アンケートの結果")
         self.assertContains(home, "👑 アジア食材店")
         self.assertContains(home, "アンケート一覧 ›")
         # 先週のアンケートは、HOMEでは投票できない (結果とアンケートのページへのリンクだけ)
@@ -2172,7 +2172,7 @@ class WeeklyTabTests(TestCase):
 
         home = self.client.get(reverse("washoku:home"))
         self.assertEqual([poll.pk for poll in home.context["last_polls"]], [polls[2].pk, polls[1].pk])
-        self.assertContains(home, "締め切ったアンケートの結果", count=1)
+        self.assertContains(home, "人気アンケートの結果", count=1)
 
     def test_old_unanswered_questions_leave_home_and_are_quiet_in_the_list(self):
 

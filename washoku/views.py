@@ -414,11 +414,10 @@ HOME_COLUMN_COUNT = 5
 # HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
 HOME_TABS = (
     ("week", "注目"),
-    ("poll", "今週のアンケート"),
+    ("poll", "新着のアンケート"),
     ("question", "質問"),
     ("review", "口コミ"),
     ("column", "コラム"),
-    ("new", "新着"),
 )
 
 # 「注目」タブに出す、管理者が選んだもの (注目) の数
@@ -474,13 +473,13 @@ def weekly_context(request, display):
     }
 
 
-# HOMEに出す締め切ったアンケートの結果の数
+# HOMEに出す人気アンケートの結果の数
 HOME_RESULT_COUNT = 2
 
 
 def last_week_polls(request, week_start):
     """
-    HOMEの「締め切ったアンケートの結果」。管理画面で「結果をHOMEに出す」を選んだもの (新しい順に2つまで)。
+    HOMEの「人気アンケートの結果」。管理画面で「結果をHOMEに出す」を選んだもの (新しい順に2つまで)。
     選んだものがなければ、先週いちばん答えが集まった1つ。月曜のプッシュ通知でも使う。
     """
 
