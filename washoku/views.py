@@ -238,6 +238,9 @@ HOME_ACTIVITY_COUNT = 15
 HOME_POLL_SCAN = 10
 HOME_OTHER_POLLS = 2
 
+# HOMEの「みんなへの質問」で、答える前から見せる最新の答えの数
+HOME_QUESTION_ANSWERS = 3
+
 # 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
 HOME_SOLVED_DAYS = 2
 
@@ -354,42 +357,45 @@ def poll_posts_q():
 
 def home_polls(request):
     """
-    HOMEのアンケート。大きく出す1つ (まだ答えていない中でいちばん新しいもの。
-    全部答えていたらいちばん新しいもの) と、ほかの新しいアンケート。
+    HOMEの「アンケート」タブ。今週 (月曜日3時から) 始まったもののうち、
+    - 大きく出す選ぶアンケート1つ (まだ答えていない中でいちばん新しいもの。全部答えていたらいちばん新しいもの)
+    - 「みんなへの質問」(自由記述のアンケート) 1つ。いちばん新しいもの。答える前から最新の答えが少し見える
+    - ほかの今週のアンケート
+    を返す。それより前のものはアンケートのページで。
     """
 
     # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
-    # HOMEで投票できるのは、今週 (月曜日3時から) 始まったアンケートだけ。それより前のものはアンケートのページで
     base = (
         Post.objects
         .filter(status="published", created_at__gte=poll_week_start())
         .filter(poll_posts_q())
         .annotate(vote_count=respondent_count(), started=Max("choices__pk"))
     )
-    choice_polls = list(base.filter(started__isnull=False).order_by("-started")[:HOME_POLL_SCAN])
-    text_polls = list(base.filter(started__isnull=True).order_by("-created_at")[:HOME_POLL_SCAN])
+    choice_polls = list(base.filter(started__isnull=False).exclude(poll_type="text").order_by("-started")[:HOME_POLL_SCAN])
+    text_polls = list(base.filter(poll_type="text").order_by("-created_at", "-pk")[:HOME_POLL_SCAN])
 
-    # 自由記述のアンケートには選択肢がないので、公開した時点までに始まった選択肢アンケートのすぐ前に並べる
-    for poll in text_polls:
-        earlier = [other.started for other in choice_polls if other.created_at <= poll.created_at]
-        poll.started = max(earlier, default=0) + 0.5
+    question = text_polls[0] if text_polls else None
+    main = None
 
-    polls = sorted(choice_polls + text_polls, key=lambda poll: poll.started, reverse=True)[:HOME_POLL_SCAN]
+    if choice_polls:
+        answered = my_votes(request, choice_polls)
+        main = next((poll for poll in choice_polls if poll.pk not in answered), choice_polls[0])
 
-    if not polls:
-        return None, []
+        # 投票した直後は、答えたアンケートの結果をそのまま見せる
+        just_voted = request.GET.get("poll", "")
+        main = next((poll for poll in choice_polls if str(poll.pk) == just_voted), main)
 
-    answered = my_votes(request, polls)
-    main = next((poll for poll in polls if poll.pk not in answered), polls[0])
+    shown = [poll for poll in (main, question) if poll]
+    attach_poll_results(shown, request)
 
-    # 投票した直後は、答えたアンケートの結果をそのまま見せる
-    just_voted = request.GET.get("poll", "")
-    main = next((poll for poll in polls if str(poll.pk) == just_voted), main)
-    attach_poll_results([main], request)
+    if question:
+        question.home_answers = list(
+            PollAnswer.objects.filter(post=question, is_hidden=False).order_by("-pk").values_list("text", flat=True)[:HOME_QUESTION_ANSWERS]
+        )
 
-    others = [poll for poll in polls if poll.pk != main.pk][:HOME_OTHER_POLLS]
+    others = [poll for poll in choice_polls + text_polls if poll not in shown][:HOME_OTHER_POLLS]
 
-    return main, others
+    return main, question, others
 
 
 # HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
@@ -478,7 +484,7 @@ def last_week_polls(request, week_start):
 
 def home(request):
 
-    main_poll, other_polls = home_polls(request)
+    main_poll, home_question, other_polls = home_polls(request)
     display = DisplaySettings.load()
 
     return render(
@@ -489,6 +495,7 @@ def home(request):
             "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
             "main_poll": main_poll,
+            "home_question": home_question,
             "other_polls": other_polls,
             "home_columns": (
                 Post.objects

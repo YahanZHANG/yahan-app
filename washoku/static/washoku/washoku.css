@@ -5389,3 +5389,45 @@ html.washoku-say-open {
     color: var(--washoku-muted);
     font-size: 13px;
 }
+
+/* HOMEのアンケートタブ: 「今週のアンケート」と「みんなへの質問」 */
+.washoku-home-poll-kind {
+    margin: 0 0 4px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.washoku-home-question {
+    margin-top: 12px;
+    background: var(--washoku-surface);
+    border-color: var(--washoku-border);
+}
+
+.washoku-home-question .washoku-poll-answer {
+    background: var(--washoku-surface-2);
+}
+
+.washoku-home-question-answers {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-home-question-answers li {
+    justify-self: start;
+    max-width: 100%;
+    padding: 6px 12px;
+    border-radius: 14px 14px 14px 4px;
+    background: var(--washoku-surface-2);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.washoku-home-question-more {
+    margin: 8px 0 0;
+    font-size: 13px;
+}

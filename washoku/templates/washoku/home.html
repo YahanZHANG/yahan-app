@@ -160,10 +160,25 @@
 </section>
 
 <section class="washoku-home-panel" id="home-panel-poll" role="tabpanel" aria-labelledby="home-tab-poll">
+    {% if main_poll or home_question %}
     {% if main_poll %}
     <div class="washoku-home-card washoku-home-poll">
+        <p class="washoku-home-poll-kind">📊 今週のアンケート</p>
         {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
     </div>
+    {% endif %}
+    {% if home_question %}
+    <div class="washoku-home-card washoku-home-poll washoku-home-question">
+        <p class="washoku-home-poll-kind">💬 みんなへの質問</p>
+        {% include "washoku/includes/poll_box.html" with poll=home_question home_title=True home_question=True %}
+        {% if home_question.home_answers %}
+        <ul class="washoku-home-question-answers">
+            {% for answer in home_question.home_answers %}<li>{{ answer }}</li>{% endfor %}
+        </ul>
+        <p class="washoku-home-question-more"><a href="{{ home_question.poll_url }}">みんなの答え（{{ home_question.results.total }}件）を見る ›</a></p>
+        {% endif %}
+    </div>
+    {% endif %}
     {% if other_polls %}
     <ul class="washoku-home-poll-more">
         {% for poll in other_polls %}

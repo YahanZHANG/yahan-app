@@ -26,6 +26,7 @@ from .models import (
     MoodTag,
     Notification,
     CommentReaction,
+    PollAnswer,
     PollChoice,
     PollSuggestion,
     PollVote,
@@ -2327,21 +2328,19 @@ class PollTests(TestCase):
         self.assertContains(page, "✓ 赤")
         self.assertContains(page, "2人が回答")
 
-    def test_home_shows_newest_unanswered_poll_including_free_text(self):
+    def test_home_shows_this_weeks_poll_and_question_for_everyone(self):
 
         text_poll = Post.objects.create(kind="poll", title="恋しい日本の味は？", status="published", poll_type="text")
+        PollAnswer.objects.create(post=text_poll, text="おでん", voter_key="a")
 
-        # 新しい自由記述のアンケートが大きく出る
-        self.client.force_login(self.member)
-        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], text_poll)
-
-        # 答えたら、まだ答えていないアンケートへ
-        self.client.post(reverse("washoku:poll_vote", args=[text_poll.pk]), {"answer": "おでん"})
-        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], self.poll)
-
-        # 全部答えたら、いちばん新しいもの
-        self.vote(self.green)
-        self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"], text_poll)
+        # 選ぶアンケートと、自由記述の「みんなへの質問」が1つずつ。質問の最新の答えは、答える前から見える
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual(home.context["main_poll"], self.poll)
+        self.assertEqual(home.context["home_question"], text_poll)
+        self.assertNotIn(text_poll, home.context["other_polls"])
+        self.assertContains(home, "💬 みんなへの質問")
+        self.assertContains(home, "<li>おでん</li>")
+        self.assertContains(home, "みんなの答え（1件）を見る")
 
     def test_multiple_choice_poll_keeps_every_ticked_choice(self):
 
