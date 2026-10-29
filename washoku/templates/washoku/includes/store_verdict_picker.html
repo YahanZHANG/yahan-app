@@ -1,0 +1,7 @@
+{# お店の口コミの「よかった・ふつう・いまいち」。current: いまの評価 (編集のとき) #}
+<div class="washoku-store-verdict" role="radiogroup" aria-label="どうだった？">
+    <label><input type="radio" name="verdict" value="good"{% if current == "good" %} checked{% endif %}> 👍 よかった</label>
+    <label><input type="radio" name="verdict" value="ok"{% if current == "ok" %} checked{% endif %}> 😐 ふつう</label>
+    <label><input type="radio" name="verdict" value="bad"{% if current == "bad" %} checked{% endif %}> 👎 いまいち</label>
+    {% if current %}<label class="is-none"><input type="radio" name="verdict" value=""> 評価なし</label>{% endif %}
+</div>

@@ -1263,6 +1263,12 @@ class Post(models.Model):
         help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
     )
 
+    show_result = models.BooleanField(
+        "結果をHOMEに出す",
+        default=False,
+        help_text="アンケートだけ。HOMEの「締め切ったアンケートの結果」に出します（新しいもの2つまで）。どれも選ばない週は、先週いちばん答えが集まったものを自動で出します。",
+    )
+
     publish_at = models.DateTimeField(
         "公開予約",
         null=True,
@@ -1485,7 +1491,7 @@ class Comment(models.Model):
         "HOMEに残す期限",
         null=True,
         blank=True,
-        help_text="質問だけ。空なら自動（未解決のあいだ＋解決してから2日）。日時を入れると、解決済みでもその日時までHOMEに出します。",
+        help_text="質問だけ。空なら自動（質問してから3週間のうち未解決のあいだ＋解決してから2日）。日時を入れると、その日時までHOMEに出します。",
     )
 
     reopened = models.BooleanField(

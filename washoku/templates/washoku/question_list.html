@@ -18,15 +18,19 @@
     {% if questions %}
         <p class="washoku-note">わかる人は返信で教えてください。</p>
         <ul class="washoku-list">
-            {% for question in questions %}
-                <li>
-                    <a href="{{ question.get_absolute_url }}">
-                        {{ question.body|truncatechars:80 }}
-                    </a>
-                    <small>{% if question.author.is_staff %}<span class="washoku-editor-tag">編集部より</span> {% endif %}{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>
-                </li>
+            {% for question in recent_questions %}
+                {% include "washoku/includes/open_question_row.html" %}
             {% endfor %}
         </ul>
+        {% if older_questions %}
+        {# 3週間以上前の質問は、少し控えめに #}
+        <p class="washoku-qa-older-label">3週間以上前の質問</p>
+        <ul class="washoku-list washoku-qa-older">
+            {% for question in older_questions %}
+                {% include "washoku/includes/open_question_row.html" %}
+            {% endfor %}
+        </ul>
+        {% endif %}
     {% else %}
         <p class="washoku-note">いまは、答えを待っている質問はありません。</p>
     {% endif %}

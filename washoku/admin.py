@@ -652,6 +652,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "featured_order",
         "featured_hidden",
         "on_home",
+        "show_result",
         "publish_at",
         "shop_names",
         "author",
@@ -663,6 +664,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "kind",
         "is_featured",
         "featured_hidden",
+        "show_result",
         "section",
     )
 
@@ -670,6 +672,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "is_featured",
         "featured_order",
         "featured_hidden",
+        "show_result",
     )
 
     search_fields = (

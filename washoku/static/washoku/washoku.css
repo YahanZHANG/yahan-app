@@ -5412,6 +5412,60 @@ html.washoku-say-open {
     font-size: 13px;
 }
 
+/* 結果の下の「アンケート一覧」 */
+.washoku-week-more {
+    margin: 0 0 10px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* お店の口コミ: 書き込み欄の枠の中に「よかった・ふつう・いまいち」 (編集画面も同じ) */
+.washoku-review-box {
+    margin: 0 0 10px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    overflow: hidden;
+}
+
+.washoku-review-box textarea {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.washoku-review-box textarea:focus {
+    outline: none;
+}
+
+.washoku-review-box:focus-within {
+    border-color: var(--washoku-accent);
+}
+
+.washoku-comment-form .washoku-review-box .washoku-store-verdict {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 8px 10px 10px;
+    border-top: 1px dashed var(--washoku-border);
+}
+
+.washoku-review-box .washoku-store-verdict label {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.washoku-review-box .washoku-store-verdict label.is-none {
+    font-weight: 400;
+    color: var(--washoku-muted);
+}
+
 .washoku-home-panel {
     box-sizing: border-box;
 }
@@ -5570,4 +5624,22 @@ html.washoku-say-open {
 .washoku-store-verdict label:has(input:focus-visible) {
     outline: 2px solid var(--washoku-accent);
     outline-offset: 2px;
+}
+
+/* 質問の一覧: 3週間以上前の答えのない質問は、字を小さく・色を薄めに */
+.washoku-qa-older-label {
+    margin: 14px 0 4px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-qa-older li {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* タブのあるページ: 横スワイプはタブの切り替えに使う (ブラウザの戻る・進むにしない) */
+html.washoku-swipe-tabs,
+html.washoku-swipe-tabs body {
+    overscroll-behavior-x: none;
 }

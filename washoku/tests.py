@@ -608,6 +608,16 @@ class StoreTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:product_list")), "納豆の品ぞろえが多いです")
         self.assertContains(self.client.get(reverse("washoku:home")), "納豆の品ぞろえが多いです")
 
+        # あとから編集で評価も変えられる
+        edit_url = reverse("washoku:comment_edit", args=[review.pk])
+        self.assertContains(self.client.get(edit_url), "口コミの編集")
+        self.client.post(edit_url, {"body": "納豆の品ぞろえが多いです", "verdict": "ok"})
+        review.refresh_from_db()
+        self.assertEqual(review.verdict, "ok")
+        self.client.post(edit_url, {"body": "納豆の品ぞろえが多いです", "verdict": ""})
+        review.refresh_from_db()
+        self.assertEqual(review.verdict, "")
+
         # 返信は口コミとして数えない。口コミの一覧では「お店の口コミ」で絞り込める
         Comment.objects.create(author=self.user, store=self.store, kind="tip", body="ありがとう", parent=review)
         Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつう", status="published")
@@ -2049,11 +2059,11 @@ class WeeklyTabTests(TestCase):
 
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, "注目</button>")
-        self.assertContains(home, "先週のアンケートの結果")
+        self.assertContains(home, "締め切ったアンケートの結果")
         self.assertContains(home, "👑 アジア食材店")
+        self.assertContains(home, "アンケート一覧 ›")
         # 先週のアンケートは、HOMEでは投票できない (結果とアンケートのページへのリンクだけ)
         self.assertIsNone(home.context["main_poll"])
-        self.assertContains(home, "まだ投票できます")
 
         column.is_featured = True
         column.save()
@@ -2064,6 +2074,33 @@ class WeeklyTabTests(TestCase):
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, "冬の鍋はこれ")
         self.assertContains(home, "今週は鍋の特集です")
+
+    def test_admin_picks_up_to_two_results(self):
+
+        polls = []
+        for title in ["お米はどこで買う？", "味噌は何派？", "納豆は好き？"]:
+            poll = Post.objects.create(kind="poll", title=title, status="published", show_result=True)
+            PollChoice.objects.create(post=poll, label="はい", order=0)
+            polls.append(poll)
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual([poll.pk for poll in home.context["last_polls"]], [polls[2].pk, polls[1].pk])
+        self.assertContains(home, "締め切ったアンケートの結果", count=1)
+
+    def test_old_unanswered_questions_leave_home_and_are_quiet_in_the_list(self):
+
+        user = get_user_model().objects.create_user("hanako", password="x")
+        recipe = make_recipe()
+        fresh = Comment.objects.create(author=user, recipe=recipe, kind="question", body="新しい質問です")
+        old = Comment.objects.create(author=user, recipe=recipe, kind="question", body="古い質問です")
+        Comment.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=22))
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertEqual([question.pk for question in home.context["questions"]], [fresh.pk])
+
+        page = self.client.get(reverse("washoku:question_list"))
+        self.assertEqual([question.pk for question in page.context["older_questions"]], [old.pk])
+        self.assertContains(page, "3週間以上前の質問")
 
     def test_neutral_review(self):
 

@@ -130,14 +130,14 @@
 
     {% for poll in last_polls %}
     <section class="washoku-week-poll" aria-labelledby="week-poll-{{ poll.pk }}">
-        <p class="washoku-week-label">📊 先週のアンケートの結果</p>
+        {% if forloop.first %}<p class="washoku-week-label">📊 締め切ったアンケートの結果</p>{% endif %}
         <h3 id="week-poll-{{ poll.pk }}">{{ poll.poll_title }}</h3>
         {% with results=poll.results %}
         {% if results.type == "text" %}
             <ul class="washoku-week-answers">
                 {% for answer in results.answers|slice:":4" %}<li>{{ answer|truncatechars:80 }}</li>{% endfor %}
             </ul>
-            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">答えを書く ›</a></p>
+            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">くわしく見る ›</a></p>
         {% else %}
             <ul class="washoku-week-chart">
                 {% for row in results.choices|slice:":3" %}
@@ -148,10 +148,11 @@
                 </li>
                 {% endfor %}
             </ul>
-            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">{% if results.voted %}アンケートのページへ{% else %}まだ投票できます{% endif %} ›</a></p>
+            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">くわしく見る ›</a></p>
         {% endif %}
         {% endwith %}
     </section>
+    {% if forloop.last %}<p class="washoku-week-more"><a href="{% url 'washoku:poll_list' %}">アンケート一覧 ›</a></p>{% endif %}
     {% endfor %}
 
     {% if not weekly_message and not featured and not last_polls %}

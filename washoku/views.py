@@ -223,6 +223,10 @@ def questions_with_answer_state():
     )
 
 
+# 答えのない質問は、この日数を過ぎると HOME に出さず、質問の一覧でも控えめに出す
+OPEN_QUESTION_FRESH_DAYS = 21
+
+
 def open_questions():
     """
     返信がまだない質問 (新しい順)。
@@ -264,7 +268,13 @@ def home_questions(open_limit=3, solved_limit=2):
         .order_by("-answered_at")
     )
 
-    return list(questions.filter(has_answer=False)[:open_limit]) + list(solved[:solved_limit])
+    # 3週間たっても答えのない質問は、未解決のままでも HOME には出さない (「HOMEに残す期限」を入れたものは出す)
+    unanswered = questions.filter(has_answer=False).filter(
+        Q(home_until__gt=now)
+        | Q(created_at__gte=now - timedelta(days=OPEN_QUESTION_FRESH_DAYS))
+    )
+
+    return list(unanswered[:open_limit]) + list(solved[:solved_limit])
 
 
 # =========================================================
@@ -464,11 +474,25 @@ def weekly_context(request, display):
     }
 
 
+# HOMEに出す締め切ったアンケートの結果の数
+HOME_RESULT_COUNT = 2
+
+
 def last_week_polls(request, week_start):
     """
-    先週のアンケートの結果 (票の多い順)。アンケートが多くなりすぎないよう、
-    いちばん答えが集まった1つだけ。月曜のプッシュ通知でも使う。
+    HOMEの「締め切ったアンケートの結果」。管理画面で「結果をHOMEに出す」を選んだもの (新しい順に2つまで)。
+    選んだものがなければ、先週いちばん答えが集まった1つ。月曜のプッシュ通知でも使う。
     """
+
+    chosen = (
+        Post.objects
+        .filter(status="published", show_result=True)
+        .filter(poll_posts_q())
+        .order_by("-created_at", "-pk")[:HOME_RESULT_COUNT]
+    )
+
+    if chosen:
+        return [sorted_results(poll) for poll in attach_poll_results(chosen, request)]
 
     polls = attach_poll_results(
         Post.objects
@@ -1840,6 +1864,7 @@ def own_comment(request, pk):
 def comment_edit(request, pk):
 
     comment = own_comment(request, pk)
+    store_review = bool(comment.store_id and not comment.parent_id and comment.kind != "question")
 
     if request.method == "POST":
 
@@ -1859,6 +1884,11 @@ def comment_edit(request, pk):
                 form.add_error("photo", error)
 
         if form.is_valid():
+
+            # お店の口コミは、あとから評価 (よかった・ふつう・いまいち) も変えられる
+            if store_review and "verdict" in request.POST:
+                verdict = request.POST["verdict"]
+                comment.verdict = verdict if verdict in dict(Post.VERDICT_CHOICES) else ""
 
             comment.edited_at = timezone.now()
             comment.save()
@@ -1880,6 +1910,7 @@ def comment_edit(request, pk):
         {
             "comment": comment,
             "form": form,
+            "store_review": store_review,
             "back_url": comment_target_url(comment),
         },
     )
@@ -2006,11 +2037,16 @@ def question_new(request):
 
 def question_list(request):
 
+    questions = list(open_questions()[:50])
+    fresh_since = timezone.now() - timedelta(days=OPEN_QUESTION_FRESH_DAYS)
+
     return render(
         request,
         "washoku/question_list.html",
         {
-            "questions": open_questions()[:50],
+            "questions": questions,
+            "recent_questions": [question for question in questions if question.created_at >= fresh_since],
+            "older_questions": [question for question in questions if question.created_at < fresh_since],
             "answered": questions_with_answer_state().filter(has_answer=True)[:50],
         },
     )

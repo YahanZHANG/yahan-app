@@ -1,8 +1,9 @@
-// 上にタブ (サブページのボタン) があるページでは、指で左右にスワイプしても隣のページへ移れる
+// 上にタブ (サブページのボタン) があるページでは、HOMEと同じように左右にスワイプしても隣のページへ移れる
+// スマホは指で、パソコンはトラックパッドの2本指の横スワイプで
 (function () {
     var tabs = document.querySelector(".washoku-subtabs");
     var main = document.querySelector(".washoku-main");
-    if (!tabs || !main || !("ontouchstart" in window)) return;
+    if (!tabs || !main) return;
 
     var links = Array.prototype.slice.call(tabs.querySelectorAll("a[href]"));
     var current = links.findIndex(function (link) { return link.classList.contains("active"); });
@@ -72,14 +73,18 @@
         var dx = touch.clientX - start.x;
         var dy = touch.clientY - start.y;
         var next = neighbour(dx);
-        var go = horizontal && next && Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5;
+        var move = horizontal && next && Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5;
         start = null;
 
-        if (!go) {
+        if (!move) {
             reset();
             return;
         }
 
+        go(next, dx);
+    });
+
+    function go(next, dx) {
         tabs.querySelectorAll("a").forEach(function (link) { link.classList.toggle("active", link === next); });
 
         if (!reduced) {
@@ -88,7 +93,33 @@
             main.style.opacity = "0";
         }
         window.location.href = next.href;
-    });
+    }
+
+    // トラックパッドの横スワイプ (パソコン)。一定以上たまったら1回だけ移る
+    var wheelX = 0;
+    var wheelTimer = null;
+    var leaving = false;
+
+    // このページでは、横スワイプをブラウザの「戻る・進む」ではなくタブの切り替えに使う
+    document.documentElement.classList.add("washoku-swipe-tabs");
+
+    document.addEventListener("wheel", function (event) {
+        if (leaving || Math.abs(event.deltaX) <= Math.abs(event.deltaY) || ignored(event.target)) return;
+        wheelX += event.deltaX;
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(function () { wheelX = 0; reset(); }, 250);
+
+        var next = neighbour(-wheelX);
+        if (!reduced) {
+            var pull = next ? -wheelX * 0.4 : -wheelX * 0.1;
+            main.style.transition = "none";
+            main.style.transform = "translateX(" + Math.max(-80, Math.min(80, pull)) + "px)";
+        }
+        if (next && Math.abs(wheelX) > 150) {
+            leaving = true;
+            go(next, -wheelX);
+        }
+    }, { passive: true });
 
     document.addEventListener("touchcancel", function () {
         start = null;
@@ -97,6 +128,8 @@
 
     // 戻るボタンでこのページに戻ったとき、ずらしたままにしない
     window.addEventListener("pageshow", function () {
+        leaving = false;
+        wheelX = 0;
         main.style.transition = "";
         main.style.transform = "";
         main.style.opacity = "";

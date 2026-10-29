@@ -1,0 +1,7 @@
+{% load washoku_tags %}
+<li>
+    <a href="{{ question.get_absolute_url }}">
+        {{ question.body|truncatechars:80 }}
+    </a>
+    <small>{% if question.author.is_staff %}<span class="washoku-editor-tag">編集部より</span> {% endif %}{{ question.author|display_name }} ・ {{ question.target.name }} ・ {{ question.created_at|date:"n/j" }}</small>
+</li>
