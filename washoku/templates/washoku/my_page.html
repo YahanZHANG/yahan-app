@@ -9,7 +9,10 @@
 <h1>マイページ</h1>
 
 {% if user.is_authenticated %}
-    <p class="washoku-lead">{{ user|display_name }} さん</p>
+    <p class="washoku-lead washoku-me-name">
+        <span>{{ user|display_name }} さん</span>
+        <a class="washoku-me-account" href="{% url 'portal:manage_apps' %}"><i class="bi bi-person-gear" aria-hidden="true"></i> My Account</a>
+    </p>
 {% else %}
     <p class="washoku-lead"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族の評価やコメントが使えます。</p>
 {% endif %}

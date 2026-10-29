@@ -5475,3 +5475,28 @@ html.washoku-say-open {
 [data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll[aria-selected="true"] {
     color: #0E2A25;
 }
+
+/* マイページ: 名前の右に、Yapp の共通アカウントへのボタン */
+.washoku-me-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+}
+
+.washoku-me-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
