@@ -1031,7 +1031,7 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
     """
 
     fieldsets = (
-        ("HOMEの「今週」タブ", {
+        ("HOMEの「注目」タブ", {
             "description": "今週に載せるコラム・Q&A・口コミは、それぞれの管理画面で「注目」に選びます（並び順は小さい順）。先週のアンケートの結果は自動で出ます。",
             "fields": (
                 "weekly_message",

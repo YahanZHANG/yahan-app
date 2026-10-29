@@ -1988,7 +1988,7 @@ class AskAnywhereTests(TestCase):
 
 
 class WeeklyTabTests(TestCase):
-    """HOMEの「今週」タブ: 編集部のひとこと・一押し、先週のアンケートの結果 (自動)"""
+    """HOMEの「注目」タブ: 編集部のひとこと・一押し、先週のアンケートの結果 (自動)"""
 
     def test_week_tab_shows_picks_message_and_last_weeks_poll(self):
 
@@ -2002,7 +2002,7 @@ class WeeklyTabTests(TestCase):
         PollVote.objects.create(post=poll, choice=rice, voter_key="a")
 
         home = self.client.get(reverse("washoku:home"))
-        self.assertContains(home, "今週</button>")
+        self.assertContains(home, "注目</button>")
         self.assertContains(home, "先週のアンケートの結果")
         self.assertContains(home, "👑 アジア食材店")
         # 先週のアンケートは、HOMEでは投票できない (結果とアンケートのページへのリンクだけ)

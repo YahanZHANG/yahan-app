@@ -1664,12 +1664,12 @@ class DisplaySettings(models.Model):
         help_text="自動: ハロウィンは10月18日〜31日",
     )
 
-    # HOMEの「今週」タブ。管理者が「注目」に選んだものと、先週のアンケートの結果 (自動) も出る
+    # HOMEの「注目」タブ。管理者が「注目」に選んだものと、先週のアンケートの結果 (自動) も出る
     weekly_message = models.CharField(
         "今週のひとこと（編集部より）",
         max_length=200,
         blank=True,
-        help_text="「今週」タブのいちばん上に出す短い文。空なら出しません。",
+        help_text="「注目」タブのいちばん上に出す短い文。空なら出しません。",
     )
 
     class Meta:
