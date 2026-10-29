@@ -7,7 +7,7 @@ from django.db import migrations
 
 ZURICH = ZoneInfo("Europe/Zurich")
 
-EDITOR_USERNAME = "yapp_editor"
+EDITOR_USERNAME = "admin"   # 編集部が使っている管理者アカウント
 EDITOR_NAME = "Yapp編集部"
 
 # (どこに, 名前, 本文, 日時)。レシピ・食材のページにはコメント、ページのない話題は短いコラムにする
@@ -29,8 +29,8 @@ TIPS = [
 
 def add_editor_tips(apps, schema_editor):
     """
-    「Yapp編集部」の名前で、レシピ・食材へのひとことと短いコラムを載せる。
-    レシピがまだない空の DB (テストなど) では何もしない。同じ文がもうあれば足さない。
+    編集部 (admin アカウント、表示名「Yapp編集部」) の名前で、レシピ・食材へのひとことと短いコラムを載せる。
+    レシピや admin がない DB (テストなど) では何もしない。同じ文がもうあれば足さない。
     """
 
     Recipe = apps.get_model("washoku", "Recipe")
@@ -43,12 +43,14 @@ def add_editor_tips(apps, schema_editor):
     if not Recipe.objects.exists():
         return
 
-    editor, created = User.objects.get_or_create(
-        username=EDITOR_USERNAME,
-        defaults={"is_staff": True, "is_active": True, "password": "!"},
-    )
+    editor = User.objects.filter(username=EDITOR_USERNAME).first()
+
+    if editor is None:
+        return
+
+    # ニックネームがまだなければ「Yapp編集部」と表示する (すでに付けた名前は変えない)
     profile, _ = UserProfile.objects.get_or_create(user=editor)
-    if not profile.nickname:
+    if not profile.nickname.strip() or profile.nickname.strip() == editor.username:
         profile.nickname = EDITOR_NAME
         profile.nickname_setup_completed = True
         profile.save()

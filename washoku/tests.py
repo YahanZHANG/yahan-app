@@ -644,6 +644,7 @@ class StoreTests(TestCase):
         from washoku.templatetags.washoku_tags import display_name
 
         recipe = make_recipe("豚汁")
+        get_user_model().objects.create_user("admin", password="x", is_staff=True)
         add_tips = importlib.import_module("washoku.migrations.0052_editor_tips").add_editor_tips
 
         add_tips(django_apps, None)
