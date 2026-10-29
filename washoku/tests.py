@@ -588,7 +588,7 @@ class StoreTests(TestCase):
         self.assertContains(response, 'data-lat="47.360100"')
         self.assertContains(response, "現在地から近い順")
 
-    def test_store_review_shows_on_the_store_and_home(self):
+    def test_store_comment_shows_on_the_store_and_home(self):
 
         self.client.force_login(self.user)
         self.client.post(
@@ -604,8 +604,16 @@ class StoreTests(TestCase):
         )
 
         self.assertContains(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])), "納豆の品ぞろえ")
-        self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 1件")
         self.assertContains(self.client.get(reverse("washoku:home")), comment.get_absolute_url())
+
+        # お店の一覧の「口コミ」は、口コミ (投稿) だけを数える。口コミの一覧では「お店の口コミ」で絞り込める
+        self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 0件")
+        Post.objects.create(kind="product", store=self.store, title=self.store.name, verdict="good", body="店員さんが親切", status="published", author=self.user)
+        Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつう", status="published")
+        self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 1件")
+        reviews = self.client.get(reverse("washoku:product_list") + "?section=store")
+        self.assertContains(reviews, "店員さんが親切")
+        self.assertNotContains(reviews, "Coop の味噌")
 
     def test_hidden_stores_are_not_shown(self):
 

@@ -41,6 +41,7 @@
     </select>
     <select name="section" aria-label="売り場" onchange="this.form.submit()">
         <option value="">すべての売り場</option>
+        <option value="store" {% if section == "store" %}selected{% endif %}>🏪 お店の口コミ</option>
         {% for value, label in sections %}<option value="{{ value }}" {% if section == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
     <noscript><button type="submit">絞り込む</button></noscript>

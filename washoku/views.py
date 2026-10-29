@@ -2186,10 +2186,11 @@ def store_list(request):
 
     kind = request.GET.get("kind", "")
 
+    # 口コミ = お店について書いた口コミ (投稿)。お店のページのコメント・質問は数えない
     stores = Store.objects.filter(is_active=True).annotate(
         review_count=Count(
-            "comments",
-            filter=Q(comments__is_hidden=False, comments__is_deleted=False),
+            "reviews",
+            filter=Q(reviews__kind="product", reviews__status="published"),
         )
     )
 
@@ -2882,7 +2883,10 @@ def post_list(request, kind):
         if shop in dict(Post.SHOP_CHOICES):
             posts = posts.filter(shop__contains=shop)
 
-        if section in dict(Post.SECTION_CHOICES):
+        # 「お店の口コミ」: 商品ではなく、お店そのものの口コミ
+        if section == "store":
+            posts = posts.filter(store__isnull=False)
+        elif section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)
 
     sort = request.GET.get("sort", "new")

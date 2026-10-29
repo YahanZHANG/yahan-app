@@ -43,6 +43,6 @@
     <p><a class="washoku-link-button" href="{% url 'washoku:post_submit' 'product' %}?store={{ store.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i> このお店の口コミを書く</a></p>
 </section>
 
-{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="コメント・質問" tip_label="コメント" %}
+{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="質問・お知らせ" tip_label="お知らせ（営業時間など）" %}
 
 {% endblock %}
