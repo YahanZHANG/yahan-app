@@ -1,0 +1,47 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}質問する | スイスで和食{% endblock %}
+
+{% block content %}
+
+{% include "washoku/includes/community_tabs.html" %}
+
+<h1>質問する</h1>
+
+<p class="washoku-lead">わからないこと、困っていることを気軽に聞いてください。わかる人が答えてくれます。</p>
+
+<form method="post" class="washoku-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="kind" value="question">
+
+    <div class="washoku-field">
+        <label for="question-about">何についての質問？</label>
+        <select id="question-about" name="about">
+            <option value="board"{% if about == "board" %} selected{% endif %}>なんでも（食材やお店以外のことも）</option>
+            {% if recipe %}<option value="recipe:{{ recipe.pk }}" selected>レシピ: {{ recipe.name }}</option>{% endif %}
+            <optgroup label="食材">
+                {% for ingredient in ingredients %}
+                    <option value="ingredient:{{ ingredient.pk }}"{% if about_kind == "ingredient" and about_pk == ingredient.pk %} selected{% endif %}>{{ ingredient.name }}</option>
+                {% endfor %}
+            </optgroup>
+            <optgroup label="お店">
+                {% for store in stores %}
+                    <option value="store:{{ store.pk }}"{% if about_kind == "store" and about_pk == store.pk %} selected{% endif %}>{{ store.name }}</option>
+                {% endfor %}
+            </optgroup>
+        </select>
+        <small>選んだ食材やお店のページにも表示されます。</small>
+    </div>
+
+    <div class="washoku-field">
+        <label for="question-body">質問 <span class="washoku-required">必須</span></label>
+        <textarea id="question-body" name="body" rows="5" maxlength="500" required placeholder="例: 薄切りの豚肉は、どこで買えますか？"></textarea>
+    </div>
+
+    <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo" accept="image/*"></label>
+
+    <button type="submit" class="washoku-button washoku-button-wide">質問する</button>
+    <p class="washoku-comment-hint">ニックネームで表示・あとから編集や削除OK</p>
+</form>
+
+{% endblock %}

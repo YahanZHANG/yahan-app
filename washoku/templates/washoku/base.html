@@ -70,7 +70,7 @@
                 <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
                 <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients find_by_nutrition random_recipe my_favorites family_favorites' %}active{% endif %}"><i class="bi bi-journal-richtext" aria-hidden="true"></i>レシピ</a>
                 <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit store_list store_detail' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
-                <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>コミュニティ</a>
+                <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list question_new column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>コミュニティ</a>
                 <a href="{% url 'washoku:install' %}" class="{% if name == 'install' %}active{% endif %}"><i class="bi bi-phone" aria-hidden="true"></i>ホーム画面に追加</a>
             </nav>
 
@@ -131,8 +131,8 @@
             <i class="bi bi-journal-richtext" aria-hidden="true"></i>
             <span>レシピ</span>
         </a>
-        <a href="{% url 'washoku:question_list' %}" class="washoku-tab-center{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %} active{% endif %}">
-            <span class="washoku-tab-circle"><i class="bi bi-people{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i></span>
+        <a href="{% url 'washoku:question_list' %}" class="washoku-tab-center{% if name in 'question_list question_new column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %} active{% endif %}">
+            <span class="washoku-tab-circle"><i class="bi bi-people{% if name in 'question_list question_new column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i></span>
             <span>コミュニティ</span>
         </a>
         <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit store_list store_detail' %}active{% endif %}">
@@ -144,6 +144,10 @@
             <span>マイページ</span>
         </a>
     </nav>
+
+{% if name not in 'post_submit question_new recipe_submit substitute_submit poll_suggest comment_edit install' %}
+    {% include "washoku/includes/say_button.html" %}
+{% endif %}
 
 {% endwith %}
 
@@ -223,6 +227,7 @@
 </script>
 
 <script src="{% static 'washoku/photo_upload.js' %}" defer></script>
+<script src="{% static 'washoku/swipe_tabs.js' %}" defer></script>
 </body>
 
 </html>

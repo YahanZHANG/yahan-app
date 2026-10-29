@@ -301,7 +301,7 @@ def featured_items(limit=3):
 
     picked = [
         {"kind": "post", "item": post, "count": None}
-        for post in Post.objects.filter(status="published", is_featured=True).order_by("featured_order", "-created_at")[:limit]
+        for post in Post.objects.filter(status="published", is_featured=True).exclude(kind="board").order_by("featured_order", "-created_at")[:limit]
     ]
     picked += [
         {"kind": "comment", "item": comment, "count": None}
@@ -391,10 +391,34 @@ def home_polls(request):
     return main, others
 
 
+# HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
+HOME_COLUMN_COUNT = 6
+
+# HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
+HOME_TABS = (
+    ("poll", "アンケート"),
+    ("question", "質問"),
+    ("review", "口コミ"),
+    ("column", "コラム"),
+    ("new", "新着"),
+)
+
+
 def home(request):
 
     main_poll, other_polls = home_polls(request)
     display = DisplaySettings.load()
+    featured = featured_items()
+    featured_posts = {entry["item"].pk for entry in featured if entry["kind"] == "post"}
+
+    home_columns = [
+        post
+        for post in Post.objects
+        .filter(kind__in=("column", "link"), status="published")
+        .select_related("author")
+        .order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT + len(featured_posts)]
+        if post.pk not in featured_posts
+    ][:HOME_COLUMN_COUNT]
 
     return render(
         request,
@@ -405,7 +429,10 @@ def home(request):
             "questions": home_questions(),
             "main_poll": main_poll,
             "other_polls": other_polls,
-            "featured": featured_items(),
+            "featured": featured,
+            "home_columns": home_columns,
+            "home_reviews": Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT],
+            "home_tabs": HOME_TABS,
             "display": display,
             "announcements": list(Announcement.current()),
         },
@@ -1009,7 +1036,11 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
-            **split_polls(request, related_posts([ingredient])),
+            "reviews": ingredient_reviews(ingredient),
+            **split_polls(
+                request,
+                [post for post in related_posts([ingredient], limit=15) if post.kind != "product"][:5],
+            ),
             **photo_context(request, ingredient=ingredient),
             **comment_context(request, ingredient=ingredient),
         },
@@ -1089,7 +1120,8 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
     return {
         "threads": comment_threads(comments, request.user),
         "comment_form": CommentForm(initial={"body": main_draft.get("body", "")}),
-        "draft_kind": main_draft.get("kind", "tip"),
+        # 「私からも一言」の「質問する」から来たときは、最初から質問を選んでおく
+        "draft_kind": main_draft.get("kind", "question" if request.GET.get("ask") else "tip"),
         "reply_draft_parent": reply_draft.get("parent", ""),
         "reply_draft_body": reply_draft.get("body", ""),
         "reported_ids": reported_ids,
@@ -1822,6 +1854,73 @@ def comment_report(request, pk):
     return redirect(comment_target_url(comment))
 
 
+QUESTION_BOARD_TITLE = "なんでも質問"
+
+
+def question_board():
+    """
+    食材やレシピに限らない質問をまとめておく、見えない投稿 (マイグレーションで作るが、なければ作る)。
+    """
+
+    board = Post.objects.filter(kind="board").order_by("pk").first()
+
+    if board is None:
+        board = Post.objects.create(
+            kind="board",
+            title=QUESTION_BOARD_TITLE,
+            body="食材やレシピに限らず、スイスの食卓のことなら何でも聞いてください。",
+            status="published",
+        )
+
+    return board
+
+
+@login_required
+def question_new(request):
+    """
+    どのページからでも質問を書けるページ。「何について？」で選んだページに質問として付ける。
+    """
+
+    ingredients = Ingredient.objects.order_by("name")
+    stores = Store.objects.filter(is_active=True).order_by("name")
+
+    if request.method == "POST":
+
+        about = request.POST.get("about", "")
+        target, _, pk = about.partition(":")
+
+        if target == "board" or not pk.isdigit() or target not in ("ingredient", "store", "recipe"):
+            target, pk = "post", str(question_board().pk)
+
+        return comment_create(request, target, int(pk))
+
+    about = "board"
+
+    for name in ("ingredient", "store", "recipe"):
+        value = request.GET.get(name, "")
+        if value.isdigit():
+            about = f"{name}:{value}"
+
+    about_kind, _, about_pk = about.partition(":")
+    recipe = None
+
+    if about_kind == "recipe":
+        recipe = visible_recipes(request.user).filter(pk=about_pk).first()
+
+    return render(
+        request,
+        "washoku/question_new.html",
+        {
+            "about": about,
+            "about_kind": about_kind,
+            "about_pk": int(about_pk) if about_pk else None,
+            "ingredients": ingredients,
+            "stores": stores,
+            "recipe": recipe,
+        },
+    )
+
+
 def question_list(request):
 
     return render(
@@ -2527,24 +2626,30 @@ def substitute_submit(request):
 
 
 # =========================================================
-# みんなの投稿 (コラム・おすすめ商品)
+# みんなの投稿 (コラム・口コミ)
 # =========================================================
 
 POST_KIND_TEXT = {
     "column": {
         "url_name": "washoku:column_list",
         "heading": "みんなのコラム",
-        "lead": "スイスでの買い物や料理の工夫、失敗談などです。",
+        "lead": "スイスでの買い物や料理の工夫、失敗談、役に立つほかのサイトの記事などです。",
         "new_label": "コラムを書く",
     },
     "product": {
         "url_name": "washoku:product_list",
-        "heading": "スーパーのおすすめ商品",
-        "lead": "スーパーやアジアの店で買える、日本の味に近い商品です。",
-        "new_label": "商品を紹介する",
+        "heading": "みんなの口コミ",
+        "lead": "スーパーやアジアの店で買ったものの、正直な感想です。よかったものも、いまいちだったものも。",
+        "new_label": "口コミを書く",
+    },
+    "board": {
+        "url_name": "washoku:question_list",
+        "heading": "質問",
+        "lead": "",
+        "new_label": "",
     },
     "link": {
-        "url_name": "washoku:link_list",
+        "url_name": "washoku:column_list",
         "heading": "参考リンク",
         "lead": "ほかのサイトの役に立つ記事です。要点と出典を載せています。",
         "new_label": "リンクを紹介する",
@@ -2586,6 +2691,20 @@ def related_posts(ingredients, limit=5):
         Post.objects
         .filter(status="published")
         .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("-created_at")[:limit]
+    )
+
+
+def ingredient_reviews(ingredient, limit=10):
+    """
+    この食材 (と同じ検索グループの食材) の口コミ (公開済み、新しい順)。
+    """
+
+    return list(
+        Post.objects
+        .filter(kind="product", status="published")
+        .filter(ingredient_group_filter("ingredients__", [ingredient]))
         .distinct()
         .order_by("-created_at")[:limit]
     )
@@ -2658,6 +2777,9 @@ def post_list(request, kind):
     # アンケート一覧には、コラムの最後に付けたアンケートも出す
     if kind == "poll":
         kinds = poll_posts_q()
+    elif kind == "column":
+        # 参考リンクはコラムの一覧に「リンク」として一緒に並べる
+        kinds = Q(kind__in=("column", "link"))
     else:
         kinds = Q(kind=kind)
 
@@ -2679,8 +2801,12 @@ def post_list(request, kind):
 
     shop = request.GET.get("shop", "")
     section = request.GET.get("section", "")
+    verdict = request.GET.get("verdict", "")
 
     if kind == "product":
+
+        if verdict in dict(Post.VERDICT_CHOICES):
+            posts = posts.filter(verdict=verdict)
 
         # お店のコードはどれもほかのコードの一部ではないので、含むかどうかで絞れる
         if shop in dict(Post.SHOP_CHOICES):
@@ -2709,9 +2835,10 @@ def post_list(request, kind):
         "washoku/post_list.html",
         {
             "kind": kind,
-            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
+            "verdict": verdict,
+            "verdicts": Post.VERDICT_CHOICES,
             "display": display,
             "sort": sort,
             "sort_choices": COLUMN_SORTS,
@@ -2732,7 +2859,8 @@ def product_list(request):
 
 
 def link_list(request):
-    return post_list(request, "link")
+    # 参考リンクはコラムの一覧に入った (古い URL のため残す)
+    return redirect("washoku:column_list")
 
 
 def poll_list(request):
@@ -3017,7 +3145,6 @@ def post_detail(request, pk):
         "washoku/post_detail.html",
         {
             "post": post,
-            "nav": "ingredients" if post.kind == "product" else "",
             "text": POST_KIND_TEXT[post.kind],
             "related_recipes": related_recipes(request.user, post) if post.kind != "poll" else [],
             "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
@@ -3047,6 +3174,13 @@ def post_submit(request, kind):
 
     form = PostForm(request.POST or None, request.FILES or None, kind=kind)
 
+    # 食材のページから口コミを書くときは、その食材に結びつける (食材のページに出る)
+    ingredient = None
+    ingredient_id = request.POST.get("ingredient") or request.GET.get("ingredient") or ""
+
+    if ingredient_id.isdigit():
+        ingredient = Ingredient.objects.filter(pk=ingredient_id).first()
+
     photos = []
 
     if request.method == "POST" and form.is_valid():
@@ -3061,6 +3195,9 @@ def post_submit(request, kind):
         # 管理者の投稿はそのまま公開する
         post.status = "published" if request.user.is_staff else "draft"
         post.save()
+
+        if ingredient:
+            post.ingredients.add(ingredient)
 
         if post.status == "draft":
 
@@ -3085,8 +3222,8 @@ def post_submit(request, kind):
         {
             "form": form,
             "kind": kind,
-            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
+            "ingredient": ingredient,
         },
     )
 
@@ -3132,6 +3269,7 @@ def activity_entries(comment_limit=300, post_limit=100):
     posts = (
         Post.objects
         .filter(status="published")
+        .exclude(kind="board")
         .select_related("author")
         .order_by("-created_at")[:post_limit]
     )
@@ -3225,6 +3363,7 @@ def search(request):
         posts = (
             Post.objects
             .filter(status="published")
+            .exclude(kind="board")
             .filter(Q(title__icontains=query) | Q(body__icontains=query) | Q(resembles__icontains=query))
         )
 
@@ -3241,7 +3380,7 @@ def search(request):
             ("食材", "ingredient", list(ingredients[:SEARCH_LIMIT])),
             ("日本の食材の代わり", "substitute", list(substitutes[:SEARCH_LIMIT])),
             ("お店", "store", list(stores[:SEARCH_LIMIT])),
-            ("コラム・おすすめ商品", "post", list(posts[:SEARCH_LIMIT])),
+            ("コラム・口コミ・アンケート", "post", list(posts[:SEARCH_LIMIT])),
             ("コメント・質問", "comment", list(comments[:SEARCH_LIMIT])),
         ]
 

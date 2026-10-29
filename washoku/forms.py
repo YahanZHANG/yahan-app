@@ -147,8 +147,8 @@ class PollSuggestionForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     """
-    みんなの投稿 (コラム・おすすめ商品・参考リンク) のフォーム。
-    商品のときだけ、お店・売り場・日本の何に近いかを聞く。
+    みんなの投稿 (コラム・口コミ・参考リンク) のフォーム。
+    口コミのときだけ、感想 (よかった/いまいち)・お店・売り場・日本の何に近いかを聞く。
     参考リンクのときだけ、URL と出典を聞く (必須は URL だけ)。
     """
 
@@ -167,8 +167,9 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["url", "title", "source", "section", "resembles", "body"]
+        fields = ["url", "title", "verdict", "source", "section", "resembles", "body"]
         widgets = {
+            "verdict": forms.RadioSelect(attrs={"class": "washoku-verdict-input"}),
             "title": forms.TextInput(attrs={"maxlength": 100}),
             "resembles": forms.TextInput(attrs={"placeholder": "例: 冷凍餃子、ちくわ"}),
             "body": forms.Textarea(attrs={"rows": 10, "maxlength": 4000}),
@@ -184,17 +185,26 @@ class PostForm(forms.ModelForm):
             del self.fields["photo_1"]
             del self.fields["photo_2"]
 
+        if kind != "product":
+            del self.fields["verdict"]
+
         if kind == "product":
 
-            self.fields["title"].label = "商品名"
+            self.fields["verdict"].label = "買ってみてどうだった？"
+            self.fields["verdict"].required = True
+            self.fields["verdict"].choices = [
+                ("good", "👍 買ってよかった"),
+                ("bad", "👎 いまいちだった"),
+            ]
+            self.fields["title"].label = "買ったもの"
             self.fields["title"].widget.attrs["placeholder"] = "例: Migros の冷凍ギョーザ"
             self.fields["resembles"].help_text = ""
             self.fields["shops"].required = True
-            self.order_fields(["title", "shops", "section", "resembles", "body"])
+            self.order_fields(["verdict", "title", "shops", "section", "resembles", "body"])
             self.fields["section"].choices = [("", "わからない")] + Post.SECTION_CHOICES
-            self.fields["body"].label = "おすすめのポイント"
+            self.fields["body"].label = "感想"
             self.fields["body"].widget.attrs["placeholder"] = (
-                "味の感想、日本のものとの違い、おいしい食べ方、値段など"
+                "味、日本のものとの違い、おいしい食べ方、値段など。いまいちだった理由も、みんなの役に立ちます。"
             )
 
             for name in ("url", "source"):

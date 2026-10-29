@@ -48,6 +48,20 @@
     {% include "washoku/includes/poll_box.html" with with_title=True inline=True %}
 {% endfor %}
 
+<section class="washoku-section washoku-reviews" id="reviews">
+    <h2>みんなの口コミ{% if reviews %}<small class="washoku-count">{{ reviews|length }}</small>{% endif %}</h2>
+    {% if reviews %}
+    <ul class="washoku-list washoku-review-list">
+        {% for post in reviews %}
+            <li><a href="{{ post.get_absolute_url }}">{% include "washoku/includes/verdict_chip.html" %} {{ post.title }}</a> <small>{{ post.author|display_name }}</small></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="washoku-note">買ってよかった商品、いまいちだった商品を教えてください。</p>
+    {% endif %}
+    <p><a class="washoku-link-button" href="{% url 'washoku:post_submit' 'product' %}?ingredient={{ ingredient.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i> 口コミを書く</a></p>
+</section>
+
 {% include "washoku/includes/related_posts.html" %}
 
 {% if recipes %}

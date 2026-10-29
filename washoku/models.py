@@ -1084,9 +1084,15 @@ class Post(models.Model):
 
     KIND_CHOICES = [
         ("column", "コラム"),
-        ("product", "おすすめ商品"),
+        ("product", "口コミ"),
         ("link", "参考リンク"),
         ("poll", "アンケート"),
+        ("board", "なんでも質問"),
+    ]
+
+    VERDICT_CHOICES = [
+        ("good", "買ってよかった"),
+        ("bad", "いまいちだった"),
     ]
 
     STATUS_CHOICES = [
@@ -1145,6 +1151,14 @@ class Post(models.Model):
         max_length=200,
         blank=True,
         help_text="SHOP_CHOICES のコードをカンマ区切りで (例: migros,coop)",
+    )
+
+    # 口コミ (kind=product) の感想: 買ってよかった / いまいちだった
+    verdict = models.CharField(
+        "口コミの感想",
+        max_length=10,
+        choices=VERDICT_CHOICES,
+        blank=True,
     )
 
     section = models.CharField(

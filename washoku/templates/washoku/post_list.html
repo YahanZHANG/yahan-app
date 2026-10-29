@@ -5,7 +5,7 @@
 
 {% block content %}
 
-{% if kind == "product" %}{% include "washoku/includes/ingredient_tabs.html" %}{% else %}{% include "washoku/includes/community_tabs.html" %}{% endif %}
+{% include "washoku/includes/community_tabs.html" %}
 
 <h1 class="washoku-visually-hidden">{{ text.heading }}</h1>
 
@@ -27,7 +27,13 @@
 {% endif %}
 
 {% if kind == "product" %}
+<p class="washoku-verdict-switch" role="group" aria-label="感想で絞り込む">
+    <a href="?{% if shop %}shop={{ shop }}&amp;{% endif %}{% if section %}section={{ section }}{% endif %}"{% if not verdict %} class="is-active" aria-current="true"{% endif %}>すべて</a>
+    <a href="?verdict=good{% if shop %}&amp;shop={{ shop }}{% endif %}{% if section %}&amp;section={{ section }}{% endif %}"{% if verdict == "good" %} class="is-active" aria-current="true"{% endif %}>👍 よかった</a>
+    <a href="?verdict=bad{% if shop %}&amp;shop={{ shop }}{% endif %}{% if section %}&amp;section={{ section }}{% endif %}"{% if verdict == "bad" %} class="is-active" aria-current="true"{% endif %}>👎 いまいち</a>
+</p>
 <form method="get" class="washoku-filter">
+    {% if verdict %}<input type="hidden" name="verdict" value="{{ verdict }}">{% endif %}
     <select name="shop" aria-label="お店" onchange="this.form.submit()">
         <option value="">すべてのお店</option>
         {% for value, label in shops %}<option value="{{ value }}" {% if shop == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
@@ -47,6 +53,7 @@
                 <a href="{% if kind == "poll" %}{{ post.poll_url }}{% else %}{{ post.get_absolute_url }}{% endif %}">
                     {% if kind == "product" %}
                         <span class="washoku-chips">
+                            {% include "washoku/includes/verdict_chip.html" %}
                             {% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}
                             {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
                             {% if post.resembles %}<span class="washoku-chip washoku-chip-shop">{{ post.resembles }}に近い</span>{% endif %}
@@ -55,6 +62,8 @@
                     <strong>{% if kind == "poll" %}{{ post.poll_title }}{% else %}{{ post.title }}{% endif %}</strong>
                     {% if kind == "poll" %}
                     <small>{% if post.kind == "column" %}コラム「{{ post.title }}」より ・ {% endif %}{{ post.vote_count }}票{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                    {% elif post.kind == "link" %}
+                    <small class="washoku-column-meta"><span class="washoku-chip">リンク</span>{% if post.source %}<span>{{ post.source }}</span>{% endif %}</small>
                     {% elif kind == "column" %}
                     <small class="washoku-column-meta">{% spaceless %}
                         {% if display.column_show_author %}<span>{{ post.author|display_name }}</span>{% endif %}
@@ -72,7 +81,7 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p class="washoku-empty">{% if shop or section %}この条件の投稿はまだありません。{% else %}まだ投稿はありません。最初の1件を書いてみませんか？{% endif %}</p>
+    <p class="washoku-empty">{% if shop or section or verdict %}この条件の投稿はまだありません。{% else %}まだ投稿はありません。最初の1件を書いてみませんか？{% endif %}</p>
 {% endif %}
 
 {% endblock %}

@@ -5,13 +5,14 @@
 
 {% block content %}
 
-{% if post.kind == "product" %}{% include "washoku/includes/ingredient_tabs.html" with kind=post.kind %}{% else %}{% include "washoku/includes/community_tabs.html" with kind=post.kind %}{% endif %}
+{% include "washoku/includes/community_tabs.html" with kind=post.kind %}
 
 <article class="washoku-post">
 
     <p class="washoku-chips">
-        <span class="washoku-chip">{{ post.get_kind_display }}</span>
+        {% if post.kind != "board" %}<span class="washoku-chip">{{ post.get_kind_display }}</span>{% endif %}
         {% if post.kind == "product" %}
+            {% include "washoku/includes/verdict_chip.html" %}
             {% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}
             {% if post.section %}<span class="washoku-chip">{{ post.get_section_display }}</span>{% endif %}
         {% endif %}
@@ -30,6 +31,9 @@
         <p><a class="washoku-button" href="{{ post.url }}" target="_blank" rel="noopener nofollow ugc">元の記事を読む <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 
         {% if post.author %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> 紹介: {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>{% endif %}
+    {% elif post.kind == "board" %}
+        <div class="washoku-post-body">{{ post.body|linebreaks }}</div>
+        <p><a class="washoku-button" href="{% url 'washoku:question_new' %}"><i class="bi bi-chat-dots" aria-hidden="true"></i> 質問する</a></p>
     {% else %}
         <p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ post.author|display_name }} さん ・ {{ post.created_at|date:"Y/n/j" }}</p>
 
@@ -48,7 +52,7 @@
         {% include "washoku/includes/poll_box.html" with poll=post question=post.poll_question|default:"みなさんはどうですか？" %}
     {% endif %}
 
-    {% if user.is_authenticated and post.kind != "poll" and post.author_id == user.pk or user.is_staff and post.kind != "poll" %}
+    {% if user.is_authenticated and post.kind not in "poll board" and post.author_id == user.pk or user.is_staff and post.kind not in "poll board" %}
     <details class="washoku-staff-photos washoku-photo-box" id="photos">
         <summary><i class="bi bi-camera" aria-hidden="true"></i> 写真を変える・消す</summary>
         <ul class="washoku-photo-choices">
@@ -82,7 +86,7 @@
 
 <p class="washoku-back"><a class="washoku-back-button" href="{% url text.url_name %}">‹ {{ text.heading }}の一覧へ</a></p>
 
-{% if related_recipes %}
+{% if related_recipes and post.kind != "board" %}
 <section class="washoku-section washoku-related">
     <h2>関連レシピ</h2>
     <ul class="washoku-list">
@@ -96,6 +100,8 @@
 {% if post.status == "published" %}
     {% if post.kind == "product" %}
         {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの感想" tip_label="感想" %}
+    {% elif post.kind == "board" %}
+        {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="みんなの質問" tip_label="情報・ひとこと" %}
     {% elif post.kind == "poll" %}
         {% include "washoku/includes/comments.html" with target="post" target_pk=post.pk heading="コメント" %}
     {% else %}

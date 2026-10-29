@@ -50,6 +50,7 @@ urlpatterns = [
     path("comments/<int:pk>/report/", views.comment_report, name="comment_report"),
     path("comments/<int:pk>/react/", views.comment_react, name="comment_react"),
     path("questions/", views.question_list, name="question_list"),
+    path("questions/new/", views.question_new, name="question_new"),
 
     # みんなの投稿
     path("columns/", views.column_list, name="column_list"),

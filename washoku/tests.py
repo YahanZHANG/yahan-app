@@ -654,8 +654,18 @@ class AboutAndMyPageTests(TestCase):
         self.assertNotContains(home, "<span>お店</span>", html=True)
 
         stores = self.client.get(reverse("washoku:store_list"))
-        for label in ["食材", "代わり", "お店", "おすすめ"]:
+        for label in ["食材", "代わり", "お店"]:
             self.assertContains(stores, f">{label}</a>")
+        self.assertNotContains(stores, ">おすすめ</a>")
+
+        # コミュニティは 質問・口コミ・コラム・アンケート (参考リンクはコラムの中)
+        community = self.client.get(reverse("washoku:question_list"))
+        for label in ["質問", "口コミ", "コラム", "アンケート"]:
+            self.assertContains(community, f">{label}</a>")
+        self.assertNotContains(community, ">リンク</a>")
+
+        # タブのあるページは、左右のスワイプでも移れる
+        self.assertContains(stores, "washoku/swipe_tabs")
 
     def test_my_pages_list_favorites_and_comments(self):
 
@@ -995,6 +1005,41 @@ class PostTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
         self.assertContains(self.client.get(reverse("washoku:activity")), "薄切り肉")
 
+    def test_review_needs_a_verdict_and_shows_on_its_ingredient(self):
+
+        self.client.force_login(self.member)
+        ingredient = Ingredient.objects.create(name="ごぼう", category="vegetable")
+        url = reverse("washoku:post_submit", args=["product"])
+
+        response = self.client.post(url, {"title": "冷凍ごぼう", "shops": ["coop"], "body": "香りがほとんどなかったです。"})
+        self.assertContains(response, "買ってみてどうだった？")
+        self.assertFalse(Post.objects.exists())
+
+        page = self.client.get(url + f"?ingredient={ingredient.pk}")
+        self.assertContains(page, f'name="ingredient" value="{ingredient.pk}"')
+
+        self.client.post(
+            url,
+            {"title": "冷凍ごぼう", "verdict": "bad", "shops": ["coop"], "body": "香りがほとんどなかったです。", "ingredient": ingredient.pk},
+        )
+        review = Post.objects.get()
+        self.assertEqual(review.verdict, "bad")
+        self.assertEqual(list(review.ingredients.all()), [ingredient])
+
+        review.status = "published"
+        review.save()
+
+        detail = self.client.get(reverse("washoku:ingredient_detail", args=[ingredient.pk]))
+        self.assertContains(detail, "みんなの口コミ")
+        self.assertContains(detail, "👎 いまいちだった")
+        self.assertContains(detail, "冷凍ごぼう")
+
+        list_url = reverse("washoku:product_list")
+        self.assertContains(self.client.get(list_url + "?verdict=bad"), "冷凍ごぼう")
+        self.assertNotContains(self.client.get(list_url + "?verdict=good"), "冷凍ごぼう")
+        # 口コミはコミュニティのタブ
+        self.assertContains(self.client.get(list_url), ">口コミ</a>")
+
     def test_product_needs_a_shop_and_can_be_filtered(self):
 
         self.client.force_login(self.member)
@@ -1005,11 +1050,12 @@ class PostTests(TestCase):
 
         self.client.post(
             url,
-            {"title": "冷凍ギョーザ", "shops": ["migros", "coop"], "section": "frozen", "resembles": "冷凍餃子", "body": "日本の味にかなり近いです。"},
+            {"title": "冷凍ギョーザ", "verdict": "good", "shops": ["migros", "coop"], "section": "frozen", "resembles": "冷凍餃子", "body": "日本の味にかなり近いです。"},
         )
         Post.objects.update(status="published")
 
         self.assertEqual(Post.objects.get().shop_labels(), ["Migros", "Coop"])
+        self.assertEqual(Post.objects.get().verdict, "good")
 
         list_url = reverse("washoku:product_list")
         self.assertContains(self.client.get(list_url + "?shop=migros"), "冷凍ギョーザ")
@@ -1160,10 +1206,12 @@ class PostTests(TestCase):
         post.status = "published"
         post.save()
 
-        links = self.client.get(reverse("washoku:link_list"))
+        # 参考リンクはコラムの一覧に「リンク」として並ぶ (古い URL はコラムへ)
+        self.assertRedirects(self.client.get(reverse("washoku:link_list")), reverse("washoku:column_list"))
+        links = self.client.get(reverse("washoku:column_list"))
         self.assertContains(links, "食材探しの記事")
         self.assertNotContains(links, "Coop で買える日本の食材の話です。")
-        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "食材探しの記事")
+        self.assertContains(links, '<span class="washoku-chip">リンク</span>')
 
         detail = self.client.get(post.get_absolute_url())
         self.assertContains(detail, 'href="https://example.com/article"')
@@ -1758,6 +1806,70 @@ class WelcomeAndJoinTests(TestCase):
         self.assertContains(self.client.get(reverse("washoku:my_page")), "ホーム画面に追加する方法")
 
 
+class AskAnywhereTests(TestCase):
+    """「私からも一言」ボタンと、どこからでも書ける質問のページ"""
+
+    def setUp(self):
+        User = get_user_model()
+        self.member = User.objects.create_user("hanako", password="x")
+        self.editor = User.objects.create_user("henshu", password="x", is_staff=True)
+        self.ingredient = Ingredient.objects.create(name="みりん", category="seasoning")
+
+    def test_say_button_points_to_the_current_page(self):
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "私からも<br>一言")
+        self.assertContains(home, f'href="{reverse("washoku:question_new")}"')
+        self.assertContains(home, "書くには無料の会員登録が必要です")
+
+        detail_url = reverse("washoku:ingredient_detail", args=[self.ingredient.pk])
+        detail = self.client.get(detail_url)
+        self.assertContains(detail, f'href="{detail_url}?ask=1#comments"')
+        self.assertContains(detail, f'{reverse("washoku:post_submit", args=["product"])}?ingredient={self.ingredient.pk}')
+
+        # 「質問する」から来たときは、最初から質問を選んでおく
+        self.client.force_login(self.member)
+        asked = self.client.get(detail_url + "?ask=1")
+        self.assertContains(asked, 'value="question" checked')
+        self.assertNotContains(self.client.get(reverse("washoku:question_new")), "私からも<br>一言")
+
+    def test_question_about_anything_or_an_ingredient(self):
+
+        url = reverse("washoku:question_new")
+        self.assertEqual(self.client.get(url).status_code, 302)
+
+        self.client.force_login(self.member)
+        page = self.client.get(url + f"?ingredient={self.ingredient.pk}")
+        self.assertContains(page, f'value="ingredient:{self.ingredient.pk}" selected')
+
+        self.client.post(url, {"about": "board", "kind": "question", "body": "スイスで日本の包丁を研いでもらえる所は？"})
+        board_question = Comment.objects.get()
+        self.assertEqual(board_question.kind, "question")
+        self.assertEqual(board_question.post.kind, "board")
+
+        Comment.objects.update(created_at=timezone.now() - timedelta(minutes=5))
+        self.client.post(url, {"about": f"ingredient:{self.ingredient.pk}", "kind": "question", "body": "本みりんはどこで買えますか？"})
+        self.assertEqual(Comment.objects.get(ingredient=self.ingredient).kind, "question")
+
+        questions = self.client.get(reverse("washoku:question_list"))
+        self.assertContains(questions, "スイスで日本の包丁")
+        self.assertContains(questions, "なんでも質問")
+        self.assertContains(self.client.get(board_question.get_absolute_url()), "みんなの質問")
+
+        # 「なんでも質問」の箱そのものは、新着や検索には出さない
+        self.assertNotContains(self.client.get(reverse("washoku:activity")), ">なんでも質問</span>")
+        self.assertNotContains(self.client.get(reverse("washoku:search") + "?q=なんでも"), "食材やレシピに限らず")
+
+    def test_editor_questions_are_marked_on_home(self):
+
+        Comment.objects.create(author=self.editor, ingredient=self.ingredient, kind="question", body="みりんの代わりに何を使っていますか？")
+
+        home = self.client.get(reverse("washoku:home"))
+        self.assertContains(home, "編集部より")
+        for label in ["アンケート", "質問", "口コミ", "コラム", "新着"]:
+            self.assertContains(home, f">{label}</button>")
+
+
 class PhotoTests(TestCase):
 
     def setUp(self):
@@ -2287,7 +2399,7 @@ class AdminPickTests(TestCase):
         Comment.objects.filter(pk=open_q.pk).update(home_photo_url="https://example.com/q.jpg")
         home = self.client.get(reverse("washoku:home"))
         self.assertContains(home, '<img src="https://example.com/q.jpg"')
-        self.assertContains(home, "data-slider-next")
+        self.assertContains(home, "data-home-tabs")
         self.assertContains(home, "答えを募集中")
         # 注目と同じく、投稿者と投稿した場所を出す
         self.assertContains(home, f"{open_q.author.username} ・ {self.ingredient.name}")
