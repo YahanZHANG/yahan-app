@@ -1425,6 +1425,14 @@ class Comment(models.Model):
         max_length=500,
     )
 
+    # お店のページの口コミ (お店へのコメント) のときだけ: よかった / ふつう / いまいち
+    verdict = models.CharField(
+        "口コミの感想",
+        max_length=10,
+        choices=Post.VERDICT_CHOICES,
+        blank=True,
+    )
+
     photo_url = models.URLField(
         "写真",
         max_length=500,

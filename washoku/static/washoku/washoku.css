@@ -5525,13 +5525,14 @@ html.washoku-say-open {
 
 /* HOMEのタブ: 上の「今日のごはん」とのあいだを少し空ける */
 .washoku-home-tabs {
-    margin-top: 16px;
+    margin-top: 10px;
 }
 
 /* スクロールしてタブがヘッダーの下に貼りついたときも、ヘッダーとのあいだに余白を取る */
 .washoku-home-tabnav {
-    padding-top: 14px;
-    padding-bottom: 6px;
+    padding-top: 8px;
+    padding-bottom: 2px;
+    margin-bottom: 8px;
 }
 
 /* お店のページの口コミ欄: 「どうだった？」を押しやすいボタンに */

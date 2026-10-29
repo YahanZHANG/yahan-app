@@ -10,11 +10,11 @@
     <div class="washoku-say-panel">
         <p class="washoku-say-title" id="washoku-say-title">何を書きますか？</p>
         <ul class="washoku-say-options">
-            <li><a href="{% if name in 'recipe_detail ingredient_detail store_detail post_detail' %}{{ request.path }}?ask=1#comments{% else %}{% url 'washoku:question_new' %}{% endif %}">
+            <li><a href="{% if name in 'recipe_detail ingredient_detail post_detail' %}{{ request.path }}?ask=1#comments{% else %}{% url 'washoku:question_new' %}{% endif %}">
                 <span aria-hidden="true">💬</span>
-                <span><strong>質問する</strong><small>{% if name in 'recipe_detail ingredient_detail store_detail post_detail' %}このページについて聞く{% else %}わからないことを、みんなに聞く{% endif %}</small></span>
+                <span><strong>質問する</strong><small>{% if name in 'recipe_detail ingredient_detail post_detail' %}このページについて聞く{% else %}わからないことを、みんなに聞く{% endif %}</small></span>
             </a></li>
-            <li><a href="{% url 'washoku:post_submit' 'product' %}{% if name == 'ingredient_detail' %}?ingredient={{ pk }}{% elif name == 'store_detail' %}?store={{ pk }}{% endif %}">
+            <li><a href="{% if name == 'store_detail' %}{{ request.path }}#comments{% else %}{% url 'washoku:post_submit' 'product' %}{% endif %}{% if name == 'ingredient_detail' %}?ingredient={{ pk }}{% endif %}">
                 <span aria-hidden="true">👍</span>
                 <span><strong>口コミを書く</strong><small>買ったものや、お店の感想</small></span>
             </a></li>

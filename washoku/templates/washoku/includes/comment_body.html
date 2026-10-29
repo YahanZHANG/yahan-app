@@ -6,6 +6,7 @@
 {% else %}
     <header class="washoku-comment-head">
         {% if not comment.parent_id and comment.kind == "question" %}<span class="washoku-chip washoku-chip-question">質問</span>{% endif %}
+        {% if comment.verdict %}{% include "washoku/includes/verdict_chip.html" with post=comment hide_store=True %}{% endif %}
         <strong>{{ comment.author|display_name }}</strong>
         <small>{{ comment.created_at|date:"Y/n/j H:i" }}{% if comment.edited_at %}（編集済み）{% endif %}</small>
         {% if comment.is_hidden %}<span class="washoku-chip washoku-chip-draft">非表示中</span>{% endif %}

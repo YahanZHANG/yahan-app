@@ -29,51 +29,7 @@
 
 <p class="washoku-note">営業時間などは変わることがあります。お出かけ前にお店のサイトでご確認ください。</p>
 
-<section class="washoku-section washoku-reviews" id="reviews">
-    <h2>口コミ{% if review_total %}<small class="washoku-count">{{ review_total }}</small>{% endif %}</h2>
-    {% if reviews %}
-    <ul class="washoku-posts washoku-store-reviews">
-        {% for post in reviews %}
-            <li>
-                <a href="{{ post.get_absolute_url }}">
-                    {% if post.photo_1 %}<img class="washoku-store-review-photo" src="{{ post.photo_1 }}" alt="" loading="lazy">{% endif %}
-                    {% if post.verdict %}<span class="washoku-chips">{% include "washoku/includes/verdict_chip.html" with post=post hide_store=True %}</span>{% endif %}
-                    <span class="washoku-post-excerpt">{{ post.body|truncatechars:160 }}</span>
-                    <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-    {% if review_total > reviews|length %}<p><a href="{% url 'washoku:product_list' %}?store={{ store.pk }}">このお店の口コミをすべて見る（{{ review_total }}件） ›</a></p>{% endif %}
-    {% else %}
-    <p class="washoku-empty">まだ口コミはありません。</p>
-    {% endif %}
-
-    {# ここに書いた口コミは、コミュニティの「口コミ」にも出る #}
-    {% if user.is_authenticated %}
-        <form method="post" action="{% url 'washoku:post_submit' 'product' %}" class="washoku-comment-form washoku-store-review-form" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="hidden" name="about" value="store">
-            <input type="hidden" name="store" value="{{ store.pk }}">
-            <input type="hidden" name="back" value="store">
-            <div class="washoku-store-verdict" role="radiogroup" aria-label="どうだった？">
-                <label><input type="radio" name="verdict" value="good" required> 👍 よかった</label>
-                <label><input type="radio" name="verdict" value="ok"> 😐 ふつう</label>
-                <label><input type="radio" name="verdict" value="bad"> 👎 いまいち</label>
-            </div>
-            <textarea name="body" rows="3" maxlength="3000" required minlength="10" aria-label="口コミ" placeholder="品ぞろえ、値段、混み具合など"></textarea>
-            <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo_1" accept="image/*"></label>
-            <button type="submit" class="washoku-button">口コミを投稿する</button>
-            <p class="washoku-comment-hint">ニックネームで表示・あとから編集や削除OK</p>
-        </form>
-    {% else %}
-        {% include "washoku/includes/join_prompt.html" with reason="口コミの投稿" %}
-    {% endif %}
-</section>
-
-{% if threads %}
-{# 以前このページに書かれた質問など (新しくは書けない) #}
-{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="以前のコメント" no_form=True %}
-{% endif %}
+{# 口コミ = このお店のページのコメント (コミュニティの「口コミ」にも出て、ここへ飛んでくる) #}
+{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="口コミ" store_review=True %}
 
 {% endblock %}

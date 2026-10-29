@@ -3,10 +3,16 @@ from django.db import migrations
 
 def store_comments_to_reviews(apps, schema_editor):
     """
+    (使わなくなった) お店の口コミはお店へのコメントのままにすることになったので、何もしない。
+    すでにこれを実行した DB は、0053 で元のコメントの形に戻す。
+    以下は以前の説明:
+
     お店のページに書かれたコメント (質問以外) を、お店の口コミ (投稿) に移す。
     返信・スタンプ・お知らせも口コミに付け替え、日時と写真もそのまま残す。
     感想 (よかった/ふつう/いまいち) はわからないので空のまま。
     """
+
+    return
 
     Comment = apps.get_model("washoku", "Comment")
     CommentReaction = apps.get_model("washoku", "CommentReaction")

@@ -596,48 +596,46 @@ class StoreTests(TestCase):
         self.assertContains(page, "口コミを投稿する")
         self.assertNotContains(page, "このお店への質問")
 
-        # お店のページの書き込み欄から書くと口コミになり、お店のページに戻る
-        with mock.patch("washoku.views.send_admin_alert"):
-            response = self.client.post(
-                reverse("washoku:post_submit", args=["product"]),
-                {"about": "store", "store": self.store.pk, "back": "store", "verdict": "good", "body": "納豆の品ぞろえが多いです"},
-            )
-        self.assertRedirects(response, reverse("washoku:store_detail", args=[self.store.pk]) + "#reviews", fetch_redirect_response=False)
-        review = Post.objects.get(store=self.store)
-        self.assertEqual((review.kind, review.status, review.title), ("product", "published", self.store.name))
+        # お店のページの書き込み欄 = 口コミ。よかった・ふつう・いまいち を添えられる
+        response = self.client.post(
+            reverse("washoku:comment_create", args=["store", self.store.pk]),
+            {"kind": "question", "verdict": "good", "body": "納豆の品ぞろえが多いです"},
+        )
+        review = Comment.objects.get(store=self.store)
+        self.assertRedirects(response, review.get_absolute_url(), fetch_redirect_response=False)
+        self.assertEqual((review.kind, review.verdict), ("tip", "good"))
         self.assertContains(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])), "納豆の品ぞろえが多いです")
         self.assertContains(self.client.get(reverse("washoku:product_list")), "納豆の品ぞろえが多いです")
-        review.delete()
+        self.assertContains(self.client.get(reverse("washoku:home")), "納豆の品ぞろえが多いです")
 
-        # お店の一覧の「口コミ」は口コミだけを数える。口コミの一覧では「お店の口コミ」で絞り込める
-        self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 0件")
-        Post.objects.create(kind="product", store=self.store, title=self.store.name, verdict="good", body="店員さんが親切", status="published", author=self.user)
+        # 返信は口コミとして数えない。口コミの一覧では「お店の口コミ」で絞り込める
+        Comment.objects.create(author=self.user, store=self.store, kind="tip", body="ありがとう", parent=review)
         Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつう", status="published")
         self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 1件")
         reviews = self.client.get(reverse("washoku:product_list") + "?section=store")
-        self.assertContains(reviews, "店員さんが親切")
+        self.assertContains(reviews, "納豆の品ぞろえが多いです")
         self.assertNotContains(reviews, "Coop の味噌")
 
-    def test_old_store_comments_become_reviews(self):
+    def test_store_review_posts_become_store_comments(self):
 
         import importlib
         from django.apps import apps as django_apps
 
         other = get_user_model().objects.create_user("jiro", password="x")
-        old = Comment.objects.create(author=self.user, store=self.store, kind="tip", body="納豆の品ぞろえが多い")
-        reply = Comment.objects.create(author=other, store=self.store, kind="tip", body="本当に！", parent=old)
-        CommentReaction.objects.create(comment=old, user=other, kind="thanks")
-        question = Comment.objects.create(author=self.user, store=self.store, kind="question", body="駐車場は？")
+        review = Post.objects.create(kind="product", store=self.store, title=self.store.name, verdict="good", body="納豆の品ぞろえが多い", status="published", author=self.user)
+        reply = Comment.objects.create(author=other, post=review, kind="tip", body="本当に！")
+        PostReaction.objects.create(post=review, user=other, kind="thanks")
+        product = Post.objects.create(kind="product", title="Coop の味噌", verdict="ok", body="ふつう", status="published")
 
-        importlib.import_module("washoku.migrations.0051_store_comments_to_reviews").store_comments_to_reviews(django_apps, None)
+        importlib.import_module("washoku.migrations.0053_store_reviews_are_comments").store_review_posts_to_comments(django_apps, None)
 
-        review = Post.objects.get(store=self.store)
-        self.assertEqual((review.kind, review.status, review.body, review.author), ("product", "published", "納豆の品ぞろえが多い", self.user))
+        comment = Comment.objects.get(store=self.store, parent=None)
+        self.assertEqual((comment.kind, comment.verdict, comment.body, comment.author), ("tip", "good", "納豆の品ぞろえが多い", self.user))
         reply.refresh_from_db()
-        self.assertEqual((reply.post, reply.parent, reply.store), (review, None, None))
-        self.assertTrue(review.reactions.filter(user=other).exists())
-        self.assertTrue(Comment.objects.filter(pk=question.pk).exists())
-        self.assertFalse(Comment.objects.filter(pk=old.pk).exists())
+        self.assertEqual((reply.store, reply.parent, reply.post), (self.store, comment, None))
+        self.assertTrue(comment.reactions.filter(user=other).exists())
+        self.assertFalse(Post.objects.filter(pk=review.pk).exists())
+        self.assertTrue(Post.objects.filter(pk=product.pk).exists())
 
     def test_editor_tips_are_added_once_as_yapp_editor(self):
 
@@ -1092,27 +1090,24 @@ class PostTests(TestCase):
         store = Store.objects.create(name="Yoshi Market", kind="japanese", city="Zürich")
         url = reverse("washoku:post_submit", args=["product"])
 
-        page = self.client.get(url + f"?store={store.pk}")
-        self.assertContains(page, 'id="id_about_1" checked')
-        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[store.pk])), f"?store={store.pk}")
-
         response = self.client.post(url, {"about": "store", "verdict": "good", "body": "店員さんが親切で、品ぞろえも多いです。"})
         self.assertContains(response, "お店を選んでください。")
 
-        self.client.post(url, {"about": "store", "store": store.pk, "verdict": "good", "body": "店員さんが親切で、品ぞろえも多いです。"})
-        review = Post.objects.get()
-        self.assertEqual((review.title, review.store, review.shop), ("Yoshi Market", store, ""))
-
-        review.status = "published"
-        review.save()
+        # 口コミのフォームからお店を選んで書いても、お店のページのコメントになる (専用のページは作らない)
+        response = self.client.post(url, {"about": "store", "store": store.pk, "verdict": "good", "body": "店員さんが親切で、品ぞろえも多いです。"})
+        review = Comment.objects.get(store=store)
+        self.assertRedirects(response, review.get_absolute_url(), fetch_redirect_response=False)
+        self.assertEqual((review.verdict, review.kind), ("good", "tip"))
+        self.assertFalse(Post.objects.exists())
 
         detail = self.client.get(reverse("washoku:store_detail", args=[store.pk]))
         self.assertContains(detail, "店員さんが親切で")
+        self.assertContains(detail, "👍 よかった")
         self.assertNotContains(detail, "🏪 お店")  # お店のページでは「お店」の札は不要
         reviews = self.client.get(reverse("washoku:product_list"))
         self.assertContains(reviews, "Yoshi Market")
         self.assertContains(reviews, "🏪 お店")
-        self.assertContains(self.client.get(reverse("washoku:product_list") + f"?store={store.pk}"), "店員さんが親切で")
+        self.assertContains(reviews, review.get_absolute_url())
 
     def test_product_needs_a_shop_and_can_be_filtered(self):
 

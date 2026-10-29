@@ -503,7 +503,11 @@ def home(request):
                 .select_related("author")
                 .order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT]
             ),
-            "home_reviews": Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT],
+            "home_reviews": with_store_reviews(
+                Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk"),
+                store_review_comments(),
+                limit=HOME_COLUMN_COUNT,
+            ),
             "home_tabs": HOME_TABS,
             **weekly_context(request, display),
             "display": display,
@@ -1484,8 +1488,10 @@ def comment_create(request, target, pk):
     if parent:
         comment.kind = "tip"
     elif store:
-        # お店のページの書き込み欄は質問だけ (感想は「口コミ」に書く)
-        comment.kind = "question"
+        # お店のページの書き込みは口コミ (よかった・ふつう・いまいち を添えられる)
+        comment.kind = "tip"
+        verdict = request.POST.get("verdict", "")
+        comment.verdict = verdict if verdict in dict(Post.VERDICT_CHOICES) else ""
 
     comment.save()
 
@@ -2186,19 +2192,49 @@ def family_leave(request):
 # お店
 # =========================================================
 
-# お店のページに出す口コミの数 (それより多ければ口コミの一覧へ)
-STORE_REVIEWS_SHOWN = 10
+def store_review_comments():
+    """
+    お店の口コミ = お店のページに書かれたコメント (質問と返信は除く)。
+    口コミの一覧と HOME では、買ったものの口コミ (投稿) と一緒に並べる。
+    一覧で投稿と同じように出せるよう、title (店名) と is_store_review を付ける。
+    """
+
+    return (
+        Comment.objects
+        .filter(store__isnull=False, parent__isnull=True, is_deleted=False, is_hidden=False)
+        .exclude(kind="question")
+        .select_related("author", "store")
+        .annotate(comment_count=Count("replies", filter=Q(replies__is_deleted=False, replies__is_hidden=False)))
+        .order_by("-created_at", "-pk")
+    )
+
+
+def with_store_reviews(posts, comments, limit=None):
+    """投稿 (買ったもの) とお店の口コミ (コメント) を新しい順に1つの一覧にする"""
+
+    comments = list(comments[:limit] if limit else comments)
+
+    for comment in comments:
+        comment.is_store_review = True
+        comment.title = comment.store.name
+
+    entries = sorted(list(posts[:limit] if limit else posts) + comments, key=lambda entry: entry.created_at, reverse=True)
+    return entries[:limit] if limit else entries
 
 
 def store_list(request):
 
     kind = request.GET.get("kind", "")
 
-    # 口コミ = お店について書いた口コミ (投稿)。お店のページのコメント・質問は数えない
+    # 口コミ = お店のページに書かれたコメント (質問と返信は数えない)
     stores = Store.objects.filter(is_active=True).annotate(
         review_count=Count(
-            "reviews",
-            filter=Q(reviews__kind="product", reviews__status="published"),
+            "comments",
+            filter=Q(
+                comments__parent__isnull=True,
+                comments__is_hidden=False,
+                comments__is_deleted=False,
+            ) & ~Q(comments__kind="question"),
         )
     )
 
@@ -2233,13 +2269,7 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
-            "reviews": list(
-                store.reviews.filter(kind="product", status="published")
-                .select_related("author")
-                .annotate(comment_count=Count("comments", filter=Q(comments__is_hidden=False, comments__is_deleted=False)))
-                .order_by("-created_at", "-pk")[:STORE_REVIEWS_SHOWN]
-            ),
-            "review_total": store.reviews.filter(kind="product", status="published").count(),
+            "verdicts": Post.VERDICT_CHOICES,
             "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
@@ -2920,23 +2950,26 @@ def post_list(request, kind):
 
     if kind == "product":
 
+        # お店の口コミは、お店のページに書かれたコメント。買ったものの口コミ (投稿) と一緒に並べる
+        store_reviews = store_review_comments()
+
         if verdict in dict(Post.VERDICT_CHOICES):
             posts = posts.filter(verdict=verdict)
+            store_reviews = store_reviews.filter(verdict=verdict)
 
         # お店のコードはどれもほかのコードの一部ではないので、含むかどうかで絞れる
         if shop in dict(Post.SHOP_CHOICES):
             posts = posts.filter(shop__contains=shop)
-
-        # お店のページの「すべて見る」から: そのお店の口コミだけ
-        store_pk = request.GET.get("store", "")
-        if store_pk.isdigit():
-            posts = posts.filter(store_id=store_pk)
+            store_reviews = store_reviews.none()
 
         # 「お店の口コミ」: 商品ではなく、お店そのものの口コミ
         if section == "store":
-            posts = posts.filter(store__isnull=False)
+            posts = posts.none()
         elif section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)
+            store_reviews = store_reviews.none()
+
+        posts = with_store_reviews(posts, store_reviews)
 
     sort = request.GET.get("sort", "new")
     display = DisplaySettings.load() if kind == "column" else None
@@ -3316,6 +3349,28 @@ def post_submit(request, kind):
     if request.method == "POST" and form.is_valid():
         photos = upload_form_photos(form, "columns")
 
+    # お店の口コミは、お店のページのコメントとして載せる (専用のページは作らない)
+    if request.method == "POST" and form.is_valid() and kind == "product" and form.cleaned_data.get("about") == "store":
+
+        store = form.cleaned_data["store"]
+        comment = Comment.objects.create(
+            store=store,
+            author=request.user,
+            kind="tip",
+            verdict=form.cleaned_data.get("verdict") or "",
+            body=form.cleaned_data["body"],
+            photo_url=photos[0] if photos else "",
+            admin_checked=request.user.is_staff,
+        )
+
+        if not request.user.is_staff:
+            messages.success(request, "口コミありがとうございます！掲載しました。")
+
+        if comment.photo_url:
+            alert_new_photo(request, f"口コミ「{comment.body[:30]}」", comment.get_absolute_url())
+
+        return redirect(comment.get_absolute_url())
+
     if request.method == "POST" and form.is_valid():
 
         post = form.save(commit=False)
@@ -3343,10 +3398,6 @@ def post_submit(request, kind):
                 request,
                 "口コミありがとうございます！掲載しました。" if kind == "product" else "投稿ありがとうございます！掲載しました。",
             )
-
-        # お店のページの口コミ欄から書いたときは、お店のページに戻る
-        if request.POST.get("back") == "store" and post.store_id:
-            return redirect(reverse("washoku:store_detail", args=[post.store_id]) + "#reviews")
 
         return redirect(post.get_absolute_url())
 
