@@ -145,9 +145,8 @@
         </a>
     </nav>
 
-{% if name not in 'post_submit question_new recipe_submit substitute_submit poll_suggest comment_edit install' %}
-    {% include "washoku/includes/say_button.html" %}
-{% endif %}
+{# 「私からも一言」はどのページにも出す (書くページでも、書くものを選び直せるように) #}
+{% include "washoku/includes/say_button.html" %}
 
 {% endwith %}
 

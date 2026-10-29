@@ -1110,7 +1110,7 @@ class NutritionTests(TestCase):
         self.assertNotContains(response, "<h2>みんなの知恵")
 
         response = self.client.get(reverse("washoku:recipe_list"))
-        self.assertContains(response, "ほかの探し方")
+        self.assertContains(response, "washoku-find-ways")
         self.assertContains(response, reverse("washoku:my_favorites"))
 
 
@@ -2091,7 +2091,7 @@ class AskAnywhereTests(TestCase):
         self.client.force_login(self.member)
         asked = self.client.get(detail_url + "?ask=1")
         self.assertContains(asked, 'value="question" checked')
-        self.assertNotContains(self.client.get(reverse("washoku:question_new")), "私からも<br>一言")
+        self.assertContains(self.client.get(reverse("washoku:question_new")), "私からも<br>一言")
 
     def test_question_about_anything_or_an_ingredient(self):
 

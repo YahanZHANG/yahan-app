@@ -6,19 +6,14 @@
 
 {% include "washoku/includes/recipe_tabs.html" %}
 
-<div class="washoku-title-row">
-    <h1 class="washoku-visually-hidden">レシピ</h1>
-    <a class="washoku-submit-pill" href="{% url 'washoku:recipe_submit' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i>投稿する</a>
-    <details class="washoku-ways">
-        <summary>ほかの探し方</summary>
-        <ul>
-            <li><a href="{% url 'washoku:find_by_ingredients' %}">🥕 食材で選ぶ</a></li>
-            <li><a href="{% url 'washoku:find_by_mood' %}">😋 気分で選ぶ</a></li>
-            <li><a href="{% url 'washoku:find_by_nutrition' %}">🥗 栄養で選ぶ</a></li>
-            <li><a href="{% url 'washoku:random_recipe' %}">🎲 ランダム</a></li>
-        </ul>
-    </details>
-</div>
+<h1 class="washoku-visually-hidden">レシピ</h1>
+{# いろいろな探し方を、横に並んだボタンで #}
+<nav class="washoku-find-ways" aria-label="レシピの探し方">
+    <a href="{% url 'washoku:find_by_ingredients' %}"><span aria-hidden="true">🥕</span>食材で選ぶ</a>
+    <a href="{% url 'washoku:find_by_mood' %}"><span aria-hidden="true">😋</span>気分で選ぶ</a>
+    <a href="{% url 'washoku:find_by_nutrition' %}"><span aria-hidden="true">🥗</span>栄養で選ぶ</a>
+    <a href="{% url 'washoku:random_recipe' %}"><span aria-hidden="true">🎲</span>ランダム</a>
+</nav>
 
 <form method="get" class="washoku-filter">
 
