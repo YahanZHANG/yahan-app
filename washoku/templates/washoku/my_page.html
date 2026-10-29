@@ -11,7 +11,7 @@
 {% if user.is_authenticated %}
     <p class="washoku-lead washoku-me-name">
         <span>{{ user|display_name }} さん</span>
-        <a class="washoku-me-account" href="{% url 'portal:manage_apps' %}"><i class="bi bi-person-gear" aria-hidden="true"></i> My Account</a>
+        <a class="washoku-me-account" href="{% url 'portal:manage_apps' %}?next={{ request.path|urlencode }}"><i class="bi bi-person-gear" aria-hidden="true"></i> My Account</a>
     </p>
 {% else %}
     <p class="washoku-lead"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族の評価やコメントが使えます。</p>
@@ -109,7 +109,7 @@
 <section class="washoku-section">
     <h2>アカウント</h2>
     <div class="washoku-menu">
-        <a class="washoku-menu-item" href="{% if user.is_authenticated %}{% url 'portal:manage_apps' %}{% else %}{% url 'login' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
+        <a class="washoku-menu-item" href="{% if user.is_authenticated %}{% url 'portal:manage_apps' %}?next={{ request.path|urlencode }}{% else %}{% url 'login' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
             <span class="washoku-menu-icon"><i class="bi bi-person-gear" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>Yapp My Account</strong><small>{% if user.is_authenticated %}共通アカウントの管理{% else %}ログイン・新規登録{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>

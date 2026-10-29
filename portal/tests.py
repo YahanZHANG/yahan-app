@@ -342,3 +342,33 @@ class PortalThemeTextTests(TestCase):
 
         self.assertContains(response, "寒い日は")
         self.assertContains(response, "スイスを楽しもう。")  # 空の行は元の文言のまま
+
+
+class ManageAppsReturnTests(TestCase):
+    """My Account から、来たアプリに戻れる"""
+
+    def setUp(self):
+        from travel.models import UserProfile
+
+        self.user = User.objects.create_user("hanako", password="x")
+        UserProfile.objects.update_or_create(
+            user=self.user,
+            defaults={"password_setup_completed": True, "nickname_setup_completed": True, "nickname": "はなこ"},
+        )
+        self.client.force_login(self.user)
+
+    def test_back_button_and_nickname_save_return_to_the_app(self):
+
+        url = reverse("portal:manage_apps") + "?next=/washoku/me/"
+        page = self.client.get(url)
+        self.assertContains(page, "スイスで和食へ戻る")
+        self.assertContains(page, 'href="/washoku/me/"')
+
+        response = self.client.post(url, {"form_type": "nickname", "nickname": "ハナコ", "next": "/washoku/me/"})
+        self.assertRedirects(response, "/washoku/me/", fetch_redirect_response=False)
+
+    def test_outside_urls_are_ignored(self):
+
+        page = self.client.get(reverse("portal:manage_apps") + "?next=https://example.com/")
+        self.assertContains(page, "Yapp Portalへ戻る")
+        self.assertNotContains(page, "example.com")
