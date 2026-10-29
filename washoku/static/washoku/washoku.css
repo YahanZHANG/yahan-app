@@ -4930,7 +4930,8 @@ html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
 }
 
 .washoku-field ul:has(.washoku-verdict-input),
-.washoku-field #id_verdict {
+.washoku-field #id_verdict,
+.washoku-field #id_about {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -4939,7 +4940,8 @@ html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
     list-style: none;
 }
 
-.washoku-field #id_verdict label {
+.washoku-field #id_verdict label,
+.washoku-field #id_about label {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -4951,7 +4953,8 @@ html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
     cursor: pointer;
 }
 
-.washoku-field #id_verdict label:has(input:checked) {
+.washoku-field #id_verdict label:has(input:checked),
+.washoku-field #id_about label:has(input:checked) {
     border-color: var(--washoku-green);
     background: var(--washoku-green-soft);
 }
@@ -5146,4 +5149,8 @@ html.washoku-say-open {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+.washoku-field[hidden] {
+    display: none;
 }

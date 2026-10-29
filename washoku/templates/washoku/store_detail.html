@@ -1,4 +1,5 @@
 {% extends "washoku/base.html" %}
+{% load washoku_tags %}
 
 {% block title %}{{ store.name }} | スイスで和食{% endblock %}
 
@@ -28,6 +29,20 @@
 
 <p class="washoku-note">営業時間などは変わることがあります。お出かけ前にお店のサイトでご確認ください。</p>
 
-{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="みんなの口コミ" tip_label="口コミ" %}
+<section class="washoku-section washoku-reviews" id="reviews">
+    <h2>みんなの口コミ{% if reviews %}<small class="washoku-count">{{ reviews|length }}</small>{% endif %}</h2>
+    {% if reviews %}
+    <ul class="washoku-list washoku-review-list">
+        {% for post in reviews %}
+            <li><a href="{{ post.get_absolute_url }}">{% include "washoku/includes/verdict_chip.html" %} {{ post.body|truncatechars:60 }}</a> <small>{{ post.author|display_name }}</small></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="washoku-note">行ってよかったか、いまいちだったか、教えてください。</p>
+    {% endif %}
+    <p><a class="washoku-link-button" href="{% url 'washoku:post_submit' 'product' %}?store={{ store.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i> このお店の口コミを書く</a></p>
+</section>
+
+{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="コメント・質問" tip_label="コメント" %}
 
 {% endblock %}

@@ -1012,7 +1012,7 @@ class PostTests(TestCase):
         url = reverse("washoku:post_submit", args=["product"])
 
         response = self.client.post(url, {"title": "冷凍ごぼう", "shops": ["coop"], "body": "香りがほとんどなかったです。"})
-        self.assertContains(response, "買ってみてどうだった？")
+        self.assertContains(response, "どうだった？")
         self.assertFalse(Post.objects.exists())
 
         page = self.client.get(url + f"?ingredient={ingredient.pk}")
@@ -1039,6 +1039,31 @@ class PostTests(TestCase):
         self.assertNotContains(self.client.get(list_url + "?verdict=good"), "冷凍ごぼう")
         # 口コミはコミュニティのタブ
         self.assertContains(self.client.get(list_url), ">口コミ</a>")
+
+    def test_store_review_from_the_store_page(self):
+
+        self.client.force_login(self.member)
+        store = Store.objects.create(name="Yoshi Market", kind="japanese", city="Zürich")
+        url = reverse("washoku:post_submit", args=["product"])
+
+        page = self.client.get(url + f"?store={store.pk}")
+        self.assertContains(page, 'id="id_about_1" checked')
+        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[store.pk])), f"?store={store.pk}")
+
+        response = self.client.post(url, {"about": "store", "verdict": "good", "body": "店員さんが親切で、品ぞろえも多いです。"})
+        self.assertContains(response, "お店を選んでください。")
+
+        self.client.post(url, {"about": "store", "store": store.pk, "verdict": "good", "body": "店員さんが親切で、品ぞろえも多いです。"})
+        review = Post.objects.get()
+        self.assertEqual((review.title, review.store, review.shop), ("Yoshi Market", store, ""))
+
+        review.status = "published"
+        review.save()
+
+        detail = self.client.get(reverse("washoku:store_detail", args=[store.pk]))
+        self.assertContains(detail, "店員さんが親切で")
+        self.assertContains(detail, "🏪 お店")
+        self.assertContains(self.client.get(reverse("washoku:product_list")), "Yoshi Market")
 
     def test_product_needs_a_shop_and_can_be_filtered(self):
 
@@ -1821,6 +1846,8 @@ class AskAnywhereTests(TestCase):
         self.assertContains(home, "私からも<br>一言")
         self.assertContains(home, f'href="{reverse("washoku:question_new")}"')
         self.assertContains(home, "書くには無料の会員登録が必要です")
+        self.assertContains(home, f'href="{reverse("washoku:recipe_submit")}"')
+        self.assertNotContains(home, "washoku-banner")
 
         detail_url = reverse("washoku:ingredient_detail", args=[self.ingredient.pk])
         detail = self.client.get(detail_url)

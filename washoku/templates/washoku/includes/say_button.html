@@ -14,13 +14,17 @@
                 <span aria-hidden="true">💬</span>
                 <span><strong>質問する</strong><small>{% if name in 'recipe_detail ingredient_detail store_detail post_detail' %}このページについて聞く{% else %}わからないことを、みんなに聞く{% endif %}</small></span>
             </a></li>
-            <li><a href="{% url 'washoku:post_submit' 'product' %}{% if name == 'ingredient_detail' %}?ingredient={{ pk }}{% endif %}">
+            <li><a href="{% url 'washoku:post_submit' 'product' %}{% if name == 'ingredient_detail' %}?ingredient={{ pk }}{% elif name == 'store_detail' %}?store={{ pk }}{% endif %}">
                 <span aria-hidden="true">👍</span>
-                <span><strong>口コミを書く</strong><small>買ってよかったもの・いまいちだったもの</small></span>
+                <span><strong>口コミを書く</strong><small>買ったものや、お店の感想</small></span>
             </a></li>
             <li><a href="{% url 'washoku:post_submit' 'column' %}">
                 <span aria-hidden="true">✍️</span>
                 <span><strong>コラムを書く</strong><small>買い物や料理の工夫、失敗談など</small></span>
+            </a></li>
+            <li><a href="{% url 'washoku:recipe_submit' %}">
+                <span aria-hidden="true">🍳</span>
+                <span><strong>レシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
             </a></li>
         </ul>
         {% if not user.is_authenticated %}

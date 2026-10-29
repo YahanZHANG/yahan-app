@@ -1,1 +1,1 @@
-{% if post.verdict == "good" %}<span class="washoku-chip washoku-verdict is-good">👍 買ってよかった</span>{% elif post.verdict == "bad" %}<span class="washoku-chip washoku-verdict is-bad">👎 いまいちだった</span>{% endif %}
+{% if post.verdict == "good" %}<span class="washoku-chip washoku-verdict is-good">👍 {% if post.store_id %}よかった{% else %}買ってよかった{% endif %}</span>{% elif post.verdict == "bad" %}<span class="washoku-chip washoku-verdict is-bad">👎 いまいちだった</span>{% endif %}{% if post.store_id %}<span class="washoku-chip">🏪 お店</span>{% endif %}

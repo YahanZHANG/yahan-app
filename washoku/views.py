@@ -2151,6 +2151,7 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
+            "reviews": list(store.reviews.filter(kind="product", status="published").select_related("author").order_by("-created_at")[:10]),
             "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
@@ -3172,7 +3173,14 @@ def post_submit(request, kind):
         )
         return redirect("washoku:my_posts")
 
-    form = PostForm(request.POST or None, request.FILES or None, kind=kind)
+    # お店のページから口コミを書くときは、そのお店を選んでおく
+    initial = {}
+    store_id = request.GET.get("store", "")
+
+    if kind == "product" and store_id.isdigit():
+        initial = {"about": "store", "store": store_id}
+
+    form = PostForm(request.POST or None, request.FILES or None, kind=kind, initial=initial)
 
     # 食材のページから口コミを書くときは、その食材に結びつける (食材のページに出る)
     ingredient = None

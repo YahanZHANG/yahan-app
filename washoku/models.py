@@ -1161,6 +1161,16 @@ class Post(models.Model):
         blank=True,
     )
 
+    # お店の口コミ (kind=product) のときだけ: どのお店か
+    store = models.ForeignKey(
+        "Store",
+        verbose_name="口コミのお店",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviews",
+    )
+
     section = models.CharField(
         "売り場",
         max_length=20,

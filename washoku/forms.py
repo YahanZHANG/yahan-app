@@ -167,7 +167,7 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["url", "title", "verdict", "source", "section", "resembles", "body"]
+        fields = ["url", "title", "store", "verdict", "source", "section", "resembles", "body"]
         widgets = {
             "verdict": forms.RadioSelect(attrs={"class": "washoku-verdict-input"}),
             "title": forms.TextInput(attrs={"maxlength": 100}),
@@ -175,11 +175,24 @@ class PostForm(forms.ModelForm):
             "body": forms.Textarea(attrs={"rows": 10, "maxlength": 4000}),
         }
 
+    # 口コミ: 買ったものか、お店か
+    about = forms.ChoiceField(
+        label="何の口コミ？",
+        choices=[("item", "🛒 買ったもの"), ("store", "🏪 お店")],
+        initial="item",
+        required=False,
+        widget=forms.RadioSelect(attrs={"class": "washoku-verdict-input"}),
+    )
+
     def __init__(self, *args, kind="column", **kwargs):
 
         super().__init__(*args, **kwargs)
 
         self.kind = kind
+
+        if kind != "product":
+            del self.fields["about"]
+            del self.fields["store"]
 
         if kind != "column":
             del self.fields["photo_1"]
@@ -190,21 +203,25 @@ class PostForm(forms.ModelForm):
 
         if kind == "product":
 
-            self.fields["verdict"].label = "買ってみてどうだった？"
+            self.fields["verdict"].label = "どうだった？"
             self.fields["verdict"].required = True
             self.fields["verdict"].choices = [
-                ("good", "👍 買ってよかった"),
+                ("good", "👍 よかった"),
                 ("bad", "👎 いまいちだった"),
             ]
             self.fields["title"].label = "買ったもの"
+            self.fields["title"].required = False
             self.fields["title"].widget.attrs["placeholder"] = "例: Migros の冷凍ギョーザ"
+            self.fields["store"].label = "お店"
+            self.fields["store"].queryset = self.fields["store"].queryset.filter(is_active=True).order_by("name")
+            self.fields["store"].empty_label = "選んでください"
             self.fields["resembles"].help_text = ""
-            self.fields["shops"].required = True
-            self.order_fields(["verdict", "title", "shops", "section", "resembles", "body"])
+            self.fields["shops"].help_text = "買えるお店をすべて選んでください。"
+            self.order_fields(["about", "verdict", "title", "shops", "section", "resembles", "store", "body"])
             self.fields["section"].choices = [("", "わからない")] + Post.SECTION_CHOICES
             self.fields["body"].label = "感想"
             self.fields["body"].widget.attrs["placeholder"] = (
-                "味、日本のものとの違い、おいしい食べ方、値段など。いまいちだった理由も、みんなの役に立ちます。"
+                "味、日本のものとの違い、値段、お店の雰囲気など。いまいちだった理由も、みんなの役に立ちます。"
             )
 
             for name in ("url", "source"):
@@ -243,10 +260,28 @@ class PostForm(forms.ModelForm):
 
         title = self.cleaned_data["title"].strip()
 
-        if not title and self.kind != "link":
+        if not title and self.kind not in ("link", "product"):
             raise forms.ValidationError("入力してください。")
 
         return title
+
+    def clean(self):
+
+        cleaned = super().clean()
+
+        # 口コミ: 買ったものなら商品名とお店 (スーパー)、お店の口コミならお店が必要
+        if self.kind == "product":
+            if cleaned.get("about") == "store":
+                if not cleaned.get("store"):
+                    self.add_error("store", "お店を選んでください。")
+            else:
+                cleaned["store"] = None
+                if not cleaned.get("title"):
+                    self.add_error("title", "入力してください。")
+                if not cleaned.get("shops"):
+                    self.add_error("shops", "このフィールドは必須です。")
+
+        return cleaned
 
     def clean_body(self):
 
@@ -267,6 +302,13 @@ class PostForm(forms.ModelForm):
 
         if "shops" in self.fields:
             post.shop = ",".join(self.cleaned_data["shops"])
+
+        # お店の口コミ: タイトルはお店の名前。スーパーや売り場の情報は使わない
+        if self.kind == "product" and post.store:
+            post.title = post.store.name
+            post.shop = ""
+            post.section = ""
+            post.resembles = ""
 
         # タイトルがない参考リンクは、ひとまずサイト名を入れておく
         if self.kind == "link" and not post.title:

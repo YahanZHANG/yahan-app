@@ -7,7 +7,7 @@
 <h1>{{ text.new_label }}</h1>
 
 {% if kind == "product" %}
-    <p class="washoku-lead">スーパーやアジアの店で買ったものの感想を教えてください。買ってよかったものも、いまいちだったものも、みんなの役に立ちます。管理者が確認してから掲載します。</p>
+    <p class="washoku-lead">買ったものやお店の感想を教えてください。よかったものも、いまいちだったものも、みんなの役に立ちます。管理者が確認してから掲載します。</p>
     {% if ingredient %}<p class="washoku-note">「{{ ingredient.name }}」のページに表示されます。</p>{% endif %}
 {% elif kind == "link" %}
     <p class="washoku-lead">役に立ったほかのサイトの記事を教えてください。URL だけでも大丈夫です。タイトルや内容は、管理者がまとめてから掲載します。</p>
@@ -20,10 +20,10 @@
     {% if ingredient %}<input type="hidden" name="ingredient" value="{{ ingredient.pk }}">{% endif %}
 
     {% for field in form %}
-        <div class="washoku-field{% if field.errors %} has-error{% endif %}">
+        <div class="washoku-field{% if field.errors %} has-error{% endif %}" data-field="{{ field.name }}">
             <label for="{{ field.id_for_label }}">
                 {{ field.label }}
-                {% if field.field.required %}<span class="washoku-required">必須</span>{% endif %}
+                {% if field.field.required or kind == "product" and field.name in "title shops store" %}<span class="washoku-required">必須</span>{% endif %}
             </label>
             {{ field }}
             {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
@@ -35,5 +35,27 @@
 
     <button type="submit" class="washoku-button washoku-button-wide">投稿する</button>
 </form>
+
+{% if kind == "product" %}
+<script>
+// 口コミ: 「買ったもの」と「お店」で、聞く項目を切り替える
+(function () {
+    var radios = document.querySelectorAll('input[name="about"]');
+    var itemOnly = ["title", "shops", "section", "resembles"];
+    function update() {
+        var checked = document.querySelector('input[name="about"]:checked');
+        var store = checked && checked.value === "store";
+        itemOnly.forEach(function (name) {
+            var box = document.querySelector('[data-field="' + name + '"]');
+            if (box) box.hidden = store;
+        });
+        var storeBox = document.querySelector('[data-field="store"]');
+        if (storeBox) storeBox.hidden = !store;
+    }
+    radios.forEach(function (radio) { radio.addEventListener("change", update); });
+    update();
+})();
+</script>
+{% endif %}
 
 {% endblock %}
