@@ -1106,8 +1106,11 @@ class PostTests(TestCase):
 
         detail = self.client.get(reverse("washoku:store_detail", args=[store.pk]))
         self.assertContains(detail, "店員さんが親切で")
-        self.assertContains(detail, "🏪 お店")
-        self.assertContains(self.client.get(reverse("washoku:product_list")), "Yoshi Market")
+        self.assertNotContains(detail, "🏪 お店")  # お店のページでは「お店」の札は不要
+        reviews = self.client.get(reverse("washoku:product_list"))
+        self.assertContains(reviews, "Yoshi Market")
+        self.assertContains(reviews, "🏪 お店")
+        self.assertContains(self.client.get(reverse("washoku:product_list") + f"?store={store.pk}"), "店員さんが親切で")
 
     def test_product_needs_a_shop_and_can_be_filtered(self):
 

@@ -2186,6 +2186,10 @@ def family_leave(request):
 # お店
 # =========================================================
 
+# お店のページに出す口コミの数 (それより多ければ口コミの一覧へ)
+STORE_REVIEWS_SHOWN = 10
+
+
 def store_list(request):
 
     kind = request.GET.get("kind", "")
@@ -2229,7 +2233,13 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
-            "reviews": list(store.reviews.filter(kind="product", status="published").select_related("author").order_by("-created_at")[:10]),
+            "reviews": list(
+                store.reviews.filter(kind="product", status="published")
+                .select_related("author")
+                .annotate(comment_count=Count("comments", filter=Q(comments__is_hidden=False, comments__is_deleted=False)))
+                .order_by("-created_at", "-pk")[:STORE_REVIEWS_SHOWN]
+            ),
+            "review_total": store.reviews.filter(kind="product", status="published").count(),
             "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
@@ -2744,7 +2754,7 @@ POST_KIND_TEXT = {
     "product": {
         "url_name": "washoku:product_list",
         "heading": "みんなの口コミ",
-        "lead": "スーパーやアジアの店で買ったものの、正直な感想です。よかったものも、いまいちだったものも。",
+        "lead": "買ったものやお店の、正直な感想です。よかったものも、いまいちだったものも。",
         "new_label": "口コミを書く",
     },
     "board": {
@@ -2916,6 +2926,11 @@ def post_list(request, kind):
         # お店のコードはどれもほかのコードの一部ではないので、含むかどうかで絞れる
         if shop in dict(Post.SHOP_CHOICES):
             posts = posts.filter(shop__contains=shop)
+
+        # お店のページの「すべて見る」から: そのお店の口コミだけ
+        store_pk = request.GET.get("store", "")
+        if store_pk.isdigit():
+            posts = posts.filter(store_id=store_pk)
 
         # 「お店の口コミ」: 商品ではなく、お店そのものの口コミ
         if section == "store":

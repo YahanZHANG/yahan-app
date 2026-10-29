@@ -30,17 +30,25 @@
 <p class="washoku-note">営業時間などは変わることがあります。お出かけ前にお店のサイトでご確認ください。</p>
 
 <section class="washoku-section washoku-reviews" id="reviews">
-    <h2>みんなの口コミ{% if reviews %}<small class="washoku-count">{{ reviews|length }}</small>{% endif %}</h2>
+    <h2>みんなの口コミ{% if review_total %}<small class="washoku-count">{{ review_total }}</small>{% endif %}</h2>
     {% if reviews %}
-    <ul class="washoku-list washoku-review-list">
+    <ul class="washoku-posts washoku-store-reviews">
         {% for post in reviews %}
-            <li><a href="{{ post.get_absolute_url }}">{% include "washoku/includes/verdict_chip.html" %} {{ post.body|truncatechars:60 }}</a> <small>{{ post.author|display_name }}</small></li>
+            <li>
+                <a href="{{ post.get_absolute_url }}">
+                    {% if post.photo_1 %}<img class="washoku-store-review-photo" src="{{ post.photo_1 }}" alt="" loading="lazy">{% endif %}
+                    {% if post.verdict %}<span class="washoku-chips">{% include "washoku/includes/verdict_chip.html" with post=post hide_store=True %}</span>{% endif %}
+                    <span class="washoku-post-excerpt">{{ post.body|truncatechars:160 }}</span>
+                    <small>{{ post.author|display_name }} ・ {{ post.created_at|date:"Y/n/j" }}{% if post.comment_count %} ・ <i class="bi bi-chat" aria-hidden="true"></i> {{ post.comment_count }}{% endif %}</small>
+                </a>
+            </li>
         {% endfor %}
     </ul>
+    {% if review_total > reviews|length %}<p><a href="{% url 'washoku:product_list' %}?store={{ store.pk }}">このお店の口コミをすべて見る（{{ review_total }}件） ›</a></p>{% endif %}
     {% else %}
     <p class="washoku-note">行ってよかったか、いまいちだったか、教えてください。</p>
     {% endif %}
-    <p><a class="washoku-link-button" href="{% url 'washoku:post_submit' 'product' %}?store={{ store.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i> このお店の口コミを書く</a></p>
+    <p><a class="washoku-button" href="{% url 'washoku:post_submit' 'product' %}?store={{ store.pk }}"><i class="bi bi-pencil" aria-hidden="true"></i> このお店の口コミを書く</a></p>
 </section>
 
 {% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="このお店への質問" question_only=True %}

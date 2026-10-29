@@ -4910,11 +4910,12 @@ html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
 }
 
 .washoku-verdict-switch a {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 6px 4px;
     border-radius: 999px;
     color: var(--washoku-muted);
-    font-size: 14px;
+    font-size: 13.5px;
+    white-space: nowrap;
     font-weight: 700;
     text-align: center;
     text-decoration: none;
@@ -5499,4 +5500,18 @@ html.washoku-say-open {
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+}
+
+/* お店のページの口コミ: 本文を長めに、写真があれば上に */
+.washoku-store-reviews {
+    margin-bottom: 12px;
+}
+
+.washoku-store-review-photo {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    margin-bottom: 8px;
+    object-fit: cover;
+    border-radius: 12px;
 }
