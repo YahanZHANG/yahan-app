@@ -760,7 +760,7 @@ class RecipeSubmissionTests(TestCase):
     def test_visitors_must_log_in(self):
         self.assertEqual(self.client.get(self.url).status_code, 302)
 
-    def test_submission_is_a_hidden_draft_until_published(self):
+    def test_submission_is_published_at_once(self):
 
         with mock.patch("washoku.views.send_admin_alert") as alert:
             response = self.submit()
@@ -768,7 +768,7 @@ class RecipeSubmissionTests(TestCase):
         recipe = Recipe.objects.get(name="鶏のさっぱり煮")
 
         self.assertRedirects(response, reverse("washoku:recipe_detail", args=[recipe.pk]))
-        self.assertEqual((recipe.status, recipe.origin, recipe.submitted_by), ("draft", "member", self.user))
+        self.assertEqual((recipe.status, recipe.origin, recipe.submitted_by), ("published", "member", self.user))
         self.assertEqual(recipe.steps, "鶏肉を切る\n調味料と煮る")
         self.assertIn("りんご酢", recipe.submitted_ingredients)
         alert.assert_called_once()
@@ -777,16 +777,14 @@ class RecipeSubmissionTests(TestCase):
         linked = dict(recipe.recipe_ingredients.values_list("ingredient__name", "amount"))
         self.assertEqual(linked, {"鶏もも肉": "300g", "醤油": "大さじ2"})
 
-        # 投稿した本人には見えるが、ほかの人には見えない
-        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])), "確認待ち")
         self.assertContains(self.client.get(reverse("washoku:my_recipes")), "鶏のさっぱり煮")
 
+        # すぐ掲載される。食材リストにない材料も「そのほかの材料」として出る
         self.client.logout()
-        self.assertEqual(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])).status_code, 404)
-
-        recipe.status = "published"
-        recipe.save()
-        self.assertContains(self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk])), "hanako さんのレシピ")
+        page = self.client.get(reverse("washoku:recipe_detail", args=[recipe.pk]))
+        self.assertContains(page, "hanako さんのレシピ")
+        self.assertContains(page, "そのほかの材料")
+        self.assertContains(page, "りんご酢")
 
     def test_duplicate_name_is_refused(self):
 
@@ -1027,7 +1025,7 @@ class PostTests(TestCase):
         self.other = User.objects.create_user("taro", password="x")
         self.admin = User.objects.create_user("admin", password="x", is_staff=True)
 
-    def test_member_column_waits_for_approval(self):
+    def test_member_column_is_published_at_once(self):
 
         self.client.force_login(self.member)
 
@@ -1040,18 +1038,12 @@ class PostTests(TestCase):
         post = Post.objects.get()
 
         self.assertRedirects(response, post.get_absolute_url())
-        self.assertEqual((post.kind, post.status, post.author), ("column", "draft", self.member))
+        # 管理者の確認を待たずに掲載する (管理者にはメールで知らせ、あとで下書きに戻すか削除できる)
+        self.assertEqual((post.kind, post.status, post.author), ("column", "published", self.member))
         alert.assert_called_once()
+        self.assertIn("掲載済み", alert.call_args.args[0])
 
-        # 本人には見える、ほかの人と一覧には出ない
-        self.assertContains(self.client.get(post.get_absolute_url()), "確認待ち（あなたにだけ表示）")
         self.client.force_login(self.other)
-        self.assertEqual(self.client.get(post.get_absolute_url()).status_code, 404)
-        self.assertNotContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
-
-        post.status = "published"
-        post.save()
-
         self.assertContains(self.client.get(reverse("washoku:column_list")), "薄切り肉")
         self.assertContains(self.client.get(reverse("washoku:activity")), "薄切り肉")
 
@@ -1278,10 +1270,7 @@ class PostTests(TestCase):
             )
 
         post = Post.objects.get()
-        self.assertEqual((post.kind, post.status), ("link", "draft"))
-
-        post.status = "published"
-        post.save()
+        self.assertEqual((post.kind, post.status), ("link", "published"))
 
         # 参考リンクはコラムの一覧に「リンク」として並ぶ (古い URL はコラムへ)
         self.assertRedirects(self.client.get(reverse("washoku:link_list")), reverse("washoku:column_list"))
@@ -1369,7 +1358,7 @@ class SubstituteListTests(TestCase):
         self.assertContains(response, "Kohlrabi")
         self.assertContains(response, "薄めに切る。")
 
-    def test_member_suggestion_waits_for_approval_and_links_known_ingredients(self):
+    def test_member_suggestion_is_published_and_links_known_ingredients(self):
 
         kohlrabi = Ingredient.objects.create(name="コールラビ", name_de="Kohlrabi", category="vegetable")
         member = get_user_model().objects.create_user("hanako", password="x")
@@ -1387,15 +1376,11 @@ class SubstituteListTests(TestCase):
 
         linked, free = Substitute.objects.order_by("pk")
 
-        self.assertEqual((linked.substitute, linked.status, linked.submitted_by), (kohlrabi, "draft", member))
+        self.assertEqual((linked.substitute, linked.status, linked.submitted_by), (kohlrabi, "published", member))
         self.assertEqual((free.substitute, free.substitute_name), (None, "Rucola"))
         self.assertEqual(alert.call_count, 2)
 
         page = reverse("washoku:substitute_list")
-        self.assertNotContains(self.client.get(page), "Rucola")
-        self.assertNotContains(self.client.get(reverse("washoku:ingredient_detail", args=[kohlrabi.pk])), "「かぶ」の代わりに")
-
-        Substitute.objects.update(status="published")
 
         response = self.client.get(page)
         self.assertContains(response, "Rucola")

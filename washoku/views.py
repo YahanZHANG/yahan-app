@@ -963,6 +963,7 @@ def recipe_detail(request, pk):
                 item for item in recipe.recipe_ingredients.all()
                 if item.is_seasoning
             ],
+            "other_items": unlinked_submitted_ingredients(recipe),
             "related_posts": related_posts(
                 [item.ingredient for item in recipe.recipe_ingredients.all()]
             ),
@@ -2239,6 +2240,34 @@ def store_detail(request, pk):
 # 会員のレシピ投稿
 # =========================================================
 
+def unlinked_submitted_ingredients(recipe):
+    """
+    会員が投稿したレシピの材料のうち、食材リストにつながっていないもの (原文の行)。
+    すぐ掲載するので、つながらなかった材料もレシピのページに出す。
+    """
+
+    if not recipe.submitted_ingredients:
+        return []
+
+    from .forms import split_ingredient_line
+
+    linked = set()
+
+    for item in recipe.recipe_ingredients.all():
+        linked.update(name.casefold() for name in (item.ingredient.name, item.ingredient.name_de) if name)
+
+    rows = []
+
+    for line in recipe.submitted_ingredients.splitlines():
+        if not line.strip():
+            continue
+        name, amount = split_ingredient_line(line)
+        if name.casefold() not in linked:
+            rows.append((name, amount))
+
+    return rows
+
+
 @login_required
 def recipe_submit(request):
 
@@ -2264,7 +2293,8 @@ def recipe_submit(request):
 
             recipe = form.save(commit=False)
             recipe.photo_1 = photos[0] if photos else ""
-            recipe.status = "draft"
+            # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+            recipe.status = "published"
             recipe.origin = "member"
             recipe.submitted_by = request.user
             recipe.submitted_ingredients = form.cleaned_data["ingredients_text"]
@@ -2294,7 +2324,7 @@ def recipe_submit(request):
             recipe.update_shop_rank()
 
         send_admin_alert(
-            "新しいレシピの投稿",
+            "新しいレシピの投稿（掲載済み）",
             f"{recipe.name}（{request.user.username} さん）\n\n"
             + request.build_absolute_uri(
                 reverse("admin:washoku_recipe_change", args=[recipe.pk])
@@ -2303,7 +2333,7 @@ def recipe_submit(request):
 
         messages.success(
             request,
-            "投稿ありがとうございます！管理者が確認してから掲載します。",
+            "投稿ありがとうございます！掲載しました。",
         )
 
         return redirect("washoku:recipe_detail", pk=recipe.pk)
@@ -2673,20 +2703,21 @@ def substitute_submit(request):
 
         substitute = form.save(commit=False)
         substitute.submitted_by = request.user
-        substitute.status = "published" if request.user.is_staff else "draft"
+        # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+        substitute.status = "published"
         substitute.save()
 
-        if substitute.status == "draft":
+        if not request.user.is_staff:
 
             send_admin_alert(
-                "新しい代用品の投稿",
+                "新しい代用品の投稿（掲載済み）",
                 f"{substitute}（{request.user.username} さん）\n\n"
                 + request.build_absolute_uri(
                     reverse("admin:washoku_substitute_change", args=[substitute.pk])
                 ),
             )
 
-            messages.success(request, "教えてくれてありがとうございます！管理者が確認してから掲載します。")
+            messages.success(request, "教えてくれてありがとうございます！掲載しました。")
 
         return redirect(reverse("washoku:substitute_list") + "#suggest")
 
@@ -3276,30 +3307,18 @@ def post_submit(request, kind):
         post.kind = kind
         post.photo_1, post.photo_2 = (photos + ["", ""])[:2]
         post.author = request.user
-        # 管理者の投稿と口コミはそのまま公開する (口コミは問題があれば管理画面で下書きに戻す)
-        post.status = "published" if request.user.is_staff or kind == "product" else "draft"
+        # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+        post.status = "published"
         post.save()
 
         if ingredient:
             post.ingredients.add(ingredient)
 
-        if kind == "product" and not request.user.is_staff:
+        if not request.user.is_staff:
 
             send_admin_alert(
-                "新しい口コミ（掲載済み）",
+                f"新しい{post.get_kind_display()}の投稿（掲載済み）",
                 f"{post.title}（{request.user.username} さん）\n\n{post.body[:300]}\n\n"
-                + request.build_absolute_uri(
-                    reverse("admin:washoku_post_change", args=[post.pk])
-                ),
-            )
-
-            messages.success(request, "口コミありがとうございます！掲載しました。")
-
-        if post.status == "draft":
-
-            send_admin_alert(
-                f"新しい{post.get_kind_display()}の投稿",
-                f"{post.title}（{request.user.username} さん）\n\n"
                 + request.build_absolute_uri(
                     reverse("admin:washoku_post_change", args=[post.pk])
                 ),
@@ -3307,7 +3326,7 @@ def post_submit(request, kind):
 
             messages.success(
                 request,
-                "投稿ありがとうございます！管理者が確認してから掲載します。",
+                "口コミありがとうございます！掲載しました。" if kind == "product" else "投稿ありがとうございます！掲載しました。",
             )
 
         return redirect(post.get_absolute_url())

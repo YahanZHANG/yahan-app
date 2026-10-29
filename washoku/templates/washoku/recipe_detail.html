@@ -85,6 +85,14 @@
                 {% endfor %}
             </ul>
         {% endif %}
+        {% if other_items %}
+            {% if main_items or seasoning_items %}<h3>そのほかの材料</h3>{% endif %}
+            <ul class="washoku-ingredients washoku-ingredients-plain">
+                {% for name, amount in other_items %}
+                    <li><span>{{ name }}</span>{% if amount %} <span class="washoku-amount">{{ amount }}</span>{% endif %}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         <p class="washoku-note">食材名を押すと、ドイツ語名や買える店、みんなの買い方の情報が見られます。</p>
     </section>
 

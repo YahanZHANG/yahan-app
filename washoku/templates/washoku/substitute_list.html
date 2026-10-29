@@ -56,7 +56,7 @@
 <section class="washoku-section washoku-suggest" id="suggest">
     <h2>代わりを教える</h2>
     {% if user.is_authenticated %}
-        <p class="washoku-note">管理者が確認してから掲載します。</p>
+        <p class="washoku-note">投稿するとすぐに掲載されます。</p>
         {% include "washoku/includes/substitute_form.html" %}
     {% else %}
         <p><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}%23suggest">ログイン</a>すると、代わりの食材を教えられます。</p>

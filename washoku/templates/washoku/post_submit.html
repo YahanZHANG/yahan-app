@@ -10,9 +10,9 @@
     <p class="washoku-lead">買ったものやお店の感想を教えてください。よかったものも、いまいちだったものも、みんなの役に立ちます。投稿するとすぐに掲載されます。</p>
     {% if ingredient %}<p class="washoku-note">「{{ ingredient.name }}」のページに表示されます。</p>{% endif %}
 {% elif kind == "link" %}
-    <p class="washoku-lead">役に立ったほかのサイトの記事を教えてください。URL だけでも大丈夫です。タイトルや内容は、管理者がまとめてから掲載します。</p>
+    <p class="washoku-lead">役に立ったほかのサイトの記事を教えてください。URL だけでも大丈夫です。投稿するとすぐに掲載されます。</p>
 {% else %}
-    <p class="washoku-lead">お肉の買い方、代わりの食材、お店での頼み方など、みんなの役に立つ経験を書いてください。管理者が確認してから掲載します。</p>
+    <p class="washoku-lead">お肉の買い方、代わりの食材、お店での頼み方など、みんなの役に立つ経験を書いてください。投稿するとすぐに掲載されます。</p>
 {% endif %}
 
 <form method="post" class="washoku-form" enctype="multipart/form-data" novalidate>
