@@ -1,5 +1,5 @@
 {% load washoku_tags %}
-{# target: "recipe" / "ingredient" / "store", target_pk, heading, help_text, tip_label, question_only (質問だけ書ける。お店のページ: 感想は口コミへ) #}
+{# target: "recipe" / "ingredient" / "store", target_pk, heading, help_text, tip_label, question_only (質問だけ書ける), no_form (書き込み欄を出さない) #}
 <section class="washoku-section" id="comments">
 
     <h2>{{ heading }}</h2>
@@ -35,7 +35,8 @@
         <p class="washoku-empty">{% if question_only %}まだ質問はありません。{% else %}まだコメントはありません。{% endif %}</p>
     {% endfor %}
 
-    {% if user.is_authenticated %}
+    {% if no_form %}
+    {% elif user.is_authenticated %}
         <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form" enctype="multipart/form-data">
             {% csrf_token %}
             {% if question_only %}

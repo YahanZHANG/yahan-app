@@ -5525,5 +5525,48 @@ html.washoku-say-open {
 
 /* HOMEのタブ: 上の「今日のごはん」とのあいだを少し空ける */
 .washoku-home-tabs {
-    margin-top: 28px;
+    margin-top: 16px;
+}
+
+/* スクロールしてタブがヘッダーの下に貼りついたときも、ヘッダーとのあいだに余白を取る */
+.washoku-home-tabnav {
+    padding-top: 14px;
+    padding-bottom: 6px;
+}
+
+/* お店のページの口コミ欄: 「どうだった？」を押しやすいボタンに */
+.washoku-store-verdict {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 10px;
+}
+
+.washoku-store-verdict label {
+    flex: 1 1 0;
+    padding: 8px 4px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.washoku-store-verdict input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.washoku-store-verdict label:has(input:checked) {
+    border-color: var(--washoku-accent);
+    background: color-mix(in srgb, var(--washoku-accent) 12%, var(--washoku-surface));
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-store-verdict label:has(input:focus-visible) {
+    outline: 2px solid var(--washoku-accent);
+    outline-offset: 2px;
 }

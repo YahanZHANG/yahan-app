@@ -588,24 +588,26 @@ class StoreTests(TestCase):
         self.assertContains(response, 'data-lat="47.360100"')
         self.assertContains(response, "現在地から近い順")
 
-    def test_store_page_takes_questions_and_reviews_go_to_the_review_list(self):
+    def test_store_page_review_box_posts_a_review(self):
 
         self.client.force_login(self.user)
-        self.client.post(
-            reverse("washoku:comment_create", args=["store", self.store.pk]),
-            {"kind": "tip", "body": "日曜は開いていますか？"},
-        )
 
-        # お店のページの書き込み欄は質問だけ
-        comment = Comment.objects.get()
-        self.assertEqual(comment.kind, "question")
-        self.assertEqual(
-            comment.get_absolute_url(),
-            reverse("washoku:store_detail", args=[self.store.pk]) + f"#comment-{comment.pk}",
-        )
         page = self.client.get(reverse("washoku:store_detail", args=[self.store.pk]))
-        self.assertContains(page, "このお店への質問")
-        self.assertNotContains(page, 'name="kind" value="tip"> ')
+        self.assertContains(page, "口コミを投稿する")
+        self.assertNotContains(page, "このお店への質問")
+
+        # お店のページの書き込み欄から書くと口コミになり、お店のページに戻る
+        with mock.patch("washoku.views.send_admin_alert"):
+            response = self.client.post(
+                reverse("washoku:post_submit", args=["product"]),
+                {"about": "store", "store": self.store.pk, "back": "store", "verdict": "good", "body": "納豆の品ぞろえが多いです"},
+            )
+        self.assertRedirects(response, reverse("washoku:store_detail", args=[self.store.pk]) + "#reviews", fetch_redirect_response=False)
+        review = Post.objects.get(store=self.store)
+        self.assertEqual((review.kind, review.status, review.title), ("product", "published", self.store.name))
+        self.assertContains(self.client.get(reverse("washoku:store_detail", args=[self.store.pk])), "納豆の品ぞろえが多いです")
+        self.assertContains(self.client.get(reverse("washoku:product_list")), "納豆の品ぞろえが多いです")
+        review.delete()
 
         # お店の一覧の「口コミ」は口コミだけを数える。口コミの一覧では「お店の口コミ」で絞り込める
         self.assertContains(self.client.get(reverse("washoku:store_list")), "口コミ 0件")

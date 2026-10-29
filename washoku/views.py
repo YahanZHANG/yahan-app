@@ -3344,6 +3344,10 @@ def post_submit(request, kind):
                 "口コミありがとうございます！掲載しました。" if kind == "product" else "投稿ありがとうございます！掲載しました。",
             )
 
+        # お店のページの口コミ欄から書いたときは、お店のページに戻る
+        if request.POST.get("back") == "store" and post.store_id:
+            return redirect(reverse("washoku:store_detail", args=[post.store_id]) + "#reviews")
+
         return redirect(post.get_absolute_url())
 
     return render(
