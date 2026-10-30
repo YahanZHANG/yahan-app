@@ -1,0 +1,60 @@
+{# どのページにも出す「私からも一言」ボタン。そのページに合わせて、質問・口コミ・コラムを書く先を選ぶ #}
+{% with pk=request.resolver_match.kwargs.pk %}
+<button type="button" class="washoku-say-button" data-say-open aria-haspopup="dialog" aria-controls="washoku-say-sheet">
+    <i class="bi bi-chat-heart" aria-hidden="true"></i>
+    <span>私からも<br>一言</span>
+</button>
+
+<div class="washoku-say-sheet" id="washoku-say-sheet" role="dialog" aria-modal="true" aria-labelledby="washoku-say-title" hidden data-say-sheet>
+    <div class="washoku-say-backdrop" data-say-close></div>
+    <div class="washoku-say-panel">
+        <p class="washoku-say-title" id="washoku-say-title">何を書きますか？</p>
+        <ul class="washoku-say-options">
+            <li><a href="{% if name in 'recipe_detail ingredient_detail post_detail' %}{{ request.path }}?ask=1#comments{% else %}{% url 'washoku:question_new' %}{% endif %}">
+                <span aria-hidden="true">💬</span>
+                <span><strong>質問する</strong><small>{% if name in 'recipe_detail ingredient_detail post_detail' %}このページについて聞く{% else %}わからないことを、みんなに聞く{% endif %}</small></span>
+            </a></li>
+            <li><a href="{% if name == 'store_detail' %}{{ request.path }}#comments{% else %}{% url 'washoku:post_submit' 'product' %}{% endif %}{% if name == 'ingredient_detail' %}?ingredient={{ pk }}{% endif %}">
+                <span aria-hidden="true">👍</span>
+                <span><strong>口コミを書く</strong><small>買ったものや、お店の感想</small></span>
+            </a></li>
+            <li><a href="{% url 'washoku:post_submit' 'column' %}">
+                <span aria-hidden="true">✍️</span>
+                <span><strong>コラムを書く</strong><small>買い物や料理の工夫、失敗談など</small></span>
+            </a></li>
+            <li><a href="{% url 'washoku:recipe_submit' %}">
+                <span aria-hidden="true">🍳</span>
+                <span><strong>レシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
+            </a></li>
+        </ul>
+        {% if not user.is_authenticated %}
+            <p class="washoku-say-login">書くには無料の会員登録が必要です。好きなIDとパスワードを決めるだけで、すぐに使えます。</p>
+        {% endif %}
+        <button type="button" class="washoku-say-cancel" data-say-close>閉じる</button>
+    </div>
+</div>
+{% endwith %}
+<script>
+(function () {
+    var open = document.querySelector("[data-say-open]");
+    var sheet = document.querySelector("[data-say-sheet]");
+    if (!open || !sheet) return;
+
+    function show(visible) {
+        sheet.hidden = !visible;
+        open.setAttribute("aria-expanded", String(visible));
+        document.documentElement.classList.toggle("washoku-say-open", visible);
+        if (visible) sheet.querySelector("a").focus();
+    }
+
+    open.addEventListener("click", function () { show(true); });
+    sheet.querySelectorAll("[data-say-close]").forEach(function (button) {
+        button.addEventListener("click", function () { show(false); open.focus(); });
+    });
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !sheet.hidden) show(false);
+    });
+    // 戻るボタンでこのページに戻ったときは閉じておく
+    window.addEventListener("pageshow", function () { show(false); });
+})();
+</script>

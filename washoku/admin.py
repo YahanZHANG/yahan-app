@@ -652,6 +652,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "featured_order",
         "featured_hidden",
         "on_home",
+        "show_result",
         "publish_at",
         "shop_names",
         "author",
@@ -663,6 +664,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "kind",
         "is_featured",
         "featured_hidden",
+        "show_result",
         "section",
     )
 
@@ -670,6 +672,7 @@ class PostAdmin(HomePhotoAdminMixin, NarrowFeaturedOrderMixin, admin.ModelAdmin)
         "is_featured",
         "featured_order",
         "featured_hidden",
+        "show_result",
     )
 
     search_fields = (
@@ -1031,6 +1034,12 @@ class DisplaySettingsAdmin(admin.ModelAdmin):
     """
 
     fieldsets = (
+        ("HOMEの「注目」タブ", {
+            "description": "今週に載せるコラム・Q&A・口コミは、それぞれの管理画面で「注目」に選びます（並び順は小さい順）。先週のアンケートの結果は自動で出ます。",
+            "fields": (
+                "weekly_message",
+            ),
+        }),
         ("HOMEに出すもの", {
             "fields": (
                 "home_season",
@@ -1074,3 +1083,7 @@ class StampAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # 消すと押されたぶんが表示できなくなるので「表示する」を外して隠す
         return False
+
+
+# コラム・アンケート・口コミ・Q&A などを種類ごとに分けた管理画面
+from . import admin_community  # noqa: E402,F401

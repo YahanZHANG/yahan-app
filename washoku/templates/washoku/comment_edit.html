@@ -1,15 +1,15 @@
 {% extends "washoku/base.html" %}
 
-{% block title %}コメントの編集 | スイスで和食{% endblock %}
+{% block title %}{% if store_review %}口コミの編集{% else %}コメントの編集{% endif %} | スイスで和食{% endblock %}
 
 {% block content %}
 
-<h1>コメントの編集</h1>
+<h1>{% if store_review %}口コミの編集{% else %}コメントの編集{% endif %}</h1>
 
 <form method="post" class="washoku-comment-form" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.body.errors }}
-    {{ form.body }}
+    {% if store_review %}<div class="washoku-review-box">{{ form.body }}{% include "washoku/includes/store_verdict_picker.html" with current=comment.verdict %}</div>{% else %}{{ form.body }}{% endif %}
     {% if comment.photo_url %}
         <img class="washoku-photo washoku-photo-small" src="{{ comment.photo_url }}" alt="今の写真">
         <label><input type="checkbox" name="remove_photo"> 写真を外す</label>

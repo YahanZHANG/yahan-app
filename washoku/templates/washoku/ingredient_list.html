@@ -13,6 +13,12 @@
     <button type="submit">探す</button>
 </form>
 
+<a class="washoku-find-banner" href="{% url 'washoku:find_by_ingredients' %}">
+    <span aria-hidden="true">🥕</span>
+    <strong>家にある食材で料理を探す</strong>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>
+
 {% if by_category %}
     <nav class="washoku-quick washoku-ingredient-kinds" aria-label="カテゴリー">
         {% for category in by_category %}<a href="#cat-{{ forloop.counter }}">{{ category }}</a>{% endfor %}

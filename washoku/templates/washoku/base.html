@@ -70,7 +70,7 @@
                 <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
                 <a href="{% url 'washoku:recipe_list' %}" class="{% if name in 'recipe_list recipe_detail find_by_mood find_by_ingredients find_by_nutrition random_recipe my_favorites family_favorites' %}active{% endif %}"><i class="bi bi-journal-richtext" aria-hidden="true"></i>レシピ</a>
                 <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit store_list store_detail' %}active{% endif %}"><i class="bi bi-basket" aria-hidden="true"></i>食材</a>
-                <a href="{% url 'washoku:question_list' %}" class="{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>コミュニティ</a>
+                <a href="{% url 'washoku:poll_list' %}" class="{% if name in 'question_list question_new column_list product_list link_list poll_list poll_suggest post_detail post_submit activity' and nav != 'ingredients' %}active{% endif %}"><i class="bi bi-people" aria-hidden="true"></i>コミュニティ</a>
                 <a href="{% url 'washoku:install' %}" class="{% if name == 'install' %}active{% endif %}"><i class="bi bi-phone" aria-hidden="true"></i>ホーム画面に追加</a>
             </nav>
 
@@ -78,14 +78,21 @@
                 <a href="{% url 'washoku:install' %}" class="washoku-install-pill yapp-install-only">📲 アプリにする</a>
             {% endif %}
 
-            <a href="{% url 'washoku:search' %}" class="washoku-search-button{% if name == 'search' %} active{% endif %}" aria-label="アプリ全体を検索">
-                <i class="bi bi-search" aria-hidden="true"></i>
+            {# スマホ: Swiss News と同じく右上に「探す」と「About」のアイコン。探すは押すとヘッダーの下に検索欄が開く #}
+            <a href="{% url 'washoku:search' %}" class="washoku-search-button washoku-header-icon{% if name == 'search' %} active{% endif %}" aria-label="探す" title="探す" aria-controls="washoku-searchbar" aria-expanded="false"{% if name != 'search' %} data-search-toggle{% endif %}>
+                <span aria-hidden="true">🔍</span>
+                <small>探す</small>
             </a>
 
             <form class="washoku-header-search" method="get" action="{% url 'washoku:search' %}" role="search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input type="search" name="q" value="{% if name == 'search' %}{{ request.GET.q }}{% endif %}" placeholder="検索" aria-label="アプリ全体を検索">
             </form>
+
+            <a href="{% url 'washoku:about' %}" class="washoku-header-icon washoku-about-icon{% if name == 'about' %} active{% endif %}" aria-label="スイスで和食について" title="スイスで和食について">
+                <span aria-hidden="true">ⓘ</span>
+                <small>About</small>
+            </a>
 
             <a
                 href="{% url 'washoku:my_page' %}"
@@ -100,6 +107,30 @@
             </a>
 
         </div>
+
+        {% if name != 'search' %}
+            <div class="washoku-searchbar" id="washoku-searchbar" hidden>
+                <form method="get" action="{% url 'washoku:search' %}" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" name="q" placeholder="料理・食材・お店を検索" aria-label="アプリ全体を検索" enterkeyhint="search">
+                </form>
+            </div>
+            <script>
+                // スマホ: 🔍 を押すと、ヘッダーの下に検索欄を開いてすぐ入力できるようにする
+                (function () {
+                    var toggle = document.querySelector("[data-search-toggle]");
+                    var bar = document.getElementById("washoku-searchbar");
+                    if (!toggle || !bar) return;
+                    toggle.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        var open = bar.hidden;
+                        bar.hidden = !open;
+                        toggle.setAttribute("aria-expanded", String(open));
+                        if (open) bar.querySelector("input").focus();
+                    });
+                })();
+            </script>
+        {% endif %}
 
     </header>
 
@@ -131,8 +162,8 @@
             <i class="bi bi-journal-richtext" aria-hidden="true"></i>
             <span>レシピ</span>
         </a>
-        <a href="{% url 'washoku:question_list' %}" class="washoku-tab-center{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %} active{% endif %}">
-            <span class="washoku-tab-circle"><i class="bi bi-people{% if name in 'question_list column_list product_list link_list poll_list post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i></span>
+        <a href="{% url 'washoku:poll_list' %}" class="washoku-tab-center{% if name in 'question_list question_new column_list product_list link_list poll_list poll_suggest post_detail post_submit activity' and nav != 'ingredients' %} active{% endif %}">
+            <span class="washoku-tab-circle"><i class="bi bi-people{% if name in 'question_list question_new column_list product_list link_list poll_list poll_suggest post_detail post_submit activity' and nav != 'ingredients' %}-fill{% endif %}" aria-hidden="true"></i></span>
             <span>コミュニティ</span>
         </a>
         <a href="{% url 'washoku:ingredient_list' %}" class="{% if nav == 'ingredients' or name in 'ingredient_list ingredient_detail substitute_list substitute_submit store_list store_detail' %}active{% endif %}">
@@ -144,6 +175,9 @@
             <span>マイページ</span>
         </a>
     </nav>
+
+{# 「私からも一言」はどのページにも出す (書くページでも、書くものを選び直せるように) #}
+{% include "washoku/includes/say_button.html" %}
 
 {% endwith %}
 
@@ -223,6 +257,20 @@
 </script>
 
 <script src="{% static 'washoku/photo_upload.js' %}" defer></script>
+<script src="{% static 'washoku/swipe_tabs.js' %}" defer></script>
+{% if user.is_authenticated %}
+<span
+    id="washoku-push-config"
+    hidden
+    data-public-key="{% vapid_public_key %}"
+    data-csrf-token="{{ csrf_token }}"
+    data-subscribe-url="{% url 'washoku:push_subscribe' %}"
+    data-unsubscribe-url="{% url 'washoku:push_unsubscribe' %}"
+    data-weekly-url="{% url 'washoku:push_weekly' %}"
+    data-test-url="{% url 'washoku:push_test' %}"
+></span>
+<script src="{% static 'washoku/push.js' %}" defer></script>
+{% endif %}
 </body>
 
 </html>

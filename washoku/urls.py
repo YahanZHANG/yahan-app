@@ -38,6 +38,8 @@ urlpatterns = [
     # プッシュ通知
     path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
     path("push/unsubscribe/", views.push_unsubscribe, name="push_unsubscribe"),
+    path("push/weekly/", views.push_weekly, name="push_weekly"),
+    path("push/test/", views.push_test, name="push_test"),
 
     # お店
     path("stores/", views.store_list, name="store_list"),
@@ -50,6 +52,7 @@ urlpatterns = [
     path("comments/<int:pk>/report/", views.comment_report, name="comment_report"),
     path("comments/<int:pk>/react/", views.comment_react, name="comment_react"),
     path("questions/", views.question_list, name="question_list"),
+    path("questions/new/", views.question_new, name="question_new"),
 
     # みんなの投稿
     path("columns/", views.column_list, name="column_list"),

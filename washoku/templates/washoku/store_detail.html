@@ -1,4 +1,5 @@
 {% extends "washoku/base.html" %}
+{% load washoku_tags %}
 
 {% block title %}{{ store.name }} | スイスで和食{% endblock %}
 
@@ -28,6 +29,7 @@
 
 <p class="washoku-note">営業時間などは変わることがあります。お出かけ前にお店のサイトでご確認ください。</p>
 
-{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="みんなの口コミ" tip_label="口コミ" %}
+{# 口コミ = このお店のページのコメント (コミュニティの「口コミ」にも出て、ここへ飛んでくる) #}
+{% include "washoku/includes/comments.html" with target="store" target_pk=store.pk heading="口コミ" store_review=True %}
 
 {% endblock %}

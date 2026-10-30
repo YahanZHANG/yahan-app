@@ -60,3 +60,23 @@ def thumb(url, size=160):
     """Cloudinary の写真なら小さく切り抜いた版にする。"""
     from ..photos import thumbnail_url
     return thumbnail_url(url, int(size))
+
+
+@register.simple_tag
+def vapid_public_key():
+    """プッシュ通知の公開鍵 (未設定なら空)"""
+
+    return settings.VAPID_PUBLIC_KEY or ""
+
+
+@register.filter(is_safe=True, needs_autoescape=True)
+def linkify(value, autoescape=True):
+    """
+    本文の URL をリンクにする (新しいタブで開く)。そのあと linebreaks / linebreaksbr を付けて使う。
+    """
+
+    from django.utils.html import urlize
+    from django.utils.safestring import mark_safe
+
+    html = urlize(str(value), trim_url_limit=60, nofollow=True, autoescape=autoescape)
+    return mark_safe(html.replace('rel="nofollow"', 'rel="nofollow noopener" target="_blank"'))

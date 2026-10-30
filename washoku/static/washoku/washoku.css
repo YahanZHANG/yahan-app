@@ -4668,3 +4668,1201 @@ html.yapp-installable .washoku-install-pill ~ .washoku-header-search {
         font-size: 20px;
     }
 }
+
+/* ---------- HOME: 「今日のごはん」の下のタブ (アンケート・質問・口コミ・コラム・新着) ---------- */
+.washoku-home-tabs {
+    margin: 0 0 18px;
+}
+
+.washoku-home-tabnav {
+    position: sticky;
+    top: var(--washoku-header-height, 56px);
+    z-index: 5;
+    display: flex;
+    gap: 2px;
+    margin: 0 -16px 12px;
+    padding: 0 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--washoku-border);
+    background: var(--washoku-bg);
+    scrollbar-width: none;
+}
+
+.washoku-home-tabnav::-webkit-scrollbar {
+    display: none;
+}
+
+.washoku-home-tabnav button {
+    flex: 1 0 auto;
+    min-height: 0;
+    padding: 11px 10px 9px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--washoku-muted);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.washoku-home-tabnav button[aria-selected="true"] {
+    border-bottom-color: var(--washoku-accent);
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-home-panels {
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    transition: height .2s ease;
+}
+
+.washoku-home-panels::-webkit-scrollbar {
+    display: none;
+}
+
+.washoku-home-panel {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+.washoku-home-panel .washoku-home-poll {
+    margin: 0;
+}
+
+.washoku-home-panel-label {
+    margin: 4px 0 8px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.washoku-home-panel-label:not(:first-child) {
+    margin-top: 18px;
+}
+
+.washoku-home-panel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 4px;
+}
+
+.washoku-home-panel-actions > a:last-child:not(.washoku-button) {
+    margin-left: auto;
+    color: var(--washoku-muted);
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.washoku-home-panel-actions .washoku-home-poll-suggest {
+    margin: 0;
+    padding: 9px 14px;
+}
+
+.washoku-home-panel .washoku-home-poll-more {
+    padding: 6px 4px 0;
+    border-top: 0;
+}
+
+.washoku-home-panel .washoku-featured-top {
+    margin-bottom: 8px;
+}
+
+.washoku-home-post-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-home-post-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 11px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-home-post-list strong {
+    font-size: 16.5px;
+    line-height: 1.45;
+}
+
+.washoku-home-post-list small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-home-post-list .washoku-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+}
+
+.washoku-home-panel .washoku-activity {
+    margin: 0;
+}
+
+.washoku-editor-tag {
+    align-self: flex-start;
+    margin-left: 4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.washoku-question-text .washoku-editor-tag {
+    margin: 0;
+}
+
+.washoku-question-text {
+    flex-wrap: wrap;
+}
+
+@media (min-width: 900px) {
+    .washoku-home-tabnav {
+        margin: 0 0 14px;
+        padding: 0;
+    }
+
+    .washoku-home-tabnav button {
+        flex: 0 0 auto;
+        padding: 12px 22px 10px;
+        font-size: 16px;
+    }
+}
+
+/* HOME: ホーム画面に追加 (スマホのブラウザで開いているときだけ) */
+.washoku-home-install-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid color-mix(in srgb, var(--washoku-accent) 30%, transparent);
+    border-radius: 16px;
+    background: var(--washoku-accent-soft);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-home-install-row img {
+    border-radius: 11px;
+}
+
+.washoku-home-install-row span {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.washoku-home-install-row small {
+    color: var(--washoku-muted);
+}
+
+/* 口コミ: 👍 買ってよかった / 👎 いまいちだった */
+.washoku-chip.washoku-verdict.is-good {
+    background: var(--washoku-green-soft);
+    color: var(--washoku-green);
+    font-weight: 700;
+}
+
+.washoku-chip.washoku-verdict.is-bad {
+    background: color-mix(in srgb, #8A7BB8 18%, var(--washoku-surface));
+    color: #6A5A9C;
+    font-weight: 700;
+}
+
+[data-washoku-theme="dark"] .washoku-chip.washoku-verdict.is-bad {
+    color: #B9ABE3;
+}
+
+.washoku-verdict-switch {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+}
+
+.washoku-verdict-switch a {
+    flex: 1 1 auto;
+    padding: 6px 4px;
+    border-radius: 999px;
+    color: var(--washoku-muted);
+    font-size: 13.5px;
+    white-space: nowrap;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.washoku-verdict-switch a.is-active {
+    background: var(--washoku-green);
+    color: #FFFFFF;
+}
+
+.washoku-review-list a {
+    text-decoration: none;
+}
+
+.washoku-field ul:has(.washoku-verdict-input),
+.washoku-field #id_verdict,
+.washoku-field #id_about {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-field #id_verdict label,
+.washoku-field #id_about label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 12px;
+    background: var(--washoku-surface);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.washoku-field #id_verdict label:has(input:checked),
+.washoku-field #id_about label:has(input:checked) {
+    border-color: var(--washoku-green);
+    background: var(--washoku-green-soft);
+}
+
+/* どのページにも出す「私からも一言」ボタン (右下) */
+.washoku-say-button {
+    position: fixed;
+    right: 14px;
+    bottom: calc(88px + max(0px, env(safe-area-inset-bottom) - 16px));
+    z-index: 26;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 64px;
+    height: 64px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--washoku-accent);
+    box-shadow: 0 6px 16px rgba(160, 60, 20, 0.35);
+    color: #FFFFFF;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 800;
+    line-height: 1.15;
+    cursor: pointer;
+}
+
+.washoku-say-button i {
+    font-size: 20px;
+}
+
+.washoku-to-top {
+    bottom: calc(162px + max(0px, env(safe-area-inset-bottom) - 16px));
+    width: 46px;
+    height: 46px;
+    right: 23px;
+}
+
+.washoku-to-top svg {
+    width: 32px;
+    height: 32px;
+}
+
+@media (min-width: 800px) {
+    .washoku-say-button {
+        right: 24px;
+        bottom: 32px;
+        width: 72px;
+        height: 72px;
+        font-size: 11.5px;
+    }
+
+    .washoku-to-top {
+        right: 37px;
+        bottom: 116px;
+    }
+}
+
+.washoku-say-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.washoku-say-sheet[hidden] {
+    display: none;
+}
+
+.washoku-say-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(30, 20, 15, 0.45);
+}
+
+.washoku-say-panel {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: var(--washoku-surface);
+    animation: washoku-say-up .2s ease-out;
+}
+
+@media (min-width: 800px) {
+    .washoku-say-sheet {
+        align-items: center;
+    }
+
+    .washoku-say-panel {
+        border-radius: 22px;
+        padding-bottom: 16px;
+    }
+}
+
+@keyframes washoku-say-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .washoku-say-panel {
+        animation: none;
+    }
+}
+
+.washoku-say-title {
+    margin: 0 0 12px;
+    font-size: 17px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.washoku-say-options {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-say-options a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-bg);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-say-options a > span:first-child {
+    font-size: 26px;
+}
+
+.washoku-say-options a > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.washoku-say-options small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-say-login {
+    margin: 12px 2px 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.washoku-say-cancel {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--washoku-muted);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+html.washoku-say-open {
+    overflow: hidden;
+}
+
+.washoku-home-panel-actions .washoku-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 42px;
+    padding: 0 16px;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.washoku-question-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.washoku-field[hidden] {
+    display: none;
+}
+
+.washoku-chip.washoku-verdict.is-ok {
+    background: color-mix(in srgb, #C9A227 18%, var(--washoku-surface));
+    color: #8A6D0B;
+    font-weight: 700;
+}
+
+[data-washoku-theme="dark"] .washoku-chip.washoku-verdict.is-ok {
+    color: #E3C766;
+}
+
+/* HOMEのタブ: 「注目」(金) と「今週のアンケート」(緑) だけ、下線ではなく色つきのボタンにして、ほかのタブと雰囲気を変える */
+.washoku-home-tabnav button.is-week,
+.washoku-home-tabnav button.is-poll {
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 6px 2px;
+    padding: 7px 14px;
+    border-bottom: 0;
+    border-radius: 999px;
+}
+
+.washoku-home-tabnav button.is-week {
+    background: #FFF1C7;
+    color: #8A5A00;
+}
+
+.washoku-home-tabnav button.is-week span {
+    margin-right: 3px;
+}
+
+.washoku-home-tabnav button.is-week[aria-selected="true"] {
+    background: #F3C64A;
+    color: #4A3000;
+    box-shadow: 0 2px 6px color-mix(in srgb, #E0A81E 40%, transparent);
+}
+
+.washoku-home-tabnav button.is-poll {
+    background: color-mix(in srgb, var(--washoku-poll-accent) 16%, var(--washoku-surface));
+    color: #1F6B5D;
+}
+
+.washoku-home-tabnav button.is-poll[aria-selected="true"] {
+    background: var(--washoku-poll-accent);
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--washoku-poll-accent) 40%, transparent);
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll {
+    color: #8FD6C7;
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week {
+    background: color-mix(in srgb, #F3C64A 20%, var(--washoku-bg));
+    color: #F0C766;
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week[aria-selected="true"] {
+    background: #E0B43A;
+    color: #2A1C00;
+}
+
+/* 「今週」タブの中身 */
+.washoku-week {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, #E0B43A 45%, transparent);
+    border-radius: 20px;
+    background: linear-gradient(180deg, color-mix(in srgb, #F6D77A 26%, var(--washoku-surface)), var(--washoku-surface) 70%);
+}
+
+.washoku-week-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.washoku-week-head span {
+    color: #9A6A00;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.washoku-week-head small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-week-label {
+    margin: 0 0 6px;
+    color: #9A6A00;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+[data-washoku-theme="dark"] .washoku-week-head span,
+[data-washoku-theme="dark"] .washoku-week-label {
+    color: #F0C766;
+}
+
+.washoku-week-message {
+    margin: 0 0 12px;
+    line-height: 1.6;
+}
+
+.washoku-week-picks {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-week-picks a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid color-mix(in srgb, #E0B43A 35%, var(--washoku-border));
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.washoku-week-picks a > span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.washoku-week-picks a.is-top {
+    flex-direction: column;
+    align-items: stretch;
+    border: 2px solid #E0B43A;
+}
+
+.washoku-week-picks img {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.washoku-week-picks a.is-top img {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+}
+
+.washoku-week-picks strong {
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+.washoku-week-picks a.is-top strong {
+    font-size: 18px;
+}
+
+.washoku-week-picks small {
+    color: var(--washoku-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.washoku-week-kind {
+    align-self: flex-start;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #F6D77A 45%, transparent);
+    color: #7A5200;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.washoku-week-poll {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--washoku-surface);
+}
+
+.washoku-week-poll h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+/* 先週の結果: 上位3つだけ、1行に「名前・バー・%」 */
+.washoku-week-chart {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-week-chart li {
+    display: grid;
+    grid-template-columns: minmax(0, 42%) 1fr 3em;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+}
+
+.washoku-week-chart-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.washoku-week-chart b {
+    color: var(--washoku-muted);
+    font-size: 13.5px;
+    text-align: right;
+}
+
+.washoku-week-chart-bar {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+}
+
+.washoku-week-chart-bar span {
+    display: block;
+    width: var(--poll-percent);
+    height: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--washoku-poll-accent) 55%, var(--washoku-surface));
+}
+
+.washoku-week-chart li.is-top .washoku-week-chart-label,
+.washoku-week-chart li.is-top b {
+    color: var(--washoku-text);
+    font-weight: 800;
+}
+
+.washoku-week-chart li.is-top .washoku-week-chart-bar span {
+    background: var(--washoku-poll-accent);
+}
+
+.washoku-week-answers {
+    margin: 0;
+    padding-left: 1.2em;
+    line-height: 1.7;
+}
+
+.washoku-week-total {
+    margin: 6px 0 0;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+/* 結果の下の「アンケート一覧」 */
+.washoku-week-more {
+    margin: 0 0 10px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* お店の口コミ: 書き込み欄の枠の中に「よかった・ふつう・いまいち」 (編集画面も同じ) */
+.washoku-review-box {
+    margin: 0 0 10px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    overflow: hidden;
+}
+
+.washoku-review-box textarea {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.washoku-review-box textarea:focus {
+    outline: none;
+}
+
+.washoku-review-box:focus-within {
+    border-color: var(--washoku-accent);
+}
+
+.washoku-comment-form .washoku-review-box .washoku-store-verdict {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 8px 10px 10px;
+    border-top: 1px dashed var(--washoku-border);
+}
+
+.washoku-review-box .washoku-store-verdict label {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+.washoku-review-box .washoku-store-verdict label.is-none {
+    font-weight: 400;
+    color: var(--washoku-muted);
+}
+
+.washoku-home-panel {
+    box-sizing: border-box;
+}
+
+/* マイページ: テスト通知の結果 */
+#washoku-push-test [role="status"] {
+    display: block;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+/* HOMEのアンケートタブ: 「今週のアンケート」と「みんなへの質問」 */
+.washoku-home-poll-kind {
+    margin: 0 0 4px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.washoku-home-question {
+    margin-top: 12px;
+    background: var(--washoku-surface);
+    border-color: var(--washoku-border);
+}
+
+.washoku-home-question .washoku-poll-answer {
+    background: var(--washoku-surface-2);
+}
+
+.washoku-home-question-answers {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.washoku-home-question-answers li {
+    justify-self: start;
+    max-width: 100%;
+    padding: 6px 12px;
+    border-radius: 14px 14px 14px 4px;
+    background: var(--washoku-surface-2);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.washoku-home-question-more {
+    margin: 8px 0 0;
+    font-size: 13px;
+}
+
+/* 「今週のアンケート」タブの中身: 「注目」と同じく、色つきの枠で囲む */
+.washoku-home-panel-poll {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 35%, transparent);
+    border-radius: 20px;
+    background: linear-gradient(180deg, var(--washoku-poll-tint), var(--washoku-surface) 70%);
+}
+
+[data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll[aria-selected="true"] {
+    color: #0E2A25;
+}
+
+/* マイページ: 名前の右に、Yapp の共通アカウントへのボタン */
+.washoku-me-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+}
+
+.washoku-me-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* お店のページの口コミ: 本文を長めに、写真があれば上に */
+.washoku-store-reviews {
+    margin-bottom: 12px;
+}
+
+.washoku-store-review-photo {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    margin-bottom: 8px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* 本文中の URL (自動でリンクになる): 長くても画面からはみ出さない */
+.washoku-comment-text a,
+.washoku-post-body a,
+.washoku-poll-answers a {
+    overflow-wrap: anywhere;
+}
+
+/* HOMEのタブ: 上の「今日のごはん」とのあいだを少し空ける */
+.washoku-home-tabs {
+    margin-top: 10px;
+}
+
+/* スクロールしてタブがヘッダーの下に貼りついたときも、ヘッダーとのあいだに余白を取る */
+.washoku-home-tabnav {
+    padding-top: 8px;
+    padding-bottom: 2px;
+    margin-bottom: 8px;
+}
+
+/* お店のページの口コミ欄: 「どうだった？」を押しやすいボタンに */
+.washoku-store-verdict {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 10px;
+}
+
+.washoku-store-verdict label {
+    flex: 1 1 0;
+    padding: 8px 4px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.washoku-store-verdict input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.washoku-store-verdict label:has(input:checked) {
+    border-color: var(--washoku-accent);
+    background: color-mix(in srgb, var(--washoku-accent) 12%, var(--washoku-surface));
+    color: var(--washoku-accent-strong);
+}
+
+.washoku-store-verdict label:has(input:focus-visible) {
+    outline: 2px solid var(--washoku-accent);
+    outline-offset: 2px;
+}
+
+/* 質問の一覧: 3週間以上前の答えのない質問は、字を小さく・色を薄めに */
+.washoku-qa-older-label {
+    margin: 14px 0 4px;
+    color: var(--washoku-muted);
+    font-size: 13px;
+}
+
+.washoku-qa-older li {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* タブのあるページ: 横スワイプはタブの切り替えに使う (ブラウザの戻る・進むにしない) */
+html.washoku-swipe-tabs,
+html.washoku-swipe-tabs body {
+    overscroll-behavior-x: none;
+}
+
+/* 食材で選ぶ: 結果の見出しがヘッダーに隠れないように */
+#results {
+    scroll-margin-top: calc(var(--washoku-header-height, 56px) + 12px);
+}
+
+/* レシピ: 探し方のボタン (4つを1行に) */
+.washoku-find-ways {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0 0 12px;
+}
+
+.washoku-find-ways a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface);
+    color: var(--washoku-text);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.washoku-find-ways a span {
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.washoku-find-ways a:hover {
+    border-color: var(--washoku-accent);
+    background: var(--washoku-accent-soft);
+}
+
+/* 食材: 「家にある食材で料理を探す」への入り口 */
+.washoku-find-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 7px 14px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 14px;
+    background: var(--washoku-surface-2);
+    color: var(--washoku-text);
+    text-decoration: none;
+}
+
+.washoku-find-banner > span:first-child {
+    font-size: 20px;
+}
+
+.washoku-find-banner strong,
+.washoku-find-banner small {
+    display: block;
+}
+
+.washoku-find-banner small {
+    color: var(--washoku-muted);
+    font-size: 12px;
+}
+
+.washoku-find-banner .bi {
+    margin-left: auto;
+    color: var(--washoku-muted);
+}
+
+.washoku-find-banner:hover {
+    border-color: var(--washoku-accent);
+}
+
+/* 口コミの「どうだった？」: 3つを1行に */
+.washoku-field #id_verdict {
+    flex-wrap: nowrap;
+    gap: 6px;
+}
+
+.washoku-field #id_verdict > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.washoku-field #id_verdict label {
+    justify-content: center;
+    gap: 4px;
+    padding: 9px 4px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.washoku-field #id_verdict input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* HOME の注目: コラムのタグは「みんなの投稿・コメント」と同じ色 */
+.washoku-week-kind.kind-column {
+    background: #FBE3D3;
+    color: #A4461C;
+}
+
+/* HOME の質問「答えを募集中」: ダークモードでも読めるように */
+[data-washoku-theme="dark"] .washoku-question-state {
+    background: rgba(242, 166, 90, 0.22);
+    color: #F7B783;
+}
+
+/* ヘッダー右上のアイコン (Swiss News と同じ形: 上に絵文字、下に小さな文字) */
+.washoku-header .washoku-header-icon {
+    display: inline-flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 40px;
+    min-height: 0;
+    height: 44px;
+    padding: 0 2px;
+    border-radius: 12px;
+    background: none;
+    color: var(--washoku-muted);
+    font-size: inherit;
+    text-decoration: none;
+}
+
+.washoku-header .washoku-header-icon > span {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.washoku-header .washoku-header-icon small {
+    font-size: .55rem;
+    font-weight: 700;
+}
+
+.washoku-header .washoku-header-icon.active {
+    color: var(--washoku-accent);
+}
+
+.washoku-header .washoku-about-icon {
+    margin-left: 0;
+}
+
+/* スマホ: ヘッダーの検索欄は出さず、🔍 で下に開く */
+@media (max-width: 799px) {
+    .washoku-header .washoku-header-search {
+        display: none;
+    }
+}
+
+/* PC: 検索欄はヘッダーにあるので 🔍 は出さない。About は文字を横に */
+@media (min-width: 800px) {
+    .washoku-header .washoku-search-button {
+        display: none;
+    }
+
+    .washoku-header .washoku-about-icon {
+        flex-direction: row;
+        gap: 5px;
+        height: auto;
+        padding: 8px 10px;
+        border-radius: 999px;
+    }
+
+    .washoku-header .washoku-about-icon small {
+        font-size: 13px;
+    }
+
+    .washoku-header .washoku-about-icon:hover {
+        background: var(--washoku-surface-2);
+    }
+
+    /* About が入るぶん、すきまと検索欄を少し詰める */
+    .washoku-header .washoku-header-inner {
+        gap: 14px;
+    }
+
+    .washoku-header .washoku-header-search {
+        min-width: 120px;
+        max-width: 220px;
+    }
+}
+
+/* 🔍 で開く検索欄 (ヘッダーのすぐ下) */
+.washoku-searchbar {
+    padding: 0 16px 10px;
+}
+
+.washoku-searchbar form {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.washoku-searchbar i {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    color: var(--washoku-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.washoku-searchbar input {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 12px 0 34px;
+    border: 1px solid var(--washoku-border);
+    border-radius: 999px;
+    background: var(--washoku-surface-2);
+    color: var(--washoku-text);
+    font: inherit;
+    font-size: 16px;
+}

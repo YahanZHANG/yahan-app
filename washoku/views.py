@@ -223,6 +223,10 @@ def questions_with_answer_state():
     )
 
 
+# 答えのない質問は、この日数を過ぎると HOME に出さず、質問の一覧でも控えめに出す
+OPEN_QUESTION_FRESH_DAYS = 21
+
+
 def open_questions():
     """
     返信がまだない質問 (新しい順)。
@@ -237,6 +241,9 @@ HOME_ACTIVITY_COUNT = 15
 # HOMEのアンケート: 新しい順にこの件数から「まだ答えていないもの」を探し、ほかに数件を並べる
 HOME_POLL_SCAN = 10
 HOME_OTHER_POLLS = 2
+
+# HOMEの「みんなへの質問」で、答える前から見せる最新の答えの数
+HOME_QUESTION_ANSWERS = 3
 
 # 解決した質問を HOME に残す日数 (みんな答えを待っているかもしれないので)
 HOME_SOLVED_DAYS = 2
@@ -261,7 +268,13 @@ def home_questions(open_limit=3, solved_limit=2):
         .order_by("-answered_at")
     )
 
-    return list(questions.filter(has_answer=False)[:open_limit]) + list(solved[:solved_limit])
+    # 3週間たっても答えのない質問は、未解決のままでも HOME には出さない (「HOMEに残す期限」を入れたものは出す)
+    unanswered = questions.filter(has_answer=False).filter(
+        Q(home_until__gt=now)
+        | Q(created_at__gte=now - timedelta(days=OPEN_QUESTION_FRESH_DAYS))
+    )
+
+    return list(unanswered[:open_limit]) + list(solved[:solved_limit])
 
 
 # =========================================================
@@ -301,7 +314,7 @@ def featured_items(limit=3):
 
     picked = [
         {"kind": "post", "item": post, "count": None}
-        for post in Post.objects.filter(status="published", is_featured=True).order_by("featured_order", "-created_at")[:limit]
+        for post in Post.objects.filter(status="published", is_featured=True).exclude(kind="board").order_by("featured_order", "-created_at")[:limit]
     ]
     picked += [
         {"kind": "comment", "item": comment, "count": None}
@@ -354,46 +367,147 @@ def poll_posts_q():
 
 def home_polls(request):
     """
-    HOMEのアンケート。大きく出す1つ (まだ答えていない中でいちばん新しいもの。
-    全部答えていたらいちばん新しいもの) と、ほかの新しいアンケート。
+    HOMEの「アンケート」タブ。今週 (月曜日3時から) 始まったもののうち、
+    - 大きく出す選ぶアンケート1つ (まだ答えていない中でいちばん新しいもの。全部答えていたらいちばん新しいもの)
+    - 「みんなへの質問」(自由記述のアンケート) 1つ。いちばん新しいもの。答える前から最新の答えが少し見える
+    - ほかの今週のアンケート
+    を返す。それより前のものはアンケートのページで。
     """
 
     # アンケートと、選択肢を付けたコラム。選択肢を作った順 (= アンケートを始めた順) の新しいもの
     base = (
         Post.objects
-        .filter(status="published")
+        .filter(status="published", created_at__gte=poll_week_start())
         .filter(poll_posts_q())
         .annotate(vote_count=respondent_count(), started=Max("choices__pk"))
     )
-    choice_polls = list(base.filter(started__isnull=False).order_by("-started")[:HOME_POLL_SCAN])
-    text_polls = list(base.filter(started__isnull=True).order_by("-created_at")[:HOME_POLL_SCAN])
+    choice_polls = list(base.filter(started__isnull=False).exclude(poll_type="text").order_by("-started")[:HOME_POLL_SCAN])
+    text_polls = list(base.filter(poll_type="text").order_by("-created_at", "-pk")[:HOME_POLL_SCAN])
 
-    # 自由記述のアンケートには選択肢がないので、公開した時点までに始まった選択肢アンケートのすぐ前に並べる
-    for poll in text_polls:
-        earlier = [other.started for other in choice_polls if other.created_at <= poll.created_at]
-        poll.started = max(earlier, default=0) + 0.5
+    question = text_polls[0] if text_polls else None
+    main = None
 
-    polls = sorted(choice_polls + text_polls, key=lambda poll: poll.started, reverse=True)[:HOME_POLL_SCAN]
+    if choice_polls:
+        answered = my_votes(request, choice_polls)
+        main = next((poll for poll in choice_polls if poll.pk not in answered), choice_polls[0])
 
-    if not polls:
-        return None, []
+        # 投票した直後は、答えたアンケートの結果をそのまま見せる
+        just_voted = request.GET.get("poll", "")
+        main = next((poll for poll in choice_polls if str(poll.pk) == just_voted), main)
 
-    answered = my_votes(request, polls)
-    main = next((poll for poll in polls if poll.pk not in answered), polls[0])
+    shown = [poll for poll in (main, question) if poll]
+    attach_poll_results(shown, request)
 
-    # 投票した直後は、答えたアンケートの結果をそのまま見せる
-    just_voted = request.GET.get("poll", "")
-    main = next((poll for poll in polls if str(poll.pk) == just_voted), main)
-    attach_poll_results([main], request)
+    if question:
+        question.home_answers = list(
+            PollAnswer.objects.filter(post=question, is_hidden=False).order_by("-pk").values_list("text", flat=True)[:HOME_QUESTION_ANSWERS]
+        )
 
-    others = [poll for poll in polls if poll.pk != main.pk][:HOME_OTHER_POLLS]
+    others = [poll for poll in choice_polls + text_polls if poll not in shown][:HOME_OTHER_POLLS]
 
-    return main, others
+    return main, question, others
+
+
+# HOMEの「口コミ」「コラム」タブに並べる新しい投稿の数
+HOME_COLUMN_COUNT = 5
+
+# HOMEのタブ (この順に並ぶ。最初のものを最初に開く)
+HOME_TABS = (
+    ("week", "注目"),
+    ("poll", "新着のアンケート"),
+    ("question", "質問"),
+    ("review", "口コミ"),
+    ("column", "コラム"),
+)
+
+# 「注目」タブに出す、管理者が選んだもの (注目) の数
+WEEKLY_FEATURED_COUNT = 5
+
+# アンケートの週の区切り: 月曜日の3時 (日曜日の夜の終わり)
+WEEK_START_HOUR = 3
+
+
+def poll_week_start(now=None):
+    """
+    いまのアンケートの週が始まった日時 (直近の月曜日3時)。
+    HOMEで投票できるのは、この日時より後に始まったアンケートだけ。
+    """
+
+    local = timezone.localtime(now or timezone.now())
+    monday = local.replace(hour=WEEK_START_HOUR, minute=0, second=0, microsecond=0) - timedelta(days=local.weekday())
+
+    if local < monday:
+        monday -= timedelta(days=7)
+
+    return monday
+
+
+def sorted_results(poll):
+    """結果を、票の多い順に並べ替える (グラフ用)。いちばん多いものに top を付ける"""
+
+    if poll.results["type"] == "text":
+        return poll
+
+    rows = sorted(poll.results["choices"], key=lambda row: row["count"], reverse=True)
+
+    for row in rows:
+        row["top"] = bool(rows[0]["count"]) and row["count"] == rows[0]["count"]
+
+    poll.results["choices"] = rows
+    return poll
+
+
+def weekly_context(request, display):
+    """
+    HOMEの「注目」タブ。編集部のひとこと、管理者が選んだもの (注目: コラム・Q&A・口コミなど)、
+    先週のアンケートの結果 (自動)。
+    """
+
+    week_start = poll_week_start()
+
+    return {
+        "week_start": week_start,
+        "weekly_message": display.weekly_message,
+        "featured": featured_items(limit=WEEKLY_FEATURED_COUNT),
+        "last_polls": last_week_polls(request, week_start),
+    }
+
+
+# HOMEに出す人気アンケートの結果の数
+HOME_RESULT_COUNT = 2
+
+
+def last_week_polls(request, week_start):
+    """
+    HOMEの「人気アンケートの結果」。管理画面で「結果をHOMEに出す」を選んだもの (新しい順に2つまで)。
+    選んだものがなければ、先週いちばん答えが集まった1つ。月曜のプッシュ通知でも使う。
+    """
+
+    chosen = (
+        Post.objects
+        .filter(status="published", show_result=True)
+        .filter(poll_posts_q())
+        .order_by("-created_at", "-pk")[:HOME_RESULT_COUNT]
+    )
+
+    if chosen:
+        return [sorted_results(poll) for poll in attach_poll_results(chosen, request)]
+
+    polls = attach_poll_results(
+        Post.objects
+        .filter(status="published")
+        .filter(poll_posts_q())
+        .filter(created_at__gte=week_start - timedelta(days=7), created_at__lt=week_start)
+        .order_by("-created_at", "-pk"),
+        request,
+    )
+
+    return [sorted_results(poll) for poll in sorted(polls, key=lambda poll: poll.results["total"], reverse=True)[:1]]
 
 
 def home(request):
 
-    main_poll, other_polls = home_polls(request)
+    main_poll, home_question, other_polls = home_polls(request)
     display = DisplaySettings.load()
 
     return render(
@@ -404,8 +518,21 @@ def home(request):
             "latest_activity": activity_entries(comment_limit=HOME_ACTIVITY_COUNT, post_limit=HOME_ACTIVITY_COUNT)[:HOME_ACTIVITY_COUNT],
             "questions": home_questions(),
             "main_poll": main_poll,
+            "home_question": home_question,
             "other_polls": other_polls,
-            "featured": featured_items(),
+            "home_columns": (
+                Post.objects
+                .filter(kind__in=("column", "link"), status="published")
+                .select_related("author")
+                .order_by("-created_at", "-pk")[:HOME_COLUMN_COUNT]
+            ),
+            "home_reviews": with_store_reviews(
+                Post.objects.filter(kind="product", status="published").select_related("author").order_by("-created_at", "-pk"),
+                store_review_comments(),
+                limit=HOME_COLUMN_COUNT,
+            ),
+            "home_tabs": HOME_TABS,
+            **weekly_context(request, display),
             "display": display,
             "announcements": list(Announcement.current()),
         },
@@ -863,6 +990,7 @@ def recipe_detail(request, pk):
                 item for item in recipe.recipe_ingredients.all()
                 if item.is_seasoning
             ],
+            "other_items": unlinked_submitted_ingredients(recipe),
             "related_posts": related_posts(
                 [item.ingredient for item in recipe.recipe_ingredients.all()]
             ),
@@ -1009,7 +1137,11 @@ def ingredient_detail(request, pk):
         {
             "ingredient": ingredient,
             "recipes": recipes,
-            **split_polls(request, related_posts([ingredient])),
+            "reviews": ingredient_reviews(ingredient),
+            **split_polls(
+                request,
+                [post for post in related_posts([ingredient], limit=15) if post.kind != "product"][:5],
+            ),
             **photo_context(request, ingredient=ingredient),
             **comment_context(request, ingredient=ingredient),
         },
@@ -1089,7 +1221,8 @@ def comment_context(request, recipe=None, ingredient=None, store=None, post=None
     return {
         "threads": comment_threads(comments, request.user),
         "comment_form": CommentForm(initial={"body": main_draft.get("body", "")}),
-        "draft_kind": main_draft.get("kind", "tip"),
+        # 「私からも一言」の「質問する」から来たときは、最初から質問を選んでおく
+        "draft_kind": main_draft.get("kind", "question" if request.GET.get("ask") else "tip"),
         "reply_draft_parent": reply_draft.get("parent", ""),
         "reply_draft_body": reply_draft.get("body", ""),
         "reported_ids": reported_ids,
@@ -1377,6 +1510,11 @@ def comment_create(request, target, pk):
 
     if parent:
         comment.kind = "tip"
+    elif store:
+        # お店のページの書き込みは口コミ (よかった・ふつう・いまいち を添えられる)
+        comment.kind = "tip"
+        verdict = request.POST.get("verdict", "")
+        comment.verdict = verdict if verdict in dict(Post.VERDICT_CHOICES) else ""
 
     comment.save()
 
@@ -1725,6 +1863,7 @@ def own_comment(request, pk):
 def comment_edit(request, pk):
 
     comment = own_comment(request, pk)
+    store_review = bool(comment.store_id and not comment.parent_id and comment.kind != "question")
 
     if request.method == "POST":
 
@@ -1744,6 +1883,11 @@ def comment_edit(request, pk):
                 form.add_error("photo", error)
 
         if form.is_valid():
+
+            # お店の口コミは、あとから評価 (よかった・ふつう・いまいち) も変えられる
+            if store_review and "verdict" in request.POST:
+                verdict = request.POST["verdict"]
+                comment.verdict = verdict if verdict in dict(Post.VERDICT_CHOICES) else ""
 
             comment.edited_at = timezone.now()
             comment.save()
@@ -1765,6 +1909,7 @@ def comment_edit(request, pk):
         {
             "comment": comment,
             "form": form,
+            "store_review": store_review,
             "back_url": comment_target_url(comment),
         },
     )
@@ -1822,13 +1967,85 @@ def comment_report(request, pk):
     return redirect(comment_target_url(comment))
 
 
+QUESTION_BOARD_TITLE = "なんでも質問"
+
+
+def question_board():
+    """
+    食材やレシピに限らない質問をまとめておく、見えない投稿 (マイグレーションで作るが、なければ作る)。
+    """
+
+    board = Post.objects.filter(kind="board").order_by("pk").first()
+
+    if board is None:
+        board = Post.objects.create(
+            kind="board",
+            title=QUESTION_BOARD_TITLE,
+            body="食材やレシピに限らず、スイスの食卓のことなら何でも聞いてください。",
+            status="published",
+        )
+
+    return board
+
+
+@login_required
+def question_new(request):
+    """
+    どのページからでも質問を書けるページ。「何について？」で選んだページに質問として付ける。
+    """
+
+    ingredients = Ingredient.objects.order_by("name")
+    stores = Store.objects.filter(is_active=True).order_by("name")
+
+    if request.method == "POST":
+
+        about = request.POST.get("about", "")
+        target, _, pk = about.partition(":")
+
+        if target == "board" or not pk.isdigit() or target not in ("ingredient", "store", "recipe"):
+            target, pk = "post", str(question_board().pk)
+
+        return comment_create(request, target, int(pk))
+
+    about = "board"
+
+    for name in ("ingredient", "store", "recipe"):
+        value = request.GET.get(name, "")
+        if value.isdigit():
+            about = f"{name}:{value}"
+
+    about_kind, _, about_pk = about.partition(":")
+    recipe = None
+
+    if about_kind == "recipe":
+        recipe = visible_recipes(request.user).filter(pk=about_pk).first()
+
+    return render(
+        request,
+        "washoku/question_new.html",
+        {
+            "about": about,
+            "about_kind": about_kind,
+            "about_pk": int(about_pk) if about_pk else None,
+            "ingredients": ingredients,
+            "stores": stores,
+            "recipe": recipe,
+        },
+    )
+
+
 def question_list(request):
+
+    questions = list(open_questions()[:50])
+    fresh_since = timezone.now() - timedelta(days=OPEN_QUESTION_FRESH_DAYS)
 
     return render(
         request,
         "washoku/question_list.html",
         {
-            "questions": open_questions()[:50],
+            "questions": questions,
+            "recent_questions": [question for question in questions if question.created_at >= fresh_since],
+            "older_questions": [question for question in questions if question.created_at < fresh_since],
             "answered": questions_with_answer_state().filter(has_answer=True)[:50],
         },
     )
@@ -2010,14 +2227,49 @@ def family_leave(request):
 # お店
 # =========================================================
 
+def store_review_comments():
+    """
+    お店の口コミ = お店のページに書かれたコメント (質問と返信は除く)。
+    口コミの一覧と HOME では、買ったものの口コミ (投稿) と一緒に並べる。
+    一覧で投稿と同じように出せるよう、title (店名) と is_store_review を付ける。
+    """
+
+    return (
+        Comment.objects
+        .filter(store__isnull=False, parent__isnull=True, is_deleted=False, is_hidden=False)
+        .exclude(kind="question")
+        .select_related("author", "store")
+        .annotate(comment_count=Count("replies", filter=Q(replies__is_deleted=False, replies__is_hidden=False)))
+        .order_by("-created_at", "-pk")
+    )
+
+
+def with_store_reviews(posts, comments, limit=None):
+    """投稿 (買ったもの) とお店の口コミ (コメント) を新しい順に1つの一覧にする"""
+
+    comments = list(comments[:limit] if limit else comments)
+
+    for comment in comments:
+        comment.is_store_review = True
+        comment.title = comment.store.name
+
+    entries = sorted(list(posts[:limit] if limit else posts) + comments, key=lambda entry: entry.created_at, reverse=True)
+    return entries[:limit] if limit else entries
+
+
 def store_list(request):
 
     kind = request.GET.get("kind", "")
 
+    # 口コミ = お店のページに書かれたコメント (質問と返信は数えない)
     stores = Store.objects.filter(is_active=True).annotate(
         review_count=Count(
             "comments",
-            filter=Q(comments__is_hidden=False, comments__is_deleted=False),
+            filter=Q(
+                comments__parent__isnull=True,
+                comments__is_hidden=False,
+                comments__is_deleted=False,
+            ) & ~Q(comments__kind="question"),
         )
     )
 
@@ -2052,6 +2304,7 @@ def store_detail(request, pk):
         "washoku/store_detail.html",
         {
             "store": store,
+            "verdicts": Post.VERDICT_CHOICES,
             "photo_slots": [("photo_url", store.photo_url)],
             **comment_context(request, store=store),
         },
@@ -2061,6 +2314,34 @@ def store_detail(request, pk):
 # =========================================================
 # 会員のレシピ投稿
 # =========================================================
+
+def unlinked_submitted_ingredients(recipe):
+    """
+    会員が投稿したレシピの材料のうち、食材リストにつながっていないもの (原文の行)。
+    すぐ掲載するので、つながらなかった材料もレシピのページに出す。
+    """
+
+    if not recipe.submitted_ingredients:
+        return []
+
+    from .forms import split_ingredient_line
+
+    linked = set()
+
+    for item in recipe.recipe_ingredients.all():
+        linked.update(name.casefold() for name in (item.ingredient.name, item.ingredient.name_de) if name)
+
+    rows = []
+
+    for line in recipe.submitted_ingredients.splitlines():
+        if not line.strip():
+            continue
+        name, amount = split_ingredient_line(line)
+        if name.casefold() not in linked:
+            rows.append((name, amount))
+
+    return rows
+
 
 @login_required
 def recipe_submit(request):
@@ -2087,7 +2368,8 @@ def recipe_submit(request):
 
             recipe = form.save(commit=False)
             recipe.photo_1 = photos[0] if photos else ""
-            recipe.status = "draft"
+            # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+            recipe.status = "published"
             recipe.origin = "member"
             recipe.submitted_by = request.user
             recipe.submitted_ingredients = form.cleaned_data["ingredients_text"]
@@ -2117,7 +2399,7 @@ def recipe_submit(request):
             recipe.update_shop_rank()
 
         send_admin_alert(
-            "新しいレシピの投稿",
+            "新しいレシピの投稿（掲載済み）",
             f"{recipe.name}（{request.user.username} さん）\n\n"
             + request.build_absolute_uri(
                 reverse("admin:washoku_recipe_change", args=[recipe.pk])
@@ -2126,7 +2408,7 @@ def recipe_submit(request):
 
         messages.success(
             request,
-            "投稿ありがとうございます！管理者が確認してから掲載します。",
+            "投稿ありがとうございます！掲載しました。",
         )
 
         return redirect("washoku:recipe_detail", pk=recipe.pk)
@@ -2208,11 +2490,7 @@ def about(request):
 
 def my_page(request):
 
-    from django.conf import settings
-
-    context = {
-        "vapid_public_key": settings.VAPID_PUBLIC_KEY or "",
-    }
+    context = {}
 
     if request.user.is_authenticated:
         context.update(
@@ -2500,20 +2778,21 @@ def substitute_submit(request):
 
         substitute = form.save(commit=False)
         substitute.submitted_by = request.user
-        substitute.status = "published" if request.user.is_staff else "draft"
+        # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+        substitute.status = "published"
         substitute.save()
 
-        if substitute.status == "draft":
+        if not request.user.is_staff:
 
             send_admin_alert(
-                "新しい代用品の投稿",
+                "新しい代用品の投稿（掲載済み）",
                 f"{substitute}（{request.user.username} さん）\n\n"
                 + request.build_absolute_uri(
                     reverse("admin:washoku_substitute_change", args=[substitute.pk])
                 ),
             )
 
-            messages.success(request, "教えてくれてありがとうございます！管理者が確認してから掲載します。")
+            messages.success(request, "教えてくれてありがとうございます！掲載しました。")
 
         return redirect(reverse("washoku:substitute_list") + "#suggest")
 
@@ -2527,24 +2806,30 @@ def substitute_submit(request):
 
 
 # =========================================================
-# みんなの投稿 (コラム・おすすめ商品)
+# みんなの投稿 (コラム・口コミ)
 # =========================================================
 
 POST_KIND_TEXT = {
     "column": {
         "url_name": "washoku:column_list",
         "heading": "みんなのコラム",
-        "lead": "スイスでの買い物や料理の工夫、失敗談などです。",
+        "lead": "スイスでの買い物や料理の工夫、失敗談、役に立つほかのサイトの記事などです。",
         "new_label": "コラムを書く",
     },
     "product": {
         "url_name": "washoku:product_list",
-        "heading": "スーパーのおすすめ商品",
-        "lead": "スーパーやアジアの店で買える、日本の味に近い商品です。",
-        "new_label": "商品を紹介する",
+        "heading": "みんなの口コミ",
+        "lead": "買ったものやお店の、正直な感想です。よかったものも、いまいちだったものも。",
+        "new_label": "口コミを書く",
+    },
+    "board": {
+        "url_name": "washoku:question_list",
+        "heading": "質問",
+        "lead": "",
+        "new_label": "",
     },
     "link": {
-        "url_name": "washoku:link_list",
+        "url_name": "washoku:column_list",
         "heading": "参考リンク",
         "lead": "ほかのサイトの役に立つ記事です。要点と出典を載せています。",
         "new_label": "リンクを紹介する",
@@ -2586,6 +2871,20 @@ def related_posts(ingredients, limit=5):
         Post.objects
         .filter(status="published")
         .filter(ingredient_group_filter("ingredients__", ingredients))
+        .distinct()
+        .order_by("-created_at")[:limit]
+    )
+
+
+def ingredient_reviews(ingredient, limit=10):
+    """
+    この食材 (と同じ検索グループの食材) の口コミ (公開済み、新しい順)。
+    """
+
+    return list(
+        Post.objects
+        .filter(kind="product", status="published")
+        .filter(ingredient_group_filter("ingredients__", [ingredient]))
         .distinct()
         .order_by("-created_at")[:limit]
     )
@@ -2658,6 +2957,9 @@ def post_list(request, kind):
     # アンケート一覧には、コラムの最後に付けたアンケートも出す
     if kind == "poll":
         kinds = poll_posts_q()
+    elif kind == "column":
+        # 参考リンクはコラムの一覧に「リンク」として一緒に並べる
+        kinds = Q(kind__in=("column", "link"))
     else:
         kinds = Q(kind=kind)
 
@@ -2679,15 +2981,30 @@ def post_list(request, kind):
 
     shop = request.GET.get("shop", "")
     section = request.GET.get("section", "")
+    verdict = request.GET.get("verdict", "")
 
     if kind == "product":
+
+        # お店の口コミは、お店のページに書かれたコメント。買ったものの口コミ (投稿) と一緒に並べる
+        store_reviews = store_review_comments()
+
+        if verdict in dict(Post.VERDICT_CHOICES):
+            posts = posts.filter(verdict=verdict)
+            store_reviews = store_reviews.filter(verdict=verdict)
 
         # お店のコードはどれもほかのコードの一部ではないので、含むかどうかで絞れる
         if shop in dict(Post.SHOP_CHOICES):
             posts = posts.filter(shop__contains=shop)
+            store_reviews = store_reviews.none()
 
-        if section in dict(Post.SECTION_CHOICES):
+        # 「お店の口コミ」: 商品ではなく、お店そのものの口コミ
+        if section == "store":
+            posts = posts.none()
+        elif section in dict(Post.SECTION_CHOICES):
             posts = posts.filter(section=section)
+            store_reviews = store_reviews.none()
+
+        posts = with_store_reviews(posts, store_reviews)
 
     sort = request.GET.get("sort", "new")
     display = DisplaySettings.load() if kind == "column" else None
@@ -2709,9 +3026,10 @@ def post_list(request, kind):
         "washoku/post_list.html",
         {
             "kind": kind,
-            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
             "posts": posts,
+            "verdict": verdict,
+            "verdicts": Post.VERDICT_CHOICES,
             "display": display,
             "sort": sort,
             "sort_choices": COLUMN_SORTS,
@@ -2732,7 +3050,8 @@ def product_list(request):
 
 
 def link_list(request):
-    return post_list(request, "link")
+    # 参考リンクはコラムの一覧に入った (古い URL のため残す)
+    return redirect("washoku:column_list")
 
 
 def poll_list(request):
@@ -3017,7 +3336,6 @@ def post_detail(request, pk):
         "washoku/post_detail.html",
         {
             "post": post,
-            "nav": "ingredients" if post.kind == "product" else "",
             "text": POST_KIND_TEXT[post.kind],
             "related_recipes": related_recipes(request.user, post) if post.kind != "poll" else [],
             "other_columns": latest_columns(exclude=post) if post.kind == "column" else [],
@@ -3045,12 +3363,48 @@ def post_submit(request, kind):
         )
         return redirect("washoku:my_posts")
 
-    form = PostForm(request.POST or None, request.FILES or None, kind=kind)
+    # お店のページから口コミを書くときは、そのお店を選んでおく
+    initial = {}
+    store_id = request.GET.get("store", "")
+
+    if kind == "product" and store_id.isdigit():
+        initial = {"about": "store", "store": store_id}
+
+    form = PostForm(request.POST or None, request.FILES or None, kind=kind, initial=initial)
+
+    # 食材のページから口コミを書くときは、その食材に結びつける (食材のページに出る)
+    ingredient = None
+    ingredient_id = request.POST.get("ingredient") or request.GET.get("ingredient") or ""
+
+    if ingredient_id.isdigit():
+        ingredient = Ingredient.objects.filter(pk=ingredient_id).first()
 
     photos = []
 
     if request.method == "POST" and form.is_valid():
         photos = upload_form_photos(form, "columns")
+
+    # お店の口コミは、お店のページのコメントとして載せる (専用のページは作らない)
+    if request.method == "POST" and form.is_valid() and kind == "product" and form.cleaned_data.get("about") == "store":
+
+        store = form.cleaned_data["store"]
+        comment = Comment.objects.create(
+            store=store,
+            author=request.user,
+            kind="tip",
+            verdict=form.cleaned_data.get("verdict") or "",
+            body=form.cleaned_data["body"],
+            photo_url=photos[0] if photos else "",
+            admin_checked=request.user.is_staff,
+        )
+
+        if not request.user.is_staff:
+            messages.success(request, "口コミありがとうございます！掲載しました。")
+
+        if comment.photo_url:
+            alert_new_photo(request, f"口コミ「{comment.body[:30]}」", comment.get_absolute_url())
+
+        return redirect(comment.get_absolute_url())
 
     if request.method == "POST" and form.is_valid():
 
@@ -3058,15 +3412,20 @@ def post_submit(request, kind):
         post.kind = kind
         post.photo_1, post.photo_2 = (photos + ["", ""])[:2]
         post.author = request.user
-        # 管理者の投稿はそのまま公開する
-        post.status = "published" if request.user.is_staff else "draft"
+        # 投稿はすぐ掲載する (問題があれば管理者があとで下書きに戻すか削除する)
+        post.status = "published"
+        # 管理者自身の投稿は「未確認」に出さない
+        post.admin_checked = request.user.is_staff
         post.save()
 
-        if post.status == "draft":
+        if ingredient:
+            post.ingredients.add(ingredient)
+
+        if not request.user.is_staff:
 
             send_admin_alert(
-                f"新しい{post.get_kind_display()}の投稿",
-                f"{post.title}（{request.user.username} さん）\n\n"
+                f"新しい{post.get_kind_display()}の投稿（掲載済み）",
+                f"{post.title}（{request.user.username} さん）\n\n{post.body[:300]}\n\n"
                 + request.build_absolute_uri(
                     reverse("admin:washoku_post_change", args=[post.pk])
                 ),
@@ -3074,7 +3433,7 @@ def post_submit(request, kind):
 
             messages.success(
                 request,
-                "投稿ありがとうございます！管理者が確認してから掲載します。",
+                "口コミありがとうございます！掲載しました。" if kind == "product" else "投稿ありがとうございます！掲載しました。",
             )
 
         return redirect(post.get_absolute_url())
@@ -3085,8 +3444,8 @@ def post_submit(request, kind):
         {
             "form": form,
             "kind": kind,
-            "nav": "ingredients" if kind == "product" else "",
             "text": POST_KIND_TEXT[kind],
+            "ingredient": ingredient,
         },
     )
 
@@ -3132,6 +3491,7 @@ def activity_entries(comment_limit=300, post_limit=100):
     posts = (
         Post.objects
         .filter(status="published")
+        .exclude(kind="board")
         .select_related("author")
         .order_by("-created_at")[:post_limit]
     )
@@ -3225,6 +3585,7 @@ def search(request):
         posts = (
             Post.objects
             .filter(status="published")
+            .exclude(kind="board")
             .filter(Q(title__icontains=query) | Q(body__icontains=query) | Q(resembles__icontains=query))
         )
 
@@ -3241,7 +3602,7 @@ def search(request):
             ("食材", "ingredient", list(ingredients[:SEARCH_LIMIT])),
             ("日本の食材の代わり", "substitute", list(substitutes[:SEARCH_LIMIT])),
             ("お店", "store", list(stores[:SEARCH_LIMIT])),
-            ("コラム・おすすめ商品", "post", list(posts[:SEARCH_LIMIT])),
+            ("コラム・口コミ・アンケート", "post", list(posts[:SEARCH_LIMIT])),
             ("コメント・質問", "comment", list(comments[:SEARCH_LIMIT])),
         ]
 
@@ -3273,7 +3634,7 @@ def push_subscribe(request):
     if data is None:
         return JsonResponse({"error": "Invalid subscription."}, status=400)
 
-    PushSubscription.objects.update_or_create(
+    subscription, _created = PushSubscription.objects.update_or_create(
         endpoint=data["endpoint"],
         defaults={
             "user": request.user,
@@ -3281,6 +3642,65 @@ def push_subscribe(request):
             "auth": data["auth"],
         },
     )
+
+    return JsonResponse({"success": True, "weekly": subscription.weekly})
+
+
+def own_subscription(request):
+    """送られてきた endpoint の、自分の端末の登録。なければ None"""
+
+    try:
+        data = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return None, {}
+
+    if not isinstance(data, dict) or not isinstance(data.get("endpoint"), str):
+        return None, {}
+
+    return PushSubscription.objects.filter(endpoint=data["endpoint"], user=request.user).first(), data
+
+
+@login_required
+@require_POST
+def push_weekly(request):
+    """この端末で、月曜の「今週」のお知らせを受け取るかどうか"""
+
+    subscription, data = own_subscription(request)
+
+    if subscription is None:
+        return JsonResponse({"error": "Not subscribed."}, status=404)
+
+    subscription.weekly = bool(data.get("weekly"))
+    subscription.save(update_fields=["weekly"])
+
+    return JsonResponse({"success": True, "weekly": subscription.weekly})
+
+
+@login_required
+@require_POST
+def push_test(request):
+    """この端末にテスト通知を送る (届かないときの確認用)"""
+
+    from .push import is_configured, send_to
+
+    subscription, _data = own_subscription(request)
+
+    if subscription is None:
+        return JsonResponse({"error": "Not subscribed."}, status=404)
+
+    if not is_configured():
+        return JsonResponse({"error": "Push is not configured."}, status=503)
+
+    sent, failed = send_to(
+        [subscription],
+        "テスト通知です",
+        "この通知が見えていれば、スイスで和食の通知は届きます。",
+        reverse("washoku:my_page"),
+        "washoku-test",
+    )
+
+    if not sent:
+        return JsonResponse({"error": "Send failed.", "status": failed[0][1] if failed else None}, status=502)
 
     return JsonResponse({"success": True})
 

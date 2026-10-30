@@ -1,4 +1,4 @@
-{# アンケート。だれでも答えて選び直せる (ログインしていない人はブラウザごと)。結果は答えたあとに見える。ひとつだけ選ぶ / いくつでも選べる / 自由に書く。with_title でタイトルを付ける / question はコラムに付けたアンケートの質問 / inline は食材ページ用 (小さめ・色違い・コメントつき) #}
+{# アンケート。だれでも答えて選び直せる (ログインしていない人はブラウザごと)。結果は答えたあとに見える。ひとつだけ選ぶ / いくつでも選べる / 自由に書く。with_title でタイトルを付ける / home_question は HOMEの「みんなへの質問」(答えはHOMEで最新のものだけ) / question はコラムに付けたアンケートの質問 / inline は食材ページ用 (小さめ・色違い・コメントつき) #}
 {% load washoku_tags %}
 {% with results=poll.results %}
 <section class="washoku-poll{% if inline %} washoku-poll-inline{% endif %}" id="poll-{{ poll.pk }}">
@@ -48,7 +48,9 @@
     </form>
 
     <p class="washoku-poll-total">
-        {% if results.type == "text" %}
+        {% if results.type == "text" and home_question %}
+            {% if results.voted %}答えてくれてありがとうございます！{% else %}ログイン不要！ひとことでどうぞ。{% endif %}
+        {% elif results.type == "text" %}
             {% if results.voted %}{{ results.total }}件の答え{% else %}ログイン不要！答えると、みんなの答えが見られる。{% endif %}
         {% elif results.voted %}
             {{ results.total }}人が回答{% if results.type == "multiple" %} ・ いくつでも選べます{% else %} ・ 押すと選び直せます{% endif %}
@@ -57,10 +59,10 @@
         {% endif %}
     </p>
 
-    {% if results.type == "text" and results.voted and results.answers %}
+    {% if results.type == "text" and results.voted and results.answers and not home_question %}
         <ul class="washoku-poll-answers">
             {% for answer in results.answers %}
-                <li>{{ answer }}</li>
+                <li>{{ answer|linkify }}</li>
             {% endfor %}
         </ul>
     {% endif %}

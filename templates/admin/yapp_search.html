@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">ホーム</a> › 検索</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="yapp-search-page">
+
+    <form method="get" action="{% url 'admin_search' %}" class="yapp-search-big" role="search">
+        <input type="search" name="q" value="{{ query }}" placeholder="タイトル・本文・ユーザー名・店名など" aria-label="管理画面をまとめて検索" autofocus>
+        <button type="submit">検索</button>
+    </form>
+
+    {% if query %}
+        <p class="yapp-search-summary">{% if total %}{{ groups|length }}つの一覧で、合わせて{{ total }}件見つかりました。{% else %}見つかりませんでした。言葉を短くすると見つかることがあります。{% endif %}</p>
+
+        {% for group in groups %}
+            <section class="yapp-search-group">
+                <h2>
+                    <span class="yapp-search-app">{{ group.app }}</span>
+                    {{ group.name }} <b>{{ group.count }}</b>
+                </h2>
+                <ul>
+                    {% for item in group.items %}
+                        <li>{% if item.url %}<a href="{{ item.url }}">{{ item.label }}</a>{% else %}{{ item.label }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+                {% if group.count > group.items|length %}<a class="yapp-search-more" href="{{ group.more_url }}">{{ group.count }}件すべて見る ›</a>{% endif %}
+            </section>
+        {% endfor %}
+    {% else %}
+        <p class="yapp-search-summary">コラム・アンケート・Q&amp;A・口コミ・レシピ・食材・お店・ニュース・ユーザーなど、管理画面のすべての一覧からまとめて探せます。</p>
+    {% endif %}
+</div>
+{% endblock %}

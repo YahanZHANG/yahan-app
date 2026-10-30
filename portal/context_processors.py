@@ -2,6 +2,7 @@ from django.db.utils import (
     OperationalError,
     ProgrammingError,
 )
+from django.db.models import Q
 from django.urls import reverse
 
 from news.models import (
@@ -46,8 +47,25 @@ def _washoku_items():
         admin_checked=False,
         is_deleted=False,
     )
+    # 質問とお店の口コミは、それぞれの一覧で確認する
+    questions = unchecked.filter(parent__isnull=True, kind="question")
+    store_reviews = unchecked.filter(parent__isnull=True, store__isnull=False).exclude(kind="question")
+    other_comments = unchecked.exclude(pk__in=questions.values("pk")).exclude(pk__in=store_reviews.values("pk"))
 
     comments_url = "admin:washoku_comment_changelist"
+
+    # 投稿: 公開中でまだ確認していないものと、確認待ち (予約なし)
+    posts_to_check = WashokuPost.objects.filter(
+        Q(status="published", admin_checked=False) | Q(status="draft", publish_at__isnull=True)
+    )
+
+    def post_item(label, kind, model):
+        return _item(
+            label,
+            posts_to_check.filter(kind=kind).count(),
+            f"admin:washoku_{model}_changelist",
+            "state=unchecked" if not posts_to_check.filter(kind=kind, status="draft").exists() else "state=pending",
+        )
 
     return [
         _item(
@@ -56,35 +74,38 @@ def _washoku_items():
             "admin:washoku_recipe_changelist",
             "origin__exact=member&status__exact=draft",
         ),
+        post_item("コラム", "column", "columnpost"),
+        post_item("口コミ（買ったもの）", "product", "reviewpost"),
+        post_item("参考リンク", "link", "linkpost"),
         _item(
-            "レシピへのコメント",
-            unchecked.filter(recipe__isnull=False).count(),
-            comments_url,
-            "admin_checked__exact=0&target=recipe",
-        ),
-        _item(
-            "食材へのコメント",
-            unchecked.filter(ingredient__isnull=False).count(),
-            comments_url,
-            "admin_checked__exact=0&target=ingredient",
+            "Q&A",
+            questions.count(),
+            "admin:washoku_questioncomment_changelist",
+            "state=unchecked",
         ),
         _item(
             "お店の口コミ",
-            unchecked.filter(store__isnull=False).count(),
-            comments_url,
-            "admin_checked__exact=0&target=store",
+            store_reviews.count(),
+            "admin:washoku_storereview_changelist",
+            "state=unchecked",
         ),
         _item(
-            "コラム・商品の投稿",
-            WashokuPost.objects.filter(status="draft").count(),
-            "admin:washoku_post_changelist",
-            "status__exact=draft",
+            "レシピへのコメント",
+            other_comments.filter(recipe__isnull=False).count(),
+            comments_url,
+            "state=unchecked&target=recipe",
         ),
         _item(
-            "コラム・商品へのコメント",
-            unchecked.filter(post__isnull=False).count(),
+            "食材へのコメント",
+            other_comments.filter(ingredient__isnull=False).count(),
             comments_url,
-            "admin_checked__exact=0&target=post",
+            "state=unchecked&target=ingredient",
+        ),
+        _item(
+            "コラム・口コミへのコメント",
+            other_comments.filter(post__isnull=False).count(),
+            comments_url,
+            "state=unchecked&target=post",
         ),
         _item(
             "投稿された写真",

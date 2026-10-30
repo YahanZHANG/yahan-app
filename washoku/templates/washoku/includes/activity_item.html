@@ -2,7 +2,7 @@
 {% with item=entry.item %}
 <li>
     <a href="{{ item.get_absolute_url }}">
-        <span class="washoku-activity-kind kind-{% if entry.kind == "post" %}{{ item.kind }}{% elif item.parent_id %}reply{% elif item.kind == "question" %}question{% elif item.store_id %}review{% else %}comment{% endif %}">
+        <span class="washoku-activity-kind kind-{% if entry.kind == "post" %}{{ item.kind }}{% elif item.parent_id %}reply{% elif item.kind == "question" %}question{% elif item.store_id %}product{% else %}comment{% endif %}">
             {% if entry.kind == "post" %}{{ item.get_kind_display }}
             {% elif item.parent_id %}返信
             {% elif item.kind == "question" %}質問

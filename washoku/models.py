@@ -1084,14 +1084,23 @@ class Post(models.Model):
 
     KIND_CHOICES = [
         ("column", "コラム"),
-        ("product", "おすすめ商品"),
+        ("product", "口コミ"),
         ("link", "参考リンク"),
         ("poll", "アンケート"),
+        ("board", "なんでも質問"),
+    ]
+
+    VERDICT_CHOICES = [
+        ("good", "よかった"),
+        ("ok", "ふつう"),
+        ("bad", "いまいちだった"),
     ]
 
     STATUS_CHOICES = [
-        ("draft", "確認待ち"),
+        ("draft", "確認待ち・予約"),
         ("published", "公開"),
+        ("hold", "保留"),
+        ("rejected", "却下"),
     ]
 
     SHOP_CHOICES = [
@@ -1145,6 +1154,24 @@ class Post(models.Model):
         max_length=200,
         blank=True,
         help_text="SHOP_CHOICES のコードをカンマ区切りで (例: migros,coop)",
+    )
+
+    # 口コミ (kind=product) の感想: 買ってよかった / いまいちだった
+    verdict = models.CharField(
+        "口コミの感想",
+        max_length=10,
+        choices=VERDICT_CHOICES,
+        blank=True,
+    )
+
+    # お店の口コミ (kind=product) のときだけ: どのお店か
+    store = models.ForeignKey(
+        "Store",
+        verbose_name="口コミのお店",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviews",
     )
 
     section = models.CharField(
@@ -1236,6 +1263,25 @@ class Post(models.Model):
         "注目から外す",
         default=False,
         help_text="スタンプが多くても、HOMEの「注目」に自動で出さない。",
+    )
+
+    admin_checked = models.BooleanField(
+        "確認済み",
+        default=False,
+        db_index=True,
+        help_text="管理者が中身を確認したもの。会員の投稿はすぐ公開されるので、あとから確認してチェックします。",
+    )
+
+    admin_note = models.TextField(
+        "管理メモ",
+        blank=True,
+        help_text="管理者だけが見るメモ（保留・却下の理由など）。会員には見えません。",
+    )
+
+    show_result = models.BooleanField(
+        "結果をHOMEに出す",
+        default=False,
+        help_text="アンケートだけ。HOMEの「人気アンケートの結果」に出します（新しいもの2つまで）。どれも選ばない週は、先週いちばん答えが集まったものを自動で出します。",
     )
 
     publish_at = models.DateTimeField(
@@ -1400,6 +1446,14 @@ class Comment(models.Model):
         max_length=500,
     )
 
+    # お店のページの口コミ (お店へのコメント) のときだけ: よかった / ふつう / いまいち
+    verdict = models.CharField(
+        "口コミの感想",
+        max_length=10,
+        choices=Post.VERDICT_CHOICES,
+        blank=True,
+    )
+
     photo_url = models.URLField(
         "写真",
         max_length=500,
@@ -1452,7 +1506,7 @@ class Comment(models.Model):
         "HOMEに残す期限",
         null=True,
         blank=True,
-        help_text="質問だけ。空なら自動（未解決のあいだ＋解決してから2日）。日時を入れると、解決済みでもその日時までHOMEに出します。",
+        help_text="質問だけ。空なら自動（質問してから3週間のうち未解決のあいだ＋解決してから2日）。日時を入れると、その日時までHOMEに出します。",
     )
 
     reopened = models.BooleanField(
@@ -1637,6 +1691,14 @@ class DisplaySettings(models.Model):
         choices=SEASON_CHOICES,
         default="auto",
         help_text="自動: ハロウィンは10月18日〜31日",
+    )
+
+    # HOMEの「注目」タブ。管理者が「注目」に選んだものと、先週のアンケートの結果 (自動) も出る
+    weekly_message = models.CharField(
+        "今週のひとこと（編集部より）",
+        max_length=200,
+        blank=True,
+        help_text="「注目」タブのいちばん上に出す短い文。空なら出しません。",
     )
 
     class Meta:
@@ -2114,6 +2176,12 @@ class PushSubscription(models.Model):
 
     auth = models.TextField()
 
+    weekly = models.BooleanField(
+        "月曜のお知らせ",
+        default=True,
+        help_text="毎週月曜16時の「今週」のお知らせ (先週のアンケートの結果など) も受け取る",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -2124,3 +2192,55 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.pk}"
+
+
+# =========================================================
+# 管理画面で種類ごとに分けて扱うための代理モデル (テーブルは Post / Comment と同じ)
+# =========================================================
+
+class ColumnPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "コラム"
+        verbose_name_plural = "コラム"
+
+
+class PollPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "アンケート"
+        verbose_name_plural = "アンケート"
+
+
+class ReviewPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "口コミ（買ったもの）"
+        verbose_name_plural = "口コミ（買ったもの）"
+
+
+class LinkPost(Post):
+
+    class Meta:
+        proxy = True
+        verbose_name = "参考リンク"
+        verbose_name_plural = "参考リンク"
+
+
+class QuestionComment(Comment):
+
+    class Meta:
+        proxy = True
+        verbose_name = "Q&A（質問）"
+        verbose_name_plural = "Q&A（質問）"
+
+
+class StoreReview(Comment):
+
+    class Meta:
+        proxy = True
+        verbose_name = "お店の口コミ"
+        verbose_name_plural = "お店の口コミ"

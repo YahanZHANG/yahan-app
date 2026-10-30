@@ -68,6 +68,15 @@
         must.addEventListener("change", function () { if (must.checked) have.checked = true; });
         have.addEventListener("change", function () { if (!have.checked) must.checked = false; });
     });
+
+    // 探したあとは、結果のところを開く (ブラウザによっては #results に飛ばずに一番上に戻るため)
+    var results = document.getElementById("results");
+    if (results) {
+        if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+        var show = function () { results.scrollIntoView({ block: "start" }); };
+        show();
+        window.addEventListener("load", show);
+    }
 })();
 </script>
 

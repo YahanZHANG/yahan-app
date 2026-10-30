@@ -1039,6 +1039,27 @@ def app_setup(request):
 # My Account
 # =========================================================
 
+# 戻り先のURLの始まりと、戻るボタンの文
+BACK_LABELS = (
+    ("/washoku/", "スイスで和食へ戻る"),
+    ("/news/", "Swiss Newsへ戻る"),
+    ("/outings/", "おでかけへ戻る"),
+)
+
+
+def back_label(next_url):
+    """My Account の「戻る」ボタンの文。来たアプリの名前を出す"""
+
+    if not next_url:
+        return "Yapp Portalへ戻る"
+
+    for prefix, label in BACK_LABELS:
+        if next_url.startswith(prefix):
+            return label
+
+    return "元のページへ戻る"
+
+
 @login_required
 def manage_apps(request):
 
@@ -1064,6 +1085,20 @@ def manage_apps(request):
     nickname_form = NicknameForm(
         instance=profile
     )
+
+    # =====================================================
+    # Where to go back (the app the user came from)
+    # =====================================================
+
+    next_url = get_safe_next(
+        request,
+        request.POST.get("next") or request.GET.get("next", ""),
+    )
+
+    stay_url = reverse("portal:manage_apps")
+
+    if next_url:
+        stay_url += "?" + urlencode({"next": next_url})
 
     # =====================================================
     # POST
@@ -1096,8 +1131,9 @@ def manage_apps(request):
                     "ニックネームを保存しました。",
                 )
 
+                # アプリから来たときは、そのアプリに戻る
                 return redirect(
-                    "portal:manage_apps"
+                    next_url or stay_url
                 )
 
         # ---------------------------------------------
@@ -1141,7 +1177,7 @@ def manage_apps(request):
                 )
 
                 return redirect(
-                    "portal:manage_apps"
+                    stay_url
                 )
 
         else:
@@ -1162,6 +1198,8 @@ def manage_apps(request):
             "profile": profile,
             "nickname_form": nickname_form,
             "can_view_analytics": can_view_analytics(request.user),
+            "next_url": next_url,
+            "back_label": back_label(next_url),
         },
     )
 

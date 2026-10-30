@@ -100,19 +100,85 @@
 </section>
 {% endif %}
 
-{% if main_poll or featured or questions %}
-<div class="washoku-home-slider-wrap" data-slider>
-<button type="button" class="washoku-slider-arrow is-prev" data-slider-prev aria-label="前のカード" hidden>‹</button>
-<button type="button" class="washoku-slider-arrow is-next" data-slider-next aria-label="次のカード">›</button>
-<div class="washoku-home-slider" data-slider-track tabindex="0" aria-label="アンケート・注目・質問（横にスワイプ）">
+<div class="washoku-home-tabs" data-home-tabs>
+<nav class="washoku-home-tabnav" role="tablist" aria-label="HOMEのページ（左右にスワイプでも切り替えられます）">
+    {% for value, label in home_tabs %}
+        <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ label }}</button>
+    {% endfor %}
+</nav>
+<div class="washoku-home-panels" data-home-panels>
 
-{% if main_poll %}
-<section class="washoku-home-slide washoku-home-poll" aria-labelledby="washoku-home-poll-label">
-    <p class="washoku-home-poll-head">
-        <span id="washoku-home-poll-label" class="washoku-home-poll-badge">📊 みんなのアンケート</span>
-        <a href="{% url 'washoku:poll_list' %}">すべて見る ›</a>
-    </p>
-    {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
+<section class="washoku-home-panel washoku-week" id="home-panel-week" role="tabpanel" aria-labelledby="home-tab-week">
+
+    {% if weekly_message %}<p class="washoku-week-message"><span class="washoku-editor-tag">編集部より</span> {{ weekly_message }}</p>{% endif %}
+
+    {% if featured %}
+    <ul class="washoku-week-picks">
+        {% for entry in featured %}{% with item=entry.item %}
+        <li><a href="{% if entry.kind == "post" and item.kind == "poll" %}{{ item.poll_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" class="{% if forloop.first %}is-top{% endif %}{% if item.home_photo_url %} has-photo{% endif %}">
+            {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
+            <span>
+                <span class="washoku-week-kind{% if entry.kind == "post" %} kind-{{ item.kind }}{% endif %}">{% if entry.kind == "comment" %}{% if item.kind == "question" %}Q&amp;A{% else %}コメント{% endif %}{% else %}{{ item.get_kind_display }}{% endif %}</span>
+                <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:70 }}{% endif %}</strong>
+                {% if forloop.first and entry.kind == "post" and item.body %}<small>{{ item.body|striptags|truncatechars:90 }}</small>{% endif %}
+                <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
+            </span>
+        </a></li>
+        {% endwith %}{% endfor %}
+    </ul>
+    {% endif %}
+
+    {% for poll in last_polls %}
+    <section class="washoku-week-poll" aria-labelledby="week-poll-{{ poll.pk }}">
+        {% if forloop.first %}<p class="washoku-week-label">📊 人気アンケートの結果</p>{% endif %}
+        <h3 id="week-poll-{{ poll.pk }}">{{ poll.poll_title }}</h3>
+        {% with results=poll.results %}
+        {% if results.type == "text" %}
+            <ul class="washoku-week-answers">
+                {% for answer in results.answers|slice:":4" %}<li>{{ answer|truncatechars:80 }}</li>{% endfor %}
+            </ul>
+            <p class="washoku-week-total">{{ results.total }}件の答え ・ <a href="{{ poll.poll_url }}">私も投票する！ ›</a></p>
+        {% else %}
+            <ul class="washoku-week-chart">
+                {% for row in results.choices|slice:":3" %}
+                <li class="{% if row.top %}is-top{% endif %}">
+                    <span class="washoku-week-chart-label">{% if row.top %}👑 {% endif %}{{ row.choice.label }}</span>
+                    <span class="washoku-week-chart-bar" style="--poll-percent: {{ row.percent }}%"><span></span></span>
+                    <b>{{ row.percent }}%</b>
+                </li>
+                {% endfor %}
+            </ul>
+            <p class="washoku-week-total">{{ results.total }}人が回答 ・ <a href="{{ poll.poll_url }}">私も投票する！ ›</a></p>
+        {% endif %}
+        {% endwith %}
+    </section>
+    {% if forloop.last %}<p class="washoku-week-more"><a href="{% url 'washoku:poll_list' %}">アンケート一覧 ›</a></p>{% endif %}
+    {% endfor %}
+
+    {% if not weekly_message and not featured and not last_polls %}
+        <p class="washoku-empty">おすすめは準備中です。</p>
+    {% endif %}
+</section>
+
+<section class="washoku-home-panel washoku-home-panel-poll" id="home-panel-poll" role="tabpanel" aria-labelledby="home-tab-poll">
+    {% if main_poll or home_question %}
+    {% if main_poll %}
+    <div class="washoku-home-card washoku-home-poll">
+        {% include "washoku/includes/poll_box.html" with poll=main_poll home_title=True %}
+    </div>
+    {% endif %}
+    {% if home_question %}
+    <div class="washoku-home-card washoku-home-poll washoku-home-question">
+        <p class="washoku-home-poll-kind">💬 みんなへの質問</p>
+        {% include "washoku/includes/poll_box.html" with poll=home_question home_title=True home_question=True %}
+        {% if home_question.home_answers %}
+        <ul class="washoku-home-question-answers">
+            {% for answer in home_question.home_answers %}<li>{{ answer }}</li>{% endfor %}
+        </ul>
+        <p class="washoku-home-question-more"><a href="{{ home_question.poll_url }}">みんなの答え（{{ home_question.results.total }}件）を見る ›</a></p>
+        {% endif %}
+    </div>
+    {% endif %}
     {% if other_polls %}
     <ul class="washoku-home-poll-more">
         {% for poll in other_polls %}
@@ -120,95 +186,155 @@
         {% endfor %}
     </ul>
     {% endif %}
-    <a class="washoku-home-poll-suggest" href="{% url 'washoku:poll_suggest' %}">💡 聞いてみたいことを提案する</a>
-</section>
-{% endif %}
-
-{% if featured %}
-<section class="washoku-home-slide washoku-home-featured" aria-labelledby="washoku-home-featured-label">
-    <p class="washoku-home-poll-head">
-        <span id="washoku-home-featured-label" class="washoku-home-poll-badge">⭐ 注目</span>
-        <a href="{% url 'washoku:column_list' %}">コラム ›</a>
-    </p>
-    {% with entry=featured.0 %}{% with item=entry.item %}
-    <a class="washoku-featured-top" href="{{ item.get_absolute_url }}">
-        {% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}
-        <strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:80 }}{% endif %}</strong>
-        {% if entry.kind == "post" %}<span class="washoku-featured-excerpt">{{ item.body|striptags|truncatechars:120 }}</span>{% endif %}
-        <small>{{ item.author|display_name }} ・ {% if entry.kind == "comment" %}{{ item.target.name }}{% else %}{{ item.get_kind_display }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small>
-    </a>
-    {% endwith %}{% endwith %}
-    {% if featured|length > 1 %}
-    <ul class="washoku-featured-more">
-        {% for entry in featured|slice:"1:3" %}{% with item=entry.item %}
-            <li><a href="{{ item.get_absolute_url }}"{% if item.home_photo_url %} class="has-photo"{% endif %}>{% if item.home_photo_url %}<img src="{{ item.home_photo_url }}" alt="" loading="lazy">{% endif %}<span><strong>{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:60 }}{% endif %}</strong><small>{{ item.author|display_name }} ・ {% if entry.kind == "comment" %}{{ item.target.name }}{% else %}{{ item.get_kind_display }}{% endif %}{% if display.home_featured_show_stamps and entry.count %} ・ 😊{{ entry.count }}{% endif %}</small></span></a></li>
-        {% endwith %}{% endfor %}
-    </ul>
+    {% else %}
+    <p class="washoku-empty">新着のアンケートは準備中です。これまでのアンケートには、アンケートのページから投票できます。</p>
     {% endif %}
-</section>
-{% endif %}
-
-{% if questions %}
-<section class="washoku-home-slide washoku-home-questions" aria-labelledby="washoku-home-questions-label">
-    <p class="washoku-home-poll-head">
-        <span id="washoku-home-questions-label" class="washoku-home-poll-badge">💬 質問</span>
-        <a href="{% url 'washoku:question_list' %}">すべて見る ›</a>
+    <p class="washoku-home-panel-actions">
+        <a class="washoku-home-poll-suggest" href="{% url 'washoku:poll_suggest' %}">💡 聞いてみたいことを提案する</a>
+        <a href="{% url 'washoku:poll_list' %}">すべて見る ›</a>
     </p>
+</section>
+
+<section class="washoku-home-panel" id="home-panel-question" role="tabpanel" aria-labelledby="home-tab-question">
+    {% if questions %}
     <ul class="washoku-home-question-list">
         {% for question in questions %}
             <li><a href="{{ question.get_absolute_url }}" class="{% if question.has_answer %}is-solved{% else %}is-open{% endif %}{% if question.home_photo_url %} has-photo{% endif %}">
                 {% if question.home_photo_url %}<img src="{{ question.home_photo_url }}" alt="" loading="lazy">{% endif %}
-                <span class="washoku-question-text"><span class="washoku-question-state">{% if question.has_answer %}✓ 解決済{% else %}答えを募集中{% endif %}</span>
+                <span class="washoku-question-text"><span class="washoku-question-tags"><span class="washoku-question-state">{% if question.has_answer %}✓ 解決済{% else %}答えを募集中{% endif %}</span>{% if question.author.is_staff %}<span class="washoku-editor-tag">編集部より</span>{% endif %}</span>
                 <strong>{{ question.body|truncatechars:70 }}</strong>
                 <small>{{ question.author|display_name }} ・ {{ question.target.name }}{% if question.answer_count %} ・ 返信{{ question.answer_count }}件{% endif %}</small></span>
             </a></li>
         {% endfor %}
     </ul>
-</section>
-{% endif %}
-
-<section class="washoku-home-slide washoku-home-install yapp-install-only" aria-labelledby="washoku-home-install-label">
-    <p class="washoku-home-poll-head">
-        <span id="washoku-home-install-label" class="washoku-home-poll-badge">📲 アプリにしよう</span>
+    {% else %}
+    <p class="washoku-empty">いまは、答えを待っている質問はありません。</p>
+    {% endif %}
+    <p class="washoku-home-panel-actions">
+        <a class="washoku-button" href="{% url 'washoku:question_new' %}"><i class="bi bi-chat-dots" aria-hidden="true"></i> 質問する</a>
+        <a href="{% url 'washoku:question_list' %}">すべて見る ›</a>
     </p>
-    <a class="washoku-home-install-body" href="{% url 'washoku:install' %}">
-        <img src="{% static 'pwa/washoku/apple-touch-icon.png' %}" alt="" width="72" height="72">
-        <strong>ホーム画面に追加すると、<br>ワンタップで開けます</strong>
-        <small>無料・ダウンロード不要。通知も届きます。</small>
-        <span class="washoku-button">やり方を見る（画像つき）</span>
-    </a>
+</section>
+
+<section class="washoku-home-panel" id="home-panel-review" role="tabpanel" aria-labelledby="home-tab-review">
+    {% if home_reviews %}
+    <ul class="washoku-home-post-list">
+        {% for post in home_reviews %}
+            <li><a href="{{ post.get_absolute_url }}">
+                <span class="washoku-chips">{% include "washoku/includes/verdict_chip.html" %}{% for label in post.shop_labels %}<span class="washoku-chip">{{ label }}</span>{% endfor %}</span>
+                <strong>{{ post.title }}</strong>
+                <small>{{ post.body|truncatechars:50 }}</small>
+            </a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="washoku-empty">まだ口コミはありません。買ってよかったもの、いまいちだったものを教えてください。</p>
+    {% endif %}
+    <p class="washoku-home-panel-actions">
+        <a class="washoku-button" href="{% url 'washoku:post_submit' 'product' %}"><i class="bi bi-pencil" aria-hidden="true"></i> 口コミを書く</a>
+        <a href="{% url 'washoku:product_list' %}">すべて見る ›</a>
+    </p>
+</section>
+
+<section class="washoku-home-panel" id="home-panel-column" role="tabpanel" aria-labelledby="home-tab-column">
+    {% if home_columns %}
+    <ul class="washoku-home-post-list">
+        {% for post in home_columns %}
+            <li><a href="{{ post.get_absolute_url }}">
+                {% if post.kind == "link" %}<span class="washoku-chips"><span class="washoku-chip">リンク</span></span>{% endif %}
+                <strong>{{ post.title }}</strong>
+                <small>{% if post.kind == "link" %}{{ post.source|default:"ほかのサイトの記事" }}{% else %}{{ post.author|display_name }} ・ {{ post.created_at|date:"n/j" }}{% endif %}</small>
+            </a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if not home_columns %}<p class="washoku-empty">まだコラムはありません。</p>{% endif %}
+    <p class="washoku-home-panel-actions">
+        <a class="washoku-button" href="{% url 'washoku:post_submit' 'column' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> コラムを書く</a>
+        <a href="{% url 'washoku:column_list' %}">すべて見る ›</a>
+    </p>
 </section>
 
 </div>
 </div>
+
+<section class="washoku-section">
+    <h2>みんなの投稿・コメント</h2>
+    {% if latest_activity %}
+        <ul class="washoku-activity washoku-activity-compact">
+            {% for entry in latest_activity %}
+                {% include "washoku/includes/activity_item.html" %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-empty">まだ投稿はありません。レシピや食材のページから、工夫や質問を書いてみてください。</p>
+    {% endif %}
+    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">投稿・コメントをすべて見る</a></p>
+</section>
+
 <script>
-// スライドの左右の矢印: 1枚ずつ動かし、端では片方を隠す
+// HOMEのタブ: タブを押すか、左右にスワイプして切り替える。高さは開いているページに合わせる
 (function () {
-    var wrap = document.querySelector("[data-slider]");
-    if (!wrap) return;
-    var track = wrap.querySelector("[data-slider-track]");
-    var prev = wrap.querySelector("[data-slider-prev]");
-    var next = wrap.querySelector("[data-slider-next]");
+    var box = document.querySelector("[data-home-tabs]");
+    if (!box) return;
+    var track = box.querySelector("[data-home-panels]");
+    var panels = Array.prototype.slice.call(track.children);
+    var tabs = Array.prototype.slice.call(box.querySelectorAll("[data-home-tab]"));
+    var KEY = "washoku_home_tab";
+    var current = 0;
 
-    function step() {
-        var card = track.children[0];
-        return card ? card.getBoundingClientRect().width + 12 : track.clientWidth * 0.8;
+    function fit() {
+        var panel = panels[current];
+        if (panel) track.style.height = panel.offsetHeight + "px";
     }
 
-    function update() {
-        var max = track.scrollWidth - track.clientWidth - 4;
-        prev.hidden = track.scrollLeft <= 4;
-        next.hidden = track.scrollLeft >= max;
+    function mark(index) {
+        current = index;
+        tabs.forEach(function (tab, i) {
+            tab.setAttribute("aria-selected", String(i === index));
+            tab.tabIndex = i === index ? 0 : -1;
+        });
+        panels.forEach(function (panel, i) { panel.setAttribute("aria-hidden", String(i !== index)); });
+        var tab = tabs[index];
+        if (tab && tab.scrollIntoView) tab.parentNode.scrollTo({ left: tab.offsetLeft - 16, behavior: "smooth" });
+        fit();
+        try { sessionStorage.setItem(KEY, String(index)); } catch (error) {}
     }
 
-    prev.addEventListener("click", function () { track.scrollBy({ left: -step(), behavior: "smooth" }); });
-    next.addEventListener("click", function () { track.scrollBy({ left: step(), behavior: "smooth" }); });
-    track.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    update();
+    function show(index, smooth) {
+        track.scrollTo({ left: index * track.clientWidth, behavior: smooth ? "smooth" : "auto" });
+        mark(index);
+    }
+
+    tabs.forEach(function (tab, i) {
+        tab.addEventListener("click", function () { show(i, true); });
+    });
+
+    var timer;
+    track.addEventListener("scroll", function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            var index = Math.round(track.scrollLeft / track.clientWidth);
+            if (index !== current) mark(index);
+        }, 80);
+    }, { passive: true });
+
+    window.addEventListener("resize", function () { show(current, false); });
+    if (window.ResizeObserver) panels.forEach(function (panel) { new ResizeObserver(fit).observe(panel); });
+
+    // ?tab=week などで開いたら、そのタブ (月曜の通知から)。戻ってきたときは、前に開いていたタブ
+    var saved = 0;
+    try { saved = parseInt(sessionStorage.getItem(KEY) || "0", 10) || 0; } catch (error) {}
+    var asked = tabs.findIndex(function (tab) { return tab.dataset.homeTab === new URLSearchParams(location.search).get("tab"); });
+    show(Math.min(asked === -1 ? saved : asked, panels.length - 1), false);
 })();
 </script>
-{% endif %}
+
+<a class="washoku-home-install-row yapp-install-only" href="{% url 'washoku:install' %}">
+    <img src="{% static 'pwa/washoku/apple-touch-icon.png' %}" alt="" width="44" height="44">
+    <span><strong>📲 ホーム画面に追加しよう</strong><small>ワンタップで開けて、通知も届きます。</small></span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>
 
 {% if not user.is_authenticated %}
 <section class="washoku-join-card">
@@ -227,27 +353,6 @@
     </p>
 </section>
 {% endif %}
-
-<a class="washoku-banner" href="{% url 'washoku:recipe_submit' %}">
-    <i class="bi bi-pencil-square" aria-hidden="true"></i>
-    <span><strong>あなたのレシピを投稿する</strong><small>あなたの家の味を教えてください</small></span>
-    <i class="bi bi-chevron-right" aria-hidden="true"></i>
-</a>
-
-
-<section class="washoku-section">
-    <h2>みんなの投稿・コメント</h2>
-    {% if latest_activity %}
-        <ul class="washoku-activity washoku-activity-compact">
-            {% for entry in latest_activity %}
-                {% include "washoku/includes/activity_item.html" %}
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="washoku-empty">まだ投稿はありません。レシピや食材のページから、工夫や質問を書いてみてください。</p>
-    {% endif %}
-    <p class="washoku-more"><a href="{% url 'washoku:activity' %}">投稿・コメントをすべて見る</a></p>
-</section>
 
 {% if user.is_staff %}
 <p class="washoku-admin-box">

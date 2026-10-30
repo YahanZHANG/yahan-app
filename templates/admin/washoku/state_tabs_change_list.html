@@ -1,0 +1,17 @@
+{% extends "admin/change_list.html" %}
+
+{% comment %}
+    種類ごとの投稿の一覧: 見出しの下に、状態のタブ (件数つき) を並べる。
+{% endcomment %}
+
+{% block content_title %}
+    {{ block.super }}
+    {% if section_note %}<p class="yapp-section-note">{{ section_note }}</p>{% endif %}
+    <nav class="yapp-state-tabs" aria-label="状態で切り替え">
+        {% for tab in state_tabs %}
+            <a href="{{ tab.url }}" class="yapp-state-tab{% if tab.active %} is-active{% endif %}{% if not tab.count %} is-empty{% endif %}"{% if tab.active %} aria-current="page"{% endif %}>
+                {{ tab.label }} <b>{{ tab.count }}</b>
+            </a>
+        {% endfor %}
+    </nav>
+{% endblock %}

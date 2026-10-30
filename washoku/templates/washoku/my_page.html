@@ -9,7 +9,10 @@
 <h1>マイページ</h1>
 
 {% if user.is_authenticated %}
-    <p class="washoku-lead">{{ user|display_name }} さん</p>
+    <p class="washoku-lead washoku-me-name">
+        <span>{{ user|display_name }} さん</span>
+        <a class="washoku-me-account" href="{% url 'portal:manage_apps' %}?next={{ request.path|urlencode }}"><i class="bi bi-person-gear" aria-hidden="true"></i> アカウントの管理</a>
+    </p>
 {% else %}
     <p class="washoku-lead"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a>すると、家族の評価やコメントが使えます。</p>
 {% endif %}
@@ -36,7 +39,7 @@
         </a>
         <a class="washoku-menu-item" href="{% url 'washoku:my_posts' %}">
             <span class="washoku-menu-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>投稿したコラム・商品</strong><small>{% if user.is_authenticated %}{{ post_count }}件{% else %}経験やおすすめ商品を投稿できる{% endif %}</small></span>
+            <span class="washoku-menu-text"><strong>投稿したコラム・口コミ</strong><small>{% if user.is_authenticated %}{{ post_count }}件{% else %}経験や口コミを投稿できる{% endif %}</small></span>
         </a>
         <a class="washoku-menu-item" href="{% url 'washoku:notification_list' %}">
             <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
@@ -75,20 +78,20 @@
         </a>
         {% if user.is_authenticated %}
         <span id="push"></span>
-        <button
-            type="button"
-            id="washoku-push-toggle"
-            class="washoku-menu-item"
-            aria-pressed="false"
-            data-public-key="{{ vapid_public_key }}"
-            data-csrf-token="{{ csrf_token }}"
-            data-subscribe-url="{% url 'washoku:push_subscribe' %}"
-            data-unsubscribe-url="{% url 'washoku:push_unsubscribe' %}"
-        >
+        <button type="button" id="washoku-push-toggle" class="washoku-menu-item" aria-pressed="false">
             <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>返信をプッシュ通知で受け取る</strong><small id="washoku-push-description">自分の質問やコメントに返事が来たとき</small></span>
+            <span class="washoku-menu-text"><strong>プッシュ通知を受け取る</strong><small id="washoku-push-description">自分の質問やコメントに返事が来たとき</small></span>
             <span class="washoku-switch" aria-hidden="true"></span>
         </button>
+        <button type="button" id="washoku-push-weekly" class="washoku-menu-item" aria-pressed="true" hidden>
+            <span class="washoku-menu-icon"><i class="bi bi-calendar-week" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>月曜のお知らせ</strong><small>毎週月曜16時に、先週のアンケートの結果などをお届けします</small></span>
+            <span class="washoku-switch" aria-hidden="true"></span>
+        </button>
+        <p class="washoku-theme-auto" id="washoku-push-test" hidden>
+            <span role="status"></span>
+            <button type="button">テスト通知を送る</button>
+        </p>
         {% endif %}
         <a class="washoku-menu-item" href="{% url 'washoku:question_list' %}">
             <span class="washoku-menu-icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
@@ -103,19 +106,6 @@
     </div>
 </section>
 
-<section class="washoku-section">
-    <h2>アカウント</h2>
-    <div class="washoku-menu">
-        <a class="washoku-menu-item" href="{% if user.is_authenticated %}{% url 'portal:manage_apps' %}{% else %}{% url 'login' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
-            <span class="washoku-menu-icon"><i class="bi bi-person-gear" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>Yapp My Account</strong><small>{% if user.is_authenticated %}共通アカウントの管理{% else %}ログイン・新規登録{% endif %}</small></span>
-            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-        </a>
-    </div>
-</section>
 
-<script src="{% static 'washoku/push.js' %}" defer></script>
-
-<script src="{% static 'washoku/push.js' %}" defer></script>
 
 {% endblock %}

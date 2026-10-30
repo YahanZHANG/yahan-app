@@ -51,11 +51,11 @@ My Account | Yapp
     <div class="manage-topbar">
 
         <a
-            href="{% url 'portal:home' %}"
+            href="{% if next_url %}{{ next_url }}{% else %}{% url 'portal:home' %}{% endif %}"
             class="manage-back-button"
         >
             <span aria-hidden="true">←</span>
-            <span>Yapp Portalへ戻る</span>
+            <span>{{ back_label }}</span>
         </a>
 
     </div>
@@ -245,6 +245,8 @@ My Account | Yapp
                         value="nickname"
                     >
 
+                    {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
+
                     <label
                         for="{{ nickname_form.nickname.id_for_label }}"
                         class="manage-field-label"
@@ -319,6 +321,8 @@ My Account | Yapp
                         name="form_type"
                         value="theme"
                     >
+
+                    {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
 
                     <div class="manage-theme-options">

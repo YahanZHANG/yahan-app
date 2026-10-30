@@ -1,10 +1,10 @@
 {% extends "washoku/base.html" %}
 
-{% block title %}投稿したコラム・商品 | スイスで和食{% endblock %}
+{% block title %}投稿したコラム・口コミ | スイスで和食{% endblock %}
 
 {% block content %}
 
-<h1>投稿したコラム・商品</h1>
+<h1>投稿したコラム・口コミ</h1>
 
 <p class="washoku-quick">
     <a href="{% url 'washoku:post_submit' 'column' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> コラムを書く</a>
@@ -20,6 +20,10 @@
                     {{ post.get_kind_display }}
                     {% if post.status == "published" %}
                         <span class="washoku-chip washoku-chip-shop">掲載中</span>
+                    {% elif post.status == "hold" %}
+                        <span class="washoku-chip washoku-chip-draft">非公開（確認中）</span>
+                    {% elif post.status == "rejected" %}
+                        <span class="washoku-chip washoku-chip-draft">非公開</span>
                     {% else %}
                         <span class="washoku-chip washoku-chip-draft">確認待ち</span>
                     {% endif %}

@@ -1,5 +1,5 @@
 {% load washoku_tags %}
-{# target: "recipe" / "ingredient" / "store", target_pk, heading, help_text, tip_label #}
+{# target: "recipe" / "ingredient" / "store", target_pk, heading, help_text, tip_label, question_only (質問だけ書ける), no_form (書き込み欄を出さない), store_review (お店の口コミ: よかった・ふつう・いまいち を選べる) #}
 <section class="washoku-section" id="comments">
 
     <h2>{{ heading }}</h2>
@@ -32,24 +32,31 @@
         </article>
         {% endwith %}
     {% empty %}
-        <p class="washoku-empty">まだコメントはありません。</p>
+        <p class="washoku-empty">{% if question_only %}まだ質問はありません。{% elif store_review %}まだ口コミはありません。{% else %}まだコメントはありません。{% endif %}</p>
     {% endfor %}
 
-    {% if user.is_authenticated %}
+    {% if no_form %}
+    {% elif user.is_authenticated %}
         <form method="post" action="{% url 'washoku:comment_create' target target_pk %}" class="washoku-comment-form" enctype="multipart/form-data">
             {% csrf_token %}
+            {% if question_only %}
+            <input type="hidden" name="kind" value="question">
+            {% elif store_review %}
+            <input type="hidden" name="kind" value="tip">
+            {% else %}
             <div class="washoku-kind">
                 <label><input type="radio" name="kind" value="tip"{% if draft_kind != "question" %} checked{% endif %}> {{ tip_label|default:"工夫・コツ" }}</label>
                 <label><input type="radio" name="kind" value="question"{% if draft_kind == "question" %} checked{% endif %}> 質問</label>
             </div>
-            {{ comment_form.body }}
+            {% endif %}
+            {% if store_review %}<div class="washoku-review-box"><textarea name="body" rows="3" maxlength="500" required aria-label="口コミ" placeholder="品ぞろえ、値段、混み具合など">{{ comment_form.body.value|default_if_none:"" }}</textarea>{% include "washoku/includes/store_verdict_picker.html" %}</div>{% else %}{{ comment_form.body }}{% endif %}
             <label class="washoku-photo-input"><i class="bi bi-camera" aria-hidden="true"></i> 写真を1枚付ける <input type="file" name="photo" accept="image/*"></label>
             <p class="washoku-photo-note">写真は自動でサイズを小さくして送信します。うまく送れない場合は、写真をスクショしてから選び直すと、送れることが多いです。</p>
-            <button type="submit" class="washoku-button">コメントする</button>
+            <button type="submit" class="washoku-button">{% if question_only %}質問する{% elif store_review %}口コミを投稿する{% else %}コメントする{% endif %}</button>
             <p class="washoku-comment-hint">ニックネームで表示・あとから編集や削除OK</p>
         </form>
     {% else %}
-        {% include "washoku/includes/join_prompt.html" with reason="コメントや質問" %}
+        {% if store_review %}{% include "washoku/includes/join_prompt.html" with reason="口コミの投稿" %}{% else %}{% include "washoku/includes/join_prompt.html" with reason="コメントや質問" %}{% endif %}
     {% endif %}
 
 </section>
