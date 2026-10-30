@@ -27,6 +27,12 @@
             <span class="washoku-menu-text"><strong>お気に入り・評価</strong><small>{% if user.is_authenticated %}♡ {{ favorite_count }}品 ・ 評価 {{ rated_count }}品（家族の分も見られます）{% else %}ログインすると保存できる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:family' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>家族</strong><small>{% if user.is_authenticated %}{{ family_count }}人{% else %}家族を招待して好みを共有{% endif %}</small></span>
+            {% if invite_count %}<span class="washoku-menu-count">招待 {{ invite_count }}</span>{% endif %}
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
         <a class="washoku-menu-item" href="{% url 'washoku:my_notes' %}">
             <span class="washoku-menu-icon"><i class="bi bi-journal-bookmark" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>レシピのメモ</strong><small>{% if user.is_authenticated %}{{ note_count }}件（自分だけに見える）{% else %}レシピごとに自分だけのメモ{% endif %}</small></span>
@@ -37,14 +43,15 @@
             <span class="washoku-menu-text"><strong>投稿したレシピ</strong><small>{% if user.is_authenticated %}{{ submitted_count }}品{% else %}自分のレシピを投稿できる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
-        <a class="washoku-menu-item" href="{% url 'washoku:my_posts' %}">
-            <span class="washoku-menu-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>投稿したコラム・口コミ</strong><small>{% if user.is_authenticated %}{{ post_count }}件{% else %}経験や口コミを投稿できる{% endif %}</small></span>
-        </a>
         <a class="washoku-menu-item" href="{% url 'washoku:notification_list' %}">
             <span class="washoku-menu-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>お知らせ</strong><small>コメントへの返信</small></span>
             {% if unread %}<span class="washoku-menu-count">{{ unread }}</span>{% endif %}
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+        <a class="washoku-menu-item" href="{% url 'washoku:my_questions' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>自分の質問</strong><small>{% if user.is_authenticated %}{{ question_count }}件（答えが来たかもわかります）{% else %}わからないことを、みんなに質問できる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
         <a class="washoku-menu-item" href="{% url 'washoku:my_comments' %}">
@@ -52,10 +59,9 @@
             <span class="washoku-menu-text"><strong>自分のコメント・口コミ</strong><small>{% if user.is_authenticated %}{{ comment_count }}件{% else %}コメント・質問・口コミの履歴{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
-        <a class="washoku-menu-item" href="{% url 'washoku:family' %}">
-            <span class="washoku-menu-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>家族</strong><small>{% if user.is_authenticated %}{{ family_count }}人{% else %}家族を招待して好みを共有{% endif %}</small></span>
-            {% if invite_count %}<span class="washoku-menu-count">招待 {{ invite_count }}</span>{% endif %}
+        <a class="washoku-menu-item" href="{% url 'washoku:my_posts' %}">
+            <span class="washoku-menu-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
+            <span class="washoku-menu-text"><strong>投稿したコラム・口コミ</strong><small>{% if user.is_authenticated %}{{ post_count }}件{% else %}経験や口コミを投稿できる{% endif %}</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
     </div>
@@ -93,11 +99,6 @@
             <button type="button">テスト通知を送る</button>
         </p>
         {% endif %}
-        <a class="washoku-menu-item" href="{% url 'washoku:question_list' %}">
-            <span class="washoku-menu-icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
-            <span class="washoku-menu-text"><strong>Q&amp;A</strong><small>答えを待っている質問</small></span>
-            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-        </a>
         <a class="washoku-menu-item" href="{% url 'washoku:about' %}">
             <span class="washoku-menu-icon"><i class="bi bi-info-circle" aria-hidden="true"></i></span>
             <span class="washoku-menu-text"><strong>スイスで和食について</strong><small>AIの利用・質問箱・応援など</small></span>

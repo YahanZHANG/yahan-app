@@ -278,6 +278,17 @@
   "substitutes_for": []
  },
  {
+  "name": "ヨーグルト",
+  "name_de": "Joghurt nature",
+  "category": "dairy",
+  "search_group": "ヨーグルト",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "無糖のプレーンは「Joghurt nature」。水切りヨーグルトの代わりには、濃厚な「Griechischer Joghurt」や「Quark」が使える。",
+  "substitutes_for": []
+ },
+ {
   "name": "ピザ用チーズ",
   "name_de": "Reibkäse / Mozzarella gerieben",
   "category": "dairy",

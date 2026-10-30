@@ -34,8 +34,9 @@
     {% if recipe.submitted_by %}<p class="washoku-credit"><i class="bi bi-person-heart" aria-hidden="true"></i> {{ recipe.submitted_by|display_name }} さんのレシピ</p>{% endif %}
 
     {% if recipe.photo_1 %}
-    <figure class="washoku-ingredient-photo">
+    <figure class="washoku-ingredient-photo{% if second_photo %} has-two{% endif %}">
         <img src="{{ recipe.photo_1 }}" alt="{{ recipe.name }}の写真" loading="lazy">
+        {% if second_photo %}<img src="{{ second_photo.url }}" alt="{{ recipe.name }}の写真（2枚目）" loading="lazy">{% endif %}
         {% if shown_photo.user %}<figcaption>写真: {{ shown_photo.user|display_name }} さん</figcaption>{% endif %}
     </figure>
     {% endif %}

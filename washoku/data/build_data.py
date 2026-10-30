@@ -79,6 +79,8 @@ INGREDIENTS = [
     ("牛乳", "Milch", "dairy", "牛乳", "S", "", {}),
     ("生クリーム", "Vollrahm", "dairy", "生クリーム", "S",
      "「Vollrahm」が生クリーム。泡立てるなら脂肪分35%の「Rahm」。料理用の「Saucenhalbrahm」でも作れる。", {}),
+    ("ヨーグルト", "Joghurt nature", "dairy", "ヨーグルト", "S",
+     "無糖のプレーンは「Joghurt nature」。水切りヨーグルトの代わりには、濃厚な「Griechischer Joghurt」や「Quark」が使える。", {}),
     ("ピザ用チーズ", "Reibkäse / Mozzarella gerieben", "dairy", "チーズ", "S",
      "グラタンには袋入りの「Reibkäse」（グリュイエールやエメンタール）。伸びを出したいときはおろしたモッツァレラ。",
      {"とろけるチーズ": "Gruyère と Emmentaler を混ぜたグラタン用の袋が近い。"}),

@@ -1,6 +1,13 @@
 {% load washoku_tags %}
 {% with item=entry.item %}
 <li>
+    {% if entry.kind == "recipe" %}
+    <a href="{% url 'washoku:recipe_detail' item.pk %}">
+        <span class="washoku-activity-kind kind-recipe">レシピ</span>
+        <span class="washoku-activity-body">{{ item.name }}</span>
+        <small>{% if item.submitted_by %}{{ item.submitted_by|display_name }} ・ {% endif %}{{ item.get_category_display }} ・ {{ entry.at|date:"n/j H:i" }}</small>
+    </a>
+    {% else %}
     <a href="{{ item.get_absolute_url }}">
         <span class="washoku-activity-kind kind-{% if entry.kind == "post" %}{{ item.kind }}{% elif item.parent_id %}reply{% elif item.kind == "question" %}question{% elif item.store_id %}product{% else %}comment{% endif %}">
             {% if entry.kind == "post" %}{{ item.get_kind_display }}
@@ -12,5 +19,6 @@
         <span class="washoku-activity-body">{% if entry.kind == "post" %}{{ item.title }}{% else %}{{ item.body|truncatechars:90 }}{% endif %}</span>
         <small>{{ item.author|display_name }}{% if entry.kind == "comment" %} ・ {{ item.target.name }}{% endif %} ・ {{ entry.at|date:"n/j H:i" }}</small>
     </a>
+    {% endif %}
 </li>
 {% endwith %}
