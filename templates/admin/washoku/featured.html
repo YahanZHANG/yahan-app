@@ -1,0 +1,140 @@
+{% extends "admin/base_site.html" %}
+{% load washoku_tags %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+    .yapp-featured section { margin: 0 0 28px; }
+    .yapp-featured h2 { margin: 0 0 4px; font-size: 16px; }
+    .yapp-featured .help { margin: 0 0 10px; color: var(--body-quiet-color); }
+    .yapp-featured table { width: 100%; }
+    .yapp-featured td { vertical-align: middle; }
+    .yapp-featured .kind { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--darkened-bg); font-size: 11px; white-space: nowrap; }
+    .yapp-featured .label { max-width: 520px; }
+    .yapp-featured .label small { display: block; color: var(--body-quiet-color); }
+    .yapp-featured .why { white-space: nowrap; color: var(--body-quiet-color); }
+    .yapp-featured .on { color: #2E7D32; font-weight: 700; white-space: nowrap; }
+    .yapp-featured form.inline { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
+    .yapp-featured input[type=number] { width: 56px; }
+    .yapp-featured .button.danger { background: #B3261E; }
+    .yapp-featured .search { display: flex; gap: 6px; margin: 0 0 10px; }
+    .yapp-featured .search input { flex: 0 1 320px; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">ホーム</a> › HOMEの注目</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="yapp-featured">
+
+<section>
+    <h2>いまHOMEの「注目」に出ているもの（{{ showing|length }}／最大{{ limit }}件）</h2>
+    <p class="help">上から順に出ます。「手で選んだもの」が先で、残りは最近{{ days }}日のスタンプが多いものが自動で入ります。</p>
+    {% if showing %}
+    <table>
+        <tbody>
+        {% for entry in showing %}
+            <tr>
+                <td><span class="kind">{{ entry.kind_label }}</span></td>
+                <td class="label"><a href="{{ entry.url }}" target="_blank" rel="noopener">{{ entry.label|truncatechars:70 }}</a><small>{{ entry.item.author|display_name }}{% if entry.place %} ・ {{ entry.place }}{% endif %} ・ {{ entry.item.created_at|date:"n/j" }}</small></td>
+                <td class="why">{% if entry.stamps is None %}手で選んだもの{% else %}自動（スタンプ {{ entry.stamps }}）{% endif %}</td>
+                <td>
+                    <form method="post" class="inline">{% csrf_token %}
+                        <input type="hidden" name="kind" value="{{ entry.kind }}"><input type="hidden" name="pk" value="{{ entry.item.pk }}">
+                        <button class="button danger" name="op" value="remove">注目から外す</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>いまは何も出ていません。</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>手で選んだもの（{{ picked|length }}件）</h2>
+    <p class="help">順番の数が小さいものほど上に出ます。最大{{ limit }}件を超えた分は、前のものを外すと出ます。</p>
+    {% if picked %}
+    <table>
+        <tbody>
+        {% for entry in picked %}
+            <tr>
+                <td><span class="kind">{{ entry.kind_label }}</span></td>
+                <td class="label"><a href="{{ entry.url }}" target="_blank" rel="noopener">{{ entry.label|truncatechars:70 }}</a><small>{{ entry.item.author|display_name }}{% if entry.place %} ・ {{ entry.place }}{% endif %} ・ {{ entry.item.created_at|date:"n/j" }}</small></td>
+                <td>{% if entry.showing %}<span class="on">表示中</span>{% endif %}</td>
+                <td>
+                    <form method="post" class="inline">{% csrf_token %}
+                        <input type="hidden" name="kind" value="{{ entry.kind }}"><input type="hidden" name="pk" value="{{ entry.item.pk }}">
+                        順番 <input type="number" name="order" min="0" max="999" value="{{ entry.item.featured_order }}">
+                        <button class="button" name="op" value="order">変更</button>
+                        <button class="button danger" name="op" value="remove">外す</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>まだありません。下の候補から「注目に足す」で選べます。</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>注目に足せるもの</h2>
+    <p class="help">最近{{ days }}日の投稿・コメントを、スタンプの多い順に並べています。言葉で探すと、古いものも出ます。</p>
+    <form method="get" class="search">
+        <input type="search" name="q" value="{{ query }}" placeholder="タイトル・本文で探す">
+        <button class="button" type="submit">探す</button>
+        {% if query %}<a class="button" href="{% url 'washoku_featured_admin' %}">最近のものに戻す</a>{% endif %}
+    </form>
+    {% if candidates %}
+    <table>
+        <tbody>
+        {% for entry in candidates %}
+            <tr>
+                <td><span class="kind">{{ entry.kind_label }}</span></td>
+                <td class="label"><a href="{{ entry.url }}" target="_blank" rel="noopener">{{ entry.label|truncatechars:70 }}</a><small>{{ entry.item.author|display_name }}{% if entry.place %} ・ {{ entry.place }}{% endif %} ・ {{ entry.item.created_at|date:"n/j" }}</small></td>
+                <td class="why">{% if entry.showing %}<span class="on">自動で表示中</span>{% elif entry.item.featured_hidden %}外したもの{% endif %}{% if entry.stamps %} スタンプ {{ entry.stamps }}{% endif %}</td>
+                <td>
+                    <form method="post" class="inline">{% csrf_token %}
+                        <input type="hidden" name="kind" value="{{ entry.kind }}"><input type="hidden" name="pk" value="{{ entry.item.pk }}"><input type="hidden" name="q" value="{{ query }}">
+                        <button class="button" name="op" value="add">注目に足す</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>見つかりませんでした。</p>
+    {% endif %}
+</section>
+
+{% if hidden %}
+<section>
+    <h2>注目から外したもの（{{ hidden|length }}件）</h2>
+    <p class="help">スタンプが多くても自動では出ません。「戻す」と、また自動で出るようになります。</p>
+    <table>
+        <tbody>
+        {% for entry in hidden %}
+            <tr>
+                <td><span class="kind">{{ entry.kind_label }}</span></td>
+                <td class="label"><a href="{{ entry.url }}" target="_blank" rel="noopener">{{ entry.label|truncatechars:70 }}</a><small>{{ entry.item.author|display_name }}{% if entry.place %} ・ {{ entry.place }}{% endif %} ・ {{ entry.item.created_at|date:"n/j" }}</small></td>
+                <td>
+                    <form method="post" class="inline">{% csrf_token %}
+                        <input type="hidden" name="kind" value="{{ entry.kind }}"><input type="hidden" name="pk" value="{{ entry.item.pk }}">
+                        <button class="button" name="op" value="restore">戻す</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+</div>
+{% endblock %}

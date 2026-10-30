@@ -1,4 +1,5 @@
 from django import template
+from django.urls import reverse
 
 
 register = template.Library()
@@ -50,6 +51,16 @@ def split_washoku(app):
             names = [name for name in models if name not in used]
         picked = [models[name] for name in names if name in models and name not in used]
         used.update(model["object_name"] for model in picked)
+        if title == "スイスで和食：HOME・お知らせ・設定":
+            # モデルではない「注目の管理」のページも、この並びの先頭に置く
+            picked = [{
+                "name": "HOMEの注目",
+                "object_name": "Featured",
+                "model": None,
+                "admin_url": reverse("washoku_featured_admin"),
+                "add_url": None,
+                "view_only": True,
+            }] + picked
         if picked:
             sections.append({**app, "name": title, "models": picked})
 

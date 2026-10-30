@@ -3058,3 +3058,35 @@ class MyQuestionsAndRecipeActivityTests(TestCase):
         response = self.client.get(reverse("washoku:home"))
         self.assertContains(response, "kind-recipe")
         self.assertContains(response, "下書きの肉じゃが")
+
+
+class FeaturedAdminTests(TestCase):
+
+    def setUp(self):
+        self.admin = get_user_model().objects.create_superuser("boss", password="x")
+        self.member = get_user_model().objects.create_user("hanako", password="x")
+        self.client.force_login(self.admin)
+        self.column = Post.objects.create(kind="column", status="published", title="味噌の選び方", body="本文", author=self.member)
+
+    def test_page_lists_candidates_and_add_remove_restore(self):
+
+        url = reverse("washoku_featured_admin")
+        self.assertContains(self.client.get(url), "味噌の選び方")
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "add"})
+        self.column.refresh_from_db()
+        self.assertTrue(self.column.is_featured)
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "remove"})
+        self.column.refresh_from_db()
+        self.assertFalse(self.column.is_featured)
+        self.assertTrue(self.column.featured_hidden)
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "restore"})
+        self.column.refresh_from_db()
+        self.assertFalse(self.column.featured_hidden)
+
+    def test_members_cannot_open_it(self):
+
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.get(reverse("washoku_featured_admin")).status_code, 302)
