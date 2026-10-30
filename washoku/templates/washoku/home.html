@@ -106,6 +106,8 @@
         <button type="button" role="tab" id="home-tab-{{ value }}" aria-controls="home-panel-{{ value }}" data-home-tab="{{ value }}" class="is-{{ value }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ label }}</button>
     {% endfor %}
 </nav>
+<button type="button" class="washoku-home-arrow is-prev" data-home-arrow="-1" aria-label="前のページへ" hidden>‹</button>
+<button type="button" class="washoku-home-arrow is-next" data-home-arrow="1" aria-label="次のページへ" hidden>›</button>
 <div class="washoku-home-panels" data-home-panels>
 
 <section class="washoku-home-panel washoku-week" id="home-panel-week" role="tabpanel" aria-labelledby="home-tab-week">
@@ -280,6 +282,7 @@
     var track = box.querySelector("[data-home-panels]");
     var panels = Array.prototype.slice.call(track.children);
     var tabs = Array.prototype.slice.call(box.querySelectorAll("[data-home-tab]"));
+    var arrows = Array.prototype.slice.call(box.querySelectorAll("[data-home-arrow]"));
     var KEY = "washoku_home_tab";
     var current = 0;
 
@@ -288,6 +291,21 @@
         if (panel) track.style.height = panel.offsetHeight + "px";
     }
 
+    // 矢印: 最初のページは右だけ、最後のページは左だけ、あいだは左右。
+    // 位置は、ヘッダーの下に貼りついたタブの列のすぐ下で固定。タブの中身がその高さに見えているときだけ出す
+    var nav = box.querySelector(".washoku-home-tabnav");
+    function place() {
+        var arrowTop = (parseFloat(getComputedStyle(nav).top) || 0) + nav.offsetHeight + 40;
+        var rect = track.getBoundingClientRect();
+        var inView = rect.top < arrowTop && rect.bottom > arrowTop + 46;
+        arrows.forEach(function (arrow) {
+            arrow.style.top = arrowTop + "px";
+            var to = current + parseInt(arrow.dataset.homeArrow, 10);
+            arrow.hidden = !inView || to < 0 || to >= panels.length;
+        });
+    }
+    window.addEventListener("scroll", place, { passive: true });
+
     function mark(index) {
         current = index;
         tabs.forEach(function (tab, i) {
@@ -295,6 +313,7 @@
             tab.tabIndex = i === index ? 0 : -1;
         });
         panels.forEach(function (panel, i) { panel.setAttribute("aria-hidden", String(i !== index)); });
+        place();
         var tab = tabs[index];
         if (tab && tab.scrollIntoView) tab.parentNode.scrollTo({ left: tab.offsetLeft - 16, behavior: "smooth" });
         fit();
@@ -310,6 +329,10 @@
         tab.addEventListener("click", function () { show(i, true); });
     });
 
+    arrows.forEach(function (arrow) {
+        arrow.addEventListener("click", function () { show(current + parseInt(arrow.dataset.homeArrow, 10), true); });
+    });
+
     var timer;
     track.addEventListener("scroll", function () {
         clearTimeout(timer);
@@ -319,7 +342,7 @@
         }, 80);
     }, { passive: true });
 
-    window.addEventListener("resize", function () { show(current, false); });
+    window.addEventListener("resize", function () { show(current, false); place(); });
     if (window.ResizeObserver) panels.forEach(function (panel) { new ResizeObserver(fit).observe(panel); });
 
     // ?tab=week などで開いたら、そのタブ (月曜の通知から)。戻ってきたときは、前に開いていたタブ
