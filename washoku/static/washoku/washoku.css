@@ -5166,57 +5166,6 @@ html.washoku-say-open {
     color: #E3C766;
 }
 
-/* HOMEのタブ: 「注目」(金) と「今週のアンケート」(緑) だけ、下線ではなく色つきのボタンにして、ほかのタブと雰囲気を変える */
-.washoku-home-tabnav button.is-week,
-.washoku-home-tabnav button.is-poll {
-    flex: 0 0 auto;
-    align-self: center;
-    margin: 6px 2px;
-    padding: 7px 14px;
-    border-bottom: 0;
-    border-radius: 999px;
-}
-
-.washoku-home-tabnav button.is-week {
-    background: #FFF1C7;
-    color: #8A5A00;
-}
-
-.washoku-home-tabnav button.is-week span {
-    margin-right: 3px;
-}
-
-.washoku-home-tabnav button.is-week[aria-selected="true"] {
-    background: #F3C64A;
-    color: #4A3000;
-    box-shadow: 0 2px 6px color-mix(in srgb, #E0A81E 40%, transparent);
-}
-
-.washoku-home-tabnav button.is-poll {
-    background: color-mix(in srgb, var(--washoku-poll-accent) 16%, var(--washoku-surface));
-    color: #1F6B5D;
-}
-
-.washoku-home-tabnav button.is-poll[aria-selected="true"] {
-    background: var(--washoku-poll-accent);
-    color: #FFFFFF;
-    box-shadow: 0 2px 6px color-mix(in srgb, var(--washoku-poll-accent) 40%, transparent);
-}
-
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll {
-    color: #8FD6C7;
-}
-
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week {
-    background: color-mix(in srgb, #F3C64A 20%, var(--washoku-bg));
-    color: #F0C766;
-}
-
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-week[aria-selected="true"] {
-    background: #E0B43A;
-    color: #2A1C00;
-}
-
 /* 「今週」タブの中身 */
 .washoku-week {
     padding: 14px;
@@ -5525,10 +5474,6 @@ html.washoku-say-open {
     border: 1px solid color-mix(in srgb, var(--washoku-poll-accent) 35%, transparent);
     border-radius: 20px;
     background: linear-gradient(180deg, var(--washoku-poll-tint), var(--washoku-surface) 70%);
-}
-
-[data-washoku-theme="dark"] .washoku-home-tabnav button.is-poll[aria-selected="true"] {
-    color: #0E2A25;
 }
 
 /* マイページ: 名前の右に、Yapp の共通アカウントへのボタン */
@@ -5865,4 +5810,48 @@ html.washoku-swipe-tabs body {
     color: var(--washoku-text);
     font: inherit;
     font-size: 16px;
+}
+
+/* HOMEのタブ: 左右にまだページがあることを知らせる、半透明の小さな矢印。
+   タブの列のすぐ下の左右に固定して、どのタブでも、スクロールしても同じ場所に出す (高さは home.html のスクリプトで決める) */
+.washoku-home-arrow {
+    position: fixed;
+    top: 180px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 46px;
+    min-height: 0;
+    padding: 0 0 3px;
+    border: 0;
+    background: color-mix(in srgb, var(--washoku-surface) 72%, transparent);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+    color: var(--washoku-muted);
+    font: inherit;
+    font-size: 28px;
+    line-height: 1;
+    opacity: .6;
+    cursor: pointer;
+    transition: opacity .2s ease;
+}
+
+.washoku-home-arrow.is-prev {
+    left: 0;
+    border-radius: 0 14px 14px 0;
+}
+
+.washoku-home-arrow.is-next {
+    right: 0;
+    border-radius: 14px 0 0 14px;
+}
+
+.washoku-home-arrow:hover,
+.washoku-home-arrow:focus-visible {
+    opacity: .95;
+}
+
+.washoku-home-arrow[hidden] {
+    display: none;
 }
