@@ -3023,3 +3023,70 @@ class HomePollTests(TestCase):
         # 全部答えたら、いちばん新しいもの
         self.client.post(reverse("washoku:poll_vote", args=[older.pk]), {"choice": older_choice.pk, "next": "/washoku/"})
         self.assertEqual(self.client.get(reverse("washoku:home")).context["main_poll"].pk, newer.pk)
+
+
+class MyQuestionsAndRecipeActivityTests(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("taro", password="x")
+        self.client.force_login(self.user)
+
+    def test_my_questions_lists_own_questions_by_answer_state(self):
+
+        recipe = make_recipe()
+        other = get_user_model().objects.create_user("hanako", password="x")
+        open_question = Comment.objects.create(recipe=recipe, author=self.user, kind="question", body="みりんの代わりは？")
+        answered = Comment.objects.create(recipe=recipe, author=self.user, kind="question", body="鶏むね肉でもいい？")
+        Comment.objects.create(recipe=recipe, author=other, parent=answered, body="大丈夫です")
+        Comment.objects.create(recipe=recipe, author=other, kind="question", body="ほかの人の質問")
+
+        response = self.client.get(reverse("washoku:my_questions"))
+
+        self.assertEqual(response.context["open_questions"], [open_question])
+        self.assertEqual(response.context["answered_questions"], [answered])
+        self.assertNotContains(response, "ほかの人の質問")
+
+    def test_newly_published_recipe_shows_in_activity(self):
+
+        draft = make_recipe("下書きの肉じゃが", status="draft")
+        self.assertIsNone(draft.published_at)
+
+        draft.status = "published"
+        draft.save()
+        self.assertIsNotNone(draft.published_at)
+
+        response = self.client.get(reverse("washoku:home"))
+        self.assertContains(response, "kind-recipe")
+        self.assertContains(response, "下書きの肉じゃが")
+
+
+class FeaturedAdminTests(TestCase):
+
+    def setUp(self):
+        self.admin = get_user_model().objects.create_superuser("boss", password="x")
+        self.member = get_user_model().objects.create_user("hanako", password="x")
+        self.client.force_login(self.admin)
+        self.column = Post.objects.create(kind="column", status="published", title="味噌の選び方", body="本文", author=self.member)
+
+    def test_page_lists_candidates_and_add_remove_restore(self):
+
+        url = reverse("washoku_featured_admin")
+        self.assertContains(self.client.get(url), "味噌の選び方")
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "add"})
+        self.column.refresh_from_db()
+        self.assertTrue(self.column.is_featured)
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "remove"})
+        self.column.refresh_from_db()
+        self.assertFalse(self.column.is_featured)
+        self.assertTrue(self.column.featured_hidden)
+
+        self.client.post(url, {"kind": "post", "pk": self.column.pk, "op": "restore"})
+        self.column.refresh_from_db()
+        self.assertFalse(self.column.featured_hidden)
+
+    def test_members_cannot_open_it(self):
+
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.get(reverse("washoku_featured_admin")).status_code, 302)

@@ -79,6 +79,7 @@ urlpatterns = [
     path("me/family-favorites/", views.family_favorites, name="family_favorites"),
     path("me/notes/", views.my_notes, name="my_notes"),
     path("me/comments/", views.my_comments, name="my_comments"),
+    path("me/questions/", views.my_questions, name="my_questions"),
 
     # 家族
     path("family/", views.family, name="family"),

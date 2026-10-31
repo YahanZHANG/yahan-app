@@ -1553,12 +1553,21 @@ def photo_context(request, recipe=None, ingredient=None):
     photos = list(item.member_photos.select_related("user"))
     shown_photo = next((photo for photo in photos if shown and photo.url == shown), None)
 
+    # 会員が投稿したレシピは、投稿のときに付けた2枚目の写真も並べて載せる
+    second_photo = None
+    if recipe and recipe.submitted_by_id and shown:
+        second_photo = next(
+            (photo for photo in photos if photo.user_id == recipe.submitted_by_id and photo.url != shown),
+            None,
+        )
+
     if not request.user.is_staff:
         photos = [photo for photo in photos if request.user.is_authenticated and photo.user_id == request.user.pk]
 
     return {
         "photo_target": "recipe" if recipe else "ingredient",
         "shown_photo": shown_photo,
+        "second_photo": second_photo,
         "photo_list": photos,
     }
 
@@ -2508,6 +2517,12 @@ def my_page(request):
                     author=request.user,
                     is_deleted=False,
                 ).count(),
+                "question_count": Comment.objects.filter(
+                    author=request.user,
+                    parent__isnull=True,
+                    kind="question",
+                    is_deleted=False,
+                ).count(),
                 "submitted_count": Recipe.objects.filter(
                     submitted_by=request.user,
                 ).count(),
@@ -2700,6 +2715,24 @@ def my_comments(request):
         "washoku/my_comments.html",
         {
             "comments": comments,
+        },
+    )
+
+
+@login_required
+def my_questions(request):
+    """
+    自分がした質問。答えが来たか (解決済) どうかも出す。
+    """
+
+    questions = list(questions_with_answer_state().filter(author=request.user)[:100])
+
+    return render(
+        request,
+        "washoku/my_questions.html",
+        {
+            "open_questions": [question for question in questions if not question.has_answer],
+            "answered_questions": [question for question in questions if question.has_answer],
         },
     )
 
@@ -3477,7 +3510,7 @@ ACTIVITY_PER_PAGE = 30
 
 def activity_entries(comment_limit=300, post_limit=100):
     """
-    公開中のコメントとみんなの投稿を、新しい順に1つの列にする。
+    公開中のコメント・みんなの投稿・新しく公開されたレシピを、新しい順に1つの列にする。
     """
 
     comments = (
@@ -3496,8 +3529,17 @@ def activity_entries(comment_limit=300, post_limit=100):
         .order_by("-created_at")[:post_limit]
     )
 
+    # 新しく公開されたレシピも「レシピ」として並べる
+    recipes = (
+        Recipe.objects
+        .filter(status="published", published_at__isnull=False)
+        .select_related("submitted_by")
+        .order_by("-published_at")[:post_limit]
+    )
+
     items = [{"kind": "comment", "item": comment, "at": comment.created_at} for comment in comments]
     items += [{"kind": "post", "item": post, "at": post.created_at} for post in posts]
+    items += [{"kind": "recipe", "item": recipe, "at": recipe.published_at} for recipe in recipes]
     items.sort(key=lambda entry: entry["at"], reverse=True)
 
     return items

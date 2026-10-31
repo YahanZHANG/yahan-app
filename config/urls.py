@@ -10,6 +10,7 @@ from portal.views import (
 )
 from portal.forms import YappAuthenticationForm
 from portal.admin_search import admin_search
+from washoku.admin_featured import featured_admin
 
 
 urlpatterns = [
@@ -18,6 +19,13 @@ urlpatterns = [
         "admin/search/",
         admin_search,
         name="admin_search",
+    ),
+
+    # スイスで和食: HOMEの「注目」の管理
+    path(
+        "admin/washoku/featured/",
+        featured_admin,
+        name="washoku_featured_admin",
     ),
 
     path(

@@ -1,0 +1,45 @@
+{% extends "washoku/base.html" %}
+
+{% block title %}自分の質問 | スイスで和食{% endblock %}
+
+{% block content %}
+
+<h1>自分の質問</h1>
+
+<p class="washoku-list-actions">
+    <a class="washoku-button" href="{% url 'washoku:question_new' %}"><i class="bi bi-chat-dots" aria-hidden="true"></i> 質問する</a>
+</p>
+
+<section class="washoku-section">
+    <h2>答えを待っている質問<small class="washoku-count">{{ open_questions|length }}</small></h2>
+    {% if open_questions %}
+        <ul class="washoku-list">
+            {% for question in open_questions %}
+                <li>
+                    <a href="{{ question.get_absolute_url }}">{{ question.body|truncatechars:80 }}</a>
+                    <small>{{ question.target.name }} ・ {{ question.created_at|date:"Y/n/j" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-empty">答えを待っている質問はありません。</p>
+    {% endif %}
+</section>
+
+<section class="washoku-section">
+    <h2>答えが来た質問<small class="washoku-count">{{ answered_questions|length }}</small></h2>
+    {% if answered_questions %}
+        <ul class="washoku-list">
+            {% for question in answered_questions %}
+                <li>
+                    <a href="{{ question.get_absolute_url }}">{{ question.body|truncatechars:80 }}</a>
+                    <small>{{ question.target.name }} ・ 返信 {{ question.answer_count }}件 ・ {{ question.created_at|date:"Y/n/j" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="washoku-empty">まだありません。</p>
+    {% endif %}
+</section>
+
+{% endblock %}

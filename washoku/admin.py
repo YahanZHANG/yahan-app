@@ -380,6 +380,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     @admin.action(description="選んだレシピを公開する")
     def publish(self, request, queryset):
+        queryset.filter(published_at__isnull=True).update(published_at=timezone.now())
         updated = queryset.update(status="published")
         self.message_user(request, f"{updated}件を公開しました。")
 

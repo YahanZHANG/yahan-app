@@ -3158,6 +3158,7 @@ a.washoku-favorite {
 .washoku-activity-kind.kind-poll { background: #D9F0EC; color: #1E6A5E; }
 .washoku-activity-kind.kind-comment { background: #E8743B; color: #fff; }
 .washoku-activity-kind.kind-review { background: #6B6B6B; color: #fff; }
+.washoku-activity-kind.kind-recipe { background: #E2ECF8; color: #2F5C8F; }
 
 /* HOME の返事を待っている質問: 質問文だけを1行ずつ。左にアクセントの線 */
 .washoku-open-questions {
@@ -5854,4 +5855,16 @@ html.washoku-swipe-tabs body {
 
 .washoku-home-arrow[hidden] {
     display: none;
+}
+
+/* 会員が投稿したレシピ: 投稿のときの写真2枚を横に並べる */
+.washoku-ingredient-photo.has-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    max-width: 640px;
+}
+
+.washoku-ingredient-photo.has-two figcaption {
+    grid-column: 1 / -1;
 }

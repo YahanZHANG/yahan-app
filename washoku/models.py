@@ -475,6 +475,13 @@ class Recipe(models.Model):
         auto_now_add=True,
     )
 
+    published_at = models.DateTimeField(
+        "公開日時",
+        null=True,
+        blank=True,
+        help_text="HOMEの「みんなの投稿・コメント」に新着レシピとして出す日時。公開したときに自動で入ります。",
+    )
+
     updated_at = models.DateTimeField(
         "更新日時",
         auto_now=True,
@@ -487,6 +494,14 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        # 初めて公開したときの日時を、新着レシピの日時にする
+        if self.status == "published" and not self.published_at:
+            self.published_at = timezone.now()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = [*kwargs["update_fields"], "published_at"]
+        super().save(*args, **kwargs)
 
     @property
     def servings_label(self):
