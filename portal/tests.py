@@ -303,6 +303,14 @@ class PortalHomeTests(TestCase):
 
         self.assertContains(response, "season-winter")
 
+        settings_row.season = "late_autumn"
+        settings_row.save()
+
+        response = self.client.get(reverse("portal:home"))
+
+        self.assertContains(response, "scene-autumn")
+        self.assertContains(response, "data-autumn-leaves")
+
 
 class SeasonCalendarTests(TestCase):
 

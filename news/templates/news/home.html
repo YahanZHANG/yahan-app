@@ -177,6 +177,10 @@ Swiss News
 
         {% include "news/_article_card.html" %}
 
+        {% if forloop.counter == 5 %}
+            {% include "news/_washoku_promo.html" %}
+        {% endif %}
+
     {% empty %}
 
         <div class="news-empty">
@@ -257,6 +261,23 @@ Swiss News
 
 </div>
 
+
+<script>
+// 「スイスで和食」の紹介: ×で閉じたら30日は出さない
+(function () {
+    var promo = document.querySelector("[data-yapp-promo]");
+    if (!promo) return;
+    var key = "yapp_promo_closed_" + promo.dataset.yappPromo;
+    var closedAt = 0;
+    try { closedAt = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (error) {}
+    if (Date.now() - closedAt < 30 * 24 * 60 * 60 * 1000) return;
+    promo.hidden = false;
+    promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
+        promo.hidden = true;
+        try { localStorage.setItem(key, String(Date.now())); } catch (error) {}
+    });
+})();
+</script>
 
 <script>
 

@@ -1408,7 +1408,9 @@ class SeasonDesignTests(TestCase):
 
         self.assertEqual(display.season(date(2026, 10, 25)), "halloween")
         self.assertEqual(display.season(date(2026, 10, 10)), "")
-        self.assertEqual(display.season(date(2026, 11, 1)), "")
+        self.assertEqual(display.season(date(2026, 11, 1)), "autumn")
+        self.assertEqual(display.season(date(2026, 11, 30)), "autumn")
+        self.assertEqual(display.season(date(2026, 12, 1)), "")
 
         display.home_season = "none"
         self.assertEqual(display.season(date(2026, 10, 25)), "")
@@ -1417,6 +1419,10 @@ class SeasonDesignTests(TestCase):
         display.save()
         self.assertEqual(display.season(date(2026, 5, 1)), "halloween")
         self.assertContains(self.client.get(reverse("washoku:home")), "Trick or Treat!")
+
+        display.home_season = "autumn"
+        display.save()
+        self.assertContains(self.client.get(reverse("washoku:home")), "data-autumn-leaves")
 
         display.home_season = "none"
         display.save()

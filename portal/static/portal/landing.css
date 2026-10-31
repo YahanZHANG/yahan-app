@@ -309,6 +309,32 @@
         radial-gradient(circle at 78% 30%, rgba(255,255,255,.35), transparent 32%),
         linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 55%, var(--sky-3) 100%);
 }
+/* 秋: 夕焼けの紅葉とカラマツの森の絵 + 舞う落ち葉 (canvas) */
+#yapp-landing.scene-autumn .landing-hero { background: #2a1236; }
+#yapp-landing.scene-autumn .landing-hero__backdrop {
+    background:
+        linear-gradient(90deg, rgba(30, 8, 20, .78) 0%, rgba(40, 10, 24, .5) 38%, rgba(40, 10, 24, .05) 72%),
+        linear-gradient(0deg, rgba(30, 8, 20, .55) 0%, transparent 30%),
+        url("images/autumn-hero.svg") center 60% / cover no-repeat;
+    animation: landing-autumn-drift 28s ease-in-out infinite alternate;
+}
+#yapp-landing.scene-autumn .landing-autumn-leaves { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+#yapp-landing.scene-autumn .landing-hero__spark { color: #ffc56b; text-shadow: 0 0 14px rgba(255, 190, 100, .9); }
+#yapp-landing.scene-autumn .landing-hero__headline {
+    background: linear-gradient(100deg, #ffd98a 0%, #fff6da 45%, #ffb45c 55%, #ffd98a 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: landing-autumn-shine 6s linear infinite;
+    font-size: clamp(40px, 5vw, 66px);
+}
+@keyframes landing-autumn-drift { 0% { background-position: 0 0, 0 0, var(--autumn-x, 50%) 60%; transform: scale(1); } 100% { background-position: 0 0, 0 0, calc(var(--autumn-x, 50%) + 4%) 58%; transform: scale(1.06); } }
+/* スマホでは、夕日が見える右寄りを映す */
+@media (max-width: 700px) { #yapp-landing.scene-autumn .landing-hero__backdrop { --autumn-x: 66%; } }
+@keyframes landing-autumn-shine { 0% { background-position: 120% 0; } 100% { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) {
+    #yapp-landing.scene-autumn .landing-hero__backdrop,
+    #yapp-landing.scene-autumn .landing-hero__headline { animation: none; }
+}
 #yapp-landing .landing-hero__mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 34%; z-index: -1; pointer-events: none; }
 #yapp-landing .landing-hero__mountains-far { fill: rgba(10,14,30,.28); }
 #yapp-landing .landing-hero__mountains-snow { fill: rgba(255,255,255,.75); }

@@ -4606,6 +4606,212 @@ button.washoku-poll-row:hover {
     .washoku-halloween-ground { font-size: 20px; }
 }
 
+/* ---------- HOME上部: 秋 (紅葉・食欲の秋。表示設定の「季節のデザイン」) ---------- */
+.washoku-season-autumn {
+    position: relative;
+    overflow: hidden;
+    padding: 14px 12px 12px;
+    border: 1px solid rgba(255, 196, 120, 0.55);
+    background:
+        radial-gradient(60% 55% at 82% 18%, rgba(255, 214, 140, 0.55), transparent 70%),
+        linear-gradient(180deg, #3A1426 0%, #6E2430 38%, #B4462C 72%, #E08A3E 100%);
+    box-shadow: 0 0 0 4px rgba(224, 120, 50, 0.14), 0 12px 28px rgba(80, 24, 20, 0.35);
+    color: #FFF3E0;
+}
+
+.washoku-autumn-scene {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* 夕日がゆっくり明るくなったり暗くなったり */
+.washoku-autumn-sun {
+    position: absolute;
+    top: 10px;
+    right: 16%;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #FFF2C4, #FFC86B 55%, #F59A3C);
+    box-shadow: 0 0 30px 12px rgba(255, 190, 100, 0.45);
+    animation: washoku-autumn-sun 6s ease-in-out infinite;
+}
+
+.washoku-autumn-hills {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 44%;
+}
+
+.washoku-autumn-branch {
+    position: absolute;
+    top: -4px;
+    left: -6px;
+    width: 120px;
+    height: 84px;
+    filter: drop-shadow(0 3px 4px rgba(40, 8, 8, 0.35));
+}
+
+.washoku-autumn-leaf {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: washoku-autumn-sway 3.6s ease-in-out infinite;
+}
+
+.washoku-autumn-leaf.is-2 { animation-delay: -1.2s; animation-duration: 4.2s; }
+.washoku-autumn-leaf.is-3 { animation-delay: -2.1s; }
+.washoku-autumn-leaf.is-4 { animation-delay: -0.6s; animation-duration: 3s; }
+
+.washoku-autumn-leaves {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.washoku-autumn-hello {
+    position: relative;
+    z-index: 2;
+    margin: 0 0 2px;
+    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.32em;
+    text-align: center;
+    background: linear-gradient(100deg, #FFD98A 0%, #FFF6DA 45%, #FFB45C 55%, #FFD98A 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 3px rgba(60, 10, 10, 0.55));
+    animation: washoku-autumn-shine 5s linear infinite;
+}
+
+.washoku-autumn-en {
+    margin-right: 10px;
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.06em;
+}
+
+.washoku-season-autumn .washoku-pick-title {
+    position: relative;
+    z-index: 2;
+    color: #FFF3E0;
+    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 800;
+    text-shadow: 0 2px 6px rgba(60, 10, 10, 0.5);
+}
+
+.washoku-season-autumn .washoku-pickers {
+    position: relative;
+    z-index: 2;
+}
+
+/* すりガラスのようなカード */
+.washoku-season-autumn .washoku-picker {
+    border: 1px solid rgba(255, 226, 180, 0.55);
+    background: rgba(255, 246, 232, 0.2);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 16px rgba(60, 14, 10, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    color: #FFF6E8;
+}
+
+.washoku-season-autumn .washoku-picker strong {
+    text-shadow: 0 1px 3px rgba(60, 10, 10, 0.55);
+}
+
+.washoku-season-autumn .washoku-picker span {
+    animation: washoku-autumn-bob 3s ease-in-out infinite;
+}
+
+.washoku-season-autumn .washoku-picker:nth-child(3) span {
+    animation-delay: -1.5s;
+}
+
+/* おまかせは、熟した柿のような色で光る */
+.washoku-season-autumn .washoku-picker.washoku-picker-random {
+    border: 0;
+    background: radial-gradient(circle at 50% 30%, #FFC56E, #EE7A2E 55%, #B8401E);
+    box-shadow: 0 0 20px rgba(255, 150, 60, 0.6), 0 8px 18px rgba(60, 14, 10, 0.4);
+    color: #3A1206;
+    animation: washoku-autumn-glow 2.8s ease-in-out infinite;
+}
+
+.washoku-season-autumn .washoku-picker.washoku-picker-random strong {
+    text-shadow: none;
+}
+
+.washoku-season-autumn .washoku-picker-random span {
+    animation: washoku-autumn-spin 6s ease-in-out infinite;
+}
+
+.washoku-autumn-ground {
+    position: relative;
+    z-index: 2;
+    margin: 10px 0 -4px;
+    font-size: 16px;
+    letter-spacing: 0.4em;
+    text-align: center;
+}
+
+.washoku-autumn-ground span {
+    display: inline-block;
+    animation: washoku-autumn-bob 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.3s);
+}
+
+@keyframes washoku-autumn-sun {
+    0%, 100% { box-shadow: 0 0 24px 8px rgba(255, 190, 100, 0.35); }
+    50% { box-shadow: 0 0 40px 16px rgba(255, 190, 100, 0.6); }
+}
+
+@keyframes washoku-autumn-sway {
+    0%, 100% { transform: rotate(-7deg); }
+    50% { transform: rotate(7deg); }
+}
+
+@keyframes washoku-autumn-shine {
+    0% { background-position: 120% 0; }
+    100% { background-position: -100% 0; }
+}
+
+@keyframes washoku-autumn-bob {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-4px) rotate(4deg); }
+}
+
+@keyframes washoku-autumn-glow {
+    0%, 100% { box-shadow: 0 0 14px rgba(255, 150, 60, 0.45), 0 8px 18px rgba(60, 14, 10, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(255, 170, 70, 0.85), 0 8px 18px rgba(60, 14, 10, 0.4); }
+}
+
+@keyframes washoku-autumn-spin {
+    0%, 100% { transform: rotate(-12deg) scale(1); }
+    50% { transform: rotate(12deg) scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .washoku-season-autumn,
+    .washoku-season-autumn * {
+        animation: none !important;
+    }
+}
+
+@media (min-width: 900px) {
+    .washoku-autumn-hello { font-size: 20px; }
+    .washoku-autumn-en { font-size: 23px; }
+    .washoku-autumn-sun { width: 64px; height: 64px; }
+    .washoku-autumn-branch { width: 170px; height: 120px; }
+    .washoku-autumn-ground { font-size: 21px; }
+}
+
 /* スマホのブラウザで開いている人にだけ出す「アプリにする」 (Swiss News と同じ形) */
 .washoku-install-pill {
     flex: none;
