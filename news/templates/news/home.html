@@ -165,6 +165,10 @@ Swiss News
 {% endif %}
 
 
+{# 注目ニュースのすぐ後 (注目がないときは記事一覧の上) に、同じ Yapp のアプリの紹介 #}
+{% include "news/_washoku_promo.html" %}
+
+
 <div class="news-list">
 
     {% for article in articles %}
@@ -176,10 +180,6 @@ Swiss News
         {% endifchanged %}
 
         {% include "news/_article_card.html" %}
-
-        {% if forloop.counter == 5 %}
-            {% include "news/_washoku_promo.html" %}
-        {% endif %}
 
     {% empty %}
 

@@ -1,5 +1,5 @@
 {% load static %}
-{# 同じ Yapp が作っている「スイスで和食」の紹介。×で閉じると30日出さない (news/templates/news/home.html のスクリプト) #}
+{# 注目ニュースのすぐ後に出す、同じ Yapp が作っている「スイスで和食」の紹介。×で閉じると30日出さない (news/templates/news/home.html のスクリプト) #}
 <aside class="news-yapp-promo" data-yapp-promo="washoku" aria-label="Yapp のほかのアプリ" hidden>
     <a class="news-yapp-promo__link" href="{% url 'washoku:home' %}?from=news">
         <img class="news-yapp-promo__icon" src="{% static 'pwa/washoku/icon-192.png' %}" alt="" width="52" height="52" loading="lazy">

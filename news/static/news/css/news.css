@@ -6132,15 +6132,11 @@
 
 .news-yapp-promo {
     position: relative;
+    margin: 0 0 18px;
     border: 1px solid rgba(200, 85, 45, .18);
     border-radius: 24px;
     background: linear-gradient(135deg, #fffaf4 0%, #fff 60%);
     box-shadow: 0 7px 24px rgba(59, 70, 66, .05);
-}
-
-/* PCで記事が2列に並ぶときも、紹介は横いっぱいの細い帯にする */
-.news-list > .news-yapp-promo {
-    grid-column: 1 / -1;
 }
 
 .news-yapp-promo[hidden] {
