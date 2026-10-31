@@ -1,0 +1,14 @@
+{% load static %}
+{# 同じ Yapp が作っている「スイスで和食」の紹介。×で閉じると30日出さない (news/templates/news/home.html のスクリプト) #}
+<aside class="news-yapp-promo" data-yapp-promo="washoku" aria-label="Yapp のほかのアプリ" hidden>
+    <a class="news-yapp-promo__link" href="{% url 'washoku:home' %}?from=news">
+        <img class="news-yapp-promo__icon" src="{% static 'pwa/washoku/icon-192.png' %}" alt="" width="52" height="52" loading="lazy">
+        <span class="news-yapp-promo__text">
+            <span class="news-yapp-promo__label">Yapp のアプリ紹介 ・ Swiss News と同じ Yapp が作っています</span>
+            <strong>スイスで和食</strong>
+            <span class="news-yapp-promo__desc">スイスで買える食材で作る和食レシピと、在住者どうしの食の知恵。無料・登録なしで使えます。</span>
+        </span>
+        <span class="news-yapp-promo__cta">見てみる ›</span>
+    </a>
+    <button type="button" class="news-yapp-promo__close" aria-label="この紹介を閉じる" data-yapp-promo-close>×</button>
+</aside>
