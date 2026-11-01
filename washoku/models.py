@@ -1698,6 +1698,7 @@ class DisplaySettings(models.Model):
         ("auto", "自動 (時期に合わせる)"),
         ("none", "いつものデザイン"),
         ("halloween", "ハロウィン"),
+        ("autumn", "秋（紅葉・食欲の秋）"),
     ]
 
     home_season = models.CharField(
@@ -1705,7 +1706,7 @@ class DisplaySettings(models.Model):
         max_length=20,
         choices=SEASON_CHOICES,
         default="auto",
-        help_text="自動: ハロウィンは10月18日〜31日",
+        help_text="自動: ハロウィンは10月18日〜31日、秋は11月1日〜30日",
     )
 
     # HOMEの「注目」タブ。管理者が「注目」に選んだものと、先週のアンケートの結果 (自動) も出る
@@ -1739,6 +1740,9 @@ class DisplaySettings(models.Model):
 
         if today.month == 10 and today.day >= 18:
             return "halloween"
+
+        if today.month == 11:
+            return "autumn"
 
         return ""
 

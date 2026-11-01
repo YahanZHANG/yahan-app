@@ -11,6 +11,8 @@ from datetime import date, timedelta
 # particle: ヒーローに舞う飾りの動き
 #   fall=上から落ちる / rise=下から上る / snow=雪 / petal=花びら
 #   firework=花火 / rain=雨 / twinkle=星がまたたく / halloween=ハロウィン
+#   autumn=紅葉とイチョウが風に舞う (canvas に描く。static/yapp/autumn_leaves.js)
+# scene: ヒーローの背景を絵にするとき (autumn=夕焼けの紅葉とカラマツの森の絵)
 # motif: 右下に大きく置く飾り
 # sky: ヒーローの空の色 (上から下へ)
 # accent: ボタンなどのテーマ色
@@ -130,11 +132,12 @@ THEMES = {
         "name": "紅葉の季節",
         "title": "紅葉のスイスを",
         "headline": "歩いてみよう。",
-        "particle": "fall",
+        "particle": "autumn",
+        "scene": "autumn",
         "symbols": ["🍁", "🍂", "🍁", "🍂"],
-        "motif": ["🍁", "🥾", "🍂"],
-        "sky": ("#5a2a12", "#c8662a", "#ffc56b"),
-        "accent": "#c8572a",
+        "motif": [],
+        "sky": ("#2a1236", "#c2492f", "#f9c774"),
+        "accent": "#d0552a",
     },
     "halloween": {
         "name": "ハロウィン",
@@ -211,21 +214,23 @@ THEMES = {
         "name": "秋",
         "title": "実りの秋を",
         "headline": "スイスで楽しもう。",
-        "particle": "fall",
-        "symbols": ["🍇", "🌰", "🍂", "🍎"],
-        "motif": ["🍇", "🌰"],
-        "sky": ("#3a5a8a", "#d8a060", "#f5d48a"),
-        "accent": "#b8662a",
+        "particle": "autumn",
+        "scene": "autumn",
+        "symbols": ["🍁", "🍂"],
+        "motif": [],
+        "sky": ("#2a1236", "#c2492f", "#f9c774"),
+        "accent": "#d0552a",
     },
     "late_autumn": {
         "name": "晩秋",
-        "title": "霧の朝も",
-        "headline": "ぬくぬく過ごそう。",
-        "particle": "fall",
-        "symbols": ["🍂", "•", "🍂", "•"],
-        "motif": ["☕", "🌰"],
-        "sky": ("#4a5060", "#8a90a0", "#c8ccd6"),
-        "accent": "#8a5a3a",
+        "title": "黄金色の秋を",
+        "headline": "スイスで味わおう。",
+        "particle": "autumn",
+        "scene": "autumn",
+        "symbols": ["🍁", "🍂"],
+        "motif": [],
+        "sky": ("#2a1236", "#c2492f", "#f9c774"),
+        "accent": "#d0552a",
     },
 }
 

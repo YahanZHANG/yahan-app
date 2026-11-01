@@ -919,3 +919,15 @@
     border-color: var(--news-dark-border-soft);
     background: var(--news-dark-header);
 }
+
+
+/* Yapp のほかのアプリの紹介 */
+.news-app.news-dark .news-yapp-promo {
+    border-color: var(--news-dark-border-soft);
+    background: linear-gradient(135deg, #33291f 0%, var(--news-dark-surface) 60%);
+}
+
+.news-app.news-dark .news-yapp-promo__label { color: var(--news-dark-accent); }
+.news-app.news-dark .news-yapp-promo__text strong { color: var(--news-dark-text); }
+.news-app.news-dark .news-yapp-promo__desc { color: var(--news-dark-muted); }
+.news-app.news-dark .news-yapp-promo__close { color: var(--news-dark-faint); }
