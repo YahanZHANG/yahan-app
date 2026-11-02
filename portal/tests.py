@@ -291,6 +291,15 @@ class PortalHomeTests(TestCase):
         self.assertContains(response, "チューリッヒで初雪")
         self.assertContains(response, 'property="og:image"')
 
+    def test_survey_banner_between_featured_and_other_apps(self):
+
+        content = self.client.get(reverse("portal:home")).content.decode()
+
+        banner = content.index('class="landing-survey"')
+        self.assertLess(content.index("気になるアプリから、はじめよう。"), banner)
+        self.assertLess(banner, content.index("その他のアプリ"))
+        self.assertIn(reverse("pre_survey:start") + "?from=yapp", content)
+
     def test_season_can_be_fixed_in_admin(self):
 
         from portal.models import PortalSettings

@@ -66,4 +66,8 @@
 {% endif %}
 
 <p class="ps-note ps-center"><a href="{% url 'portal:home' %}">Yappのトップへ</a></p>
+<script>
+// Swiss News・Yapp のトップに出しているアンケートのお願いを、しばらく出さないようにする
+try { localStorage.setItem("yapp_pre_survey_done", String(Date.now())); } catch (error) {}
+</script>
 {% endblock %}

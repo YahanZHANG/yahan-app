@@ -1,0 +1,14 @@
+{% load static %}
+{# 事前アンケートのお願い。注目ニュースのすぐ後に出す。×で閉じると30日、回答し終えると14日出さない (news/templates/news/home.html のスクリプト) #}
+<aside class="news-yapp-promo news-yapp-promo--survey" data-yapp-promo="pre-survey" aria-label="アンケートへのご協力のお願い" hidden>
+    <a class="news-yapp-promo__link" href="{% url 'pre_survey:start' %}?from=news">
+        <img class="news-yapp-promo__icon" src="{% static 'portal/yapp-icon.png' %}" alt="" width="52" height="52" loading="lazy">
+        <span class="news-yapp-promo__text">
+            <span class="news-yapp-promo__label">ご協力のお願い ・ Swiss News を作っている Yapp より</span>
+            <strong>スイス生活の<wbr>知恵袋アンケート</strong>
+            <span class="news-yapp-promo__desc">スイスで暮らす日本人どうしの知恵を集めています。答えられる質問だけでOK・登録不要です。</span>
+        </span>
+        <span class="news-yapp-promo__cta">協力する ›</span>
+    </a>
+    <button type="button" class="news-yapp-promo__close" aria-label="このお願いを閉じる" data-yapp-promo-close>×</button>
+</aside>

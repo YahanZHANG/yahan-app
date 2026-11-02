@@ -6211,6 +6211,20 @@
     cursor: pointer;
 }
 
+/* アンケートのお願いは Yapp の青 */
+.news-yapp-promo--survey {
+    border-color: rgba(54, 95, 117, .22);
+    background: linear-gradient(135deg, #f1f6f9 0%, #fff 60%);
+}
+
+.news-yapp-promo--survey .news-yapp-promo__icon {
+    box-shadow: 0 4px 10px rgba(54, 95, 117, .2);
+}
+
+.news-yapp-promo--survey .news-yapp-promo__cta {
+    background: #365f75;
+}
+
 @media (max-width: 520px) {
     .news-yapp-promo__cta {
         display: none;
