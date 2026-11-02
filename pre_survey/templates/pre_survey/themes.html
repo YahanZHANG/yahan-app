@@ -10,7 +10,10 @@
     <form method="post" class="ps-form">
         {% csrf_token %}
         <fieldset class="ps-chips">
-            <legend>テーマ（複数選べます）</legend>
+            <legend>
+                テーマ（複数選べます）
+                <button type="button" class="ps-link-button ps-select-all" data-select-all hidden>すべて選択</button>
+            </legend>
             {% for option in theme_options %}
                 <label class="ps-chip">
                     <input type="checkbox" name="themes" value="{{ option.value }}" {% if option.checked %}checked{% endif %}>
@@ -28,6 +31,25 @@
                 {% endfor %}
             </select>
         </label>
+
+        <script>
+        // 「すべて選択」: 全部選ばれていれば「すべて解除」になる
+        (function () {
+            var button = document.querySelector("[data-select-all]");
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('input[name="themes"]'));
+            if (!button || !boxes.length) return;
+            function allChecked() { return boxes.every(function (box) { return box.checked; }); }
+            function update() { button.textContent = allChecked() ? "すべて解除" : "すべて選択"; }
+            button.hidden = false;
+            update();
+            button.addEventListener("click", function () {
+                var check = !allChecked();
+                boxes.forEach(function (box) { box.checked = check; });
+                update();
+            });
+            boxes.forEach(function (box) { box.addEventListener("change", update); });
+        })();
+        </script>
 
         <button type="submit" class="ps-button ps-button-primary">質問に答える</button>
         <button type="submit" name="next" value="ask" class="ps-button ps-button-ghost">答えずに、質問だけ投稿する</button>

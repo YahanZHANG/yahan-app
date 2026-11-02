@@ -162,7 +162,8 @@ class ParticipationTests(FlowMixin, TestCase):
     def test_again_keeps_nickname_and_previous_themes(self):
         first = self.join(themes=("life", "work"), region="zurich")
         self.client.get(reverse("pre_survey:done"))
-        self.client.post(reverse("pre_survey:again"))
+        response = self.client.post(reverse("pre_survey:again"))
+        self.assertRedirects(response, reverse("pre_survey:question"), fetch_redirect_response=False)
         response = self.client.get(reverse("pre_survey:themes"))
         checked = [option["value"] for option in response.context["theme_options"] if option["checked"]]
         self.assertEqual(checked, ["life", "work"])
@@ -170,6 +171,40 @@ class ParticipationTests(FlowMixin, TestCase):
         self.assertEqual(second.nickname, "さくら")
         self.assertEqual(second.region, "zurich")
         self.assertEqual(second.browser_token, first.browser_token)
+
+    def test_themes_page_has_select_all_and_zurich_by_default(self):
+        self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
+        self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
+        response = self.client.get(reverse("pre_survey:themes"))
+        self.assertContains(response, "すべて選択")
+        self.assertEqual(response.context["region"], "zurich")
+        self.assertNotIn("other", [option["value"] for option in response.context["theme_options"]])
+
+    def test_again_keeps_no_region_if_chosen(self):
+        self.join(region="")
+        self.client.post(reverse("pre_survey:again"))
+        self.assertEqual(self.client.get(reverse("pre_survey:themes")).context["region"], "")
+
+    def test_finish_box_at_top_after_three_answers(self):
+        questions = [make_question(f"Q{i}") for i in range(4)]
+        self.join()
+        for question in questions[:3]:
+            self.act(question, "answer")
+        response = self.client.get(reverse("pre_survey:question"))
+        content = response.content.decode()
+        self.assertIn("ここで回答を終えて、あなたが聞きたいことを教えていただくこともできます", content)
+        self.assertLess(content.index("回答を終えて、聞きたいことを書く"), content.index("ps-question-body"))
+
+    def test_ask_with_other_theme(self):
+        self.join(themes=("life",))
+        response = self.client.get(reverse("pre_survey:ask"))
+        self.assertContains(response, "その他")
+        self.client.post(reverse("pre_survey:ask"), {"theme": "other", "body": "どのテーマでもない質問"})
+        asked = Question.objects.get(source="member")
+        self.assertEqual(asked.theme, "other")
+        other = self.client_class()
+        self.join(client=other, themes=("life",))
+        self.assertEqual(self.current(other), asked)
 
     def test_region_choices_start_with_zurich(self):
         self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
@@ -373,9 +408,15 @@ class AccountTests(FlowMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["suggested_username"], "さくら2")
 
-    def test_no_signup_offer_for_auto_or_anonymous(self):
+    def test_signup_offer_for_every_logged_out_respondent(self):
         self.join(mode="auto")
-        self.assertNotIn("signup_form", self.client.get(reverse("pre_survey:done")).context)
+        response = self.client.get(reverse("pre_survey:done"))
+        self.assertEqual(response.context["signup_form"]["username"].value(), "森のリス")
+        other = self.client_class()
+        self.join(client=other, mode="anonymous")
+        response = other.get(reverse("pre_survey:done"))
+        self.assertEqual(response.context["signup_form"]["username"].value(), "")
+        self.assertContains(response, "ユーザーIDとパスワードを決めるだけで登録できます")
 
     def test_suggest_username_strips_spaces(self):
         self.assertEqual(suggest_username("さくら テスト"), ("さくらテスト", False))

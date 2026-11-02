@@ -20,6 +20,12 @@ class Theme(models.TextChoices):
     WORK = "work", "仕事"
     LANGUAGE = "language", "語学"
     OUTING = "outing", "おでかけ"
+    # 質問を追加するとき、どのテーマにも当てはまらないもの (回答するテーマとしては選ばない)
+    OTHER = "other", "その他"
+
+
+# 回答するテーマとして選べるもの (「その他」の質問は、選んだテーマの質問の後に出る)
+ANSWER_THEMES = [(value, label) for value, label in Theme.choices if value != Theme.OTHER]
 
 
 # SwissNews の地域 (news.Region の slug) と同じ分類。ドイツ語圏を上にしている。
@@ -51,7 +57,7 @@ ANONYMOUS_NAME = "名無しさん"
 
 
 class Participant(models.Model):
-    """1回の参加 (「また参加する」で新しい行ができる)"""
+    """1回の参加 (終了画面の「さらに他の質問に答える」で新しい行ができる)"""
 
     class NicknameMode(models.TextChoices):
         CUSTOM = "custom", "自分で設定"

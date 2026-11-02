@@ -12,7 +12,7 @@
 
     <form method="post" action="{% url 'pre_survey:again' %}" class="ps-form">
         {% csrf_token %}
-        <button type="submit" class="ps-button ps-button-primary">また参加する</button>
+        <button type="submit" class="ps-button ps-button-primary">さらに他の質問に答える</button>
     </form>
     {% if can_ask %}
         <a href="{% url 'pre_survey:ask' %}" class="ps-button ps-button-ghost ps-done-ask">＋ 知りたいことを質問する</a>
@@ -23,7 +23,7 @@
 <section class="ps-card ps-card-soft">
     <h2>よければ、このままYappに登録もできます</h2>
     <p>
-        「{{ participant.nickname }}」のまま、パスワードを決めるだけで登録できます。
+        {% if participant.nickname %}「{{ participant.nickname }}」のまま、パスワードを決めるだけで登録できます。{% else %}ユーザーIDとパスワードを決めるだけで登録できます。{% endif %}
         登録すると、別の端末からでも今回の回答とつながります。
     </p>
 

@@ -14,10 +14,21 @@
     </form>
 {% endif %}
 
-<p class="ps-progress">
-    回答 <strong>{{ answered_count }}</strong> 問
-    {% if not can_finish %}<small>（{{ answers_before_finish }}問答えたら、いつでも終われます）</small>{% endif %}
-</p>
+{% if can_finish %}
+    <div class="ps-finish-box">
+        <p>
+            <strong>{{ answered_count }}問</strong>お答えいただきました。ありがとうございます！<br>
+            ここで回答を終えて、あなたが聞きたいことを教えていただくこともできます。
+        </p>
+        <a href="{% url 'pre_survey:ask' %}?last=1" class="ps-button ps-button-primary">回答を終えて、聞きたいことを書く</a>
+        <p class="ps-note">もちろん、続けて回答していただくのも大歓迎です。</p>
+    </div>
+{% else %}
+    <p class="ps-progress">
+        回答 <strong>{{ answered_count }}</strong> 問
+        <small>（{{ answers_before_finish }}問答えたら、いつでも終われます）</small>
+    </p>
+{% endif %}
 
 {% if question %}
 {% if question.other_theme %}
@@ -48,7 +59,7 @@
 {% else %}
 <section class="ps-card ps-card-soft">
     <h1>すべての質問を見ていただきました</h1>
-    <p>本当にありがとうございます！ 知りたいことがあれば、質問を追加してください。新しい質問が増えたら、「また参加する」からお答えいただけます。</p>
+    <p>本当にありがとうございます！ 知りたいことがあれば、質問を追加してください。新しい質問が増えたら、またお答えいただけるとうれしいです。</p>
 </section>
 {% endif %}
 

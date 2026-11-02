@@ -141,6 +141,7 @@ class Migration(migrations.Migration):
                             ("work", "仕事"),
                             ("language", "語学"),
                             ("outing", "おでかけ"),
+                            ("other", "その他"),
                         ],
                         max_length=20,
                         verbose_name="テーマ",

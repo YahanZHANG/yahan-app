@@ -19,7 +19,7 @@ from portal.forms import SignupForm
 from portal.views import create_public_user
 from travel.models import UserProfile
 
-from .models import REGION_CHOICES, Answer, Interest, Participant, Question, Skip, Theme
+from .models import ANSWER_THEMES, REGION_CHOICES, Answer, Interest, Participant, Question, Skip, Theme
 from .services import (
     TOKEN_COOKIE,
     TOKEN_MAX_AGE,
@@ -42,6 +42,9 @@ NICKNAME_MAX_LENGTH = 30
 
 # 1回の参加で追加できる質問の数
 QUESTIONS_PER_PARTICIPATION = 5
+
+# 地域の初期値 (最初はチューリッヒ周辺の人に送るため)
+DEFAULT_REGION = "zurich"
 
 # この数だけ答えたら「ここで終了」を出す
 ANSWERS_BEFORE_FINISH = 3
@@ -132,7 +135,7 @@ def login_url(request, path=None):
 def theme_options(selected):
     return [
         {"value": value, "label": label, "checked": value in selected}
-        for value, label in Theme.choices
+        for value, label in ANSWER_THEMES
     ]
 
 
@@ -247,13 +250,14 @@ def themes(request):
         return step_redirect(participant)
 
     error = ""
-    # 「また参加する」では、前回のテーマを選んだ状態から始める
-    selected = participant.themes or request.session.get("pre_survey_previous_themes", [])
-    region = participant.region
+    # 「さらに他の質問に答える」では、前回のテーマ・地域が引き継がれている (again)
+    selected = participant.themes
+    # 地域は、はじめて選ぶときはチューリッヒを選んだ状態にしておく
+    region = participant.region if participant.themes else (participant.region or DEFAULT_REGION)
 
     if request.method == "POST":
 
-        selected = [value for value in request.POST.getlist("themes") if value in Theme.values]
+        selected = [value for value in request.POST.getlist("themes") if value in dict(ANSWER_THEMES)]
         region = request.POST.get("region", "")
 
         if region not in dict(REGION_CHOICES):
@@ -442,7 +446,7 @@ def ask(request):
         theme = request.POST.get("theme", "")
 
         if len(asked) >= QUESTIONS_PER_PARTICIPATION:
-            error = f"1回の参加で追加できる質問は{QUESTIONS_PER_PARTICIPATION}問までです。「また参加する」から、また追加できます。"
+            error = f"1回の参加で追加できる質問は{QUESTIONS_PER_PARTICIPATION}問までです。終了画面の「さらに他の質問に答える」から、また追加できます。"
         elif theme not in Theme.values:
             error = "テーマを選んでください。"
         elif not body:
@@ -489,13 +493,12 @@ def ask(request):
 # =========================================================
 
 def signup_offer(request, participant):
-    """未ログインで、自分でニックネームを決めた人には「このまま登録」を出す"""
+    """
+    ログインしていない人には「このままYappに登録」を出す。
+    ニックネームがあれば (自分で決めた・おまかせ)、それをユーザーIDの初期値にする。
+    """
 
-    return (
-        not request.user.is_authenticated
-        and participant.nickname_mode == Participant.NicknameMode.CUSTOM
-        and bool(participant.nickname)
-    )
+    return not request.user.is_authenticated
 
 
 @with_token
@@ -584,7 +587,7 @@ def done_signup(request):
 @require_POST
 @with_token
 def again(request):
-    """また参加する: 同意とニックネームは前回のまま、テーマから選び直す"""
+    """さらに他の質問に答える: 同意・ニックネーム・テーマ・地域は前回のまま、すぐ次の質問へ"""
 
     previous = current_participant(request)
 
@@ -603,11 +606,10 @@ def again(request):
         user=request.user if request.user.is_authenticated else None,
         nickname=previous.nickname,
         nickname_mode=previous.nickname_mode,
-        themes=[],
+        themes=previous.themes,
         region=previous.region,
         consent_version=previous.consent_version,
         consented_at=previous.consented_at,
     )
     request.session[SESSION_KEY] = participant.pk
-    request.session["pre_survey_previous_themes"] = previous.themes
-    return redirect("pre_survey:themes")
+    return redirect("pre_survey:question")

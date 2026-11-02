@@ -463,6 +463,34 @@ html[data-yapp-resolved-theme="dark"] .ps-chip input:checked + span {
 
 /* ---------- Question ---------- */
 
+.ps-finish-box {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--ps-accent);
+    border-radius: 16px;
+    background: var(--ps-accent-soft);
+    font-size: 14px;
+}
+
+.ps-finish-box p {
+    margin: 0 0 10px;
+}
+
+.ps-finish-box .ps-note {
+    margin: 8px 0 0;
+    text-align: center;
+}
+
+.ps-chips legend {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.ps-select-all {
+    align-self: auto;
+}
+
 .ps-progress {
     margin: 0 0 10px;
     color: var(--ps-muted);
