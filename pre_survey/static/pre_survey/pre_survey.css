@@ -442,6 +442,13 @@ html[data-yapp-resolved-theme="dark"] .ps-chip input:checked + span {
     font-weight: 600;
 }
 
+.ps-button-help {
+    margin: 0 !important;
+    color: var(--ps-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
 .ps-link-button {
     align-self: flex-start;
     padding: 0;
