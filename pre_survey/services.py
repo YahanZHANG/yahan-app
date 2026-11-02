@@ -1,0 +1,194 @@
+"""
+事前アンケートの中身: 同意文、ブラウザの目印、ニックネーム、質問を出す順番。
+"""
+
+import random
+import re
+import uuid
+from functools import lru_cache
+from pathlib import Path
+
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Exists, OuterRef, Q
+
+from .models import Answer, Interest, Question, Skip
+
+
+# =========================================================
+# 同意文 (consent/v1.txt, v2.txt ... の一番新しいもの)
+# =========================================================
+
+CONSENT_DIR = Path(__file__).resolve().parent / "consent"
+
+
+def _version_number(path):
+    match = re.fullmatch(r"v(\d+)", path.stem)
+    return int(match.group(1)) if match else -1
+
+
+@lru_cache(maxsize=1)
+def current_consent():
+    """(バージョン名, 文面)。文面を差し替えるときは v2.txt を足す。"""
+
+    files = sorted(CONSENT_DIR.glob("v*.txt"), key=_version_number)
+    latest = files[-1]
+    return latest.stem, latest.read_text(encoding="utf-8").strip()
+
+
+def consent_blocks(text):
+    """同意文を段落に分ける。「# 」で始まる段落は見出し、「※」で始まる段落 (メモ) は出さない。"""
+
+    blocks = []
+    for paragraph in text.split("\n\n"):
+        paragraph = paragraph.strip()
+        if not paragraph or paragraph.startswith("※"):
+            continue
+        if paragraph.startswith("# "):
+            blocks.append({"heading": True, "text": paragraph[2:].strip()})
+        else:
+            blocks.append({"heading": False, "text": paragraph})
+    return blocks
+
+
+# =========================================================
+# ブラウザの目印 (cookie)
+# =========================================================
+
+TOKEN_COOKIE = "pre_survey_token"
+TOKEN_MAX_AGE = 60 * 60 * 24 * 365 * 2
+
+
+def browser_token(request):
+    """このブラウザの目印。なければ作り、レスポンスで cookie に保存する (views.with_token)。"""
+
+    cached = getattr(request, "_pre_survey_token", None)
+    if cached:
+        return cached
+
+    try:
+        token = uuid.UUID(request.COOKIES.get(TOKEN_COOKIE, ""))
+    except ValueError:
+        token = uuid.uuid4()
+        request._pre_survey_new_token = True
+
+    request._pre_survey_token = token
+    return token
+
+
+def identity(request):
+    """「この人の記録」を探す条件: このブラウザの記録と、ログイン中ならそのユーザーの記録"""
+
+    condition = Q(browser_token=browser_token(request))
+    if request.user.is_authenticated:
+        condition |= Q(user=request.user)
+    return condition
+
+
+def owner_fields(request, participant):
+    """記録を作るときに入れる「だれの記録か」"""
+
+    return {
+        "user": request.user if request.user.is_authenticated else None,
+        "browser_token": browser_token(request),
+        "participant": participant,
+    }
+
+
+# =========================================================
+# 運営におまかせのニックネーム
+# =========================================================
+
+NICKNAME_PLACES = [
+    "アルプスの", "湖のほとりの", "森の", "雪山の", "ぶどう畑の", "朝市の",
+    "チーズ好きの", "ハイキング好きの", "トラム好きの", "旧市街の", "牧場の", "山小屋の",
+]
+
+NICKNAME_ANIMALS = [
+    "リス", "マーモット", "アイベックス", "ウシ", "ヤギ", "白鳥",
+    "カモ", "キツネ", "ハリネズミ", "フクロウ", "セントバーナード", "ウサギ",
+]
+
+
+def random_nickname():
+    return random.choice(NICKNAME_PLACES) + random.choice(NICKNAME_ANIMALS)
+
+
+# =========================================================
+# 質問を出す順番
+# =========================================================
+
+def next_question(request, participant):
+    """
+    次に出す質問。なければ None。
+
+    - 公開中の質問のうち、選んだテーマのもの
+    - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
+    - 回答した質問は出さない。この参加でスキップ・「知りたい」にした質問も出さない
+    - 前の参加でスキップ・「知りたい」にした質問は、まだ見ていない質問の後
+    - その中で、回答の少ない順 (0件が先) → 新しい順
+    """
+
+    mine = identity(request)
+
+    answered = Answer.objects.filter(mine).values("question_id")
+    passed_now = Skip.objects.filter(participant=participant).values("question_id")
+    interested_now = Interest.objects.filter(participant=participant).values("question_id")
+
+    seen_before = (
+        Skip.objects.filter(mine, question=OuterRef("pk"))
+        .exclude(participant=participant)
+    )
+    interested_before = (
+        Interest.objects.filter(mine, question=OuterRef("pk"))
+        .exclude(participant=participant)
+    )
+
+    questions = (
+        Question.objects
+        .filter(status=Question.Status.PUBLISHED, theme__in=participant.themes)
+        .exclude(pk__in=answered)
+        .exclude(pk__in=passed_now)
+        .exclude(pk__in=interested_now)
+    )
+
+    if participant.region:
+        questions = questions.filter(Q(region="") | Q(region=participant.region))
+
+    return (
+        questions
+        .annotate(
+            answer_count=Count("answers", filter=Q(answers__is_hidden=False)),
+            skipped_before=Exists(seen_before),
+            interested_before=Exists(interested_before),
+        )
+        .order_by("skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
+        .first()
+    )
+
+
+# =========================================================
+# 終了画面での登録: ユーザーIDの初期値
+# =========================================================
+
+def suggest_username(nickname):
+    """
+    ニックネームから、使えるユーザーIDの案を作る。(案, 元のニックネームがすでに使われていたか)
+    ユーザーIDに使えない文字 (空白・記号など) は取り除く。何も残らなければ ("", False)。
+    """
+
+    base = re.sub(r"[^\w.@+-]", "", nickname or "")[:140]
+
+    if not base:
+        return "", False
+
+    users = get_user_model().objects
+
+    if not users.filter(username__iexact=base).exists():
+        return base, False
+
+    for number in range(2, 100):
+        candidate = f"{base}{number}"
+        if not users.filter(username__iexact=candidate).exists():
+            return candidate, True
+
+    return f"{base}{random.randint(1000, 9999)}", True

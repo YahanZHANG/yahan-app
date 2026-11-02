@@ -1,0 +1,72 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}スイス生活の知恵袋アンケート{% endblock %} | Yapp</title>
+    <script>
+    // 画面を描く前にライト/ダークを決める (Yapp 共通の設定に合わせる)
+    (function () {
+        var root = document.documentElement;
+        var preference = root.dataset.yappTheme || "system";
+        var dark = preference === "dark" || (preference === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.yappResolvedTheme = dark ? "dark" : "light";
+    })();
+    </script>
+    <meta name="theme-color" content="#6577B6">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="{% static 'pre_survey/pre_survey.css' %}">
+    {% include "includes/app_icons.html" %}
+</head>
+<body>
+
+<header class="ps-header">
+    <a href="{% url 'pre_survey:start' %}" class="ps-brand">
+        <img src="{% static 'portal/yapp-icon.png' %}" alt="" width="32" height="32">
+        <span>
+            <strong>スイス生活の知恵袋</strong>
+            <small>掲示板づくりの事前アンケート</small>
+        </span>
+    </a>
+    {% if user.is_authenticated %}
+        <span class="ps-account" title="ログイン中">👤 {{ user.username }}</span>
+    {% endif %}
+</header>
+
+{% if step %}
+<ol class="ps-steps" aria-label="進み具合">
+    <li class="{% if step >= 1 %}done{% endif %}{% if step == 1 %} now{% endif %}"><span>はじめに</span></li>
+    <li class="{% if step >= 2 %}done{% endif %}{% if step == 2 %} now{% endif %}"><span>名前</span></li>
+    <li class="{% if step >= 3 %}done{% endif %}{% if step == 3 %} now{% endif %}"><span>テーマ</span></li>
+    <li class="{% if step >= 4 %}done{% endif %}{% if step == 4 %} now{% endif %}"><span>回答</span></li>
+    <li class="{% if step >= 5 %}done{% endif %}{% if step == 5 %} now{% endif %}"><span>質問</span></li>
+    <li class="{% if step >= 6 %}done{% endif %}{% if step == 6 %} now{% endif %}"><span>おわり</span></li>
+</ol>
+{% endif %}
+
+<main class="ps-main">
+    {% if messages %}
+        {% for message in messages %}
+            <p class="ps-message ps-message-{{ message.tags }}" role="status">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="ps-footer">
+    <a href="{% url 'portal:home' %}">Yapp</a>
+    <a href="{% url 'portal:support' %}?from=pre-survey">お問い合わせ・応援</a>
+</footer>
+
+<script>
+// 送信ボタンの二度押しを防ぐ
+document.addEventListener("submit", function (event) {
+    var form = event.target;
+    if (form.dataset.sent) { event.preventDefault(); return; }
+    form.dataset.sent = "1";
+    setTimeout(function () { delete form.dataset.sent; }, 4000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card">
+    <h1>ニックネーム</h1>
+    <p class="ps-lead">掲示板の公開時に、回答と一緒に表示されるお名前です。</p>
+
+    {% if error %}<p class="ps-error" role="alert">{{ error }}</p>{% endif %}
+
+    <form method="post" class="ps-form">
+        {% csrf_token %}
+        <input type="hidden" name="auto_name" value="{{ auto_name }}">
+
+        <label class="ps-choice">
+            <input type="radio" name="mode" value="custom" {% if mode == "custom" %}checked{% endif %}>
+            <span>
+                <strong>自分で決める</strong>
+                <input type="text" name="custom_name" value="{{ custom_name }}" maxlength="{{ max_length }}"
+                       placeholder="例：チューリッヒのさくら" autocomplete="nickname"
+                       onfocus="this.form.mode.value='custom'">
+            </span>
+        </label>
+
+        <label class="ps-choice">
+            <input type="radio" name="mode" value="auto" {% if mode == "auto" %}checked{% endif %}>
+            <span>
+                <strong>運営におまかせ</strong>
+                <span class="ps-auto-name">「{{ auto_name }}」</span>
+                <button type="submit" name="reroll" value="1" class="ps-link-button" formnovalidate>ほかの名前にする</button>
+            </span>
+        </label>
+
+        <label class="ps-choice">
+            <input type="radio" name="mode" value="anonymous" {% if mode == "anonymous" %}checked{% endif %}>
+            <span>
+                <strong>名無し</strong>
+                <small>「名無しさん」と表示されます</small>
+            </span>
+        </label>
+
+        <button type="submit" class="ps-button ps-button-primary">次へ</button>
+    </form>
+</section>
+{% endblock %}

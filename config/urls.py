@@ -201,6 +201,15 @@ urlpatterns = [
         ),
     ),
 
+    # 事前アンケート
+    path(
+        "pre-survey/",
+        include(
+            "pre_survey.urls",
+            namespace="pre_survey",
+        ),
+    ),
+
     path(
         "analytics/",
         include(

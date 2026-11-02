@@ -1,0 +1,48 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card">
+    <h1>知りたいことを質問する</h1>
+    <p class="ps-lead">ほかの参加者が答えてくれます。1回の参加で{{ limit }}問まで追加できます。</p>
+
+    {% if error %}<p class="ps-error" role="alert">{{ error }}</p>{% endif %}
+
+    {% if remaining %}
+    <form method="post" class="ps-form">
+        {% csrf_token %}
+        <label class="ps-field">
+            <span>テーマ</span>
+            <select name="theme">
+                {% for value, label in theme_choices %}
+                    <option value="{{ value }}" {% if value == theme %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="ps-field">
+            <span>質問（{{ max_length }}文字まで）</span>
+            <textarea name="body" rows="4" maxlength="{{ max_length }}" required placeholder="例：チューリッヒで日本語の通じる歯医者さんはありますか？">{{ body }}</textarea>
+        </label>
+        <button type="submit" class="ps-button ps-button-primary">質問を追加する</button>
+        <p class="ps-note">あと{{ remaining }}問追加できます。</p>
+    </form>
+    {% else %}
+        <p>今回の参加で追加できる質問は以上です。ありがとうございました！</p>
+    {% endif %}
+</section>
+
+{% if asked %}
+<section class="ps-card ps-card-soft">
+    <h2>今回追加した質問</h2>
+    <ul class="ps-list">
+        {% for item in asked %}
+            <li><span class="ps-tag">{{ item.get_theme_display }}</span> {{ item.body }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<nav class="ps-next">
+    <a href="{% url 'pre_survey:question' %}" class="ps-button ps-button-ghost">質問に答える</a>
+    <a href="{% url 'pre_survey:done' %}" class="ps-button ps-button-ghost">ここで終了</a>
+</nav>
+{% endblock %}

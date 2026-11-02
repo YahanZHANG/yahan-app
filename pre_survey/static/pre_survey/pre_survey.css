@@ -1,0 +1,565 @@
+/* =========================================================
+   事前アンケート (pre-survey)
+   Yapp の配色 (static/css/style.css) に合わせた、スマホ前提の画面
+   ========================================================= */
+
+:root {
+    --ps-background: #f5f6f8;
+    --ps-surface: #ffffff;
+    --ps-surface-soft: #f8fafb;
+    --ps-text: #2f3740;
+    --ps-muted: #7f8790;
+    --ps-border: #e4e8eb;
+    --ps-primary: #365f75;
+    --ps-primary-dark: #294c5f;
+    --ps-primary-soft: #e8f0f4;
+    --ps-accent: #e8a45a;
+    --ps-accent-soft: #fff3dd;
+    --ps-success: #357145;
+    --ps-success-soft: #e9f5ec;
+    --ps-danger: #b84b4b;
+    --ps-danger-soft: #fff0f0;
+    --ps-shadow: 0 8px 24px rgba(32, 45, 55, .06);
+    color-scheme: light;
+}
+
+html[data-yapp-resolved-theme="dark"] {
+    --ps-background: #14191e;
+    --ps-surface: #1d242b;
+    --ps-surface-soft: #222b33;
+    --ps-text: #e6eaee;
+    --ps-muted: #9aa4ae;
+    --ps-border: #2f3a44;
+    --ps-primary: #7fb0c9;
+    --ps-primary-dark: #a3c8da;
+    --ps-primary-soft: #23353f;
+    --ps-accent: #e8a45a;
+    --ps-accent-soft: #3a2f22;
+    --ps-success: #8cc79a;
+    --ps-success-soft: #1f3324;
+    --ps-danger: #f0a0a0;
+    --ps-danger-soft: #3a2424;
+    --ps-shadow: none;
+    color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--ps-background);
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--ps-background);
+    color: var(--ps-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+a {
+    color: var(--ps-primary);
+}
+
+/* ---------- Header ---------- */
+
+.ps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 8px;
+}
+
+.ps-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.ps-brand img {
+    border-radius: 9px;
+}
+
+.ps-brand strong {
+    display: block;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.ps-brand small {
+    display: block;
+    color: var(--ps-muted);
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.ps-account {
+    max-width: 40%;
+    overflow: hidden;
+    color: var(--ps-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Steps ---------- */
+
+.ps-steps {
+    display: flex;
+    gap: 4px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 4px 16px 0;
+    list-style: none;
+}
+
+.ps-steps li {
+    flex: 1;
+    padding-top: 6px;
+    border-top: 4px solid var(--ps-border);
+    color: var(--ps-muted);
+    font-size: 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ps-steps li.done {
+    border-color: var(--ps-primary);
+}
+
+.ps-steps li.now {
+    color: var(--ps-primary);
+    font-weight: 700;
+}
+
+/* ---------- Main ---------- */
+
+.ps-main {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 14px 16px 24px;
+}
+
+.ps-card {
+    margin-bottom: 14px;
+    padding: 22px 20px;
+    border: 1px solid var(--ps-border);
+    border-radius: 20px;
+    background: var(--ps-surface);
+    box-shadow: var(--ps-shadow);
+}
+
+.ps-card-soft {
+    background: var(--ps-surface-soft);
+    box-shadow: none;
+}
+
+.ps-card h1 {
+    margin: 0 0 10px;
+    font-size: 21px;
+    line-height: 1.45;
+}
+
+.ps-card h2 {
+    margin: 18px 0 6px;
+    font-size: 16px;
+}
+
+.ps-card h2:first-child {
+    margin-top: 0;
+}
+
+.ps-card p {
+    margin: 0 0 10px;
+}
+
+.ps-eyebrow {
+    margin: 0 0 4px !important;
+    color: var(--ps-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+}
+
+.ps-lead {
+    color: var(--ps-muted);
+    font-size: 14px;
+}
+
+.ps-note {
+    color: var(--ps-muted);
+    font-size: 13px;
+}
+
+.ps-center {
+    text-align: center;
+}
+
+.ps-consent {
+    margin: 14px 0 6px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--ps-surface-soft);
+    font-size: 14px;
+}
+
+/* ---------- Messages ---------- */
+
+.ps-message,
+.ps-toast,
+.ps-error {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.ps-message-success,
+.ps-toast {
+    background: var(--ps-success-soft);
+    color: var(--ps-success);
+}
+
+.ps-message-error,
+.ps-error {
+    background: var(--ps-danger-soft);
+    color: var(--ps-danger);
+}
+
+.ps-message-info {
+    background: var(--ps-primary-soft);
+    color: var(--ps-primary);
+}
+
+.ps-toast-undo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--ps-primary-soft);
+    color: var(--ps-text);
+}
+
+/* ---------- Forms ---------- */
+
+.ps-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.ps-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ps-field input,
+.ps-field select,
+.ps-field textarea,
+.ps-choice input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--ps-border);
+    border-radius: 12px;
+    background: var(--ps-surface);
+    color: var(--ps-text);
+    font: inherit;
+    font-size: 16px; /* iPhone で拡大されないように */
+    font-weight: 400;
+}
+
+.ps-field textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.ps-field input:focus,
+.ps-field select:focus,
+.ps-field textarea:focus,
+.ps-choice input[type="text"]:focus {
+    border-color: var(--ps-primary);
+    outline: 2px solid var(--ps-primary-soft);
+}
+
+.ps-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.ps-check input {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    flex: none;
+    accent-color: var(--ps-primary);
+}
+
+.ps-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--ps-border);
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+.ps-choice:has(input[type="radio"]:checked) {
+    border-color: var(--ps-primary);
+    background: var(--ps-primary-soft);
+}
+
+.ps-choice > input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    flex: none;
+    accent-color: var(--ps-primary);
+}
+
+.ps-choice > span {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ps-choice small {
+    color: var(--ps-muted);
+    font-size: 13px;
+}
+
+.ps-auto-name {
+    font-weight: 700;
+}
+
+.ps-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.ps-chips legend {
+    width: 100%;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ps-chip input {
+    position: absolute;
+    opacity: 0;
+}
+
+.ps-chip span {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 1px solid var(--ps-border);
+    border-radius: 999px;
+    background: var(--ps-surface);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.ps-chip input:checked + span {
+    border-color: var(--ps-primary);
+    background: var(--ps-primary);
+    color: #fff;
+}
+
+.ps-chip input:focus-visible + span {
+    outline: 2px solid var(--ps-accent);
+}
+
+/* ---------- Buttons ---------- */
+
+.ps-button {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ps-button-primary {
+    background: var(--ps-primary);
+    color: #fff;
+}
+
+html[data-yapp-resolved-theme="dark"] .ps-button-primary,
+html[data-yapp-resolved-theme="dark"] .ps-chip input:checked + span {
+    color: #14191e;
+}
+
+.ps-button-primary:active {
+    background: var(--ps-primary-dark);
+}
+
+.ps-button-ghost {
+    border-color: var(--ps-border);
+    background: var(--ps-surface);
+    color: var(--ps-primary);
+}
+
+.ps-button-row {
+    display: flex;
+    gap: 10px;
+}
+
+.ps-button-row .ps-button {
+    flex: 1;
+    padding: 12px 8px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ps-link-button {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ps-primary);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.ps-next {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ---------- Question ---------- */
+
+.ps-progress {
+    margin: 0 0 10px;
+    color: var(--ps-muted);
+    font-size: 14px;
+}
+
+.ps-progress strong {
+    color: var(--ps-primary);
+    font-size: 18px;
+}
+
+.ps-question-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.ps-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--ps-accent-soft);
+    color: #9a5a17;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+html[data-yapp-resolved-theme="dark"] .ps-tag {
+    color: var(--ps-accent);
+}
+
+.ps-tag-soft {
+    background: var(--ps-primary-soft);
+    color: var(--ps-primary);
+}
+
+.ps-from {
+    color: var(--ps-muted);
+}
+
+.ps-card .ps-question-body {
+    margin: 10px 0 4px;
+    font-size: 19px;
+}
+
+.ps-list {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.ps-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ps-border);
+    font-size: 14px;
+}
+
+.ps-list li:last-child {
+    border-bottom: 0;
+}
+
+/* ---------- Done ---------- */
+
+.ps-done {
+    text-align: center;
+}
+
+.ps-done .ps-form {
+    text-align: left;
+}
+
+.ps-done-mark {
+    margin: 0 !important;
+    font-size: 44px;
+}
+
+/* ---------- Footer ---------- */
+
+.ps-footer {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    padding: 10px 16px 28px;
+    font-size: 13px;
+}
+
+.ps-footer a {
+    color: var(--ps-muted);
+}
+
+.ps-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

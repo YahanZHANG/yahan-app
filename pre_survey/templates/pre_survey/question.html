@@ -1,0 +1,59 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+
+{% if answered %}
+    <p class="ps-toast" role="status">ありがとうございます！ 次の質問です。</p>
+{% elif interested %}
+    <p class="ps-toast" role="status">「私も知りたい」を記録しました。</p>
+{% elif skipped %}
+    <form method="post" action="{% url 'pre_survey:undo_skip' skipped.question_id %}" class="ps-toast ps-toast-undo" role="status">
+        {% csrf_token %}
+        <span>スキップしました</span>
+        <button type="submit" class="ps-link-button">元に戻す</button>
+    </form>
+{% endif %}
+
+<p class="ps-progress">
+    回答 <strong>{{ answered_count }}</strong> 問
+    {% if not can_finish %}<small>（{{ answers_before_finish }}問答えたら、いつでも終われます）</small>{% endif %}
+</p>
+
+{% if question %}
+<section class="ps-card ps-question">
+    <p class="ps-question-meta">
+        <span class="ps-tag">{{ question.get_theme_display }}</span>
+        {% if question.region %}<span class="ps-tag ps-tag-soft">{{ question.get_region_display }}</span>{% endif %}
+        <span class="ps-from">{{ question.display_name }}からの質問</span>
+    </p>
+    <h1 class="ps-question-body">{{ question.body|linebreaksbr }}</h1>
+
+    <form method="post" action="{% url 'pre_survey:question_action' question.pk %}" class="ps-form">
+        {% csrf_token %}
+        <label class="ps-field">
+            <span class="ps-visually-hidden">回答</span>
+            <textarea name="body" rows="6" maxlength="{{ max_length }}" placeholder="知っていること、経験したことを自由に書いてください。">{{ draft }}</textarea>
+        </label>
+        <button type="submit" name="action" value="answer" class="ps-button ps-button-primary">回答する</button>
+
+        <div class="ps-button-row">
+            <button type="submit" name="action" value="skip" class="ps-button ps-button-ghost" formnovalidate>スキップ</button>
+            <button type="submit" name="action" value="interest" class="ps-button ps-button-ghost" formnovalidate>🙋 私も知りたい</button>
+        </div>
+    </form>
+</section>
+{% else %}
+<section class="ps-card ps-card-soft">
+    <h1>いまお答えいただける質問は以上です</h1>
+    <p>たくさんありがとうございます。知りたいことがあれば、質問を追加してください。</p>
+    <a href="{% url 'pre_survey:themes' %}" class="ps-button ps-button-ghost">テーマを選び直す</a>
+</section>
+{% endif %}
+
+<nav class="ps-next">
+    <a href="{% url 'pre_survey:ask' %}" class="ps-button {% if question %}ps-button-ghost{% else %}ps-button-primary{% endif %}">＋ 自分の質問を追加する</a>
+    {% if can_finish or not question %}
+        <a href="{% url 'pre_survey:done' %}" class="ps-button ps-button-ghost">ここで終了</a>
+    {% endif %}
+</nav>
+{% endblock %}
