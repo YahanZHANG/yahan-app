@@ -295,10 +295,11 @@ class PortalHomeTests(TestCase):
 
         content = self.client.get(reverse("portal:home")).content.decode()
 
-        banner = content.index('class="landing-survey"')
+        banner = content.index('data-survey-banner')
         self.assertLess(content.index("気になるアプリから、はじめよう。"), banner)
         self.assertLess(banner, content.index("その他のアプリ"))
         self.assertIn(reverse("pre_survey:start") + "?from=yapp", content)
+        self.assertNotIn("landing-survey__close", content)
 
     def test_season_can_be_fixed_in_admin(self):
 

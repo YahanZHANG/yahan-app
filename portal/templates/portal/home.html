@@ -225,8 +225,8 @@
             {% endfor %}
         </div>
 
-        {# 事前アンケートのお願い。×で閉じると7日、回答し終えると14日出さない #}
-        <aside class="landing-survey" data-yapp-promo="pre-survey" aria-label="アンケートへのご協力のお願い" hidden>
+        {# 事前アンケートのお願い (閉じられない・いつも出す) #}
+        <aside class="landing-survey" data-survey-banner aria-label="アンケートへのご協力のお願い">
             <a class="landing-survey__link" href="{% url 'pre_survey:start' %}?from=yapp">
                 <span class="landing-survey__icon" aria-hidden="true">📝</span>
                 <span class="landing-survey__body">
@@ -236,24 +236,7 @@
                 </span>
                 <span class="landing-survey__cta">協力する <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
             </a>
-            <button type="button" class="landing-survey__close" aria-label="このお願いを閉じる" data-yapp-promo-close>×</button>
         </aside>
-        <script>
-        (function () {
-            var promo = document.querySelector('.landing-survey[data-yapp-promo]');
-            if (!promo) return;
-            var DAY = 24 * 60 * 60 * 1000;
-            function since(key) {
-                try { return Date.now() - (parseInt(localStorage.getItem(key) || "0", 10) || 0); } catch (error) { return Infinity; }
-            }
-            if (since("yapp_promo_closed_pre-survey") < 7 * DAY || since("yapp_pre_survey_done") < 14 * DAY) return;
-            promo.hidden = false;
-            promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
-                promo.hidden = true;
-                try { localStorage.setItem("yapp_promo_closed_pre-survey", String(Date.now())); } catch (error) {}
-            });
-        })();
-        </script>
 
         <section class="landing-more" aria-labelledby="landing-more-title">
             <div class="landing-more__intro">
