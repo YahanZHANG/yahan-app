@@ -280,4 +280,14 @@ urlpatterns = [
     
     path("outings/", include("outings.urls")),
 
+    # =====================================================
+    # Zurich Rainbow-kids Attendance
+    # =====================================================
+
+    path(
+    "rainbow-kids-zurich-attendance/",
+    include("attendance.urls"),
+),
+
+
 ]

@@ -83,6 +83,9 @@ INSTALLED_APPS = [
 
     # スイスで和食
     "washoku.apps.WashokuConfig",
+
+    # Rainbow Kids Zurich 出欠管理
+    "attendance.apps.AttendanceConfig",
 ]
 
 # ------------------------------------------------------------------------------
@@ -461,3 +464,7 @@ SWISS_NEWS_SUPPORT_EMAIL = os.getenv(
 
 
 EMAIL_TIMEOUT = 20
+
+
+# Rainbow Kids Zurich Attendance
+ATTENDANCE_ADMIN_USERNAME = "attendance_manager"

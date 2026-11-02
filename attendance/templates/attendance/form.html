@@ -1,0 +1,1 @@
+{% extends 'attendance/base.html' %}{% block content %}<section class="card"><h2>{{title}}</h2><form method="post">{% csrf_token %}{{form.as_p}}<button class="full" type="submit">{{submit}}</button></form><p><a href="{% url 'attendance:index' %}">← 管理画面に戻る</a></p></section>{% endblock %}
