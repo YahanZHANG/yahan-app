@@ -477,6 +477,69 @@ def find_resubmitted_signup(request):
     )
 
 
+def create_public_user(form, nickname=""):
+    """
+    SignupForm (検証済み) から一般公開ユーザーを作る。
+    すぐに使える状態で作り、public_users グループに入れ、プロフィールを用意する。
+    nickname を渡すと、ニックネーム設定も済んだことにする (事前アンケートからの登録)。
+    """
+
+    # =================================================
+    # Create user (すぐに使える状態で作成)
+    # =================================================
+
+    user = form.save(
+        commit=False
+    )
+
+    user.email = (
+        form.cleaned_data[
+            "email"
+        ]
+    )
+
+    user.is_active = True
+
+    user.save()
+
+
+    # =================================================
+    # Public user group
+    # =================================================
+
+    public_group, _ = (
+        Group.objects.get_or_create(
+            name=PUBLIC_USER_GROUP
+        )
+    )
+
+    user.groups.add(
+        public_group
+    )
+
+
+    # =================================================
+    # Profile
+    # =================================================
+
+    profile, _ = (
+        UserProfile.objects.get_or_create(
+            user=user
+        )
+    )
+
+    # Signup時にパスワードは設定済み
+    profile.password_setup_completed = True
+
+    profile.nickname = nickname
+    profile.nickname_setup_completed = bool(nickname)
+    profile.app_setup_completed = False
+
+    profile.save()
+
+    return user
+
+
 def signup(request):
 
     next_url = get_safe_next(
@@ -511,57 +574,7 @@ def signup(request):
 
         if form.is_valid():
 
-            # =================================================
-            # Create user (すぐに使える状態で作成)
-            # =================================================
-
-            user = form.save(
-                commit=False
-            )
-
-            user.email = (
-                form.cleaned_data[
-                    "email"
-                ]
-            )
-
-            user.is_active = True
-
-            user.save()
-
-
-            # =================================================
-            # Public user group
-            # =================================================
-
-            public_group, _ = (
-                Group.objects.get_or_create(
-                    name=PUBLIC_USER_GROUP
-                )
-            )
-
-            user.groups.add(
-                public_group
-            )
-
-
-            # =================================================
-            # Profile
-            # =================================================
-
-            profile, _ = (
-                UserProfile.objects.get_or_create(
-                    user=user
-                )
-            )
-
-            # Signup時にパスワードは設定済み
-            profile.password_setup_completed = True
-
-            profile.nickname_setup_completed = False
-            profile.app_setup_completed = False
-
-            profile.save()
+            user = create_public_user(form)
 
 
             messages.success(
