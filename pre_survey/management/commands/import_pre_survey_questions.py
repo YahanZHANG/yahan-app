@@ -65,4 +65,5 @@ class Command(BaseCommand):
             existing.add(key)
             created += 1
 
-        self.stdout.write(f"事前アンケート: 質問を{created}件追加しました")
+        if options["verbosity"]:
+            self.stdout.write(f"事前アンケート: 質問を{created}件追加しました")
