@@ -180,15 +180,36 @@ class ParticipationTests(FlowMixin, TestCase):
 
 class DeliveryTests(FlowMixin, TestCase):
 
-    def test_only_published_questions_of_chosen_themes(self):
+    def test_only_published_questions(self):
         make_question("hidden", status=Question.Status.HIDDEN)
         make_question("rejected", status=Question.Status.REJECTED)
         make_question("pending", status=Question.Status.PENDING)
-        make_question("work", theme="work")
         wanted = make_question("life")
         self.join(themes=("life",))
         self.assertEqual(self.current(), wanted)
         self.act(wanted, "answer")
+        self.assertIsNone(self.current())
+
+    def test_chosen_themes_first_then_other_themes(self):
+        work = make_question("work", theme="work")
+        life = make_question("life")
+        self.join(themes=("life",))
+        self.assertEqual(self.current(), life)
+        self.act(life, "answer")
+        response = self.client.get(reverse("pre_survey:question"))
+        self.assertEqual(response.context["question"], work)
+        self.assertContains(response, "ほかのテーマの質問もお出ししています")
+
+    def test_questions_answered_by_others_are_still_asked(self):
+        question = make_question("Q1")
+        for _ in range(3):
+            Answer.objects.create(question=question, body="ほかの人の回答")
+        self.join()
+        self.assertEqual(self.current(), question)
+
+    def test_own_question_is_not_asked_back(self):
+        self.join(themes=("life",))
+        self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "自分の質問"})
         self.assertIsNone(self.current())
 
     def test_fewest_answers_first_then_newest(self):
@@ -408,11 +429,11 @@ class ImportTests(TestCase):
     def test_import_is_idempotent(self):
         call_command("import_pre_survey_questions", verbosity=0)
         count = Question.objects.count()
-        self.assertGreaterEqual(count, 10)
+        self.assertEqual(count, 50)
         self.assertEqual(set(Question.objects.values_list("theme", flat=True)),
                          {"life", "shopping", "childcare", "work", "language", "outing"})
-        Question.objects.filter(seed_key="life-001").update(body="直した")
+        Question.objects.filter(seed_key="q01").update(body="直した")
         call_command("import_pre_survey_questions", verbosity=0)
         self.assertEqual(Question.objects.count(), count)
-        self.assertEqual(Question.objects.get(seed_key="life-001").body, "直した")
+        self.assertEqual(Question.objects.get(seed_key="q01").body, "直した")
         self.assertFalse(Question.objects.exclude(source="staff").exists())
