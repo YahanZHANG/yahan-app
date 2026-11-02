@@ -268,17 +268,18 @@ Swiss News
 
 
 <script>
-// Yapp のアプリ紹介・アンケートのお願い: ×で閉じたら30日は出さない。
-// アンケートは、回答し終えてから14日も出さない (終了画面が yapp_pre_survey_done を残す)
+// Yapp のアプリ紹介: ×で閉じたら30日は出さない。
+// アンケートのお願い: ×で閉じたら7日、回答し終えてから14日は出さない (終了画面が yapp_pre_survey_done を残す)
 (function () {
     var DAY = 24 * 60 * 60 * 1000;
     function since(key) {
         try { return Date.now() - (parseInt(localStorage.getItem(key) || "0", 10) || 0); } catch (error) { return Infinity; }
     }
     document.querySelectorAll("[data-yapp-promo]").forEach(function (promo) {
+        var survey = promo.dataset.yappPromo === "pre-survey";
         var key = "yapp_promo_closed_" + promo.dataset.yappPromo;
-        if (since(key) < 30 * DAY) return;
-        if (promo.dataset.yappPromo === "pre-survey" && since("yapp_pre_survey_done") < 14 * DAY) return;
+        if (since(key) < (survey ? 7 : 30) * DAY) return;
+        if (survey && since("yapp_pre_survey_done") < 14 * DAY) return;
         promo.hidden = false;
         promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
             promo.hidden = true;

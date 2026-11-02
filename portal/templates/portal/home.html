@@ -225,7 +225,7 @@
             {% endfor %}
         </div>
 
-        {# 事前アンケートのお願い。×で閉じると30日、回答し終えると14日出さない #}
+        {# 事前アンケートのお願い。×で閉じると7日、回答し終えると14日出さない #}
         <aside class="landing-survey" data-yapp-promo="pre-survey" aria-label="アンケートへのご協力のお願い" hidden>
             <a class="landing-survey__link" href="{% url 'pre_survey:start' %}?from=yapp">
                 <span class="landing-survey__icon" aria-hidden="true">📝</span>
@@ -246,7 +246,7 @@
             function since(key) {
                 try { return Date.now() - (parseInt(localStorage.getItem(key) || "0", 10) || 0); } catch (error) { return Infinity; }
             }
-            if (since("yapp_promo_closed_pre-survey") < 30 * DAY || since("yapp_pre_survey_done") < 14 * DAY) return;
+            if (since("yapp_promo_closed_pre-survey") < 7 * DAY || since("yapp_pre_survey_done") < 14 * DAY) return;
             promo.hidden = false;
             promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
                 promo.hidden = true;
