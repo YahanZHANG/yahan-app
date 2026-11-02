@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Q, Value, When
 
 from .models import Answer, Interest, Question, Skip
 
@@ -119,12 +119,14 @@ def random_nickname():
 
 def next_question(request, participant):
     """
-    次に出す質問。なければ None。
+    次に出す質問。なければ None (すべての公開中の質問を、この参加で見終わったときだけ)。
 
-    - 公開中の質問のうち、選んだテーマのもの
-    - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
-    - 回答した質問は出さない。この参加でスキップ・「知りたい」にした質問も出さない
+    - 公開中の質問すべてが対象。ほかの人がもう答えた質問も出す (いろいろな人の意見を集めるため)
+    - 選んだテーマの質問を先に出し、それが尽きたら、ほかのテーマの質問も出す
+    - 自分が回答した質問、自分が追加した質問は出さない
+    - この参加でスキップ・「知りたい」にした質問は出さない
     - 前の参加でスキップ・「知りたい」にした質問は、まだ見ていない質問の後
+    - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
     - その中で、回答の少ない順 (0件が先) → 新しい順
     """
 
@@ -133,6 +135,7 @@ def next_question(request, participant):
     answered = Answer.objects.filter(mine).values("question_id")
     passed_now = Skip.objects.filter(participant=participant).values("question_id")
     interested_now = Interest.objects.filter(participant=participant).values("question_id")
+    own = Question.objects.filter(mine).values("pk")
 
     seen_before = (
         Skip.objects.filter(mine, question=OuterRef("pk"))
@@ -145,10 +148,11 @@ def next_question(request, participant):
 
     questions = (
         Question.objects
-        .filter(status=Question.Status.PUBLISHED, theme__in=participant.themes)
+        .filter(status=Question.Status.PUBLISHED)
         .exclude(pk__in=answered)
         .exclude(pk__in=passed_now)
         .exclude(pk__in=interested_now)
+        .exclude(pk__in=own)
     )
 
     if participant.region:
@@ -157,11 +161,16 @@ def next_question(request, participant):
     return (
         questions
         .annotate(
+            other_theme=Case(
+                When(theme__in=participant.themes, then=Value(False)),
+                default=Value(True),
+                output_field=BooleanField(),
+            ),
             answer_count=Count("answers", filter=Q(answers__is_hidden=False)),
             skipped_before=Exists(seen_before),
             interested_before=Exists(interested_before),
         )
-        .order_by("skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
+        .order_by("other_theme", "skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
         .first()
     )
 

@@ -20,6 +20,9 @@
 </p>
 
 {% if question %}
+{% if question.other_theme %}
+    <p class="ps-note">選んだテーマの質問はひととおり終わりました。ほかのテーマの質問もお出ししています（答えにくければスキップしてください）。</p>
+{% endif %}
 <section class="ps-card ps-question">
     <p class="ps-question-meta">
         <span class="ps-tag">{{ question.get_theme_display }}</span>
@@ -44,9 +47,8 @@
 </section>
 {% else %}
 <section class="ps-card ps-card-soft">
-    <h1>いまお答えいただける質問は以上です</h1>
-    <p>たくさんありがとうございます。知りたいことがあれば、質問を追加してください。</p>
-    <a href="{% url 'pre_survey:themes' %}" class="ps-button ps-button-ghost">テーマを選び直す</a>
+    <h1>すべての質問を見ていただきました</h1>
+    <p>本当にありがとうございます！ 知りたいことがあれば、質問を追加してください。新しい質問が増えたら、「また参加する」からお答えいただけます。</p>
 </section>
 {% endif %}
 
