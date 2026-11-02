@@ -20,6 +20,9 @@ class Theme(models.TextChoices):
     WORK = "work", "仕事"
     LANGUAGE = "language", "語学"
     OUTING = "outing", "おでかけ"
+    HEALTH = "health", "健康・美容"
+    MONEY = "money", "お金"
+    CULTURE = "culture", "人付き合い・文化"
     # 質問を追加するとき、どのテーマにも当てはまらないもの (回答するテーマとしては選ばない)
     OTHER = "other", "その他"
 
