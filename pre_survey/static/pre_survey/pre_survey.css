@@ -536,6 +536,10 @@ html[data-yapp-resolved-theme="dark"] .ps-tag {
     text-align: left;
 }
 
+.ps-done-ask {
+    margin-top: 10px;
+}
+
 .ps-done-mark {
     margin: 0 !important;
     font-size: 44px;

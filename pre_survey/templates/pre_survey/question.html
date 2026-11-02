@@ -53,7 +53,7 @@
 <nav class="ps-next">
     <a href="{% url 'pre_survey:ask' %}" class="ps-button {% if question %}ps-button-ghost{% else %}ps-button-primary{% endif %}">＋ 自分の質問を追加する</a>
     {% if can_finish or not question %}
-        <a href="{% url 'pre_survey:done' %}" class="ps-button ps-button-ghost">ここで終了</a>
+        <a href="{% url 'pre_survey:ask' %}?last=1" class="ps-button ps-button-ghost">ここで終了</a>
     {% endif %}
 </nav>
 {% endblock %}

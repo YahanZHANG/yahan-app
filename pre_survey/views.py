@@ -430,6 +430,8 @@ def ask(request):
         return redirect_to
 
     asked = list(participant.questions.order_by("created_at"))
+    # 回答画面の「ここで終了」から来た: 最後に質問を聞いてから終わる
+    last = (request.POST.get("last") or request.GET.get("last")) == "1"
     error = ""
     body = ""
     theme = participant.themes[0] if participant.themes else Theme.LIFE
@@ -459,7 +461,8 @@ def ask(request):
                     **owner_fields(request, participant),
                 )
             messages.success(request, "質問を追加しました。ありがとうございます。")
-            return redirect("pre_survey:ask")
+            url = reverse("pre_survey:ask")
+            return redirect(f"{url}?last=1" if last else url)
 
     return render(
         request,
@@ -475,6 +478,7 @@ def ask(request):
             "error": error,
             "max_length": QUESTION_MAX_LENGTH,
             "answered_count": participant.answers.count(),
+            "last": last,
             "step": 5,
         },
     )
@@ -510,6 +514,7 @@ def done(request):
         "participant": participant,
         "answered_count": participant.answers.count(),
         "asked_count": participant.questions.count(),
+        "can_ask": participant.questions.count() < QUESTIONS_PER_PARTICIPATION,
         "interest_count": participant.interests.count(),
         "step": 6,
     }
@@ -553,6 +558,7 @@ def done_signup(request):
                 "participant": participant,
                 "answered_count": participant.answers.count(),
                 "asked_count": participant.questions.count(),
+                "can_ask": participant.questions.count() < QUESTIONS_PER_PARTICIPATION,
                 "interest_count": participant.interests.count(),
                 "signup_form": form,
                 "suggested_username": username if "username" in form.errors else "",

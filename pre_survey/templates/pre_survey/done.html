@@ -14,6 +14,9 @@
         {% csrf_token %}
         <button type="submit" class="ps-button ps-button-primary">また参加する</button>
     </form>
+    {% if can_ask %}
+        <a href="{% url 'pre_survey:ask' %}" class="ps-button ps-button-ghost ps-done-ask">＋ 知りたいことを質問する</a>
+    {% endif %}
 </section>
 
 {% if signup_form %}

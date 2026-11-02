@@ -133,6 +133,26 @@ class ParticipationTests(FlowMixin, TestCase):
         self.assertEqual(question.status, Question.Status.PUBLISHED)
         self.assertEqual(question.nickname, "さくら")
 
+    def test_finish_goes_through_ask_step(self):
+        questions = [make_question(f"Q{i}") for i in range(3)]
+        self.join()
+        for question in questions:
+            self.act(question, "answer")
+        response = self.client.get(reverse("pre_survey:question"))
+        self.assertContains(response, reverse("pre_survey:ask") + "?last=1")
+        response = self.client.get(reverse("pre_survey:ask") + "?last=1")
+        self.assertContains(response, "最後に、知りたいことはありますか？")
+        self.assertContains(response, "質問せずに終了する")
+        response = self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "質問", "last": "1"})
+        self.assertRedirects(response, reverse("pre_survey:ask") + "?last=1")
+
+    def test_done_page_offers_asking_until_limit(self):
+        self.join()
+        self.assertContains(self.client.get(reverse("pre_survey:done")), "知りたいことを質問する")
+        for number in range(5):
+            self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": f"質問{number}"})
+        self.assertNotContains(self.client.get(reverse("pre_survey:done")), "知りたいことを質問する")
+
     def test_ask_only_without_answering(self):
         self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
         self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})

@@ -2,14 +2,20 @@
 
 {% block content %}
 <section class="ps-card">
-    <h1>知りたいことを質問する</h1>
-    <p class="ps-lead">ほかの参加者が答えてくれます。1回の参加で{{ limit }}問まで追加できます。</p>
+    {% if last %}
+        <h1>最後に、知りたいことはありますか？</h1>
+        <p class="ps-lead">スイスでの暮らしで知りたいことがあれば、質問してください。ほかの参加者が答えてくれます。なければ、下の「終了する」を押してください。</p>
+    {% else %}
+        <h1>知りたいことを質問する</h1>
+        <p class="ps-lead">ほかの参加者が答えてくれます。1回の参加で{{ limit }}問まで追加できます。</p>
+    {% endif %}
 
     {% if error %}<p class="ps-error" role="alert">{{ error }}</p>{% endif %}
 
     {% if remaining %}
     <form method="post" class="ps-form">
         {% csrf_token %}
+        {% if last %}<input type="hidden" name="last" value="1">{% endif %}
         <label class="ps-field">
             <span>テーマ</span>
             <select name="theme">
@@ -42,7 +48,12 @@
 {% endif %}
 
 <nav class="ps-next">
-    <a href="{% url 'pre_survey:question' %}" class="ps-button ps-button-ghost">質問に答える</a>
-    <a href="{% url 'pre_survey:done' %}" class="ps-button ps-button-ghost">ここで終了</a>
+    {% if last %}
+        <a href="{% url 'pre_survey:done' %}" class="ps-button {% if asked or not remaining %}ps-button-primary{% else %}ps-button-ghost{% endif %}">{% if asked %}終了する{% else %}質問せずに終了する{% endif %}</a>
+        <a href="{% url 'pre_survey:question' %}" class="ps-button ps-button-ghost">もう少し回答する</a>
+    {% else %}
+        <a href="{% url 'pre_survey:question' %}" class="ps-button ps-button-ghost">質問に答える</a>
+        <a href="{% url 'pre_survey:done' %}" class="ps-button ps-button-ghost">終了する</a>
+    {% endif %}
 </nav>
 {% endblock %}
