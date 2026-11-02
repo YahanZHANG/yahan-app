@@ -2,6 +2,7 @@
 <a class="washoku-card" href="{% url 'washoku:recipe_detail' recipe.pk %}">
     <div class="washoku-card-top">
         <span class="washoku-chip">{{ recipe.get_category_display }}</span>
+        {% if recipe.is_new %}<span class="washoku-chip washoku-chip-new">New</span>{% endif %}
         {% if recipe.status == "draft" %}<span class="washoku-chip washoku-chip-draft">下書き</span>{% endif %}
         {% if recipe.shop_rank == 1 %}<span class="washoku-chip washoku-chip-shop">普通のスーパーで作れる</span>{% endif %}
     </div>

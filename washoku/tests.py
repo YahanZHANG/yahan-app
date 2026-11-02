@@ -3065,6 +3065,20 @@ class MyQuestionsAndRecipeActivityTests(TestCase):
         self.assertContains(response, "kind-recipe")
         self.assertContains(response, "下書きの肉じゃが")
 
+    def test_new_badge_only_for_a_week_after_publishing(self):
+
+        fresh = make_recipe("新しい天ぷら", status="draft")
+        fresh.status = "published"
+        fresh.save()
+        old = make_recipe("前からの親子丼")
+        Recipe.objects.filter(pk=old.pk).update(published_at=timezone.now() - timedelta(days=8))
+
+        response = self.client.get(reverse("washoku:recipe_list"))
+        cards = {recipe.name: recipe.is_new for recipe in response.context["recipes"]}
+        self.assertTrue(cards["新しい天ぷら"])
+        self.assertFalse(cards["前からの親子丼"])
+        self.assertContains(response, "washoku-chip-new", count=1)
+
 
 class FeaturedAdminTests(TestCase):
 

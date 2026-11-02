@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.validators import (
     MaxValueValidator,
@@ -502,6 +504,17 @@ class Recipe(models.Model):
             if kwargs.get("update_fields") is not None:
                 kwargs["update_fields"] = [*kwargs["update_fields"], "published_at"]
         super().save(*args, **kwargs)
+
+    # 公開からこの日数のあいだ、カードに「New」を付ける
+    NEW_DAYS = 7
+
+    @property
+    def is_new(self):
+        return (
+            self.status == "published"
+            and self.published_at is not None
+            and self.published_at >= timezone.now() - timedelta(days=self.NEW_DAYS)
+        )
 
     @property
     def servings_label(self):

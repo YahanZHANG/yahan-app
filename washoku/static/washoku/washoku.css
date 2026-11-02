@@ -311,6 +311,15 @@ button,
     color: var(--washoku-accent);
 }
 
+/* 公開から1週間のレシピ */
+.washoku-chip.washoku-chip-new {
+    border-color: #D9534F;
+    background: #D9534F;
+    color: #FFFFFF;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
 .washoku-stars {
     color: #D9902F;
     letter-spacing: 1px;
