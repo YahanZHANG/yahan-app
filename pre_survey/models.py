@@ -11,6 +11,13 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
+
+def local_time(value):
+    """管理画面の表示名などに出す時刻。保存は UTC なので、スイス時間 (TIME_ZONE) に直して出す。"""
+
+    return timezone.localtime(value).strftime("%Y-%m-%d %H:%M") if value else ""
 
 
 class Theme(models.TextChoices):
@@ -96,7 +103,7 @@ class Participant(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.display_name} ({self.created_at:%Y-%m-%d %H:%M})"
+        return f"{self.display_name} ({local_time(self.created_at)})"
 
     @property
     def display_name(self):
@@ -325,7 +332,7 @@ class FeatureWish(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.get_response_display()} ({self.created_at:%Y-%m-%d %H:%M})"
+        return f"{self.get_response_display()} ({local_time(self.created_at)})"
 
     def feature_labels(self):
         from .features import FEATURE_CHOICES

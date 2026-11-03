@@ -603,3 +603,20 @@ class ActivityPageTests(FlowMixin, TestCase):
         staff = self.client_class()
         staff.force_login(self.admin_user)
         self.assertContains(staff.get(reverse("admin:pre_survey_participant_changelist")), reverse("admin:pre_survey_activity"))
+
+
+class LabelTimeTests(TestCase):
+
+    def test_labels_use_swiss_time(self):
+        from datetime import datetime, timezone as dt_timezone
+
+        participant = Participant.objects.create(
+            browser_token="d7f13000-0000-4000-8000-000000000000",
+            nickname="チーズ好きのヤギ",
+            consent_version="v1",
+            consented_at=datetime(2026, 11, 3, 15, 42, tzinfo=dt_timezone.utc),
+        )
+        Participant.objects.filter(pk=participant.pk).update(created_at=datetime(2026, 11, 3, 15, 42, tzinfo=dt_timezone.utc))
+        participant.refresh_from_db()
+        # 15:42 UTC は冬のスイス時間で 16:42
+        self.assertEqual(str(participant), "チーズ好きのヤギ (2026-11-03 16:42)")
