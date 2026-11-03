@@ -1,0 +1,73 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card ps-done">
+    <p class="ps-done-mark" aria-hidden="true">🌷</p>
+    <h1>ご協力ありがとうございました</h1>
+    <p>
+        {% if answered_count %}今回 <strong>{{ answered_count }}問</strong> 答えていただきました。{% endif %}
+        {% if asked_count %}質問を <strong>{{ asked_count }}問</strong> 追加していただきました。{% endif %}
+    </p>
+    <p>いただいた質問と回答は、掲示板の公開時に掲載します。{% if asked_count %}あなたの質問への回答も、掲示板の公開後に見ることができます。{% endif %}</p>
+
+    <form method="post" action="{% url 'pre_survey:again' %}" class="ps-form">
+        {% csrf_token %}
+        <button type="submit" class="ps-button ps-button-primary">さらに他の質問に答える</button>
+    </form>
+    {% if can_ask %}
+        <a href="{% url 'pre_survey:ask' %}" class="ps-button ps-button-ghost ps-done-ask">＋ 知りたいことを質問する</a>
+    {% endif %}
+</section>
+
+{% if signup_form %}
+<section class="ps-card ps-card-soft">
+    <h2>よければ、このままYappに登録もできます</h2>
+    <p>
+        {% if participant.nickname %}「{{ participant.nickname }}」のまま、パスワードを決めるだけで登録できます。{% else %}ユーザーIDとパスワードを決めるだけで登録できます。{% endif %}
+        登録すると、別の端末からでも今回の回答とつながります。
+    </p>
+
+    {% if nickname_taken %}
+        <p class="ps-note">「{{ participant.nickname }}」はユーザーIDとしてすでに使われているため、別の案を入れています。</p>
+    {% endif %}
+    {% if suggested_username %}
+        <p class="ps-note">「{{ suggested_username }}」なら使えます。</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'pre_survey:done_signup' %}" class="ps-form">
+        {% csrf_token %}
+        {% for error in signup_form.non_field_errors %}<p class="ps-error">{{ error }}</p>{% endfor %}
+
+        <label class="ps-field">
+            <span>ユーザーID（ログインに使います）</span>
+            <input type="text" name="username" value="{{ suggested_username|default:signup_form.username.value|default:'' }}"
+                   required maxlength="150" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username">
+        </label>
+        {% for error in signup_form.username.errors %}<p class="ps-error">{{ error }}</p>{% endfor %}
+
+        <label class="ps-field">
+            <span>パスワード</span>
+            <input type="password" name="password1" required autocomplete="new-password">
+        </label>
+        {% for error in signup_form.password1.errors %}<p class="ps-error">{{ error }}</p>{% endfor %}
+
+        <label class="ps-field">
+            <span>パスワード（確認）</span>
+            <input type="password" name="password2" required autocomplete="new-password">
+        </label>
+        {% for error in signup_form.password2.errors %}<p class="ps-error">{{ error }}</p>{% endfor %}
+
+        <p class="ps-note">ユーザーIDに使えるのは、文字・数字と @ . + - _ です（空白は使えません）。</p>
+
+        <button type="submit" class="ps-button ps-button-ghost">登録する</button>
+    </form>
+    <p class="ps-note">アカウントをお持ちの方は <a href="{{ login_url }}">ログイン</a>。</p>
+</section>
+{% endif %}
+
+<p class="ps-note ps-center"><a href="{% url 'portal:home' %}">Yappのトップへ</a></p>
+<script>
+// Swiss News・Yapp のトップに出しているアンケートのお願いを、しばらく出さないようにする
+try { localStorage.setItem("yapp_pre_survey_done", String(Date.now())); } catch (error) {}
+</script>
+{% endblock %}

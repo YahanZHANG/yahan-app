@@ -1,0 +1,58 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card">
+    <h1>答えられそうなテーマ</h1>
+    <p class="ps-lead">選んだテーマの質問をお出しします。いくつ選んでも大丈夫です。<br>答えられない・答えたくない質問は、いつでもスキップできます。</p>
+
+    {% if error %}<p class="ps-error" role="alert">{{ error }}</p>{% endif %}
+
+    <form method="post" class="ps-form">
+        {% csrf_token %}
+        <fieldset class="ps-chips">
+            <legend>
+                テーマ（複数選べます）
+                <button type="button" class="ps-link-button ps-select-all" data-select-all hidden>すべて選択</button>
+            </legend>
+            {% for option in theme_options %}
+                <label class="ps-chip">
+                    <input type="checkbox" name="themes" value="{{ option.value }}" {% if option.checked %}checked{% endif %}>
+                    <span>{{ option.label }}</span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <label class="ps-field">
+            <span>住んでいる地域（任意）</span>
+            <select name="region">
+                <option value="">選ばない</option>
+                {% for value, label in regions %}
+                    <option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <script>
+        // 「すべて選択」: 全部選ばれていれば「すべて解除」になる
+        (function () {
+            var button = document.querySelector("[data-select-all]");
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('input[name="themes"]'));
+            if (!button || !boxes.length) return;
+            function allChecked() { return boxes.every(function (box) { return box.checked; }); }
+            function update() { button.textContent = allChecked() ? "すべて解除" : "すべて選択"; }
+            button.hidden = false;
+            update();
+            button.addEventListener("click", function () {
+                var check = !allChecked();
+                boxes.forEach(function (box) { box.checked = check; });
+                update();
+            });
+            boxes.forEach(function (box) { box.addEventListener("change", update); });
+        })();
+        </script>
+
+        <button type="submit" class="ps-button ps-button-primary">質問に答える</button>
+        <button type="submit" name="next" value="ask" class="ps-button ps-button-ghost">答えずに、質問だけ投稿する</button>
+    </form>
+</section>
+{% endblock %}

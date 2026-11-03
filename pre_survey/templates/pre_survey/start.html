@@ -1,0 +1,39 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card">
+    <p class="ps-eyebrow">ご協力のお願い</p>
+    <h1>スイスで暮らす人どうしの<br>知恵を集めています</h1>
+
+    <div class="ps-consent">
+        {% for block in consent_blocks %}
+            {% if block.heading %}
+                <h2>{{ block.text }}</h2>
+            {% else %}
+                <p>{{ block.text|linebreaksbr }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <form method="post" class="ps-form">
+        {% csrf_token %}
+        <label class="ps-check">
+            <input type="checkbox" name="agree" value="yes" required>
+            <span>上の内容（回答が掲示板に公開されること）に同意します</span>
+        </label>
+        <button type="submit" class="ps-button ps-button-primary">同意して始める</button>
+    </form>
+</section>
+
+<section class="ps-card ps-card-soft">
+    {% if user.is_authenticated %}
+        <p>
+            <strong>{{ nickname|default:user.username }}</strong> さんとしてログインしています。回答はアカウントに記録されます。
+        </p>
+    {% else %}
+        <p>Yappのアカウントをお持ちの方は、ログインしてから始めると回答がアカウントに記録されます。</p>
+        <a href="{{ login_url }}" class="ps-button ps-button-ghost">ログインする</a>
+        <p class="ps-note">ログインしなくても、そのまま参加できます。</p>
+    {% endif %}
+</section>
+{% endblock %}

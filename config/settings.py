@@ -83,6 +83,9 @@ INSTALLED_APPS = [
 
     # スイスで和食
     "washoku.apps.WashokuConfig",
+
+    # 事前アンケート (掲示板の公開前に質問と回答を集める)
+    "pre_survey.apps.PreSurveyConfig",
 ]
 
 # ------------------------------------------------------------------------------

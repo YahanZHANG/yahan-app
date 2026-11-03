@@ -18,6 +18,9 @@ python manage.py seed_master_data
 # スイスで和食: JSON にあってまだ DB にない食材・レシピを追加 (新しいレシピは下書き)
 python manage.py import_washoku --new-only
 
+# 事前アンケート: JSON にあってまだ DB にない運営の質問を追加 (直した質問は上書きしない)
+python manage.py import_pre_survey_questions
+
 
 # =====================================================
 # Start Outings scheduler

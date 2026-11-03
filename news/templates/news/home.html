@@ -165,8 +165,8 @@ Swiss News
 {% endif %}
 
 
-{# 注目ニュースのすぐ後 (注目がないときは記事一覧の上) に、同じ Yapp のアプリの紹介 #}
-{% include "news/_washoku_promo.html" %}
+{# 注目ニュースのすぐ後 (注目がないときは記事一覧の上) に、事前アンケートのお願い #}
+{% include "news/_pre_survey_promo.html" %}
 
 
 <div class="news-list">
@@ -180,6 +180,11 @@ Swiss News
         {% endifchanged %}
 
         {% include "news/_article_card.html" %}
+
+        {# まとめ記事の5件目と6件目のあいだに、同じ Yapp の「スイスで和食」の紹介 #}
+        {% if forloop.counter == 5 and not forloop.last %}
+            {% include "news/_washoku_promo.html" %}
+        {% endif %}
 
     {% empty %}
 
@@ -263,18 +268,23 @@ Swiss News
 
 
 <script>
-// 「スイスで和食」の紹介: ×で閉じたら30日は出さない
+// Yapp のアプリ紹介: ×で閉じたら30日は出さない。
+// アンケートのお願い: ×で閉じたら7日、回答し終えてから14日は出さない (終了画面が yapp_pre_survey_done を残す)
 (function () {
-    var promo = document.querySelector("[data-yapp-promo]");
-    if (!promo) return;
-    var key = "yapp_promo_closed_" + promo.dataset.yappPromo;
-    var closedAt = 0;
-    try { closedAt = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (error) {}
-    if (Date.now() - closedAt < 30 * 24 * 60 * 60 * 1000) return;
-    promo.hidden = false;
-    promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
-        promo.hidden = true;
-        try { localStorage.setItem(key, String(Date.now())); } catch (error) {}
+    var DAY = 24 * 60 * 60 * 1000;
+    function since(key) {
+        try { return Date.now() - (parseInt(localStorage.getItem(key) || "0", 10) || 0); } catch (error) { return Infinity; }
+    }
+    document.querySelectorAll("[data-yapp-promo]").forEach(function (promo) {
+        var survey = promo.dataset.yappPromo === "pre-survey";
+        var key = "yapp_promo_closed_" + promo.dataset.yappPromo;
+        if (since(key) < (survey ? 7 : 30) * DAY) return;
+        if (survey && since("yapp_pre_survey_done") < 14 * DAY) return;
+        promo.hidden = false;
+        promo.querySelector("[data-yapp-promo-close]").addEventListener("click", function () {
+            promo.hidden = true;
+            try { localStorage.setItem(key, String(Date.now())); } catch (error) {}
+        });
     });
 })();
 </script>

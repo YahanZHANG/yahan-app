@@ -225,6 +225,19 @@
             {% endfor %}
         </div>
 
+        {# 事前アンケートのお願い (閉じられない・いつも出す) #}
+        <aside class="landing-survey" data-survey-banner aria-label="アンケートへのご協力のお願い">
+            <a class="landing-survey__link" href="{% url 'pre_survey:start' %}?from=yapp">
+                <span class="landing-survey__icon" aria-hidden="true">📝</span>
+                <span class="landing-survey__body">
+                    <span class="landing-kicker">PLEASE HELP US</span>
+                    <strong>スイス生活の<wbr>知恵袋アンケートに、<wbr>ご協力ください</strong>
+                    <span>スイスで暮らす日本人どうしの知恵を集めて、掲示板を作ろうとしています。答えられる質問だけでOK・登録不要です。</span>
+                </span>
+                <span class="landing-survey__cta">協力する <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+            </a>
+        </aside>
+
         <section class="landing-more" aria-labelledby="landing-more-title">
             <div class="landing-more__intro">
                 <div>

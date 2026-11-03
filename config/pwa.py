@@ -51,6 +51,13 @@ APP_ICONS = {
         "theme_color": "#B5462E",
     },
 
+    # 事前アンケート: アイコンは Yapp のもの、ホーム画面の名前だけ変える
+    "pre-survey": {
+        "name": "Yapp アンケート",
+        "folder": "pwa",
+        "theme_color": "#6577B6",
+    },
+
 }
 
 DEFAULT_ICONS = {

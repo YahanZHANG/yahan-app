@@ -63,6 +63,33 @@ class NewsTestCase(TestCase):
         )
 
 
+class YappPromoTests(NewsTestCase):
+
+    def test_survey_after_featured_and_washoku_after_fifth_article(self):
+
+        now = timezone.now()
+        for number in range(7):
+            self.make_article(self.srf, f"n{number}", published_at=now - timedelta(minutes=number))
+
+        content = self.client.get(reverse("news:home")).content.decode()
+
+        survey = content.index('data-yapp-promo="pre-survey"')
+        washoku = content.index('data-yapp-promo="washoku"')
+        self.assertLess(survey, content.index("日本語 n0"))
+        self.assertLess(content.index("日本語 n4"), washoku)
+        self.assertLess(washoku, content.index("日本語 n5"))
+
+    def test_no_washoku_promo_with_five_articles_or_fewer(self):
+
+        for number in range(5):
+            self.make_article(self.srf, f"n{number}")
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, 'data-yapp-promo="pre-survey"')
+        self.assertNotContains(response, 'data-yapp-promo="washoku"')
+
+
 class ArticleListTests(NewsTestCase):
 
     def test_duplicates_shown_once_with_all_sources(self):
