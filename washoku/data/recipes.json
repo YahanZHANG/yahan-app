@@ -8554,5 +8554,1760 @@
    "carbs_g": 75,
    "salt_g": 3.5
   }
+ },
+ {
+  "name": "天ぷら",
+  "category": "fish",
+  "cooking_time_minutes": 40,
+  "servings": 3,
+  "serving_unit": "",
+  "description": "エビと季節の野菜を、さくっと軽い衣で。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "おもてなし",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "むきエビ",
+    "amount": "12尾",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "なす",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "かぼちゃ",
+    "amount": "1/8個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "さつまいも",
+    "amount": "1/2本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "しいたけ",
+    "amount": "6枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "5cm",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "天つゆを作る。水150mlに顆粒だし・醤油・みりんを入れてひと煮立ちさせる。",
+   "エビは背わたを取り、腹側に浅く切り込みを入れてまっすぐにする。野菜は5mmほどの厚さに切り、水気をよく拭く。",
+   "冷水150mlに卵を溶き、薄力粉を入れて菜箸で軽く混ぜる。粉が少し残るくらいでよい。",
+   "具に薄く粉（分量外）をまぶしてから衣にくぐらせ、170℃の油で野菜は2〜3分、エビは1〜2分揚げる。",
+   "油を切り、天つゆと大根おろし、おろし生姜を添える。"
+  ],
+  "swiss_tips": "かぼちゃは Kürbis Hokkaido が日本のかぼちゃに近い。衣は冷たい水で作り、混ぜすぎないのがさくっと揚げるコツ。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 20,
+   "fat_g": 24,
+   "carbs_g": 30,
+   "salt_g": 1.8
+  }
+ },
+ {
+  "name": "鮭のホイル焼き",
+  "category": "fish",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "きのこと鮭を包んで焼くだけ。洗いものも少なめ。",
+  "mood_tags": [
+   "さっぱり",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "鮭",
+    "amount": "2切れ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "しいたけ",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "えのき",
+    "amount": "1/2袋",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "バター",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "レモン",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "鮭に塩こしょうをふる。玉ねぎは薄切り、きのこは食べやすく切る。",
+   "アルミホイルに玉ねぎを敷き、鮭ときのこをのせ、バターを半量ずつのせて包む。",
+   "フライパンに並べて水50mlを入れ、ふたをして中火で12〜15分蒸し焼きにする（200℃のオーブンなら15分）。",
+   "ホイルを開けて醤油を回しかけ、好みでレモンを絞る。"
+  ],
+  "swiss_tips": "鮭は Lachsfilet で。きのこはマッシュルームやひらたけ（Austernpilze）でもおいしい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 260,
+   "protein_g": 24,
+   "fat_g": 15,
+   "carbs_g": 7,
+   "salt_g": 1.4
+  }
+ },
+ {
+  "name": "鮭のムニエル・和風バター醤油",
+  "category": "fish",
+  "cooking_time_minutes": 15,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "小麦粉をまぶしてバターで焼き、醤油で香ばしく。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "鮭",
+    "amount": "2切れ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "薄力粉",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "15g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "レモン",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ブロッコリー",
+    "amount": "1/2株",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "鮭に塩をふって10分置き、出てきた水気を拭く。こしょうをふり、薄力粉を薄くまぶす。",
+   "フライパンに油とバター半量を熱し、皮目から中火で3分焼く。",
+   "裏返してふたをし、弱火で3分焼く。",
+   "残りのバターと醤油（あればみりんも）を加えて、鮭にからめる。茹でたブロッコリーとレモンを添える。"
+  ],
+  "swiss_tips": "皮なしの切り身でも作れる。子ども向けには、骨のない Lachsfilet を選ぶと安心。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 300,
+   "protein_g": 24,
+   "fat_g": 19,
+   "carbs_g": 8,
+   "salt_g": 1.5
+  }
+ },
+ {
+  "name": "さばの竜田揚げ",
+  "category": "fish",
+  "cooking_time_minutes": 30,
+  "servings": 3,
+  "serving_unit": "",
+  "description": "下味をつけたさばを、片栗粉でカリッと揚げて。",
+  "mood_tags": [
+   "お弁当向き",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "鯖（冷凍）",
+    "amount": "3切れ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "みりん",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "大さじ4",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "レモン",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "さばは冷蔵庫で解凍し、水気を拭いて2〜3cm幅のそぎ切りにする。骨があれば抜く。",
+   "醤油・酒・みりん・すりおろした生姜をもみ込み、15分置く。",
+   "汁気を軽く切り、片栗粉をまぶす。",
+   "170〜180℃の油で3分ほど、カリッとするまで揚げる。少ない油で揚げ焼きにしてもよい。"
+  ],
+  "swiss_tips": "アジアスーパーの冷凍さば（ノルウェー産）が使いやすい。塩さばを使うときは、醤油を半分にする。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 20,
+   "fat_g": 22,
+   "carbs_g": 11,
+   "salt_g": 1.4
+  }
+ },
+ {
+  "name": "鶏そぼろ丼",
+  "category": "rice",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "甘辛い鶏そぼろと炒り卵。作り置きにも便利。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "鶏ひき肉",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1.5と小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "卵",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "絹さや",
+    "amount": "6枚",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "鍋にひき肉・すりおろした生姜・醤油・砂糖大さじ1.5・みりん・酒を入れ、火をつける前に菜箸でよく混ぜる。",
+   "中火にかけ、菜箸4本でかき混ぜながら、汁気がほとんどなくなるまで炒り煮にする。",
+   "卵に砂糖小さじ1と塩を混ぜ、別の鍋で弱火にかけて、混ぜながら細かい炒り卵にする。",
+   "ご飯にそぼろと炒り卵をのせ、好みで茹でた絹さやを添える。"
+  ],
+  "swiss_tips": "鶏ひき肉は Pouletgehacktes。見つからなければ、鶏むね肉をフードプロセッサーで細かくしてもよい。そぼろは冷蔵で3日、冷凍で1か月ほど持つ。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 560,
+   "protein_g": 26,
+   "fat_g": 14,
+   "carbs_g": 80,
+   "salt_g": 2.6
+  }
+ },
+ {
+  "name": "三色丼",
+  "category": "rice",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "茶色・黄色・緑で、見た目も楽しいお弁当の定番。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "鶏ひき肉",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5と小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1と小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "卵",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ほうれん草",
+    "amount": "1/2束",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "そぼろを作る。ひき肉と醤油大さじ1.5・砂糖大さじ1・みりん・生姜を鍋で混ぜてから火にかけ、汁気がなくなるまで炒る。",
+   "卵に砂糖小さじ1と塩を混ぜ、弱火で混ぜながら細かい炒り卵にする。",
+   "ほうれん草は茹でて水にとり、水気を絞って2cmに切り、醤油小さじ1とごまで和える。",
+   "ご飯に3つの具を3色に分けて並べる。"
+  ],
+  "swiss_tips": "ほうれん草は Blattspinat。冷凍のほうれん草でもよく、その場合は解凍して水気を絞るだけでよい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 520,
+   "protein_g": 22,
+   "fat_g": 12,
+   "carbs_g": 78,
+   "salt_g": 2.4
+  }
+ },
+ {
+  "name": "焼きおにぎり",
+  "category": "rice",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "醤油を塗って焼いた、香ばしいおにぎり。余ったご飯で。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "子どもが喜ぶ",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ごま油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "海苔",
+    "amount": "1枚",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "ご飯に、あればかつお節を混ぜ、少し固めにぎゅっとにぎる（4個）。冷めたご飯は温め直してからにぎる。",
+   "醤油とみりんを混ぜておく。",
+   "フライパンにごま油を薄く塗り、おにぎりを中火で両面2〜3分ずつ、焼き目がつくまで焼く。",
+   "刷毛かスプーンで醤油だれを塗り、さっと両面を焼いて香ばしくする。好みで海苔を巻く。"
+  ],
+  "swiss_tips": "崩れやすいときは、焼いている間はさわらず、しっかり焼き目がついてから返す。焼いてから冷凍し、食べるときに温めてもよい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 5,
+   "fat_g": 2,
+   "carbs_g": 60,
+   "salt_g": 1.4
+  }
+ },
+ {
+  "name": "きのこの炊き込みピラフ風ご飯",
+  "category": "rice",
+  "cooking_time_minutes": 50,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "スイスのきのこをたっぷり使った、バター醤油味の炊き込みご飯。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2合",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マッシュルーム",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "エリンギ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "しいたけ",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ベーコン",
+    "amount": "80g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "コンソメ",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "バター",
+    "amount": "20g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "米を研いで30分浸け、ざるに上げる。",
+   "きのこは薄切り、ベーコンは1cm幅、玉ねぎはみじん切りにする。",
+   "鍋に米・コンソメ・醤油を入れ、水を2合の目盛り（約360ml）まで加えて混ぜる。具をのせて普通に炊く。",
+   "炊けたらバターとこしょうを加えて10分蒸らし、全体を混ぜる。小口切りのねぎを散らす。"
+  ],
+  "swiss_tips": "Champignons のほか、季節には Steinpilze（ポルチーニ）や Eierschwämmli（アンズタケ）を少し入れると、香りがぐっと良くなる。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 9,
+   "fat_g": 10,
+   "carbs_g": 62,
+   "salt_g": 1.6
+  }
+ },
+ {
+  "name": "いなり寿司",
+  "category": "rice",
+  "cooking_time_minutes": 60,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "甘く煮た油揚げに酢飯をつめて。持ち寄りやお弁当に。",
+  "mood_tags": [
+   "お弁当向き",
+   "おもてなし",
+   "和の定番が恋しい"
+  ],
+  "ingredients": [
+   {
+    "name": "油揚げ",
+    "amount": "6枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ5と1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "米",
+    "amount": "2合",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "酢",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "白ごま",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "油揚げを半分に切り、袋状に開く。熱湯で2分茹でて油抜きし、軽く絞る。",
+   "鍋に水200ml・顆粒だし・砂糖大さじ4・醤油・みりんを入れて油揚げを並べ、落としぶたをして弱火で15分、煮汁が少し残るまで煮る。そのまま冷ます。",
+   "ご飯を少し固めに炊き、酢・砂糖大さじ1.5・塩を混ぜた寿司酢を回しかけて切るように混ぜ、ごまを加えて冷ます。",
+   "酢飯を12等分して軽くにぎる。油揚げの汁を軽く絞り、酢飯をつめて口を閉じる。"
+  ],
+  "swiss_tips": "油揚げはアジアスーパーの冷凍コーナーにある。開きにくいときは、まな板の上で菜箸を転がしてから開く。味付けずみの「いなり揚げ」の缶や袋なら、煮る手間がいらない。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 420,
+   "protein_g": 11,
+   "fat_g": 10,
+   "carbs_g": 70,
+   "salt_g": 2.4
+  }
+ },
+ {
+  "name": "茶碗蒸し",
+  "category": "side",
+  "cooking_time_minutes": 30,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "だしのきいた、つるんとやさしい卵の蒸しもの。蒸し器なしでも。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "おもてなし",
+   "あったまりたい"
+  ],
+  "ingredients": [
+   {
+    "name": "卵",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "鶏むね肉",
+    "amount": "50g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "むきエビ",
+    "amount": "4尾",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "しいたけ",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "ぬるま湯300mlに顆粒だし・醤油・みりん・塩を溶かして冷ます。",
+   "卵をよく溶いてだしと混ぜ、ざるでこす。",
+   "鶏肉は小さく切り、しいたけは薄切りにする。耐熱の器に鶏肉・エビ・しいたけを入れ、卵液を注いでアルミホイルでふたをする。",
+   "深めの鍋に器を並べ、器の高さの1/3まで湯を入れる。ふたをして強火で2分、ふたを少しずらして弱火で12〜15分蒸す。",
+   "竹串を刺して透明な汁が出れば完成。ねぎを散らす。"
+  ],
+  "swiss_tips": "蒸し器がなくても、ふた付きの深い鍋で作れる。ふたを布巾で包むと、水滴が落ちない。強火のままだと「す」が立つので、弱火で蒸す。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 80,
+   "protein_g": 9,
+   "fat_g": 4,
+   "carbs_g": 2,
+   "salt_g": 0.8
+  }
+ },
+ {
+  "name": "かぼちゃの煮物",
+  "category": "side",
+  "cooking_time_minutes": 25,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "ほっくり甘い、ほっとする定番の煮物。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "作りおき",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "かぼちゃ",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "かぼちゃは種とわたを取り、4cm角に切る。ところどころ皮をむき、角を薄く削ると煮崩れしにくい。",
+   "鍋に皮を下にして重ならないように並べ、水200ml・顆粒だし・砂糖を入れて中火にかける。",
+   "煮立ったら落としぶたをして、弱火で5分煮る。",
+   "醤油・みりんを加えてさらに5〜8分、竹串がすっと通るまで煮る。火を止めてそのまま冷まし、味をしみ込ませる。"
+  ],
+  "swiss_tips": "Kürbis Hokkaido は皮がやわらかく、日本のかぼちゃのようにほくほくになる。Butternut は水っぽいので、煮物には向かない。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 110,
+   "protein_g": 2,
+   "fat_g": 0.3,
+   "carbs_g": 25,
+   "salt_g": 0.8
+  }
+ },
+ {
+  "name": "厚揚げ風の豆腐ステーキ",
+  "category": "side",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "硬めの豆腐をカリッと焼いて、厚揚げのような食感に。",
+  "mood_tags": [
+   "さっぱり",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "木綿豆腐",
+    "amount": "1丁",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "大さじ2",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "豆腐をキッチンペーパーで包み、重しをのせて15分水切りする。2cmほどの厚さに切る。",
+   "醤油・みりん・砂糖・すりおろした生姜を混ぜて、たれを作る。",
+   "豆腐の水気を拭いて片栗粉をまぶし、多めの油で全面をカリッと焼く（片面3分ずつ）。",
+   "余分な油を拭き、たれを入れてからめる。ねぎとかつお節をのせる。"
+  ],
+  "swiss_tips": "スイスの Tofu nature は日本の木綿より硬めなので、水切りは短くて済む。厚揚げらしくしたいときは、焼き時間を長めにして表面をしっかり固くする。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 280,
+   "protein_g": 13,
+   "fat_g": 18,
+   "carbs_g": 15,
+   "salt_g": 1.9
+  }
+ },
+ {
+  "name": "なすの揚げびたし",
+  "category": "side",
+  "cooking_time_minutes": 25,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "揚げたなすを、だしに浸して。冷やしてもおいしい。",
+  "mood_tags": [
+   "さっぱり",
+   "作りおき",
+   "和の定番が恋しい"
+  ],
+  "ingredients": [
+   {
+    "name": "なす",
+    "amount": "2本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "鍋に水200ml・顆粒だし・醤油・みりんを入れてひと煮立ちさせ、浸し地を作って容器に入れる。",
+   "なすはへたを取り、縦半分に切って皮に斜めの切り込みを入れ、長さを半分に切る。",
+   "水気を拭き、170℃の油で皮目から2〜3分、やわらかくなるまで揚げる（多めの油で揚げ焼きにしてもよい）。",
+   "油を切って熱いうちに浸し地に入れ、15分以上置く。おろし生姜とねぎをのせる。"
+  ],
+  "swiss_tips": "スイスの Aubergine は大きく、1本で日本のなす2本分くらい。冷蔵庫で2〜3日持つ。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 110,
+   "protein_g": 1,
+   "fat_g": 8,
+   "carbs_g": 8,
+   "salt_g": 1.2
+  }
+ },
+ {
+  "name": "大根とツナのサラダ",
+  "category": "side",
+  "cooking_time_minutes": 10,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "火を使わず、切って和えるだけ。あと一品に。",
+  "mood_tags": [
+   "さっぱり",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "大根（Rettich）",
+    "amount": "10cm",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ツナ缶",
+    "amount": "1缶",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "クレス",
+    "amount": "1/2パック",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "海苔",
+    "amount": "1/2枚",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "大根は細切りにして塩をふり、5分置いて水気をしっかり絞る。",
+   "ツナは油（または水）を切る。",
+   "大根・ツナ・マヨネーズ・醤油を和える。",
+   "器に盛り、クレス・ごま・ちぎった海苔をのせる。"
+  ],
+  "swiss_tips": "Rettich は日本の大根より辛いので、塩をふって少し置くと辛みがやわらぐ。かいわれ大根の代わりにクレス（Kresse）を。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 170,
+   "protein_g": 10,
+   "fat_g": 12,
+   "carbs_g": 5,
+   "salt_g": 1.0
+  }
+ },
+ {
+  "name": "豚バラ大根",
+  "category": "meat",
+  "cooking_time_minutes": 40,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "豚バラのうまみが大根にしみた、甘辛いおかず。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "あったまりたい",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "豚バラ肉",
+    "amount": "250g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "15cm",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "大根は皮をむき、2cm幅の半月切りにする。耐熱皿に入れてラップをし、電子レンジで5分加熱する（または水から10分下茹でする）。",
+   "豚肉は4cmに切り、生姜は薄切りにする。",
+   "鍋に油を熱して豚肉を炒め、色が変わったら大根と生姜を加えて炒め合わせる。",
+   "水300ml・顆粒だし・調味料を入れ、落としぶたをして弱火で20分、煮汁が少なくなるまで煮る。"
+  ],
+  "swiss_tips": "豚バラは生の Schweinsbrust を使う。Rettich は辛みが強いので、下茹でしてから煮る。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 370,
+   "protein_g": 10,
+   "fat_g": 30,
+   "carbs_g": 14,
+   "salt_g": 2.1
+  }
+ },
+ {
+  "name": "鶏肉と大根の煮物",
+  "category": "meat",
+  "cooking_time_minutes": 40,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "少ない材料でできる、しみじみおいしい定番の煮物。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "あったまりたい",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "鶏もも肉",
+    "amount": "300g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "15cm",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "卵",
+    "amount": "2個",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "大根は2cm幅のいちょう切りにし、水から10分下茹でする（電子レンジで5分でもよい）。卵を入れるときは、ゆで卵にして殻をむく。",
+   "鶏肉は一口大に切る。",
+   "鍋で鶏肉を皮目から焼き、脂が出たら大根と薄切りの生姜を加える。",
+   "水300ml・顆粒だし・調味料を入れ、落としぶたをして弱火で20分煮る。ゆで卵は最後の10分で加える。"
+  ],
+  "swiss_tips": "鶏もも肉は骨なしの Pouletschenkel を。一度冷ますと、大根に味がよくしみる。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 250,
+   "protein_g": 18,
+   "fat_g": 12,
+   "carbs_g": 14,
+   "salt_g": 2.1
+  }
+ },
+ {
+  "name": "牛肉とピーマンの甘辛炒め",
+  "category": "meat",
+  "cooking_time_minutes": 15,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "醤油と砂糖でさっと炒める、ご飯がすすむおかず。",
+  "mood_tags": [
+   "がっつり",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "牛薄切り肉",
+    "amount": "200g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ピーマン",
+    "amount": "3個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/2個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "小さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "牛肉は食べやすく切り、片栗粉をまぶす。ピーマンは細切り、玉ねぎは薄切りにする。",
+   "醤油・砂糖・みりん・すりおろした生姜を混ぜておく。",
+   "フライパンに油を熱し、牛肉を強火で炒める。色が変わったら玉ねぎとピーマンを加えて1〜2分炒める。",
+   "合わせ調味料を入れ、さっと炒めてからめる。ごまをふる。"
+  ],
+  "swiss_tips": "牛肉は「Rindsgeschnetzeltes」や、アジアスーパーの冷凍のすき焼き用が使いやすい。ピーマンは緑の Peperoni で。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 380,
+   "protein_g": 20,
+   "fat_g": 26,
+   "carbs_g": 16,
+   "salt_g": 1.9
+  }
+ },
+ {
+  "name": "豆腐ハンバーグ",
+  "category": "meat",
+  "cooking_time_minutes": 30,
+  "servings": 3,
+  "serving_unit": "",
+  "description": "豆腐を合わせて、ふんわり軽く。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "さっぱり"
+  ],
+  "ingredients": [
+   {
+    "name": "鶏ひき肉",
+    "amount": "250g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "木綿豆腐",
+    "amount": "1/2丁",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "パン粉",
+    "amount": "大さじ3",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "小さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "5cm",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "豆腐はキッチンペーパーで包み、10分ほど水切りする。玉ねぎはみじん切りにする。",
+   "ボウルにひき肉・豆腐・玉ねぎ・パン粉・卵・塩を入れ、粘りが出るまでよく混ぜる。6等分して、平たい楕円にする。",
+   "フライパンに油を熱し、中火で3分焼く。裏返してふたをし、弱火で6〜7分焼く。",
+   "醤油・みりん・砂糖・水大さじ3・片栗粉を混ぜて加え、とろみがつくまでからめる。好みで大根おろしを添える。"
+  ],
+  "swiss_tips": "スイスの Tofu は硬めなので、水切りは短めでよい。豚ひき肉や合いびき肉でもおいしい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 300,
+   "protein_g": 22,
+   "fat_g": 16,
+   "carbs_g": 15,
+   "salt_g": 2.0
+  }
+ },
+ {
+  "name": "天津飯",
+  "category": "chinese",
+  "cooking_time_minutes": 20,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "かに玉をご飯にのせ、甘酢あんをかけた日本生まれの中華。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "米",
+    "amount": "2膳分",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "カニカマ",
+    "amount": "6本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "2本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "鶏がらスープの素",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "酢",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "絹さや",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "あんを作る。小鍋に水200ml・スープの素・醤油・砂糖・酢・ケチャップを入れて煮立て、水大さじ2で溶いた片栗粉でとろみをつける。",
+   "カニカマはほぐし、ねぎは斜め切りにする。卵を2個ずつ溶き、カニカマとねぎを半量ずつ混ぜる。",
+   "フライパンに油の半量を強火で熱し、卵液1人分を流して大きく混ぜ、半熟で丸く整える。",
+   "器に盛ったご飯の上にすべらせてのせる。もう1人分も同じように作る。",
+   "あんをかけ、ごま油を少したらし、茹でた絹さやを飾る。"
+  ],
+  "swiss_tips": "カニカマは Coop・Migros の冷蔵コーナーにある「Surimi」で。酢を入れずに醤油あんにしてもおいしい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 620,
+   "protein_g": 20,
+   "fat_g": 22,
+   "carbs_g": 82,
+   "salt_g": 2.6
+  }
+ },
+ {
+  "name": "オムそば",
+  "category": "noodle",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "ソース焼きそばを、ふんわり卵で包んで。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "がっつり"
+  ],
+  "ingredients": [
+   {
+    "name": "中華麺",
+    "amount": "2玉",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "豚薄切り肉",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "キャベツ",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "もやし",
+    "amount": "1/2袋",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "サラダ油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ウスターソース",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ケチャップ",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "焼きそばの作り方で、豚肉と野菜、麺をソースで炒めて取り出す。",
+   "卵2個に塩少々を入れて溶く。フライパンに油少々を熱し、卵を流して薄く広げる。",
+   "半熟のうちに真ん中へ焼きそばの半量をのせ、卵で包むようにして皿に返す。",
+   "もう1人分も同じように作る。ソース（分量外）とマヨネーズをかけ、かつお節をのせる。"
+  ],
+  "swiss_tips": "日本のマヨネーズ（キユーピー）はアジアスーパーにある。スイスの Thomy でもおいしい。",
+  "origin": "ai",
+  "status": "draft",
+  "nutrition": {
+   "energy_kcal": 780,
+   "protein_g": 32,
+   "fat_g": 40,
+   "carbs_g": 72,
+   "salt_g": 4.0
+  }
  }
 ]

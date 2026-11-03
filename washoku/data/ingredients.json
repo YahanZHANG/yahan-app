@@ -218,6 +218,17 @@
   "substitutes_for": []
  },
  {
+  "name": "カニカマ",
+  "name_de": "Surimi-Sticks",
+  "category": "fish",
+  "search_group": "カニカマ",
+  "shops": [
+   "supermarket"
+  ],
+  "buying_notes": "Coop・Migros の冷蔵コーナーに「Surimi」の名で売っている。",
+  "substitutes_for": []
+ },
+ {
   "name": "おでん種",
   "name_de": "Fischbällchen / Oden-Set",
   "category": "fish",
