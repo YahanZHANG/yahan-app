@@ -561,6 +561,49 @@ html[data-yapp-resolved-theme="dark"] .ps-tag {
     border-bottom: 0;
 }
 
+/* ---------- 0問目: 掲示板に求める機能 ---------- */
+
+.ps-wish-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.ps-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.ps-check-row {
+    align-items: center;
+    padding: 9px 4px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.ps-check-row:has(input:checked) {
+    background: var(--ps-primary-soft);
+}
+
+.ps-check-row input {
+    margin-top: 0;
+}
+
+.ps-other-field {
+    margin: 2px 0 6px 36px;
+}
+
+.ps-other-field[hidden] {
+    display: none;
+}
+
 /* ---------- Done ---------- */
 
 .ps-done {

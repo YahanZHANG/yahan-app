@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from travel.models import UserProfile
 
-from .models import Answer, Interest, Participant, Question, Skip
+from .models import Answer, FeatureWish, Interest, Participant, Question, Skip
 from .services import current_consent, suggest_username
 
 
@@ -21,11 +21,14 @@ def make_question(body, theme="life", **extra):
 
 class FlowMixin:
 
-    def join(self, client=None, themes=("life",), region="", mode="custom", name="さくら"):
+    def join(self, client=None, themes=("life",), region="", mode="custom", name="さくら", wish="already"):
         client = client or self.client
         client.post(reverse("pre_survey:start"), {"agree": "yes"})
         client.post(reverse("pre_survey:nickname"), {"mode": mode, "custom_name": name, "auto_name": "森のリス"})
         client.post(reverse("pre_survey:themes"), {"themes": list(themes), "region": region})
+        if wish:
+            # 「0問目」(掲示板に求める機能) を済ませる
+            client.post(reverse("pre_survey:wish"), {"action": wish})
         return Participant.objects.filter(pk=client.session["pre_survey_participant"]).first()
 
     def current(self, client=None):
@@ -159,6 +162,8 @@ class ParticipationTests(FlowMixin, TestCase):
         self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
         self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
         response = self.client.post(reverse("pre_survey:themes"), {"themes": ["life"], "next": "ask"})
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=ask")
+        response = self.client.post(reverse("pre_survey:wish"), {"action": "skip", "next": "ask"})
         self.assertRedirects(response, reverse("pre_survey:ask"))
 
     def test_again_keeps_nickname_and_previous_themes(self):
@@ -214,6 +219,75 @@ class ParticipationTests(FlowMixin, TestCase):
         self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
         response = self.client.get(reverse("pre_survey:themes"))
         self.assertEqual(response.context["regions"][0][0], "zurich")
+
+
+class FeatureWishTests(FlowMixin, TestCase):
+
+    def test_wish_comes_before_the_first_question(self):
+        make_question("Q1")
+        self.join(wish=None)
+        response = self.client.get(reverse("pre_survey:question"))
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=question")
+        response = self.client.get(response.url)
+        self.assertContains(response, "こんな機能があったら使ってみたい！と思うものは？")
+        self.assertContains(response, "前に回答しました")
+
+    def test_themes_go_to_wish_first(self):
+        self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
+        self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
+        response = self.client.post(reverse("pre_survey:themes"), {"themes": ["life"], "next": "ask"})
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=ask")
+
+    def test_answer_is_saved_and_not_asked_again(self):
+        question = make_question("Q1")
+        self.join(wish=None)
+        response = self.client.post(reverse("pre_survey:wish"), {
+            "action": "answer",
+            "features": ["qa", "giveaway", "other", "bogus"],
+            "other_text": "ベビーシッター探し",
+            "comment": "地域で分けてほしい",
+            "next": "question",
+        })
+        self.assertRedirects(response, reverse("pre_survey:question"))
+        wish = FeatureWish.objects.get()
+        self.assertEqual(wish.features, ["qa", "giveaway", "other"])
+        self.assertEqual(wish.other_text, "ベビーシッター探し")
+        self.assertEqual(wish.comment, "地域で分けてほしい")
+        self.assertEqual(wish.response, FeatureWish.Response.ANSWERED)
+        self.assertEqual(self.current(), question)
+
+        self.client.post(reverse("pre_survey:again"))
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+
+    def test_empty_answer_asks_to_choose_or_skip(self):
+        self.join(wish=None)
+        response = self.client.post(reverse("pre_survey:wish"), {"action": "answer"})
+        self.assertContains(response, "あてはまるものを選ぶか")
+        self.assertFalse(FeatureWish.objects.exists())
+
+    def test_skip_shows_it_once_more_next_time_but_already_does_not(self):
+        self.join(wish="skip")
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+        self.client.post(reverse("pre_survey:again"))
+        self.assertRedirects(self.client.get(reverse("pre_survey:question")), reverse("pre_survey:wish") + "?next=question")
+        self.client.post(reverse("pre_survey:wish"), {"action": "already"})
+        self.client.post(reverse("pre_survey:again"))
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+
+    def test_admin_tally_and_csv(self):
+        admin_user = User.objects.create_superuser("boss", password=PASSWORD)
+        FeatureWish.objects.create(features=["qa", "events"])
+        FeatureWish.objects.create(features=["qa"])
+        FeatureWish.objects.create(response=FeatureWish.Response.SKIPPED)
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("admin:pre_survey_featurewish_changelist"))
+        self.assertContains(response, "回答 2件・スキップ 1件")
+        self.assertEqual(response.context["wish_tally"][0]["count"], 2)
+        response = self.client.post(
+            reverse("admin:pre_survey_featurewish_changelist"),
+            {"action": "export_csv", "_selected_action": list(FeatureWish.objects.values_list("pk", flat=True))},
+        )
+        self.assertIn("困ったことを質問・相談できる（知恵袋）", response.content.decode("utf-8-sig"))
 
 
 class DeliveryTests(FlowMixin, TestCase):

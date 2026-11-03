@@ -12,7 +12,8 @@ from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.utils import timezone
 
-from .models import Answer, Participant, Question
+from .features import FEATURE_CHOICES
+from .models import Answer, FeatureWish, Participant, Question
 
 
 def csv_response(filename, header, rows):
@@ -249,3 +250,82 @@ class ParticipantAdmin(admin.ModelAdmin):
     @admin.display(description="質問", ordering="questions_total")
     def question_count(self, obj):
         return obj.questions_total
+
+
+@admin.register(FeatureWish)
+class FeatureWishAdmin(admin.ModelAdmin):
+    """「0問目」: 掲示板に求める機能。一覧の上に、選択肢ごとの票数を出す。"""
+
+    change_list_template = "admin/pre_survey/featurewish/change_list.html"
+    list_display = ["created_at", "response", "feature_list", "other_text", "short_comment", "who"]
+    list_filter = ["response"]
+    search_fields = ["other_text", "comment"]
+    ordering = ["-created_at"]
+    list_per_page = 100
+    actions = ["export_csv"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("participant", "user")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="選んだ機能")
+    def feature_list(self, obj):
+        return "・".join(obj.feature_labels())
+
+    @admin.display(description="ご意見")
+    def short_comment(self, obj):
+        return obj.comment if len(obj.comment) <= 60 else obj.comment[:60] + "…"
+
+    @admin.display(description="ニックネーム")
+    def who(self, obj):
+        if obj.participant:
+            return obj.participant.display_name
+        return obj.user.username if obj.user else ""
+
+    def changelist_view(self, request, extra_context=None):
+        answered = FeatureWish.objects.filter(response=FeatureWish.Response.ANSWERED)
+        counts = {key: 0 for key, _ in FEATURE_CHOICES}
+        for features in answered.values_list("features", flat=True):
+            for key in features:
+                counts[key] = counts.get(key, 0) + 1
+        total = answered.count()
+        tally = [
+            {"label": label, "count": counts.get(key, 0), "percent": round(counts.get(key, 0) * 100 / total) if total else 0}
+            for key, label in FEATURE_CHOICES
+        ]
+        tally.sort(key=lambda row: -row["count"])
+        extra_context = {
+            **(extra_context or {}),
+            "wish_tally": tally,
+            "wish_total": total,
+            "wish_skipped": FeatureWish.objects.filter(response=FeatureWish.Response.SKIPPED).count(),
+            "wish_already": FeatureWish.objects.filter(response=FeatureWish.Response.ALREADY).count(),
+        }
+        return super().changelist_view(request, extra_context=extra_context)
+
+    @admin.action(description="選んだものをCSVで書き出す")
+    def export_csv(self, request, queryset):
+        keys = [key for key, _ in FEATURE_CHOICES]
+        rows = (
+            [
+                w.pk,
+                local(w.created_at),
+                w.get_response_display(),
+                w.participant.display_name if w.participant else "",
+                w.user.username if w.user else "",
+                *["1" if key in w.features else "" for key in keys],
+                w.other_text,
+                w.comment,
+            ]
+            for w in queryset.order_by("pk")
+        )
+        return csv_response(
+            "pre-survey-feature-wishes",
+            ["ID", "日時", "状態", "ニックネーム", "ユーザーID", *[label for _, label in FEATURE_CHOICES], "その他の内容", "ご意見"],
+            rows,
+        )
