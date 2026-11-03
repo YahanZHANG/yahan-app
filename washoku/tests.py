@@ -3065,6 +3065,21 @@ class MyQuestionsAndRecipeActivityTests(TestCase):
         self.assertContains(response, "kind-recipe")
         self.assertContains(response, "下書きの肉じゃが")
 
+    def test_admin_published_recipes_are_one_activity_row(self):
+
+        now = timezone.now()
+        for name in ["天ぷら", "天津飯", "いなり寿司"]:
+            recipe = make_recipe(name)
+            Recipe.objects.filter(pk=recipe.pk).update(published_at=now)
+        member_recipe = make_recipe("会員の筑前煮")
+        Recipe.objects.filter(pk=member_recipe.pk).update(origin="member", published_at=now)
+
+        response = self.client.get(reverse("washoku:home"))
+        self.assertContains(response, "レシピが新たに3品追加されました")
+        self.assertContains(response, reverse("washoku:recipe_list") + "?sort=new")
+        self.assertContains(response, "会員の筑前煮")
+        self.assertNotContains(response, ">天津飯<")
+
     def test_new_badge_only_for_a_week_after_publishing(self):
 
         fresh = make_recipe("新しい天ぷら", status="draft")

@@ -1,7 +1,13 @@
 {% load washoku_tags %}
 {% with item=entry.item %}
 <li>
-    {% if entry.kind == "recipe" %}
+    {% if entry.kind == "recipe_batch" %}
+    <a href="{% url 'washoku:recipe_list' %}?sort=new">
+        <span class="washoku-activity-kind kind-recipe">レシピ</span>
+        <span class="washoku-activity-body">レシピが新たに{{ entry.count }}品追加されました</span>
+        <small>{{ entry.at|date:"n/j H:i" }}</small>
+    </a>
+    {% elif entry.kind == "recipe" %}
     <a href="{% url 'washoku:recipe_detail' item.pk %}">
         <span class="washoku-activity-kind kind-recipe">レシピ</span>
         <span class="washoku-activity-body">{{ item.name }}</span>

@@ -601,7 +601,7 @@ def recipe_list(request):
             recipes = recipes.filter(condition)
 
     if sort == "new":
-        recipes = recipes.order_by("-created_at")
+        recipes = recipes.order_by(F("published_at").desc(nulls_last=True), "-created_at")
     elif sort == "time":
         recipes = recipes.order_by("cooking_time_minutes", "name")
     elif sort == "light":
@@ -3508,6 +3508,34 @@ def my_posts(request):
 ACTIVITY_PER_PAGE = 30
 
 
+def recipe_activity_entries(recipes):
+    """
+    会員が投稿したレシピは1品ずつ。管理者が公開したレシピは、1回の公開
+    (同じ分に公開したもの) をまとめて1行にする。
+    """
+
+    entries = []
+    batches = {}
+
+    for recipe in recipes:
+        if recipe.origin == "member":
+            entries.append({"kind": "recipe", "item": recipe, "at": recipe.published_at})
+            continue
+        key = recipe.published_at.replace(second=0, microsecond=0)
+        if key not in batches:
+            batches[key] = {"kind": "recipe", "item": recipe, "at": recipe.published_at, "recipes": []}
+            entries.append(batches[key])
+        batches[key]["recipes"].append(recipe)
+
+    for entry in entries:
+        recipes_in_batch = entry.get("recipes", [])
+        if len(recipes_in_batch) > 1:
+            entry["kind"] = "recipe_batch"
+            entry["count"] = len(recipes_in_batch)
+
+    return entries
+
+
 def activity_entries(comment_limit=300, post_limit=100):
     """
     公開中のコメント・みんなの投稿・新しく公開されたレシピを、新しい順に1つの列にする。
@@ -3534,12 +3562,12 @@ def activity_entries(comment_limit=300, post_limit=100):
         Recipe.objects
         .filter(status="published", published_at__isnull=False)
         .select_related("submitted_by")
-        .order_by("-published_at")[:post_limit]
+        .order_by("-published_at")[:max(post_limit, 200)]  # まとめた行の品数が欠けないよう多めに
     )
 
     items = [{"kind": "comment", "item": comment, "at": comment.created_at} for comment in comments]
     items += [{"kind": "post", "item": post, "at": post.created_at} for post in posts]
-    items += [{"kind": "recipe", "item": recipe, "at": recipe.published_at} for recipe in recipes]
+    items += recipe_activity_entries(recipes)
     items.sort(key=lambda entry: entry["at"], reverse=True)
 
     return items
