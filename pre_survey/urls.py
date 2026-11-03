@@ -9,6 +9,7 @@ urlpatterns = [
     path("", views.start, name="start"),
     path("nickname/", views.nickname, name="nickname"),
     path("themes/", views.themes, name="themes"),
+    path("wish/", views.wish, name="wish"),
     path("q/", views.question, name="question"),
     path("q/<int:pk>/", views.question_action, name="question_action"),
     path("q/<int:pk>/undo/", views.undo_skip, name="undo_skip"),

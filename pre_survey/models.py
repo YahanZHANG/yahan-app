@@ -283,3 +283,52 @@ class Skip(models.Model):
         verbose_name_plural = "スキップ"
         ordering = ["-created_at"]
 
+
+
+class FeatureWish(models.Model):
+    """
+    「0問目」: 掲示板にあったらうれしい機能 (複数選択 + その他 + 自由記述)。
+    選択肢は features.py。答えた・「前に回答しました」を押した人には、もう出さない。
+    """
+
+    class Response(models.TextChoices):
+        ANSWERED = "answered", "回答"
+        SKIPPED = "skipped", "スキップ"
+        ALREADY = "already", "前に回答済み"
+
+    response = models.CharField("回答の状態", max_length=10, choices=Response.choices, default=Response.ANSWERED)
+    features = models.JSONField("選んだ機能", default=list, blank=True)
+    other_text = models.CharField("その他の内容", max_length=200, blank=True)
+    comment = models.TextField("ご意見", blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="ユーザー",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pre_survey_feature_wishes",
+    )
+    participant = models.ForeignKey(
+        Participant,
+        verbose_name="参加",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="feature_wishes",
+    )
+    browser_token = models.UUIDField("ブラウザの目印", null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField("作成日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "掲示板に求める機能"
+        verbose_name_plural = "掲示板に求める機能"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_response_display()} ({self.created_at:%Y-%m-%d %H:%M})"
+
+    def feature_labels(self):
+        from .features import FEATURE_CHOICES
+
+        labels = dict(FEATURE_CHOICES)
+        return [labels.get(key, key) for key in self.features]

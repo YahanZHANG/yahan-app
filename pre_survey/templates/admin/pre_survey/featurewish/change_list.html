@@ -1,0 +1,22 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+<div class="module" style="max-width: 720px; margin-bottom: 20px;">
+    <h2>集計（回答 {{ wish_total }}件・スキップ {{ wish_skipped }}件・前に回答済み {{ wish_already }}件）</h2>
+    <table style="width: 100%;">
+        <thead>
+            <tr><th>機能</th><th style="text-align: right;">票</th><th style="text-align: right;">回答した人のうち</th></tr>
+        </thead>
+        <tbody>
+            {% for row in wish_tally %}
+                <tr>
+                    <td>{{ row.label }}</td>
+                    <td style="text-align: right;">{{ row.count }}</td>
+                    <td style="text-align: right;">{{ row.percent }}%</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{{ block.super }}
+{% endblock %}
