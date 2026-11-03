@@ -217,6 +217,22 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
 
+    change_list_template = "admin/pre_survey/participant/change_list.html"
+
+    def get_urls(self):
+        from django.urls import path
+
+        from .activity import activity_view
+
+        extra = [
+            path(
+                "activity/",
+                self.admin_site.admin_view(lambda request: activity_view(request, admin_site=self.admin_site)),
+                name="pre_survey_activity",
+            ),
+        ]
+        return extra + super().get_urls()
+
     list_display = ["display_name", "nickname_mode", "theme_list", "region", "user", "answer_count",
                     "question_count", "consent_version", "created_at", "finished_at"]
     list_filter = ["nickname_mode", "region", "consent_version"]
@@ -285,7 +301,10 @@ class FeatureWishAdmin(admin.ModelAdmin):
     def who(self, obj):
         if obj.participant:
             return obj.participant.display_name
-        return obj.user.username if obj.user else ""
+        if obj.user:
+            return obj.user.username
+        # つながっていた「参加」の行がない (削除された) とき。ブラウザの目印の先頭で見分ける
+        return f"参加なし #{str(obj.browser_token)[:6]}" if obj.browser_token else "参加なし"
 
     def changelist_view(self, request, extra_context=None):
         answered = FeatureWish.objects.filter(response=FeatureWish.Response.ANSWERED)

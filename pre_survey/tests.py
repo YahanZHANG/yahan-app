@@ -555,3 +555,51 @@ class ImportTests(TestCase):
         self.assertEqual(Question.objects.count(), count)
         self.assertEqual(Question.objects.get(seed_key="q01").body, "直した")
         self.assertFalse(Question.objects.exclude(source="staff").exists())
+
+
+class ActivityPageTests(FlowMixin, TestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser("boss", password=PASSWORD)
+
+    def test_shows_everything_in_time_order(self):
+        questions = [make_question(f"Q{i}") for i in range(3)]
+        participant = self.join(wish=None, name="ゆき")
+        self.client.post(reverse("pre_survey:wish"), {"action": "answer", "features": ["qa"]})
+        self.act(self.current(), "answer", "Coopで買えます")
+        self.act(self.current(), "skip")
+        self.act(self.current(), "interest")
+        self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "自分の質問"})
+
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        response = staff.get(reverse("admin:pre_survey_activity"))
+        self.assertEqual(response.status_code, 200)
+        kinds = [event["kind"] for event in response.context["events"]]
+        self.assertEqual(kinds, ["質問の追加", "私も知りたい", "スキップ", "回答", "0問目: 回答", "参加の開始"])
+        self.assertContains(response, "Coopで買えます")
+        self.assertEqual(response.context["people"], 1)
+
+        # 人ごと・参加ごとに絞り込める
+        by_person = staff.get(reverse("admin:pre_survey_activity") + f"?token={participant.browser_token}")
+        self.assertEqual(len(by_person.context["events"]), 6)
+        by_participation = staff.get(reverse("admin:pre_survey_activity") + f"?participant={participant.pk}")
+        self.assertEqual(len(by_participation.context["events"]), 6)
+        self.assertEqual(len(staff.get(reverse("admin:pre_survey_activity") + "?date=2020-01-01").context["events"]), 0)
+
+    def test_records_left_after_a_participation_is_deleted(self):
+        make_question("Q1")
+        participant = self.join(wish=None)
+        self.client.post(reverse("pre_survey:wish"), {"action": "answer", "features": ["qa"]})
+        participant.delete()
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        response = staff.get(reverse("admin:pre_survey_activity"))
+        self.assertContains(response, "参加なし")
+        self.assertEqual(response.context["events"][0]["kind"], "0問目: 回答")
+
+    def test_staff_only_and_linked_from_participants(self):
+        self.assertEqual(self.client.get(reverse("admin:pre_survey_activity")).status_code, 302)
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        self.assertContains(staff.get(reverse("admin:pre_survey_participant_changelist")), reverse("admin:pre_survey_activity"))
