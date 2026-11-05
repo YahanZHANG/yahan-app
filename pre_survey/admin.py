@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from .features import FEATURE_CHOICES
-from .models import Answer, FeatureWish, Participant, Question
+from .models import Answer, FeatureWish, Participant, Question, ShareOffer
 from .services import POPULAR_MIN_INTERESTS
 
 
@@ -369,5 +369,53 @@ class FeatureWishAdmin(admin.ModelAdmin):
         return csv_response(
             "pre-survey-feature-wishes",
             ["ID", "日時", "状態", "ニックネーム", "ユーザーID", *[label for _, label in FEATURE_CHOICES], "その他の内容", "ご意見"],
+            rows,
+        )
+
+
+@admin.register(ShareOffer)
+class ShareOfferAdmin(admin.ModelAdmin):
+    """終了画面の「ゆずりたい・ゆずってほしい・貸したい・借りたい物がある」。公開の日の連絡先リスト。"""
+
+    list_display = ["kind", "item", "who", "account", "contacted", "created_at"]
+    list_editable = ["contacted"]
+    list_filter = ["kind", "contacted"]
+    search_fields = ["item", "user__username", "participant__nickname"]
+    ordering = ["-created_at"]
+    list_per_page = 100
+    readonly_fields = ["kind", "item", "user", "participant", "browser_token", "created_at"]
+    actions = ["export_csv"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("participant", "user")
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="ニックネーム")
+    def who(self, obj):
+        return obj.participant.display_name if obj.participant else ""
+
+    @admin.display(description="アカウント", ordering="user__username")
+    def account(self, obj):
+        return obj.user.username if obj.user else "未登録"
+
+    @admin.action(description="選んだ行をCSVで書き出す")
+    def export_csv(self, request, queryset):
+        rows = (
+            [
+                o.get_kind_display(),
+                o.item,
+                o.participant.display_name if o.participant else "",
+                o.user.username if o.user else "",
+                o.user.email if o.user else "",
+                "済" if o.contacted else "",
+                local(o.created_at),
+            ]
+            for o in queryset
+        )
+        return csv_response(
+            "pre-survey-share",
+            ["種類", "品物", "ニックネーム", "ユーザーID", "メール", "連絡", "日時"],
             rows,
         )

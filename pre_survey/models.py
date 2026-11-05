@@ -339,3 +339,49 @@ class FeatureWish(models.Model):
 
         labels = dict(FEATURE_CHOICES)
         return [labels.get(key, key) for key in self.features]
+
+
+class ShareOffer(models.Model):
+    """
+    終了画面の「ゆずりたい・ゆずってほしい・貸したい・借りたい物がある」。
+    掲示板の公開の日に、この人たちに知らせて最初の書き込みをお願いする。
+    """
+
+    class Kind(models.TextChoices):
+        GIVE = "give", "ゆずりたい"
+        WANT = "want", "ゆずってほしい"
+        LEND = "lend", "貸したい"
+        BORROW = "borrow", "借りたい"
+
+    # 出す側 (アカウント登録をすすめる)
+    OFFERING_KINDS = (Kind.GIVE, Kind.LEND)
+
+    kind = models.CharField("種類", max_length=10, choices=Kind.choices)
+    item = models.CharField("品物", max_length=100, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="ユーザー",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pre_survey_share_offers",
+    )
+    participant = models.ForeignKey(
+        Participant,
+        verbose_name="参加",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="share_offers",
+    )
+    browser_token = models.UUIDField("ブラウザの目印", null=True, blank=True, db_index=True)
+    contacted = models.BooleanField("公開時に連絡した", default=False)
+    created_at = models.DateTimeField("作成日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "ゆずりあい・貸し借りの希望"
+        verbose_name_plural = "ゆずりあい・貸し借りの希望"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_kind_display()}: {self.item or '（品物なし）'}"

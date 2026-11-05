@@ -20,7 +20,7 @@ from portal.views import create_public_user
 from travel.models import UserProfile
 
 from .features import COMMENT_MAX_LENGTH, FEATURE_CHOICES, OTHER_MAX_LENGTH
-from .models import ANSWER_THEMES, REGION_CHOICES, Answer, FeatureWish, Interest, Participant, Question, Skip, Theme
+from .models import ANSWER_THEMES, REGION_CHOICES, Answer, ShareOffer, FeatureWish, Interest, Participant, Question, Skip, Theme
 from .services import (
     TOKEN_COOKIE,
     TOKEN_MAX_AGE,
@@ -100,7 +100,7 @@ def current_participant(request):
         with transaction.atomic():
             participant.user = user
             participant.save(update_fields=["user"])
-            for model in (Answer, Question, Interest, Skip, FeatureWish):
+            for model in (Answer, Question, Interest, Skip, FeatureWish, ShareOffer):
                 model.objects.filter(participant=participant, user=None).update(user=user)
 
     elif user.is_authenticated and participant.user_id != user.pk:
@@ -589,6 +589,57 @@ def signup_offer(request, participant):
     return not request.user.is_authenticated
 
 
+SHARE_ITEM_MAX_LENGTH = 100
+
+
+def done_context(request, participant):
+    offers = list(ShareOffer.objects.filter(identity(request)).order_by("created_at"))
+    return {
+        "participant": participant,
+        "answered_count": participant.answers.count(),
+        "asked_count": participant.questions.count(),
+        "can_ask": participant.questions.count() < QUESTIONS_PER_PARTICIPATION,
+        "interest_count": participant.interests.count(),
+        "share_kinds": ShareOffer.Kind.choices,
+        "share_offers": offers,
+        "share_offering": any(offer.kind in ShareOffer.OFFERING_KINDS for offer in offers),
+        "share_item_max_length": SHARE_ITEM_MAX_LENGTH,
+        "step": 6,
+    }
+
+
+@require_POST
+@with_token
+def done_share(request):
+    """終了画面の「ゆずりたい・ゆずってほしい・貸したい・借りたい物がある」"""
+
+    participant = current_participant(request)
+
+    if participant is None:
+        return redirect("pre_survey:start")
+
+    kinds = [kind for kind in request.POST.getlist("kinds") if kind in ShareOffer.Kind.values]
+
+    if not kinds:
+        messages.error(request, "当てはまるものにチェックを入れてください。")
+        return redirect(reverse("pre_survey:done") + "#share")
+
+    owner = owner_fields(request, participant)
+    for kind in kinds:
+        item = (request.POST.get(f"item_{kind}") or "").strip()[:SHARE_ITEM_MAX_LENGTH]
+        # 二重送信で同じ行が2つできないように
+        ShareOffer.objects.get_or_create(kind=kind, item=item, participant=participant, defaults=owner)
+
+    offering = any(kind in ShareOffer.OFFERING_KINDS for kind in kinds)
+
+    if offering and not request.user.is_authenticated:
+        messages.success(request, "ありがとうございます！掲示板の公開の日にお知らせできるよう、下でYappに登録しておいてください。")
+        return redirect(reverse("pre_survey:done") + "#signup")
+
+    messages.success(request, "ありがとうございます！掲示板が公開されたら、ぜひ書き込んでください。")
+    return redirect(reverse("pre_survey:done") + "#share")
+
+
 @with_token
 def done(request):
 
@@ -601,14 +652,7 @@ def done(request):
         participant.finished_at = timezone.now()
         participant.save(update_fields=["finished_at"])
 
-    context = {
-        "participant": participant,
-        "answered_count": participant.answers.count(),
-        "asked_count": participant.questions.count(),
-        "can_ask": participant.questions.count() < QUESTIONS_PER_PARTICIPATION,
-        "interest_count": participant.interests.count(),
-        "step": 6,
-    }
+    context = done_context(request, participant)
 
     if signup_offer(request, participant):
         username, taken = suggest_username(participant.nickname)
@@ -646,11 +690,7 @@ def done_signup(request):
             request,
             "pre_survey/done.html",
             {
-                "participant": participant,
-                "answered_count": participant.answers.count(),
-                "asked_count": participant.questions.count(),
-                "can_ask": participant.questions.count() < QUESTIONS_PER_PARTICIPATION,
-                "interest_count": participant.interests.count(),
+                **done_context(request, participant),
                 "signup_form": form,
                 "suggested_username": username if "username" in form.errors else "",
                 "login_url": login_url(request, reverse("pre_survey:done")),
@@ -664,7 +704,7 @@ def done_signup(request):
         # このブラウザでの、これまでの事前アンケートの記録をアカウントにつなげる
         token = browser_token(request)
         Participant.objects.filter(browser_token=token, user=None).update(user=user)
-        for model in (Answer, Question, Interest, Skip, FeatureWish):
+        for model in (Answer, Question, Interest, Skip, FeatureWish, ShareOffer):
             model.objects.filter(browser_token=token, user=None).update(user=user)
 
     login(request, user, backend="portal.backends.EmailOrUsernameBackend")

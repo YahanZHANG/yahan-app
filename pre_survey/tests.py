@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from travel.models import UserProfile
 
-from .models import Answer, FeatureWish, Interest, Participant, Question, Skip
+from .models import Answer, FeatureWish, Interest, Participant, Question, ShareOffer, Skip
 from .services import current_consent, suggest_username
 
 
@@ -503,6 +503,46 @@ class AccountTests(FlowMixin, TestCase):
         self.assertEqual(Question.objects.get(source="member").user, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
+    def test_share_offer_asks_giver_to_sign_up_then_links_account(self):
+        question = make_question("Q1")
+        self.join(name="さくら")
+        self.act(question, "answer")
+        response = self.client.post(
+            reverse("pre_survey:done_share"),
+            {"kinds": ["give", "borrow"], "item_give": "ベビーカー", "item_borrow": "", "item_lend": "無視"},
+        )
+        self.assertRedirects(response, reverse("pre_survey:done") + "#signup", fetch_redirect_response=False)
+        self.assertEqual(
+            sorted(ShareOffer.objects.values_list("kind", "item")),
+            [("borrow", ""), ("give", "ベビーカー")],
+        )
+        # 二重送信しても増えない
+        self.client.post(reverse("pre_survey:done_share"), {"kinds": ["give"], "item_give": "ベビーカー"})
+        self.assertEqual(ShareOffer.objects.count(), 2)
+
+        response = self.client.get(reverse("pre_survey:done"))
+        self.assertContains(response, "公開の日にお知らせできるよう")
+        self.assertContains(response, "ベビーカー")
+
+        self.client.post(
+            reverse("pre_survey:done_signup"),
+            {"username": "さくら", "password1": PASSWORD, "password2": PASSWORD},
+        )
+        user = User.objects.get(username="さくら")
+        self.assertEqual(ShareOffer.objects.filter(user=user).count(), 2)
+
+    def test_share_offer_only_wanting_does_not_push_signup(self):
+        self.join()
+        response = self.client.post(reverse("pre_survey:done_share"), {"kinds": ["want"], "item_want": "こたつ"})
+        self.assertRedirects(response, reverse("pre_survey:done") + "#share", fetch_redirect_response=False)
+        response = self.client.get(reverse("pre_survey:done"))
+        self.assertContains(response, "よければ、このままYappに登録もできます")
+
+    def test_share_offer_needs_a_tick(self):
+        self.join()
+        self.client.post(reverse("pre_survey:done_share"), {"item_give": "本"})
+        self.assertFalse(ShareOffer.objects.exists())
+
     def test_taken_nickname_gets_another_suggestion(self):
         self.make_public_user(username="さくら")
         self.join(name="さくら")
@@ -566,7 +606,8 @@ class AdminTests(FlowMixin, TestCase):
     def test_admin_lists_and_sorts(self):
         question = make_question("Q1")
         Answer.objects.create(question=question, body="A1")
-        for name in ["question", "answer", "participant"]:
+        ShareOffer.objects.create(kind="give", item="ベビーカー")
+        for name in ["question", "answer", "participant", "shareoffer"]:
             response = self.client.get(reverse(f"admin:pre_survey_{name}_changelist"))
             self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse("admin:pre_survey_question_changelist") + "?o=7")

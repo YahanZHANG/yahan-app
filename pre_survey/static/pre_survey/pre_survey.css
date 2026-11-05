@@ -273,7 +273,8 @@ a {
 .ps-field input,
 .ps-field select,
 .ps-field textarea,
-.ps-choice input[type="text"] {
+.ps-choice input[type="text"],
+.ps-share-row input[type="text"] {
     width: 100%;
     padding: 12px 14px;
     border: 1px solid var(--ps-border);
@@ -293,7 +294,8 @@ a {
 .ps-field input:focus,
 .ps-field select:focus,
 .ps-field textarea:focus,
-.ps-choice input[type="text"]:focus {
+.ps-choice input[type="text"]:focus,
+.ps-share-row input[type="text"]:focus {
     border-color: var(--ps-primary);
     outline: 2px solid var(--ps-primary-soft);
 }
@@ -645,3 +647,22 @@ html[data-yapp-resolved-theme="dark"] .ps-tag {
     clip: rect(0 0 0 0);
     white-space: nowrap;
 }
+
+/* 終了画面: ゆずりたい・貸したい物 */
+.ps-share-row {
+    display: grid;
+    gap: 6px;
+    padding: 10px 0;
+    border-top: 1px solid var(--ps-border);
+}
+.ps-share-row:first-of-type { border-top: 0; }
+.ps-share-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+.ps-share-check input { width: 18px; height: 18px; margin: 0; }
+.ps-share-row input[type="text"] { box-sizing: border-box; padding: 9px 12px; }
+.ps-share-list { margin: 8px 0; padding-left: 1.2em; }
+.ps-share-row input[type="text"][hidden] { display: none; }
