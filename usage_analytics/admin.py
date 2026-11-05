@@ -50,15 +50,19 @@ class UsageEventAdmin(admin.ModelAdmin):
 @admin.register(PageView)
 class PageViewAdmin(admin.ModelAdmin):
 
-    list_display = ["accessed_at", "app_key", "path", "user", "source_type", "source_label", "device_type"]
+    list_display = ["accessed_at", "app_key", "path", "user", "source_type", "source_label", "device_type", "is_confirmed"]
 
-    list_filter = ["app_key", "source_type", "device_type", "is_visit_start"]
+    list_filter = ["is_confirmed", "app_key", "source_type", "device_type", "is_visit_start"]
 
     search_fields = ["path", "source_label", "user__username"]
 
     date_hierarchy = "accessed_at"
 
     ordering = ["-accessed_at"]
+
+    def get_queryset(self, request):
+        # ボットの疑い (人の閲覧と確認済み = いいえ) も管理画面では見られるように
+        return PageView.all_objects.all()
 
     def has_add_permission(self, request):
         return False

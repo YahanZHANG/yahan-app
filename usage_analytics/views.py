@@ -23,7 +23,7 @@ from . import stats
 from .catalog import app_info
 from .behavior import build_behavior
 from .insights import build_insights
-from .middleware import IGNORE_COOKIE, get_device_type, is_bot, visitor_of
+from .middleware import IGNORE_COOKIE, get_device_type, is_bot, page_view_id_from_token, visitor_of
 from .models import (
     AnalyticsExclusion,
     NewsSummaryRead,
@@ -502,6 +502,30 @@ def public_news_article_click(
 # =========================================================
 
 MAX_READS_PER_REQUEST = 40
+
+
+@csrf_exempt
+@require_POST
+def confirm_page_view(request):
+    """
+    cookie を持たない匿名の閲覧を「人が見た」として集計に入れる。
+
+    ページに入れたスクリプトが、操作があったときか画面に5秒映ったときに送る。
+    トークンは閲覧の番号に署名したもの (1時間有効) なので、他の閲覧は確認できない。
+    """
+
+    if is_bot(request):
+        return HttpResponse(status=204)
+
+    page_view_id = page_view_id_from_token(request.POST.get("t", ""))
+
+    if page_view_id:
+        try:
+            PageView.all_objects.filter(pk=page_view_id, is_confirmed=False).update(is_confirmed=True)
+        except DatabaseError:
+            logger.exception("Failed to confirm page view.")
+
+    return HttpResponse(status=204)
 
 
 @csrf_exempt
