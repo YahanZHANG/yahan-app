@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
@@ -293,6 +295,35 @@ class DeliveryTests(FlowMixin, TestCase):
         self.act(fresh, "answer")
         self.assertIn(self.current(), [skipped, other])
 
+    def test_popular_question_every_third_regardless_of_theme(self):
+        popular = make_question("popular work", theme="work")
+        lonely = make_question("one vote", theme="work")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        Interest.objects.create(question=lonely, browser_token=uuid.uuid4())
+        for i in range(4):
+            make_question(f"life {i}")
+
+        self.join(themes=("life",))
+        order = []
+        while (question := self.current()) is not None and len(order) < 4:
+            order.append(question.body)
+            self.act(question, "answer")
+        self.assertEqual(order[2], "popular work")
+        self.assertNotIn("one vote", order[:4])
+        self.assertTrue(all(body.startswith("life") for body in order[:2] + order[3:]))
+
+    def test_popular_question_not_given_to_someone_who_wants_to_know_too(self):
+        popular = make_question("popular")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        for i in range(3):
+            make_question(f"life {i}")
+        self.join()
+        self.act(popular, "interest")
+        self.act(self.current(), "answer")
+        self.assertNotEqual(self.current(), popular)
+
     def test_regional_questions(self):
         zurich = make_question("zurich", region="zurich")
         make_question("geneva", region="geneva")
@@ -442,6 +473,15 @@ class AdminTests(FlowMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse("admin:pre_survey_question_change", args=[question.pk]))
         self.assertContains(response, "A1")
+
+    def test_popular_filter(self):
+        popular = make_question("popular one")
+        make_question("quiet one")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        response = self.client.get(reverse("admin:pre_survey_question_changelist") + "?popular=2")
+        self.assertContains(response, "popular one")
+        self.assertNotContains(response, "quiet one")
 
     def test_status_actions(self):
         question = make_question("Q1")

@@ -13,6 +13,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from .models import Answer, Participant, Question
+from .services import POPULAR_MIN_INTERESTS
 
 
 def csv_response(filename, header, rows):
@@ -38,6 +39,28 @@ class AnswerInline(admin.TabularInline):
     show_change_link = True
 
 
+class PopularFilter(admin.SimpleListFilter):
+    """「私も知りたい」が多い質問だけ (アンケートで人気の質問として混ぜて出すもの)"""
+
+    title = "私も知りたい"
+    parameter_name = "popular"
+
+    def lookups(self, request, model_admin):
+        return [
+            (str(POPULAR_MIN_INTERESTS), f"{POPULAR_MIN_INTERESTS}票以上 (人気の質問)"),
+            ("1", "1票以上"),
+            ("0", "0票"),
+        ]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value == "0":
+            return queryset.filter(interests_total=0)
+        if value and value.isdigit():
+            return queryset.filter(interests_total__gte=int(value))
+        return queryset
+
+
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 
@@ -55,7 +78,7 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     list_display_links = ["short_body"]
     list_editable = ["theme", "status"]
-    list_filter = ["status", "theme", "source", "region"]
+    list_filter = ["status", PopularFilter, "theme", "source", "region"]
     search_fields = ["body", "nickname"]
     ordering = ["-created_at"]
     list_per_page = 100
