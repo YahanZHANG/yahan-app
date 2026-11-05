@@ -11,7 +11,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Q, Value, When
 
-from .models import Answer, Interest, Question, Skip
+from .models import Answer, Interest, Participant, Question, Skip
 
 
 # =========================================================
@@ -98,19 +98,62 @@ def owner_fields(request, participant):
 # 運営におまかせのニックネーム
 # =========================================================
 
-NICKNAME_PLACES = [
-    "アルプスの", "湖のほとりの", "森の", "雪山の", "ぶどう畑の", "朝市の",
-    "チーズ好きの", "ハイキング好きの", "トラム好きの", "旧市街の", "牧場の", "山小屋の",
+# 3つのテイスト。どのセットも同じ確率で選び、前と後ろは同じセットの中で組み合わせる
+# (10×10×3 = 300通り)
+NICKNAME_SETS = [
+    # 食べもの系 (ゆるくてかわいい)
+    (
+        ["ほかほか", "もちもち", "ふわふわ", "さくさく", "とろとろ",
+         "ほくほく", "ぷるぷる", "こんがり", "つやつや", "あつあつ"],
+        ["おにぎり", "おだんご", "メロンパン", "たまご焼き", "おもち",
+         "肉まん", "プレッツェル", "ラクレット", "ロスティ", "クロワッサン"],
+    ),
+    # 自然・季節系 (しっとり、詩的)
+    (
+        ["春風の", "月夜の", "朝霧の", "夕焼けの", "星降る",
+         "木漏れ日の", "初雪の", "雨上がりの", "そよ風の", "小春日和の"],
+        ["旅人", "詩人", "カフェ", "ベンチ", "ピアノ",
+         "ランプ", "手紙", "ことり", "灯台", "ひつじ"],
+    ),
+    # 動物のお仕事系 (ちょっとユーモア)
+    (
+        ["くま", "ねこ", "ペンギン", "パンダ", "カワウソ",
+         "アルパカ", "ハムスター", "コアラ", "ラッコ", "シロクマ"],
+        ["店長", "先生", "隊長", "博士", "パン屋",
+         "郵便屋", "船長", "庭師", "探検家", "料理長"],
+    ),
 ]
 
-NICKNAME_ANIMALS = [
-    "リス", "マーモット", "アイベックス", "ウシ", "ヤギ", "白鳥",
-    "カモ", "キツネ", "ハリネズミ", "フクロウ", "セントバーナード", "ウサギ",
-]
+# すでに使われている名前を避けて選び直す回数 (全部使われていたら重なってもよい)
+NICKNAME_TRIES = 30
 
 
-def random_nickname():
-    return random.choice(NICKNAME_PLACES) + random.choice(NICKNAME_ANIMALS)
+def _nickname_candidate():
+    heads, tails = random.choice(NICKNAME_SETS)
+    return random.choice(heads) + random.choice(tails)
+
+
+def random_nickname(avoid=""):
+    """
+    運営におまかせのニックネーム。ほかの参加者が使っている名前と、
+    いま表示している名前 (avoid、「ほかの名前にする」のとき) はなるべく避ける。
+    """
+
+    used = set(
+        Participant.objects
+        .filter(nickname_mode=Participant.NicknameMode.AUTO)
+        .exclude(nickname="")
+        .values_list("nickname", flat=True)
+    )
+    if avoid:
+        used.add(avoid)
+
+    name = _nickname_candidate()
+    for _ in range(NICKNAME_TRIES):
+        if name not in used:
+            break
+        name = _nickname_candidate()
+    return name
 
 
 # =========================================================

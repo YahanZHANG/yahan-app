@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from travel.models import UserProfile
 
@@ -455,6 +456,31 @@ class AccountTests(FlowMixin, TestCase):
     def test_suggest_username_strips_spaces(self):
         self.assertEqual(suggest_username("さくら テスト"), ("さくらテスト", False))
         self.assertEqual(suggest_username("🌸"), ("", False))
+
+
+class NicknameTests(TestCase):
+
+    def test_names_come_from_one_set(self):
+        from .services import NICKNAME_SETS, random_nickname
+        combos = {h + t for heads, tails in NICKNAME_SETS for h in heads for t in tails}
+        self.assertEqual(len(combos), 300)
+        for _ in range(50):
+            self.assertIn(random_nickname(), combos)
+
+    def test_used_names_are_avoided(self):
+        from . import services
+        taken = "もちもちラクレット"
+        Participant.objects.create(
+            browser_token=uuid.uuid4(), nickname=taken, nickname_mode="auto",
+            consent_version="v1", consented_at=timezone.now(),
+        )
+        picks = iter([taken, taken, "星降るカフェ"])
+        original = services._nickname_candidate
+        services._nickname_candidate = lambda: next(picks)
+        try:
+            self.assertEqual(services.random_nickname(), "星降るカフェ")
+        finally:
+            services._nickname_candidate = original
 
 
 class AdminTests(FlowMixin, TestCase):

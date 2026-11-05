@@ -200,7 +200,7 @@ def nickname(request):
 
         if request.POST.get("reroll"):
             # 「ほかの名前にする」: おまかせの名前だけ変えて、もう一度表示
-            auto_name = random_nickname()
+            auto_name = random_nickname(avoid=auto_name)
             mode = "auto"
 
         elif mode == "custom" and not custom_name:
