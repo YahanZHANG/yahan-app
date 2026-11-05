@@ -422,6 +422,15 @@ class DeliveryTests(FlowMixin, TestCase):
         self.act(asked, "answer", "Migros にあります", client=other)
         self.assertEqual(asked.answers.get().body, "Migros にあります")
 
+    def test_member_question_reaches_other_regions(self):
+        self.join(region="zurich")
+        self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "お土産は何を買う？"})
+        question = Question.objects.get(source="member")
+        self.assertEqual(question.region, "")
+        other = self.client_class()
+        self.join(client=other, region="geneva")
+        self.assertEqual(self.current(other), question)
+
     def test_hidden_member_question_is_not_delivered(self):
         self.join(themes=("shopping",))
         self.client.post(reverse("pre_survey:ask"), {"theme": "shopping", "body": "変な質問"})

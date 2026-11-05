@@ -547,7 +547,8 @@ def ask(request):
                 Question.objects.create(
                     body=body,
                     theme=theme,
-                    region=participant.region,
+                    # 地域は付けない (付けると、ほかの地域の人に出ない)。
+                    # その地域だけの質問は、管理画面で地域を付ける
                     source=Question.Source.MEMBER,
                     nickname=participant.nickname,
                     **owner_fields(request, participant),
