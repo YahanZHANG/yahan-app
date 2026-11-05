@@ -19,7 +19,8 @@ from portal.forms import SignupForm
 from portal.views import create_public_user
 from travel.models import UserProfile
 
-from .models import ANSWER_THEMES, REGION_CHOICES, Answer, Interest, Participant, Question, Skip, Theme
+from .features import COMMENT_MAX_LENGTH, FEATURE_CHOICES, OTHER_MAX_LENGTH
+from .models import ANSWER_THEMES, REGION_CHOICES, Answer, FeatureWish, Interest, Participant, Question, Skip, Theme
 from .services import (
     TOKEN_COOKIE,
     TOKEN_MAX_AGE,
@@ -99,7 +100,7 @@ def current_participant(request):
         with transaction.atomic():
             participant.user = user
             participant.save(update_fields=["user"])
-            for model in (Answer, Question, Interest, Skip):
+            for model in (Answer, Question, Interest, Skip, FeatureWish):
                 model.objects.filter(participant=participant, user=None).update(user=user)
 
     elif user.is_authenticated and participant.user_id != user.pk:
@@ -270,9 +271,11 @@ def themes(request):
             participant.region = region
             participant.save(update_fields=["themes", "region"])
 
-            if request.POST.get("next") == "ask":
-                return redirect("pre_survey:ask")
-            return redirect("pre_survey:question")
+            following = "ask" if request.POST.get("next") == "ask" else "question"
+
+            if needs_wish(request, participant):
+                return redirect(f"{reverse('pre_survey:wish')}?next={following}")
+            return redirect(f"pre_survey:{following}")
 
     return render(
         request,
@@ -289,6 +292,88 @@ def themes(request):
 
 
 # =========================================================
+# 4-0. 「0問目」: 掲示板に求める機能 (任意)
+# =========================================================
+
+def needs_wish(request, participant):
+    """
+    「0問目」をまだ出していないか。
+    答えた・「前に回答しました」を押した人には、もう出さない。スキップした人には、次の参加でもう一度だけ出す。
+    """
+
+    if participant.feature_wishes.exists():
+        return False
+
+    return not FeatureWish.objects.filter(
+        identity(request),
+        response__in=[FeatureWish.Response.ANSWERED, FeatureWish.Response.ALREADY],
+    ).exists()
+
+
+@with_token
+def wish(request):
+
+    participant = current_participant(request)
+    redirect_to = step_redirect(participant)
+
+    if redirect_to:
+        return redirect_to
+
+    following = "ask" if (request.POST.get("next") or request.GET.get("next")) == "ask" else "question"
+    keys = dict(FEATURE_CHOICES)
+    selected = []
+    other_text = ""
+    comment = ""
+    error = ""
+
+    if request.method == "POST":
+
+        action = request.POST.get("action")
+        selected = [key for key in request.POST.getlist("features") if key in keys]
+        other_text = (request.POST.get("other_text") or "").strip()[:OTHER_MAX_LENGTH]
+        comment = (request.POST.get("comment") or "").strip()
+
+        if action in ("skip", "already"):
+            FeatureWish.objects.create(
+                response=FeatureWish.Response.SKIPPED if action == "skip" else FeatureWish.Response.ALREADY,
+                **owner_fields(request, participant),
+            )
+            return redirect(f"pre_survey:{following}")
+
+        if len(comment) > COMMENT_MAX_LENGTH:
+            error = f"ご意見は{COMMENT_MAX_LENGTH}文字までです。"
+        elif not selected and not comment:
+            error = "あてはまるものを選ぶか、「スキップ」を押してください。"
+        else:
+            if not participant.feature_wishes.exists():
+                FeatureWish.objects.create(
+                    response=FeatureWish.Response.ANSWERED,
+                    features=selected,
+                    other_text=other_text if "other" in selected else "",
+                    comment=comment,
+                    **owner_fields(request, participant),
+                )
+            messages.success(request, "ご意見ありがとうございます！ 続いて、質問にお答えください。" if following == "question" else "ご意見ありがとうございます！")
+            return redirect(f"pre_survey:{following}")
+
+    return render(
+        request,
+        "pre_survey/wish.html",
+        {
+            "participant": participant,
+            "choices": [{"key": key, "label": label, "checked": key in selected} for key, label in FEATURE_CHOICES],
+            "other_text": other_text,
+            "comment": comment,
+            "error": error,
+            "next": following,
+            "other_max_length": OTHER_MAX_LENGTH,
+            "comment_max_length": COMMENT_MAX_LENGTH,
+            "step": 4,
+        },
+    )
+
+
+# =========================================================
 # 4. 質問に回答 (1問ずつ)
 # =========================================================
 
@@ -300,6 +385,9 @@ def question(request):
 
     if redirect_to:
         return redirect_to
+
+    if needs_wish(request, participant):
+        return redirect(f"{reverse('pre_survey:wish')}?next=question")
 
     answered_count = participant.answers.count()
 
@@ -576,7 +664,7 @@ def done_signup(request):
         # このブラウザでの、これまでの事前アンケートの記録をアカウントにつなげる
         token = browser_token(request)
         Participant.objects.filter(browser_token=token, user=None).update(user=user)
-        for model in (Answer, Question, Interest, Skip):
+        for model in (Answer, Question, Interest, Skip, FeatureWish):
             model.objects.filter(browser_token=token, user=None).update(user=user)
 
     login(request, user, backend="portal.backends.EmailOrUsernameBackend")

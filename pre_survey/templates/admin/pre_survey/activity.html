@@ -1,0 +1,90 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">ホーム</a>
+    › <a href="{% url 'admin:app_list' 'pre_survey' %}">事前アンケート</a>
+    › 事前アンケートの動き
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    .ps-activity-filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 14px; }
+    .ps-activity-filters form { display: flex; gap: 6px; align-items: center; }
+    .ps-activity table { width: 100%; }
+    .ps-activity td { vertical-align: top; }
+    .ps-activity .when { white-space: nowrap; }
+    .ps-kind { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; background: #eef0f2; color: #333; }
+    .ps-kind-start { background: #e3eef6; color: #1f4d66; }
+    .ps-kind-done { background: #e9f5ec; color: #2f6a3d; }
+    .ps-kind-answer { background: #2f6a3d; color: #fff; }
+    .ps-kind-skip { background: #f2f2f2; color: #777; }
+    .ps-kind-interest { background: #fff3dd; color: #8a5a14; }
+    .ps-kind-wish { background: #efe8fb; color: #5a3f99; }
+    .ps-kind-ask { background: #fde8e8; color: #9b3434; }
+    .ps-person { display: inline-flex; align-items: center; gap: 6px; }
+    .ps-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: #ccc; }
+    .ps-dot-0 { background: #e15759; } .ps-dot-1 { background: #4e79a7; } .ps-dot-2 { background: #59a14f; } .ps-dot-3 { background: #f28e2b; }
+    .ps-dot-4 { background: #b07aa1; } .ps-dot-5 { background: #76b7b2; } .ps-dot-6 { background: #edc948; } .ps-dot-7 { background: #9c755f; }
+    .ps-mark { color: #888; font-family: monospace; font-size: 11px; }
+    .ps-orphan { color: #b84b4b; font-size: 11px; }
+</style>
+
+<div class="ps-activity">
+    <p>
+        参加・0問目・回答・スキップ・私も知りたい・質問の追加を、新しい順に並べています。
+        左の色の点と「#」のあとの英数字は、同じブラウザ（同じ人）を表します。人の名前を押すと、その人の動きだけを表示します。
+    </p>
+
+    <div class="ps-activity-filters">
+        {% if day %}
+            {% if previous_day %}<a href="?date={{ previous_day|date:'Y-m-d' }}">‹ 前の日</a>{% endif %}
+            <strong>{{ day|date:"Y年n月j日 (D)" }}</strong>
+            {% if next_day %}<a href="?date={{ next_day|date:'Y-m-d' }}">次の日 ›</a>{% endif %}
+        {% else %}
+            <strong>{% if token %}この人のすべての動き{% elif participant_id %}この参加のすべての動き{% endif %}</strong>
+        {% endif %}
+        <form method="get">
+            <input type="date" name="date" value="{% if day %}{{ day|date:'Y-m-d' }}{% endif %}" max="{{ today|date:'Y-m-d' }}">
+            <button type="submit" class="button">この日を見る</button>
+        </form>
+        {% if token or participant_id or day != today %}<a href="?">今日に戻る</a>{% endif %}
+        <span>{{ events|length }}件・{{ people }}人{% if events|length >= max_events %}（多いので新しい{{ max_events }}件まで）{% endif %}</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>時刻</th><th>人</th><th>参加</th><th>操作</th><th>内容</th></tr>
+        </thead>
+        <tbody>
+        {% for event in events %}
+            <tr>
+                <td class="when">{{ event.at|date:"n/j H:i:s" }}</td>
+                <td>
+                    {% if event.token %}
+                        <a class="ps-person" href="?token={{ event.token }}" title="この人の動きだけを見る">
+                            <span class="ps-dot ps-dot-{{ event.color }}"></span>{{ event.name }} <span class="ps-mark">#{{ event.mark }}</span>
+                        </a>
+                    {% else %}
+                        {{ event.name }}
+                    {% endif %}
+                    {% if event.user %}<br><small>ログイン: {{ event.user.username }}</small>{% endif %}
+                </td>
+                <td>
+                    {% if event.participant %}
+                        <a href="?participant={{ event.participant.pk }}" title="この参加の動きだけを見る">#{{ event.participant.pk }}</a>
+                    {% else %}
+                        <span class="ps-orphan" title="この記録がつながっていた「参加」の行がありません（管理画面で削除された可能性があります）">参加なし</span>
+                    {% endif %}
+                </td>
+                <td><span class="ps-kind ps-kind-{{ event.kind_class }}">{{ event.kind }}</span></td>
+                <td>{{ event.detail }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">この条件の動きはありません。</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

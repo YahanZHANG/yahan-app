@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from travel.models import UserProfile
 
-from .models import Answer, Interest, Participant, Question, Skip
+from .models import Answer, FeatureWish, Interest, Participant, Question, Skip
 from .services import current_consent, suggest_username
 
 
@@ -24,11 +24,14 @@ def make_question(body, theme="life", **extra):
 
 class FlowMixin:
 
-    def join(self, client=None, themes=("life",), region="", mode="custom", name="さくら"):
+    def join(self, client=None, themes=("life",), region="", mode="custom", name="さくら", wish="already"):
         client = client or self.client
         client.post(reverse("pre_survey:start"), {"agree": "yes"})
         client.post(reverse("pre_survey:nickname"), {"mode": mode, "custom_name": name, "auto_name": "森のリス"})
         client.post(reverse("pre_survey:themes"), {"themes": list(themes), "region": region})
+        if wish:
+            # 「0問目」(掲示板に求める機能) を済ませる
+            client.post(reverse("pre_survey:wish"), {"action": wish})
         return Participant.objects.filter(pk=client.session["pre_survey_participant"]).first()
 
     def current(self, client=None):
@@ -162,6 +165,8 @@ class ParticipationTests(FlowMixin, TestCase):
         self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
         self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
         response = self.client.post(reverse("pre_survey:themes"), {"themes": ["life"], "next": "ask"})
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=ask")
+        response = self.client.post(reverse("pre_survey:wish"), {"action": "skip", "next": "ask"})
         self.assertRedirects(response, reverse("pre_survey:ask"))
 
     def test_again_keeps_nickname_and_previous_themes(self):
@@ -217,6 +222,75 @@ class ParticipationTests(FlowMixin, TestCase):
         self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
         response = self.client.get(reverse("pre_survey:themes"))
         self.assertEqual(response.context["regions"][0][0], "zurich")
+
+
+class FeatureWishTests(FlowMixin, TestCase):
+
+    def test_wish_comes_before_the_first_question(self):
+        make_question("Q1")
+        self.join(wish=None)
+        response = self.client.get(reverse("pre_survey:question"))
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=question")
+        response = self.client.get(response.url)
+        self.assertContains(response, "こんな機能があったら使ってみたい！と思うものは？")
+        self.assertContains(response, "前に回答しました")
+
+    def test_themes_go_to_wish_first(self):
+        self.client.post(reverse("pre_survey:start"), {"agree": "yes"})
+        self.client.post(reverse("pre_survey:nickname"), {"mode": "anonymous"})
+        response = self.client.post(reverse("pre_survey:themes"), {"themes": ["life"], "next": "ask"})
+        self.assertRedirects(response, reverse("pre_survey:wish") + "?next=ask")
+
+    def test_answer_is_saved_and_not_asked_again(self):
+        question = make_question("Q1")
+        self.join(wish=None)
+        response = self.client.post(reverse("pre_survey:wish"), {
+            "action": "answer",
+            "features": ["qa", "giveaway", "other", "bogus"],
+            "other_text": "ベビーシッター探し",
+            "comment": "地域で分けてほしい",
+            "next": "question",
+        })
+        self.assertRedirects(response, reverse("pre_survey:question"))
+        wish = FeatureWish.objects.get()
+        self.assertEqual(wish.features, ["qa", "giveaway", "other"])
+        self.assertEqual(wish.other_text, "ベビーシッター探し")
+        self.assertEqual(wish.comment, "地域で分けてほしい")
+        self.assertEqual(wish.response, FeatureWish.Response.ANSWERED)
+        self.assertEqual(self.current(), question)
+
+        self.client.post(reverse("pre_survey:again"))
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+
+    def test_empty_answer_asks_to_choose_or_skip(self):
+        self.join(wish=None)
+        response = self.client.post(reverse("pre_survey:wish"), {"action": "answer"})
+        self.assertContains(response, "あてはまるものを選ぶか")
+        self.assertFalse(FeatureWish.objects.exists())
+
+    def test_skip_shows_it_once_more_next_time_but_already_does_not(self):
+        self.join(wish="skip")
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+        self.client.post(reverse("pre_survey:again"))
+        self.assertRedirects(self.client.get(reverse("pre_survey:question")), reverse("pre_survey:wish") + "?next=question")
+        self.client.post(reverse("pre_survey:wish"), {"action": "already"})
+        self.client.post(reverse("pre_survey:again"))
+        self.assertEqual(self.client.get(reverse("pre_survey:question")).status_code, 200)
+
+    def test_admin_tally_and_csv(self):
+        admin_user = User.objects.create_superuser("boss", password=PASSWORD)
+        FeatureWish.objects.create(features=["qa", "events"])
+        FeatureWish.objects.create(features=["qa"])
+        FeatureWish.objects.create(response=FeatureWish.Response.SKIPPED)
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("admin:pre_survey_featurewish_changelist"))
+        self.assertContains(response, "回答 2件・スキップ 1件")
+        self.assertEqual(response.context["wish_tally"][0]["count"], 2)
+        response = self.client.post(
+            reverse("admin:pre_survey_featurewish_changelist"),
+            {"action": "export_csv", "_selected_action": list(FeatureWish.objects.values_list("pk", flat=True))},
+        )
+        self.assertIn("困ったことを質問・相談できる（知恵袋）", response.content.decode("utf-8-sig"))
 
 
 class DeliveryTests(FlowMixin, TestCase):
@@ -547,3 +621,68 @@ class ImportTests(TestCase):
         self.assertEqual(Question.objects.count(), count)
         self.assertEqual(Question.objects.get(seed_key="q01").body, "直した")
         self.assertFalse(Question.objects.exclude(source="staff").exists())
+
+
+class ActivityPageTests(FlowMixin, TestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser("boss", password=PASSWORD)
+
+    def test_shows_everything_in_time_order(self):
+        questions = [make_question(f"Q{i}") for i in range(3)]
+        participant = self.join(wish=None, name="ゆき")
+        self.client.post(reverse("pre_survey:wish"), {"action": "answer", "features": ["qa"]})
+        self.act(self.current(), "answer", "Coopで買えます")
+        self.act(self.current(), "skip")
+        self.act(self.current(), "interest")
+        self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "自分の質問"})
+
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        response = staff.get(reverse("admin:pre_survey_activity"))
+        self.assertEqual(response.status_code, 200)
+        kinds = [event["kind"] for event in response.context["events"]]
+        self.assertEqual(kinds, ["質問の追加", "私も知りたい", "スキップ", "回答", "0問目: 回答", "参加の開始"])
+        self.assertContains(response, "Coopで買えます")
+        self.assertEqual(response.context["people"], 1)
+
+        # 人ごと・参加ごとに絞り込める
+        by_person = staff.get(reverse("admin:pre_survey_activity") + f"?token={participant.browser_token}")
+        self.assertEqual(len(by_person.context["events"]), 6)
+        by_participation = staff.get(reverse("admin:pre_survey_activity") + f"?participant={participant.pk}")
+        self.assertEqual(len(by_participation.context["events"]), 6)
+        self.assertEqual(len(staff.get(reverse("admin:pre_survey_activity") + "?date=2020-01-01").context["events"]), 0)
+
+    def test_records_left_after_a_participation_is_deleted(self):
+        make_question("Q1")
+        participant = self.join(wish=None)
+        self.client.post(reverse("pre_survey:wish"), {"action": "answer", "features": ["qa"]})
+        participant.delete()
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        response = staff.get(reverse("admin:pre_survey_activity"))
+        self.assertContains(response, "参加なし")
+        self.assertEqual(response.context["events"][0]["kind"], "0問目: 回答")
+
+    def test_staff_only_and_linked_from_participants(self):
+        self.assertEqual(self.client.get(reverse("admin:pre_survey_activity")).status_code, 302)
+        staff = self.client_class()
+        staff.force_login(self.admin_user)
+        self.assertContains(staff.get(reverse("admin:pre_survey_participant_changelist")), reverse("admin:pre_survey_activity"))
+
+
+class LabelTimeTests(TestCase):
+
+    def test_labels_use_swiss_time(self):
+        from datetime import datetime, timezone as dt_timezone
+
+        participant = Participant.objects.create(
+            browser_token="d7f13000-0000-4000-8000-000000000000",
+            nickname="チーズ好きのヤギ",
+            consent_version="v1",
+            consented_at=datetime(2026, 11, 3, 15, 42, tzinfo=dt_timezone.utc),
+        )
+        Participant.objects.filter(pk=participant.pk).update(created_at=datetime(2026, 11, 3, 15, 42, tzinfo=dt_timezone.utc))
+        participant.refresh_from_db()
+        # 15:42 UTC は冬のスイス時間で 16:42
+        self.assertEqual(str(participant), "チーズ好きのヤギ (2026-11-03 16:42)")

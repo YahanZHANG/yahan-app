@@ -1,0 +1,6 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    <li><a href="{% url 'admin:pre_survey_activity' %}" class="viewlink">事前アンケートの動き（時刻順）</a></li>
+    {{ block.super }}
+{% endblock %}

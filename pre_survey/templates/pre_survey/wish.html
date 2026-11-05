@@ -1,0 +1,63 @@
+{% extends "pre_survey/base.html" %}
+
+{% block content %}
+<section class="ps-card ps-wish">
+    <p class="ps-wish-meta">
+        <span class="ps-tag ps-tag-soft">掲示板づくりへのご意見</span>
+        <span class="ps-from">任意・約10秒</span>
+    </p>
+    <h1>こんな機能があったら使ってみたい！と思うものは？</h1>
+    <p class="ps-lead">これから作る掲示板について、みなさんの希望を教えてください。興味があるものをいくつでも選んでください😊</p>
+
+    {% if error %}<p class="ps-error" role="alert">{{ error }}</p>{% endif %}
+
+    <form method="post" class="ps-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <fieldset class="ps-checks">
+            <legend class="ps-visually-hidden">あったら使ってみたい機能（複数選べます）</legend>
+            {% for choice in choices %}
+                <label class="ps-check ps-check-row">
+                    <input type="checkbox" name="features" value="{{ choice.key }}" {% if choice.checked %}checked{% endif %}{% if choice.key == "other" %} data-other-toggle{% endif %}>
+                    <span>{{ choice.label }}</span>
+                </label>
+                {% if choice.key == "other" %}
+                    <label class="ps-field ps-other-field" data-other-field>
+                        <span class="ps-visually-hidden">その他の内容</span>
+                        <input type="text" name="other_text" value="{{ other_text }}" maxlength="{{ other_max_length }}" placeholder="どんな機能があるとうれしいですか？">
+                    </label>
+                {% endif %}
+            {% endfor %}
+        </fieldset>
+
+        <label class="ps-field">
+            <span>ほかにご意見があれば（任意）</span>
+            <textarea name="comment" rows="3" maxlength="{{ comment_max_length }}" placeholder="例：地域ごとに分かれていると見やすい、など">{{ comment }}</textarea>
+        </label>
+
+        <button type="submit" name="action" value="answer" class="ps-button ps-button-primary">{% if next == "ask" %}送信する{% else %}送信して質問へ{% endif %}</button>
+
+        <div class="ps-button-row">
+            <button type="submit" name="action" value="skip" class="ps-button ps-button-ghost" formnovalidate>スキップ</button>
+            <button type="submit" name="action" value="already" class="ps-button ps-button-ghost" formnovalidate>前に回答しました</button>
+        </div>
+        <p class="ps-button-help">別の端末やブラウザで、この質問にもう答えた方は「前に回答しました」を押してください。</p>
+    </form>
+</section>
+
+<script>
+// 「その他」を選んだときだけ、内容を書く欄を出す
+(function () {
+    var toggle = document.querySelector("[data-other-toggle]");
+    var field = document.querySelector("[data-other-field]");
+    if (!toggle || !field) return;
+    function update() { field.hidden = !toggle.checked; }
+    toggle.addEventListener("change", function () {
+        update();
+        if (toggle.checked) field.querySelector("input").focus();
+    });
+    update();
+})();
+</script>
+{% endblock %}
