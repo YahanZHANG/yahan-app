@@ -20,6 +20,7 @@ from portal.views import create_public_user
 from travel.models import UserProfile
 
 from .features import COMMENT_MAX_LENGTH, FEATURE_CHOICES, OTHER_MAX_LENGTH
+from .alerts import notify_new_question
 from .models import ANSWER_THEMES, REGION_CHOICES, Answer, ShareOffer, FeatureWish, Interest, Participant, Question, Skip, Theme
 from .services import (
     TOKEN_COOKIE,
@@ -544,7 +545,7 @@ def ask(request):
         else:
             # 二度押し: 同じ参加で同じ質問がもうあれば追加しない
             if not participant.questions.filter(body=body).exists():
-                Question.objects.create(
+                question = Question.objects.create(
                     body=body,
                     theme=theme,
                     # 地域は付けない (付けると、ほかの地域の人に出ない)。
@@ -553,6 +554,7 @@ def ask(request):
                     nickname=participant.nickname,
                     **owner_fields(request, participant),
                 )
+                notify_new_question(request, question)
             messages.success(request, "質問を追加しました。ありがとうございます。")
             url = reverse("pre_survey:ask")
             return redirect(f"{url}?last=1" if last else url)

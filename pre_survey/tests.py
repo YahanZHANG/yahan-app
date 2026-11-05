@@ -422,6 +422,29 @@ class DeliveryTests(FlowMixin, TestCase):
         self.act(asked, "answer", "Migros にあります", client=other)
         self.assertEqual(asked.answers.get().body, "Migros にあります")
 
+    def test_new_member_question_emails_admin(self):
+        from unittest import mock
+        from django.core import mail
+        from django.test import override_settings
+
+        class RunNow:
+            def __init__(self, target, args, daemon):
+                self.target, self.args = target, args
+
+            def start(self):
+                self.target(*self.args)
+
+        self.join()
+        with override_settings(ADMIN_NOTIFICATION_EMAIL="boss@example.com"), \
+                mock.patch("pre_survey.alerts.threading.Thread", RunNow):
+            self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "おすすめの歯医者は？"})
+            # 二度押しではメールも増えない
+            self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "おすすめの歯医者は？"})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("おすすめの歯医者は？", mail.outbox[0].subject)
+        self.assertIn("/admin/pre_survey/question/", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].to, ["boss@example.com"])
+
     def test_member_question_reaches_other_regions(self):
         self.join(region="zurich")
         self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "お土産は何を買う？"})
