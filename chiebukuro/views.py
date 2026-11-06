@@ -278,6 +278,7 @@ def home(request):
             "hero_season": season,
             "cal": cal,
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
+            "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
             "season_label": SEASON_LABELS.get(season, ""),
         },

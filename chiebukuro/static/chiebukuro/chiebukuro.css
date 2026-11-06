@@ -1328,3 +1328,9 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 @media (min-width: 900px) { .cb-wx { width: 150px; height: 118px; right: 0; } .cb-hero-top { padding-right: 130px; } }
 .cb-wx { top: -12px; right: -6px; width: 118px; height: 93px; }
 @media (min-width: 900px) { .cb-wx { width: 140px; height: 110px; top: -14px; right: 4px; } }
+/* 月: 日付の横にいつも小さく (細い月でも形がわかるように、暗い部分もうっすら) */
+.cb-moon-mini { width: 18px; height: 18px; align-self: center; }
+.cb-moon-dark { fill: rgba(255, 255, 255, .22); stroke: rgba(255, 241, 193, .5); stroke-width: 1.2; }
+/* 夜は、くもりや雨でも雲の後ろに月を出す */
+.cb-hero[data-time="night"] .cb-wx-moon { display: inline; }
+.cb-hero[data-time="night"][data-sky="cloudy"] .cb-wx-moon, .cb-hero[data-time="night"][data-sky="rain"] .cb-wx-moon, .cb-hero[data-time="night"][data-sky="snow"] .cb-wx-moon { opacity: .7; }
