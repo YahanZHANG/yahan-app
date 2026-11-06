@@ -1131,51 +1131,6 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
 /* =========================================================
    v5: HOME「今週の知恵袋」
    ========================================================= */
-.cb-hero {
-    position: relative;
-    color: #fff;
-    background:
-        radial-gradient(circle at 92% -20%, rgba(255,255,255,.18) 0 90px, transparent 91px),
-        linear-gradient(135deg, #d4142f 0%, #a50d24 100%);
-    padding: 18px 16px 12px;
-    overflow: hidden;
-}
-/* 白い十字をうっすら */
-.cb-hero::after {
-    content: "";
-    position: absolute;
-    right: -18px;
-    bottom: -26px;
-    width: 120px;
-    height: 120px;
-    background:
-        linear-gradient(#fff, #fff) center / 26% 76% no-repeat,
-        linear-gradient(#fff, #fff) center / 76% 26% no-repeat;
-    opacity: .1;
-    transform: rotate(-12deg);
-    pointer-events: none;
-}
-.cb-hero-date { margin: 0; font-size: 12.5px; font-weight: 700; opacity: .85; letter-spacing: .04em; }
-.cb-hero-title { margin: 2px 0 0; font-size: 26px; font-weight: 900; letter-spacing: .02em; line-height: 1.2; }
-.cb-hero-sub { margin: 4px 0 0; font-size: 13px; opacity: .9; }
-.cb-today { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; min-height: 34px; }
-.cb-today-chip {
-    display: inline-flex; align-items: baseline; gap: 5px;
-    padding: 6px 10px; border-radius: 999px;
-    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25);
-    font-size: 14px; line-height: 1.2;
-}
-.cb-today-chip small { font-size: 11.5px; opacity: .85; }
-.cb-today-chip small.up { color: #c9ffd9; opacity: 1; }
-.cb-today-chip small.down { color: #ffe0b8; opacity: 1; }
-.cb-today-emoji { font-size: 16px; }
-.cb-hero-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.22); }
-.cb-stats { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; font-size: 11.5px; }
-.cb-stats li { display: grid; text-align: center; line-height: 1.15; opacity: .92; }
-.cb-stats b { font-size: 19px; font-weight: 800; opacity: 1; }
-.cb-hero .cb-regionbar { color: #fff; }
-.cb-hero .cb-regionbar select { background: rgba(255,255,255,.95); color: #1d2125; border: 0; height: 30px; font-size: 12.5px; }
-.cb-hero .cb-regionbar svg { color: #fff; }
 
 /* 今週のアンケート: 大きく */
 .cb-hpoll { background: var(--surface); border-bottom: 1px solid var(--line); padding: 16px 16px 6px; }
@@ -1234,8 +1189,6 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 .cb-hsec + .cb-sponsor, .cb-hsec + .cb-sponsor-empty { margin-top: 10px; }
 
 @media (min-width: 900px) {
-    .cb-hero { border-radius: 10px; padding: 24px 24px 14px; margin-top: 12px; }
-    .cb-hero-title { font-size: 32px; }
     .cb-hpoll, .cb-hsec { border-radius: 10px; border: 1px solid var(--line); margin-top: 12px; }
     .cb-hpoll .cb-poll-choices { grid-template-columns: repeat(4, 1fr); }
     .cb-feat { grid-template-columns: 1.4fr 1fr 1fr; }
@@ -1244,10 +1197,118 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
     .cb-tile { width: 150px; }
     .cb-tile-wide { width: 230px; }
 }
-.cb-today:empty { display: none; }
 .cb-strip { scroll-padding: 0 16px; }
-.cb-stats li { color: #fff; opacity: 1; }
-.cb-stats li { font-weight: 600; }
 .cb-face-edit { min-width: 0; max-width: 100%; }
 .cb-face-edit { grid-template-columns: minmax(0, 1fr); } .cb-face-edit > * { min-width: 0; }
 .cb-face-option, .cb-face-kinds label { position: relative; }
+
+/* =========================================================
+   v5.2: HOME の景色 (アニメ風のスイスの山。時間と天気で空が変わる)
+   ========================================================= */
+.cb-hero {
+    --sky1: #3B8BD9; --sky2: #A9D8F7;
+    --m1: #93B7DA; --m2: #6F90B6;
+    --h1: #86C27F; --h2: #5FA65F; --tree: #3F7F4B; --wood: #8A5A3A;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    min-height: 268px;
+    isolation: isolate;
+}
+.cb-hero[data-time="morning"] { --sky1: #6FA8DC; --sky2: #FCD9B8; --m1: #A9B9D6; --m2: #8597BE; }
+.cb-hero[data-time="evening"] { --sky1: #4B5C9A; --sky2: #F2A97E; --m1: #8E86AE; --m2: #6C6592; --h1: #6E9A6E; --h2: #4F7E55; --tree: #34603C; }
+.cb-hero[data-time="night"] { --sky1: #0E1B3A; --sky2: #34477A; --m1: #2D3E66; --m2: #22345B; --h1: #213F49; --h2: #1A333B; --tree: #142A30; --wood: #4C3527; }
+.cb-hero[data-sky="cloudy"] { --sky1: #7E93AA; --sky2: #CBD5DF; --m1: #A6B3C1; --m2: #8796A8; }
+.cb-hero[data-sky="rain"] { --sky1: #56697F; --sky2: #9DAEC1; --m1: #8494A6; --m2: #67778B; --h1: #6E9871; --h2: #557E59; }
+.cb-hero[data-sky="snow"] { --sky1: #8DA4C0; --sky2: #E1E9F2; --m1: #B9C6D6; --m2: #97A8BE; --h1: #F1F5F9; --h2: #DCE5EE; --tree: #5D7F6A; }
+.cb-hero[data-time="night"][data-sky="cloudy"], .cb-hero[data-time="night"][data-sky="rain"] { --sky1: #1A2236; --sky2: #3B4560; }
+.cb-hero[data-time="night"][data-sky="snow"] { --sky1: #1E2A44; --sky2: #4A5B7E; --h1: #C9D3E0; --h2: #AEBACB; }
+
+.cb-hero-scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
+.cb-cloud { fill: #fff; opacity: .85; }
+.cb-hero[data-sky="cloudy"] .cb-cloud, .cb-hero[data-sky="rain"] .cb-cloud { fill: #EEF2F6; opacity: .95; }
+.cb-hero[data-time="night"] .cb-cloud { fill: #8A97B5; opacity: .45; }
+.cb-cloud-a { animation: cb-drift 70s linear infinite; }
+.cb-cloud-b { animation: cb-drift 95s linear infinite reverse; }
+.cb-cloud-c { animation: cb-drift 120s linear infinite; }
+@keyframes cb-drift { 0% { transform: translateX(-30px); } 50% { transform: translateX(40px); } 100% { transform: translateX(-30px); } }
+
+.cb-sun, .cb-moon, .cb-stars, .cb-rain, .cb-snowfall { display: none; }
+.cb-hero:not([data-time="night"])[data-sky="clear"] .cb-sun { display: inline; }
+.cb-hero[data-time="evening"] .cb-sun circle:last-child { fill: #FFC98A; }
+.cb-hero[data-time="evening"] .cb-sun { transform: translateY(40px); }
+.cb-hero[data-time="night"] .cb-moon { display: inline; }
+.cb-hero[data-time="night"][data-sky="clear"] .cb-stars { display: inline; animation: cb-twinkle 4s ease-in-out infinite alternate; }
+.cb-hero[data-sky="rain"] .cb-rain { display: inline; animation: cb-fall 0.9s linear infinite; }
+.cb-hero[data-sky="snow"] .cb-snowfall { display: inline; animation: cb-snow 6s linear infinite; }
+.cb-window { fill: #F6E7B8; }
+.cb-hero[data-time="night"] .cb-window, .cb-hero[data-time="evening"] .cb-window { fill: #FFC857; filter: drop-shadow(0 0 3px #FFB22E); }
+.cb-flag { transform-origin: 318px 182px; animation: cb-wave 3s ease-in-out infinite; }
+@keyframes cb-twinkle { from { opacity: .5; } to { opacity: 1; } }
+@keyframes cb-fall { from { transform: translate(0, -20px); } to { transform: translate(-8px, 20px); } }
+@keyframes cb-snow { from { transform: translate(0, -30px); } to { transform: translate(10px, 30px); } }
+@keyframes cb-wave { 0%, 100% { transform: skewY(0deg); } 50% { transform: skewY(-4deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .cb-cloud, .cb-stars, .cb-rain, .cb-snowfall, .cb-flag { animation: none !important; }
+}
+
+.cb-hero-in { position: relative; padding: 18px 16px 14px; text-shadow: 0 1px 8px rgba(10, 30, 60, .35); }
+.cb-hero-date { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; opacity: .95; }
+.cb-hero-title {
+    margin: 4px 0 0;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    line-height: 1.15;
+    font-feature-settings: "palt";
+}
+.cb-hero-sub { margin: 6px 0 0; font-size: 12.5px; font-weight: 600; letter-spacing: .04em; opacity: .95; }
+
+.cb-today { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.cb-today:empty { display: none; }
+.cb-today-chip {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    padding: 7px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .2);
+    border: 1px solid rgba(255, 255, 255, .38);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+    box-shadow: 0 4px 18px rgba(20, 40, 80, .12);
+    text-shadow: none;
+    font-size: 13px;
+    line-height: 1.15;
+}
+.cb-today-chip b { font-size: 17px; font-weight: 800; letter-spacing: .01em; }
+.cb-today-chip small { font-size: 11px; opacity: .9; }
+.cb-today-cap { font-weight: 700; letter-spacing: .04em; }
+.cb-today-weather { align-items: center; gap: 8px; }
+.cb-today-emoji { font-size: 26px; line-height: 1; }
+.cb-today-main { display: grid; gap: 1px; }
+.cb-today-main b { font-size: 22px; }
+.cb-today-place { align-self: flex-end; }
+.cb-today-change.up { color: #D6FFE2; opacity: 1; font-weight: 700; }
+.cb-today-change.down { color: #FFE2C4; opacity: 1; font-weight: 700; }
+
+.cb-hero-foot { margin-top: 12px; }
+.cb-hero .cb-regionbar { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.38); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; text-shadow: none; }
+.cb-hero .cb-regionbar select { background: transparent; color: #fff; border: 0; height: 28px; font-size: 12.5px; font-weight: 700; padding-right: 22px; }
+.cb-hero .cb-regionbar select option { color: #1d2125; }
+.cb-hero .cb-regionbar svg { color: #fff; }
+
+@media (min-width: 900px) {
+    .cb-hero { border-radius: 14px; margin-top: 12px; min-height: 300px; }
+    .cb-hero-in { padding: 26px 26px 18px; }
+    .cb-hero-title { font-size: 38px; }
+}
+/* 明るい空 (雪・くもり) でも白い文字が読めるように、上と左をうっすら暗く */
+.cb-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(100deg, rgba(10, 25, 55, .28) 0%, rgba(10, 25, 55, .08) 55%, transparent 80%);
+    pointer-events: none;
+}
+.cb-hero[data-sky="snow"]::before, .cb-hero[data-sky="cloudy"]::before { background: linear-gradient(100deg, rgba(10, 25, 55, .42) 0%, rgba(10, 25, 55, .15) 60%, transparent 85%); }
+.cb-hero[data-sky="snow"] .cb-today-chip, .cb-hero[data-sky="snow"] .cb-regionbar { background: rgba(30, 50, 80, .28); }

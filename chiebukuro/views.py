@@ -262,6 +262,7 @@ def home(request):
             "headlines": news_headlines(),
             "waiting": waiting_questions(region=region, limit=3),
             "today": timezone.localdate(),
+            "hero_time": hero_time(),
         },
     )
     if not voter_key and not request.user.is_authenticated:
@@ -269,15 +270,37 @@ def home(request):
     return response
 
 
+SKY_BY_EMOJI = {"☀️": "clear", "🌤️": "clear", "⛅": "clear", "☁️": "cloudy", "🌫️": "cloudy",
+                "🌦️": "rain", "🌧️": "rain", "⛈️": "rain", "🌨️": "snow", "❄️": "snow"}
+
+
+def sky_for(weather):
+    """HOME の景色の空: clear / cloudy / rain / snow"""
+    return SKY_BY_EMOJI.get((weather or {}).get("emoji", ""), "clear")
+
+
+def hero_time():
+    """HOME の景色の時間: 朝 (6-9時)・昼・夕方 (16-18時、冬は早い)・夜"""
+    hour = timezone.localtime().hour
+    if 6 <= hour < 9:
+        return "morning"
+    if 9 <= hour < 16:
+        return "day"
+    if 16 <= hour < 18:
+        return "evening"
+    return "night"
+
+
 @board_open
 def today_strip(request):
     """HOME の「今日のスイス」(天気・為替)。外のサービスに聞くので、ページとは別に読みこむ"""
 
     region = current_region(request)
+    info = today_in_switzerland(region)
     return render(
         request,
         "chiebukuro/_today.html",
-        {**today_in_switzerland(region), "place": REGION_LABELS.get(region, "") or "チューリッヒ"},
+        {**info, "sky": sky_for(info.get("weather")), "place": REGION_LABELS.get(region, "") or "チューリッヒ"},
     )
 
 

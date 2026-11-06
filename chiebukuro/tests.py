@@ -142,7 +142,7 @@ class HomeTests(BoardTestCase):
         with mock.patch("chiebukuro.views.today_in_switzerland", return_value=fake):
             response = self.client.get(reverse("chiebukuro:today"))
         self.assertContains(response, "7°")
-        self.assertContains(response, "182.3円")
+        self.assertContains(response, "182.3")
         self.assertContains(response, "チューリッヒ")
 
     def test_region_is_remembered(self):
