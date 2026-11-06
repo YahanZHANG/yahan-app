@@ -1201,85 +1201,6 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 .cb-face-edit { min-width: 0; max-width: 100%; }
 .cb-face-edit { grid-template-columns: minmax(0, 1fr); } .cb-face-edit > * { min-width: 0; }
 .cb-face-option, .cb-face-kinds label { position: relative; }
-
-/* =========================================================
-   v5.2: HOME の景色 (アニメ風のスイスの山。時間と天気で空が変わる)
-   ========================================================= */
-.cb-hero {
-    --sky1: #3B8BD9; --sky2: #A9D8F7;
-    --m1: #93B7DA; --m2: #6F90B6;
-    --h1: #86C27F; --h2: #5FA65F; --tree: #3F7F4B; --wood: #8A5A3A;
-    position: relative;
-}
-.cb-hero[data-time="morning"] { --sky1: #6FA8DC; --sky2: #FCD9B8; --m1: #A9B9D6; --m2: #8597BE; }
-.cb-hero[data-time="evening"] { --sky1: #4B5C9A; --sky2: #F2A97E; --m1: #8E86AE; --m2: #6C6592; --h1: #6E9A6E; --h2: #4F7E55; --tree: #34603C; }
-.cb-hero[data-time="night"] { --sky1: #0E1B3A; --sky2: #34477A; --m1: #2D3E66; --m2: #22345B; --h1: #213F49; --h2: #1A333B; --tree: #142A30; --wood: #4C3527; }
-.cb-hero[data-sky="cloudy"] { --sky1: #7E93AA; --sky2: #CBD5DF; --m1: #A6B3C1; --m2: #8796A8; }
-.cb-hero[data-sky="rain"] { --sky1: #56697F; --sky2: #9DAEC1; --m1: #8494A6; --m2: #67778B; --h1: #6E9871; --h2: #557E59; }
-.cb-hero[data-sky="snow"] { --sky1: #8DA4C0; --sky2: #E1E9F2; --m1: #B9C6D6; --m2: #97A8BE; --h1: #F1F5F9; --h2: #DCE5EE; --tree: #5D7F6A; }
-.cb-hero[data-time="night"][data-sky="cloudy"], .cb-hero[data-time="night"][data-sky="rain"] { --sky1: #1A2236; --sky2: #3B4560; }
-.cb-hero[data-time="night"][data-sky="snow"] { --sky1: #1E2A44; --sky2: #4A5B7E; --h1: #C9D3E0; --h2: #AEBACB; }
-
-.cb-hero-scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.cb-cloud { fill: #fff; opacity: .85; }
-.cb-hero[data-sky="cloudy"] .cb-cloud, .cb-hero[data-sky="rain"] .cb-cloud { fill: #EEF2F6; opacity: .95; }
-.cb-hero[data-time="night"] .cb-cloud { fill: #8A97B5; opacity: .45; }
-.cb-cloud-a { animation: cb-drift 70s linear infinite; }
-.cb-cloud-b { animation: cb-drift 95s linear infinite reverse; }
-.cb-cloud-c { animation: cb-drift 120s linear infinite; }
-@keyframes cb-drift { 0% { transform: translateX(-30px); } 50% { transform: translateX(40px); } 100% { transform: translateX(-30px); } }
-
-.cb-sun, .cb-moon, .cb-stars, .cb-rain, .cb-snowfall { display: none; }
-.cb-hero:not([data-time="night"])[data-sky="clear"] .cb-sun { display: inline; }
-.cb-hero[data-time="evening"] .cb-sun circle:last-child { fill: #FFC98A; }
-.cb-hero[data-time="evening"] .cb-sun { transform: translateY(40px); }
-.cb-hero[data-time="night"] .cb-moon { display: inline; }
-.cb-hero[data-time="night"][data-sky="clear"] .cb-stars { display: inline; animation: cb-twinkle 4s ease-in-out infinite alternate; }
-.cb-hero[data-sky="rain"] .cb-rain { display: inline; animation: cb-fall 0.9s linear infinite; }
-.cb-hero[data-sky="snow"] .cb-snowfall { display: inline; animation: cb-snow 6s linear infinite; }
-.cb-window { fill: #F6E7B8; }
-.cb-hero[data-time="night"] .cb-window, .cb-hero[data-time="evening"] .cb-window { fill: #FFC857; filter: drop-shadow(0 0 3px #FFB22E); }
-.cb-flag { transform-origin: 318px 182px; animation: cb-wave 3s ease-in-out infinite; }
-@keyframes cb-twinkle { from { opacity: .5; } to { opacity: 1; } }
-@keyframes cb-fall { from { transform: translate(0, -20px); } to { transform: translate(-8px, 20px); } }
-@keyframes cb-snow { from { transform: translate(0, -30px); } to { transform: translate(10px, 30px); } }
-@keyframes cb-wave { 0%, 100% { transform: skewY(0deg); } 50% { transform: skewY(-4deg); } }
-@media (prefers-reduced-motion: reduce) {
-    .cb-cloud, .cb-stars, .cb-rain, .cb-snowfall, .cb-flag { animation: none !important; }
-}
-
-
-.cb-ev { display: none; }
-.cb-hero[data-season="halloween"] .cb-ev-halloween,
-.cb-hero[data-season="autumn"] .cb-ev-autumn,
-.cb-hero[data-season="christmas"] .cb-ev-christmas,
-.cb-hero[data-season="newyear"] .cb-ev-newyear,
-.cb-hero[data-season="nationalday"] .cb-ev-nationalday,
-.cb-hero[data-season="spring"] .cb-ev-spring { display: inline; }
-.cb-hero[data-season="halloween"] .cb-sun, .cb-hero[data-season="halloween"] .cb-moon { display: none; }
-.cb-hero[data-season="halloween"] { --sky1: #2A1F4E; --sky2: #8E5A8C; --m1: #4A3D6E; --m2: #3A2F5C; --h1: #3E4C3A; --h2: #2E3A2C; --tree: #1F2A1E; }
-.cb-hero[data-season="autumn"] { --tree: #D2652A; --h1: #B9A55A; --h2: #9C8C46; }
-.cb-hero[data-season="christmas"] { --h1: #F1F5F9; --h2: #DCE5EE; --tree: #2F6B4A; }
-.cb-hero[data-season="christmas"] .cb-snowfall { display: inline; animation: cb-snow 6s linear infinite; }
-.cb-hero[data-season="newyear"] { --sky1: #12204A; --sky2: #4B4F8A; --h1: #E8EEF5; --h2: #D3DDE8; }
-.cb-hero[data-season="newyear"] .cb-sun { display: none; }
-.cb-hero[data-season="spring"] { --h1: #9ED08F; --h2: #7BBE6F; }
-.cb-bat { animation: cb-flap 1.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-.cb-bat-2 { animation-duration: 1.1s; }
-@keyframes cb-flap { from { transform: translate(0, 0) scaleY(1); } to { transform: translate(12px, -6px) scaleY(.6); } }
-.cb-leaves, .cb-petals { animation: cb-snow 7s linear infinite; }
-.cb-lights circle, .cb-twinkle { animation: cb-twinkle 1.2s ease-in-out infinite alternate; }
-.cb-lights circle:nth-child(2n) { animation-delay: .6s; }
-.cb-fw { transform-box: fill-box; transform-origin: center; animation: cb-burst 2.4s ease-out infinite; }
-.cb-fw-b { animation-delay: .8s; }
-.cb-fw-c { animation-delay: 1.6s; }
-@keyframes cb-burst { 0% { opacity: 0; scale: .2; } 20% { opacity: 1; } 70% { opacity: .9; scale: 1.2; } 100% { opacity: 0; scale: 1.4; } }
-@media (prefers-reduced-motion: reduce) {
-    .cb-bat, .cb-leaves, .cb-petals, .cb-lights circle, .cb-twinkle, .cb-fw { animation: none !important; }
-}
-
-.cb-moon.is-full path { filter: drop-shadow(0 0 6px #FFF3C4); }
-
 .cb-rules-mobile { margin: 10px 0 0; background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .cb-rules-mobile summary { padding: 12px 16px; font-size: 14px; font-weight: 800; cursor: pointer; }
 .cb-rules-mobile .cb-rules-list { margin: 0; padding: 0 16px 14px 34px; }
@@ -1289,218 +1210,6 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7px; background: none; object-fit: cover; }
 .cb-closed img.cb-brand-mark { width: 56px; height: 56px; border-radius: 13px; }
 
-
-/* =========================================================
-   v5.5: HOME 上部 = 景色 (絵だけ) + 白いパネル (情報)
-   文字を景色に重ねない。読みやすさ優先
-   ========================================================= */
-.cb-scene { position: relative; height: 150px; overflow: hidden; }
-.cb-scene-badge {
-    position: absolute; left: 12px; top: 12px;
-    padding: 4px 10px; border-radius: 999px;
-    background: rgba(255, 255, 255, .92); color: #1d2125;
-    font-size: 12px; font-weight: 700;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, .12);
-}
-.cb-hero-panel {
-    position: relative;
-    margin: -18px 10px 0;
-    padding: 14px 14px 12px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    box-shadow: 0 8px 24px rgba(15, 30, 60, .10);
-}
-.cb-hero-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.cb-hero-date { margin: 0; display: flex; align-items: baseline; gap: 8px; color: var(--text); }
-.cb-hero-md { font-size: 34px; font-weight: 900; line-height: 1; letter-spacing: .01em; font-feature-settings: "palt"; }
-.cb-hero-md small { font-size: 16px; font-weight: 800; margin: 0 3px 0 1px; }
-.cb-hero-wd { font-size: 15px; font-weight: 800; color: var(--sub); }
-.cb-jptime { margin: 0; display: inline-flex; align-items: baseline; gap: 5px; font-size: 12.5px; color: var(--sub); font-weight: 600; }
-.cb-jptime b { font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
-
-.cb-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.cb-tiles > .cb-today { display: contents; }
-.cb-tile2 {
-    display: grid; align-content: start; gap: 2px;
-    min-width: 0; padding: 10px 10px 9px;
-    border-radius: 10px;
-    background: var(--surface-2);
-    color: var(--text);
-}
-.cb-tile2-cap { font-size: 11px; font-weight: 700; color: var(--sub); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cb-tile2-big { display: flex; align-items: center; gap: 5px; font-size: 22px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
-.cb-tile2-big .cb-emoji { font-size: 22px; }
-.cb-tile2-sub { font-size: 11.5px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cb-tile2-row { display: flex; align-items: baseline; gap: 5px; white-space: nowrap; font-size: 11.5px; color: var(--sub); }
-.cb-tile2-row b { font-size: 17px; color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
-.cb-tile2 .up { color: var(--give); font-weight: 700; }
-.cb-tile2 .down { color: var(--brand); font-weight: 700; }
-.cb-tile2-wait { color: var(--sub); font-size: 13px; padding-top: 6px; }
-.cb-rokuyo-big { font-size: 22px; font-weight: 900; letter-spacing: .06em; }
-.cb-rokuyo-大安 .cb-rokuyo-big { color: var(--brand); }
-
-.cb-hero-panel .cb-hero-foot { margin-top: 10px; }
-.cb-hero-panel .cb-regionbar select { height: 30px; font-size: 13px; }
-
-@media (min-width: 900px) {
-    .cb-hero { margin-top: 12px; }
-    .cb-scene { height: 210px; border-radius: 14px; }
-    .cb-hero-panel { margin: -28px 18px 0; padding: 16px 18px 14px; }
-    .cb-hero-md { font-size: 40px; }
-    .cb-tile2 { padding: 12px 14px; }
-}
-.cb-scene { height: 172px; }
-@media (min-width: 900px) { .cb-scene { height: 260px; } }
-.cb-hero-panel { margin-top: -14px; }
-@media (min-width: 900px) { .cb-hero-panel { margin-top: -20px; } }
-.cb-hero[data-time="evening"] .cb-sun { transform: translateY(24px); }
-
-/* =========================================================
-   v6: HOME 上部のデザイン 3種類 (+ 山のイラスト)
-   sky = 空のグラデーション / widget = 色つきのマス / wa = 和モダン
-   ========================================================= */
-.cb-moon-mini { width: 30px; height: 30px; flex: none; }
-.cb-moon-dark { fill: rgba(255, 255, 255, .14); }
-.cb-moon-lit { fill: #FFF1C1; }
-.cb-hero-side { display: flex; align-items: center; gap: 8px; }
-.cb-jptime { display: grid; justify-items: end; gap: 0; line-height: 1.1; }
-.cb-jptime small { font-size: 11px; font-weight: 700; letter-spacing: .06em; }
-.cb-hero-season { display: inline-block; margin-left: 2px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-.cb-alps { display: block; width: 100%; height: 34px; margin: 6px 0 2px; }
-.cb-hero--sky, .cb-hero--widget, .cb-hero--wa { margin-top: 0; }
-.cb-hero--sky .cb-hero-panel, .cb-hero--widget .cb-hero-panel, .cb-hero--wa .cb-hero-panel { margin: 0; }
-
-/* ---------- 1. sky: 空のグラデーション ---------- */
-.cb-hero--sky {
-    --g1: #1559C7; --g2: #2F86E8; --g3: #79C2F2; --accent: rgba(255, 255, 255, 0);
-    position: relative;
-    overflow: hidden;
-    color: #fff;
-    background:
-        radial-gradient(120% 80% at 100% 0%, rgba(255, 255, 255, .22), transparent 55%),
-        radial-gradient(90% 70% at 0% 100%, var(--accent), transparent 60%),
-        linear-gradient(165deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 100%);
-    transition: background .6s;
-}
-.cb-hero--sky[data-time="morning"] { --g1: #2E5CB8; --g2: #6E8FD8; --g3: #F3B38A; }
-.cb-hero--sky[data-time="evening"] { --g1: #2B2A6E; --g2: #6B4C9A; --g3: #E9876A; }
-.cb-hero--sky[data-time="night"] { --g1: #070D24; --g2: #14224F; --g3: #2C3F7A; }
-.cb-hero--sky[data-sky="cloudy"] { --g1: #3B4A5E; --g2: #5D6E84; --g3: #95A6BA; }
-.cb-hero--sky[data-sky="rain"] { --g1: #1E2A3C; --g2: #34465E; --g3: #5B708C; }
-.cb-hero--sky[data-sky="snow"] { --g1: #46618A; --g2: #7690B5; --g3: #AFC2DB; }
-.cb-hero--sky[data-time="night"][data-sky="cloudy"], .cb-hero--sky[data-time="night"][data-sky="rain"] { --g1: #0B1020; --g2: #1C2638; --g3: #344259; }
-.cb-hero--sky[data-time="night"][data-sky="snow"] { --g1: #101A33; --g2: #2B3B60; --g3: #5A6E94; }
-.cb-hero--sky[data-season="halloween"] { --accent: rgba(242, 140, 40, .55); }
-.cb-hero--sky[data-season="autumn"] { --accent: rgba(224, 102, 43, .5); }
-.cb-hero--sky[data-season="christmas"] { --accent: rgba(200, 16, 46, .5); }
-.cb-hero--sky[data-season="newyear"] { --accent: rgba(245, 196, 81, .5); }
-.cb-hero--sky[data-season="nationalday"] { --accent: rgba(255, 59, 74, .55); }
-.cb-hero--sky[data-season="spring"] { --accent: rgba(247, 168, 196, .6); }
-/* 雨・雪がうっすら降る */
-.cb-hero--sky[data-sky="rain"]::after, .cb-hero--sky[data-sky="snow"]::after {
-    content: ""; position: absolute; inset: -40px 0 0; pointer-events: none; opacity: .35;
-}
-.cb-hero--sky[data-sky="rain"]::after {
-    background-image: repeating-linear-gradient(105deg, transparent 0 14px, rgba(255, 255, 255, .5) 14px 15px, transparent 15px 34px);
-    background-size: 100% 60px;
-    animation: cb-rainfall .7s linear infinite;
-}
-.cb-hero--sky[data-sky="snow"]::after {
-    background-image: radial-gradient(circle, #fff 1.4px, transparent 1.6px), radial-gradient(circle, #fff 1px, transparent 1.2px);
-    background-size: 46px 46px, 28px 28px;
-    background-position: 0 0, 13px 17px;
-    opacity: .6;
-    animation: cb-snowdrift 9s linear infinite;
-}
-@keyframes cb-rainfall { from { background-position: 0 0; } to { background-position: -12px 60px; } }
-@keyframes cb-snowdrift { from { background-position: 0 0, 13px 17px; } to { background-position: 30px 460px, 43px 297px; } }
-@media (prefers-reduced-motion: reduce) { .cb-hero--sky::after { animation: none !important; } }
-
-.cb-hero--sky .cb-hero-panel { background: none; border: 0; box-shadow: none; padding: 20px 18px 14px; position: relative; z-index: 1; }
-.cb-hero--sky .cb-hero-date { color: #fff; flex-wrap: wrap; }
-.cb-hero--sky .cb-hero-md { font-size: 50px; font-weight: 800; letter-spacing: -.01em; }
-.cb-hero--sky .cb-hero-md small { font-size: 19px; }
-.cb-hero--sky .cb-hero-wd { color: rgba(255, 255, 255, .85); }
-.cb-hero--sky .cb-hero-season { background: rgba(255, 255, 255, .18); color: #fff; }
-.cb-hero--sky .cb-jptime { color: rgba(255, 255, 255, .8); }
-.cb-hero--sky .cb-jptime b { color: #fff; }
-.cb-hero--sky .cb-alps { color: rgba(255, 255, 255, .55); }
-.cb-hero--sky .cb-tile2 { background: none; color: #fff; padding: 2px 10px; border-left: 1px solid rgba(255, 255, 255, .28); border-radius: 0; }
-.cb-hero--sky .cb-tiles { gap: 0; margin-top: 8px; }
-.cb-hero--sky .cb-today > .cb-tile2:first-of-type { border-left: 0; padding-left: 0; }
-.cb-hero--sky .cb-tile2-cap, .cb-hero--sky .cb-tile2-sub, .cb-hero--sky .cb-tile2-row, .cb-hero--sky .cb-tile2-wait { color: rgba(255, 255, 255, .78); }
-.cb-hero--sky .cb-tile2-row b { color: #fff; }
-.cb-hero--sky .cb-tile2 .up { color: #B9F6CA; }
-.cb-hero--sky .cb-tile2 .down { color: #FFD0D0; }
-.cb-hero--sky .cb-rokuyo-大安 .cb-rokuyo-big { color: #FFE08A; }
-.cb-hero--sky .cb-regionbar select { background: rgba(255, 255, 255, .16); color: #fff; border: 1px solid rgba(255, 255, 255, .3); }
-.cb-hero--sky .cb-regionbar select option { color: #1d2125; }
-.cb-hero--sky .cb-regionbar svg { color: #fff; }
-
-/* ---------- 2. widget: 色つきのマス ---------- */
-.cb-hero--widget { padding: 10px 10px 0; }
-.cb-hero--widget .cb-hero-panel { background: #0F172A; color: #fff; border: 0; border-radius: 18px; padding: 16px 14px 12px; box-shadow: 0 10px 30px rgba(15, 23, 42, .25); }
-.cb-hero--widget .cb-hero-date { color: #fff; }
-.cb-hero--widget .cb-hero-md { font-size: 42px; }
-.cb-hero--widget .cb-hero-wd, .cb-hero--widget .cb-jptime { color: #94A3B8; }
-.cb-hero--widget .cb-jptime b { color: #fff; }
-.cb-hero--widget .cb-hero-season { background: #1E293B; color: #E2E8F0; }
-.cb-hero--widget .cb-tile2 { border-radius: 14px; padding: 12px; color: #fff; min-height: 92px; background: #1E293B; }
-.cb-hero--widget .cb-tile2-cap, .cb-hero--widget .cb-tile2-sub, .cb-hero--widget .cb-tile2-row, .cb-hero--widget .cb-tile2-wait { color: rgba(255, 255, 255, .78); }
-.cb-hero--widget .cb-tile2-row b { color: #fff; }
-.cb-hero--widget .cb-tile2-weather { background: linear-gradient(160deg, #2F86E8, #79C2F2); }
-.cb-hero--widget[data-time="night"] .cb-tile2-weather { background: linear-gradient(160deg, #14224F, #2C3F7A); }
-.cb-hero--widget[data-sky="cloudy"] .cb-tile2-weather { background: linear-gradient(160deg, #5D6E84, #95A6BA); }
-.cb-hero--widget[data-sky="rain"] .cb-tile2-weather { background: linear-gradient(160deg, #34465E, #5B708C); }
-.cb-hero--widget[data-sky="snow"] .cb-tile2-weather { background: linear-gradient(160deg, #7690B5, #AFC2DB); }
-.cb-hero--widget .cb-tile2-fx { background: linear-gradient(160deg, #3A2E12, #6B5320); }
-.cb-hero--widget .cb-tile2-fx .cb-tile2-row b { color: #FFE08A; }
-.cb-hero--widget .cb-tile2-koyomi { background: linear-gradient(160deg, #334155, #1E293B); }
-.cb-hero--widget .cb-rokuyo-大安 { background: linear-gradient(160deg, #C8102E, #8E0C22); }
-.cb-hero--widget .cb-tile2 .up { color: #86EFAC; }
-.cb-hero--widget .cb-tile2 .down { color: #FCA5A5; }
-.cb-hero--widget .cb-regionbar select { background: #1E293B; color: #fff; border: 1px solid #334155; }
-.cb-hero--widget .cb-regionbar svg { color: #94A3B8; }
-
-/* ---------- 3. wa: 和モダン ---------- */
-.cb-hero--wa .cb-hero-panel { background: #FBF8F3; color: #2A2420; border: 1px solid #E8DFD2; border-radius: 0; box-shadow: none; padding: 18px 18px 12px; }
-.cb-hero--wa .cb-hero-date, .cb-hero--wa .cb-rokuyo-big, .cb-hero--wa .cb-tile2-big, .cb-hero--wa .cb-tile2-row b, .cb-hero--wa .cb-jptime b {
-    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-}
-.cb-hero--wa .cb-hero-date { color: #2A2420; }
-.cb-hero--wa .cb-hero-md { font-size: 48px; font-weight: 800; }
-.cb-hero--wa .cb-hero-wd { color: #8A7E70; font-weight: 600; letter-spacing: .2em; }
-.cb-hero--wa .cb-hero-season { background: none; border: 1px solid #C8102E; color: #C8102E; }
-.cb-hero--wa .cb-jptime { color: #8A7E70; }
-.cb-hero--wa .cb-jptime b { color: #2A2420; }
-.cb-hero--wa .cb-alps { color: #C8102E; opacity: .85; }
-.cb-hero--wa .cb-moon-dark { fill: #E9E1D5; }
-.cb-hero--wa .cb-moon-lit { fill: #C9A24A; }
-.cb-hero--wa .cb-tiles { gap: 0; margin-top: 6px; }
-.cb-hero--wa .cb-tile2 { background: none; border-left: 1px solid #E3D9CC; border-radius: 0; padding: 4px 12px; color: #2A2420; }
-.cb-hero--wa .cb-today > .cb-tile2:first-of-type { border-left: 0; padding-left: 0; }
-.cb-hero--wa .cb-tile2-cap, .cb-hero--wa .cb-tile2-sub, .cb-hero--wa .cb-tile2-row, .cb-hero--wa .cb-tile2-wait { color: #8A7E70; }
-.cb-hero--wa .cb-tile2-row b { color: #2A2420; }
-.cb-hero--wa .cb-rokuyo-大安 .cb-rokuyo-big { color: #C8102E; }
-html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-hero-panel { background: #1E1B18; border-color: #3A332C; color: #EFE8DE; }
-html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-hero-date, html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2,
-html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2-row b, html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-jptime b { color: #EFE8DE; }
-html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2 { border-color: #3A332C; }
-html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-moon-dark { fill: #3A332C; }
-
-/* 山のイラスト版だけは景色が上、パネルが重なる */
-.cb-hero--scene .cb-moon-mini { display: none; }
-
-@media (min-width: 900px) {
-    .cb-hero--sky, .cb-hero--wa .cb-hero-panel { border-radius: 14px; }
-    .cb-hero--sky { margin-top: 12px; }
-    .cb-hero--sky .cb-hero-panel { padding: 26px 26px 18px; }
-    .cb-hero--sky .cb-hero-md { font-size: 64px; }
-    .cb-hero--widget { padding: 12px 0 0; }
-    .cb-hero--wa { margin-top: 12px; }
-    .cb-hero--wa .cb-hero-md { font-size: 58px; }
-}
 
 /* はじめて書きこむときのルール確認 */
 .cb-rules-dialog { border: 0; border-radius: 14px; padding: 0; width: min(440px, calc(100vw - 32px)); background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
@@ -1513,8 +1222,54 @@ html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-moon-dark { fill: #3A332C
 .cb-rules-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .cb-rules-actions .cb-btn[disabled] { opacity: .45; cursor: not-allowed; }
 .cb-rules-box .cb-note { margin: 0; font-size: 12px; color: var(--sub); }
-.cb-hero-top { flex-wrap: nowrap; align-items: flex-start; }
-.cb-hero-date { flex-wrap: wrap; min-width: 0; }
-.cb-hero-season { margin: 2px 0 0; }
-.cb-hero-date .cb-hero-season { order: 3; }
-@media (max-width: 899px) { .cb-hero-date .cb-hero-season { flex-basis: auto; } .cb-hero-date { row-gap: 6px; } }
+
+/* =========================================================
+   HOME 上部: 小さめのウィジェット (Taro が選んだデザイン)
+   日付・日本の時刻・暦・月 + 天気と為替の2マス。主役は下の掲示板なので控えめに
+   ========================================================= */
+.cb-hero { padding: 10px 10px 0; }
+.cb-hero-panel { background: #0F172A; color: #fff; border-radius: 16px; padding: 12px 12px 10px; box-shadow: 0 6px 18px rgba(15, 23, 42, .18); }
+.cb-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cb-hero-date { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; min-width: 0; }
+.cb-hero-md { font-size: 24px; font-weight: 800; line-height: 1.1; font-feature-settings: "palt"; }
+.cb-hero-md small { font-size: 13px; font-weight: 700; margin: 0 2px 0 1px; }
+.cb-hero-wd { font-size: 13px; font-weight: 700; color: #94A3B8; }
+.cb-hero-koyomi { font-size: 12px; font-weight: 700; color: #CBD5E1; }
+.cb-hero-koyomi.is-taian { color: #FCA5A5; }
+.cb-hero-season { font-size: 11.5px; font-weight: 700; color: #E2E8F0; background: #1E293B; padding: 1px 8px; border-radius: 999px; }
+.cb-hero-side { display: flex; align-items: center; gap: 6px; flex: none; color: #94A3B8; font-size: 11.5px; font-weight: 700; }
+.cb-hero-side b { color: #fff; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cb-moon-mini { width: 20px; height: 20px; flex: none; }
+.cb-moon-dark { fill: rgba(255, 255, 255, .16); }
+.cb-moon-lit { fill: #FFF1C1; }
+
+.cb-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.cb-tiles > .cb-today { display: contents; }
+.cb-tile2 { display: grid; align-content: center; gap: 1px; min-width: 0; padding: 8px 10px; border-radius: 12px; background: #1E293B; color: #fff; min-height: 58px; }
+.cb-tile2-cap { font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, .72); letter-spacing: .04em; }
+.cb-tile2-big { display: flex; align-items: center; gap: 5px; font-size: 18px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+.cb-tile2-big .cb-emoji { font-size: 18px; }
+.cb-tile2-big small { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, .75); }
+.cb-tile2-line { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; font-size: 11px; color: rgba(255, 255, 255, .75); }
+.cb-tile2-line b { font-size: 16px; font-weight: 800; color: #FFE08A; font-variant-numeric: tabular-nums; }
+.cb-tile2-wait { font-size: 12px; color: rgba(255, 255, 255, .7); }
+.cb-tile2 .up { color: #86EFAC; font-weight: 700; }
+.cb-tile2 .down { color: #FCA5A5; font-weight: 700; }
+.cb-tile2-weather { background: linear-gradient(160deg, #2F86E8, #5FA8EE); }
+.cb-hero[data-time="night"] .cb-tile2-weather { background: linear-gradient(160deg, #14224F, #2C3F7A); }
+.cb-hero[data-time="evening"] .cb-tile2-weather { background: linear-gradient(160deg, #4B3C8C, #C9765F); }
+.cb-hero[data-sky="cloudy"] .cb-tile2-weather { background: linear-gradient(160deg, #5D6E84, #8597AC); }
+.cb-hero[data-sky="rain"] .cb-tile2-weather { background: linear-gradient(160deg, #34465E, #556A86); }
+.cb-hero[data-sky="snow"] .cb-tile2-weather { background: linear-gradient(160deg, #6F89AE, #98AECB); }
+.cb-tile2-fx { background: linear-gradient(160deg, #3A2E12, #5E4A1D); }
+
+.cb-hero-foot { margin-top: 8px; }
+.cb-hero .cb-regionbar { color: #94A3B8; }
+.cb-hero .cb-regionbar select { background: #1E293B; color: #fff; border: 1px solid #334155; height: 28px; font-size: 12.5px; }
+.cb-hero .cb-regionbar svg { color: #94A3B8; }
+
+@media (min-width: 900px) {
+    .cb-hero { padding: 12px 0 0; }
+    .cb-hero-panel { padding: 14px 16px 12px; }
+    .cb-hero-md { font-size: 28px; }
+}

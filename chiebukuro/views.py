@@ -19,7 +19,6 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -261,10 +260,6 @@ def home(request):
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
-    board_settings = BoardSettings.current()
-    hero_style = request.GET.get("hero") or board_settings.hero_style
-    if hero_style not in dict(BoardSettings.HERO_STYLES):
-        hero_style = "sky"
 
     response = render(
         request,
@@ -282,10 +277,7 @@ def home(request):
             "hero_time": hero_time(),
             "hero_season": season,
             "cal": cal,
-            "moon_d": moon_path(330, 84, 15, cal["lit"], cal["waxing"]),
             "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
-            "hero_style": hero_style,
-            "scene_svg": render_to_string("chiebukuro/_hero_scene_svg.html", {"cal": cal, "moon_d": moon_path(330, 84, 15, cal["lit"], cal["waxing"])}) if hero_style == "scene" else "",
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
             "season_label": SEASON_LABELS.get(season, ""),
         },

@@ -678,6 +678,7 @@ class SeasonTests(BoardTestCase):
         self.assertContains(response, 'data-season="christmas"')
         self.assertContains(response, "🎄 アドベント")
         self.assertContains(response, "cb-hero-md")
+        self.assertNotContains(response, "cb-scene")
         self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")
 
 
@@ -711,8 +712,3 @@ class RulesAgreementTests(BoardTestCase):
         self.assertContains(page, "data-rules")
         self.assertEqual(self.client.post(reverse("chiebukuro:rules_agree")).status_code, 200)
         self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "cb-rules-dialog")
-
-    def test_hero_styles_can_be_previewed(self):
-        for style in ["sky", "widget", "wa", "scene"]:
-            self.assertContains(self.client.get(reverse("chiebukuro:home") + f"?hero={style}"), f"cb-hero--{style}")
-        self.assertContains(self.client.get(reverse("chiebukuro:home") + "?hero=nope"), "cb-hero--sky")
