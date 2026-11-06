@@ -55,7 +55,7 @@ APP_ICONS = {
     "swiss-board": {
         "name": "スイス知恵袋",
         "folder": "pwa/swiss-board",
-        "theme_color": "#C8102E",
+        "theme_color": "#F2A900",
     },
 
     # 事前アンケート: アイコンは Yapp のもの、ホーム画面の名前だけ変える

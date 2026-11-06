@@ -1294,3 +1294,37 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 .cb-hero .cb-regionbar select option { color: #1d2125; }
 .cb-hero-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .cb-here-btn { border: 1px solid rgba(255, 255, 255, .3); background: none; color: #fff; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700; padding: 4px 10px; cursor: pointer; }
+
+/* 右上の天気の絵 (晴れ=大きな太陽、くもり=雲、雨・雪=雲と雨つぶ・雪、夜=月) */
+.cb-hero-panel { position: relative; overflow: hidden; }
+.cb-hero-top, .cb-tiles, .cb-hero-foot { position: relative; z-index: 1; }
+.cb-wx { position: absolute; top: -8px; right: -10px; width: 132px; height: 104px; z-index: 0; pointer-events: none; }
+.cb-wx > * { display: none; }
+.cb-hero-top { padding-right: 96px; }
+.cb-hero-jp { font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, .75); }
+.cb-hero-jp b { color: #fff; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cb-wx-cloud { fill: #FFFFFF; }
+.cb-wx-cloud-back { fill: rgba(255, 255, 255, .55); }
+/* 昼 */
+.cb-hero:not([data-time="night"])[data-sky="clear"] .cb-wx-sun,
+.cb-hero:not([data-time="night"])[data-sky="partly"] .cb-wx-sun { display: inline; }
+/* 夜 */
+.cb-hero[data-time="night"][data-sky="clear"] .cb-wx-moon,
+.cb-hero[data-time="night"][data-sky="partly"] .cb-wx-moon { display: inline; }
+.cb-hero[data-sky="partly"] .cb-wx-cloud-front { display: inline; }
+.cb-hero[data-sky="cloudy"] .cb-wx-cloud, .cb-hero[data-sky="rain"] .cb-wx-cloud, .cb-hero[data-sky="snow"] .cb-wx-cloud { display: inline; }
+.cb-hero[data-sky="cloudy"] .cb-wx-cloud-front { fill: #E6EBF1; }
+.cb-hero[data-sky="rain"] .cb-wx-cloud-front { fill: #C9D2DD; }
+.cb-hero[data-sky="rain"] .cb-wx-rain { display: inline; animation: cb-wx-drop 1s linear infinite; }
+.cb-hero[data-sky="snow"] .cb-wx-snow { display: inline; animation: cb-wx-flake 2.4s ease-in-out infinite; }
+.cb-hero[data-time="night"] .cb-wx-cloud-front { fill: #A9B4C8; }
+.cb-wx-rays { transform-origin: 92px 44px; animation: cb-wx-spin 30s linear infinite; }
+.cb-wx-cloud-front { animation: cb-wx-float 6s ease-in-out infinite; }
+@keyframes cb-wx-spin { to { transform: rotate(360deg); } }
+@keyframes cb-wx-float { 0%, 100% { translate: 0 0; } 50% { translate: -4px 0; } }
+@keyframes cb-wx-drop { from { translate: 0 -6px; opacity: 0; } 30% { opacity: 1; } to { translate: -3px 6px; opacity: 0; } }
+@keyframes cb-wx-flake { 0%, 100% { translate: 0 -3px; } 50% { translate: 2px 3px; } }
+@media (prefers-reduced-motion: reduce) { .cb-wx * { animation: none !important; } }
+@media (min-width: 900px) { .cb-wx { width: 150px; height: 118px; right: 0; } .cb-hero-top { padding-right: 130px; } }
+.cb-wx { top: -12px; right: -6px; width: 118px; height: 93px; }
+@media (min-width: 900px) { .cb-wx { width: 140px; height: 110px; top: -14px; right: 4px; } }

@@ -1,25 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#E5333F"/><stop offset="1" stop-color="#A80F25"/></linearGradient>
-    <linearGradient id="bag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F1E9E4"/></linearGradient>
-  </defs>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#FFD24A"/><stop offset="1" stop-color="#F2A900"/></linearGradient></defs>
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <!-- 知恵袋 = 巾着袋。真ん中にスイスの旗 -->
-  <g transform="translate(512 560) scale(0.9) translate(-512 -560)">
-    <path d="M436 300 C412 252 372 226 336 216 C392 214 440 236 474 272 C482 230 498 200 512 182 C526 200 542 230 550 272 C584 236 632 214 688 216 C652 226 612 252 588 300 Z" fill="url(#bag)"/>
-    <path d="M432 330 C318 380 252 480 258 600 C266 760 380 842 512 842 C644 842 758 760 766 600 C772 480 706 380 592 330 Z" fill="url(#bag)"/>
-    <rect x="430" y="300" width="164" height="34" rx="17" fill="#7A1020"/>
-    <!-- 結び目のリボン -->
-    <path d="M512 316 C470 270 410 280 420 316 C410 352 470 362 512 316 Z" fill="#7A1020"/>
-    <path d="M512 316 C554 270 614 280 604 316 C614 352 554 362 512 316 Z" fill="#7A1020"/>
-    <path d="M500 330 L470 404 L496 396 L508 418 Z M524 330 L554 404 L528 396 L516 418 Z" fill="#7A1020"/>
-    <circle cx="512" cy="316" r="20" fill="#5E0C18"/>
-    <!-- スイスの旗 (赤地に白い十字。白地に赤い十字は赤十字のマークなので使わない) -->
-    <rect x="416" y="510" width="192" height="192" rx="34" fill="#D52B1E"/>
-    <rect x="490" y="546" width="44" height="120" rx="3" fill="#FFFFFF"/>
-    <rect x="452" y="584" width="120" height="44" rx="3" fill="#FFFFFF"/>
+  <!-- 電球 = ひらめき・知恵。中にスイスの旗 -->
+  <g stroke="#1F2A44" stroke-width="22" stroke-linecap="round" opacity=".9">
+    <path d="M512 150 v-60"/><path d="M290 240 l-40 -40"/><path d="M734 240 l40 -40"/><path d="M200 440 h-60"/><path d="M824 440 h60"/>
   </g>
-  <!-- ひらめきの光 -->
-  <path d="M790 196 C798 236 808 246 848 254 C808 262 798 272 790 312 C782 272 772 262 732 254 C772 246 782 236 790 196 Z" fill="#FFD866"/>
-  <circle cx="220" cy="250" r="14" fill="#FFD866" opacity=".9"/>
+  <path d="M512 230 C380 230 290 330 290 450 C290 540 340 600 390 650 C420 680 430 710 430 750 L594 750 C594 710 604 680 634 650 C684 600 734 540 734 450 C734 330 644 230 512 230Z" fill="#FFFFFF"/>
+  <rect x="430" y="770" width="164" height="40" rx="14" fill="#1F2A44"/>
+  <rect x="446" y="826" width="132" height="40" rx="14" fill="#1F2A44"/>
+  <rect x="476" y="882" width="72" height="28" rx="14" fill="#1F2A44"/>
+  <g transform="translate(512 470)"><rect x="-96" y="-96" width="192" height="192" rx="34" fill="#D52B1E"/><rect x="-22" y="-62" width="44" height="124" rx="3" fill="#fff"/><rect x="-62" y="-22" width="124" height="44" rx="3" fill="#fff"/></g>
 </svg>
