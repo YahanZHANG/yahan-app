@@ -2,9 +2,9 @@
 スイス生活の知恵袋の管理画面。
 
 - 掲示板の設定: 公開のオン・オフ、事前アンケートからの取り込みボタン
-- 質問・答え・ゆずります/本: 公開・非公開の切り替え
+- 質問・答え・つぶやき・ゆずりあい・募集告知: 公開・非公開の切り替え
 - 通報: 対応済みのチェック
-- やりとり (ほしい・借りたい) は、トラブルのときに確認できるよう読むだけ
+- やりとり (2人だけのメッセージ) は、トラブルのときに確認できるよう読むだけ
 """
 
 from django.contrib import admin, messages
@@ -18,6 +18,7 @@ from .models import (
     Item,
     ItemRequest,
     Message,
+    Notice,
     Post,
     PostReply,
     Question,
@@ -137,18 +138,28 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
 
-    list_display = ["title", "kind", "state", "status", "region", "nickname", "request_count", "created_at"]
+    list_display = ["title", "kind", "genre", "state", "status", "region", "nickname", "request_count", "created_at"]
     list_editable = ["status"]
-    list_filter = ["kind", "state", "status", "region"]
+    list_filter = ["kind", "genre", "state", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(requests_total=Count("requests"))
 
-    @admin.display(description="ほしい・借りたい", ordering="requests_total")
+    @admin.display(description="やりとり", ordering="requests_total")
     def request_count(self, obj):
         return obj.requests_total
+
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+
+    list_display = ["title", "kind", "status", "region", "nickname", "expires_at", "created_at"]
+    list_editable = ["status"]
+    list_filter = ["kind", "status", "region"]
+    search_fields = ["title", "body", "nickname", "owner__username"]
+    readonly_fields = ["owner"]
 
 
 class MessageInline(admin.TabularInline):
@@ -163,9 +174,9 @@ class MessageInline(admin.TabularInline):
 class ItemRequestAdmin(admin.ModelAdmin):
     """トラブルの確認用 (読むだけ)"""
 
-    list_display = ["item", "nickname", "is_chosen", "last_message_at"]
+    list_display = ["__str__", "nickname", "is_chosen", "last_message_at"]
     list_filter = ["is_chosen"]
-    search_fields = ["item__title", "nickname", "requester__username"]
+    search_fields = ["item__title", "notice__title", "nickname", "requester__username"]
     inlines = [MessageInline]
 
     def has_add_permission(self, request):
@@ -208,7 +219,7 @@ class ReportAdmin(admin.ModelAdmin):
     def target_link(self, obj):
         from django.utils.html import format_html
 
-        names = {"question": "question", "answer": "answer", "item": "item", "post": "post"}
+        names = {"question": "question", "answer": "answer", "item": "item", "post": "post", "notice": "notice"}
         if obj.target not in names:
             return obj.target_id
         url = reverse(f"admin:chiebukuro_{names[obj.target]}_change", args=[obj.target_id])

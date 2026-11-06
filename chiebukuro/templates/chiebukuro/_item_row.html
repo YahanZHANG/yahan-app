@@ -1,0 +1,14 @@
+{% load board %}
+<a href="{% url 'chiebukuro:item' item.pk %}" class="cb-irow {% if item.state != 'open' %}is-closed{% endif %}">
+    <span class="cb-imain">
+        <span class="cb-ititle"><span class="cb-kind cb-kind-{{ item.kind }}">{{ item.get_kind_display }}</span>{{ item.title }}</span>
+        <span class="cb-meta">
+            <span class="cb-cat">{{ item.get_genre_display }}</span>
+            {% if item.get_region_display %}<span>{{ item.get_region_display }}</span>{% endif %}
+            {% if item.place %}<span>{{ item.place }}</span>{% endif %}
+            <span>{{ item.created_at|ago }}</span>
+            {% if item.state != 'open' %}<span class="cb-state">{{ item.state_label }}</span>{% endif %}
+        </span>
+    </span>
+    {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="" class="cb-ithumb" loading="lazy">{% endif %}
+</a>

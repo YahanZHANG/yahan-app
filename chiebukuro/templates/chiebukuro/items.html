@@ -1,49 +1,39 @@
 {% extends "chiebukuro/base.html" %}
-
-{% block title %}{{ kind_label }} | スイス生活の知恵袋{% endblock %}
-
+{% block title %}ゆずりあい | スイス生活の知恵袋{% endblock %}
 {% block content %}
-<section class="cb-intro">
-    {% if kind == 'book' %}
-        <h1>📚 本の貸し借り</h1>
-        <p>読み終わった日本語の本や絵本を、貸したり借りたりできます。お金のやりとりはありません。</p>
-    {% else %}
-        <h1>🎁 ゆずります</h1>
-        <p>使わなくなった物を、無料でゆずる場所です。売り買いはできません。</p>
-    {% endif %}
-    <a href="{% url 'chiebukuro:item_new' kind %}" class="cb-button cb-button-primary">{% if kind == 'book' %}＋ 本を貸す{% else %}＋ ゆずる物を出す{% endif %}</a>
-</section>
 
-<form method="get" class="cb-search">
-    <select name="region" aria-label="地域" onchange="this.form.submit()">
-        <option value="">スイス全体</option>
-        {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <label class="cb-check"><input type="checkbox" name="all" value="1" {% if show_done %}checked{% endif %} onchange="this.form.submit()"> おわったものも見る</label>
-</form>
+<h1 class="cb-page-title">ゆずりあい</h1>
+<p class="cb-page-lead">いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。</p>
 
-<div class="cb-item-grid">
-    {% for item in page.object_list %}
-        <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-item-card {% if item.state != 'open' %}is-closed{% endif %}">
-            <span class="cb-item-photo">
-                {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="" loading="lazy">{% else %}<span aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
-                <em class="cb-state cb-state-{{ item.state }}">{{ item.state_label }}</em>
-            </span>
-            <strong>{{ item.title }}</strong>
-            <span class="cb-meta">{% if item.region %}📍{{ item.get_region_display }}{% endif %}{% if item.request_total %}・{{ item.request_word }} {{ item.request_total }}人{% endif %}</span>
-        </a>
-    {% empty %}
-        <section class="cb-card cb-empty">
-            <p>{% if kind == 'book' %}まだ本がありません。読み終わった本があれば、最初の1冊を出してみませんか？{% else %}まだ出ている物がありません。使わなくなった物があれば、最初の1つを出してみませんか？{% endif %}</p>
-        </section>
+<nav class="cb-seg cb-seg-tight" aria-label="種類">
+    <a href="?{% if genre %}genre={{ genre }}{% endif %}" class="{% if not kind %}on{% endif %}">すべて</a>
+    {% for value, label in kinds %}
+        <a href="?kind={{ value }}{% if genre %}&genre={{ genre }}{% endif %}" class="{% if kind == value %}on{% endif %}">{{ label }}</a>
     {% endfor %}
+</nav>
+
+<div class="cb-filterbar">
+    <form method="get" class="cb-inline-form">
+        {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+        <select name="genre" aria-label="ジャンル" data-autosubmit>
+            <option value="">すべてのジャンル</option>
+            {% for value, label in genres %}<option value="{{ value }}" {% if genre == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <label class="cb-check-s"><input type="checkbox" name="all" value="1" {% if show_done %}checked{% endif %} data-autosubmit> おわったものも</label>
+    </form>
+    {% include "chiebukuro/_region.html" %}
 </div>
 
-{% if page.has_other_pages %}
-<nav class="cb-pager">
-    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}{% if region %}&amp;region={{ region }}{% endif %}">‹ 前へ</a>{% endif %}
-    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
-    {% if page.has_next %}<a href="?page={{ page.next_page_number }}{% if region %}&amp;region={{ region }}{% endif %}">次へ ›</a>{% endif %}
-</nav>
-{% endif %}
+<section class="cb-block cb-block-flat">
+    {% for item in page.object_list %}
+        {% include "chiebukuro/_item_row.html" %}
+    {% empty %}
+        <div class="cb-empty">
+            <p>この条件の書きこみはまだありません。</p>
+            <p><a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">出してみる</a></p>
+        </div>
+    {% endfor %}
+</section>
+
+{% include "chiebukuro/_pager.html" %}
 {% endblock %}

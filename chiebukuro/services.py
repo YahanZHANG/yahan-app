@@ -199,59 +199,40 @@ def popular_questions(theme="", region="", query="", limit=20):
     return best_answers(list(questions[:limit]))
 
 
-def timeline(theme="", region="", query="", limit=30, before=None):
-    """
-    新着: つぶやき・新しい質問・新しい答え・ゆずります/本 を、新しい順に混ぜる。
-    各行は {"kind", "at", "obj"}。
-    """
-
-    from .models import Item, Post
-
-    def narrow(queryset, body_field, has_theme=True):
-        if theme and has_theme:
-            queryset = queryset.filter(theme=theme)
-        if region:
-            queryset = queryset.filter(Q(region=region) | Q(region=""))
-        if query:
-            queryset = queryset.filter(**{f"{body_field}__icontains": query})
-        if before:
-            queryset = queryset.filter(created_at__lt=before)
-        return queryset
-
-    posts = narrow(Post.objects.filter(status=Status.PUBLISHED), "body").annotate(
-        reply_total=Count("replies", filter=Q(replies__status=Status.PUBLISHED), distinct=True),
-        like_total=Count("likes", distinct=True),
-    )
-    # 運営があらかじめ用意した質問は流さない (利用者の質問だけ)
-    questions = narrow(Question.objects.filter(status=Status.PUBLISHED).exclude(source=Question.Source.STAFF), "body").annotate(
-        answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
-    )
-
-    answers = Answer.objects.filter(status=Status.PUBLISHED, question__status=Status.PUBLISHED).select_related("question")
-    if theme:
-        answers = answers.filter(question__theme=theme)
-    if region:
-        answers = answers.filter(Q(question__region=region) | Q(question__region=""))
-    if query:
-        answers = answers.filter(Q(body__icontains=query) | Q(question__body__icontains=query))
-    if before:
-        answers = answers.filter(created_at__lt=before)
-
-    rows = []
-    rows += [{"kind": "post", "at": obj.created_at, "obj": obj} for obj in posts.order_by("-created_at")[:limit]]
-    rows += [{"kind": "question", "at": obj.created_at, "obj": obj} for obj in questions.order_by("-created_at")[:limit]]
-    rows += [{"kind": "answer", "at": obj.created_at, "obj": obj} for obj in answers.order_by("-created_at")[:limit]]
-
-    if not theme:
-        items = Item.objects.filter(status=Status.PUBLISHED)
-        items = narrow(items, "title", has_theme=False)
-        rows += [{"kind": "item", "at": obj.created_at, "obj": obj} for obj in items.order_by("-created_at")[:limit]]
-
-    rows.sort(key=lambda row: row["at"], reverse=True)
-    return rows[:limit]
-
-
 def waiting_questions(theme="", region="", query="", limit=30):
-    """答え待ち: まだ答えがない質問を、知りたい人が多い順に"""
+    """答え募集中: まだ答えがない質問を、知りたい人が多い順に"""
 
     return list(question_list(theme, region, "open", query)[:limit])
+
+
+# =========================================================
+# お知らせ (🔔)
+# =========================================================
+
+def notify(user, kind, text, url, actor=None):
+    """user にお知らせを1件。自分の操作では知らせない。"""
+
+    from .models import Notification
+
+    if user is None or (actor is not None and actor.pk == user.pk):
+        return
+    Notification.objects.create(
+        user=user,
+        kind=kind,
+        text=text[:200],
+        url=url[:300],
+        actor=user_nickname(actor) if actor is not None else "",
+    )
+
+
+def unread_notifications(user):
+    from .models import Notification
+
+    if not user.is_authenticated:
+        return 0
+    return Notification.objects.filter(user=user, read_at__isnull=True).count()
+
+
+def short(text, length=40):
+    text = " ".join((text or "").split())
+    return text if len(text) <= length else text[:length] + "…"

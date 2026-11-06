@@ -1,0 +1,25 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}プロフィールを編集 | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">プロフィールを編集</h1>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" class="cb-form">
+        {% csrf_token %}
+        <label class="cb-field"><span>ニックネーム（Yappのほかのアプリでも同じ名前になります）</span>
+            <input type="text" name="nickname" value="{{ nickname }}" maxlength="30" required>
+        </label>
+        <label class="cb-field"><span>住んでいる地域</span>
+            <select name="home_region"><option value="">ひみつ</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == board_profile.region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            <small class="cb-sub">選ぶと、掲示板を開いたときに、その地域の書きこみが最初に出ます。</small>
+        </label>
+        <label class="cb-field"><span>ひとこと自己紹介（任意）</span>
+            <textarea name="intro" rows="3" maxlength="160" placeholder="例: チューリッヒ在住3年目。2歳の娘がいます。山歩きが好きです。" data-count="intro-left">{{ board_profile.intro }}</textarea>
+            <small class="cb-sub">あと <span id="intro-left"></span> 文字</small>
+        </label>
+        <button type="submit" class="cb-btn cb-btn-primary">保存する</button>
+        <p class="cb-note">本名・住所・勤め先など、個人が特定できることは書かないでください。</p>
+    </form>
+</section>
+{% endblock %}

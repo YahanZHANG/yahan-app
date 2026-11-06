@@ -1,47 +1,54 @@
 {% extends "chiebukuro/base.html" %}
-
-{% block title %}{{ kind_label }}に出す | スイス生活の知恵袋{% endblock %}
-
+{% block title %}ゆずりあいに出す | スイス生活の知恵袋{% endblock %}
 {% block content %}
-<section class="cb-card">
-    <h1>{% if kind == 'book' %}本を貸す{% else %}ゆずる物を出す{% endif %}</h1>
+<p class="cb-back"><a href="{% url 'chiebukuro:items' %}">{% include "chiebukuro/_icon.html" with name="back" %}ゆずりあい</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">ゆずりあいに出す</h1>
+
+    <nav class="cb-seg" aria-label="種類">
+        {% for value, label in kinds %}<a href="?kind={{ value }}" class="{% if kind == value %}on{% endif %}">{{ label }}</a>{% endfor %}
+    </nav>
+
     {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post" enctype="multipart/form-data" class="cb-form">
         {% csrf_token %}
+        <input type="hidden" name="kind" value="{{ kind }}">
         <label class="cb-field">
-            <span>{% if kind == 'book' %}本のタイトル{% else %}品物{% endif %}</span>
-            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required placeholder="{% if kind == 'book' %}例: はらぺこあおむし{% else %}例: ベビーカー（2歳まで使用）{% endif %}">
+            <span>{{ title_label }}</span>
+            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required placeholder="{{ title_placeholder }}">
+        </label>
+        <label class="cb-field"><span>ジャンル</span>
+            <select name="genre" required><option value="">選んでください</option>{% for value, label in genres %}<option value="{{ value }}" {% if value == values.genre %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
         </label>
         <label class="cb-field">
             <span>説明（任意）</span>
-            <textarea name="body" rows="4" maxlength="{{ body_max }}" placeholder="{% if kind == 'book' %}例: 絵本です。1か月くらいで返してもらえればうれしいです。{% else %}例: 少し傷がありますが、問題なく使えます。{% endif %}">{{ values.body }}</textarea>
+            <textarea name="body" rows="4" maxlength="{{ body_max }}" placeholder="{{ body_placeholder }}">{{ values.body }}</textarea>
         </label>
+        {% if kind == "give" or kind == "lend" %}
         <label class="cb-field">
             <span>写真（任意）</span>
             <input type="file" name="photo" accept="image/*">
         </label>
-        <label class="cb-field">
-            <span>地域</span>
-            <select name="region">
-                <option value="">選ばない</option>
-                {% for value, label in regions %}<option value="{{ value }}" {% if value == values.region %}selected{% endif %}>{{ label }}</option>{% endfor %}
-            </select>
-        </label>
-        <label class="cb-field">
-            <span>受け渡しの場所（だいたいで大丈夫です）</span>
-            <input type="text" name="place" value="{{ values.place }}" maxlength="80" placeholder="例: Oerlikon 駅の近く">
-        </label>
+        {% endif %}
+        <div class="cb-field-row">
+            <label class="cb-field"><span>地域</span>
+                <select name="item_region"><option value="">選ばない</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == values.item_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            </label>
+            <label class="cb-field"><span>受け渡しの場所（だいたいで）</span>
+                <input type="text" name="place" value="{{ values.place }}" maxlength="80" placeholder="例: Oerlikon 駅の近く">
+            </label>
+        </div>
         <div class="cb-rules">
             <p><strong>ルール</strong></p>
             <ul>
-                <li>お金のやりとりはしません（{% if kind == 'book' %}貸し借り{% else %}無料でゆずる{% endif %}だけ）。</li>
-                <li>住所や電話番号は、ここには書かないでください。相手が決まってから、2人だけのやりとりで伝えます。</li>
-                <li>受け渡しは、駅など人のいる場所がおすすめです。</li>
-                {% if kind == 'book' %}<li>本は、返ってこなくても困らないものだけにしてください。</li>{% endif %}
+                <li>お金のやりとりはしません（売り買いは禁止）。</li>
+                <li>住所や電話番号は書かないでください。相手が決まってから、2人だけのやりとりで伝えます。</li>
+                <li>受け渡しは、駅など人のいる場所で、対面でどうぞ。</li>
+                {% if kind == "lend" %}<li>貸す物は、もし返ってこなくても困らない物だけにしてください。</li>{% endif %}
             </ul>
             <label class="cb-check"><input type="checkbox" name="agree" value="yes" required> ルールを確認しました</label>
         </div>
-        <button type="submit" class="cb-button cb-button-primary">書き込む</button>
+        <button type="submit" class="cb-btn cb-btn-primary">書きこむ</button>
     </form>
 </section>
 {% endblock %}

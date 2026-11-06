@@ -1,50 +1,40 @@
 {% extends "chiebukuro/base.html" %}
-
+{% load board %}
 {% block title %}{{ nickname }} | スイス生活の知恵袋{% endblock %}
-
 {% block content %}
-<section class="cb-card cb-profile">
-    <span class="cb-avatar cb-avatar-big" aria-hidden="true">{{ nickname|slice:":1" }}</span>
-    <div>
+<section class="cb-block cb-profile-head">
+    <span class="cb-av cb-av-l {{ person.pk|avatar }}" aria-hidden="true">{{ nickname|initial }}</span>
+    <div class="cb-profile-text">
         <h1>{{ nickname }}</h1>
-        <p class="cb-meta">つぶやき {{ posts|length }}・答え {{ answers|length }}・質問 {{ questions|length }}{% if helpful %}・👍 {{ helpful }}{% endif %}</p>
+        {% if home_region %}<p class="cb-sub">{{ home_region }}</p>{% endif %}
+        {% if intro %}<p class="cb-intro">{{ intro }}</p>{% endif %}
+        <p class="cb-stats"><span><b>{{ posts|length }}</b>つぶやき</span><span><b>{{ answers|length }}</b>回答</span><span><b>{{ questions|length }}</b>質問</span><span><b>{{ helpful }}</b>役に立った</span></p>
+        {% if is_me %}<p class="cb-profile-links"><a href="{% url 'chiebukuro:profile_edit' %}" class="cb-btn cb-btn-s">プロフィールを編集</a></p>{% endif %}
     </div>
 </section>
-{% if is_me %}<p class="cb-note">ニックネームは <a href="{% url 'portal:home' %}">Yapp</a> のアカウント設定で変えられます。</p>{% endif %}
 
-{% if posts %}
-<h2 class="cb-section-title">つぶやき</h2>
-<div class="cb-feed-list">
-    {% for post in posts %}
-        <a href="{% url 'chiebukuro:post' post.pk %}" class="cb-feed cb-feed-question">
-            <span class="cb-meta">{{ post.created_at|date:"n/j H:i" }}</span>
-            <strong class="cb-normal">{{ post.body|truncatechars:160 }}</strong>
-            <span class="cb-meta">💬 {{ post.reply_total }}　👍 {{ post.like_total }}</span>
-        </a>
-    {% endfor %}
-</div>
-{% endif %}
+<nav class="cb-seg" aria-label="表示">
+    <a href="?show=posts" class="{% if show == 'posts' %}on{% endif %}">つぶやき</a>
+    <a href="?show=answers" class="{% if show == 'answers' %}on{% endif %}">回答</a>
+    <a href="?show=questions" class="{% if show == 'questions' %}on{% endif %}">質問</a>
+    <a href="?show=items" class="{% if show == 'items' %}on{% endif %}">ゆずりあい</a>
+</nav>
 
-{% if answers %}
-<h2 class="cb-section-title">答え</h2>
-<div class="cb-feed-list">
+<section class="cb-block cb-block-flat">
+{% if show == "posts" %}
+    {% for post in posts %}{% include "chiebukuro/_post_row.html" with clip=True %}{% empty %}<p class="cb-empty">まだつぶやきがありません。</p>{% endfor %}
+{% elif show == "answers" %}
     {% for answer in answers %}
-        <a href="{% url 'chiebukuro:question' answer.question_id %}#a{{ answer.pk }}" class="cb-feed cb-feed-answer">
-            <p class="cb-feed-q">Q. {{ answer.question.body|truncatechars:60 }}</p>
-            <p class="cb-feed-a">{{ answer.body|truncatechars:120 }}</p>
+        <a href="{% url 'chiebukuro:question' answer.question_id %}#a{{ answer.pk }}" class="cb-arow">
+            <span class="cb-arow-q"><i>Q</i>{{ answer.question.body|truncatechars:70 }}</span>
+            <span class="cb-arow-a">{{ answer.body|truncatechars:140 }}</span>
+            <span class="cb-meta"><span>{{ answer.created_at|ago }}</span></span>
         </a>
-    {% endfor %}
-</div>
+    {% empty %}<p class="cb-empty">まだ回答がありません。</p>{% endfor %}
+{% elif show == "questions" %}
+    {% for question in questions %}{% include "chiebukuro/_question_row.html" with hide_best=True %}{% empty %}<p class="cb-empty">まだ質問がありません。</p>{% endfor %}
+{% else %}
+    {% for item in items %}{% include "chiebukuro/_item_row.html" %}{% empty %}<p class="cb-empty">いま出しているものはありません。</p>{% endfor %}
 {% endif %}
-
-{% if questions %}
-<h2 class="cb-section-title">質問</h2>
-<ul class="cb-simple-list cb-card">
-    {% for question in questions %}<li><a href="{% url 'chiebukuro:question' question.pk %}">{{ question.body }}</a></li>{% endfor %}
-</ul>
-{% endif %}
-
-{% if not posts and not answers and not questions %}
-    <section class="cb-card cb-empty"><p>まだ書き込みがありません。</p></section>
-{% endif %}
+</section>
 {% endblock %}

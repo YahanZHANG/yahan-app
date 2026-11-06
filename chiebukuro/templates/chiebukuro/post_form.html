@@ -1,31 +1,27 @@
 {% extends "chiebukuro/base.html" %}
-
 {% block title %}つぶやく | スイス生活の知恵袋{% endblock %}
-
 {% block content %}
-<section class="cb-card">
-    <h1>つぶやく</h1>
-    <p class="cb-lead">見つけたお店、役に立った情報、今日のできごとなど、気軽にどうぞ。「{{ nickname }}」の名前で載ります。</p>
+<p class="cb-back"><a href="{% url 'chiebukuro:posts' %}">{% include "chiebukuro/_icon.html" with name="back" %}つぶやき</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">つぶやく</h1>
     {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post" class="cb-form">
         {% csrf_token %}
-        <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！">{{ body }}</textarea>
-        <fieldset class="cb-choices">
-            <legend>テーマ（あとで探しやすくなります）</legend>
-            <label class="cb-choice"><input type="radio" name="theme" value="" {% if not theme %}checked{% endif %}><span>なし</span></label>
-            {% for value, label, emoji in themes %}
-                <label class="cb-choice"><input type="radio" name="theme" value="{{ value }}" {% if value == theme %}checked{% endif %}><span>{{ emoji }} {{ label }}</span></label>
-            {% endfor %}
-        </fieldset>
         <label class="cb-field">
-            <span>地域（その地域の話のときだけ）</span>
-            <select name="region">
-                <option value="">スイス全体</option>
-                {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
-            </select>
+            <span>「{{ nickname }}」として載ります</span>
+            <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！" data-count="post-left">{{ body }}</textarea>
+            <small class="cb-sub">あと <span id="post-left"></span> 文字</small>
         </label>
-        <button type="submit" class="cb-button cb-button-primary">つぶやく</button>
+        <div class="cb-field-row">
+            <label class="cb-field"><span>テーマ（任意）</span>
+                <select name="theme"><option value="">なし</option>{% for value, label in themes %}<option value="{{ value }}" {% if value == theme %}selected{% endif %}>#{{ label }}</option>{% endfor %}</select>
+            </label>
+            <label class="cb-field"><span>地域（任意）</span>
+                <select name="post_region"><option value="">なし</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == post_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            </label>
+        </div>
+        <button type="submit" class="cb-btn cb-btn-primary">つぶやく</button>
+        <p class="cb-note">住所・電話番号など、個人が特定できる情報は書かないでください。</p>
     </form>
-    <p class="cb-note">住所・電話番号など、個人が特定できる情報は書かないでください。</p>
 </section>
 {% endblock %}

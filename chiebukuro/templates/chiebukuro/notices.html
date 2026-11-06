@@ -1,0 +1,27 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}募集・告知 | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<h1 class="cb-page-title">募集・告知</h1>
+<p class="cb-page-lead">お店・教室の案内、イベント、仲間さがし、シッターの募集など。1人1件、30日間のせられます。</p>
+
+<nav class="cb-seg cb-seg-scroll" aria-label="種類">
+    {% for key, label in filters.items %}<a href="?{% if key %}kind={{ key }}{% endif %}" class="{% if kind == key %}on{% endif %}">{{ label }}</a>{% endfor %}
+</nav>
+
+<div class="cb-filterbar">{% include "chiebukuro/_region.html" %}</div>
+
+{% if kind == "sitter" %}{% include "chiebukuro/_sitter_safety.html" %}{% endif %}
+
+<section class="cb-block cb-block-flat">
+    {% for notice in page.object_list %}
+        {% include "chiebukuro/_notice_row.html" %}
+    {% empty %}
+        <div class="cb-empty">
+            <p>この条件の告知は、いまはありません。</p>
+            <p><a href="{% url 'chiebukuro:notice_new' %}" class="cb-btn cb-btn-primary cb-btn-s">告知する</a></p>
+        </div>
+    {% endfor %}
+</section>
+{% include "chiebukuro/_pager.html" %}
+<p class="cb-note">「PR」はお店・教室など、お仕事としての案内です。内容は出した人の責任で、運営は仲介しません。</p>
+{% endblock %}

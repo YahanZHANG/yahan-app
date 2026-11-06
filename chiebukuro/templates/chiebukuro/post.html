@@ -1,62 +1,46 @@
 {% extends "chiebukuro/base.html" %}
-
+{% load board %}
 {% block title %}{{ post.body|truncatechars:30 }} | スイス生活の知恵袋{% endblock %}
-
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:home' %}?tab=new">‹ 新着</a></p>
+<p class="cb-back"><a href="{% url 'chiebukuro:posts' %}">{% include "chiebukuro/_icon.html" with name="back" %}つぶやき</a></p>
 
-<article class="cb-card cb-post">
-    <p class="cb-answer-who">
-        <span class="cb-avatar" aria-hidden="true">{{ post.display_name|slice:":1" }}</span>
-        <a href="{% url 'chiebukuro:profile' post.author.username %}">{{ post.display_name }}</a>
-        <span class="cb-meta">{{ post.created_at|date:"n月j日 H:i" }}</span>
-    </p>
-    <p class="cb-post-body">{{ post.body|linebreaksbr|urlize }}</p>
-    <p class="cb-tags">
-        {% if theme_label %}<a href="{% url 'chiebukuro:home' %}?tab=new&amp;theme={{ post.theme }}" class="cb-tag cb-theme-{{ post.theme }}">{{ theme_label }}</a>{% endif %}
-        {% if region_label %}<span class="cb-tag cb-tag-region">📍{{ region_label }}</span>{% endif %}
-    </p>
-    <div class="cb-question-actions">
-        {% if user.is_authenticated and post.author_id != user.pk %}
-            <form method="post" action="{% url 'chiebukuro:post_like' post.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="cb-pill {% if liked %}on{% endif %}">👍 役に立った {{ like_total }}</button>
-            </form>
-        {% else %}
-            <span class="cb-pill cb-pill-static">👍 役に立った {{ like_total }}</span>
-        {% endif %}
+<section class="cb-block cb-block-flat cb-post-single">
+    {% include "chiebukuro/_post_row.html" %}
+    <p class="cb-post-foot">
+        <span class="cb-sub">{{ post.created_at|date:"Y年n月j日 H:i" }}</span>
         {% if user.is_authenticated and post.author_id == user.pk %}
             <form method="post" action="{% url 'chiebukuro:delete_post' post.pk %}" onsubmit="return confirm('このつぶやきを消しますか？');">
-                {% csrf_token %}
-                <button type="submit" class="cb-link-button">消す</button>
+                {% csrf_token %}<button type="submit" class="cb-textbtn">消す</button>
             </form>
         {% endif %}
-    </div>
-</article>
-
-<h2 class="cb-section-title" id="replies">返信 {{ replies|length }}件</h2>
-{% for reply in replies %}
-    <article class="cb-card cb-answer">
-        <p class="cb-answer-who">
-            <span class="cb-avatar" aria-hidden="true">{{ reply.display_name|slice:":1" }}</span>
-            <a href="{% url 'chiebukuro:profile' reply.author.username %}">{{ reply.display_name }}</a>
-            <span class="cb-meta">{{ reply.created_at|date:"n月j日 H:i" }}</span>
-        </p>
-        <p class="cb-answer-body">{{ reply.body|linebreaksbr|urlize }}</p>
-    </article>
-{% endfor %}
-
-<section class="cb-card">
-    {% if user.is_authenticated %}
-        <form method="post" class="cb-form">
-            {% csrf_token %}
-            <textarea name="body" rows="3" required placeholder="返信する"></textarea>
-            <button type="submit" class="cb-button cb-button-primary">返信する</button>
-        </form>
-    {% else %}
-        <a href="{{ login_url }}" class="cb-button cb-button-primary">ログインして返信する</a>
-    {% endif %}
+        {% with report_target="post" report_id=post.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+    </p>
 </section>
 
-{% with report_target="post" report_id=post.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+<section class="cb-block" id="replies">
+    <header class="cb-block-head"><h2>返信 {{ replies|length }}件</h2></header>
+    {% for reply in replies %}
+        <article class="cb-reply">
+            <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{{ reply.display_name|initial }}</a>
+            <div>
+                <p class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a><span class="cb-sub">{{ reply.created_at|ago }}</span></p>
+                <div class="cb-post-body">{{ reply.body|urlize|linebreaksbr }}</div>
+            </div>
+        </article>
+    {% empty %}
+        <p class="cb-empty">まだ返信はありません。</p>
+    {% endfor %}
+    <div class="cb-reply-form">
+        {% if user.is_authenticated %}
+            <form method="post" class="cb-inline-compose">
+                {% csrf_token %}
+                <label class="cb-sr" for="reply-body">返信</label>
+                <textarea name="body" id="reply-body" rows="1" required placeholder="返信を書く" data-grow></textarea>
+                <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">返信</button>
+            </form>
+        {% else %}
+            <a href="{{ login_url }}" class="cb-btn cb-btn-s">ログインして返信する</a>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

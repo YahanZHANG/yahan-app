@@ -1,20 +1,25 @@
 {% extends "chiebukuro/base.html" %}
-
 {% block title %}{{ other_name }}さんとのやりとり | スイス生活の知恵袋{% endblock %}
-
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">‹ マイページ</a></p>
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
 
-<section class="cb-card cb-talk-head">
-    <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-talk-item">
-        {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="">{% else %}<span aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
-        <span><strong>{{ item.title }}</strong><span class="cb-meta">{{ item.get_kind_display }}・{{ item.state_label }}</span></span>
-    </a>
-    <p class="cb-talk-with">{{ other_name }}さんとの2人だけのやりとり</p>
-    {% if is_owner and not talk.is_chosen and item.state == 'open' %}
-        <form method="post" action="{% url 'chiebukuro:talk_choose' talk.pk %}">
+<section class="cb-block cb-talk-head">
+    {% if item %}
+        <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-linkrow">
+            <span><span class="cb-kind cb-kind-{{ item.kind }}">{{ item.get_kind_display }}</span><strong>{{ item.title }}</strong></span>
+            <span class="cb-sub">{{ item.state_label }}</span>
+        </a>
+    {% else %}
+        <a href="{% url 'chiebukuro:notice' notice.pk %}" class="cb-linkrow">
+            <span><span class="cb-kind cb-kind-n-{{ notice.kind }}">{{ notice.get_kind_display }}</span><strong>{{ notice.title }}</strong></span>
+            <span class="cb-sub">告知</span>
+        </a>
+    {% endif %}
+    <p class="cb-talk-with">{{ other_name }}さんとの、2人だけのやりとり</p>
+    {% if item and is_owner and not talk.is_chosen and item.state == 'open' %}
+        <form method="post" action="{% url 'chiebukuro:talk_choose' talk.pk %}" class="cb-talk-choose">
             {% csrf_token %}
-            <button type="submit" class="cb-button cb-button-primary" onclick="return confirm('{{ talk.display_name }}さんに決めますか？');">{{ talk.display_name }}さんに{% if item.kind == 'book' %}貸す{% else %}ゆずる{% endif %}</button>
+            <button type="submit" class="cb-btn cb-btn-primary cb-btn-s" onclick="return confirm('{{ talk.display_name }}さんに決めますか？');">{{ talk.display_name }}さんに決める</button>
         </form>
     {% endif %}
 </section>
@@ -28,10 +33,11 @@
     {% endfor %}
 </div>
 
-<form method="post" class="cb-form cb-talk-form" id="bottom">
+<form method="post" class="cb-inline-compose cb-talk-form" id="bottom">
     {% csrf_token %}
-    <textarea name="body" rows="2" maxlength="{{ message_max }}" required placeholder="メッセージ"></textarea>
-    <button type="submit" class="cb-button cb-button-primary">送る</button>
+    <label class="cb-sr" for="talk-body">メッセージ</label>
+    <textarea name="body" id="talk-body" rows="1" maxlength="{{ message_max }}" required placeholder="メッセージ" data-grow></textarea>
+    <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">送る</button>
 </form>
-<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったことがあれば、運営に<a href="{% url 'portal:support' %}?from=board">お問い合わせ</a>ください。</p>
+<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったときは<a href="{% url 'portal:support' %}?from=board">運営にお問い合わせ</a>ください。</p>
 {% endblock %}
