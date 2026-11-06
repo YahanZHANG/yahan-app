@@ -76,7 +76,7 @@ class TrackingTests(TestCase):
         response = self.get("/washoku/", HTTP_REFERER="https://www.google.ch/search?q=x")
 
         self.assertEqual(response.status_code, 200)
-        view = PageView.objects.get()
+        view = PageView.all_objects.get()
         self.assertEqual(view.app_key, "washoku")
         self.assertTrue(view.is_visit_start)
         self.assertTrue(view.is_new_visitor)
@@ -90,7 +90,7 @@ class TrackingTests(TestCase):
         self.get("/washoku/")
         self.get("/outings/", HTTP_REFERER="http://testserver/washoku/")
 
-        first, second = PageView.objects.order_by("id")
+        first, second = PageView.all_objects.order_by("id")
         self.assertEqual(first.visit_id, second.visit_id)
         self.assertEqual(first.visitor_id, second.visitor_id)
         self.assertFalse(second.is_visit_start)
@@ -107,7 +107,68 @@ class TrackingTests(TestCase):
         self.client.cookies[IGNORE_COOKIE] = "1"
         self.get("/washoku/")
 
+        self.assertFalse(PageView.all_objects.exists())
+
+    def confirm_token(self, response):
+
+        import re
+
+        match = re.search(r'append\("t","([^"]+)"\)', response.content.decode())
+        self.assertIsNotNone(match)
+        return match.group(1)
+
+    def test_new_anonymous_visitor_counts_only_after_script_confirms(self):
+
+        response = self.get("/news/", HTTP_REFERER="https://t.co/abc")
+
+        view = PageView.all_objects.get()
+        self.assertFalse(view.is_confirmed)
         self.assertFalse(PageView.objects.exists())
+        self.assertContains(response, "/analytics/confirm/")
+
+        # 違うトークンでは確認されない
+        self.client.post("/analytics/confirm/", {"t": "nope"}, HTTP_USER_AGENT=BROWSER)
+        self.assertFalse(PageView.objects.exists())
+
+        result = self.client.post(
+            "/analytics/confirm/", {"t": self.confirm_token(response)}, HTTP_USER_AGENT=BROWSER
+        )
+        self.assertEqual(result.status_code, 204)
+        self.assertEqual(PageView.objects.get().source_label, "X (Twitter)")
+
+    def test_second_page_confirms_the_first(self):
+
+        self.get("/news/")
+        self.assertFalse(PageView.objects.exists())
+
+        response = self.get("/washoku/")
+        self.assertNotContains(response, "/analytics/confirm/")
+        self.assertEqual(PageView.objects.count(), 2)
+
+    def test_logged_in_views_are_confirmed_at_once(self):
+
+        user = get_user_model().objects.create_user("reader", "r@example.com", "x")
+        self.client.force_login(user)
+
+        response = self.get("/washoku/")
+        self.assertNotContains(response, "/analytics/confirm/")
+        self.assertTrue(PageView.objects.exists())
+
+    def test_old_unconfirmed_views_are_deleted(self):
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from . import middleware
+
+        self.get("/news/")
+        PageView.all_objects.update(accessed_at=timezone.now() - timedelta(days=3))
+        middleware._last_cleanup = 0.0
+
+        self.client.cookies.clear()
+        self.get("/washoku/")
+        self.assertEqual(PageView.all_objects.count(), 1)
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"], STORAGES=SIMPLE_STATIC)
@@ -121,7 +182,10 @@ class DashboardTests(TestCase):
 
     def visit(self, path, **extra):
 
-        return self.client.get(path, HTTP_USER_AGENT=BROWSER, **extra)
+        response = self.client.get(path, HTTP_USER_AGENT=BROWSER, **extra)
+        # 人の閲覧として数える (本番ではページのスクリプトが知らせる)
+        PageView.all_objects.update(is_confirmed=True)
+        return response
 
     def test_only_viewers_can_open(self):
 

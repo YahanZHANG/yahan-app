@@ -73,6 +73,8 @@ ALLOWED_VIEW_NAMES = {
     "usage_analytics:public_news_article_click",
     # SwissNews の要約の閲覧 (画面に映った時間) の記録
     "usage_analytics:news_summary_reads",
+    # 匿名の閲覧が人のものだと知らせる
+    "usage_analytics:confirm_page_view",
 }
 
 

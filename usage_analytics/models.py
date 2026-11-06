@@ -594,6 +594,13 @@ class UserNewsArticleClick(models.Model):
 # Page views (all apps)
 # =========================================================
 
+class ConfirmedPageViewManager(models.Manager):
+    """人が開いたと確認できた閲覧だけ。集計はすべてこちらを使う。"""
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_confirmed=True)
+
+
 class PageView(models.Model):
     """
     全アプリ共通のページ閲覧記録。
@@ -648,6 +655,14 @@ class PageView(models.Model):
 
     # LINE内・Safari など (browsers.py)。以前のデータは空
     browser = models.CharField("開いた場所", max_length=20, blank=True, default="")
+
+    # cookie を持たない匿名の閲覧は、ページの JavaScript が「人が見ている」と
+    # 知らせてくるまで False (X のリンクチェックなど、普通の Chrome を名乗るボット対策)
+    is_confirmed = models.BooleanField("人の閲覧と確認済み", default=True, db_index=True)
+
+    # objects = 確認済みだけ (分析画面・人気順などの集計)。all_objects = ボットの疑いも含む全部
+    objects = ConfirmedPageViewManager()
+    all_objects = models.Manager()
 
     class Meta:
 

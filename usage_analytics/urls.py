@@ -47,6 +47,9 @@ urlpatterns = [
         name="public_news_article_click",
     ),
 
+    # 匿名の閲覧が人のものだと知らせる (ページに入れたスクリプトから)
+    path("confirm/", views.confirm_page_view, name="confirm_page_view"),
+
     path("news-reads/", views.news_summary_reads, name="news_summary_reads"),
 
     # =====================================================
