@@ -46,7 +46,7 @@
     <section class="cb-block cb-form-block">
         <h2 class="cb-form-title">「{{ item.request_word }}」を送る</h2>
         {% if user.is_authenticated %}
-            <form method="post" action="{% url 'chiebukuro:item_request' item.pk %}" class="cb-form">
+            <form method="post" action="{% url 'chiebukuro:item_request' item.pk %}" class="cb-form" data-rules>
                 {% csrf_token %}
                 <textarea name="body" rows="3" maxlength="{{ message_max }}" required placeholder="{% if item.is_offer %}ひとこと（例: 3歳の娘に使いたいです。平日の夕方なら受け取りに行けます）{% else %}ひとこと（例: 使っていないのがあります。週末なら Oerlikon で渡せます）{% endif %}"></textarea>
                 <button type="submit" class="cb-btn cb-btn-primary">「{{ item.request_word }}」を送る</button>

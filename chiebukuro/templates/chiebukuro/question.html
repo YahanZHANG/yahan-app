@@ -61,7 +61,7 @@
     <h2 class="cb-form-title">回答する</h2>
     {% if user.is_authenticated %}
         {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
-        <form method="post" enctype="multipart/form-data" class="cb-form">
+        <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
             {% csrf_token %}
             <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="知っていること、経験したことを教えてください。お店や場所の名前があると助かります。">{{ draft }}</textarea>
             {% include "chiebukuro/_photo_field.html" %}

@@ -144,5 +144,53 @@ document.querySelectorAll("[data-count]").forEach(function (area) {
     area.addEventListener("input", update); update();
 });
 </script>
+{% if needs_rules %}
+<dialog class="cb-rules-dialog" id="cb-rules-dialog" data-url="{% url 'chiebukuro:rules_agree' %}" aria-labelledby="cb-rules-title">
+    <form method="dialog" class="cb-rules-box">
+        <h2 id="cb-rules-title">書きこむ前に、掲示板のルールをご確認ください</h2>
+        {% include "chiebukuro/_rules.html" %}
+        <label class="cb-rules-check"><input type="checkbox" id="cb-rules-ok"> ルールを読んで、同意します</label>
+        <div class="cb-rules-actions">
+            <button type="submit" value="cancel" class="cb-btn cb-btn-s">やめる</button>
+            <button type="button" id="cb-rules-agree" class="cb-btn cb-btn-primary cb-btn-s" disabled>同意して送る</button>
+        </div>
+        <p class="cb-note">同意は一度だけです。次からはこの画面は出ません。</p>
+    </form>
+</dialog>
+<script>
+(function () {
+    // はじめて書きこむときだけ: ルールに同意してから送る
+    var dialog = document.getElementById("cb-rules-dialog");
+    if (!dialog || !dialog.showModal) return;
+    var check = document.getElementById("cb-rules-ok");
+    var agree = document.getElementById("cb-rules-agree");
+    var pending = null;
+    var agreed = false;
+    check.addEventListener("change", function () { agree.disabled = !check.checked; });
+    document.addEventListener("submit", function (event) {
+        var form = event.target;
+        if (agreed || !form.matches || !form.matches("form[data-rules]")) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        pending = form;
+        dialog.showModal();
+    }, true);
+    agree.addEventListener("click", function () {
+        if (!pending) return;
+        var token = pending.querySelector('input[name="csrfmiddlewaretoken"]');
+        agree.disabled = true;
+        fetch(dialog.dataset.url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "X-CSRFToken": token ? token.value : "" }
+        }).finally(function () {
+            agreed = true;
+            dialog.close();
+            if (pending.requestSubmit) pending.requestSubmit(); else pending.submit();
+        });
+    });
+})();
+</script>
+{% endif %}
 </body>
 </html>

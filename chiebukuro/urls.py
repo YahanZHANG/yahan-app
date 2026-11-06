@@ -47,6 +47,7 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("report/", views.report, name="report"),
     path("rules/", views.rules, name="rules"),
+    path("rules/agree/", views.rules_agree, name="rules_agree"),
     path("stamp/", views.stamp, name="stamp"),
     # HOME: アンケート・広告
     path("today/", views.today_strip, name="today"),

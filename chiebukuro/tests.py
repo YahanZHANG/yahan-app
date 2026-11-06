@@ -700,3 +700,19 @@ class JapanCalendarTests(TestCase):
 
         self.assertEqual(moon(datetime.datetime(2026, 11, 24, 15, tzinfo=datetime.timezone.utc))["name"], "満月")
         self.assertEqual(moon(datetime.datetime(2026, 11, 9, 12, tzinfo=datetime.timezone.utc))["emoji"], "🌑")
+
+
+class RulesAgreementTests(BoardTestCase):
+
+    def test_rules_dialog_until_agreed(self):
+        self.client.force_login(self.alice)
+        page = self.client.get(reverse("chiebukuro:posts"))
+        self.assertContains(page, "cb-rules-dialog")
+        self.assertContains(page, "data-rules")
+        self.assertEqual(self.client.post(reverse("chiebukuro:rules_agree")).status_code, 200)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "cb-rules-dialog")
+
+    def test_hero_styles_can_be_previewed(self):
+        for style in ["sky", "widget", "wa", "scene"]:
+            self.assertContains(self.client.get(reverse("chiebukuro:home") + f"?hero={style}"), f"cb-hero--{style}")
+        self.assertContains(self.client.get(reverse("chiebukuro:home") + "?hero=nope"), "cb-hero--sky")

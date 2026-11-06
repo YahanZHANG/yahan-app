@@ -19,6 +19,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -175,7 +176,15 @@ def board_context(request, tab, region=None):
         "region_label": REGION_LABELS.get(region or "", ""),
         "regions": BOARD_REGION_CHOICES,
         "stamp_list": STAMPS,
+        "needs_rules": needs_rules(request.user),
     }
+
+
+def needs_rules(user):
+    """まだ掲示板のルールに同意していない (はじめて書きこむ前に、ルールの画面を出す)"""
+    if not user.is_authenticated:
+        return False
+    return not BoardProfile.objects.filter(user=user, rules_agreed_at__isnull=False).exists()
 
 
 def my_talks(user):
@@ -252,6 +261,10 @@ def home(request):
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
+    board_settings = BoardSettings.current()
+    hero_style = request.GET.get("hero") or board_settings.hero_style
+    if hero_style not in dict(BoardSettings.HERO_STYLES):
+        hero_style = "sky"
 
     response = render(
         request,
@@ -270,6 +283,9 @@ def home(request):
             "hero_season": season,
             "cal": cal,
             "moon_d": moon_path(330, 84, 15, cal["lit"], cal["waxing"]),
+            "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
+            "hero_style": hero_style,
+            "scene_svg": render_to_string("chiebukuro/_hero_scene_svg.html", {"cal": cal, "moon_d": moon_path(330, 84, 15, cal["lit"], cal["waxing"])}) if hero_style == "scene" else "",
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
             "season_label": SEASON_LABELS.get(season, ""),
         },
@@ -1540,6 +1556,18 @@ def profile_edit(request):
             "error": error,
         },
     )
+
+
+@login_required
+@require_POST
+def rules_agree(request):
+    profile, _ = BoardProfile.objects.get_or_create(user=request.user)
+    if not profile.rules_agreed_at:
+        profile.rules_agreed_at = timezone.now()
+        profile.save(update_fields=["rules_agreed_at"])
+    from django.http import JsonResponse
+
+    return JsonResponse({"ok": True})
 
 
 @board_open

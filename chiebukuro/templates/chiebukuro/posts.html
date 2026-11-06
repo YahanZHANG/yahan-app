@@ -6,7 +6,7 @@
 <h1 class="cb-page-title">つぶやき</h1>
 
 {% if user.is_authenticated %}
-<form method="post" action="{% url 'chiebukuro:post_new' %}" enctype="multipart/form-data" class="cb-compose" id="compose">
+<form method="post" action="{% url 'chiebukuro:post_new' %}" enctype="multipart/form-data" class="cb-compose" id="compose" data-rules>
     {% csrf_token %}
     <span class="cb-av {{ user.pk|avatar }}" aria-hidden="true">{% face user user.profile.display_name|default:user.username %}</span>
     <div class="cb-compose-main">

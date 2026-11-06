@@ -33,7 +33,7 @@
     {% endfor %}
 </div>
 
-<form method="post" class="cb-inline-compose cb-talk-form" id="bottom">
+<form method="post" class="cb-inline-compose cb-talk-form" id="bottom" data-rules>
     {% csrf_token %}
     <label class="cb-sr" for="talk-body">メッセージ</label>
     <textarea name="body" id="talk-body" rows="1" maxlength="{{ message_max }}" required placeholder="メッセージ" data-grow></textarea>

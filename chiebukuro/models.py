@@ -50,6 +50,13 @@ class BoardSettings(models.Model):
         default="auto",
         help_text="自動: 春 4/1〜4/25、建国記念日 7/25〜8/1、ハロウィン 10/18〜10/31、秋 11月、クリスマス 12/1〜12/26、お正月 12/30〜1/7",
     )
+    HERO_STYLES = [
+        ("sky", "空のグラデーション（文字が大きい）"),
+        ("widget", "ウィジェット（色つきのマス）"),
+        ("wa", "和モダン（白地に明朝体と線画）"),
+        ("scene", "山のイラスト"),
+    ]
+    hero_style = models.CharField("HOME上部のデザイン", max_length=10, choices=HERO_STYLES, default="sky")
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -381,6 +388,7 @@ class BoardProfile(models.Model):
     avatar_kind = models.CharField("アイコン", max_length=10, choices=AvatarKind.choices, default=AvatarKind.LETTER)
     avatar_parts = models.JSONField("イラストの組み合わせ", default=dict, blank=True)
     photo_url = models.URLField("プロフィール写真", max_length=500, blank=True)
+    rules_agreed_at = models.DateTimeField("ルールに同意した日時", null=True, blank=True)
 
     class PushFrequency(models.TextChoices):
         INSTANT = "instant", "すぐに知らせる"

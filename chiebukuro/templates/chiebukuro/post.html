@@ -34,7 +34,7 @@
     {% endfor %}
     <div class="cb-reply-form">
         {% if user.is_authenticated %}
-            <form method="post" enctype="multipart/form-data" class="cb-reply-compose">
+            <form method="post" enctype="multipart/form-data" class="cb-reply-compose" data-rules>
                 {% csrf_token %}
                 <div class="cb-inline-compose">
                     <label class="cb-sr" for="reply-body">返信</label>

@@ -1355,3 +1355,166 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 .cb-hero-panel { margin-top: -14px; }
 @media (min-width: 900px) { .cb-hero-panel { margin-top: -20px; } }
 .cb-hero[data-time="evening"] .cb-sun { transform: translateY(24px); }
+
+/* =========================================================
+   v6: HOME 上部のデザイン 3種類 (+ 山のイラスト)
+   sky = 空のグラデーション / widget = 色つきのマス / wa = 和モダン
+   ========================================================= */
+.cb-moon-mini { width: 30px; height: 30px; flex: none; }
+.cb-moon-dark { fill: rgba(255, 255, 255, .14); }
+.cb-moon-lit { fill: #FFF1C1; }
+.cb-hero-side { display: flex; align-items: center; gap: 8px; }
+.cb-jptime { display: grid; justify-items: end; gap: 0; line-height: 1.1; }
+.cb-jptime small { font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.cb-hero-season { display: inline-block; margin-left: 2px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.cb-alps { display: block; width: 100%; height: 34px; margin: 6px 0 2px; }
+.cb-hero--sky, .cb-hero--widget, .cb-hero--wa { margin-top: 0; }
+.cb-hero--sky .cb-hero-panel, .cb-hero--widget .cb-hero-panel, .cb-hero--wa .cb-hero-panel { margin: 0; }
+
+/* ---------- 1. sky: 空のグラデーション ---------- */
+.cb-hero--sky {
+    --g1: #1559C7; --g2: #2F86E8; --g3: #79C2F2; --accent: rgba(255, 255, 255, 0);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background:
+        radial-gradient(120% 80% at 100% 0%, rgba(255, 255, 255, .22), transparent 55%),
+        radial-gradient(90% 70% at 0% 100%, var(--accent), transparent 60%),
+        linear-gradient(165deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 100%);
+    transition: background .6s;
+}
+.cb-hero--sky[data-time="morning"] { --g1: #2E5CB8; --g2: #6E8FD8; --g3: #F3B38A; }
+.cb-hero--sky[data-time="evening"] { --g1: #2B2A6E; --g2: #6B4C9A; --g3: #E9876A; }
+.cb-hero--sky[data-time="night"] { --g1: #070D24; --g2: #14224F; --g3: #2C3F7A; }
+.cb-hero--sky[data-sky="cloudy"] { --g1: #3B4A5E; --g2: #5D6E84; --g3: #95A6BA; }
+.cb-hero--sky[data-sky="rain"] { --g1: #1E2A3C; --g2: #34465E; --g3: #5B708C; }
+.cb-hero--sky[data-sky="snow"] { --g1: #46618A; --g2: #7690B5; --g3: #AFC2DB; }
+.cb-hero--sky[data-time="night"][data-sky="cloudy"], .cb-hero--sky[data-time="night"][data-sky="rain"] { --g1: #0B1020; --g2: #1C2638; --g3: #344259; }
+.cb-hero--sky[data-time="night"][data-sky="snow"] { --g1: #101A33; --g2: #2B3B60; --g3: #5A6E94; }
+.cb-hero--sky[data-season="halloween"] { --accent: rgba(242, 140, 40, .55); }
+.cb-hero--sky[data-season="autumn"] { --accent: rgba(224, 102, 43, .5); }
+.cb-hero--sky[data-season="christmas"] { --accent: rgba(200, 16, 46, .5); }
+.cb-hero--sky[data-season="newyear"] { --accent: rgba(245, 196, 81, .5); }
+.cb-hero--sky[data-season="nationalday"] { --accent: rgba(255, 59, 74, .55); }
+.cb-hero--sky[data-season="spring"] { --accent: rgba(247, 168, 196, .6); }
+/* 雨・雪がうっすら降る */
+.cb-hero--sky[data-sky="rain"]::after, .cb-hero--sky[data-sky="snow"]::after {
+    content: ""; position: absolute; inset: -40px 0 0; pointer-events: none; opacity: .35;
+}
+.cb-hero--sky[data-sky="rain"]::after {
+    background-image: repeating-linear-gradient(105deg, transparent 0 14px, rgba(255, 255, 255, .5) 14px 15px, transparent 15px 34px);
+    background-size: 100% 60px;
+    animation: cb-rainfall .7s linear infinite;
+}
+.cb-hero--sky[data-sky="snow"]::after {
+    background-image: radial-gradient(circle, #fff 1.4px, transparent 1.6px), radial-gradient(circle, #fff 1px, transparent 1.2px);
+    background-size: 46px 46px, 28px 28px;
+    background-position: 0 0, 13px 17px;
+    opacity: .6;
+    animation: cb-snowdrift 9s linear infinite;
+}
+@keyframes cb-rainfall { from { background-position: 0 0; } to { background-position: -12px 60px; } }
+@keyframes cb-snowdrift { from { background-position: 0 0, 13px 17px; } to { background-position: 30px 460px, 43px 297px; } }
+@media (prefers-reduced-motion: reduce) { .cb-hero--sky::after { animation: none !important; } }
+
+.cb-hero--sky .cb-hero-panel { background: none; border: 0; box-shadow: none; padding: 20px 18px 14px; position: relative; z-index: 1; }
+.cb-hero--sky .cb-hero-date { color: #fff; flex-wrap: wrap; }
+.cb-hero--sky .cb-hero-md { font-size: 50px; font-weight: 800; letter-spacing: -.01em; }
+.cb-hero--sky .cb-hero-md small { font-size: 19px; }
+.cb-hero--sky .cb-hero-wd { color: rgba(255, 255, 255, .85); }
+.cb-hero--sky .cb-hero-season { background: rgba(255, 255, 255, .18); color: #fff; }
+.cb-hero--sky .cb-jptime { color: rgba(255, 255, 255, .8); }
+.cb-hero--sky .cb-jptime b { color: #fff; }
+.cb-hero--sky .cb-alps { color: rgba(255, 255, 255, .55); }
+.cb-hero--sky .cb-tile2 { background: none; color: #fff; padding: 2px 10px; border-left: 1px solid rgba(255, 255, 255, .28); border-radius: 0; }
+.cb-hero--sky .cb-tiles { gap: 0; margin-top: 8px; }
+.cb-hero--sky .cb-today > .cb-tile2:first-of-type { border-left: 0; padding-left: 0; }
+.cb-hero--sky .cb-tile2-cap, .cb-hero--sky .cb-tile2-sub, .cb-hero--sky .cb-tile2-row, .cb-hero--sky .cb-tile2-wait { color: rgba(255, 255, 255, .78); }
+.cb-hero--sky .cb-tile2-row b { color: #fff; }
+.cb-hero--sky .cb-tile2 .up { color: #B9F6CA; }
+.cb-hero--sky .cb-tile2 .down { color: #FFD0D0; }
+.cb-hero--sky .cb-rokuyo-大安 .cb-rokuyo-big { color: #FFE08A; }
+.cb-hero--sky .cb-regionbar select { background: rgba(255, 255, 255, .16); color: #fff; border: 1px solid rgba(255, 255, 255, .3); }
+.cb-hero--sky .cb-regionbar select option { color: #1d2125; }
+.cb-hero--sky .cb-regionbar svg { color: #fff; }
+
+/* ---------- 2. widget: 色つきのマス ---------- */
+.cb-hero--widget { padding: 10px 10px 0; }
+.cb-hero--widget .cb-hero-panel { background: #0F172A; color: #fff; border: 0; border-radius: 18px; padding: 16px 14px 12px; box-shadow: 0 10px 30px rgba(15, 23, 42, .25); }
+.cb-hero--widget .cb-hero-date { color: #fff; }
+.cb-hero--widget .cb-hero-md { font-size: 42px; }
+.cb-hero--widget .cb-hero-wd, .cb-hero--widget .cb-jptime { color: #94A3B8; }
+.cb-hero--widget .cb-jptime b { color: #fff; }
+.cb-hero--widget .cb-hero-season { background: #1E293B; color: #E2E8F0; }
+.cb-hero--widget .cb-tile2 { border-radius: 14px; padding: 12px; color: #fff; min-height: 92px; background: #1E293B; }
+.cb-hero--widget .cb-tile2-cap, .cb-hero--widget .cb-tile2-sub, .cb-hero--widget .cb-tile2-row, .cb-hero--widget .cb-tile2-wait { color: rgba(255, 255, 255, .78); }
+.cb-hero--widget .cb-tile2-row b { color: #fff; }
+.cb-hero--widget .cb-tile2-weather { background: linear-gradient(160deg, #2F86E8, #79C2F2); }
+.cb-hero--widget[data-time="night"] .cb-tile2-weather { background: linear-gradient(160deg, #14224F, #2C3F7A); }
+.cb-hero--widget[data-sky="cloudy"] .cb-tile2-weather { background: linear-gradient(160deg, #5D6E84, #95A6BA); }
+.cb-hero--widget[data-sky="rain"] .cb-tile2-weather { background: linear-gradient(160deg, #34465E, #5B708C); }
+.cb-hero--widget[data-sky="snow"] .cb-tile2-weather { background: linear-gradient(160deg, #7690B5, #AFC2DB); }
+.cb-hero--widget .cb-tile2-fx { background: linear-gradient(160deg, #3A2E12, #6B5320); }
+.cb-hero--widget .cb-tile2-fx .cb-tile2-row b { color: #FFE08A; }
+.cb-hero--widget .cb-tile2-koyomi { background: linear-gradient(160deg, #334155, #1E293B); }
+.cb-hero--widget .cb-rokuyo-大安 { background: linear-gradient(160deg, #C8102E, #8E0C22); }
+.cb-hero--widget .cb-tile2 .up { color: #86EFAC; }
+.cb-hero--widget .cb-tile2 .down { color: #FCA5A5; }
+.cb-hero--widget .cb-regionbar select { background: #1E293B; color: #fff; border: 1px solid #334155; }
+.cb-hero--widget .cb-regionbar svg { color: #94A3B8; }
+
+/* ---------- 3. wa: 和モダン ---------- */
+.cb-hero--wa .cb-hero-panel { background: #FBF8F3; color: #2A2420; border: 1px solid #E8DFD2; border-radius: 0; box-shadow: none; padding: 18px 18px 12px; }
+.cb-hero--wa .cb-hero-date, .cb-hero--wa .cb-rokuyo-big, .cb-hero--wa .cb-tile2-big, .cb-hero--wa .cb-tile2-row b, .cb-hero--wa .cb-jptime b {
+    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+.cb-hero--wa .cb-hero-date { color: #2A2420; }
+.cb-hero--wa .cb-hero-md { font-size: 48px; font-weight: 800; }
+.cb-hero--wa .cb-hero-wd { color: #8A7E70; font-weight: 600; letter-spacing: .2em; }
+.cb-hero--wa .cb-hero-season { background: none; border: 1px solid #C8102E; color: #C8102E; }
+.cb-hero--wa .cb-jptime { color: #8A7E70; }
+.cb-hero--wa .cb-jptime b { color: #2A2420; }
+.cb-hero--wa .cb-alps { color: #C8102E; opacity: .85; }
+.cb-hero--wa .cb-moon-dark { fill: #E9E1D5; }
+.cb-hero--wa .cb-moon-lit { fill: #C9A24A; }
+.cb-hero--wa .cb-tiles { gap: 0; margin-top: 6px; }
+.cb-hero--wa .cb-tile2 { background: none; border-left: 1px solid #E3D9CC; border-radius: 0; padding: 4px 12px; color: #2A2420; }
+.cb-hero--wa .cb-today > .cb-tile2:first-of-type { border-left: 0; padding-left: 0; }
+.cb-hero--wa .cb-tile2-cap, .cb-hero--wa .cb-tile2-sub, .cb-hero--wa .cb-tile2-row, .cb-hero--wa .cb-tile2-wait { color: #8A7E70; }
+.cb-hero--wa .cb-tile2-row b { color: #2A2420; }
+.cb-hero--wa .cb-rokuyo-大安 .cb-rokuyo-big { color: #C8102E; }
+html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-hero-panel { background: #1E1B18; border-color: #3A332C; color: #EFE8DE; }
+html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-hero-date, html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2,
+html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2-row b, html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-jptime b { color: #EFE8DE; }
+html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-tile2 { border-color: #3A332C; }
+html[data-yapp-resolved-theme="dark"] .cb-hero--wa .cb-moon-dark { fill: #3A332C; }
+
+/* 山のイラスト版だけは景色が上、パネルが重なる */
+.cb-hero--scene .cb-moon-mini { display: none; }
+
+@media (min-width: 900px) {
+    .cb-hero--sky, .cb-hero--wa .cb-hero-panel { border-radius: 14px; }
+    .cb-hero--sky { margin-top: 12px; }
+    .cb-hero--sky .cb-hero-panel { padding: 26px 26px 18px; }
+    .cb-hero--sky .cb-hero-md { font-size: 64px; }
+    .cb-hero--widget { padding: 12px 0 0; }
+    .cb-hero--wa { margin-top: 12px; }
+    .cb-hero--wa .cb-hero-md { font-size: 58px; }
+}
+
+/* はじめて書きこむときのルール確認 */
+.cb-rules-dialog { border: 0; border-radius: 14px; padding: 0; width: min(440px, calc(100vw - 32px)); background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+.cb-rules-dialog::backdrop { background: rgba(10, 15, 25, .5); }
+.cb-rules-box { padding: 20px 20px 16px; display: grid; gap: 12px; }
+.cb-rules-box h2 { margin: 0; font-size: 16px; line-height: 1.5; }
+.cb-rules-box .cb-rules-list { margin: 0; padding: 12px 12px 12px 30px; background: var(--surface-2); border-radius: 8px; }
+.cb-rules-check { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.cb-rules-check input { width: 20px; height: 20px; accent-color: var(--brand); }
+.cb-rules-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.cb-rules-actions .cb-btn[disabled] { opacity: .45; cursor: not-allowed; }
+.cb-rules-box .cb-note { margin: 0; font-size: 12px; color: var(--sub); }
+.cb-hero-top { flex-wrap: nowrap; align-items: flex-start; }
+.cb-hero-date { flex-wrap: wrap; min-width: 0; }
+.cb-hero-season { margin: 2px 0 0; }
+.cb-hero-date .cb-hero-season { order: 3; }
+@media (max-width: 899px) { .cb-hero-date .cb-hero-season { flex-basis: auto; } .cb-hero-date { row-gap: 6px; } }
