@@ -1,0 +1,65 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ item.title }} | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<p class="cb-back"><a href="{% if item.kind == 'book' %}{% url 'chiebukuro:books' %}{% else %}{% url 'chiebukuro:give' %}{% endif %}">‹ {{ item.get_kind_display }}</a></p>
+
+<section class="cb-card cb-item">
+    {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="{{ item.title }}" class="cb-item-image">{% endif %}
+    <p class="cb-tags">
+        <span class="cb-tag">{{ item.get_kind_display }}</span>
+        <span class="cb-state cb-state-{{ item.state }}">{{ item.state_label }}</span>
+    </p>
+    <h1>{{ item.title }}</h1>
+    {% if item.body %}<p class="cb-item-body">{{ item.body|linebreaksbr }}</p>{% endif %}
+    <dl class="cb-item-facts">
+        {% if region_label %}<div><dt>地域</dt><dd>{{ region_label }}</dd></div>{% endif %}
+        {% if item.place %}<div><dt>受け渡し</dt><dd>{{ item.place }}</dd></div>{% endif %}
+        <div><dt>出した人</dt><dd>{{ item.display_name }}・{{ item.created_at|date:"n月j日" }}</dd></div>
+    </dl>
+</section>
+
+{% if is_owner %}
+    <section class="cb-card">
+        <h2>届いた「{{ item.request_word }}」</h2>
+        {% for req in requests_for_owner %}
+            <a href="{% url 'chiebukuro:talk' req.pk %}" class="cb-talk-row">
+                <span>{{ req.display_name }}{% if req.is_chosen %} <em class="cb-state cb-state-reserved">決定</em>{% endif %}</span>
+                <span class="cb-meta">やりとりを開く ›</span>
+            </a>
+        {% empty %}
+            <p class="cb-note">まだありません。届いたら、マイページにもお知らせが出ます。</p>
+        {% endfor %}
+        <form method="post" action="{% url 'chiebukuro:item_state' item.pk %}" class="cb-state-form">
+            {% csrf_token %}
+            {% if item.state != 'open' %}<button type="submit" name="state" value="open" class="cb-pill">受付中に戻す</button>{% endif %}
+            {% if item.state != 'done' %}<button type="submit" name="state" value="done" class="cb-pill">{% if item.kind == 'book' %}返してもらった・おわり{% else %}ゆずり終わった{% endif %}</button>{% endif %}
+            <button type="submit" name="delete" value="yes" class="cb-link-button" onclick="return confirm('この書き込みを取り下げますか？');">取り下げる</button>
+        </form>
+    </section>
+{% elif my_request %}
+    <section class="cb-card">
+        <p>「{{ item.request_word }}」を送りました。</p>
+        <a href="{% url 'chiebukuro:talk' my_request.pk %}" class="cb-button cb-button-primary">{{ item.display_name }}さんとのやりとりを開く</a>
+    </section>
+{% elif item.state == 'open' %}
+    <section class="cb-card">
+        <h2>{{ item.request_word }}！</h2>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'chiebukuro:item_request' item.pk %}" class="cb-form">
+                {% csrf_token %}
+                <textarea name="body" rows="3" maxlength="{{ message_max }}" required placeholder="ひとこと（例: 3歳の娘に使いたいです。平日の夕方なら受け取りに行けます）"></textarea>
+                <button type="submit" class="cb-button cb-button-primary">「{{ item.request_word }}」を送る</button>
+            </form>
+            <p class="cb-note">送ったメッセージは、{{ item.display_name }}さんだけが読めます。</p>
+        {% else %}
+            <a href="{{ login_url }}" class="cb-button cb-button-primary">ログインして「{{ item.request_word }}」を送る</a>
+        {% endif %}
+    </section>
+{% else %}
+    <p class="cb-note cb-center">この品物は、もう相手が決まっています。</p>
+{% endif %}
+
+{% if not is_owner %}{% with report_target="item" report_id=item.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}{% endif %}
+{% endblock %}

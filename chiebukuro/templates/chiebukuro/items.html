@@ -1,0 +1,49 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ kind_label }} | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<section class="cb-intro">
+    {% if kind == 'book' %}
+        <h1>📚 本の貸し借り</h1>
+        <p>読み終わった日本語の本や絵本を、貸したり借りたりできます。お金のやりとりはありません。</p>
+    {% else %}
+        <h1>🎁 ゆずります</h1>
+        <p>使わなくなった物を、無料でゆずる場所です。売り買いはできません。</p>
+    {% endif %}
+    <a href="{% url 'chiebukuro:item_new' kind %}" class="cb-button cb-button-primary">{% if kind == 'book' %}＋ 本を貸す{% else %}＋ ゆずる物を出す{% endif %}</a>
+</section>
+
+<form method="get" class="cb-search">
+    <select name="region" aria-label="地域" onchange="this.form.submit()">
+        <option value="">スイス全体</option>
+        {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <label class="cb-check"><input type="checkbox" name="all" value="1" {% if show_done %}checked{% endif %} onchange="this.form.submit()"> おわったものも見る</label>
+</form>
+
+<div class="cb-item-grid">
+    {% for item in page.object_list %}
+        <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-item-card {% if item.state != 'open' %}is-closed{% endif %}">
+            <span class="cb-item-photo">
+                {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="" loading="lazy">{% else %}<span aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
+                <em class="cb-state cb-state-{{ item.state }}">{{ item.state_label }}</em>
+            </span>
+            <strong>{{ item.title }}</strong>
+            <span class="cb-meta">{% if item.region %}📍{{ item.get_region_display }}{% endif %}{% if item.request_total %}・{{ item.request_word }} {{ item.request_total }}人{% endif %}</span>
+        </a>
+    {% empty %}
+        <section class="cb-card cb-empty">
+            <p>{% if kind == 'book' %}まだ本がありません。読み終わった本があれば、最初の1冊を出してみませんか？{% else %}まだ出ている物がありません。使わなくなった物があれば、最初の1つを出してみませんか？{% endif %}</p>
+        </section>
+    {% endfor %}
+</div>
+
+{% if page.has_other_pages %}
+<nav class="cb-pager">
+    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}{% if region %}&amp;region={{ region }}{% endif %}">‹ 前へ</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?page={{ page.next_page_number }}{% if region %}&amp;region={{ region }}{% endif %}">次へ ›</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

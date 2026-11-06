@@ -1,0 +1,22 @@
+<article class="cb-qcard">
+    <a href="{% url 'chiebukuro:question' question.pk %}" class="cb-qcard-link">
+        <p class="cb-tags">
+            <span class="cb-tag cb-theme-{{ question.theme }}">{{ question.get_theme_display }}</span>
+            {% if question.region %}<span class="cb-tag cb-tag-region">📍{{ question.get_region_display }}</span>{% endif %}
+        </p>
+        <h3>{{ question.body }}</h3>
+        {% if question.previews %}
+            <ul class="cb-previews">
+                {% for answer in question.previews %}
+                    <li><b>{{ answer.display_name }}</b>{{ answer.body|truncatechars:70 }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="cb-wanted-note">まだ答えがありません。知っていたら教えてください！</p>
+        {% endif %}
+        <p class="cb-qcard-meta">
+            <span>💬 答え {{ question.answer_total }}</span>
+            {% if question.interest_total %}<span>🙋 知りたい {{ question.interest_total }}</span>{% endif %}
+        </p>
+    </a>
+</article>

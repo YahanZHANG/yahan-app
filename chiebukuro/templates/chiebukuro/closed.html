@@ -1,0 +1,23 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>スイス生活の知恵袋 | Yapp</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="{% static 'chiebukuro/chiebukuro.css' %}">
+    {% include "includes/app_icons.html" %}
+</head>
+<body>
+<main class="cb-main">
+    <section class="cb-card cb-closed">
+        <p class="cb-closed-mark" aria-hidden="true">💡</p>
+        <h1>スイス生活の知恵袋</h1>
+        <p>スイスで暮らす日本人の掲示板を、いま準備しています。</p>
+        <p>公開までの間、みなさんの「知りたいこと」と「知っていること」を集めています。よければアンケートにご協力ください。</p>
+        <a href="{% url 'pre_survey:start' %}?from=board" class="cb-button cb-button-primary">アンケートに答える</a>
+        <p class="cb-note"><a href="{% url 'portal:home' %}">Yappのトップへ</a></p>
+    </section>
+</main>
+</body>
+</html>

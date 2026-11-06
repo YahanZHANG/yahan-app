@@ -1,0 +1,13 @@
+{% if user.is_authenticated %}
+<details class="cb-report">
+    <summary>通報</summary>
+    <form method="post" action="{% url 'chiebukuro:report' %}">
+        {% csrf_token %}
+        <input type="hidden" name="target" value="{{ report_target }}">
+        <input type="hidden" name="target_id" value="{{ report_id }}">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="text" name="reason" maxlength="500" placeholder="理由（任意）" aria-label="通報の理由">
+        <button type="submit" class="cb-link-button">運営に知らせる</button>
+    </form>
+</details>
+{% endif %}

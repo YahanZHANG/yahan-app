@@ -1,0 +1,37 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ other_name }}さんとのやりとり | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">‹ マイページ</a></p>
+
+<section class="cb-card cb-talk-head">
+    <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-talk-item">
+        {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="">{% else %}<span aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
+        <span><strong>{{ item.title }}</strong><span class="cb-meta">{{ item.get_kind_display }}・{{ item.state_label }}</span></span>
+    </a>
+    <p class="cb-talk-with">{{ other_name }}さんとの2人だけのやりとり</p>
+    {% if is_owner and not talk.is_chosen and item.state == 'open' %}
+        <form method="post" action="{% url 'chiebukuro:talk_choose' talk.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="cb-button cb-button-primary" onclick="return confirm('{{ talk.display_name }}さんに決めますか？');">{{ talk.display_name }}さんに{% if item.kind == 'book' %}貸す{% else %}ゆずる{% endif %}</button>
+        </form>
+    {% endif %}
+</section>
+
+<div class="cb-messages">
+    {% for message in talk_messages %}
+        <div class="cb-bubble {% if message.sender_id == user.pk %}mine{% endif %}">
+            <p>{{ message.body|linebreaksbr }}</p>
+            <span>{{ message.created_at|date:"n/j H:i" }}</span>
+        </div>
+    {% endfor %}
+</div>
+
+<form method="post" class="cb-form cb-talk-form" id="bottom">
+    {% csrf_token %}
+    <textarea name="body" rows="2" maxlength="{{ message_max }}" required placeholder="メッセージ"></textarea>
+    <button type="submit" class="cb-button cb-button-primary">送る</button>
+</form>
+<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったことがあれば、運営に<a href="{% url 'portal:support' %}?from=board">お問い合わせ</a>ください。</p>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}スイス生活の知恵袋{% endblock %} | Yapp</title>
+    <script>
+    (function () {
+        var root = document.documentElement;
+        var preference = root.dataset.yappTheme || "system";
+        var dark = preference === "dark" || (preference === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.yappResolvedTheme = dark ? "dark" : "light";
+    })();
+    </script>
+    <meta name="theme-color" content="#365f75">
+    {% if not board_is_open %}<meta name="robots" content="noindex, nofollow">{% endif %}
+    <meta name="description" content="スイスで暮らす日本人の、質問と答え・ゆずりあい・本の貸し借りの掲示板。">
+    <link rel="stylesheet" href="{% static 'chiebukuro/chiebukuro.css' %}">
+    {% include "includes/app_icons.html" %}
+</head>
+<body>
+
+<header class="cb-header">
+    <a href="{% url 'chiebukuro:home' %}" class="cb-brand">
+        <span class="cb-brand-mark" aria-hidden="true">💡</span>
+        <span>
+            <strong>スイス生活の知恵袋</strong>
+            <small>スイスで暮らす日本人の掲示板</small>
+        </span>
+    </a>
+    <nav class="cb-pc-nav" aria-label="メニュー">
+        <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'questions' %}on{% endif %}">質問と答え</a>
+        <a href="{% url 'chiebukuro:give' %}" class="{% if tab == 'give' %}on{% endif %}">ゆずります</a>
+        <a href="{% url 'chiebukuro:books' %}" class="{% if tab == 'books' %}on{% endif %}">本の貸し借り</a>
+        <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}">マイページ{% if unread_talks %}<b class="cb-dot">{{ unread_talks }}</b>{% endif %}</a>
+    </nav>
+    {% if user.is_authenticated %}
+        <a href="{% url 'chiebukuro:me' %}" class="cb-account cb-phone-only" aria-label="マイページ">👤{% if unread_talks %}<b class="cb-dot">{{ unread_talks }}</b>{% endif %}</a>
+    {% else %}
+        <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="cb-login">ログイン</a>
+    {% endif %}
+</header>
+
+{% if user.is_staff and not board_is_open %}
+    <p class="cb-staff-note">いまは運営だけが見られます（管理画面「掲示板の設定」で公開）。</p>
+{% endif %}
+
+<main class="cb-main">
+    {% for message in messages %}
+        <p class="cb-message cb-message-{{ message.tags }}" role="status">{{ message }}</p>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="cb-footer">
+    <a href="{% url 'portal:home' %}">Yapp</a>
+    <a href="{% url 'portal:help' %}">ヘルプ</a>
+    <a href="{% url 'portal:support' %}?from=board">お問い合わせ</a>
+</footer>
+
+<nav class="cb-tabbar" aria-label="メニュー">
+    <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'questions' %}on{% endif %}"><span aria-hidden="true">💬</span>質問</a>
+    <a href="{% url 'chiebukuro:give' %}" class="{% if tab == 'give' %}on{% endif %}"><span aria-hidden="true">🎁</span>ゆずります</a>
+    <a href="{% url 'chiebukuro:ask' %}" class="cb-tabbar-ask"><span aria-hidden="true">＋</span>質問する</a>
+    <a href="{% url 'chiebukuro:books' %}" class="{% if tab == 'books' %}on{% endif %}"><span aria-hidden="true">📚</span>本</a>
+    <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}"><span aria-hidden="true">👤</span>マイページ{% if unread_talks %}<b class="cb-dot">{{ unread_talks }}</b>{% endif %}</a>
+</nav>
+
+<script>
+document.addEventListener("submit", function (event) {
+    var form = event.target;
+    if (form.dataset.sent) { event.preventDefault(); return; }
+    form.dataset.sent = "1";
+    setTimeout(function () { delete form.dataset.sent; }, 4000);
+});
+</script>
+</body>
+</html>

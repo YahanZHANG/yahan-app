@@ -1,0 +1,88 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ question.body|truncatechars:40 }} | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:home' %}?theme={{ question.theme }}">‹ {{ theme_label }}の質問</a></p>
+
+<section class="cb-card cb-question">
+    <p class="cb-tags">
+        <span class="cb-tag cb-theme-{{ question.theme }}">{{ theme_emoji }} {{ theme_label }}</span>
+        {% if region_label %}<span class="cb-tag cb-tag-region">📍{{ region_label }}</span>{% endif %}
+    </p>
+    <h1>{{ question.body }}</h1>
+    <p class="cb-meta">{{ question.display_name }}・{{ question.created_at|date:"Y年n月j日" }}</p>
+
+    <div class="cb-question-actions">
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'chiebukuro:interest' question.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="cb-pill {% if interested %}on{% endif %}">🙋 私も知りたい {{ interest_total }}</button>
+            </form>
+        {% else %}
+            <a href="{{ login_url }}" class="cb-pill">🙋 私も知りたい {{ interest_total }}</a>
+        {% endif %}
+        <a href="#answer-form" class="cb-pill cb-pill-primary">✏️ 答える</a>
+    </div>
+</section>
+
+<h2 class="cb-section-title" id="answers">答え {{ answers|length }}件</h2>
+
+{% for answer in answers %}
+    <article class="cb-card cb-answer" id="a{{ answer.pk }}">
+        <p class="cb-answer-body">{{ answer.body|linebreaksbr|urlize }}</p>
+        <div class="cb-answer-foot">
+            <span class="cb-meta">{{ answer.display_name }}・{{ answer.created_at|date:"n月j日" }}</span>
+            {% if user.is_authenticated and answer.author_id != user.pk %}
+                <form method="post" action="{% url 'chiebukuro:thanks' answer.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="cb-pill cb-pill-small {% if answer.pk in thanked %}on{% endif %}">👍 参考になった{% if answer.thanks_total %} {{ answer.thanks_total }}{% endif %}</button>
+                </form>
+            {% elif answer.thanks_total %}
+                <span class="cb-pill cb-pill-small cb-pill-static">👍 {{ answer.thanks_total }}</span>
+            {% endif %}
+        </div>
+        {% if user.is_authenticated and answer.author_id == user.pk %}
+            <form method="post" action="{% url 'chiebukuro:delete_answer' answer.pk %}" class="cb-inline" onsubmit="return confirm('この答えを消しますか？');">
+                {% csrf_token %}
+                <button type="submit" class="cb-link-button">消す</button>
+            </form>
+        {% else %}
+            {% with report_target="answer" report_id=answer.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+        {% endif %}
+    </article>
+{% empty %}
+    <section class="cb-card cb-empty">
+        <p>まだ答えがありません。知っていることがあれば、ひとことでも教えてください。</p>
+    </section>
+{% endfor %}
+
+<section class="cb-card cb-answer-form" id="answer-form">
+    <h2>答える</h2>
+    {% if user.is_authenticated %}
+        {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+        <form method="post" class="cb-form">
+            {% csrf_token %}
+            <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="知っていること、経験したことを教えてください。お店や場所の名前があると助かります。">{{ draft }}</textarea>
+            <button type="submit" class="cb-button cb-button-primary">書き込む</button>
+        </form>
+    {% else %}
+        <p>答えるには、Yappへのログインが必要です（無料・30秒で登録できます）。</p>
+        <a href="{{ login_url }}" class="cb-button cb-button-primary">ログインして答える</a>
+        <p class="cb-note"><a href="{% url 'portal:signup' %}?next={{ request.get_full_path|urlencode }}">はじめての方は登録</a></p>
+    {% endif %}
+</section>
+
+{% with report_target="question" report_id=question.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+
+{% if related %}
+<section class="cb-related">
+    <h2 class="cb-section-title">{{ theme_label }}のほかの質問</h2>
+    <ul>
+        {% for item in related %}
+            <li><a href="{% url 'chiebukuro:question' item.pk %}">{{ item.body }}</a> <span class="cb-meta">答え{{ item.answer_total }}</span></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}

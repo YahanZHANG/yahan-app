@@ -1,0 +1,74 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block content %}
+{% if not theme and not query and not region and page.number == 1 %}
+<section class="cb-hero">
+    <p class="cb-hero-lead">スイス暮らしの<br>「知りたい」と「知ってる」をつなぐ場所</p>
+    <p class="cb-hero-count"><b>{{ totals.questions }}</b>の質問に、<b>{{ totals.answers }}</b>の答え</p>
+    <a href="{% url 'chiebukuro:ask' %}" class="cb-button cb-button-primary cb-hero-ask">＋ 質問してみる</a>
+</section>
+
+{% if new_items %}
+<section class="cb-strip" aria-label="新着のゆずります・本">
+    <h2 class="cb-strip-title">新着のゆずります・本</h2>
+    <div class="cb-strip-row">
+        {% for item in new_items %}
+            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-strip-item">
+                {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="" loading="lazy">{% else %}<span class="cb-strip-emoji" aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
+                <span>{{ item.title|truncatechars:18 }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endif %}
+
+<form method="get" class="cb-search" role="search">
+    <input type="search" name="q" value="{{ query }}" placeholder="キーワードで探す" aria-label="キーワード">
+    {% if theme %}<input type="hidden" name="theme" value="{{ theme }}">{% endif %}
+    <select name="region" aria-label="地域" onchange="this.form.submit()">
+        <option value="">スイス全体</option>
+        {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+</form>
+
+<nav class="cb-chips" aria-label="テーマ">
+    <a href="?{% if region %}region={{ region }}&amp;{% endif %}sort={{ sort }}" class="cb-chip {% if not theme %}on{% endif %}">すべて</a>
+    {% for item in themes %}
+        <a href="?theme={{ item.value }}{% if region %}&amp;region={{ region }}{% endif %}&amp;sort={{ sort }}" class="cb-chip {% if item.value == theme %}on{% endif %}">{{ item.emoji }} {{ item.label }}</a>
+    {% endfor %}
+</nav>
+
+<nav class="cb-sorts" aria-label="並べ方">
+    {% for key, label in sorts.items %}
+        <a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ key }}" class="{% if key == sort %}on{% endif %}">{{ label }}</a>
+    {% endfor %}
+</nav>
+
+{% if query or theme or region %}
+    <p class="cb-filter-note">
+        {% if query %}「{{ query }}」{% endif %}{% if theme_label %} {{ theme_label }}{% endif %}{% if region_label %} 📍{{ region_label }}{% endif %}
+        の質問 {{ page.paginator.count }}件
+        <a href="{% url 'chiebukuro:home' %}">条件を外す</a>
+    </p>
+{% endif %}
+
+<div class="cb-qlist">
+    {% for question in page.object_list %}
+        {% include "chiebukuro/_question_card.html" %}
+    {% empty %}
+        <section class="cb-card cb-empty">
+            <p>当てはまる質問がまだありません。</p>
+            <a href="{% url 'chiebukuro:ask' %}{% if theme %}?theme={{ theme }}{% endif %}" class="cb-button cb-button-primary">この内容で質問する</a>
+        </section>
+    {% endfor %}
+</div>
+
+{% if page.has_other_pages %}
+<nav class="cb-pager" aria-label="ページ">
+    {% if page.has_previous %}<a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ sort }}&amp;page={{ page.previous_page_number }}">‹ 前へ</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ sort }}&amp;page={{ page.next_page_number }}">次へ ›</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

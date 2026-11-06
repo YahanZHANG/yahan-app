@@ -1,0 +1,55 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}マイページ | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<section class="cb-card cb-me-head">
+    <h1>{{ nickname }}さん</h1>
+    <p class="cb-meta">質問 {{ my_questions|length }}・答え {{ answer_total }}</p>
+</section>
+
+<section class="cb-card">
+    <h2>やりとり{% if unread_talks %} <b class="cb-dot">{{ unread_talks }}</b>{% endif %}</h2>
+    {% for talk in talks %}
+        <a href="{% url 'chiebukuro:talk' talk.pk %}" class="cb-talk-row {% if talk.unread %}unread{% endif %}">
+            <span>{% if talk.unread %}● {% endif %}{{ talk.item.title }}<span class="cb-meta"> ・{{ talk.other }}さん{% if talk.mine %}（あなたが出した物）{% endif %}</span></span>
+            <span class="cb-meta">›</span>
+        </a>
+    {% empty %}
+        <p class="cb-note">「ゆずります」「本」で、ほしい・借りたいを送ったり受け取ったりすると、ここに出ます。</p>
+    {% endfor %}
+</section>
+
+<section class="cb-card">
+    <h2>私の質問</h2>
+    <ul class="cb-simple-list">
+        {% for question in my_questions %}
+            <li><a href="{% url 'chiebukuro:question' question.pk %}">{{ question.body }}</a> <span class="cb-meta">答え{{ question.answer_total }}</span></li>
+        {% empty %}
+            <li class="cb-note">まだありません。<a href="{% url 'chiebukuro:ask' %}">質問してみる</a></li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="cb-card">
+    <h2>私も知りたい質問</h2>
+    <ul class="cb-simple-list">
+        {% for question in wanted %}
+            <li><a href="{% url 'chiebukuro:question' question.pk %}">{{ question.body }}</a> <span class="cb-meta">答え{{ question.answer_total }}</span></li>
+        {% empty %}
+            <li class="cb-note">気になる質問で「私も知りたい」を押すと、ここに集まります。</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="cb-card">
+    <h2>出している物・本</h2>
+    <ul class="cb-simple-list">
+        {% for item in my_items %}
+            <li><a href="{% url 'chiebukuro:item' item.pk %}">{{ item.title }}</a> <span class="cb-meta">{{ item.get_kind_display }}・{{ item.state_label }}</span></li>
+        {% empty %}
+            <li class="cb-note">まだありません。</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

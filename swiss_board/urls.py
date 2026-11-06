@@ -118,7 +118,7 @@ urlpatterns = [
 
 def custom_404(request, exception):
 
-    if request.path.startswith("/swiss-board/"):
+    if request.path.startswith("/swiss-board-old/"):
 
         from swiss_board.views import page_not_found
 
