@@ -19,9 +19,55 @@
     {% endif %}
 </section>
 
+<section class="ps-card ps-share" id="share">
+    <h2>ゆずりたい物・貸したい物はありますか？</h2>
+    <p>掲示板に「無料でゆずる」「貸し借り」のコーナーを作る予定です。当てはまるものがあれば、教えてください。</p>
+
+    {% if share_offers %}
+        <ul class="ps-share-list">
+            {% for offer in share_offers %}
+                <li><strong>{{ offer.get_kind_display }}</strong>{% if offer.item %}：{{ offer.item }}{% endif %}</li>
+            {% endfor %}
+        </ul>
+        <p class="ps-note">ほかにもあれば、追加できます。</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'pre_survey:done_share' %}" class="ps-form">
+        {% csrf_token %}
+        {% for value, label in share_kinds %}
+            <div class="ps-share-row">
+                <label class="ps-share-check">
+                    <input type="checkbox" name="kinds" value="{{ value }}">
+                    <span>{{ label }}物がある</span>
+                </label>
+                <input type="text" name="item_{{ value }}" maxlength="{{ share_item_max_length }}"
+                       placeholder="品物をひとこと（例: ベビーカー）" aria-label="{{ label }}品物">
+            </div>
+        {% endfor %}
+        <button type="submit" class="ps-button ps-button-ghost">送る</button>
+    </form>
+    <script>
+    // 品物の欄は、チェックを入れたときだけ出す
+    (function () {
+        document.querySelectorAll(".ps-share-row").forEach(function (row) {
+            var box = row.querySelector('input[type="checkbox"]');
+            var text = row.querySelector('input[type="text"]');
+            function update() { text.hidden = !box.checked; if (box.checked) text.focus(); }
+            text.hidden = !box.checked;
+            box.addEventListener("change", update);
+        });
+    })();
+    </script>
+</section>
+
 {% if signup_form %}
-<section class="ps-card ps-card-soft">
-    <h2>よければ、このままYappに登録もできます</h2>
+<section class="ps-card ps-card-soft" id="signup">
+    {% if share_offering %}
+        <h2>公開の日にお知らせできるよう、Yappに登録してください</h2>
+        <p>ゆずりたい・貸したい物を掲示板に載せるには、アカウントが必要です。</p>
+    {% else %}
+        <h2>よければ、このままYappに登録もできます</h2>
+    {% endif %}
     <p>
         {% if participant.nickname %}「{{ participant.nickname }}」のまま、パスワードを決めるだけで登録できます。{% else %}ユーザーIDとパスワードを決めるだけで登録できます。{% endif %}
         登録すると、別の端末からでも今回の回答とつながります。

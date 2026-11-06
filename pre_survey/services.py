@@ -11,7 +11,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Q, Value, When
 
-from .models import Answer, Interest, Question, Skip
+from .models import Answer, Interest, Participant, Question, Skip
 
 
 # =========================================================
@@ -98,24 +98,74 @@ def owner_fields(request, participant):
 # 運営におまかせのニックネーム
 # =========================================================
 
-NICKNAME_PLACES = [
-    "アルプスの", "湖のほとりの", "森の", "雪山の", "ぶどう畑の", "朝市の",
-    "チーズ好きの", "ハイキング好きの", "トラム好きの", "旧市街の", "牧場の", "山小屋の",
+# 3つのテイスト。どのセットも同じ確率で選び、前と後ろは同じセットの中で組み合わせる
+# (10×10×3 = 300通り)
+NICKNAME_SETS = [
+    # 食べもの系 (ゆるくてかわいい)
+    (
+        ["ほかほか", "もちもち", "ふわふわ", "さくさく", "とろとろ",
+         "ほくほく", "ぷるぷる", "こんがり", "つやつや", "あつあつ"],
+        ["おにぎり", "おだんご", "メロンパン", "たまご焼き", "おもち",
+         "肉まん", "プレッツェル", "ラクレット", "ロスティ", "クロワッサン"],
+    ),
+    # 自然・季節系 (しっとり、詩的)
+    (
+        ["春風の", "月夜の", "朝霧の", "夕焼けの", "星降る",
+         "木漏れ日の", "初雪の", "雨上がりの", "そよ風の", "小春日和の"],
+        ["旅人", "詩人", "カフェ", "ベンチ", "ピアノ",
+         "ランプ", "手紙", "ことり", "灯台", "ひつじ"],
+    ),
+    # 動物のお仕事系 (ちょっとユーモア)
+    (
+        ["くま", "ねこ", "ペンギン", "パンダ", "カワウソ",
+         "アルパカ", "ハムスター", "コアラ", "ラッコ", "シロクマ"],
+        ["店長", "先生", "隊長", "博士", "パン屋",
+         "郵便屋", "船長", "庭師", "探検家", "料理長"],
+    ),
 ]
 
-NICKNAME_ANIMALS = [
-    "リス", "マーモット", "アイベックス", "ウシ", "ヤギ", "白鳥",
-    "カモ", "キツネ", "ハリネズミ", "フクロウ", "セントバーナード", "ウサギ",
-]
+# すでに使われている名前を避けて選び直す回数 (全部使われていたら重なってもよい)
+NICKNAME_TRIES = 30
 
 
-def random_nickname():
-    return random.choice(NICKNAME_PLACES) + random.choice(NICKNAME_ANIMALS)
+def _nickname_candidate():
+    heads, tails = random.choice(NICKNAME_SETS)
+    return random.choice(heads) + random.choice(tails)
+
+
+def random_nickname(avoid=""):
+    """
+    運営におまかせのニックネーム。ほかの参加者が使っている名前と、
+    いま表示している名前 (avoid、「ほかの名前にする」のとき) はなるべく避ける。
+    """
+
+    used = set(
+        Participant.objects
+        .filter(nickname_mode=Participant.NicknameMode.AUTO)
+        .exclude(nickname="")
+        .values_list("nickname", flat=True)
+    )
+    if avoid:
+        used.add(avoid)
+
+    name = _nickname_candidate()
+    for _ in range(NICKNAME_TRIES):
+        if name not in used:
+            break
+        name = _nickname_candidate()
+    return name
 
 
 # =========================================================
 # 質問を出す順番
 # =========================================================
+
+# 何問に1回、人気の質問を混ぜるか (3なら 3問目・6問目・9問目…)
+POPULAR_EVERY = 3
+
+# 「私も知りたい」がこの票数以上なら人気の質問
+POPULAR_MIN_INTERESTS = 2
+
 
 def next_question(request, participant):
     """
@@ -128,6 +178,8 @@ def next_question(request, participant):
     - 前の参加でスキップ・「知りたい」にした質問は、まだ見ていない質問の後
     - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
     - その中で、回答の少ない順 (0件が先) → 新しい順
+    - ただし POPULAR_EVERY 問に1回は、「私も知りたい」が POPULAR_MIN_INTERESTS 票以上の
+      人気の質問を、テーマに関係なく出す (知りたい票の多い順 → 回答の少ない順)
     """
 
     mine = identity(request)
@@ -157,6 +209,28 @@ def next_question(request, participant):
 
     if participant.region:
         questions = questions.filter(Q(region="") | Q(region=participant.region))
+
+    shown_count = (
+        Answer.objects.filter(participant=participant).count()
+        + Skip.objects.filter(participant=participant).count()
+        + Interest.objects.filter(participant=participant).count()
+    )
+
+    if shown_count % POPULAR_EVERY == POPULAR_EVERY - 1:
+        popular = (
+            questions
+            .exclude(pk__in=Interest.objects.filter(mine).values("question_id"))
+            .exclude(pk__in=Skip.objects.filter(mine).values("question_id"))
+            .annotate(
+                interest_total=Count("interests", distinct=True),
+                answer_count=Count("answers", filter=Q(answers__is_hidden=False), distinct=True),
+            )
+            .filter(interest_total__gte=POPULAR_MIN_INTERESTS)
+            .order_by("-interest_total", "answer_count", "-created_at", "-pk")
+            .first()
+        )
+        if popular is not None:
+            return popular
 
     return (
         questions

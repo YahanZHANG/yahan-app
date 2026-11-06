@@ -16,5 +16,6 @@ urlpatterns = [
     path("ask/", views.ask, name="ask"),
     path("done/", views.done, name="done"),
     path("done/signup/", views.done_signup, name="done_signup"),
+    path("done/share/", views.done_share, name="done_share"),
     path("again/", views.again, name="again"),
 ]

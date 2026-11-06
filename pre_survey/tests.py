@@ -1,12 +1,15 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from travel.models import UserProfile
 
-from .models import Answer, FeatureWish, Interest, Participant, Question, Skip
+from .models import Answer, FeatureWish, Interest, Participant, Question, ShareOffer, Skip
 from .services import current_consent, suggest_username
 
 
@@ -367,6 +370,35 @@ class DeliveryTests(FlowMixin, TestCase):
         self.act(fresh, "answer")
         self.assertIn(self.current(), [skipped, other])
 
+    def test_popular_question_every_third_regardless_of_theme(self):
+        popular = make_question("popular work", theme="work")
+        lonely = make_question("one vote", theme="work")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        Interest.objects.create(question=lonely, browser_token=uuid.uuid4())
+        for i in range(4):
+            make_question(f"life {i}")
+
+        self.join(themes=("life",))
+        order = []
+        while (question := self.current()) is not None and len(order) < 4:
+            order.append(question.body)
+            self.act(question, "answer")
+        self.assertEqual(order[2], "popular work")
+        self.assertNotIn("one vote", order[:4])
+        self.assertTrue(all(body.startswith("life") for body in order[:2] + order[3:]))
+
+    def test_popular_question_not_given_to_someone_who_wants_to_know_too(self):
+        popular = make_question("popular")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        for i in range(3):
+            make_question(f"life {i}")
+        self.join()
+        self.act(popular, "interest")
+        self.act(self.current(), "answer")
+        self.assertNotEqual(self.current(), popular)
+
     def test_regional_questions(self):
         zurich = make_question("zurich", region="zurich")
         make_question("geneva", region="geneva")
@@ -389,6 +421,38 @@ class DeliveryTests(FlowMixin, TestCase):
         self.assertEqual(self.current(other), asked)
         self.act(asked, "answer", "Migros にあります", client=other)
         self.assertEqual(asked.answers.get().body, "Migros にあります")
+
+    def test_new_member_question_emails_admin(self):
+        from unittest import mock
+        from django.core import mail
+        from django.test import override_settings
+
+        class RunNow:
+            def __init__(self, target, args, daemon):
+                self.target, self.args = target, args
+
+            def start(self):
+                self.target(*self.args)
+
+        self.join()
+        with override_settings(ADMIN_NOTIFICATION_EMAIL="boss@example.com"), \
+                mock.patch("pre_survey.alerts.threading.Thread", RunNow):
+            self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "おすすめの歯医者は？"})
+            # 二度押しではメールも増えない
+            self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "おすすめの歯医者は？"})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("おすすめの歯医者は？", mail.outbox[0].subject)
+        self.assertIn("/admin/pre_survey/question/", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].to, ["boss@example.com"])
+
+    def test_member_question_reaches_other_regions(self):
+        self.join(region="zurich")
+        self.client.post(reverse("pre_survey:ask"), {"theme": "life", "body": "お土産は何を買う？"})
+        question = Question.objects.get(source="member")
+        self.assertEqual(question.region, "")
+        other = self.client_class()
+        self.join(client=other, region="geneva")
+        self.assertEqual(self.current(other), question)
 
     def test_hidden_member_question_is_not_delivered(self):
         self.join(themes=("shopping",))
@@ -471,6 +535,46 @@ class AccountTests(FlowMixin, TestCase):
         self.assertEqual(Question.objects.get(source="member").user, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
+    def test_share_offer_asks_giver_to_sign_up_then_links_account(self):
+        question = make_question("Q1")
+        self.join(name="さくら")
+        self.act(question, "answer")
+        response = self.client.post(
+            reverse("pre_survey:done_share"),
+            {"kinds": ["give", "borrow"], "item_give": "ベビーカー", "item_borrow": "", "item_lend": "無視"},
+        )
+        self.assertRedirects(response, reverse("pre_survey:done") + "#signup", fetch_redirect_response=False)
+        self.assertEqual(
+            sorted(ShareOffer.objects.values_list("kind", "item")),
+            [("borrow", ""), ("give", "ベビーカー")],
+        )
+        # 二重送信しても増えない
+        self.client.post(reverse("pre_survey:done_share"), {"kinds": ["give"], "item_give": "ベビーカー"})
+        self.assertEqual(ShareOffer.objects.count(), 2)
+
+        response = self.client.get(reverse("pre_survey:done"))
+        self.assertContains(response, "公開の日にお知らせできるよう")
+        self.assertContains(response, "ベビーカー")
+
+        self.client.post(
+            reverse("pre_survey:done_signup"),
+            {"username": "さくら", "password1": PASSWORD, "password2": PASSWORD},
+        )
+        user = User.objects.get(username="さくら")
+        self.assertEqual(ShareOffer.objects.filter(user=user).count(), 2)
+
+    def test_share_offer_only_wanting_does_not_push_signup(self):
+        self.join()
+        response = self.client.post(reverse("pre_survey:done_share"), {"kinds": ["want"], "item_want": "こたつ"})
+        self.assertRedirects(response, reverse("pre_survey:done") + "#share", fetch_redirect_response=False)
+        response = self.client.get(reverse("pre_survey:done"))
+        self.assertContains(response, "よければ、このままYappに登録もできます")
+
+    def test_share_offer_needs_a_tick(self):
+        self.join()
+        self.client.post(reverse("pre_survey:done_share"), {"item_give": "本"})
+        self.assertFalse(ShareOffer.objects.exists())
+
     def test_taken_nickname_gets_another_suggestion(self):
         self.make_public_user(username="さくら")
         self.join(name="さくら")
@@ -500,6 +604,31 @@ class AccountTests(FlowMixin, TestCase):
         self.assertEqual(suggest_username("🌸"), ("", False))
 
 
+class NicknameTests(TestCase):
+
+    def test_names_come_from_one_set(self):
+        from .services import NICKNAME_SETS, random_nickname
+        combos = {h + t for heads, tails in NICKNAME_SETS for h in heads for t in tails}
+        self.assertEqual(len(combos), 300)
+        for _ in range(50):
+            self.assertIn(random_nickname(), combos)
+
+    def test_used_names_are_avoided(self):
+        from . import services
+        taken = "もちもちラクレット"
+        Participant.objects.create(
+            browser_token=uuid.uuid4(), nickname=taken, nickname_mode="auto",
+            consent_version="v1", consented_at=timezone.now(),
+        )
+        picks = iter([taken, taken, "星降るカフェ"])
+        original = services._nickname_candidate
+        services._nickname_candidate = lambda: next(picks)
+        try:
+            self.assertEqual(services.random_nickname(), "星降るカフェ")
+        finally:
+            services._nickname_candidate = original
+
+
 class AdminTests(FlowMixin, TestCase):
 
     def setUp(self):
@@ -509,13 +638,23 @@ class AdminTests(FlowMixin, TestCase):
     def test_admin_lists_and_sorts(self):
         question = make_question("Q1")
         Answer.objects.create(question=question, body="A1")
-        for name in ["question", "answer", "participant"]:
+        ShareOffer.objects.create(kind="give", item="ベビーカー")
+        for name in ["question", "answer", "participant", "shareoffer"]:
             response = self.client.get(reverse(f"admin:pre_survey_{name}_changelist"))
             self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse("admin:pre_survey_question_changelist") + "?o=7")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse("admin:pre_survey_question_change", args=[question.pk]))
         self.assertContains(response, "A1")
+
+    def test_popular_filter(self):
+        popular = make_question("popular one")
+        make_question("quiet one")
+        for _ in range(2):
+            Interest.objects.create(question=popular, browser_token=uuid.uuid4())
+        response = self.client.get(reverse("admin:pre_survey_question_changelist") + "?popular=2")
+        self.assertContains(response, "popular one")
+        self.assertNotContains(response, "quiet one")
 
     def test_status_actions(self):
         question = make_question("Q1")
