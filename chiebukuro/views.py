@@ -25,6 +25,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from . import avatar as avatar_art
+from .japan_calendar import JST as JAPAN_TZ
+from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
     THEME_CHOICES,
@@ -249,6 +251,7 @@ def home(request):
     region = current_region(request)
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     season = BoardSettings.current().season(timezone.localdate())
+    cal = today_info()
 
     response = render(
         request,
@@ -265,6 +268,9 @@ def home(request):
             "today": timezone.localdate(),
             "hero_time": hero_time(),
             "hero_season": season,
+            "cal": cal,
+            "moon_d": moon_path(330, 54, 15, cal["lit"], cal["waxing"]),
+            "japan_now": timezone.now().astimezone(JAPAN_TZ),
             "season_label": SEASON_LABELS.get(season, ""),
         },
     )
@@ -1534,6 +1540,11 @@ def profile_edit(request):
             "error": error,
         },
     )
+
+
+@board_open
+def rules(request):
+    return render(request, "chiebukuro/rules.html", board_context(request, "me"))
 
 
 def avatar_preview(request):

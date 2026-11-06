@@ -1349,3 +1349,36 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 @media (prefers-reduced-motion: reduce) {
     .cb-bat, .cb-leaves, .cb-petals, .cb-lights circle, .cb-twinkle, .cb-fw { animation: none !important; }
 }
+
+/* v5.4: 日本の時刻・六曜・月、見やすいカード、為替は1つのカードに */
+.cb-hero-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.cb-meta-chip {
+    display: inline-flex; align-items: baseline; gap: 4px;
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(12, 22, 42, .42);
+    border: 1px solid rgba(255, 255, 255, .18);
+    font-size: 12.5px; font-weight: 600; text-shadow: none;
+}
+.cb-meta-chip b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cb-meta-chip small { font-size: 11px; opacity: .85; }
+.cb-rokuyo { font-weight: 800; letter-spacing: .08em; }
+.cb-rokuyo-大安 { background: rgba(200, 16, 46, .85); border-color: rgba(255, 255, 255, .35); }
+
+/* 半透明のままだと読みにくいので、濃いすりガラスに */
+.cb-today-chip {
+    background: rgba(12, 22, 42, .5);
+    border: 1px solid rgba(255, 255, 255, .2);
+    box-shadow: 0 6px 20px rgba(0, 10, 30, .18);
+}
+.cb-hero[data-sky="snow"] .cb-today-chip { background: rgba(12, 22, 42, .55); }
+.cb-today-fx { gap: 14px; flex-wrap: nowrap; }
+.cb-fx { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.cb-fx + .cb-fx { padding-left: 14px; border-left: 1px solid rgba(255, 255, 255, .25); }
+.cb-moon.is-full path { filter: drop-shadow(0 0 6px #FFF3C4); }
+
+.cb-rules-mobile { margin: 10px 0 0; background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cb-rules-mobile summary { padding: 12px 16px; font-size: 14px; font-weight: 800; cursor: pointer; }
+.cb-rules-mobile .cb-rules-list { margin: 0; padding: 0 16px 14px 34px; }
+.cb-rules-list { font-size: 13.5px; line-height: 1.7; color: var(--text); }
+.cb-rules .cb-rules-list { padding-left: 20px; font-size: 15px; }
+@media (min-width: 1220px) { .cb-rules-mobile { display: none; } }

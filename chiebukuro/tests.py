@@ -679,3 +679,24 @@ class SeasonTests(BoardTestCase):
         self.assertContains(response, "🎄 アドベント")
         self.assertContains(response, "cb-hero-md")
         self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")
+
+
+class JapanCalendarTests(TestCase):
+
+    def test_lunar_new_year_and_leap_month(self):
+        import datetime
+
+        from chiebukuro.japan_calendar import lunar_date, rokuyo
+
+        self.assertEqual(lunar_date(datetime.date(2026, 2, 17)), (1, 1, False))
+        self.assertEqual(rokuyo(datetime.date(2026, 2, 17)), "先勝")  # 旧暦1月1日はいつも先勝
+        self.assertEqual(lunar_date(datetime.date(2025, 10, 6)), (8, 15, False))  # 中秋の名月
+        self.assertEqual(lunar_date(datetime.date(2023, 3, 22)), (2, 1, True))  # 閏2月
+
+    def test_full_moon(self):
+        import datetime
+
+        from chiebukuro.japan_calendar import moon
+
+        self.assertEqual(moon(datetime.datetime(2026, 11, 24, 15, tzinfo=datetime.timezone.utc))["name"], "満月")
+        self.assertEqual(moon(datetime.datetime(2026, 11, 9, 12, tzinfo=datetime.timezone.utc))["emoji"], "🌑")

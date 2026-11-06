@@ -109,7 +109,21 @@
 </section>
 {% endif %}
 
+<details class="cb-rules-mobile">
+    <summary>この掲示板のルール</summary>
+    {% include "chiebukuro/_rules.html" %}
+</details>
+
 <script>
+(function () {
+    // 日本の時刻 (端末の時計から、30秒ごとに)
+    var clock = document.getElementById("cb-japan-time");
+    if (clock && window.Intl) {
+        var format = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", minute: "2-digit", hour12: false });
+        var tick = function () { clock.textContent = format.format(new Date()); };
+        tick(); setInterval(tick, 30000);
+    }
+})();
 (function () {
     var box = document.getElementById("cb-today");
     if (!box || !window.fetch) return;

@@ -80,12 +80,7 @@
         </form>
         <section class="cb-aside-box">
             <h2>この掲示板のルール</h2>
-            <ul>
-                <li>お金のやりとり（売り買い）はしません</li>
-                <li>受け渡しは対面で。住所や電話番号は書かない</li>
-                <li>連絡は、品物・告知ごとの「2人だけのやりとり」で</li>
-                <li>困ったときは「通報」から運営へ</li>
-            </ul>
+            {% include "chiebukuro/_rules.html" %}
         </section>
         {% endblock %}
     </aside>
