@@ -115,7 +115,7 @@ class HomeTests(BoardTestCase):
         Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
         Item.objects.create(kind="give", genre="kids", title="写真なしの椅子", owner=self.bob)
         response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["今週の知恵袋", "今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "あなたの知恵を貸してください"]:
+        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "あなたの知恵を貸してください"]:
             self.assertContains(response, text)
         # つぶやきの新着・写真のないゆずりあいは HOME に出さない
         self.assertNotContains(response, "Coop に枝豆がありました")
@@ -648,3 +648,34 @@ class FaceTests(BoardTestCase):
         response = self.client.get(reverse("chiebukuro:avatar_preview") + "?av_bg=red&av_hair=cap")
         self.assertEqual(response["Content-Type"], "image/svg+xml")
         self.assertContains(response, "#E45B63")
+
+
+class SeasonTests(BoardTestCase):
+
+    def test_auto_season_by_date(self):
+        import datetime
+
+        from chiebukuro.models import BoardSettings
+
+        board = BoardSettings.current()
+        self.assertEqual(board.season(datetime.date(2026, 10, 25)), "halloween")
+        self.assertEqual(board.season(datetime.date(2026, 12, 10)), "christmas")
+        self.assertEqual(board.season(datetime.date(2027, 1, 3)), "newyear")
+        self.assertEqual(board.season(datetime.date(2026, 8, 1)), "nationalday")
+        self.assertEqual(board.season(datetime.date(2026, 6, 10)), "")
+        board.hero_season = "none"
+        self.assertEqual(board.season(datetime.date(2026, 12, 10)), "")
+        board.hero_season = "spring"
+        self.assertEqual(board.season(datetime.date(2026, 6, 10)), "spring")
+
+    def test_home_hero_shows_big_date_and_season(self):
+        from chiebukuro.models import BoardSettings
+
+        board = BoardSettings.current()
+        board.hero_season = "christmas"
+        board.save()
+        response = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(response, 'data-season="christmas"')
+        self.assertContains(response, "🎄 アドベント")
+        self.assertContains(response, "cb-hero-md")
+        self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")

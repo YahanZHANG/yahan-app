@@ -248,6 +248,7 @@ def home(request):
 
     region = current_region(request)
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
+    season = BoardSettings.current().season(timezone.localdate())
 
     response = render(
         request,
@@ -263,12 +264,23 @@ def home(request):
             "waiting": waiting_questions(region=region, limit=3),
             "today": timezone.localdate(),
             "hero_time": hero_time(),
+            "hero_season": season,
+            "season_label": SEASON_LABELS.get(season, ""),
         },
     )
     if not voter_key and not request.user.is_authenticated:
         response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
     return response
 
+
+SEASON_LABELS = {
+    "spring": "🌸 お花見の季節",
+    "nationalday": "🇨🇭 8月1日は建国記念日",
+    "halloween": "🎃 ハロウィン",
+    "autumn": "🍁 紅葉の季節",
+    "christmas": "🎄 アドベント",
+    "newyear": "🎍 お正月",
+}
 
 SKY_BY_EMOJI = {"☀️": "clear", "🌤️": "clear", "⛅": "clear", "☁️": "cloudy", "🌫️": "cloudy",
                 "🌦️": "rain", "🌧️": "rain", "⛈️": "rain", "🌨️": "snow", "❄️": "snow"}

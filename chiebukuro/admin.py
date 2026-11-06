@@ -34,8 +34,8 @@ from .services import import_from_survey
 @admin.register(BoardSettings)
 class BoardSettingsAdmin(admin.ModelAdmin):
 
-    list_display = ["__str__", "is_open", "updated_at"]
-    list_editable = ["is_open"]
+    list_display = ["__str__", "is_open", "hero_season", "updated_at"]
+    list_editable = ["is_open", "hero_season"]
     list_display_links = ["__str__"]
     change_list_template = "admin/chiebukuro/boardsettings/change_list.html"
 

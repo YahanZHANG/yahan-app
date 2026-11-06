@@ -1312,3 +1312,40 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 }
 .cb-hero[data-sky="snow"]::before, .cb-hero[data-sky="cloudy"]::before { background: linear-gradient(100deg, rgba(10, 25, 55, .42) 0%, rgba(10, 25, 55, .15) 60%, transparent 85%); }
 .cb-hero[data-sky="snow"] .cb-today-chip, .cb-hero[data-sky="snow"] .cb-regionbar { background: rgba(30, 50, 80, .28); }
+
+/* v5.3: 大きな日付・季節とイベントのデザイン */
+.cb-hero-date { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0; letter-spacing: 0; opacity: 1; }
+.cb-hero-md { font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: .01em; font-feature-settings: "palt"; }
+.cb-hero-md small { font-size: 20px; font-weight: 800; margin: 0 4px 0 2px; }
+.cb-hero-wd { font-size: 16px; font-weight: 800; letter-spacing: .1em; }
+.cb-hero-season { flex-basis: 100%; font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+@media (min-width: 900px) { .cb-hero-md { font-size: 58px; } .cb-hero-md small { font-size: 24px; } }
+
+.cb-ev { display: none; }
+.cb-hero[data-season="halloween"] .cb-ev-halloween,
+.cb-hero[data-season="autumn"] .cb-ev-autumn,
+.cb-hero[data-season="christmas"] .cb-ev-christmas,
+.cb-hero[data-season="newyear"] .cb-ev-newyear,
+.cb-hero[data-season="nationalday"] .cb-ev-nationalday,
+.cb-hero[data-season="spring"] .cb-ev-spring { display: inline; }
+.cb-hero[data-season="halloween"] .cb-sun, .cb-hero[data-season="halloween"] .cb-moon { display: none; }
+.cb-hero[data-season="halloween"] { --sky1: #2A1F4E; --sky2: #8E5A8C; --m1: #4A3D6E; --m2: #3A2F5C; --h1: #3E4C3A; --h2: #2E3A2C; --tree: #1F2A1E; }
+.cb-hero[data-season="autumn"] { --tree: #D2652A; --h1: #B9A55A; --h2: #9C8C46; }
+.cb-hero[data-season="christmas"] { --h1: #F1F5F9; --h2: #DCE5EE; --tree: #2F6B4A; }
+.cb-hero[data-season="christmas"] .cb-snowfall { display: inline; animation: cb-snow 6s linear infinite; }
+.cb-hero[data-season="newyear"] { --sky1: #12204A; --sky2: #4B4F8A; --h1: #E8EEF5; --h2: #D3DDE8; }
+.cb-hero[data-season="newyear"] .cb-sun { display: none; }
+.cb-hero[data-season="spring"] { --h1: #9ED08F; --h2: #7BBE6F; }
+.cb-bat { animation: cb-flap 1.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.cb-bat-2 { animation-duration: 1.1s; }
+@keyframes cb-flap { from { transform: translate(0, 0) scaleY(1); } to { transform: translate(12px, -6px) scaleY(.6); } }
+.cb-leaves, .cb-petals { animation: cb-snow 7s linear infinite; }
+.cb-lights circle, .cb-twinkle { animation: cb-twinkle 1.2s ease-in-out infinite alternate; }
+.cb-lights circle:nth-child(2n) { animation-delay: .6s; }
+.cb-fw { transform-box: fill-box; transform-origin: center; animation: cb-burst 2.4s ease-out infinite; }
+.cb-fw-b { animation-delay: .8s; }
+.cb-fw-c { animation-delay: 1.6s; }
+@keyframes cb-burst { 0% { opacity: 0; scale: .2; } 20% { opacity: 1; } 70% { opacity: .9; scale: 1.2; } 100% { opacity: 0; scale: 1.4; } }
+@media (prefers-reduced-motion: reduce) {
+    .cb-bat, .cb-leaves, .cb-petals, .cb-lights circle, .cb-twinkle, .cb-fw { animation: none !important; }
+}

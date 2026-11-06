@@ -33,6 +33,23 @@ class BoardSettings(models.Model):
         default=False,
         help_text="オフの間は、運営 (スタッフ) だけが見られます。ほかの人には「準備中」の画面が出ます。",
     )
+    SEASON_CHOICES = [
+        ("auto", "自動（時期に合わせる）"),
+        ("none", "いつものデザイン"),
+        ("spring", "春（桜）"),
+        ("nationalday", "スイス建国記念日（8月1日）"),
+        ("halloween", "ハロウィン"),
+        ("autumn", "秋（紅葉）"),
+        ("christmas", "クリスマス"),
+        ("newyear", "お正月"),
+    ]
+    hero_season = models.CharField(
+        "HOME上部の季節のデザイン",
+        max_length=20,
+        choices=SEASON_CHOICES,
+        default="auto",
+        help_text="自動: 春 4/1〜4/25、建国記念日 7/25〜8/1、ハロウィン 10/18〜10/31、秋 11月、クリスマス 12/1〜12/26、お正月 12/30〜1/7",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -46,6 +63,28 @@ class BoardSettings(models.Model):
     def current(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def season(self, today):
+        """HOME上部に使う季節のデザイン ("" ならいつもの)"""
+
+        if self.hero_season == "none":
+            return ""
+        if self.hero_season != "auto":
+            return self.hero_season
+        month, day = today.month, today.day
+        if month == 4 and day <= 25:
+            return "spring"
+        if (month == 7 and day >= 25) or (month == 8 and day == 1):
+            return "nationalday"
+        if month == 10 and day >= 18:
+            return "halloween"
+        if month == 11:
+            return "autumn"
+        if month == 12 and day <= 26:
+            return "christmas"
+        if (month == 12 and day >= 30) or (month == 1 and day <= 7):
+            return "newyear"
+        return ""
 
 
 class Status(models.TextChoices):
