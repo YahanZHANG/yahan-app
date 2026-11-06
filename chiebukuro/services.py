@@ -414,28 +414,6 @@ def weekend_outings(limit=4):
 FEATURE_DAYS = 7
 
 
-def week_stats(region=""):
-    """この1週間の数 (HOME の上の帯)"""
-
-    from datetime import timedelta
-
-    from django.utils import timezone
-
-    from .models import Item, Post
-
-    since = timezone.now() - timedelta(days=FEATURE_DAYS)
-
-    def narrow(queryset, field="region"):
-        return queryset.filter(Q(**{field: region}) | Q(**{field: ""})) if region else queryset
-
-    return {
-        "questions": narrow(Question.objects.filter(status=Status.PUBLISHED, created_at__gte=since).exclude(source=Question.Source.STAFF)).count(),
-        "answers": narrow(Answer.objects.filter(status=Status.PUBLISHED, created_at__gte=since, from_survey=False), "question__region").count(),
-        "posts": narrow(Post.objects.filter(status=Status.PUBLISHED, created_at__gte=since)).count(),
-        "items": narrow(Item.objects.filter(status=Status.PUBLISHED, created_at__gte=since)).count(),
-    }
-
-
 def featured_this_week(limit=3):
     """
     今週の注目: 運営が選んだもの (home_pick) を先に、そのあと1週間の反応が多い順。
@@ -555,12 +533,10 @@ def news_headlines(limit=3):
         from news.models import Article
 
         since = timezone.now() - timedelta(hours=36)
-        articles = (
-            Article.objects.filter(duplicate_of__isnull=True, published_at__gte=since)
-            .exclude(title_ja="")
-            .order_by("-is_featured", "-published_at")[:limit]
-        )
-        return list(articles)
+        shown = Article.objects.filter(duplicate_of__isnull=True).exclude(title_ja="")
+        articles = list(shown.filter(published_at__gte=since).order_by("-is_featured", "-published_at")[:limit])
+        # 新しいニュースが少ないとき (更新が止まっている・手元の DB など) は、最新のものを出す
+        return articles or list(shown.order_by("-published_at")[:limit])
     except Exception:
         logger.exception("news headlines for the board failed")
         return []

@@ -11,12 +11,6 @@
     </div>
     <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite"></div>
     <div class="cb-hero-foot">
-        <ul class="cb-stats" aria-label="この1週間">
-            <li><b>{{ stats.questions }}</b>質問</li>
-            <li><b>{{ stats.answers }}</b>回答</li>
-            <li><b>{{ stats.posts }}</b>つぶやき</li>
-            <li><b>{{ stats.items }}</b>ゆずりあい</li>
-        </ul>
         {% include "chiebukuro/_region.html" %}
     </div>
 </section>

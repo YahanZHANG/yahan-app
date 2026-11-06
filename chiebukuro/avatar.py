@@ -24,6 +24,7 @@ SKINS = [
     ("4", "濃いめ", "#A8704A"),
 ]
 HAIRS = [
+    ("mid", "ミディアム"),
     ("short", "ショート"),
     ("side", "七三"),
     ("bob", "ボブ"),
@@ -76,7 +77,7 @@ PART_LABELS = [
     ("mouth", "口"),
     ("extra", "ほっぺ・ひげ"),
 ]
-DEFAULT = {"bg": "sky", "skin": "2", "hair": "short", "hair_color": "black", "glasses": "none", "mouth": "smile", "extra": "none"}
+DEFAULT = {"bg": "sky", "skin": "2", "hair": "mid", "hair_color": "black", "glasses": "none", "mouth": "smile", "extra": "none"}
 
 SHIRTS = {
     "sky": "#3C6E91", "mint": "#3F7F5B", "peach": "#B5643E", "lemon": "#8C7A2E",
@@ -109,6 +110,10 @@ def _color(options, key):
 def _hair(style, color):
     """(顔より後ろの髪, 顔より前の髪)"""
 
+    if style == "mid":
+        back = f'<path d="M21 60 C18 29 34 18 50 18 C66 18 82 29 79 60 C79 67 76 69 72 69 L28 69 C24 69 21 67 21 60Z" fill="{color}"/>'
+        front = f'<path d="M25 53 C24 31 38 23 50 23 C62 23 76 31 75 53 C71 46 65 40 59 37 C52 43 39 46 25 53Z" fill="{color}"/>'
+        return back, front
     if style == "short":
         return "", f'<path d="M25 55 C22 30 37 21 50 21 C64 21 79 30 75 55 C72 43 64 35 50 35 C37 35 29 42 25 55Z" fill="{color}"/>'
     if style == "side":
@@ -189,7 +194,7 @@ def svg(parts, title=""):
     back, front = _hair(parts["hair"], hair_color)
     label = f"<title>{escape(title)}</title>" if title else ""
     brow = "" if parts["glasses"] == "sun" else (
-        f'<path d="M36 49 Q41 46.5 46 49 M54 49 Q59 46.5 64 49" fill="none" stroke="{hair_color}" stroke-width="2" stroke-linecap="round" opacity=".85"/>'
+        f'<path d="M36 49 Q41 46.5 46 49 M54 49 Q59 46.5 64 49" fill="none" stroke="{hair_color}" stroke-width="1.5" stroke-linecap="round" opacity=".7"/>'
     )
     eyes = "" if parts["glasses"] == "sun" else '<circle cx="41" cy="57" r="2.7" fill="#2B2522"/><circle cx="59" cy="57" r="2.7" fill="#2B2522"/>'
     return (
