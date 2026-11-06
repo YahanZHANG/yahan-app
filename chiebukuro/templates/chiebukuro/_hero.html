@@ -1,6 +1,7 @@
 {# HOME のいちばん上: スイスの山の景色。空の色は時間 (昼・夜) と今日の天気 (晴れ・くもり・雨・雪) で変わる #}
 <section class="cb-hero" id="cb-hero" data-time="{{ hero_time }}" data-sky="clear" data-season="{{ hero_season }}">
-    <svg class="cb-hero-scene" viewBox="0 0 400 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+<div class="cb-scene">
+        <svg class="cb-hero-scene" viewBox="0 0 400 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
         <defs>
             <linearGradient id="cbSky" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" style="stop-color: var(--sky1)"/>
@@ -17,10 +18,10 @@
             <circle cx="262" cy="18" r="1"/><circle cx="300" cy="62" r=".8"/><circle cx="352" cy="34" r="1.1"/><circle cx="380" cy="80" r=".7"/>
             <circle cx="120" cy="90" r=".7"/><circle cx="20" cy="76" r=".8"/>
         </g>
-        <g class="cb-sun"><circle cx="330" cy="58" r="42" fill="url(#cbGlow)"/><circle cx="330" cy="58" r="17" fill="#FFE9A8"/></g>
+        <g class="cb-sun"><circle cx="330" cy="84" r="42" fill="url(#cbGlow)"/><circle cx="330" cy="84" r="17" fill="#FFE9A8"/></g>
         <g class="cb-moon{% if cal.name == '満月' %} is-full{% endif %}">
-            <circle cx="330" cy="54" r="{% if cal.name == '満月' %}44{% else %}30{% endif %}" fill="url(#cbGlow)" opacity="{% if cal.name == '満月' %}.8{% else %}.4{% endif %}"/>
-            <circle cx="330" cy="54" r="15" fill="#FFFFFF" opacity=".12"/>
+            <circle cx="330" cy="84" r="{% if cal.name == '満月' %}44{% else %}30{% endif %}" fill="url(#cbGlow)" opacity="{% if cal.name == '満月' %}.8{% else %}.4{% endif %}"/>
+            <circle cx="330" cy="84" r="15" fill="#FFFFFF" opacity=".12"/>
             {% if moon_d %}<path d="{{ moon_d }}" fill="#FFF3C4"/>{% endif %}
         </g>
         <g class="cb-clouds">
@@ -45,7 +46,7 @@
         <path d="M0 214 C80 202 160 206 230 214 C300 222 350 210 400 212 L400 240 L0 240Z" style="fill: var(--h2)"/>
         {# ===== 季節・イベント (data-season で出し分け) ===== #}
         <g class="cb-ev cb-ev-halloween">
-            <circle cx="330" cy="58" r="26" fill="#FFB347"/><circle cx="322" cy="52" r="4" fill="#F39A2E" opacity=".6"/>
+            <circle cx="330" cy="84" r="26" fill="#FFB347"/><circle cx="322" cy="52" r="4" fill="#F39A2E" opacity=".6"/>
             <path class="cb-bat" d="M250 60 q6 -6 10 0 q4 -5 8 0 q4 -6 10 0 q-6 2 -9 6 q-3 -3 -5 0 q-3 -4 -5 0 q-3 -4 -9 -6z" fill="#1B1430"/>
             <path class="cb-bat cb-bat-2" d="M200 30 q5 -5 8 0 q3 -4 6 0 q3 -5 8 0 q-5 2 -7 5 q-2 -3 -4 0 q-2 -3 -4 0 q-2 -3 -7 -5z" fill="#1B1430"/>
             <g transform="translate(232 204)"><ellipse cx="0" cy="0" rx="12" ry="9" fill="#F28C28"/><path d="M-4 -9 q2 -6 6 -6" stroke="#3B6B2A" stroke-width="2" fill="none"/><path d="M-6 -2 l3 -3 l3 3z M3 -2 l3 -3 l3 3z M-5 3 q5 4 10 0" fill="#3A1B06"/></g>
@@ -82,15 +83,25 @@
             <circle cx="280" cy="80" r="1.4"/><circle cx="330" cy="24" r="2"/><circle cx="370" cy="64" r="1.6"/><circle cx="60" cy="120" r="1.5"/><circle cx="200" cy="130" r="1.8"/><circle cx="340" cy="120" r="1.4"/>
         </g>
     </svg>
-    <div class="cb-hero-in">
-        <p class="cb-hero-date"><span class="cb-hero-md">{{ today|date:"n" }}<small>月</small>{{ today|date:"j" }}<small>日</small></span><span class="cb-hero-wd">{{ today|date:"D" }}曜日</span></p>
-        <p class="cb-hero-meta">
-            <span class="cb-meta-chip" title="日本の時刻"><span aria-hidden="true">🇯🇵</span>日本 <b id="cb-japan-time" data-epoch="{{ japan_now|date:'U' }}">{{ japan_now|date:"G:i" }}</b><small>（{{ japan_now|date:"D" }}）</small></span>
-            {% if cal.rokuyo %}<span class="cb-meta-chip cb-rokuyo cb-rokuyo-{{ cal.rokuyo }}" title="六曜（日本の暦）">{{ cal.rokuyo }}</span>{% endif %}
-            <span class="cb-meta-chip" title="月齢 {{ cal.age }}"><span aria-hidden="true">{{ cal.emoji }}</span>{{ cal.name }}<small>月齢{{ cal.age|floatformat:0 }}</small></span>
-            {% if season_label %}<span class="cb-meta-chip">{{ season_label }}</span>{% endif %}
-        </p>
-        <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite"></div>
+        {% if season_label %}<span class="cb-scene-badge">{{ season_label }}</span>{% endif %}
+    </div>
+    <div class="cb-hero-panel">
+        <div class="cb-hero-top">
+            <p class="cb-hero-date"><span class="cb-hero-md">{{ today|date:"n" }}<small>月</small>{{ today|date:"j" }}<small>日</small></span><span class="cb-hero-wd">{{ today|date:"D" }}曜日</span></p>
+            <p class="cb-jptime" title="日本の時刻">🇯🇵 日本<b id="cb-japan-time">{{ japan_now|date:"G:i" }}</b>（{{ japan_now|date:"D" }}）</p>
+        </div>
+        <div class="cb-tiles">
+            <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite">
+                <div class="cb-tile2"><span class="cb-tile2-cap">天気</span><span class="cb-tile2-wait">読みこみ中…</span></div>
+                <div class="cb-tile2"><span class="cb-tile2-cap">為替</span><span class="cb-tile2-wait">読みこみ中…</span></div>
+            </div>
+            <div class="cb-tile2 cb-rokuyo-{{ cal.rokuyo }}">
+                <span class="cb-tile2-cap">日本の暦</span>
+                <span class="cb-rokuyo-big">{{ cal.rokuyo|default:"—" }}</span>
+                <span class="cb-tile2-sub" title="月齢 {{ cal.age }}">{{ cal.emoji }} {{ cal.name }}</span>
+                <span class="cb-tile2-sub">月齢 {{ cal.age|floatformat:0 }}</span>
+            </div>
+        </div>
         <div class="cb-hero-foot">{% include "chiebukuro/_region.html" %}</div>
     </div>
 </section>

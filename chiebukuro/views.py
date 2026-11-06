@@ -269,7 +269,7 @@ def home(request):
             "hero_time": hero_time(),
             "hero_season": season,
             "cal": cal,
-            "moon_d": moon_path(330, 54, 15, cal["lit"], cal["waxing"]),
+            "moon_d": moon_path(330, 84, 15, cal["lit"], cal["waxing"]),
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
             "season_label": SEASON_LABELS.get(season, ""),
         },
