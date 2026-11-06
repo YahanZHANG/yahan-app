@@ -1,0 +1,48 @@
+{% extends "chiebukuro/base.html" %}
+{% load static %}
+{% block title %}通知と表示の設定 | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+<h1 class="cb-page-title">通知と表示の設定</h1>
+
+<section class="cb-block">
+    <header class="cb-block-head"><h2>この端末のプッシュ通知</h2></header>
+    <button type="button" id="cb-push-toggle" class="cb-menurow cb-switchrow" aria-pressed="false">
+        {% include "chiebukuro/_icon.html" with name="bell" %}
+        <span><strong>プッシュ通知を受け取る</strong><small id="cb-push-description">確認しています…</small></span>
+        <span class="cb-switch" aria-hidden="true"></span>
+    </button>
+    <p class="cb-push-test" id="cb-push-test" hidden><span role="status"></span><button type="button" class="cb-btn cb-btn-s">テスト通知を送る</button></p>
+</section>
+
+<form method="post" class="cb-settings">
+    {% csrf_token %}
+    <section class="cb-block cb-block-pad">
+        <h2 class="cb-form-title">プッシュ通知の頻度</h2>
+        {% for value, label in frequencies %}
+            <label class="cb-radio"><input type="radio" name="push_frequency" value="{{ value }}" {% if board_profile.push_frequency == value %}checked{% endif %}> {{ label }}</label>
+        {% endfor %}
+        <h2 class="cb-form-title cb-mt">知らせてほしいこと</h2>
+        {% for field, label, on in toggles %}
+            <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
+        {% endfor %}
+        <p class="cb-sub">右上の🔔には、設定にかかわらず全部のお知らせが出ます。</p>
+    </section>
+    <section class="cb-block cb-block-pad">
+        <h2 class="cb-form-title">表示</h2>
+        {% for value, label in themes %}
+            <label class="cb-radio"><input type="radio" name="theme" value="{{ value }}" {% if theme == value %}checked{% endif %}> {% if value == "dark" %}ダークモード{% elif value == "light" %}ライトモード{% else %}端末の設定に合わせる{% endif %}</label>
+        {% endfor %}
+        <p class="cb-sub">Yappのほかのアプリ（Swiss News など）にも同じ設定が使われます。</p>
+    </section>
+    <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
+</form>
+
+<span id="cb-push-config" hidden
+    data-public-key="{{ vapid_public_key }}"
+    data-csrf-token="{{ csrf_token }}"
+    data-subscribe-url="{% url 'chiebukuro:push_subscribe' %}"
+    data-unsubscribe-url="{% url 'chiebukuro:push_unsubscribe' %}"
+    data-test-url="{% url 'chiebukuro:push_test' %}"></span>
+<script src="{% static 'chiebukuro/push.js' %}" defer></script>
+{% endblock %}

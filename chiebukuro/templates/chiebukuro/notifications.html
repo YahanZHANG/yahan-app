@@ -2,18 +2,19 @@
 {% load board %}
 {% block title %}お知らせ | スイス生活の知恵袋{% endblock %}
 {% block content %}
-<h1 class="cb-page-title">お知らせ</h1>
+<h1 class="cb-page-title cb-title-row">お知らせ{% if user.is_authenticated %}<a href="{% url 'chiebukuro:settings' %}" class="cb-btn cb-btn-s">通知の設定</a>{% endif %}</h1>
 <section class="cb-block cb-block-flat">
     {% for row in rows %}
+        {% ifchanged row.group %}<h2 class="cb-group">{{ row.group }}</h2>{% endifchanged %}
         <a href="{{ row.url }}" class="cb-notif {% if not row.read_at %}is-unread{% endif %}">
-            <span class="cb-notif-icon cb-notif-{{ row.kind }}" aria-hidden="true">{% if row.kind == "answer" %}{% include "chiebukuro/_icon.html" with name="questions" %}{% elif row.kind == "reply" %}{% include "chiebukuro/_icon.html" with name="posts" %}{% else %}{% include "chiebukuro/_icon.html" with name="items" %}{% endif %}</span>
+            <span class="cb-notif-icon cb-notif-{{ row.kind }}" aria-hidden="true">{% if row.kind == "answer" %}{% include "chiebukuro/_icon.html" with name="questions" %}{% elif row.kind == "stamp" %}☺{% elif row.kind == "reply" %}{% include "chiebukuro/_icon.html" with name="posts" %}{% else %}{% include "chiebukuro/_icon.html" with name="items" %}{% endif %}</span>
             <span class="cb-notif-main">
                 <span>{% if row.actor %}<b>{{ row.actor }}</b>さん：{% endif %}{{ row.text }}</span>
                 <span class="cb-sub">{{ row.created_at|ago }}</span>
             </span>
         </a>
     {% empty %}
-        <p class="cb-empty">まだお知らせはありません。質問に答えがついたとき、つぶやきに返信があったとき、やりとりにメッセージが届いたときに、ここに出ます。</p>
+        <p class="cb-empty">まだお知らせはありません。質問に答えがついたとき、つぶやきに返信やスタンプがあったとき、やりとりにメッセージが届いたときに、ここに出ます。</p>
     {% endfor %}
 </section>
 {% endblock %}

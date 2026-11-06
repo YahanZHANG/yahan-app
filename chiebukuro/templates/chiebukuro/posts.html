@@ -6,7 +6,7 @@
 <h1 class="cb-page-title">つぶやき</h1>
 
 {% if user.is_authenticated %}
-<form method="post" action="{% url 'chiebukuro:post_new' %}" class="cb-compose" id="compose">
+<form method="post" action="{% url 'chiebukuro:post_new' %}" enctype="multipart/form-data" class="cb-compose" id="compose">
     {% csrf_token %}
     <span class="cb-av {{ user.pk|avatar }}" aria-hidden="true">{{ user.profile.display_name|default:user.username|initial }}</span>
     <div class="cb-compose-main">
@@ -21,6 +21,7 @@
                 <option value="">地域なし</option>
                 {% for value, label in regions %}<option value="{{ value }}" {% if region == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
             </select>
+            <label class="cb-photo-icon" title="写真を付ける"><span aria-hidden="true">📷</span><span class="cb-sr">写真を付ける</span><input type="file" name="photo" accept="image/*"></label>
             <span class="cb-left" id="compose-left" aria-live="polite"></span>
             <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">つぶやく</button>
         </div>

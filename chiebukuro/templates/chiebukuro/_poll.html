@@ -1,0 +1,27 @@
+<section class="cb-poll" id="poll{{ poll.pk }}">
+    <p class="cb-poll-label">みんなのアンケート{% if poll.total %}<span>{{ poll.total }}人が回答</span>{% endif %}</p>
+    <h3 class="cb-poll-q">{{ poll.question }}</h3>
+    {% if poll.my_choice_id %}
+        <ul class="cb-poll-result">
+            {% for row in poll.rows %}
+                <li class="{% if row.mine %}is-mine{% endif %}">
+                    <span class="cb-poll-bar" style="width: {{ row.percent }}%"></span>
+                    <span class="cb-poll-text">{{ row.choice.label }}{% if row.mine %}<small>（あなた）</small>{% endif %}</span>
+                    <b>{{ row.percent }}%</b>
+                </li>
+            {% endfor %}
+        </ul>
+        <p class="cb-poll-note">選び直すときは、下からもう一度選べます。</p>
+        <form method="post" action="{% url 'chiebukuro:poll_vote' poll.pk %}" class="cb-poll-revote">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <select name="choice" aria-label="選び直す">{% for row in poll.rows %}<option value="{{ row.choice.pk }}" {% if row.mine %}selected{% endif %}>{{ row.choice.label }}</option>{% endfor %}</select>
+            <button type="submit" class="cb-btn cb-btn-s">選び直す</button>
+        </form>
+    {% else %}
+        <form method="post" action="{% url 'chiebukuro:poll_vote' poll.pk %}" class="cb-poll-choices">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% for row in poll.rows %}<button type="submit" name="choice" value="{{ row.choice.pk }}">{{ row.choice.label }}</button>{% endfor %}
+        </form>
+        <p class="cb-poll-note">ログインなしで答えられます。答えると結果が見られます。</p>
+    {% endif %}
+</section>

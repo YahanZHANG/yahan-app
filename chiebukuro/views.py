@@ -9,13 +9,14 @@ import logging
 from datetime import date
 from functools import wraps
 
+from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -36,16 +37,29 @@ from .models import (
     Message,
     Notice,
     Notification,
+    STAMPS,
+    Poll,
+    PollChoice,
+    PollVote,
     Post,
-    PostLike,
     PostReply,
+    PushDevice,
     Question,
+    Reaction,
     Report,
+    Sponsor,
     Status,
     Thanks,
 )
 from .services import (
+    attach_stamps,
     best_answers,
+    current_sponsor,
+    my_votes,
+    poll_for_home,
+    poll_result,
+    recent_activity,
+    weekend_outings,
     notify,
     question_list,
     short,
@@ -154,6 +168,7 @@ def board_context(request, tab, region=None):
         "region": region or "",
         "region_label": REGION_LABELS.get(region or "", ""),
         "regions": BOARD_REGION_CHOICES,
+        "stamp_list": STAMPS,
     }
 
 
@@ -166,30 +181,41 @@ def my_talks(user):
     )
 
 
-def upload_board_photo(uploaded_file):
+def upload_board_photo(uploaded_file, folder="items"):
     """写真を小さくして Cloudinary に保存 (和食・おでかけと同じ仕組み)"""
 
     from outings.services.user_event_cloudinary import upload_user_event_photo
     from outings.services.user_event_images import process_user_event_image
 
     processed = process_user_event_image(uploaded_file, max_size=1200, quality=78)
-    return upload_user_event_photo(processed, folder="yapp/board/items", filename="photo.webp")
+    return upload_user_event_photo(processed, folder=f"yapp/board/{folder}", filename="photo.webp")
+
+
+PHOTO_ERROR = "写真を保存できませんでした。写真なしで送るか、別の写真を選んでください。"
+
+
+def take_photo(request, folder):
+    """フォームの写真 (任意) を保存して (URL, エラー) を返す。写真がなければ ("", "")"""
+
+    photo = request.FILES.get("photo")
+    if not photo:
+        return "", ""
+    try:
+        return upload_board_photo(photo, folder), ""
+    except (ValidationError, Exception):
+        logger.exception("board photo upload failed")
+        return "", PHOTO_ERROR
 
 
 def annotate_posts(queryset):
     return queryset.annotate(
         reply_total=Count("replies", filter=Q(replies__status=Status.PUBLISHED), distinct=True),
-        like_total=Count("likes", distinct=True),
     )
 
 
 def mark_liked(posts, user):
-    liked = set()
-    if user.is_authenticated:
-        liked = set(PostLike.objects.filter(user=user, post__in=[post.pk for post in posts]).values_list("post_id", flat=True))
-    for post in posts:
-        post.liked = post.pk in liked
-    return posts
+    """つぶやきに押されたスタンプを付ける"""
+    return attach_stamps(posts, "post", user)
 
 
 def active_notices():
@@ -204,36 +230,82 @@ def open_items():
 # HOME: 各コーナーの新しいものを少しずつ
 # =========================================================
 
+VOTER_COOKIE = "cb_voter"
+
+
 @board_open
 def home(request):
+    """
+    HOME: 個人のニーズにかかわらず、みんなの参考になるもの
+    (アンケート・広告枠・今週末のおでかけ) と、掲示板の新着・答えを待っている質問。
+    """
+
+    import uuid
 
     region = current_region(request)
+    voter_key = request.COOKIES.get(VOTER_COOKIE, "")
 
-    posts = mark_liked(list(
-        annotate_posts(by_region(Post.objects.filter(status=Status.PUBLISHED), region))
-        .order_by("-created_at")[:4]
-    ), request.user)
-
-    waiting = waiting_questions(region=region, limit=4)
-    answered = best_answers(list(
-        question_list(region=region, sort="new").filter(answer_total__gt=0)[:4]
-    ))
-
-    items = list(by_region(open_items(), region).order_by("-created_at")[:4])
-    notices = list(by_region(active_notices(), region).order_by("-created_at")[:4])
-
-    return render(
+    response = render(
         request,
         "chiebukuro/home.html",
         {
             **board_context(request, "home", region),
-            "posts": posts,
-            "waiting": waiting,
-            "answered": answered,
-            "items": items,
-            "notices": notices,
+            "poll": poll_for_home(request, voter_key),
+            "sponsor": current_sponsor(),
+            "outings": weekend_outings(),
+            "activity": recent_activity(region, limit=8),
+            "waiting": waiting_questions(region=region, limit=3),
         },
     )
+    if not voter_key and not request.user.is_authenticated:
+        response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
+    return response
+
+
+@board_open
+@require_POST
+def poll_vote(request, pk):
+    """アンケートに答える (ログインなしでも、ブラウザごとに1票)。答え直しもできる"""
+
+    poll = get_object_or_404(Poll, pk=pk)
+    choice = poll.choices.filter(pk=request.POST.get("choice") or 0).first()
+    voter_key = request.COOKIES.get(VOTER_COOKIE, "")
+    if choice and (request.user.is_authenticated or voter_key):
+        votes = PollVote.objects.filter(poll=poll)
+        votes = votes.filter(user=request.user) if request.user.is_authenticated else votes.filter(user__isnull=True, voter_key=voter_key)
+        vote = votes.first()
+        if vote:
+            vote.choice = choice
+            vote.save(update_fields=["choice"])
+        else:
+            PollVote.objects.create(
+                poll=poll,
+                choice=choice,
+                user=request.user if request.user.is_authenticated else None,
+                voter_key="" if request.user.is_authenticated else voter_key[:40],
+            )
+    return redirect(safe_next(request, reverse("chiebukuro:home")) + f"#poll{poll.pk}")
+
+
+@board_open
+def poll_list(request):
+
+    voter_key = request.COOKIES.get(VOTER_COOKIE, "")
+    polls = list(Poll.objects.prefetch_related("choices")[:30])
+    mine = my_votes(request, voter_key, [poll.pk for poll in polls])
+    for poll in polls:
+        poll_result(poll, mine.get(poll.pk))
+    return render(request, "chiebukuro/polls.html", {**board_context(request, "home"), "polls": polls})
+
+
+def sponsor_click(request, pk):
+    """広告のクリックを数えてから、広告主のページへ"""
+
+    from django.db.models import F
+
+    sponsor = get_object_or_404(Sponsor, pk=pk)
+    Sponsor.objects.filter(pk=pk).update(clicks=F("clicks") + 1)
+    return redirect(sponsor.link)
 
 
 # =========================================================
@@ -282,10 +354,13 @@ def post_new(request):
             error = f"つぶやきは{POST_MAX_LENGTH}文字までです。"
         else:
             recent = Post.objects.filter(author=request.user, body=body).first()
+            photo_url, error = ("", "") if recent else take_photo(request, "posts")
+        if not error:
             post = recent or Post.objects.create(
                 body=body,
                 theme=theme,
                 region=region,
+                photo_url=photo_url,
                 author=request.user,
                 nickname=user_nickname(request.user),
             )
@@ -321,7 +396,11 @@ def post_detail(request, pk):
             return redirect(login_url(request))
         body = (request.POST.get("body") or "").strip()[:ANSWER_MAX_LENGTH]
         if body and not post.replies.filter(author=request.user, body=body).exists():
-            PostReply.objects.create(post=post, body=body, author=request.user, nickname=user_nickname(request.user))
+            photo_url, error = take_photo(request, "replies")
+            if error:
+                messages.error(request, error)
+                return redirect(reverse("chiebukuro:post", args=[pk]) + "#replies")
+            PostReply.objects.create(post=post, body=body, photo_url=photo_url, author=request.user, nickname=user_nickname(request.user))
             notify(
                 post.author,
                 Notification.Kind.REPLY,
@@ -331,8 +410,9 @@ def post_detail(request, pk):
             )
         return redirect(reverse("chiebukuro:post", args=[pk]) + "#replies")
 
-    post.liked = request.user.is_authenticated and post.likes.filter(user=request.user).exists()
-    post.like_total = post.likes.count()
+    post.reply_total = post.replies.filter(status=Status.PUBLISHED).count()
+    attach_stamps([post], "post", request.user)
+    replies = attach_stamps(list(post.replies.filter(status=Status.PUBLISHED).select_related("author")), "reply", request.user)
 
     return render(
         request,
@@ -340,26 +420,47 @@ def post_detail(request, pk):
         {
             **board_context(request, "posts", current_region(request)),
             "post": post,
-            "replies": post.replies.filter(status=Status.PUBLISHED),
+            "replies": replies,
             "login_url": login_url(request),
         },
     )
 
 
+STAMP_LABELS = {key: (emoji, label) for key, emoji, label in STAMPS}
+
+
 @board_open
 @require_POST
 @login_required
-def toggle_post_like(request, pk):
+def stamp(request):
+    """スタンプを押す・取り消す (つぶやき・返信・回答)。自分の書きこみには押せない"""
 
-    post = get_object_or_404(Post, pk=pk, status=Status.PUBLISHED)
-    if post.author_id != request.user.pk:
-        deleted, _ = PostLike.objects.filter(post=post, user=request.user).delete()
+    target = request.POST.get("target", "")
+    key = request.POST.get("stamp", "")
+    target_id = request.POST.get("target_id", "")
+    models_by_target = {"post": Post, "reply": PostReply, "answer": Answer}
+    if target not in models_by_target or key not in STAMP_LABELS or not target_id.isdigit():
+        raise Http404
+    obj = get_object_or_404(models_by_target[target], pk=int(target_id), status=Status.PUBLISHED)
+    author = obj.author
+    fallback = {
+        "post": lambda: reverse("chiebukuro:post", args=[obj.pk]),
+        "reply": lambda: reverse("chiebukuro:post", args=[obj.post_id]) + f"#r{obj.pk}",
+        "answer": lambda: reverse("chiebukuro:question", args=[obj.question_id]) + f"#a{obj.pk}",
+    }[target]()
+
+    if author is None or author.pk != request.user.pk:
+        deleted, _ = Reaction.objects.filter(target=target, target_id=obj.pk, user=request.user, stamp=key).delete()
         if not deleted:
             try:
-                PostLike.objects.create(post=post, user=request.user)
+                Reaction.objects.create(target=target, target_id=obj.pk, user=request.user, stamp=key, target_author=author)
             except IntegrityError:
                 pass
-    return redirect(safe_next(request, reverse("chiebukuro:post", args=[pk])))
+            else:
+                emoji, label = STAMP_LABELS[key]
+                what = {"post": "つぶやき", "reply": "返信", "answer": "回答"}[target]
+                notify(author, Notification.Kind.STAMP, f"あなたの{what}「{short(obj.body, 20)}」に {emoji}{label}", fallback, actor=request.user)
+    return redirect(safe_next(request, fallback))
 
 
 @board_open
@@ -447,9 +548,13 @@ def question_detail(request, pk):
             error = f"答えは{ANSWER_MAX_LENGTH}文字までです。"
         else:
             # 二度押し: 同じ人の同じ答えがもうあれば追加しない
-            if not question.answers.filter(author=request.user, body=draft).exists():
+            exists = question.answers.filter(author=request.user, body=draft).exists()
+            photo_url, error = ("", "") if exists else take_photo(request, "answers")
+        if not error:
+            if not exists:
                 answer = Answer.objects.create(
                     question=question,
+                    photo_url=photo_url,
                     body=draft,
                     author=request.user,
                     nickname=user_nickname(request.user),
@@ -465,6 +570,7 @@ def question_detail(request, pk):
         .annotate(thanks_total=Count("thanks"))
         .order_by("-thanks_total", "created_at")
     )
+    attach_stamps(answers, "answer", request.user)
     best_answer = answers[0] if answers and answers[0].thanks_total > 0 else None
     thanked = set()
     interested = False
@@ -536,8 +642,13 @@ def ask(request):
             error = "テーマを選んでください。"
         else:
             question = Question.objects.filter(author=request.user, body=body).first()
+            photo_url = ""
+            if question is None:
+                photo_url, error = take_photo(request, "questions")
+        if not error:
             if question is None:
                 question = Question.objects.create(
+                    photo_url=photo_url,
                     body=body,
                     theme=theme,
                     region=region,
@@ -670,8 +781,6 @@ def item_new(request):
             "item_region": clean_choice(request.POST.get("item_region", ""), BOARD_REGION_CHOICES),
             "place": (request.POST.get("place") or "").strip()[:80],
         }
-        photo = request.FILES.get("photo")
-
         if not values["title"]:
             error = "品物の名前を入力してください。"
         elif len(values["title"]) > ITEM_TITLE_MAX_LENGTH:
@@ -683,13 +792,7 @@ def item_new(request):
         elif request.POST.get("agree") != "yes":
             error = "ルールを確認して、チェックを入れてください。"
         else:
-            photo_url = ""
-            if photo:
-                try:
-                    photo_url = upload_board_photo(photo)
-                except (ValidationError, Exception):
-                    logger.exception("board photo upload failed")
-                    error = "写真を保存できませんでした。写真なしで出すか、別の写真を選んでください。"
+            photo_url, error = take_photo(request, "items")
             if not error:
                 item = Item.objects.create(
                     kind=kind,
@@ -931,7 +1034,10 @@ def notice_new(request):
         elif request.POST.get("agree") != "yes":
             error = "ルールを確認して、チェックを入れてください。"
         else:
+            photo_url, error = take_photo(request, "notices")
+        if not error:
             notice = Notice.objects.create(
+                photo_url=photo_url,
                 kind=values["kind"],
                 title=values["title"],
                 body=values["body"],
@@ -1130,6 +1236,10 @@ def notifications(request):
 
     rows = list(Notification.objects.filter(user=request.user)[:60])
     Notification.objects.filter(user=request.user, read_at__isnull=True).update(read_at=timezone.now())
+    today = timezone.localdate()
+    for row in rows:
+        day = timezone.localdate(row.created_at)
+        row.group = "今日" if day == today else ("昨日" if (today - day).days == 1 else ("この1週間" if (today - day).days < 7 else "それより前"))
 
     return render(
         request,
@@ -1141,24 +1251,10 @@ def notifications(request):
 @board_open
 @login_required
 def my_page(request):
+    """マイページ: 和食と同じ「メニューの一覧」の形。中身は各ページで"""
 
     user = request.user
     talks = list(my_talks(user))
-    for talk_request in talks:
-        talk_request.unread = talk_request.unread_for(user)
-        talk_request.other = talk_request.other_name(user)
-        talk_request.mine = talk_request.owner_id == user.pk
-
-    my_questions = (
-        Question.objects.filter(author=user, status=Status.PUBLISHED)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
-        .order_by("-created_at")[:30]
-    )
-    wanted = (
-        Question.objects.filter(interests__user=user, status=Status.PUBLISHED)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
-        .order_by("-last_answered_at")[:30]
-    )
     board_profile = BoardProfile.objects.filter(user=user).first()
 
     return render(
@@ -1166,16 +1262,170 @@ def my_page(request):
         "chiebukuro/me.html",
         {
             **board_context(request, "me"),
-            "talks": talks,
-            "my_questions": my_questions,
-            "wanted": wanted,
-            "my_items": Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).order_by("-created_at")[:30],
-            "my_notices": Notice.objects.filter(owner=user, status=Status.PUBLISHED).order_by("-created_at")[:5],
+            "nickname": user_nickname(user),
             "home_region": REGION_LABELS.get(board_profile.region, "") if board_profile else "",
             "intro": board_profile.intro if board_profile else "",
-            "nickname": user_nickname(user),
+            "counts": {
+                "talks": len(talks),
+                "unread_talks": sum(1 for talk_request in talks if talk_request.unread_for(user)),
+                "posts": Post.objects.filter(author=user, status=Status.PUBLISHED).count(),
+                "questions": Question.objects.filter(author=user, status=Status.PUBLISHED).count(),
+                "answers": Answer.objects.filter(author=user, status=Status.PUBLISHED).count(),
+                "wanted": Interest.objects.filter(user=user, question__status=Status.PUBLISHED).count(),
+                "items": Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).count()
+                + Notice.objects.filter(owner=user, status=Status.PUBLISHED).count(),
+            },
         },
     )
+
+
+MY_SECTIONS = {
+    "talks": "2人だけのやりとり",
+    "posts": "自分のつぶやき",
+    "questions": "自分の質問",
+    "answers": "自分の回答",
+    "wanted": "私も知りたい質問",
+    "items": "出しているもの",
+}
+
+
+@board_open
+@login_required
+def my_list(request, section):
+
+    if section not in MY_SECTIONS:
+        raise Http404
+    user = request.user
+    context = {**board_context(request, "me"), "section": section, "section_title": MY_SECTIONS[section]}
+
+    if section == "talks":
+        talks = list(my_talks(user))
+        for talk_request in talks:
+            talk_request.unread = talk_request.unread_for(user)
+            talk_request.other = talk_request.other_name(user)
+            talk_request.mine = talk_request.owner_id == user.pk
+        context["talks"] = talks
+    elif section == "posts":
+        context["posts"] = mark_liked(list(
+            annotate_posts(Post.objects.filter(author=user, status=Status.PUBLISHED)).select_related("author").order_by("-created_at")[:50]
+        ), user)
+    elif section in ("questions", "wanted"):
+        questions = Question.objects.filter(status=Status.PUBLISHED)
+        questions = questions.filter(author=user) if section == "questions" else questions.filter(interests__user=user)
+        context["questions"] = list(
+            questions.annotate(
+                answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+                interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
+            ).order_by("-created_at")[:50]
+        )
+    elif section == "answers":
+        context["answers"] = list(
+            Answer.objects.filter(author=user, status=Status.PUBLISHED, question__status=Status.PUBLISHED)
+            .select_related("question").order_by("-created_at")[:50]
+        )
+    else:
+        context["items"] = list(Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).order_by("-created_at")[:50])
+        context["notices"] = list(Notice.objects.filter(owner=user, status=Status.PUBLISHED).order_by("-created_at")[:10])
+
+    return render(request, "chiebukuro/my_list.html", context)
+
+
+@board_open
+@login_required
+def settings_view(request):
+    """設定: 表示 (ダークモード) と、プッシュ通知の頻度・種類"""
+
+    from travel.models import UserProfile
+
+    board_profile, _ = BoardProfile.objects.get_or_create(user=request.user)
+    yapp_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    toggles = ["push_answer", "push_reply", "push_stamp", "push_talk"]
+
+    if request.method == "POST":
+        theme = request.POST.get("theme", "")
+        if theme in dict(UserProfile.THEME_CHOICES):
+            yapp_profile.theme_preference = theme
+            yapp_profile.save(update_fields=["theme_preference"])
+        frequency = request.POST.get("push_frequency", "")
+        if frequency in BoardProfile.PushFrequency.values:
+            board_profile.push_frequency = frequency
+        for field in toggles:
+            setattr(board_profile, field, request.POST.get(field) == "1")
+        board_profile.save()
+        messages.success(request, "設定を保存しました。")
+        return redirect("chiebukuro:settings")
+
+    return render(
+        request,
+        "chiebukuro/settings.html",
+        {
+            **board_context(request, "me"),
+            "board_profile": board_profile,
+            "theme": yapp_profile.theme_preference,
+            "themes": UserProfile.THEME_CHOICES,
+            "frequencies": BoardProfile.PushFrequency.choices,
+            "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
+            "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
+        },
+    )
+
+
+@login_required
+@require_POST
+def push_subscribe(request):
+
+    from django.http import JsonResponse
+
+    from news.push_views import parse_subscription
+
+    data = parse_subscription(request)
+    if data is None:
+        return JsonResponse({"error": "Invalid subscription."}, status=400)
+    PushDevice.objects.update_or_create(
+        endpoint=data["endpoint"],
+        defaults={"user": request.user, "p256dh": data["p256dh"], "auth": data["auth"]},
+    )
+    return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+def push_unsubscribe(request):
+
+    import json
+
+    from django.http import JsonResponse
+
+    try:
+        endpoint = json.loads(request.body).get("endpoint")
+    except (ValueError, UnicodeDecodeError, AttributeError):
+        endpoint = None
+    if not isinstance(endpoint, str) or not endpoint:
+        return JsonResponse({"error": "Invalid endpoint."}, status=400)
+    PushDevice.objects.filter(endpoint=endpoint, user=request.user).delete()
+    return JsonResponse({"success": True})
+
+
+@login_required
+@require_POST
+def push_test(request):
+
+    import json
+
+    from django.http import JsonResponse
+
+    from .push import send
+
+    try:
+        endpoint = json.loads(request.body).get("endpoint")
+    except (ValueError, UnicodeDecodeError, AttributeError):
+        endpoint = None
+    devices = list(PushDevice.objects.filter(user=request.user, endpoint=endpoint or ""))
+    if not devices:
+        return JsonResponse({"error": "Not subscribed."}, status=404)
+    if not send(devices, "テスト通知です", "この通知が見えていれば、知恵袋の通知は届きます。", reverse("chiebukuro:settings"), "chiebukuro-test"):
+        return JsonResponse({"error": "Send failed."}, status=502)
+    return JsonResponse({"success": True})
 
 
 @board_open
@@ -1242,7 +1492,7 @@ def profile(request, username):
     items = list(Item.objects.filter(owner=person, status=Status.PUBLISHED).exclude(state=Item.State.DONE)[:30])
     helpful = (
         Thanks.objects.filter(answer__author=person).count()
-        + PostLike.objects.filter(post__author=person).count()
+        + Reaction.objects.filter(target_author=person).count()
     )
     board_profile = BoardProfile.objects.filter(user=person).first()
 

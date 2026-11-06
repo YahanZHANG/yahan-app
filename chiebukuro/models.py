@@ -61,6 +61,7 @@ class Question(models.Model):
         SURVEY = "survey", "事前アンケート"
 
     body = models.TextField("質問")
+    photo_url = models.URLField("写真", max_length=500, blank=True)
     theme = models.CharField("テーマ", max_length=20, choices=THEME_CHOICES, default=Theme.LIFE)
     region = models.CharField("地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
     source = models.CharField("作成者", max_length=10, choices=Source.choices, default=Source.MEMBER)
@@ -102,6 +103,7 @@ class Answer(models.Model):
 
     question = models.ForeignKey(Question, verbose_name="質問", on_delete=models.CASCADE, related_name="answers")
     body = models.TextField("答え")
+    photo_url = models.URLField("写真", max_length=500, blank=True)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="投稿者",
@@ -277,6 +279,7 @@ class Notice(models.Model):
     kind = models.CharField("種類", max_length=20, choices=Kind.choices)
     title = models.CharField("タイトル", max_length=80)
     body = models.TextField("内容")
+    photo_url = models.URLField("写真", max_length=500, blank=True)
     region = models.CharField("地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
     place = models.CharField("場所", max_length=80, blank=True)
     event_date = models.DateField("日にち", null=True, blank=True)
@@ -328,6 +331,17 @@ class BoardProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_profile")
     region = models.CharField("住んでいる地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
     intro = models.CharField("ひとこと", max_length=160, blank=True)
+
+    class PushFrequency(models.TextChoices):
+        INSTANT = "instant", "すぐに知らせる"
+        DAILY = "daily", "1日1回まとめて（夜7時）"
+        OFF = "off", "プッシュ通知はしない"
+
+    push_frequency = models.CharField("プッシュ通知の頻度", max_length=10, choices=PushFrequency.choices, default=PushFrequency.INSTANT)
+    push_answer = models.BooleanField("自分の質問・知りたい質問に答えがついたとき", default=True)
+    push_reply = models.BooleanField("つぶやきに返信があったとき", default=True)
+    push_stamp = models.BooleanField("スタンプが押されたとき", default=False)
+    push_talk = models.BooleanField("2人だけのやりとりにメッセージが来たとき", default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -346,6 +360,7 @@ class Notification(models.Model):
         REPLY = "reply", "返信"
         TALK = "talk", "やりとり"
         CHOSEN = "chosen", "相手に決まった"
+        STAMP = "stamp", "スタンプ"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_notifications")
     kind = models.CharField(max_length=10, choices=Kind.choices)
@@ -448,6 +463,7 @@ class Post(models.Model):
     """つぶやき。テーマと地域のタグを付けると、あとから検索で見つかる。"""
 
     body = models.TextField("つぶやき")
+    photo_url = models.URLField("写真", max_length=500, blank=True)
     theme = models.CharField("テーマ", max_length=20, choices=THEME_CHOICES, blank=True)
     region = models.CharField("地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_posts")
@@ -472,6 +488,7 @@ class PostReply(models.Model):
 
     post = models.ForeignKey(Post, verbose_name="つぶやき", on_delete=models.CASCADE, related_name="replies")
     body = models.TextField("返信")
+    photo_url = models.URLField("写真", max_length=500, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_post_replies")
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
@@ -490,14 +507,121 @@ class PostReply(models.Model):
         return self.nickname or "名無しさん"
 
 
-class PostLike(models.Model):
-    """つぶやきへの「役に立った」"""
+# スタンプ (つぶやき・返信・回答に押せる)。key は変えない (データに残るため)
+STAMPS = [
+    ("helpful", "💡", "役に立った"),
+    ("like", "👍", "いいね"),
+    ("thanks", "🙏", "ありがとう"),
+    ("agree", "🤝", "わかる"),
+    ("laugh", "😂", "笑った"),
+    ("cheer", "📣", "応援してる"),
+]
+STAMP_CHOICES = [(key, f"{emoji} {label}") for key, emoji, label in STAMPS]
 
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_post_likes")
+
+class Reaction(models.Model):
+    """スタンプ。1人が同じものに同じスタンプを押せるのは1回 (違うスタンプは複数OK)"""
+
+    class Target(models.TextChoices):
+        POST = "post", "つぶやき"
+        REPLY = "reply", "返信"
+        ANSWER = "answer", "回答"
+
+    target = models.CharField(max_length=10, choices=Target.choices)
+    target_id = models.PositiveIntegerField()
+    stamp = models.CharField(max_length=20, choices=STAMP_CHOICES)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_reactions")
+    target_author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="chie_reactions_received"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "役に立った (つぶやき)"
-        verbose_name_plural = "役に立った (つぶやき)"
-        constraints = [models.UniqueConstraint(fields=["post", "user"], name="chie_post_like_once")]
+        verbose_name = "スタンプ"
+        verbose_name_plural = "スタンプ"
+        indexes = [models.Index(fields=["target", "target_id"])]
+        constraints = [
+            models.UniqueConstraint(fields=["target", "target_id", "user", "stamp"], name="chie_reaction_once"),
+        ]
+
+
+class Poll(models.Model):
+    """HOME の「みんなのアンケート」(運営が管理画面で作る)"""
+
+    question = models.CharField("質問", max_length=120)
+    is_active = models.BooleanField("HOME に出す", default=True)
+    created_at = models.DateTimeField("作成日時", default=timezone.now)
+
+    class Meta:
+        verbose_name = "アンケート"
+        verbose_name_plural = "アンケート"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.question
+
+
+class PollChoice(models.Model):
+
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="choices")
+    label = models.CharField("選択肢", max_length=60)
+    order = models.PositiveSmallIntegerField("並び順", default=0)
+
+    class Meta:
+        verbose_name = "選択肢"
+        verbose_name_plural = "選択肢"
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return self.label
+
+
+class PollVote(models.Model):
+    """1つのアンケートに1票。ログインしていない人はブラウザごと (cookie)"""
+
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="votes")
+    choice = models.ForeignKey(PollChoice, on_delete=models.CASCADE, related_name="votes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    voter_key = models.CharField(max_length=40, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "アンケートの票"
+        verbose_name_plural = "アンケートの票"
+
+
+class Sponsor(models.Model):
+    """HOME の広告枠 (運営が管理画面で入れる)。期間中のものから1つ出す"""
+
+    name = models.CharField("広告主", max_length=80)
+    title = models.CharField("見出し", max_length=80)
+    text = models.CharField("ひとこと", max_length=160, blank=True)
+    link = models.URLField("リンク先", max_length=500)
+    image_url = models.URLField("画像のURL", max_length=500, blank=True)
+    starts_on = models.DateField("開始日", default=timezone.localdate)
+    ends_on = models.DateField("終了日", null=True, blank=True)
+    is_active = models.BooleanField("出す", default=True)
+    clicks = models.PositiveIntegerField("クリック数", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "広告枠"
+        verbose_name_plural = "広告枠"
+        ordering = ["-starts_on"]
+
+    def __str__(self):
+        return f"{self.name}: {self.title}"
+
+
+class PushDevice(models.Model):
+    """プッシュ通知を受け取る端末 (Service Worker と鍵は Swiss News・和食と共通)"""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_push_devices")
+    endpoint = models.TextField(unique=True)
+    p256dh = models.TextField()
+    auth = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "プッシュ通知の端末"
+        verbose_name_plural = "プッシュ通知の端末"

@@ -11,8 +11,8 @@ from pre_survey.models import Interest as SurveyInterest
 from pre_survey.models import Question as SurveyQuestion
 
 from .models import (
-    Answer, BoardProfile, BoardSettings, Interest, Item, ItemRequest, Message, Notice, Notification, Post, PostLike,
-    PostReply, Question, Report, Thanks,
+    Answer, BoardProfile, BoardSettings, Interest, Item, ItemRequest, Message, Notice, Notification, Poll, PollChoice, PollVote,
+    Post, PostReply, Question, Reaction, Report, Sponsor, Thanks,
 )
 from .services import import_from_survey
 
@@ -110,8 +110,9 @@ class HomeTests(BoardTestCase):
         Answer.objects.create(question=answered, body="これが答え")
         Item.objects.create(kind="want", genre="kids", title="スキーブーツ", owner=self.bob)
         Notice.objects.create(kind="event", title="読み聞かせ会", body="毎月", owner=self.bob)
+        Answer.objects.create(question=answered, body="新しい回答です", author=self.bob, nickname="bob")
         response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["Coop に枝豆がありました", "答え待ちの質問", "答えのある質問", "これが答え", "スキーブーツ", "読み聞かせ会"]:
+        for text in ["Coop に枝豆がありました", "答え待ちの質問", "新しい回答です", "スキーブーツ", "読み聞かせ会"]:
             self.assertContains(response, text)
         # 下のメニュー: 本は出さない、つぶやきは出す
         for label in ["つぶやき", "質問", "ゆずりあい", "募集・告知"]:
@@ -292,8 +293,8 @@ class ItemTests(BoardTestCase):
         # 出した人に🔔、マイページにやりとり
         self.client.force_login(self.alice)
         response = self.client.get(reverse("chiebukuro:me"))
-        self.assertContains(response, "ベビーカー")
         self.assertEqual(response.context["unread"], 1)
+        self.assertContains(self.client.get(reverse("chiebukuro:my_list", args=["talks"])), "ベビーカー")
 
         response = self.client.get(reverse("chiebukuro:talk", args=[talk.pk]))
         self.assertContains(response, "ほしいです")
@@ -386,7 +387,7 @@ class NoticeTests(BoardTestCase):
         self.assertTrue(Notification.objects.filter(user=self.alice, kind="talk").exists())
         self.assertContains(self.client.get(reverse("chiebukuro:talk", args=[talk.pk])), "見学できますか？")
         self.client.force_login(self.alice)
-        self.assertContains(self.client.get(reverse("chiebukuro:me")), "書道教室")
+        self.assertContains(self.client.get(reverse("chiebukuro:my_list", args=["items"])), "書道教室")
 
         # 取り下げると、すぐ新しく出せる
         self.client.post(reverse("chiebukuro:notice_withdraw", args=[notice.pk]))
@@ -421,12 +422,14 @@ class PostTests(BoardTestCase):
         self.client.post(reverse("chiebukuro:post", args=[post.pk]), {"body": "どこの店舗ですか？"})
         self.assertEqual(PostReply.objects.get().author, self.bob)
         self.assertTrue(Notification.objects.filter(user=self.alice, kind="reply").exists())
-        self.client.post(reverse("chiebukuro:post_like", args=[post.pk]), {"next": "https://evil.example/"})
-        self.assertTrue(PostLike.objects.filter(user=self.bob).exists())
+        response = self.client.post(reverse("chiebukuro:stamp"), {"target": "post", "target_id": post.pk, "stamp": "helpful", "next": "https://evil.example/"})
+        self.assertEqual(response["Location"], reverse("chiebukuro:post", args=[post.pk]))
+        self.assertTrue(Reaction.objects.filter(user=self.bob, stamp="helpful").exists())
+        self.assertTrue(Notification.objects.filter(user=self.alice, kind="stamp").exists())
 
         response = self.client.get(reverse("chiebukuro:profile", args=["alice"]))
         self.assertContains(response, "Migros にお餅がありました")
-        self.assertContains(response, "役に立った 1")
+        self.assertContains(response, "<b>1</b>役に立った", html=False)
 
         # 消すのは本人だけ
         self.client.post(reverse("chiebukuro:delete_post", args=[post.pk]))
@@ -470,3 +473,114 @@ class PostTests(BoardTestCase):
         ]
         for url in urls:
             self.assertEqual(self.client.get(url).status_code, 200, url)
+
+
+class HomeExtrasTests(BoardTestCase):
+
+    def test_poll_vote_as_guest_and_member(self):
+        poll = Poll.objects.create(question="スイスで一番好きな季節は？")
+        spring = PollChoice.objects.create(poll=poll, label="春", order=1)
+        autumn = PollChoice.objects.create(poll=poll, label="秋", order=2)
+        response = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(response, "スイスで一番好きな季節は？")
+        self.assertContains(response, "答えると結果が見られます")
+        # ゲストはブラウザごとに1票 (cookie)
+        self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
+        self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})
+        self.assertEqual(PollVote.objects.get().choice, autumn)
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "100%")
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
+        self.assertEqual(PollVote.objects.count(), 2)
+        self.assertContains(self.client.get(reverse("chiebukuro:polls")), "50%")
+
+    def test_sponsor_slot_and_click(self):
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
+        sponsor = Sponsor.objects.create(name="和ショップ", title="日本の食材を宅配", link="https://example.com/")
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "日本の食材を宅配")
+        response = self.client.get(reverse("chiebukuro:sponsor", args=[sponsor.pk]))
+        self.assertEqual(response["Location"], "https://example.com/")
+        sponsor.refresh_from_db()
+        self.assertEqual(sponsor.clicks, 1)
+
+
+class StampAndSettingsTests(BoardTestCase):
+
+    def test_stamps_on_answers_and_replies(self):
+        question = Question.objects.create(body="Q", theme="life")
+        answer = Answer.objects.create(question=question, body="A", author=self.alice, nickname="alice")
+        post = Post.objects.create(body="p", author=self.alice, nickname="alice")
+        reply = PostReply.objects.create(post=post, body="r", author=self.alice, nickname="alice")
+        self.client.force_login(self.bob)
+        for target, obj in (("answer", answer), ("reply", reply)):
+            self.client.post(reverse("chiebukuro:stamp"), {"target": target, "target_id": obj.pk, "stamp": "thanks"})
+        self.client.post(reverse("chiebukuro:stamp"), {"target": "answer", "target_id": answer.pk, "stamp": "like"})
+        self.assertEqual(Reaction.objects.count(), 3)
+        response = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
+        self.assertContains(response, "<span>ありがとう</span><b>1</b>", html=False)
+        # もう一度押すと取り消し
+        self.client.post(reverse("chiebukuro:stamp"), {"target": "answer", "target_id": answer.pk, "stamp": "like"})
+        self.assertEqual(Reaction.objects.count(), 2)
+        # 自分の書きこみには押せない
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:stamp"), {"target": "answer", "target_id": answer.pk, "stamp": "like"})
+        self.assertEqual(Reaction.objects.count(), 2)
+
+    def test_settings_save_theme_and_push_choices(self):
+        from travel.models import UserProfile
+
+        self.client.force_login(self.alice)
+        self.assertContains(self.client.get(reverse("chiebukuro:settings")), "プッシュ通知の頻度")
+        self.client.post(reverse("chiebukuro:settings"), {"theme": "dark", "push_frequency": "daily", "push_answer": "1", "push_stamp": "1"})
+        profile = BoardProfile.objects.get(user=self.alice)
+        self.assertEqual((profile.push_frequency, profile.push_answer, profile.push_reply, profile.push_stamp), ("daily", True, False, True))
+        self.assertEqual(UserProfile.objects.get(user=self.alice).theme_preference, "dark")
+        self.assertContains(self.client.get(reverse("chiebukuro:me")), 'data-yapp-theme="dark"', html=False)
+
+    def test_push_follows_settings(self):
+        from unittest import mock
+
+        from chiebukuro.models import PushDevice
+        from chiebukuro.push import send_daily_digest
+
+        PushDevice.objects.create(user=self.alice, endpoint="https://push.example/a", p256dh="x", auth="y")
+        question = Question.objects.create(body="Q", theme="life", author=self.alice)
+        with mock.patch("washoku.push.is_configured", return_value=True), \
+                mock.patch("chiebukuro.push.send", return_value=1) as send, \
+                mock.patch("chiebukuro.push.threading.Thread") as thread:
+            thread.side_effect = lambda target, daemon: mock.Mock(start=target)
+            self.client.force_login(self.bob)
+            self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "答えです"})
+            self.assertEqual(send.call_count, 1)
+            self.assertIn("答えがつきました", send.call_args[0][2])
+
+            BoardProfile.objects.create(user=self.alice, push_frequency="daily")
+            self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "もうひとつ"})
+            self.assertEqual(send.call_count, 1)
+            self.assertEqual(send_daily_digest(), 1)
+            self.assertIn("未読のお知らせが2件", send.call_args[0][2])
+
+    def test_photo_on_post_and_answer(self):
+        from unittest import mock
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.client.force_login(self.alice)
+        with mock.patch("chiebukuro.views.upload_board_photo", return_value="https://res.example/p.webp"):
+            self.client.post(reverse("chiebukuro:post_new"), {"body": "写真つき", "photo": SimpleUploadedFile("a.jpg", b"x", "image/jpeg")})
+            question = Question.objects.create(body="Q", theme="life")
+            self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "写真の答え", "photo": SimpleUploadedFile("a.jpg", b"x", "image/jpeg")})
+        self.assertEqual(Post.objects.get().photo_url, "https://res.example/p.webp")
+        self.assertEqual(Answer.objects.get().photo_url, "https://res.example/p.webp")
+        self.assertContains(self.client.get(reverse("chiebukuro:posts")), "https://res.example/p.webp")
+        # 写真を保存できないときは、書きこみも残さずに知らせる
+        with mock.patch("chiebukuro.views.upload_board_photo", side_effect=Exception("down")):
+            response = self.client.post(reverse("chiebukuro:post_new"), {"body": "失敗", "photo": SimpleUploadedFile("b.jpg", b"x", "image/jpeg")})
+        self.assertContains(response, "写真を保存できませんでした")
+        self.assertEqual(Post.objects.count(), 1)
+
+    def test_my_lists(self):
+        self.client.force_login(self.alice)
+        for section in ["talks", "posts", "questions", "answers", "wanted", "items"]:
+            self.assertEqual(self.client.get(reverse("chiebukuro:my_list", args=[section])).status_code, 200, section)
+        self.assertEqual(self.client.get(reverse("chiebukuro:my_list", args=["nope"])).status_code, 404)

@@ -1,0 +1,33 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}{{ section_title }} | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+<h1 class="cb-page-title">{{ section_title }}</h1>
+<section class="cb-block cb-block-flat">
+{% if section == "talks" %}
+    {% for talk in talks %}
+        <a href="{% url 'chiebukuro:talk' talk.pk %}" class="cb-linkrow {% if talk.unread %}is-unread{% endif %}">
+            <span>{% if talk.unread %}<i class="cb-dot" aria-label="未読"></i>{% endif %}{{ talk.subject.title }}<small class="cb-sub">{{ talk.other }}さん{% if talk.mine %}・あなたが出したもの{% endif %}</small></span>
+            <span class="cb-sub">{{ talk.last_message_at|ago }}</span>
+        </a>
+    {% empty %}<p class="cb-empty">ゆずりあいや募集・告知で、メッセージを送ったり受け取ったりすると、ここに出ます。</p>{% endfor %}
+{% elif section == "posts" %}
+    {% for post in posts %}{% include "chiebukuro/_post_row.html" with clip=True %}{% empty %}<p class="cb-empty">まだつぶやいていません。</p>{% endfor %}
+{% elif section == "questions" or section == "wanted" %}
+    {% for question in questions %}{% include "chiebukuro/_question_row.html" with hide_best=True %}{% empty %}<p class="cb-empty">{% if section == "wanted" %}気になる質問で「私も知りたい」を押すと、ここに集まります。{% else %}まだ質問していません。{% endif %}</p>{% endfor %}
+{% elif section == "answers" %}
+    {% for answer in answers %}
+        <a href="{% url 'chiebukuro:question' answer.question_id %}#a{{ answer.pk }}" class="cb-arow">
+            <span class="cb-arow-q"><i>Q</i>{{ answer.question.body|truncatechars:70 }}</span>
+            <span class="cb-arow-a">{{ answer.body|truncatechars:140 }}</span>
+            <span class="cb-meta"><span>{{ answer.created_at|ago }}</span></span>
+        </a>
+    {% empty %}<p class="cb-empty">まだ回答していません。</p>{% endfor %}
+{% else %}
+    {% for item in items %}{% include "chiebukuro/_item_row.html" %}{% endfor %}
+    {% for notice in notices %}{% include "chiebukuro/_notice_row.html" %}{% endfor %}
+    {% if not items and not notices %}<p class="cb-empty">まだありません。</p>{% endif %}
+{% endif %}
+</section>
+{% endblock %}

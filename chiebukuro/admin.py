@@ -19,10 +19,13 @@ from .models import (
     ItemRequest,
     Message,
     Notice,
+    Poll,
+    PollChoice,
     Post,
     PostReply,
     Question,
     Report,
+    Sponsor,
     Status,
 )
 from .services import import_from_survey
@@ -224,3 +227,39 @@ class ReportAdmin(admin.ModelAdmin):
             return obj.target_id
         url = reverse(f"admin:chiebukuro_{names[obj.target]}_change", args=[obj.target_id])
         return format_html('<a href="{}">#{} を開く</a>', url, obj.target_id)
+
+
+class PollChoiceInline(admin.TabularInline):
+    model = PollChoice
+    extra = 4
+    fields = ["label", "order", "vote_count"]
+    readonly_fields = ["vote_count"]
+
+    @admin.display(description="票")
+    def vote_count(self, obj):
+        return obj.votes.count() if obj.pk else ""
+
+
+@admin.register(Poll)
+class PollAdmin(admin.ModelAdmin):
+    """HOME の「みんなのアンケート」。まだ答えていない新しいものから HOME に出ます"""
+
+    list_display = ["question", "is_active", "vote_total", "created_at"]
+    list_editable = ["is_active"]
+    inlines = [PollChoiceInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(votes_total=Count("votes"))
+
+    @admin.display(description="回答数", ordering="votes_total")
+    def vote_total(self, obj):
+        return obj.votes_total
+
+
+@admin.register(Sponsor)
+class SponsorAdmin(admin.ModelAdmin):
+    """HOME の広告枠。期間中のものが、日ごとに順番に出ます"""
+
+    list_display = ["name", "title", "starts_on", "ends_on", "is_active", "clicks"]
+    list_editable = ["is_active"]
+    readonly_fields = ["clicks"]

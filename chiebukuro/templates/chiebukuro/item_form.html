@@ -24,12 +24,7 @@
             <span>説明（任意）</span>
             <textarea name="body" rows="4" maxlength="{{ body_max }}" placeholder="{{ body_placeholder }}">{{ values.body }}</textarea>
         </label>
-        {% if kind == "give" or kind == "lend" %}
-        <label class="cb-field">
-            <span>写真（任意）</span>
-            <input type="file" name="photo" accept="image/*">
-        </label>
-        {% endif %}
+        {% include "chiebukuro/_photo_field.html" %}
         <div class="cb-field-row">
             <label class="cb-field"><span>地域</span>
                 <select name="item_region"><option value="">選ばない</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == values.item_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>

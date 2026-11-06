@@ -20,11 +20,13 @@
 <section class="cb-block" id="replies">
     <header class="cb-block-head"><h2>返信 {{ replies|length }}件</h2></header>
     {% for reply in replies %}
-        <article class="cb-reply">
+        <article class="cb-reply" id="r{{ reply.pk }}">
             <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{{ reply.display_name|initial }}</a>
             <div>
                 <p class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a><span class="cb-sub">{{ reply.created_at|ago }}</span></p>
                 <div class="cb-post-body">{{ reply.body|urlize|linebreaksbr }}</div>
+                {% include "chiebukuro/_photo.html" with url=reply.photo_url %}
+                {% include "chiebukuro/_stamps.html" with obj=reply target="reply" prefix="r" %}
             </div>
         </article>
     {% empty %}
@@ -32,11 +34,14 @@
     {% endfor %}
     <div class="cb-reply-form">
         {% if user.is_authenticated %}
-            <form method="post" class="cb-inline-compose">
+            <form method="post" enctype="multipart/form-data" class="cb-reply-compose">
                 {% csrf_token %}
-                <label class="cb-sr" for="reply-body">返信</label>
-                <textarea name="body" id="reply-body" rows="1" required placeholder="返信を書く" data-grow></textarea>
-                <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">返信</button>
+                <div class="cb-inline-compose">
+                    <label class="cb-sr" for="reply-body">返信</label>
+                    <textarea name="body" id="reply-body" rows="1" required placeholder="返信を書く" data-grow></textarea>
+                    <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">返信</button>
+                </div>
+                {% include "chiebukuro/_photo_field.html" %}
             </form>
         {% else %}
             <a href="{{ login_url }}" class="cb-btn cb-btn-s">ログインして返信する</a>

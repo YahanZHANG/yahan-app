@@ -6,37 +6,28 @@
     <span class="cb-av cb-av-l {{ user.pk|avatar }}" aria-hidden="true">{{ nickname|initial }}</span>
     <div class="cb-profile-text">
         <h1>{{ nickname }}</h1>
-        <p class="cb-sub">{% if home_region %}{{ home_region }}{% else %}地域は未設定{% endif %}</p>
+        <p class="cb-sub">{% if home_region %}{{ home_region }}{% else %}住んでいる地域は未設定{% endif %}</p>
         {% if intro %}<p class="cb-intro">{{ intro }}</p>{% endif %}
-        <p class="cb-profile-links"><a href="{% url 'chiebukuro:profile_edit' %}" class="cb-btn cb-btn-s">プロフィールを編集</a><a href="{% url 'chiebukuro:profile' user.username %}" class="cb-btn cb-btn-s">公開プロフィールを見る</a></p>
+        <p class="cb-profile-links"><a href="{% url 'chiebukuro:profile_edit' %}" class="cb-btn cb-btn-s">プロフィールを編集</a><a href="{% url 'chiebukuro:profile' user.username %}" class="cb-btn cb-btn-s">みんなから見たページ</a></p>
     </div>
 </section>
 
 <section class="cb-block">
-    <header class="cb-block-head"><h2>2人だけのやりとり</h2></header>
-    {% for talk in talks %}
-        <a href="{% url 'chiebukuro:talk' talk.pk %}" class="cb-linkrow {% if talk.unread %}is-unread{% endif %}">
-            <span>{% if talk.unread %}<i class="cb-dot" aria-label="未読"></i>{% endif %}{{ talk.subject.title }}<small class="cb-sub">{{ talk.other }}さん{% if talk.mine %}・あなたが出したもの{% endif %}</small></span>
-            <span class="cb-sub">{{ talk.last_message_at|ago }}</span>
-        </a>
-    {% empty %}
-        <p class="cb-empty">ゆずりあいや募集・告知で、メッセージを送ったり受け取ったりすると、ここに出ます。</p>
-    {% endfor %}
+    <header class="cb-block-head"><h2>わたしの記録</h2></header>
+    <a href="{% url 'chiebukuro:notifications' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="bell" %}<span><strong>お知らせ</strong><small>回答・返信・スタンプ・メッセージ</small></span>{% if unread %}<b class="cb-count">{{ unread }}</b>{% endif %}{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'talks' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="mail" %}<span><strong>2人だけのやりとり</strong><small>{{ counts.talks }}件（ゆずりあい・告知のメッセージ）</small></span>{% if counts.unread_talks %}<b class="cb-count">{{ counts.unread_talks }}</b>{% endif %}{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'posts' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="posts" %}<span><strong>自分のつぶやき</strong><small>{{ counts.posts }}件</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'questions' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="questions" %}<span><strong>自分の質問</strong><small>{{ counts.questions }}件（答えが来たかもわかります）</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'answers' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="reply" %}<span><strong>自分の回答</strong><small>{{ counts.answers }}件</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'wanted' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="heart" %}<span><strong>私も知りたい質問</strong><small>{{ counts.wanted }}件（答えがついたらお知らせ）</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:my_list' 'items' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="items" %}<span><strong>出しているもの</strong><small>{{ counts.items }}件（ゆずりあい・募集告知）</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
 </section>
 
 <section class="cb-block">
-    <header class="cb-block-head"><h2>出しているもの</h2><a href="{% url 'chiebukuro:item_new' %}" class="cb-more">出す</a></header>
-    {% for item in my_items %}{% include "chiebukuro/_item_row.html" %}{% empty %}<p class="cb-empty">まだありません。</p>{% endfor %}
-    {% for notice in my_notices %}{% include "chiebukuro/_notice_row.html" %}{% endfor %}
-</section>
-
-<section class="cb-block">
-    <header class="cb-block-head"><h2>私の質問</h2><a href="{% url 'chiebukuro:ask' %}" class="cb-more">質問する</a></header>
-    {% for question in my_questions %}{% include "chiebukuro/_question_row.html" with hide_best=True %}{% empty %}<p class="cb-empty">まだありません。</p>{% endfor %}
-</section>
-
-<section class="cb-block">
-    <header class="cb-block-head"><h2>私も知りたい質問</h2></header>
-    {% for question in wanted %}{% include "chiebukuro/_question_row.html" with hide_best=True %}{% empty %}<p class="cb-empty">気になる質問で「私も知りたい」を押すと、ここに集まります。答えがついたら🔔でお知らせします。</p>{% endfor %}
+    <header class="cb-block-head"><h2>設定</h2></header>
+    <a href="{% url 'chiebukuro:settings' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="gear" %}<span><strong>通知と表示の設定</strong><small>プッシュ通知のオン・オフと頻度、ダークモード</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'chiebukuro:profile_edit' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="user" %}<span><strong>プロフィール</strong><small>ニックネーム・住んでいる地域・ひとこと</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'portal:manage_apps' %}?next={{ request.path|urlencode }}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="key" %}<span><strong>Yappのアカウント</strong><small>パスワード・メールアドレスなど</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <a href="{% url 'portal:help' %}?from=board" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="questions" %}<span><strong>ヘルプ</strong><small>ログインできない・通知が来ないときなど</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
 </section>
 {% endblock %}

@@ -1,0 +1,28 @@
+{# スタンプ: 押されたもの (数つき) + 「☺＋」で選ぶ。obj・target・prefix (ページ内リンクの頭) を渡す #}
+{% with can_press=user.is_authenticated %}
+<div class="cb-stamps">
+    {% for s in obj.stamps %}
+        {% if can_press and user.pk != obj.author_id %}
+            <form method="post" action="{% url 'chiebukuro:stamp' %}">
+                {% csrf_token %}<input type="hidden" name="target" value="{{ target }}"><input type="hidden" name="target_id" value="{{ obj.pk }}"><input type="hidden" name="stamp" value="{{ s.key }}"><input type="hidden" name="next" value="{{ request.get_full_path }}#{{ prefix }}{{ obj.pk }}">
+                <button type="submit" class="cb-stamp {% if s.mine %}on{% endif %}" aria-pressed="{% if s.mine %}true{% else %}false{% endif %}" title="{{ s.label }}">{{ s.emoji }}<span>{{ s.label }}</span><b>{{ s.count }}</b></button>
+            </form>
+        {% else %}
+            <span class="cb-stamp is-static" title="{{ s.label }}">{{ s.emoji }}<span>{{ s.label }}</span><b>{{ s.count }}</b></span>
+        {% endif %}
+    {% endfor %}
+    {% if can_press and user.pk != obj.author_id %}
+        <details class="cb-stamp-pick">
+            <summary aria-label="スタンプを押す">☺<small>＋</small></summary>
+            <div class="cb-stamp-menu">
+                {% for key, emoji, label in stamp_list %}
+                    <form method="post" action="{% url 'chiebukuro:stamp' %}">
+                        {% csrf_token %}<input type="hidden" name="target" value="{{ target }}"><input type="hidden" name="target_id" value="{{ obj.pk }}"><input type="hidden" name="stamp" value="{{ key }}"><input type="hidden" name="next" value="{{ request.get_full_path }}#{{ prefix }}{{ obj.pk }}">
+                        <button type="submit"><span aria-hidden="true">{{ emoji }}</span>{{ label }}</button>
+                    </form>
+                {% endfor %}
+            </div>
+        </details>
+    {% endif %}
+</div>
+{% endwith %}

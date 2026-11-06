@@ -2,11 +2,16 @@
 掲示板の中身の計算: ニックネーム、事前アンケートからの取り込み、並べ替え。
 """
 
+import logging
+
 from django.db import transaction
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Coalesce
 
 from .models import Answer, Question, Status, SurveyImport
+
+
+logger = logging.getLogger(__name__)
 
 
 def user_nickname(user):
@@ -214,15 +219,18 @@ def notify(user, kind, text, url, actor=None):
 
     from .models import Notification
 
+    from .push import push_notification
+
     if user is None or (actor is not None and actor.pk == user.pk):
         return
-    Notification.objects.create(
+    notification = Notification.objects.create(
         user=user,
         kind=kind,
         text=text[:200],
         url=url[:300],
         actor=user_nickname(actor) if actor is not None else "",
     )
+    push_notification(notification)
 
 
 def unread_notifications(user):
@@ -236,3 +244,163 @@ def unread_notifications(user):
 def short(text, length=40):
     text = " ".join((text or "").split())
     return text if len(text) <= length else text[:length] + "…"
+
+
+# =========================================================
+# スタンプ
+# =========================================================
+
+def attach_stamps(objects, target, user):
+    """各オブジェクトに .stamps (押されたスタンプ: emoji・label・数・自分が押したか) を付ける"""
+
+    from .models import STAMPS, Reaction
+
+    ids = [obj.pk for obj in objects]
+    counts = {}
+    mine = set()
+    for row in Reaction.objects.filter(target=target, target_id__in=ids).values("target_id", "stamp", "user_id"):
+        key = (row["target_id"], row["stamp"])
+        counts[key] = counts.get(key, 0) + 1
+        if user.is_authenticated and row["user_id"] == user.pk:
+            mine.add(key)
+    for obj in objects:
+        obj.stamps = [
+            {"key": key, "emoji": emoji, "label": label, "count": counts[(obj.pk, key)], "mine": (obj.pk, key) in mine}
+            for key, emoji, label in STAMPS
+            if counts.get((obj.pk, key))
+        ]
+        obj.stamp_target = target
+    return objects
+
+
+# =========================================================
+# HOME: みんなの参考になるもの
+# =========================================================
+
+def recent_activity(region="", limit=8):
+    """新着: つぶやき・利用者の質問・回答・ゆずりあい・告知を、新しい順に混ぜる"""
+
+    from django.utils import timezone
+
+    from .models import Item, Notice, Post
+
+    def narrow(queryset, field="region"):
+        if region:
+            queryset = queryset.filter(Q(**{field: region}) | Q(**{field: ""}))
+        return queryset
+
+    rows = []
+    rows += [("post", obj) for obj in narrow(Post.objects.filter(status=Status.PUBLISHED)).order_by("-created_at")[:limit]]
+    rows += [
+        ("question", obj)
+        for obj in narrow(Question.objects.filter(status=Status.PUBLISHED).exclude(source=Question.Source.STAFF)).order_by("-created_at")[:limit]
+    ]
+    rows += [
+        ("answer", obj)
+        for obj in narrow(
+            Answer.objects.filter(status=Status.PUBLISHED, question__status=Status.PUBLISHED, from_survey=False).select_related("question"),
+            "question__region",
+        ).order_by("-created_at")[:limit]
+    ]
+    rows += [("item", obj) for obj in narrow(Item.objects.filter(status=Status.PUBLISHED).exclude(state=Item.State.DONE)).order_by("-created_at")[:limit]]
+    rows += [
+        ("notice", obj)
+        for obj in narrow(Notice.objects.filter(status=Status.PUBLISHED, expires_at__gt=timezone.now())).order_by("-created_at")[:limit]
+    ]
+    rows.sort(key=lambda row: row[1].created_at, reverse=True)
+    return [{"kind": kind, "obj": obj} for kind, obj in rows[:limit]]
+
+
+def poll_for_home(request, voter_key):
+    """HOME に出すアンケート: まだ答えていない新しいもの (なければいちばん新しいもの)"""
+
+    from .models import Poll, PollVote
+
+    polls = list(Poll.objects.filter(is_active=True).prefetch_related("choices")[:10])
+    if not polls:
+        return None
+    voted = set(my_votes(request, voter_key, [poll.pk for poll in polls]))
+    poll = next((poll for poll in polls if poll.pk not in voted), polls[0])
+    return poll_result(poll, my_votes(request, voter_key, [poll.pk]).get(poll.pk))
+
+
+def my_votes(request, voter_key, poll_ids):
+    from .models import PollVote
+
+    votes = PollVote.objects.filter(poll_id__in=poll_ids)
+    if request.user.is_authenticated:
+        votes = votes.filter(user=request.user)
+    elif voter_key:
+        votes = votes.filter(user__isnull=True, voter_key=voter_key)
+    else:
+        return {}
+    return dict(votes.values_list("poll_id", "choice_id"))
+
+
+def poll_result(poll, my_choice_id=None):
+    """選択肢ごとの票と % (答えた人にだけ見せる)"""
+
+    counts = dict(poll.votes.values("choice_id").annotate(n=Count("pk")).values_list("choice_id", "n"))
+    total = sum(counts.values())
+    poll.total = total
+    poll.my_choice_id = my_choice_id
+    poll.rows = [
+        {
+            "choice": choice,
+            "count": counts.get(choice.pk, 0),
+            "percent": round(counts.get(choice.pk, 0) * 100 / total) if total else 0,
+            "mine": choice.pk == my_choice_id,
+        }
+        for choice in poll.choices.all()
+    ]
+    return poll
+
+
+def current_sponsor():
+    """期間中の広告から1つ (いくつかあれば日ごとに順番に)"""
+
+    from django.utils import timezone
+
+    from .models import Sponsor
+
+    today = timezone.localdate()
+    sponsors = list(
+        Sponsor.objects.filter(is_active=True, starts_on__lte=today).filter(Q(ends_on__isnull=True) | Q(ends_on__gte=today)).order_by("pk")
+    )
+    if not sponsors:
+        return None
+    return sponsors[today.toordinal() % len(sponsors)]
+
+
+def weekend_outings(limit=4):
+    """今週末のおでかけ (おでかけアプリのイベントから)。使えないときは空"""
+
+    try:
+        from django.utils import timezone
+
+        from outings.event_views import period_range
+        from outings.models import Event, EventOccurrence
+
+        now = timezone.now()
+        start, end = period_range("weekend", now)
+        occurrences = (
+            EventOccurrence.objects
+            .filter(is_cancelled=False, event__status=Event.Status.PUBLISHED, start_at__lt=end)
+            .filter(Q(end_at__gt=start) | Q(end_at__isnull=True, start_at__gte=start))
+            .select_related("event", "event__location")
+            .order_by("-event__ai_score", "start_at")
+        )
+        events = []
+        seen = set()
+        for occurrence in occurrences[:60]:
+            if occurrence.event_id in seen:
+                continue
+            seen.add(occurrence.event_id)
+            occurrence.event.when = occurrence.start_at
+            events.append(occurrence.event)
+            if len(events) >= limit:
+                break
+        return events
+    except Exception:
+        logger.exception("weekend outings for the board failed")
+        return []

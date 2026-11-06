@@ -12,7 +12,6 @@ urlpatterns = [
     path("posts/", views.post_list, name="posts"),
     path("post/", views.post_new, name="post_new"),
     path("p/<int:pk>/", views.post_detail, name="post"),
-    path("p/<int:pk>/like/", views.toggle_post_like, name="post_like"),
     path("p/<int:pk>/delete/", views.delete_post, name="delete_post"),
     # 質問
     path("questions/", views.question_index, name="questions"),
@@ -46,4 +45,15 @@ urlpatterns = [
     path("new/", views.new_choice, name="new"),
     path("search/", views.search, name="search"),
     path("report/", views.report, name="report"),
+    path("stamp/", views.stamp, name="stamp"),
+    # HOME: アンケート・広告
+    path("polls/", views.poll_list, name="polls"),
+    path("polls/<int:pk>/vote/", views.poll_vote, name="poll_vote"),
+    path("ad/<int:pk>/", views.sponsor_click, name="sponsor"),
+    # 設定・プッシュ通知
+    path("me/settings/", views.settings_view, name="settings"),
+    path("me/<str:section>/", views.my_list, name="my_list"),
+    path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
+    path("push/unsubscribe/", views.push_unsubscribe, name="push_unsubscribe"),
+    path("push/test/", views.push_test, name="push_test"),
 ]

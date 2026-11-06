@@ -5,13 +5,14 @@
 <section class="cb-block cb-form-block">
     <h1 class="cb-form-title">つぶやく</h1>
     {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
-    <form method="post" class="cb-form">
+    <form method="post" enctype="multipart/form-data" class="cb-form">
         {% csrf_token %}
         <label class="cb-field">
             <span>「{{ nickname }}」として載ります</span>
             <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！" data-count="post-left">{{ body }}</textarea>
             <small class="cb-sub">あと <span id="post-left"></span> 文字</small>
         </label>
+        {% include "chiebukuro/_photo_field.html" %}
         <div class="cb-field-row">
             <label class="cb-field"><span>テーマ（任意）</span>
                 <select name="theme"><option value="">なし</option>{% for value, label in themes %}<option value="{{ value }}" {% if value == theme %}selected{% endif %}>#{{ label }}</option>{% endfor %}</select>
