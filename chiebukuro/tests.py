@@ -712,3 +712,17 @@ class RulesAgreementTests(BoardTestCase):
         self.assertContains(page, "data-rules")
         self.assertEqual(self.client.post(reverse("chiebukuro:rules_agree")).status_code, 200)
         self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "cb-rules-dialog")
+
+
+class WeatherHereTests(BoardTestCase):
+
+    def test_weather_for_current_location(self):
+        fake = {"weather": {"temp": 3, "emoji": "❄️", "label": "雪", "days": []}, "jpy": None, "eur": None}
+        with mock.patch("chiebukuro.views.today_in_switzerland", return_value=fake) as today:
+            response = self.client.get(reverse("chiebukuro:today") + "?lat=46.95&lon=7.45")
+        today.assert_called_with("bern")
+        self.assertContains(response, "現在地（ベルン付近）")
+        self.assertContains(response, 'data-sky="snow"')
+        with mock.patch("chiebukuro.views.today_in_switzerland", return_value=fake) as today:
+            self.client.get(reverse("chiebukuro:today") + "?lat=35.68&lon=139.76")  # 東京: スイスの外
+        today.assert_called_with("")

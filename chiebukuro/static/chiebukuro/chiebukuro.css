@@ -1273,3 +1273,24 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
     .cb-hero-panel { padding: 14px 16px 12px; }
     .cb-hero-md { font-size: 28px; }
 }
+
+/* ウィジェット全体の色も、時間と天気で変わる (白い文字が読める濃さ) */
+.cb-hero-panel { background: linear-gradient(150deg, #123A7A 0%, #1F5FB8 100%); transition: background .5s; }
+.cb-hero[data-time="morning"] .cb-hero-panel { background: linear-gradient(150deg, #24407E 0%, #7A6A9E 100%); }
+.cb-hero[data-time="evening"] .cb-hero-panel { background: linear-gradient(150deg, #2A2558 0%, #8A4E6A 100%); }
+.cb-hero[data-time="night"] .cb-hero-panel { background: linear-gradient(150deg, #070D24 0%, #1A2A5C 100%); }
+.cb-hero[data-sky="cloudy"] .cb-hero-panel { background: linear-gradient(150deg, #2E3A4A 0%, #56657A 100%); }
+.cb-hero[data-sky="rain"] .cb-hero-panel { background: linear-gradient(150deg, #1A2433 0%, #34465E 100%); }
+.cb-hero[data-sky="snow"] .cb-hero-panel { background: linear-gradient(150deg, #34496B 0%, #6C84A8 100%); }
+.cb-hero[data-time="night"][data-sky="cloudy"] .cb-hero-panel,
+.cb-hero[data-time="night"][data-sky="rain"] .cb-hero-panel { background: linear-gradient(150deg, #0A0F1C 0%, #222D40 100%); }
+.cb-hero[data-time="night"][data-sky="snow"] .cb-hero-panel { background: linear-gradient(150deg, #0E1730 0%, #3A4C72 100%); }
+.cb-hero-wd, .cb-hero-side, .cb-hero .cb-regionbar, .cb-hero .cb-regionbar svg { color: rgba(255, 255, 255, .75); }
+.cb-hero-season { background: rgba(255, 255, 255, .14); }
+/* マスは半透明の白で、背景の色を生かす */
+.cb-tile2, .cb-tile2-weather, .cb-hero[data-time] .cb-tile2-weather, .cb-hero[data-sky] .cb-tile2-weather { background: rgba(255, 255, 255, .13); }
+.cb-tile2-fx { background: rgba(0, 0, 0, .22); }
+.cb-hero .cb-regionbar select { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .22); }
+.cb-hero .cb-regionbar select option { color: #1d2125; }
+.cb-hero-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cb-here-btn { border: 1px solid rgba(255, 255, 255, .3); background: none; color: #fff; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700; padding: 4px 10px; cursor: pointer; }

@@ -317,16 +317,41 @@ def hero_time():
     return "night"
 
 
+def nearest_region(lat, lon):
+    """現在地にいちばん近い地域 (天気を出す地域の中から)"""
+
+    from news.services.info_bar import REGION_COORDS
+
+    import math
+
+    def distance(item):
+        _, (rlat, rlon) = item
+        return (rlat - lat) ** 2 + ((rlon - lon) * math.cos(math.radians(lat))) ** 2
+
+    slug, coords = min(REGION_COORDS.items(), key=distance)
+    # スイスの外 (だいたい 150km 以上離れている) なら使わない
+    return slug if distance((slug, coords)) < 1.9 else ""
+
+
 @board_open
 def today_strip(request):
-    """HOME の「今日のスイス」(天気・為替)。外のサービスに聞くので、ページとは別に読みこむ"""
+    """HOME の天気・為替。外のサービスに聞くので、ページとは別に読みこむ。
+    ?lat=&lon= があれば (端末の現在地)、いちばん近い地域の天気"""
 
     region = current_region(request)
-    info = today_in_switzerland(region)
+    here = ""
+    try:
+        lat, lon = float(request.GET["lat"]), float(request.GET["lon"])
+        here = nearest_region(lat, lon)
+    except (KeyError, ValueError):
+        pass
+    place_region = here or region
+    info = today_in_switzerland(place_region)
+    place = REGION_LABELS.get(place_region, "") or "チューリッヒ"
     return render(
         request,
         "chiebukuro/_today.html",
-        {**info, "sky": sky_for(info.get("weather")), "place": REGION_LABELS.get(region, "") or "チューリッヒ"},
+        {**info, "sky": sky_for(info.get("weather")), "place": place, "is_here": bool(here)},
     )
 
 

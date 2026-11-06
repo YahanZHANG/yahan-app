@@ -126,16 +126,46 @@
 })();
 (function () {
     var box = document.getElementById("cb-today");
+    var hero = document.getElementById("cb-hero");
+    var hereButton = document.getElementById("cb-here");
     if (!box || !window.fetch) return;
-    fetch(box.dataset.url, { credentials: "same-origin" })
-        .then(function (r) { return r.ok ? r.text() : ""; })
-        .then(function (html) {
-            box.innerHTML = html;
-            var sky = box.querySelector("[data-sky]");
-            var hero = document.getElementById("cb-hero");
-            if (sky && hero) hero.dataset.sky = sky.dataset.sky;
-        })
-        .catch(function () {});
+    function load(coords) {
+        var url = box.dataset.url + (coords ? "?lat=" + coords.latitude.toFixed(3) + "&lon=" + coords.longitude.toFixed(3) : "");
+        return fetch(url, { credentials: "same-origin" })
+            .then(function (r) { return r.ok ? r.text() : ""; })
+            .then(function (html) {
+                if (!html) return;
+                box.innerHTML = html;
+                var sky = box.querySelector("[data-sky]");
+                if (sky && hero) hero.dataset.sky = sky.dataset.sky;
+            })
+            .catch(function () {});
+    }
+    function locate(ask) {
+        // 現在地: すでに許可されているとき (またはボタンを押したとき) だけ。勝手に許可を求めない
+        navigator.geolocation.getCurrentPosition(function (position) {
+            try { localStorage.setItem("cb_weather_here", "1"); } catch (e) {}
+            if (hereButton) hereButton.hidden = true;
+            load(position.coords);
+        }, function () {
+            if (ask && hereButton) hereButton.textContent = "📍 現在地を使えませんでした";
+        }, { maximumAge: 30 * 60 * 1000, timeout: 8000 });
+    }
+    load(null);
+    if (!navigator.geolocation) return;
+    var wanted = false;
+    try { wanted = localStorage.getItem("cb_weather_here") === "1"; } catch (e) {}
+    var show = function () { if (hereButton) { hereButton.hidden = false; hereButton.onclick = function () { locate(true); }; } };
+    if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: "geolocation" }).then(function (status) {
+            if (status.state === "granted") locate(false);
+            else if (status.state === "prompt") show();
+        }).catch(function () { if (wanted) locate(false); else show(); });
+    } else if (wanted) {
+        locate(false);
+    } else {
+        show();
+    }
 })();
 </script>
 {% endblock %}
