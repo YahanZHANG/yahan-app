@@ -79,6 +79,7 @@ class Question(models.Model):
     survey_interest_count = models.PositiveIntegerField("アンケートでの「知りたい」", default=0)
     # 事前アンケートの質問 (取り込み元)
     survey_question_id = models.PositiveIntegerField("アンケートの質問ID", null=True, blank=True, unique=True)
+    home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     # 新しい答えがついた日時 (HOME の「新しい答え順」)
     last_answered_at = models.DateTimeField("最後の答え", null=True, blank=True, db_index=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
@@ -114,6 +115,7 @@ class Answer(models.Model):
     )
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     from_survey = models.BooleanField("事前アンケートから", default=False)
+    home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
@@ -332,6 +334,15 @@ class BoardProfile(models.Model):
     region = models.CharField("住んでいる地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
     intro = models.CharField("ひとこと", max_length=160, blank=True)
 
+    class AvatarKind(models.TextChoices):
+        LETTER = "letter", "名前の1文字"
+        ILLUST = "illust", "イラスト"
+        PHOTO = "photo", "写真"
+
+    avatar_kind = models.CharField("アイコン", max_length=10, choices=AvatarKind.choices, default=AvatarKind.LETTER)
+    avatar_parts = models.JSONField("イラストの組み合わせ", default=dict, blank=True)
+    photo_url = models.URLField("プロフィール写真", max_length=500, blank=True)
+
     class PushFrequency(models.TextChoices):
         INSTANT = "instant", "すぐに知らせる"
         DAILY = "daily", "1日1回まとめて（夜7時）"
@@ -463,6 +474,7 @@ class Post(models.Model):
     """つぶやき。テーマと地域のタグを付けると、あとから検索で見つかる。"""
 
     body = models.TextField("つぶやき")
+    home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     photo_url = models.URLField("写真", max_length=500, blank=True)
     theme = models.CharField("テーマ", max_length=20, choices=THEME_CHOICES, blank=True)
     region = models.CharField("地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)

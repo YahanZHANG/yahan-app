@@ -24,6 +24,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from . import avatar as avatar_art
 from .models import (
     BOARD_REGION_CHOICES,
     THEME_CHOICES,
@@ -58,8 +59,12 @@ from .services import (
     my_votes,
     poll_for_home,
     poll_result,
-    recent_activity,
     weekend_outings,
+    featured_this_week,
+    give_items_with_photo,
+    news_headlines,
+    today_in_switzerland,
+    week_stats,
     notify,
     question_list,
     short,
@@ -252,14 +257,30 @@ def home(request):
             **board_context(request, "home", region),
             "poll": poll_for_home(request, voter_key),
             "sponsor": current_sponsor(),
-            "outings": weekend_outings(),
-            "activity": recent_activity(region, limit=8),
+            "outings": weekend_outings(limit=6),
+            "stats": week_stats(region),
+            "featured": featured_this_week(),
+            "gives": give_items_with_photo(region),
+            "headlines": news_headlines(),
             "waiting": waiting_questions(region=region, limit=3),
+            "today": timezone.localdate(),
         },
     )
     if not voter_key and not request.user.is_authenticated:
         response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
     return response
+
+
+@board_open
+def today_strip(request):
+    """HOME の「今日のスイス」(天気・為替)。外のサービスに聞くので、ページとは別に読みこむ"""
+
+    region = current_region(request)
+    return render(
+        request,
+        "chiebukuro/_today.html",
+        {**today_in_switzerland(region), "place": REGION_LABELS.get(region, "") or "チューリッヒ"},
+    )
 
 
 @board_open
@@ -1444,7 +1465,18 @@ def profile_edit(request):
         intro = (request.POST.get("intro") or "").strip()
         board_profile.region = clean_choice(request.POST.get("home_region", ""), BOARD_REGION_CHOICES)
         board_profile.intro = intro
-        if not nickname:
+        kind = request.POST.get("avatar_kind", board_profile.avatar_kind)
+        if kind in BoardProfile.AvatarKind.values:
+            board_profile.avatar_kind = kind
+        board_profile.avatar_parts = avatar_art.from_post(request.POST)
+        photo_url, photo_error = take_photo(request, "profiles")
+        if photo_url:
+            board_profile.photo_url = photo_url
+        if board_profile.avatar_kind == BoardProfile.AvatarKind.PHOTO and not board_profile.photo_url and not photo_error:
+            photo_error = "写真を選んでください。"
+        if photo_error:
+            error = photo_error
+        elif not nickname:
             error = "ニックネームを入力してください。"
         elif len(nickname) > 30:
             error = "ニックネームは30文字までです。"
@@ -1464,9 +1496,21 @@ def profile_edit(request):
             **board_context(request, "me"),
             "nickname": nickname,
             "board_profile": board_profile,
+            "avatar_groups": avatar_art.choices_for_editor(board_profile.avatar_parts),
+            "avatar_kinds": BoardProfile.AvatarKind.choices,
             "error": error,
         },
     )
+
+
+def avatar_preview(request):
+    """編集画面の見本 (選んだ組み合わせのイラスト)"""
+
+    from django.http import HttpResponse
+
+    response = HttpResponse(avatar_art.svg(avatar_art.from_post(request.GET)), content_type="image/svg+xml")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @board_open

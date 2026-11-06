@@ -8,7 +8,7 @@
 {% if user.is_authenticated %}
 <form method="post" action="{% url 'chiebukuro:post_new' %}" enctype="multipart/form-data" class="cb-compose" id="compose">
     {% csrf_token %}
-    <span class="cb-av {{ user.pk|avatar }}" aria-hidden="true">{{ user.profile.display_name|default:user.username|initial }}</span>
+    <span class="cb-av {{ user.pk|avatar }}" aria-hidden="true">{% face user user.profile.display_name|default:user.username %}</span>
     <div class="cb-compose-main">
         <label class="cb-sr" for="compose-body">つぶやく</label>
         <textarea name="body" id="compose-body" rows="2" maxlength="{{ max_length }}" placeholder="いまどうしてる？ スイスの暮らしで気づいたこと、ちょっと聞きたいこと" data-grow data-count="compose-left" required></textarea>

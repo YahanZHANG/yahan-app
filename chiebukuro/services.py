@@ -7,6 +7,7 @@ import logging
 from django.db import transaction
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Coalesce
+from django.urls import reverse
 
 from .models import Answer, Question, Status, SurveyImport
 
@@ -404,3 +405,180 @@ def weekend_outings(limit=4):
     except Exception:
         logger.exception("weekend outings for the board failed")
         return []
+
+
+# =========================================================
+# HOME v5: 今週の知恵袋 (ワクワクする HOME)
+# =========================================================
+
+FEATURE_DAYS = 7
+
+
+def week_stats(region=""):
+    """この1週間の数 (HOME の上の帯)"""
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models import Item, Post
+
+    since = timezone.now() - timedelta(days=FEATURE_DAYS)
+
+    def narrow(queryset, field="region"):
+        return queryset.filter(Q(**{field: region}) | Q(**{field: ""})) if region else queryset
+
+    return {
+        "questions": narrow(Question.objects.filter(status=Status.PUBLISHED, created_at__gte=since).exclude(source=Question.Source.STAFF)).count(),
+        "answers": narrow(Answer.objects.filter(status=Status.PUBLISHED, created_at__gte=since, from_survey=False), "question__region").count(),
+        "posts": narrow(Post.objects.filter(status=Status.PUBLISHED, created_at__gte=since)).count(),
+        "items": narrow(Item.objects.filter(status=Status.PUBLISHED, created_at__gte=since)).count(),
+    }
+
+
+def featured_this_week(limit=3):
+    """
+    今週の注目: 運営が選んだもの (home_pick) を先に、そのあと1週間の反応が多い順。
+    回答 (ありがとう・スタンプ)、つぶやき (スタンプ・返信)、質問 (私も知りたい・答え)。
+    反応がまだ少ないときは、これまででいちばん「ありがとう」が多い回答で埋める。
+    """
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models import Post, Reaction
+
+    since = timezone.now() - timedelta(days=FEATURE_DAYS)
+
+    def stamp_counts(target):
+        rows = Reaction.objects.filter(target=target, created_at__gte=since).values("target_id").annotate(n=Count("id"))
+        return {row["target_id"]: row["n"] for row in rows}
+
+    answer_stamps = stamp_counts("answer")
+    post_stamps = stamp_counts("post")
+
+    answers = (
+        Answer.objects.filter(status=Status.PUBLISHED, question__status=Status.PUBLISHED)
+        .select_related("question", "author")
+        .annotate(week_thanks=Count("thanks", filter=Q(thanks__created_at__gte=since), distinct=True))
+    )
+    posts = (
+        Post.objects.filter(status=Status.PUBLISHED)
+        .select_related("author")
+        .annotate(week_replies=Count("replies", filter=Q(replies__created_at__gte=since, replies__status=Status.PUBLISHED), distinct=True))
+    )
+    questions = (
+        Question.objects.filter(status=Status.PUBLISHED)
+        .annotate(
+            week_interest=Count("interests", filter=Q(interests__created_at__gte=since), distinct=True),
+            week_answers=Count("answers", filter=Q(answers__created_at__gte=since, answers__status=Status.PUBLISHED), distinct=True),
+        )
+    )
+
+    def answer_card(answer, score):
+        return {
+            "kind": "answer", "label": "役に立った答え", "text": answer.body, "context": answer.question.body,
+            "name": answer.display_name, "user": answer.author, "photo": answer.photo_url, "score": score,
+            "url": reverse("chiebukuro:question", args=[answer.question_id]) + f"#a{answer.pk}", "key": ("answer", answer.pk),
+        }
+
+    def post_card(post, score):
+        return {
+            "kind": "post", "label": "話題のつぶやき", "text": post.body, "context": post.get_region_display() if post.region else "",
+            "name": post.display_name, "user": post.author, "photo": post.photo_url, "score": score,
+            "url": reverse("chiebukuro:post", args=[post.pk]), "key": ("post", post.pk),
+        }
+
+    def question_card(question, score):
+        return {
+            "kind": "question", "label": "みんなが知りたい質問", "text": question.body, "context": question.get_theme_display(),
+            "name": question.display_name, "user": question.author, "photo": question.photo_url, "score": score,
+            "url": reverse("chiebukuro:question", args=[question.pk]), "key": ("question", question.pk),
+        }
+
+    picked = (
+        [answer_card(a, 0) for a in answers.filter(home_pick=True)]
+        + [post_card(p, 0) for p in posts.filter(home_pick=True)]
+        + [question_card(q, 0) for q in questions.filter(home_pick=True)]
+    )
+
+    ranked = []
+    answer_ids = set(answer_stamps)
+    for answer in answers.filter(Q(pk__in=answer_ids) | Q(thanks__created_at__gte=since)).distinct()[:50]:
+        score = answer.week_thanks * 2 + answer_stamps.get(answer.pk, 0)
+        if score:
+            ranked.append(answer_card(answer, score))
+    for post in posts.filter(Q(pk__in=set(post_stamps)) | Q(replies__created_at__gte=since)).distinct()[:50]:
+        score = post_stamps.get(post.pk, 0) + post.week_replies
+        if score:
+            ranked.append(post_card(post, score))
+    for question in questions.filter(Q(interests__created_at__gte=since) | Q(answers__created_at__gte=since)).distinct()[:50]:
+        score = question.week_interest + question.week_answers
+        if score:
+            ranked.append(question_card(question, score))
+    ranked.sort(key=lambda card: card["score"], reverse=True)
+
+    cards, seen = [], set()
+    for card in picked + ranked:
+        if card["key"] not in seen and len(cards) < limit:
+            seen.add(card["key"])
+            cards.append(card)
+    if len(cards) < limit:
+        best = answers.annotate(all_thanks=Count("thanks", distinct=True)).filter(all_thanks__gt=0).order_by("-all_thanks", "-created_at")
+        for answer in best[:limit * 2]:
+            if ("answer", answer.pk) not in seen and len(cards) < limit:
+                seen.add(("answer", answer.pk))
+                cards.append(answer_card(answer, 0))
+    return cards
+
+
+def give_items_with_photo(region="", limit=8):
+    """HOME の「ゆずります」: 写真つきで、まだ受け付けているもの"""
+
+    from .models import Item
+
+    queryset = Item.objects.filter(status=Status.PUBLISHED, kind=Item.Kind.GIVE).exclude(state=Item.State.DONE).exclude(photo_url="")
+    if region:
+        queryset = queryset.filter(Q(region=region) | Q(region=""))
+    return list(queryset.order_by("-created_at")[:limit])
+
+
+def news_headlines(limit=3):
+    """SwissNews の新しい見出し (押すと SwissNews が開く)"""
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    try:
+        from news.models import Article
+
+        since = timezone.now() - timedelta(hours=36)
+        articles = (
+            Article.objects.filter(duplicate_of__isnull=True, published_at__gte=since)
+            .exclude(title_ja="")
+            .order_by("-is_featured", "-published_at")[:limit]
+        )
+        return list(articles)
+    except Exception:
+        logger.exception("news headlines for the board failed")
+        return []
+
+
+def today_in_switzerland(region=""):
+    """天気 (住んでいる地域、なければチューリッヒ) と CHF→円 (SwissNews と同じ仕組み・キャッシュ)"""
+
+    try:
+        from news.services.info_bar import fx_rates, weather
+
+        places = weather([region] if region else [])
+        fx = fx_rates()
+        return {
+            "weather": places[0] if places else None,
+            "jpy": (fx or {}).get("rates", {}).get("JPY"),
+            "eur": (fx or {}).get("rates", {}).get("EUR"),
+        }
+    except Exception:
+        logger.exception("today in switzerland failed")
+        return {"weather": None, "jpy": None, "eur": None}

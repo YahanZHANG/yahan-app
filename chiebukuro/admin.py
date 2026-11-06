@@ -77,9 +77,9 @@ def set_status(modeladmin, request, queryset, status, label):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "theme", "region", "status", "source", "nickname", "answer_count", "interest_count", "created_at"]
+    list_display = ["short_body", "theme", "region", "status", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
     list_display_links = ["short_body"]
-    list_editable = ["theme", "region", "status"]
+    list_editable = ["theme", "region", "status", "home_pick"]
     list_filter = ["status", "theme", "source", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["source", "author", "survey_question_id", "last_answered_at", "updated_at"]
@@ -117,8 +117,8 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "question", "nickname", "status", "from_survey", "created_at"]
-    list_editable = ["status"]
+    list_display = ["short_body", "question", "nickname", "status", "from_survey", "home_pick", "created_at"]
+    list_editable = ["status", "home_pick"]
     list_filter = ["status", "from_survey"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["question", "author", "from_survey"]
@@ -199,8 +199,8 @@ class PostReplyInline(admin.TabularInline):
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "theme", "region", "nickname", "status", "created_at"]
-    list_editable = ["status"]
+    list_display = ["short_body", "theme", "region", "nickname", "status", "home_pick", "created_at"]
+    list_editable = ["status", "home_pick"]
     list_filter = ["status", "theme", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["author"]

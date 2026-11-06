@@ -30,7 +30,7 @@
             <a href="{% url 'chiebukuro:search' %}" class="cb-tool {% if tab == 'search' %}on{% endif %}" aria-label="検索" aria-controls="cb-searchbar" aria-expanded="false" id="cb-search-toggle">{% include "chiebukuro/_icon.html" with name="search" %}</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'chiebukuro:notifications' %}" class="cb-tool {% if tab == 'bell' %}on{% endif %}" aria-label="お知らせ{% if unread %}（{{ unread }}件）{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}{% if unread %}<b class="cb-badge">{{ unread }}</b>{% endif %}</a>
-                <a href="{% url 'chiebukuro:me' %}" class="cb-tool cb-tool-me {% if tab == 'me' %}on{% endif %}" aria-label="マイページ"><span class="cb-av cb-av-s {{ user.pk|avatar }}">{{ user.profile.display_name|default:user.username|initial }}</span></a>
+                <a href="{% url 'chiebukuro:me' %}" class="cb-tool cb-tool-me {% if tab == 'me' %}on{% endif %}" aria-label="マイページ"><span class="cb-av cb-av-s {{ user.pk|avatar }}">{% face user user.profile.display_name|default:user.username %}</span></a>
             {% else %}
                 <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="cb-login">ログイン</a>
             {% endif %}

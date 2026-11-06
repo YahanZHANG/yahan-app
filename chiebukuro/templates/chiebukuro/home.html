@@ -2,18 +2,93 @@
 {% load board %}
 {% block content %}
 
+{# いちばん上: 今週の知恵袋 (日付・今日のスイス・この1週間の数) #}
+<section class="cb-hero">
+    <div class="cb-hero-head">
+        <p class="cb-hero-date">{{ today|date:"n月j日" }}（{{ today|date:"D" }}）</p>
+        <h1 class="cb-hero-title">今週の知恵袋</h1>
+        <p class="cb-hero-sub">スイスで暮らす日本人の、知恵と助け合い</p>
+    </div>
+    <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite"></div>
+    <div class="cb-hero-foot">
+        <ul class="cb-stats" aria-label="この1週間">
+            <li><b>{{ stats.questions }}</b>質問</li>
+            <li><b>{{ stats.answers }}</b>回答</li>
+            <li><b>{{ stats.posts }}</b>つぶやき</li>
+            <li><b>{{ stats.items }}</b>ゆずりあい</li>
+        </ul>
+        {% include "chiebukuro/_region.html" %}
+    </div>
+</section>
+
 {% if not user.is_authenticated %}
 <section class="cb-welcome">
-    <p><strong>スイスで暮らす日本人の掲示板</strong>です。読むのは登録なしでどうぞ。書きこむにはYappのアカウント（無料）が必要です。</p>
+    <p>読むのは登録なしでどうぞ。書きこむにはYappのアカウント（無料）が必要です。</p>
     <p class="cb-welcome-links"><a href="{% url 'portal:signup' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-primary cb-btn-s">無料で登録</a><a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-s">ログイン</a></p>
 </section>
 {% endif %}
 
 {% if poll %}
-<div class="cb-block cb-block-pad">
+<div class="cb-hpoll">
     {% include "chiebukuro/_poll.html" %}
-    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">ほかのアンケート</a></p>
+    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">これまでのアンケート</a></p>
 </div>
+{% endif %}
+
+{% if featured %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>今週の注目</h2><a href="{% url 'chiebukuro:questions' %}?sort=popular" class="cb-more">人気の質問</a></header>
+    <ol class="cb-feat">
+        {% for card in featured %}
+            <li>
+                <a href="{{ card.url }}" class="cb-feat-card cb-feat-{{ card.kind }}">
+                    <span class="cb-feat-no" aria-hidden="true">{{ forloop.counter }}</span>
+                    <span class="cb-feat-main">
+                        <span class="cb-feat-label">{{ card.label }}</span>
+                        {% if card.kind == "answer" %}<span class="cb-feat-q">Q. {{ card.context|truncatechars:60 }}</span>{% endif %}
+                        <span class="cb-feat-text">{{ card.text|truncatechars:120 }}</span>
+                        <span class="cb-feat-by">
+                            <span class="cb-av cb-av-s {{ card.user.pk|avatar }}" aria-hidden="true">{% face card.user card.name %}</span>{{ card.name }}
+                            {% if card.kind != "answer" and card.context %}<span class="cb-feat-ctx">{{ card.context }}</span>{% endif %}
+                        </span>
+                    </span>
+                    {% if card.photo %}<img src="{{ card.photo }}" alt="" class="cb-feat-photo" loading="lazy">{% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
+{% if gives %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>ゆずります<small>無料</small></h2><a href="{% url 'chiebukuro:items' %}?kind=give" class="cb-more">すべて見る</a></header>
+    <div class="cb-strip">
+        {% for item in gives %}
+            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-tile">
+                <img src="{{ item.photo_url }}" alt="" loading="lazy">
+                <span class="cb-tile-title">{{ item.title }}</span>
+                <span class="cb-tile-sub">{% if item.get_region_display %}{{ item.get_region_display }}・{% endif %}{{ item.created_at|ago }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if outings %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>今週末のおでかけ</h2><a href="{% url 'outings:home' %}" class="cb-more">おでかけアプリ</a></header>
+    <div class="cb-strip">
+        {% for event in outings %}
+            <a href="{% url 'outings:event_detail' event.pk %}" class="cb-tile cb-tile-wide">
+                {% if event.image_url %}<img src="{{ event.image_url }}" alt="" loading="lazy">{% else %}<span class="cb-tile-noimg" aria-hidden="true">{% include "chiebukuro/_icon.html" with name="pin" %}</span>{% endif %}
+                <span class="cb-tile-date">{{ event.when|date:"n/j" }}（{{ event.when|date:"D" }}）{% if event.is_free %}・無料{% endif %}</span>
+                <span class="cb-tile-title">{{ event.title }}</span>
+                {% if event.location %}<span class="cb-tile-sub">{{ event.location.city }}</span>{% endif %}
+            </a>
+        {% endfor %}
+    </div>
+</section>
 {% endif %}
 
 {% if sponsor %}
@@ -29,50 +104,36 @@
 <p class="cb-sponsor-empty"><span class="cb-pr">PR</span>この枠に、お店・サービスの広告を出せます。<a href="{% url 'portal:support' %}?from=board-ad">広告について問い合わせる</a></p>
 {% endif %}
 
-{% if outings %}
-<section class="cb-block">
-    <header class="cb-block-head"><h2>今週末のおでかけ</h2><a href="{% url 'outings:home' %}" class="cb-more">おでかけアプリ</a></header>
-    {% for event in outings %}
-        <a href="{% url 'outings:event_detail' event.pk %}" class="cb-orow">
-            <span class="cb-odate"><b>{{ event.when|date:"j" }}</b>{{ event.when|date:"D" }}</span>
-            <span class="cb-imain">
-                <span class="cb-ititle">{{ event.title }}</span>
-                <span class="cb-meta">{% if event.location %}<span>{{ event.location.city }}</span>{% endif %}<span>{{ event.when|date:"n月j日 H:i" }}</span>{% if event.is_free %}<span class="cb-cat">無料</span>{% endif %}</span>
-            </span>
-            {% if event.image_url %}<img src="{{ event.image_url }}" alt="" class="cb-ithumb" loading="lazy">{% endif %}
-        </a>
-    {% endfor %}
-</section>
-{% endif %}
-
-<section class="cb-block">
-    <header class="cb-block-head"><h2>掲示板の新着</h2>{% include "chiebukuro/_region.html" %}</header>
-    {% for row in activity %}
-        {% with obj=row.obj %}
-        {% if row.kind == "post" %}
-            <a href="{% url 'chiebukuro:post' obj.pk %}" class="cb-frow"><span class="cb-flabel">つぶやき</span><span class="cb-ftext">{{ obj.body|truncatechars:90 }}</span><span class="cb-meta"><span>{{ obj.display_name }}</span>{% if obj.get_region_display %}<span>{{ obj.get_region_display }}</span>{% endif %}<span>{{ obj.created_at|ago }}</span></span></a>
-        {% elif row.kind == "question" %}
-            <a href="{% url 'chiebukuro:question' obj.pk %}" class="cb-frow"><span class="cb-flabel cb-flabel-q">質問</span><span class="cb-ftext">{{ obj.body|truncatechars:90 }}</span><span class="cb-meta"><span>{{ obj.display_name }}</span><span>{{ obj.created_at|ago }}</span></span></a>
-        {% elif row.kind == "answer" %}
-            <a href="{% url 'chiebukuro:question' obj.question_id %}#a{{ obj.pk }}" class="cb-frow"><span class="cb-flabel cb-flabel-a">回答</span><span class="cb-ftext">{{ obj.body|truncatechars:70 }}</span><span class="cb-meta"><span>Q. {{ obj.question.body|truncatechars:26 }}</span><span>{{ obj.created_at|ago }}</span></span></a>
-        {% elif row.kind == "item" %}
-            <a href="{% url 'chiebukuro:item' obj.pk %}" class="cb-frow"><span class="cb-flabel cb-kind-{{ obj.kind }}">{{ obj.get_kind_display }}</span><span class="cb-ftext">{{ obj.title }}</span><span class="cb-meta"><span>{{ obj.get_genre_display }}</span>{% if obj.get_region_display %}<span>{{ obj.get_region_display }}</span>{% endif %}<span>{{ obj.created_at|ago }}</span></span></a>
-        {% else %}
-            <a href="{% url 'chiebukuro:notice' obj.pk %}" class="cb-frow"><span class="cb-flabel cb-flabel-n">{% if obj.is_pr %}PR・{% endif %}告知</span><span class="cb-ftext">{{ obj.title }}</span><span class="cb-meta"><span>{{ obj.get_kind_display }}</span>{% if obj.get_region_display %}<span>{{ obj.get_region_display }}</span>{% endif %}<span>{{ obj.created_at|ago }}</span></span></a>
-        {% endif %}
-        {% endwith %}
-    {% empty %}
-        <p class="cb-empty">まだ書きこみがありません。右下の「書く」からどうぞ。</p>
-    {% endfor %}
-</section>
-
-<section class="cb-block">
-    <header class="cb-block-head"><h2>答えを待っている質問</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>あなたの知恵を貸してください</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
+    <div class="cb-hsec-body">
     {% for question in waiting %}
         {% include "chiebukuro/_question_row.html" %}
     {% empty %}
         <p class="cb-empty">いまは、答えを待っている質問はありません。</p>
     {% endfor %}
+    </div>
 </section>
 
+{% if headlines %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>スイスの今日のニュース</h2><a href="{% url 'news:home' %}" class="cb-more">SwissNews</a></header>
+    <div class="cb-hsec-body">
+    {% for article in headlines %}
+        <a href="{% url 'news:article_detail' article.pk %}" class="cb-nrow"><span class="cb-ntext">{{ article.title_ja }}</span><span class="cb-meta"><span>{{ article.published_at|ago }}</span></span></a>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<script>
+(function () {
+    var box = document.getElementById("cb-today");
+    if (!box || !window.fetch) return;
+    fetch(box.dataset.url, { credentials: "same-origin" })
+        .then(function (r) { return r.ok ? r.text() : ""; })
+        .then(function (html) { box.innerHTML = html; })
+        .catch(function () {});
+})();
+</script>
 {% endblock %}

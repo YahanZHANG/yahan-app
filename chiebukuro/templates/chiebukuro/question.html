@@ -28,7 +28,7 @@
         <article class="cb-answer {% if best_answer and answer.pk == best_answer.pk %}is-best{% endif %}" id="a{{ answer.pk }}">
             {% if best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
             <p class="cb-post-head">
-                {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-av cb-av-s {{ answer.author_id|avatar }}" aria-hidden="true" tabindex="-1">{{ answer.display_name|initial }}</a><a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-name">{{ answer.display_name }}</a>{% else %}<span class="cb-av cb-av-s cb-av0" aria-hidden="true">{{ answer.display_name|initial }}</span><span class="cb-name">{{ answer.display_name }}</span>{% endif %}
+                {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-av cb-av-s {{ answer.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face answer.author answer.display_name %}</a><a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-name">{{ answer.display_name }}</a>{% else %}<span class="cb-av cb-av-s cb-av0" aria-hidden="true">{{ answer.display_name|initial }}</span><span class="cb-name">{{ answer.display_name }}</span>{% endif %}
                 <span class="cb-sub">{{ answer.created_at|ago }}</span>
             </p>
             <div class="cb-answer-body">{{ answer.body|urlize|linebreaksbr }}</div>

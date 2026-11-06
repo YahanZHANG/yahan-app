@@ -3,7 +3,7 @@
 {% block title %}マイページ | スイス生活の知恵袋{% endblock %}
 {% block content %}
 <section class="cb-block cb-profile-head">
-    <span class="cb-av cb-av-l {{ user.pk|avatar }}" aria-hidden="true">{{ nickname|initial }}</span>
+    <span class="cb-av cb-av-l {{ user.pk|avatar }}" aria-hidden="true">{% face user nickname %}</span>
     <div class="cb-profile-text">
         <h1>{{ nickname }}</h1>
         <p class="cb-sub">{% if home_region %}{{ home_region }}{% else %}住んでいる地域は未設定{% endif %}</p>

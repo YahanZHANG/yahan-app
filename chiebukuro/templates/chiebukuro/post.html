@@ -21,7 +21,7 @@
     <header class="cb-block-head"><h2>返信 {{ replies|length }}件</h2></header>
     {% for reply in replies %}
         <article class="cb-reply" id="r{{ reply.pk }}">
-            <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{{ reply.display_name|initial }}</a>
+            <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face reply.author reply.display_name %}</a>
             <div>
                 <p class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a><span class="cb-sub">{{ reply.created_at|ago }}</span></p>
                 <div class="cb-post-body">{{ reply.body|urlize|linebreaksbr }}</div>

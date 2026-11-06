@@ -1,6 +1,6 @@
 {% load board %}
 <article class="cb-post" id="p{{ post.pk }}">
-    <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-av {{ post.author_id|avatar }}" aria-hidden="true" tabindex="-1">{{ post.display_name|initial }}</a>
+    <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-av {{ post.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face post.author post.display_name %}</a>
     <div class="cb-post-main">
         <p class="cb-post-head">
             <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-name">{{ post.display_name }}</a>

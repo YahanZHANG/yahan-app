@@ -1,4 +1,5 @@
 import uuid
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -103,21 +104,46 @@ class SurveyImportTests(BoardTestCase):
 
 class HomeTests(BoardTestCase):
 
-    def test_home_shows_every_corner_and_menu(self):
+    def test_home_is_weekly_edition_without_new_post_list(self):
+        from chiebukuro.models import Thanks
+
         Post.objects.create(body="Coop に枝豆がありました", author=self.alice, nickname="alice")
         Question.objects.create(body="答え待ちの質問", theme="life")
         answered = Question.objects.create(body="答えのある質問", theme="life")
-        Answer.objects.create(question=answered, body="これが答え")
-        Item.objects.create(kind="want", genre="kids", title="スキーブーツ", owner=self.bob)
-        Notice.objects.create(kind="event", title="読み聞かせ会", body="毎月", owner=self.bob)
-        Answer.objects.create(question=answered, body="新しい回答です", author=self.bob, nickname="bob")
+        best = Answer.objects.create(question=answered, body="これが答え", author=self.bob, nickname="bob")
+        Thanks.objects.create(answer=best, user=self.alice)
+        Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
+        Item.objects.create(kind="give", genre="kids", title="写真なしの椅子", owner=self.bob)
         response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["Coop に枝豆がありました", "答え待ちの質問", "新しい回答です", "スキーブーツ", "読み聞かせ会"]:
+        for text in ["今週の知恵袋", "今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "あなたの知恵を貸してください"]:
             self.assertContains(response, text)
+        # つぶやきの新着・写真のないゆずりあいは HOME に出さない
+        self.assertNotContains(response, "Coop に枝豆がありました")
+        self.assertNotContains(response, "写真なしの椅子")
         # 下のメニュー: 本は出さない、つぶやきは出す
         for label in ["つぶやき", "質問", "ゆずりあい", "募集・告知"]:
             self.assertContains(response, f"<span>{label}</span>", html=False)
         self.assertNotContains(response, "本の貸し借り")
+
+    def test_staff_pick_comes_first_in_featured(self):
+        from chiebukuro.models import Thanks
+
+        question = Question.objects.create(body="質問", theme="life")
+        popular = Answer.objects.create(question=question, body="人気の答え")
+        Thanks.objects.create(answer=popular, user=self.alice)
+        Post.objects.create(body="運営のおすすめ", author=self.alice, nickname="alice", home_pick=True)
+        response = self.client.get(reverse("chiebukuro:home"))
+        featured = response.context["featured"]
+        self.assertEqual(featured[0]["text"], "運営のおすすめ")
+        self.assertEqual(featured[1]["text"], "人気の答え")
+
+    def test_today_strip_shows_weather_and_rate(self):
+        fake = {"weather": {"temp": 7, "emoji": "☀️", "label": "晴れ", "days": [{"max": 9, "min": 1}]}, "jpy": {"rate": 182.34, "change": 0.4}, "eur": None}
+        with mock.patch("chiebukuro.views.today_in_switzerland", return_value=fake):
+            response = self.client.get(reverse("chiebukuro:today"))
+        self.assertContains(response, "7°")
+        self.assertContains(response, "182.3円")
+        self.assertContains(response, "チューリッヒ")
 
     def test_region_is_remembered(self):
         Item.objects.create(kind="give", genre="other", title="チューリッヒの椅子", region="zurich", owner=self.bob)
@@ -584,3 +610,41 @@ class StampAndSettingsTests(BoardTestCase):
         for section in ["talks", "posts", "questions", "answers", "wanted", "items"]:
             self.assertEqual(self.client.get(reverse("chiebukuro:my_list", args=[section])).status_code, 200, section)
         self.assertEqual(self.client.get(reverse("chiebukuro:my_list", args=["nope"])).status_code, 404)
+
+
+class FaceTests(BoardTestCase):
+
+    def test_illustration_avatar_is_saved_and_shown(self):
+        from chiebukuro.models import BoardProfile
+
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("chiebukuro:profile_edit"), {
+            "nickname": "ありす", "avatar_kind": "illust",
+            "av_bg": "mint", "av_hair": "bob", "av_glasses": "round", "av_skin": "9", "av_mouth": "grin",
+        })
+        self.assertEqual(response.status_code, 302)
+        profile = BoardProfile.objects.get(user=self.alice)
+        self.assertEqual(profile.avatar_kind, "illust")
+        self.assertEqual(profile.avatar_parts["hair"], "bob")
+        self.assertEqual(profile.avatar_parts["skin"], "2")  # 知らない値はふつうに戻す
+        Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")
+        page = self.client.get(reverse("chiebukuro:posts"))
+        self.assertContains(page, "#C9EAD3")  # ミントの背景のイラスト
+
+    def test_photo_avatar_needs_a_photo(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("chiebukuro:profile_edit"), {"nickname": "ありす", "avatar_kind": "photo"})
+        self.assertContains(response, "写真を選んでください。")
+        with mock.patch("chiebukuro.views.upload_board_photo", return_value="https://res.cloudinary.com/x/face.webp"):
+            from django.core.files.uploadedfile import SimpleUploadedFile
+
+            response = self.client.post(reverse("chiebukuro:profile_edit"), {
+                "nickname": "ありす", "avatar_kind": "photo", "photo": SimpleUploadedFile("a.jpg", b"x", content_type="image/jpeg"),
+            })
+        self.assertEqual(response.status_code, 302)
+        self.assertContains(self.client.get(reverse("chiebukuro:me")), "https://res.cloudinary.com/x/face.webp")
+
+    def test_avatar_preview_is_svg(self):
+        response = self.client.get(reverse("chiebukuro:avatar_preview") + "?av_bg=red&av_hair=cap")
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertContains(response, "#E45B63")

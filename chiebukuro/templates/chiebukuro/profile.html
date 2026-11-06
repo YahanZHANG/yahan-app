@@ -3,7 +3,7 @@
 {% block title %}{{ nickname }} | スイス生活の知恵袋{% endblock %}
 {% block content %}
 <section class="cb-block cb-profile-head">
-    <span class="cb-av cb-av-l {{ person.pk|avatar }}" aria-hidden="true">{{ nickname|initial }}</span>
+    <span class="cb-av cb-av-l {{ person.pk|avatar }}" aria-hidden="true">{% face person nickname %}</span>
     <div class="cb-profile-text">
         <h1>{{ nickname }}</h1>
         {% if home_region %}<p class="cb-sub">{{ home_region }}</p>{% endif %}
