@@ -1382,3 +1382,5 @@ html[data-yapp-resolved-theme="dark"] .cb-feat li:first-child .cb-feat-card { bo
 .cb-rules-list { font-size: 13.5px; line-height: 1.7; color: var(--text); }
 .cb-rules .cb-rules-list { padding-left: 20px; font-size: 15px; }
 @media (min-width: 1220px) { .cb-rules-mobile { display: none; } }
+img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7px; background: none; object-fit: cover; }
+.cb-closed img.cb-brand-mark { width: 56px; height: 56px; border-radius: 13px; }
