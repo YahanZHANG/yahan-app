@@ -164,3 +164,94 @@ def attach_previews(questions, count=2):
     for question in questions:
         question.previews = previews.get(question.pk, [])
     return questions
+
+
+# =========================================================
+# HOME のタブ
+# =========================================================
+
+def best_answers(questions):
+    """各質問に、いちばん参考になった答え (なければ最初の答え) を best として付ける"""
+
+    ids = [question.pk for question in questions]
+    best = {}
+    for answer in (
+        Answer.objects
+        .filter(question_id__in=ids, status=Status.PUBLISHED)
+        .annotate(thanks_total=Count("thanks"))
+        .order_by("question_id", "-thanks_total", "created_at")
+    ):
+        best.setdefault(answer.question_id, answer)
+    for question in questions:
+        question.best = best.get(question.pk)
+    return questions
+
+
+def popular_questions(theme="", region="", query="", limit=20):
+    """人気: 答えがあって、知りたい人・答え・参考になったが多い質問"""
+
+    questions = (
+        question_list(theme, region, "new", query)
+        .filter(answer_total__gt=0)
+        .annotate(thanks_total=Count("answers__thanks", distinct=True))
+        .order_by("-interest_total", "-answer_total", "-thanks_total", "-last_answered_at")
+    )
+    return best_answers(list(questions[:limit]))
+
+
+def timeline(theme="", region="", query="", limit=30, before=None):
+    """
+    新着: つぶやき・新しい質問・新しい答え・ゆずります/本 を、新しい順に混ぜる。
+    各行は {"kind", "at", "obj"}。
+    """
+
+    from .models import Item, Post
+
+    def narrow(queryset, body_field, has_theme=True):
+        if theme and has_theme:
+            queryset = queryset.filter(theme=theme)
+        if region:
+            queryset = queryset.filter(Q(region=region) | Q(region=""))
+        if query:
+            queryset = queryset.filter(**{f"{body_field}__icontains": query})
+        if before:
+            queryset = queryset.filter(created_at__lt=before)
+        return queryset
+
+    posts = narrow(Post.objects.filter(status=Status.PUBLISHED), "body").annotate(
+        reply_total=Count("replies", filter=Q(replies__status=Status.PUBLISHED), distinct=True),
+        like_total=Count("likes", distinct=True),
+    )
+    # 運営があらかじめ用意した質問は流さない (利用者の質問だけ)
+    questions = narrow(Question.objects.filter(status=Status.PUBLISHED).exclude(source=Question.Source.STAFF), "body").annotate(
+        answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+    )
+
+    answers = Answer.objects.filter(status=Status.PUBLISHED, question__status=Status.PUBLISHED).select_related("question")
+    if theme:
+        answers = answers.filter(question__theme=theme)
+    if region:
+        answers = answers.filter(Q(question__region=region) | Q(question__region=""))
+    if query:
+        answers = answers.filter(Q(body__icontains=query) | Q(question__body__icontains=query))
+    if before:
+        answers = answers.filter(created_at__lt=before)
+
+    rows = []
+    rows += [{"kind": "post", "at": obj.created_at, "obj": obj} for obj in posts.order_by("-created_at")[:limit]]
+    rows += [{"kind": "question", "at": obj.created_at, "obj": obj} for obj in questions.order_by("-created_at")[:limit]]
+    rows += [{"kind": "answer", "at": obj.created_at, "obj": obj} for obj in answers.order_by("-created_at")[:limit]]
+
+    if not theme:
+        items = Item.objects.filter(status=Status.PUBLISHED)
+        items = narrow(items, "title", has_theme=False)
+        rows += [{"kind": "item", "at": obj.created_at, "obj": obj} for obj in items.order_by("-created_at")[:limit]]
+
+    rows.sort(key=lambda row: row["at"], reverse=True)
+    return rows[:limit]
+
+
+def waiting_questions(theme="", region="", query="", limit=30):
+    """答え待ち: まだ答えがない質問を、知りたい人が多い順に"""
+
+    return list(question_list(theme, region, "open", query)[:limit])

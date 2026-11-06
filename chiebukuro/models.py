@@ -284,3 +284,62 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.target} #{self.target_id}"
+
+
+class Post(models.Model):
+    """つぶやき。テーマと地域のタグを付けると、あとから検索で見つかる。"""
+
+    body = models.TextField("つぶやき")
+    theme = models.CharField("テーマ", max_length=20, choices=THEME_CHOICES, blank=True)
+    region = models.CharField("地域", max_length=30, choices=BOARD_REGION_CHOICES, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_posts")
+    nickname = models.CharField("ニックネーム", max_length=30, blank=True)
+    status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = "つぶやき"
+        verbose_name_plural = "つぶやき"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.body[:40]
+
+    @property
+    def display_name(self):
+        return self.nickname or "名無しさん"
+
+
+class PostReply(models.Model):
+
+    post = models.ForeignKey(Post, verbose_name="つぶやき", on_delete=models.CASCADE, related_name="replies")
+    body = models.TextField("返信")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_post_replies")
+    nickname = models.CharField("ニックネーム", max_length=30, blank=True)
+    status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    created_at = models.DateTimeField("作成日時", default=timezone.now)
+
+    class Meta:
+        verbose_name = "つぶやきへの返信"
+        verbose_name_plural = "つぶやきへの返信"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return self.body[:40]
+
+    @property
+    def display_name(self):
+        return self.nickname or "名無しさん"
+
+
+class PostLike(models.Model):
+    """つぶやきへの「役に立った」"""
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_post_likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "役に立った (つぶやき)"
+        verbose_name_plural = "役に立った (つぶやき)"
+        constraints = [models.UniqueConstraint(fields=["post", "user"], name="chie_post_like_once")]

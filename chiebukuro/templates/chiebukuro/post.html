@@ -1,0 +1,62 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ post.body|truncatechars:30 }} | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:home' %}?tab=new">‹ 新着</a></p>
+
+<article class="cb-card cb-post">
+    <p class="cb-answer-who">
+        <span class="cb-avatar" aria-hidden="true">{{ post.display_name|slice:":1" }}</span>
+        <a href="{% url 'chiebukuro:profile' post.author.username %}">{{ post.display_name }}</a>
+        <span class="cb-meta">{{ post.created_at|date:"n月j日 H:i" }}</span>
+    </p>
+    <p class="cb-post-body">{{ post.body|linebreaksbr|urlize }}</p>
+    <p class="cb-tags">
+        {% if theme_label %}<a href="{% url 'chiebukuro:home' %}?tab=new&amp;theme={{ post.theme }}" class="cb-tag cb-theme-{{ post.theme }}">{{ theme_label }}</a>{% endif %}
+        {% if region_label %}<span class="cb-tag cb-tag-region">📍{{ region_label }}</span>{% endif %}
+    </p>
+    <div class="cb-question-actions">
+        {% if user.is_authenticated and post.author_id != user.pk %}
+            <form method="post" action="{% url 'chiebukuro:post_like' post.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="cb-pill {% if liked %}on{% endif %}">👍 役に立った {{ like_total }}</button>
+            </form>
+        {% else %}
+            <span class="cb-pill cb-pill-static">👍 役に立った {{ like_total }}</span>
+        {% endif %}
+        {% if user.is_authenticated and post.author_id == user.pk %}
+            <form method="post" action="{% url 'chiebukuro:delete_post' post.pk %}" onsubmit="return confirm('このつぶやきを消しますか？');">
+                {% csrf_token %}
+                <button type="submit" class="cb-link-button">消す</button>
+            </form>
+        {% endif %}
+    </div>
+</article>
+
+<h2 class="cb-section-title" id="replies">返信 {{ replies|length }}件</h2>
+{% for reply in replies %}
+    <article class="cb-card cb-answer">
+        <p class="cb-answer-who">
+            <span class="cb-avatar" aria-hidden="true">{{ reply.display_name|slice:":1" }}</span>
+            <a href="{% url 'chiebukuro:profile' reply.author.username %}">{{ reply.display_name }}</a>
+            <span class="cb-meta">{{ reply.created_at|date:"n月j日 H:i" }}</span>
+        </p>
+        <p class="cb-answer-body">{{ reply.body|linebreaksbr|urlize }}</p>
+    </article>
+{% endfor %}
+
+<section class="cb-card">
+    {% if user.is_authenticated %}
+        <form method="post" class="cb-form">
+            {% csrf_token %}
+            <textarea name="body" rows="3" required placeholder="返信する"></textarea>
+            <button type="submit" class="cb-button cb-button-primary">返信する</button>
+        </form>
+    {% else %}
+        <a href="{{ login_url }}" class="cb-button cb-button-primary">ログインして返信する</a>
+    {% endif %}
+</section>
+
+{% with report_target="post" report_id=post.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+{% endblock %}

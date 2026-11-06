@@ -28,12 +28,22 @@ from .models import (
     Item,
     ItemRequest,
     Message,
+    Post,
+    PostLike,
+    PostReply,
     Question,
     Report,
     Status,
     Thanks,
 )
-from .services import SORTS, attach_previews, question_list, user_nickname
+from .services import (
+    attach_previews,
+    popular_questions,
+    question_list,
+    timeline,
+    user_nickname,
+    waiting_questions,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -125,34 +135,47 @@ def upload_board_photo(uploaded_file):
 # HOME (質問の一覧)
 # =========================================================
 
+HOME_TABS = {
+    "popular": "人気",
+    "new": "新着",
+    "waiting": "答え待ち",
+}
+
+
 @board_open
 def home(request):
 
+    tab = request.GET.get("tab", "popular")
+    if tab not in HOME_TABS:
+        tab = "popular"
     theme = clean_choice(request.GET.get("theme", ""), THEME_CHOICES)
     region = clean_choice(request.GET.get("region", ""), BOARD_REGION_CHOICES)
-    sort = request.GET.get("sort", "new")
-    if sort not in SORTS:
-        sort = "new"
     query = (request.GET.get("q") or "").strip()[:60]
 
-    page = Paginator(question_list(theme, region, sort, query), PER_PAGE).get_page(request.GET.get("page"))
-    attach_previews(page.object_list)
+    rows = []
+    questions = []
+    if tab == "new":
+        rows = timeline(theme, region, query, limit=40)
+    elif tab == "waiting":
+        questions = waiting_questions(theme, region, query, limit=40)
+    else:
+        questions = popular_questions(theme, region, query, limit=20)
 
-    # テーマごとの質問の数 (チップに出す)
+    # キーワード検索では、質問の一覧 (答えのちら見せ付き) も出す
+    search_page = None
+    if query:
+        search_page = Paginator(question_list(theme, region, "new", query), PER_PAGE).get_page(request.GET.get("page"))
+        attach_previews(search_page.object_list)
+
     counts = dict(
         Question.objects.filter(status=Status.PUBLISHED)
         .values("theme").annotate(n=Count("pk")).values_list("theme", "n")
     )
     themes = [
-        {"value": value, "label": THEME_LABELS[value], "emoji": THEME_EMOJI.get(value, ""), "count": counts.get(value, 0)}
+        {"value": value, "label": THEME_LABELS[value], "emoji": THEME_EMOJI.get(value, "")}
         for value in THEME_ORDER
         if counts.get(value)
     ]
-
-    # 新着の「ゆずります」「本」(HOME の上に小さく)
-    new_items = list(
-        Item.objects.filter(status=Status.PUBLISHED, state=Item.State.OPEN).order_by("-created_at")[:6]
-    )
 
     totals = {
         "questions": Question.objects.filter(status=Status.PUBLISHED).count(),
@@ -164,19 +187,182 @@ def home(request):
         "chiebukuro/home.html",
         {
             **board_context(request, "questions"),
-            "page": page,
+            "home_tab": tab,
+            "home_tabs": HOME_TABS,
+            "rows": rows,
+            "questions": questions,
+            "search_page": search_page,
             "themes": themes,
             "theme": theme,
             "theme_label": THEME_LABELS.get(theme, ""),
             "region": region,
             "region_label": REGION_LABELS.get(region, ""),
             "regions": BOARD_REGION_CHOICES,
-            "sort": sort,
-            "sorts": SORTS,
             "query": query,
-            "new_items": new_items,
             "totals": totals,
             "theme_emoji": THEME_EMOJI,
+            "post_max": POST_MAX_LENGTH,
+        },
+    )
+
+
+# =========================================================
+# つぶやき
+# =========================================================
+
+POST_MAX_LENGTH = 500
+
+
+@board_open
+@login_required
+def post_new(request):
+
+    error = ""
+    body = (request.POST.get("body") or "").strip() if request.method == "POST" else ""
+    theme = clean_choice(request.POST.get("theme", "") if request.method == "POST" else request.GET.get("theme", ""), THEME_CHOICES)
+    region = clean_choice(request.POST.get("region", ""), BOARD_REGION_CHOICES)
+
+    if request.method == "POST":
+        if not body:
+            error = "つぶやく内容を入力してください。"
+        elif len(body) > POST_MAX_LENGTH:
+            error = f"つぶやきは{POST_MAX_LENGTH}文字までです。"
+        else:
+            recent = Post.objects.filter(author=request.user, body=body).first()
+            post = recent or Post.objects.create(
+                body=body,
+                theme=theme,
+                region=region,
+                author=request.user,
+                nickname=user_nickname(request.user),
+            )
+            if recent is None:
+                notify_staff(request, "新しいつぶやき", post.body, reverse("admin:chiebukuro_post_change", args=[post.pk]))
+            messages.success(request, "つぶやきました！")
+            return redirect(reverse("chiebukuro:home") + "?tab=new")
+
+    return render(
+        request,
+        "chiebukuro/post_form.html",
+        {
+            **board_context(request, "questions"),
+            "body": body,
+            "theme": theme,
+            "region": region,
+            "themes": [(value, THEME_LABELS[value], THEME_EMOJI.get(value, "")) for value in THEME_ORDER],
+            "regions": BOARD_REGION_CHOICES,
+            "error": error,
+            "max_length": POST_MAX_LENGTH,
+            "nickname": user_nickname(request.user),
+        },
+    )
+
+
+@board_open
+def post_detail(request, pk):
+
+    post = get_object_or_404(Post.objects.select_related("author"), pk=pk)
+    if post.status != Status.PUBLISHED and not request.user.is_staff:
+        raise Http404
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return redirect(login_url(request))
+        body = (request.POST.get("body") or "").strip()[:ANSWER_MAX_LENGTH]
+        if body and not post.replies.filter(author=request.user, body=body).exists():
+            PostReply.objects.create(post=post, body=body, author=request.user, nickname=user_nickname(request.user))
+        return redirect(reverse("chiebukuro:post", args=[pk]) + "#replies")
+
+    liked = request.user.is_authenticated and post.likes.filter(user=request.user).exists()
+
+    return render(
+        request,
+        "chiebukuro/post.html",
+        {
+            **board_context(request, "questions"),
+            "post": post,
+            "replies": post.replies.filter(status=Status.PUBLISHED),
+            "like_total": post.likes.count(),
+            "liked": liked,
+            "theme_label": THEME_LABELS.get(post.theme, ""),
+            "region_label": REGION_LABELS.get(post.region, ""),
+            "login_url": login_url(request),
+        },
+    )
+
+
+@board_open
+@require_POST
+@login_required
+def toggle_post_like(request, pk):
+
+    post = get_object_or_404(Post, pk=pk, status=Status.PUBLISHED)
+    if post.author_id != request.user.pk:
+        deleted, _ = PostLike.objects.filter(post=post, user=request.user).delete()
+        if not deleted:
+            try:
+                PostLike.objects.create(post=post, user=request.user)
+            except IntegrityError:
+                pass
+    return redirect(request.POST.get("next") or reverse("chiebukuro:post", args=[pk]))
+
+
+@board_open
+@require_POST
+@login_required
+def delete_post(request, pk):
+
+    post = get_object_or_404(Post, pk=pk, author=request.user)
+    post.status = Status.HIDDEN
+    post.save(update_fields=["status"])
+    messages.success(request, "つぶやきを消しました。")
+    return redirect(reverse("chiebukuro:home") + "?tab=new")
+
+
+@board_open
+def new_choice(request):
+    """真ん中の「＋」: 何を書くか選ぶ"""
+
+    return render(request, "chiebukuro/new.html", board_context(request, "new"))
+
+
+# =========================================================
+# プロフィール
+# =========================================================
+
+@board_open
+def profile(request, username):
+
+    from django.contrib.auth import get_user_model
+
+    person = get_object_or_404(get_user_model(), username=username, is_active=True)
+    posts = list(
+        Post.objects.filter(author=person, status=Status.PUBLISHED)
+        .annotate(reply_total=Count("replies", distinct=True), like_total=Count("likes", distinct=True))
+        .order_by("-created_at")[:30]
+    )
+    answers = list(
+        Answer.objects.filter(author=person, status=Status.PUBLISHED, question__status=Status.PUBLISHED)
+        .select_related("question").order_by("-created_at")[:30]
+    )
+    questions = list(Question.objects.filter(author=person, status=Status.PUBLISHED).order_by("-created_at")[:30])
+    helpful = (
+        Thanks.objects.filter(answer__author=person).count()
+        + PostLike.objects.filter(post__author=person).count()
+    )
+
+    return render(
+        request,
+        "chiebukuro/profile.html",
+        {
+            **board_context(request, "me" if person == request.user else "questions"),
+            "person": person,
+            "nickname": user_nickname(person),
+            "posts": posts,
+            "answers": answers,
+            "questions": questions,
+            "helpful": helpful,
+            "is_me": person == request.user,
         },
     )
 
@@ -217,11 +403,13 @@ def question_detail(request, pk):
             messages.success(request, "答えを書き込みました。ありがとうございます！")
             return redirect(reverse("chiebukuro:question", args=[question.pk]) + "#answers")
 
-    answers = (
+    # 参考になった数の多い順 (同じなら古い順)。いちばん上を「いちばん参考になった」として大きく出す
+    answers = list(
         question.answers.filter(status=Status.PUBLISHED)
         .annotate(thanks_total=Count("thanks"))
-        .order_by("created_at")
+        .order_by("-thanks_total", "created_at")
     )
+    best_answer = answers[0] if answers and answers[0].thanks_total > 0 else None
     thanked = set()
     interested = False
     if request.user.is_authenticated:
@@ -247,6 +435,7 @@ def question_detail(request, pk):
             "theme_emoji": THEME_EMOJI.get(question.theme, ""),
             "region_label": REGION_LABELS.get(question.region, ""),
             "answers": answers,
+            "best_answer": best_answer,
             "thanked": thanked,
             "interested": interested,
             "interest_total": interest_total,
@@ -669,7 +858,7 @@ def report(request):
 
     target = request.POST.get("target", "")
     target_id = request.POST.get("target_id", "")
-    if target in ("question", "answer", "item") and target_id.isdigit():
+    if target in ("question", "answer", "item", "post") and target_id.isdigit():
         Report.objects.create(
             target=target,
             target_id=int(target_id),

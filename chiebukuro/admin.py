@@ -18,6 +18,8 @@ from .models import (
     Item,
     ItemRequest,
     Message,
+    Post,
+    PostReply,
     Question,
     Report,
     Status,
@@ -173,6 +175,28 @@ class ItemRequestAdmin(admin.ModelAdmin):
         return False
 
 
+class PostReplyInline(admin.TabularInline):
+    model = PostReply
+    extra = 0
+    fields = ["body", "nickname", "status", "created_at"]
+    readonly_fields = ["created_at"]
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+
+    list_display = ["short_body", "theme", "region", "nickname", "status", "created_at"]
+    list_editable = ["status"]
+    list_filter = ["status", "theme", "region"]
+    search_fields = ["body", "nickname", "author__username"]
+    readonly_fields = ["author"]
+    inlines = [PostReplyInline]
+
+    @admin.display(description="つぶやき")
+    def short_body(self, obj):
+        return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
+
+
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
 
@@ -184,7 +208,7 @@ class ReportAdmin(admin.ModelAdmin):
     def target_link(self, obj):
         from django.utils.html import format_html
 
-        names = {"question": "question", "answer": "answer", "item": "item"}
+        names = {"question": "question", "answer": "answer", "item": "item", "post": "post"}
         if obj.target not in names:
             return obj.target_id
         url = reverse(f"admin:chiebukuro_{names[obj.target]}_change", args=[obj.target_id])

@@ -10,7 +10,9 @@ from pre_survey.models import Answer as SurveyAnswer
 from pre_survey.models import Interest as SurveyInterest
 from pre_survey.models import Question as SurveyQuestion
 
-from .models import Answer, BoardSettings, Interest, Item, ItemRequest, Message, Question, Report, Thanks
+from .models import (
+    Answer, BoardSettings, Interest, Item, ItemRequest, Message, Post, PostLike, PostReply, Question, Report, Thanks,
+)
 from .services import import_from_survey
 
 
@@ -100,43 +102,68 @@ class SurveyImportTests(BoardTestCase):
 
 class QuestionTests(BoardTestCase):
 
-    def test_home_lists_questions_with_answer_previews_and_filters(self):
+    def test_home_tabs_and_filters(self):
         dentist = Question.objects.create(body="歯医者は？", theme="health", region="zurich")
-        Answer.objects.create(question=dentist, body="Smile がいいです", nickname="Yunyun")
+        best = Answer.objects.create(question=dentist, body="Smile がいいです", nickname="Yunyun")
+        Answer.objects.create(question=dentist, body="日本で治す", nickname="空")
+        Thanks.objects.create(answer=best, user=self.alice)
         Question.objects.create(body="お土産は？", theme="shopping")
         Question.objects.create(body="ジュネーブの公園は？", theme="outing", region="geneva")
 
+        # 人気: 答えのある質問だけ、いちばん参考になった答えを見せる
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "歯医者は？")
         self.assertContains(response, "Smile がいいです")
-        self.assertContains(response, "まだ答えがありません")
-
-        response = self.client.get(reverse("chiebukuro:home") + "?theme=health")
-        self.assertContains(response, "歯医者は？")
+        self.assertContains(response, "ほかの答えも見る（全2件）")
         self.assertNotContains(response, "お土産は？")
 
+        # 答え待ち
+        response = self.client.get(reverse("chiebukuro:home") + "?tab=waiting")
+        self.assertContains(response, "お土産は？")
+        self.assertNotContains(response, "歯医者は？")
+
         # 地域: その地域 + スイス全体
-        response = self.client.get(reverse("chiebukuro:home") + "?region=zurich")
-        self.assertContains(response, "歯医者は？")
+        response = self.client.get(reverse("chiebukuro:home") + "?tab=waiting&region=zurich")
         self.assertContains(response, "お土産は？")
         self.assertNotContains(response, "ジュネーブの公園は？")
 
-        response = self.client.get(reverse("chiebukuro:home") + "?q=Smile")
-        self.assertContains(response, "歯医者は？")
+        response = self.client.get(reverse("chiebukuro:home") + "?tab=waiting&theme=outing")
+        self.assertContains(response, "ジュネーブの公園は？")
         self.assertNotContains(response, "お土産は？")
 
-        response = self.client.get(reverse("chiebukuro:home") + "?sort=open")
-        self.assertNotContains(response, "歯医者は？")
-        self.assertContains(response, "お土産は？")
+        # キーワード: 答えの中も探す
+        response = self.client.get(reverse("chiebukuro:home") + "?q=Smile")
+        self.assertContains(response, "「Smile」の質問 1件")
 
-    def test_wanted_sort_counts_survey_and_board_interests(self):
+    def test_new_tab_mixes_posts_questions_answers_items(self):
+        question = Question.objects.create(body="新しい質問", theme="life")
+        Answer.objects.create(question=question, body="新しい答え", nickname="x")
+        Post.objects.create(body="Coop に枝豆がありました", author=self.alice, nickname="alice", theme="shopping")
+        Item.objects.create(kind="give", title="ベビーカー", owner=self.bob)
+        response = self.client.get(reverse("chiebukuro:home") + "?tab=new")
+        for text in ["新しい質問", "新しい答え", "Coop に枝豆がありました", "ベビーカー"]:
+            self.assertContains(response, text)
+        response = self.client.get(reverse("chiebukuro:home") + "?tab=new&theme=shopping")
+        self.assertContains(response, "枝豆")
+        self.assertNotContains(response, "新しい質問")
+
+    def test_wanted_questions_first_in_popular(self):
         popular = Question.objects.create(body="人気", theme="life", survey_interest_count=2)
         quiet = Question.objects.create(body="静か", theme="life")
+        for question in (popular, quiet):
+            Answer.objects.create(question=question, body="A")
         Interest.objects.create(question=quiet, user=self.alice)
-        response = self.client.get(reverse("chiebukuro:home") + "?sort=wanted")
-        bodies = [q.body for q in response.context["page"].object_list]
-        self.assertEqual(bodies, ["人気", "静か"])
-        self.assertEqual(popular.pk, response.context["page"].object_list[0].pk)
+        response = self.client.get(reverse("chiebukuro:home"))
+        self.assertEqual([q.body for q in response.context["questions"]], ["人気", "静か"])
+
+    def test_best_answer_first_on_question_page(self):
+        question = Question.objects.create(body="Q", theme="life")
+        Answer.objects.create(question=question, body="最初の答え")
+        helpful = Answer.objects.create(question=question, body="役に立つ答え")
+        Thanks.objects.create(answer=helpful, user=self.alice)
+        response = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
+        self.assertEqual(response.context["answers"][0], helpful)
+        self.assertContains(response, "いちばん参考になった答え")
 
     def test_ask_answer_interest_thanks(self):
         self.client.force_login(self.alice)
@@ -259,3 +286,36 @@ class ItemTests(BoardTestCase):
         self.assertEqual(item.status, "hidden")
         self.client.force_login(self.bob)
         self.assertEqual(self.client.get(reverse("chiebukuro:item", args=[item.pk])).status_code, 404)
+
+
+class PostTests(BoardTestCase):
+
+    def test_post_reply_like_profile(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("chiebukuro:post_new"), {"body": "Migros にお餅がありました", "theme": "shopping", "region": "zurich"})
+        self.assertRedirects(response, reverse("chiebukuro:home") + "?tab=new")
+        post = Post.objects.get()
+        self.assertEqual((post.theme, post.region, post.nickname), ("shopping", "zurich", "alice"))
+
+        self.client.force_login(self.bob)
+        self.client.post(reverse("chiebukuro:post", args=[post.pk]), {"body": "どこの店舗ですか？"})
+        self.assertEqual(PostReply.objects.get().author, self.bob)
+        self.client.post(reverse("chiebukuro:post_like", args=[post.pk]))
+        self.assertTrue(PostLike.objects.filter(user=self.bob).exists())
+
+        response = self.client.get(reverse("chiebukuro:profile", args=["alice"]))
+        self.assertContains(response, "Migros にお餅がありました")
+        self.assertContains(response, "👍 1")
+
+        # 消すのは本人だけ
+        self.client.post(reverse("chiebukuro:delete_post", args=[post.pk]))
+        post.refresh_from_db()
+        self.assertEqual(post.status, "published")
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:delete_post", args=[post.pk]))
+        post.refresh_from_db()
+        self.assertEqual(post.status, "hidden")
+
+    def test_write_menu_and_guest_redirect(self):
+        self.assertContains(self.client.get(reverse("chiebukuro:new")), "つぶやく")
+        self.assertEqual(self.client.get(reverse("chiebukuro:post_new")).status_code, 302)

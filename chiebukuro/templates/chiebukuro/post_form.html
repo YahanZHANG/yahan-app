@@ -1,0 +1,31 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}つぶやく | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<section class="cb-card">
+    <h1>つぶやく</h1>
+    <p class="cb-lead">見つけたお店、役に立った情報、今日のできごとなど、気軽にどうぞ。「{{ nickname }}」の名前で載ります。</p>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" class="cb-form">
+        {% csrf_token %}
+        <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！">{{ body }}</textarea>
+        <fieldset class="cb-choices">
+            <legend>テーマ（あとで探しやすくなります）</legend>
+            <label class="cb-choice"><input type="radio" name="theme" value="" {% if not theme %}checked{% endif %}><span>なし</span></label>
+            {% for value, label, emoji in themes %}
+                <label class="cb-choice"><input type="radio" name="theme" value="{{ value }}" {% if value == theme %}checked{% endif %}><span>{{ emoji }} {{ label }}</span></label>
+            {% endfor %}
+        </fieldset>
+        <label class="cb-field">
+            <span>地域（その地域の話のときだけ）</span>
+            <select name="region">
+                <option value="">スイス全体</option>
+                {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </label>
+        <button type="submit" class="cb-button cb-button-primary">つぶやく</button>
+    </form>
+    <p class="cb-note">住所・電話番号など、個人が特定できる情報は書かないでください。</p>
+</section>
+{% endblock %}

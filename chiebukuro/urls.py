@@ -21,5 +21,11 @@ urlpatterns = [
     path("talk/<int:pk>/", views.talk, name="talk"),
     path("talk/<int:pk>/choose/", views.talk_choose, name="talk_choose"),
     path("me/", views.my_page, name="me"),
+    path("post/", views.post_new, name="post_new"),
+    path("new/", views.new_choice, name="new"),
+    path("p/<int:pk>/", views.post_detail, name="post"),
+    path("p/<int:pk>/like/", views.toggle_post_like, name="post_like"),
+    path("p/<int:pk>/delete/", views.delete_post, name="delete_post"),
+    path("u/<str:username>/", views.profile, name="profile"),
     path("report/", views.report, name="report"),
 ]

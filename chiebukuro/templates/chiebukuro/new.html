@@ -1,0 +1,30 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}書く | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<h1 class="cb-page-title">何を書きますか？</h1>
+<div class="cb-choice-grid">
+    <a href="{% url 'chiebukuro:ask' %}" class="cb-big-choice">
+        <span aria-hidden="true">✋</span>
+        <strong>質問する</strong>
+        <small>知りたいことを、みんなに聞く</small>
+    </a>
+    <a href="{% url 'chiebukuro:post_new' %}" class="cb-big-choice">
+        <span aria-hidden="true">💬</span>
+        <strong>つぶやく</strong>
+        <small>見つけた情報や、今日のできごとをひとこと</small>
+    </a>
+    <a href="{% url 'chiebukuro:item_new' 'give' %}" class="cb-big-choice">
+        <span aria-hidden="true">🎁</span>
+        <strong>ゆずる</strong>
+        <small>使わなくなった物を、無料で</small>
+    </a>
+    <a href="{% url 'chiebukuro:item_new' 'book' %}" class="cb-big-choice">
+        <span aria-hidden="true">📚</span>
+        <strong>本を貸す</strong>
+        <small>読み終わった本や絵本を</small>
+    </a>
+</div>
+<p class="cb-note cb-center">答えるときは、質問のページから書き込めます。<a href="{% url 'chiebukuro:home' %}?tab=waiting">答えを待っている質問 ›</a></p>
+{% endblock %}

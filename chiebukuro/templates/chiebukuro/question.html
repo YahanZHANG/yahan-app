@@ -10,7 +10,7 @@
         <span class="cb-tag cb-theme-{{ question.theme }}">{{ theme_emoji }} {{ theme_label }}</span>
         {% if region_label %}<span class="cb-tag cb-tag-region">📍{{ region_label }}</span>{% endif %}
     </p>
-    <h1>{{ question.body }}</h1>
+    <h1><span class="cb-q-mark" aria-hidden="true">Q</span>{{ question.body }}</h1>
     <p class="cb-meta">{{ question.display_name }}・{{ question.created_at|date:"Y年n月j日" }}</p>
 
     <div class="cb-question-actions">
@@ -29,10 +29,16 @@
 <h2 class="cb-section-title" id="answers">答え {{ answers|length }}件</h2>
 
 {% for answer in answers %}
-    <article class="cb-card cb-answer" id="a{{ answer.pk }}">
+    <article class="cb-card cb-answer {% if best_answer and answer.pk == best_answer.pk %}cb-answer-best{% endif %}" id="a{{ answer.pk }}">
+        {% if best_answer and answer.pk == best_answer.pk %}<p class="cb-best-label">👍 いちばん参考になった答え</p>{% endif %}
+        <p class="cb-answer-who">
+            <span class="cb-avatar" aria-hidden="true">{{ answer.display_name|slice:":1" }}</span>
+            {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}">{{ answer.display_name }}</a>{% else %}<span>{{ answer.display_name }}</span>{% endif %}
+            <span class="cb-meta">{{ answer.created_at|date:"n月j日" }}</span>
+        </p>
         <p class="cb-answer-body">{{ answer.body|linebreaksbr|urlize }}</p>
         <div class="cb-answer-foot">
-            <span class="cb-meta">{{ answer.display_name }}・{{ answer.created_at|date:"n月j日" }}</span>
+            <span></span>
             {% if user.is_authenticated and answer.author_id != user.pk %}
                 <form method="post" action="{% url 'chiebukuro:thanks' answer.pk %}">
                     {% csrf_token %}

@@ -1,74 +1,107 @@
 {% extends "chiebukuro/base.html" %}
 
 {% block content %}
-{% if not theme and not query and not region and page.number == 1 %}
-<section class="cb-hero">
-    <p class="cb-hero-lead">スイス暮らしの<br>「知りたい」と「知ってる」をつなぐ場所</p>
-    <p class="cb-hero-count"><b>{{ totals.questions }}</b>の質問に、<b>{{ totals.answers }}</b>の答え</p>
-    <a href="{% url 'chiebukuro:ask' %}" class="cb-button cb-button-primary cb-hero-ask">＋ 質問してみる</a>
+{% if not query %}
+<section class="cb-welcome">
+    <p class="cb-welcome-lead">スイス暮らしの「知りたい」と「知ってる」が集まる場所</p>
+    <p class="cb-welcome-count"><b>{{ totals.questions }}</b>の質問と<b>{{ totals.answers }}</b>の答え</p>
 </section>
-
-{% if new_items %}
-<section class="cb-strip" aria-label="新着のゆずります・本">
-    <h2 class="cb-strip-title">新着のゆずります・本</h2>
-    <div class="cb-strip-row">
-        {% for item in new_items %}
-            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-strip-item">
-                {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="" loading="lazy">{% else %}<span class="cb-strip-emoji" aria-hidden="true">{% if item.kind == 'book' %}📚{% else %}🎁{% endif %}</span>{% endif %}
-                <span>{{ item.title|truncatechars:18 }}</span>
-            </a>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
+<nav class="cb-doors" aria-label="何をしに来ましたか">
+    <a href="#search" class="cb-door" data-focus-search><span aria-hidden="true">🔍</span><strong>探す</strong><small>キーワードで</small></a>
+    <a href="{% url 'chiebukuro:ask' %}" class="cb-door cb-door-accent"><span aria-hidden="true">✋</span><strong>質問する</strong><small>みんなに聞く</small></a>
+    <a href="{% url 'chiebukuro:post_new' %}" class="cb-door"><span aria-hidden="true">💬</span><strong>つぶやく</strong><small>情報をひとこと</small></a>
+</nav>
 {% endif %}
 
-<form method="get" class="cb-search" role="search">
-    <input type="search" name="q" value="{{ query }}" placeholder="キーワードで探す" aria-label="キーワード">
+<form method="get" class="cb-search" role="search" id="search">
+    <input type="search" name="q" value="{{ query }}" placeholder="キーワードで探す（歯医者、お米…）" aria-label="キーワード">
+    <input type="hidden" name="tab" value="{{ home_tab }}">
     {% if theme %}<input type="hidden" name="theme" value="{{ theme }}">{% endif %}
-    <select name="region" aria-label="地域" onchange="this.form.submit()">
-        <option value="">スイス全体</option>
-        {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
+    {% if region %}<input type="hidden" name="region" value="{{ region }}">{% endif %}
+    <button type="submit" class="cb-search-button" aria-label="探す">🔍</button>
 </form>
 
 <nav class="cb-chips" aria-label="テーマ">
-    <a href="?{% if region %}region={{ region }}&amp;{% endif %}sort={{ sort }}" class="cb-chip {% if not theme %}on{% endif %}">すべて</a>
+    <a href="?tab={{ home_tab }}{% if region %}&amp;region={{ region }}{% endif %}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" class="cb-chip {% if not theme %}on{% endif %}">すべて</a>
     {% for item in themes %}
-        <a href="?theme={{ item.value }}{% if region %}&amp;region={{ region }}{% endif %}&amp;sort={{ sort }}" class="cb-chip {% if item.value == theme %}on{% endif %}">{{ item.emoji }} {{ item.label }}</a>
+        <a href="?tab={{ home_tab }}&amp;theme={{ item.value }}{% if region %}&amp;region={{ region }}{% endif %}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" class="cb-chip {% if item.value == theme %}on{% endif %}">{{ item.emoji }} {{ item.label }}</a>
     {% endfor %}
 </nav>
 
-<nav class="cb-sorts" aria-label="並べ方">
-    {% for key, label in sorts.items %}
-        <a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ key }}" class="{% if key == sort %}on{% endif %}">{{ label }}</a>
-    {% endfor %}
-</nav>
+<form method="get" class="cb-region">
+    <input type="hidden" name="tab" value="{{ home_tab }}">
+    {% if theme %}<input type="hidden" name="theme" value="{{ theme }}">{% endif %}
+    {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+    <label>📍
+        <select name="region" aria-label="地域" onchange="this.form.submit()">
+            <option value="">スイス全体</option>
+            {% for value, label in regions %}<option value="{{ value }}" {% if value == region %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </label>
+    {% if query or theme or region %}<a href="{% url 'chiebukuro:home' %}?tab={{ home_tab }}" class="cb-clear">条件を外す</a>{% endif %}
+</form>
 
-{% if query or theme or region %}
-    <p class="cb-filter-note">
-        {% if query %}「{{ query }}」{% endif %}{% if theme_label %} {{ theme_label }}{% endif %}{% if region_label %} 📍{{ region_label }}{% endif %}
-        の質問 {{ page.paginator.count }}件
-        <a href="{% url 'chiebukuro:home' %}">条件を外す</a>
-    </p>
+{% if search_page %}
+    <h2 class="cb-section-title">「{{ query }}」の質問 {{ search_page.paginator.count }}件</h2>
+    <div class="cb-qlist">
+        {% for question in search_page.object_list %}
+            {% include "chiebukuro/_question_card.html" %}
+        {% empty %}
+            <section class="cb-card cb-empty">
+                <p>見つかりませんでした。</p>
+                <a href="{% url 'chiebukuro:ask' %}" class="cb-button cb-button-primary">みんなに質問する</a>
+            </section>
+        {% endfor %}
+    </div>
+    <h2 class="cb-section-title">つぶやき・答えの中から</h2>
 {% endif %}
 
-<div class="cb-qlist">
-    {% for question in page.object_list %}
-        {% include "chiebukuro/_question_card.html" %}
-    {% empty %}
-        <section class="cb-card cb-empty">
-            <p>当てはまる質問がまだありません。</p>
-            <a href="{% url 'chiebukuro:ask' %}{% if theme %}?theme={{ theme }}{% endif %}" class="cb-button cb-button-primary">この内容で質問する</a>
-        </section>
+<nav class="cb-tabs" aria-label="表示">
+    {% for key, label in home_tabs.items %}
+        <a href="?tab={{ key }}{% if theme %}&amp;theme={{ theme }}{% endif %}{% if region %}&amp;region={{ region }}{% endif %}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" class="{% if key == home_tab %}on{% endif %}">{% if key == 'popular' %}⭐ {% elif key == 'new' %}🕒 {% else %}✏️ {% endif %}{{ label }}</a>
     {% endfor %}
-</div>
-
-{% if page.has_other_pages %}
-<nav class="cb-pager" aria-label="ページ">
-    {% if page.has_previous %}<a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ sort }}&amp;page={{ page.previous_page_number }}">‹ 前へ</a>{% endif %}
-    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
-    {% if page.has_next %}<a href="?{% if theme %}theme={{ theme }}&amp;{% endif %}{% if region %}region={{ region }}&amp;{% endif %}{% if query %}q={{ query|urlencode }}&amp;{% endif %}sort={{ sort }}&amp;page={{ page.next_page_number }}">次へ ›</a>{% endif %}
 </nav>
+
+{% if home_tab == 'new' %}
+    <div class="cb-feed-list">
+        {% for row in rows %}
+            {% include "chiebukuro/_feed.html" %}
+        {% empty %}
+            <section class="cb-card cb-empty"><p>まだ何もありません。最初のつぶやきをどうぞ！</p></section>
+        {% endfor %}
+    </div>
+{% elif home_tab == 'waiting' %}
+    <p class="cb-tab-lead">まだ答えがない質問です。ひとことでも、知っていることを教えてください。</p>
+    <div class="cb-wait-list">
+        {% for question in questions %}
+            <a href="{% url 'chiebukuro:question' question.pk %}#answer-form" class="cb-wait">
+                <span class="cb-tag cb-theme-{{ question.theme }}">{{ question.get_theme_display }}</span>
+                <strong>{{ question.body }}</strong>
+                <span class="cb-wait-foot">{% if question.interest_total %}<span class="cb-meta">🙋 知りたい {{ question.interest_total }}人</span>{% endif %}<span class="cb-wait-go">答える ›</span></span>
+            </a>
+        {% empty %}
+            <section class="cb-card cb-empty"><p>答えを待っている質問はありません。すごい！</p></section>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="cb-pop-list">
+        {% for question in questions %}
+            {% include "chiebukuro/_popular_card.html" %}
+        {% empty %}
+            <section class="cb-card cb-empty"><p>当てはまる質問がまだありません。</p><a href="{% url 'chiebukuro:ask' %}" class="cb-button cb-button-primary">質問する</a></section>
+        {% endfor %}
+    </div>
 {% endif %}
+
+<script>
+// 「探す」: 検索欄へ移動して入力できる状態に
+document.querySelectorAll("[data-focus-search]").forEach(function (link) {
+    link.addEventListener("click", function (event) {
+        event.preventDefault();
+        var input = document.querySelector("#search input[type=search]");
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus({ preventScroll: true });
+    });
+});
+</script>
 {% endblock %}

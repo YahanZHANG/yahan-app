@@ -1,0 +1,50 @@
+{% extends "chiebukuro/base.html" %}
+
+{% block title %}{{ nickname }} | スイス生活の知恵袋{% endblock %}
+
+{% block content %}
+<section class="cb-card cb-profile">
+    <span class="cb-avatar cb-avatar-big" aria-hidden="true">{{ nickname|slice:":1" }}</span>
+    <div>
+        <h1>{{ nickname }}</h1>
+        <p class="cb-meta">つぶやき {{ posts|length }}・答え {{ answers|length }}・質問 {{ questions|length }}{% if helpful %}・👍 {{ helpful }}{% endif %}</p>
+    </div>
+</section>
+{% if is_me %}<p class="cb-note">ニックネームは <a href="{% url 'portal:home' %}">Yapp</a> のアカウント設定で変えられます。</p>{% endif %}
+
+{% if posts %}
+<h2 class="cb-section-title">つぶやき</h2>
+<div class="cb-feed-list">
+    {% for post in posts %}
+        <a href="{% url 'chiebukuro:post' post.pk %}" class="cb-feed cb-feed-question">
+            <span class="cb-meta">{{ post.created_at|date:"n/j H:i" }}</span>
+            <strong class="cb-normal">{{ post.body|truncatechars:160 }}</strong>
+            <span class="cb-meta">💬 {{ post.reply_total }}　👍 {{ post.like_total }}</span>
+        </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if answers %}
+<h2 class="cb-section-title">答え</h2>
+<div class="cb-feed-list">
+    {% for answer in answers %}
+        <a href="{% url 'chiebukuro:question' answer.question_id %}#a{{ answer.pk }}" class="cb-feed cb-feed-answer">
+            <p class="cb-feed-q">Q. {{ answer.question.body|truncatechars:60 }}</p>
+            <p class="cb-feed-a">{{ answer.body|truncatechars:120 }}</p>
+        </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if questions %}
+<h2 class="cb-section-title">質問</h2>
+<ul class="cb-simple-list cb-card">
+    {% for question in questions %}<li><a href="{% url 'chiebukuro:question' question.pk %}">{{ question.body }}</a></li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if not posts and not answers and not questions %}
+    <section class="cb-card cb-empty"><p>まだ書き込みがありません。</p></section>
+{% endif %}
+{% endblock %}
