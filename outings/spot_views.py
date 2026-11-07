@@ -134,7 +134,7 @@ def spot_list(request):
     used_areas = {AREA_OF_CANTON.get(c) for c in published_spots().values_list("canton", flat=True)}
     chips = {
         "toggles": [
-            {"label": label, "icon": icon, "active": flags[key], "qs": link(**{key: "" if flags[key] else "1"})}
+            {"key": key, "label": label, "icon": icon, "active": flags[key], "qs": link(**{key: "" if flags[key] else "1"})}
             for key, label, icon in TOGGLES
         ],
         "ages": [{"label": label, "active": key == age, "qs": choice("age", key, age)} for key, label, *_ in AGE_GROUPS],
@@ -148,10 +148,21 @@ def spot_list(request):
             for value, label in FamilySpot.Kind.choices if value in used_kinds
         ],
     }
+    # The filter form: pick everything, then press 探す once.
+    groups = [
+        {"name": "age", "title": "年齢", "value": age, "options": [(key, label) for key, label, *_ in AGE_GROUPS]},
+        {"name": "trip", "title": "チューリッヒから", "value": trip, "options": list(TRIPS)},
+        {"name": "area", "title": "地域", "value": area,
+         "options": [(key, label) for key, label, _ in AREAS if key in used_areas]},
+        {"name": "kind", "title": "種類", "value": kind,
+         "options": [(value, f"{KIND_EMOJI.get(value, '🎈')} {label}") for value, label in FamilySpot.Kind.choices if value in used_kinds]},
+    ]
+    groups = [g for g in groups if len(g["options"]) > 1]
     filtered = bool(kind or area or age or trip or any(flags.values()))
     return render(request, "outings/spot_list.html", {
         "spots": spots,
         "chips": chips,
+        "groups": groups,
         "filtered": filtered,
         "filter_count": sum(bool(v) for v in (kind, area, age, trip)) + sum(flags.values()),
         "clear_qs": "kids=1",

@@ -15,35 +15,36 @@
     </a>
     <div class="og-countbar"><p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>{% include "outings/includes/view_toggle.html" %}</div>
 
-    <nav class="og-chips og-chips--scroll" aria-label="よく使う条件">
-        {% for chip in chips.toggles %}
-            <a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}"{% if chip.active %} aria-current="true"{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</a>
-        {% endfor %}
-    </nav>
-
-    <details class="og-filters" data-open-on-pc{% if filter_count %} open{% endif %}>
-        <summary><i class="bi bi-sliders" aria-hidden="true"></i>年齢・地域・種類で絞り込む</summary>
-        <div class="og-filters__body">
-            <div class="og-filters__group">
-                <h2>年齢</h2>
-                <div class="og-chips">{% for chip in chips.ages %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
-            </div>
-            <div class="og-filters__group">
-                <h2>チューリッヒから</h2>
-                <div class="og-chips">{% for chip in chips.trips %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
-            </div>
-            {% if chips.areas|length > 1 %}
-                <div class="og-filters__group">
-                    <h2>地域</h2>
-                    <div class="og-chips">{% for chip in chips.areas %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
-                </div>
-            {% endif %}
-            <div class="og-filters__group">
-                <h2>種類</h2>
-                <div class="og-chips">{% for chip in chips.kinds %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.emoji }} {{ chip.label }}</a>{% endfor %}</div>
-            </div>
+    <form method="get" action="" class="og-filterform">
+        <input type="hidden" name="kids" value="1">
+        <div class="og-chips og-chips--scroll" role="group" aria-label="よく使う条件">
+            {% for chip in chips.toggles %}
+                <label class="og-chip og-chip--pick"><input type="checkbox" name="{{ chip.key }}" value="1"{% if chip.active %} checked{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</label>
+            {% endfor %}
         </div>
-    </details>
+
+        <details class="og-filters" data-open-on-pc{% if filter_count %} open{% endif %}>
+            <summary><i class="bi bi-sliders" aria-hidden="true"></i>年齢・地域・種類で絞り込む</summary>
+            <div class="og-filters__body">
+                {% for group in groups %}
+                    <fieldset class="og-filters__group">
+                        <legend>{{ group.title }}</legend>
+                        <div class="og-chips">
+                            <label class="og-chip og-chip--pick"><input type="radio" name="{{ group.name }}" value=""{% if not group.value %} checked{% endif %}>指定なし</label>
+                            {% for value, label in group.options %}
+                                <label class="og-chip og-chip--pick"><input type="radio" name="{{ group.name }}" value="{{ value }}"{% if value == group.value %} checked{% endif %}>{{ label }}</label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                {% endfor %}
+            </div>
+        </details>
+
+        <div class="og-filterform__actions">
+            <button type="submit" class="og-filterform__go"><i class="bi bi-search" aria-hidden="true"></i>この条件で探す</button>
+            {% if filtered %}<a href="?{{ clear_qs }}" class="og-filterform__reset">条件を解除</a>{% endif %}
+        </div>
+    </form>
 
     {% if spots %}
         <div class="og-spots og-spots--list">
@@ -55,6 +56,14 @@
 
 </div>
 <script>
+// Drop empty choices from the address (?kind=&area= …) when searching.
+document.querySelectorAll(".og-filterform").forEach(function (form) {
+    form.addEventListener("submit", function () {
+        form.querySelectorAll("input").forEach(function (input) {
+            if ((input.type === "radio" && input.checked && !input.value)) input.disabled = true;
+        });
+    });
+});
 // PC has room: show the filters open.
 if (window.matchMedia && window.matchMedia("(min-width: 960px)").matches) {
     document.querySelectorAll("[data-open-on-pc]").forEach(function (el) { el.open = true; });
