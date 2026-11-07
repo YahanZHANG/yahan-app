@@ -488,6 +488,22 @@ class SearchTests(PageTestCase):
         self.assertContains(response, "来週末の祭り")
         self.assertContains(response, "明日の講演")
 
+    def test_sunny_sort_puts_sunny_places_first(self):
+        from outings import sunny
+        day = timezone.localdate(self.now) + timedelta(days=1)
+        start = timezone.make_aware(datetime.combine(day, datetime.min.time())) + timedelta(hours=12)
+        wet = make_event("雨の町の会", start=start)
+        dry = make_event("晴れの町の会", start=start + timedelta(hours=1))
+        for event, (lat, lon) in ((wet, sunny.POINTS[0]), (dry, sunny.POINTS[-1])):
+            event.location.latitude, event.location.longitude = lat, lon
+            event.location.save()
+        forecasts = {sunny.POINTS[0]: {day.isoformat(): {"code": 61, "rain": 80}},
+                     sunny.POINTS[-1]: {day.isoformat(): {"code": 0, "rain": 0}}}
+        with mock.patch.object(sunny.weather, "_forecasts", return_value=forecasts):
+            body = self.search(sort="sunny").content.decode()
+        self.assertLess(body.index("晴れの町の会"), body.index("雨の町の会"))
+        self.assertIn("晴れ優先", body)
+
     def test_keyword_also_finds_trips(self):
         from outings.models import TouristSpot
         TouristSpot.objects.create(

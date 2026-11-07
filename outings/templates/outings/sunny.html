@@ -34,10 +34,20 @@
 
     <div id="og-map" class="og-map" aria-label="地図"></div>
 
+    {% if count %}
+        <nav class="og-wx-jump" aria-label="天気ごとの件数">
+            {% for group in groups %}
+                {% if group.total %}
+                    <a href="#wx-{{ group.key }}" class="og-wx-jump__item og-wx--{{ group.key }}">{{ group.label }}<strong>{{ group.total }}</strong></a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+    {% endif %}
+
     {% for group in groups %}
         {% if group.rows %}
-            <section class="og-section">
-                <header class="og-section__head"><h2>{{ group.label }}<small>{{ group.total }}件</small></h2></header>
+            <section class="og-wx-group og-wx--{{ group.key }}" id="wx-{{ group.key }}">
+                <h2 class="og-wx-group__head">{{ group.label }}<span>{{ group.total }}件</span></h2>
                 <ul class="og-rows">
                     {% for item in group.rows %}
                         <li>

@@ -565,3 +565,20 @@ html[data-outings-theme="dark"] {
 .og-rows__wx { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-size: 20px; line-height: 1.1; }
 .og-rows__wx small { font-size: 11px; color: var(--outings-muted); }
 .og-section__head h2 small { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--outings-muted); }
+
+/* 晴れの場所: each weather group is its own coloured block */
+.og-wx-jump { display: flex; gap: 8px; margin: 0 0 16px; flex-wrap: wrap; }
+.og-wx-jump__item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--wx-ink); background: var(--wx-bg); border: 1px solid var(--wx-line); }
+.og-wx-jump__item strong { font-size: 15px; }
+.og-wx-group { margin: 0 0 20px; border-radius: 14px; overflow: hidden; border: 1px solid var(--wx-line); border-left: 6px solid var(--wx-line); background: var(--outings-surface); scroll-margin-top: 12px; }
+.og-wx-group__head { margin: 0; padding: 10px 14px; font-size: 17px; font-weight: 700; color: var(--wx-ink); background: var(--wx-bg); display: flex; align-items: baseline; gap: 8px; }
+.og-wx-group__head span { font-size: 13px; font-weight: 500; opacity: .8; }
+.og-wx-group .og-rows { margin: 0; padding: 0 12px; }
+.og-wx-group .og-count { padding: 0 14px 10px; }
+.og-wx--sunny { --wx-bg: #fff4d6; --wx-line: #e8a317; --wx-ink: #7a4d00; }
+.og-wx--cloudy { --wx-bg: #eef1f5; --wx-line: #9aa6b5; --wx-ink: #3d4652; }
+.og-wx--wet { --wx-bg: #e3eefb; --wx-line: #4a7fc1; --wx-ink: #1f4a7d; }
+.og-wx--wet .og-rows strong { font-weight: 500; }
+[data-outings-theme="dark"] .og-wx--sunny { --wx-bg: #3a2f12; --wx-line: #e8a317; --wx-ink: #ffd77a; }
+[data-outings-theme="dark"] .og-wx--cloudy { --wx-bg: #2a2f36; --wx-line: #7d8896; --wx-ink: #d3d9e0; }
+[data-outings-theme="dark"] .og-wx--wet { --wx-bg: #1c2b3d; --wx-line: #5b8fd1; --wx-ink: #b7d3f5; }
