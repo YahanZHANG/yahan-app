@@ -15,6 +15,7 @@ python manage.py import_myswitzerland --pages 1
 
 python manage.py import_myswitzerland --all            # count everything
 python manage.py import_myswitzerland --all --commit   # save everything
+python manage.py import_myswitzerland --all --max-new 200 --commit   # only 200 new
 """
 
 from django.core.management.base import (
@@ -70,6 +71,14 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--max-new",
+            type=int,
+            default=0,
+            help="Stop after this many new spots (0 = no limit). "
+                 "Types are mixed, a quarter each, before the limit is shared.",
+        )
+
+        parser.add_argument(
             "--commit",
             action="store_true",
         )
@@ -101,6 +110,15 @@ class Command(BaseCommand):
             else (spot_type,)
         )
 
+        max_new = options["max_new"]
+
+        if max_new < 0:
+            raise CommandError("--max-new must be 0 or more")
+
+        # Share the limit between the types so a test import has a bit of
+        # everything; a type that runs out leaves its share to the next.
+        remaining = max_new
+
         stats = {
             "created": 0,
             "updated": 0,
@@ -108,7 +126,16 @@ class Command(BaseCommand):
             "skipped": 0,
         }
 
-        for current_type in types:
+        for index, current_type in enumerate(types):
+
+            if max_new and remaining <= 0:
+                break
+
+            type_cap = (
+                -(-remaining // (len(types) - index))
+                if max_new else 0
+            )
+            created_before = stats["created"]
 
             self.stdout.write("")
             self.stdout.write(
@@ -126,18 +153,24 @@ class Command(BaseCommand):
                     fetched += len(items)
                     with transaction.atomic():
                         for item in items:
+                            if type_cap and stats["created"] - created_before >= type_cap:
+                                break
                             self.save_item(
                                 item,
                                 current_type,
                                 stats,
                                 commit,
                             )
+                    if type_cap and stats["created"] - created_before >= type_cap:
+                        break
             except MySwitzerlandAPIError as exc:
                 raise CommandError(
                     f"{exc} (pages already read were "
                     f"{'saved' if commit else 'counted'}; "
                     "a rerun skips unchanged records)"
                 ) from exc
+
+            remaining -= stats["created"] - created_before
 
             self.stdout.write(
                 f"Finished {current_type}: fetched {fetched}"

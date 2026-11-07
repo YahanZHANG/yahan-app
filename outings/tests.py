@@ -796,6 +796,18 @@ class TripImportTests(TestCase):
         self.assertEqual(spot.summary_ja, "大きな滝。")
         self.assertIsNone(hidden.ai_reviewed_at)
 
-    def test_nightly_run_writes_trip_text(self):
-        command = outings_scheduler.daily_command()
+    def test_nightly_trip_text_is_off_unless_turned_on(self):
+        with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
+            self.assertNotIn("--trip-ai", outings_scheduler.daily_command())
+        with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": "250"}):
+            command = outings_scheduler.daily_command()
         self.assertEqual(command[command.index("--trip-ai") + 1], "250")
+
+    def test_max_new_shares_the_limit_between_types(self):
+        def pages(spot_type, **kwargs):
+            return iter([[self.item(f"{spot_type}-{n}", f"{spot_type} {n}") for n in range(5)]])
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", side_effect=pages):
+            call_command("import_myswitzerland", "--all", "--max-new", "6", "--commit", stdout=open(os.devnull, "w"))
+        counts = {t: TouristSpot.objects.filter(spot_type=t).count() for t in ("attractions", "tours", "destinations", "offers")}
+        self.assertEqual(sum(counts.values()), 6)
+        self.assertTrue(all(counts.values()), counts)
