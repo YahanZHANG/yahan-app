@@ -27,6 +27,8 @@
             <span class="cb-brand-name">スイス生活の知恵袋</span>
         </a>
         <div class="cb-header-tools">
+            {% if tab != 'install' %}<a href="{% url 'chiebukuro:install' %}" class="cb-install-pill yapp-install-only">📲 アプリにする</a>{% endif %}
+            <a href="{% url 'chiebukuro:install' %}" class="cb-install-pc{% if tab == 'install' %} on{% endif %}">ホーム画面に追加</a>
             <a href="{% url 'chiebukuro:search' %}" class="cb-tool {% if tab == 'search' %}on{% endif %}" aria-label="検索" aria-controls="cb-searchbar" aria-expanded="false" id="cb-search-toggle">{% include "chiebukuro/_icon.html" with name="search" %}</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'chiebukuro:notifications' %}" class="cb-tool {% if tab == 'bell' %}on{% endif %}" aria-label="お知らせ{% if unread %}（{{ unread }}件）{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}{% if unread %}<b class="cb-badge">{{ unread }}</b>{% endif %}</a>

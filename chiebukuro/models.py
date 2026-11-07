@@ -140,6 +140,7 @@ class Question(models.Model):
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     # 新しい答えがついた日時 (HOME の「新しい答え順」)
     last_answered_at = models.DateTimeField("最後の答え", null=True, blank=True, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
@@ -175,6 +176,7 @@ class Answer(models.Model):
     from_survey = models.BooleanField("事前アンケートから", default=False)
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
@@ -540,6 +542,7 @@ class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_posts")
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
 
     class Meta:
@@ -563,6 +566,7 @@ class PostReply(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_post_replies")
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now)
 
     class Meta:

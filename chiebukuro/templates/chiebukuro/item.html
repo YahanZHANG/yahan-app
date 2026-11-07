@@ -34,7 +34,8 @@
             {% csrf_token %}
             {% if item.state != 'open' %}<button type="submit" name="state" value="open" class="cb-btn cb-btn-s">受付中に戻す</button>{% endif %}
             {% if item.state != 'done' %}<button type="submit" name="state" value="done" class="cb-btn cb-btn-s">おわりにする</button>{% endif %}
-            <button type="submit" name="delete" value="yes" class="cb-textbtn" onclick="return confirm('この書きこみを取り下げますか？');">取り下げる</button>
+            <a href="{% url 'chiebukuro:edit' 'item' item.pk %}" class="cb-textbtn">編集</a>
+            <button type="submit" name="delete" value="yes" class="cb-textbtn" onclick="return confirm('この書きこみを取り下げますか？');">取り下げる（消す）</button>
         </form>
     </section>
 {% elif my_request %}

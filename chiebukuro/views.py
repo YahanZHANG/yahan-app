@@ -1748,3 +1748,167 @@ def notify_staff(request, subject, text, admin_path):
         return
     body = f"{text}\n\n{request.build_absolute_uri(admin_path)}\n"
     threading.Thread(target=_send, args=(f"[知恵袋] {subject}", body, recipient), daemon=True).start()
+
+
+@board_open
+def install_guide(request):
+    """ホーム画面に追加する方法 (SwissNews・和食と同じ案内)"""
+
+    from config.pwa import install_guide_context
+
+    return render(
+        request,
+        "chiebukuro/install.html",
+        {**board_context(request, "install", current_region(request)), **install_guide_context(request, reverse("chiebukuro:home"))},
+    )
+
+
+# =========================================================
+# 自分の書きこみの編集・削除
+# =========================================================
+
+def _edit_spec(kind):
+    """編集できる書きこみと、その欄 (名前, 表示, 種類, 最大文字数, 必須, 選択肢)"""
+
+    body = lambda limit, label="内容": ("body", label, "textarea", limit, True, None)
+    region = (lambda name: ("region", "地域", "select", None, False, [("", "指定しない")] + list(BOARD_REGION_CHOICES)))
+    specs = {
+        "post": {
+            "model": Post, "owner": "author", "label": "つぶやき", "photo": "posts", "edited": True,
+            "fields": [body(POST_MAX_LENGTH), ("theme", "テーマ", "select", None, False, [("", "なし")] + list(THEMES)), region("region")],
+            "back": lambda obj: reverse("chiebukuro:post", args=[obj.pk]),
+        },
+        "reply": {
+            "model": PostReply, "owner": "author", "label": "返信", "photo": "replies", "edited": True,
+            "fields": [body(ANSWER_MAX_LENGTH)],
+            "back": lambda obj: reverse("chiebukuro:post", args=[obj.post_id]) + f"#r{obj.pk}",
+        },
+        "question": {
+            "model": Question, "owner": "author", "label": "質問", "photo": "questions", "edited": True,
+            "fields": [body(QUESTION_MAX_LENGTH, "質問"), ("theme", "テーマ", "select", None, True, list(THEMES)), region("region")],
+            "back": lambda obj: reverse("chiebukuro:question", args=[obj.pk]),
+        },
+        "answer": {
+            "model": Answer, "owner": "author", "label": "回答", "photo": "answers", "edited": True,
+            "fields": [body(ANSWER_MAX_LENGTH, "回答")],
+            "back": lambda obj: reverse("chiebukuro:question", args=[obj.question_id]) + f"#a{obj.pk}",
+        },
+        "item": {
+            "model": Item, "owner": "owner", "label": "ゆずりあい", "photo": "items", "edited": False,
+            "fields": [
+                ("title", "品物の名前", "text", ITEM_TITLE_MAX_LENGTH, True, None),
+                ("body", "説明", "textarea", ITEM_BODY_MAX_LENGTH, False, None),
+                ("genre", "ジャンル", "select", None, True, list(Genre.choices)),
+                region("region"),
+                ("place", "受け渡しの場所", "text", 80, False, None),
+            ],
+            "back": lambda obj: reverse("chiebukuro:item", args=[obj.pk]),
+        },
+        "notice": {
+            "model": Notice, "owner": "owner", "label": "募集・告知", "photo": "notices", "edited": False,
+            "fields": [
+                ("title", "タイトル", "text", ITEM_TITLE_MAX_LENGTH, True, None),
+                body(NOTICE_BODY_MAX_LENGTH),
+                region("region"),
+                ("place", "場所", "text", 80, False, None),
+                ("event_date", "日にち", "date", None, False, None),
+                ("link", "リンク", "url", 500, False, None),
+            ],
+            "back": lambda obj: reverse("chiebukuro:notice", args=[obj.pk]),
+        },
+    }
+    if kind not in specs:
+        raise Http404
+    return specs[kind]
+
+
+@board_open
+@login_required
+def edit_mine(request, kind, pk):
+    """自分の書きこみを直す (写真の差し替え・削除も)"""
+
+    spec = _edit_spec(kind)
+    obj = get_object_or_404(spec["model"], pk=pk, status=Status.PUBLISHED, **{spec["owner"]: request.user})
+    error = ""
+    values = {}
+    for name, label, field_type, limit, required, choices in spec["fields"]:
+        current = getattr(obj, name)
+        values[name] = current.isoformat() if field_type == "date" and current else (current or "")
+
+    if request.method == "POST":
+        cleaned = {}
+        for name, label, field_type, limit, required, choices in spec["fields"]:
+            value = (request.POST.get(name) or "").strip()
+            values[name] = value
+            if error:
+                continue
+            if choices is not None and value not in {key for key, _ in choices}:
+                error = f"{label}を選んでください。"
+            elif required and not value:
+                error = f"{label}を入力してください。"
+            elif limit and len(value) > limit:
+                error = f"{label}は{limit}文字までです。"
+            elif field_type == "url" and value and not value.startswith(("https://", "http://")):
+                error = "リンクは https:// から始まるURLを入れてください。"
+            elif field_type == "date":
+                try:
+                    value = date.fromisoformat(value) if value else None
+                except ValueError:
+                    error = "日にちの形が正しくありません。"
+            cleaned[name] = value
+        photo_url = obj.photo_url
+        if not error and request.FILES.get("photo"):
+            photo_url, error = take_photo(request, spec["photo"])
+        elif request.POST.get("remove_photo") == "yes":
+            photo_url = ""
+        if not error:
+            for name, value in cleaned.items():
+                setattr(obj, name, value)
+            obj.photo_url = photo_url
+            if spec["edited"]:
+                obj.edited_at = timezone.now()
+            obj.save()
+            messages.success(request, f"{spec['label']}を直しました。")
+            return redirect(spec["back"](obj))
+
+    fields = [
+        {"name": name, "label": label, "type": field_type, "limit": limit, "required": required, "choices": choices, "value": values[name]}
+        for name, label, field_type, limit, required, choices in spec["fields"]
+    ]
+    return render(
+        request,
+        "chiebukuro/edit.html",
+        {
+            **board_context(request, {"post": "posts", "reply": "posts", "question": "questions", "answer": "questions", "item": "items", "notice": "notices"}[kind], current_region(request)),
+            "obj": obj,
+            "kind": kind,
+            "kind_label": spec["label"],
+            "fields": fields,
+            "back_url": spec["back"](obj),
+            "error": error,
+        },
+    )
+
+
+@board_open
+@require_POST
+@login_required
+def delete_mine(request, kind, pk):
+    """質問・返信を消す (つぶやき・回答・ゆずりあい・告知は、それぞれの消すボタンがある)"""
+
+    if kind == "question":
+        question = get_object_or_404(Question, pk=pk, author=request.user, status=Status.PUBLISHED)
+        if question.answers.filter(status=Status.PUBLISHED).exclude(author=request.user).exists():
+            messages.error(request, "ほかの人の回答がついた質問は消せません。内容を直すか、どうしても消したいときは運営に連絡してください。")
+            return redirect("chiebukuro:question", pk=pk)
+        question.status = Status.HIDDEN
+        question.save(update_fields=["status", "updated_at"])
+        messages.success(request, "質問を消しました。")
+        return redirect("chiebukuro:questions")
+    if kind == "reply":
+        reply = get_object_or_404(PostReply, pk=pk, author=request.user, status=Status.PUBLISHED)
+        reply.status = Status.HIDDEN
+        reply.save(update_fields=["status"])
+        messages.success(request, "返信を消しました。")
+        return redirect(reverse("chiebukuro:post", args=[reply.post_id]) + "#replies")
+    raise Http404

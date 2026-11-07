@@ -44,9 +44,12 @@ urlpatterns = [
     path("avatar.svg", views.avatar_preview, name="avatar_preview"),
     path("u/<str:username>/", views.profile, name="profile"),
     path("new/", views.new_choice, name="new"),
+    path("edit/<str:kind>/<int:pk>/", views.edit_mine, name="edit"),
+    path("delete/<str:kind>/<int:pk>/", views.delete_mine, name="delete"),
     path("search/", views.search, name="search"),
     path("report/", views.report, name="report"),
     path("rules/", views.rules, name="rules"),
+    path("install/", views.install_guide, name="install"),
     path("rules/agree/", views.rules_agree, name="rules_agree"),
     path("stamp/", views.stamp, name="stamp"),
     # HOME: アンケート・広告
