@@ -6,6 +6,7 @@ from outings.models import TouristSpot
 
 from .models import (
     Event,
+    FamilySpot,
     EventCategory,
     EventLocation,
     EventOccurrence,
@@ -390,3 +391,17 @@ class OutingsFeedbackAdmin(admin.ModelAdmin):
     list_filter = ("is_read",)
     search_fields = ("message",)
     readonly_fields = ("message", "created_at")
+
+
+@admin.register(FamilySpot)
+class FamilySpotAdmin(admin.ModelAdmin):
+    list_display = ("name", "name_ja", "kind", "canton", "price", "rainy_ok", "status", "sort_order", "checked_on")
+    list_editable = ("status", "sort_order")
+    list_filter = ("status", "kind", "canton", "price", "rainy_ok")
+    search_fields = ("name", "name_ja", "town", "summary_ja")
+    fieldsets = (
+        (None, {"fields": ("status", "sort_order", "name", "name_ja", "kind", "summary_ja", "tips_ja")}),
+        ("場所", {"fields": ("canton", "town", "address", "latitude", "longitude", "maps_url")}),
+        ("条件", {"fields": ("price", "price_note", "rainy_ok", "open_sunday", "hours_note", "stroller_ok", "age_note", "parking_note", "food_note")}),
+        ("リンク・写真", {"fields": ("official_url", "image_url", "image_credit", "checked_on")}),
+    )

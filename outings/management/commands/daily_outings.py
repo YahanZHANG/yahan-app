@@ -56,12 +56,15 @@ class Command(BaseCommand):
         parser.add_argument('--days', type=int, default=30)
         parser.add_argument('--cleanup', action='store_true', help='Also unpublish ended Eventfrog events and delete past events')
         parser.add_argument('--images', action='store_true', help='Upload images of new events to Cloudinary')
+        parser.add_argument('--trip-ai', type=int, default=0, help='Also write Japanese text for up to N waiting trip spots')
 
     def handle(self, *args, **opts):
         if not 1 <= opts['max_new'] <= 30:
             raise CommandError('--max-new must be between 1 and 30')
         if not 0 <= opts['max_screen'] <= 3000:
             raise CommandError('--max-screen must be between 0 and 3000')
+        if not 0 <= opts['trip_ai'] <= 3000:
+            raise CommandError('--trip-ai must be between 0 and 3000')
         if not 1 <= opts['pages'] <= 60 or not 1 <= opts['days'] <= 90:
             raise CommandError('--pages 1..60; --days 1..90 required')
         if not opts['commit']:
@@ -94,6 +97,9 @@ class Command(BaseCommand):
                 self.step('images', lambda: upload_images_for_selected(selected, raw, max_uploads=opts['max_new']))
         if opts['cleanup']:
             self.step('cleanup', lambda: call_command('cleanup_outings', commit=True))
+        if opts['trip_ai']:
+            # Imported trip spots stay hidden until this writes their Japanese text.
+            self.step('trip AI', lambda: call_command('enrich_tourist_spots', limit=opts['trip_ai'], commit=True))
 
         if self.errors:
             raise CommandError('Daily run finished with errors: ' + '; '.join(self.errors))

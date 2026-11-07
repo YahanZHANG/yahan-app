@@ -264,7 +264,8 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .discovery-card-track > .discovery-card {
+    .discovery-card-track > .discovery-card,
+    .discovery-card-track > .ev-card {
         flex: 0 0 min(77vw, 285px);
         scroll-snap-align: start;
     }

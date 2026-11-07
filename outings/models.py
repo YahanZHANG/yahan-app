@@ -1,10 +1,14 @@
 
 
+from urllib.parse import quote
+
 from django.conf import settings
 
 from django.db import models
 
 from django.db.models import Q
+
+from outings.regions import REGION_CHOICES, REGION_NAMES_JA
 
 
 
@@ -1185,3 +1189,83 @@ class OutingsFeedback(models.Model):
 
     def __str__(self):
         return self.message[:50]
+
+
+class FamilySpot(models.Model):
+    """A place families can visit any day: parks, animal parks, museums,
+    indoor play. Written by hand in our own words, never copied from other
+    sites; the details parents ask about first get their own fields."""
+
+    class Kind(models.TextChoices):
+        PARK = "park", "公園・遊び場"
+        ANIMALS = "animals", "動物"
+        MUSEUM = "museum", "博物館・体験"
+        INDOOR = "indoor", "室内遊び場"
+        NATURE = "nature", "自然・ハイキング"
+        OTHER = "other", "そのほか"
+
+    class Price(models.TextChoices):
+        FREE = "free", "無料"
+        PARTLY = "partly", "入場無料（一部有料）"
+        PAID = "paid", "有料"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "下書き"
+        PUBLISHED = "published", "公開"
+
+    name = models.CharField("名前（現地語）", max_length=200)
+    name_ja = models.CharField("名前（日本語）", max_length=200, blank=True)
+    kind = models.CharField("種類", max_length=20, choices=Kind.choices, default=Kind.PARK)
+    canton = models.CharField("州", max_length=2, choices=REGION_CHOICES, blank=True)
+    town = models.CharField("町", max_length=100, blank=True)
+    address = models.CharField("住所", max_length=200, blank=True)
+    latitude = models.FloatField("緯度", null=True, blank=True)
+    longitude = models.FloatField("経度", null=True, blank=True)
+
+    summary_ja = models.TextField("紹介（自分たちの言葉で）")
+    tips_ja = models.TextField("知っておくと便利なこと", blank=True)
+
+    rainy_ok = models.BooleanField("雨の日もOK（室内あり）", default=False)
+    price = models.CharField("料金", max_length=10, choices=Price.choices, default=Price.PAID)
+    price_note = models.CharField("料金メモ", max_length=200, blank=True)
+    open_sunday = models.BooleanField("日曜も営業", default=True)
+    hours_note = models.CharField("営業日・時間メモ", max_length=300, blank=True)
+    parking_note = models.CharField("駐車場", max_length=200, blank=True)
+    food_note = models.CharField("食事", max_length=200, blank=True)
+    stroller_ok = models.BooleanField("ベビーカーOK", default=False)
+    age_note = models.CharField("おすすめの年齢", max_length=100, blank=True)
+
+    official_url = models.URLField("公式サイト", blank=True)
+    maps_url = models.URLField("Googleマップのリンク", blank=True)
+    image_url = models.URLField("写真URL", blank=True)
+    image_credit = models.CharField("写真のクレジット", max_length=200, blank=True)
+
+    status = models.CharField("状態", max_length=10, choices=Status.choices, default=Status.DRAFT, db_index=True)
+    sort_order = models.IntegerField("並び順（小さいほど上）", default=100)
+    checked_on = models.DateField("情報を確認した日", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "子連れスポット"
+        verbose_name_plural = "子連れスポット"
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name_ja or self.name
+
+    @property
+    def title(self):
+        return self.name_ja or self.name
+
+    @property
+    def place_label(self):
+        canton = REGION_NAMES_JA.get(self.canton, "")
+        return "・".join(part for part in (self.town, canton) if part)
+
+    @property
+    def directions_url(self):
+        if self.maps_url:
+            return self.maps_url
+        query = self.address or f"{self.name} {self.town}"
+        return "https://www.google.com/maps/search/?api=1&query=" + quote(query)

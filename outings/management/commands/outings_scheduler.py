@@ -47,6 +47,9 @@ DAILY_OPTIONS = dict(
     days=30,
     cleanup=True,
     images=True,
+    # Japanese text for up to this many imported trip spots per night
+    # (about $0.3 of OpenAI credit); 0 when none are waiting.
+    trip_ai=250,
 )
 
 

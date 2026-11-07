@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import views, discovery_views, event_views, search_views
+from . import views, discovery_views, event_views, kids_views, search_views
 
 
 app_name = "outings"
@@ -21,6 +21,16 @@ urlpatterns = [
         "events/",
         event_views.event_home,
         name="event_home",
+    ),
+    path(
+        "kids/",
+        kids_views.spot_list,
+        name="kids_list",
+    ),
+    path(
+        "kids/<int:pk>/",
+        kids_views.spot_detail,
+        name="kids_detail",
     ),
     path(
         "about/",

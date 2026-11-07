@@ -690,3 +690,112 @@ class PublicUserAccessTests(PageTestCase):
         self.client.force_login(user)
         for name in ("outings:home", "outings:search", "outings:about_outings"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
+
+
+class FamilySpotTests(PageTestCase):
+
+    def make(self, name, **fields):
+        from outings.models import FamilySpot
+        defaults = dict(kind=FamilySpot.Kind.PARK, canton="ZH", town="Zürich", status=FamilySpot.Status.PUBLISHED)
+        defaults.update(fields)
+        return FamilySpot.objects.create(name=name, **defaults)
+
+    def setUp(self):
+        super().setUp()
+        from outings.models import FamilySpot
+        FamilySpot.objects.all().delete()  # drop the seeded spots
+        self.park = self.make("Sunny Park", name_ja="ひなた公園", price=FamilySpot.Price.FREE)
+        self.museum = self.make("Rain Museum", kind=FamilySpot.Kind.MUSEUM, canton="AG", rainy_ok=True,
+                                price=FamilySpot.Price.PAID, open_sunday=False)
+        self.draft = self.make("Secret Draft", status=FamilySpot.Status.DRAFT)
+
+    def names(self, query=""):
+        response = self.client.get(reverse("outings:kids_list") + query)
+        self.assertEqual(response.status_code, 200)
+        return [spot.name for spot in response.context["spots"]]
+
+    def test_list_shows_published_only_and_filters(self):
+        self.assertEqual(sorted(self.names()), ["Rain Museum", "Sunny Park"])
+        self.assertEqual(self.names("?rainy=1"), ["Rain Museum"])
+        self.assertEqual(self.names("?free=1"), ["Sunny Park"])
+        self.assertEqual(self.names("?sunday=1"), ["Sunny Park"])
+        self.assertEqual(self.names("?kind=museum"), ["Rain Museum"])
+        self.assertEqual(self.names("?canton=AG"), ["Rain Museum"])
+        self.assertEqual(self.names("?kind=bogus"), self.names())
+
+    def test_detail_has_map_link_and_hides_drafts(self):
+        response = self.client.get(reverse("outings:kids_detail", args=[self.park.pk]))
+        self.assertContains(response, "ひなた公園")
+        self.assertContains(response, "Googleマップで開く")
+        self.assertContains(response, "https://www.google.com/maps/search/")
+        self.assertEqual(self.client.get(reverse("outings:kids_detail", args=[self.draft.pk])).status_code, 404)
+
+    def test_home_and_trips_link_to_kids_spots(self):
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, reverse("outings:kids_detail", args=[self.park.pk]))
+        self.assertNotContains(home, "Secret Draft")
+        trips = self.client.get(reverse("outings:tourist_spot_list"))
+        self.assertContains(trips, reverse("outings:kids_list"))
+
+    def test_seed_spots_exist(self):
+        from importlib import import_module
+        from django.apps import apps as django_apps
+        from outings.models import FamilySpot
+        import_module("outings.migrations.0018_family_spot_seed").add_spots(django_apps, None)
+        self.assertTrue(FamilySpot.objects.filter(name="Park im Grüene", status="published").exists())
+
+
+class TripImportTests(TestCase):
+
+    def item(self, identifier, name):
+        return {"identifier": identifier, "name": name, "url": f"https://www.myswitzerland.com/de/{identifier}/",
+                "abstract": "Kurz", "description": "Lang", "geo": {"latitude": 47.0, "longitude": 8.0}}
+
+    def test_new_spots_wait_hidden_and_existing_keep_status(self):
+        hidden = TouristSpot.objects.create(
+            external_id="old", spot_type="attractions", title_original="Old", official_url="https://www.myswitzerland.com/de/old/",
+            status=TouristSpot.Status.HIDDEN,
+        )
+        pages = [[self.item("new", "Neu"), self.item("old", "Old renamed")]]
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", return_value=iter(pages)):
+            call_command("import_myswitzerland", "--type", "attractions", "--all", "--commit", stdout=open(os.devnull, "w"))
+        self.assertEqual(TouristSpot.objects.get(external_id="new").status, TouristSpot.Status.PENDING)
+        hidden.refresh_from_db()
+        self.assertEqual(hidden.status, TouristSpot.Status.HIDDEN)
+        self.assertEqual(hidden.title_original, "Old renamed")
+
+    def test_dry_run_saves_nothing(self):
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", return_value=iter([[self.item("a", "A")]])):
+            call_command("import_myswitzerland", "--type", "attractions", "--all", stdout=open(os.devnull, "w"))
+        self.assertFalse(TouristSpot.objects.exists())
+
+    @mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test"})
+    def test_enrichment_publishes_waiting_spots(self):
+        from outings.management.commands import enrich_tourist_spots as enrich
+        spot = TouristSpot.objects.create(
+            external_id="w", spot_type="attractions", title_original="Rheinfall",
+            official_url="https://www.myswitzerland.com/de/w/", status=TouristSpot.Status.PENDING,
+        )
+        hidden = TouristSpot.objects.create(
+            external_id="h", spot_type="attractions", title_original="Hidden",
+            official_url="https://www.myswitzerland.com/de/h/", status=TouristSpot.Status.HIDDEN,
+        )
+
+        def fake(api_key, model, prompt, data, schema):
+            enrich.USAGE["input"] += 1000
+            ids = [record["id"] for record in data["spots"]]
+            if prompt == enrich.TRANSLATION_PROMPT:
+                return {"results": [{"id": i, "japanese_subtitle": "ライン滝", "summary_ja": "大きな滝。"} for i in ids]}
+            return {"results": [{"id": i, "reason": "迫力", **{k: 5 for k in enrich.SCORE_FIELDS}} for i in ids]}
+
+        with mock.patch.object(enrich, "call_openai", side_effect=fake):
+            call_command("enrich_tourist_spots", "--limit", "10", "--commit", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        hidden.refresh_from_db()
+        self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
+        self.assertEqual(spot.summary_ja, "大きな滝。")
+        self.assertIsNone(hidden.ai_reviewed_at)
+
+    def test_nightly_run_writes_trip_text(self):
+        command = outings_scheduler.daily_command()
+        self.assertEqual(command[command.index("--trip-ai") + 1], "250")

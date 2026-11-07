@@ -87,6 +87,9 @@
                 <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
                     <i class="bi bi-compass" aria-hidden="true"></i>旅行
                 </a>
+                <a href="{% url 'outings:kids_list' %}" class="{% if name == 'kids_list' or name == 'kids_detail' %}active{% endif %}">
+                    <i class="bi bi-balloon" aria-hidden="true"></i>子連れスポット
+                </a>
                 <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
                     <i class="bi bi-heart" aria-hidden="true"></i>お気に入り
                 </a>
@@ -138,10 +141,12 @@
             <span class="tabbar__search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
             <span>探す</span>
         </a>
-        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
-            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
+        {% with trips_on=name|default:""|slice:":4" %}
+        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or trips_on == 'kids' %}active{% endif %}">
+            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or trips_on == 'kids' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>旅行</span>
         </a>
+        {% endwith %}
         <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
             <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>お気に入り</span>

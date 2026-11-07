@@ -303,6 +303,12 @@ def interleave_cards(events, trips):
 # Unified HOME
 # =========================================================
 
+def home_kids_spots(limit=6):
+    from .kids_views import decorate, published_spots
+
+    return [decorate(spot) for spot in published_spots()[:limit]]
+
+
 def home(request):
 
     now = timezone.now()
@@ -509,6 +515,7 @@ def home(request):
             "fresh_trip_cards": fresh_trip_cards,
             "recommended_event_cards": recommended_event_cards,
             "recommended_trip_cards": recommended_trip_cards,
+            "kids_spots": home_kids_spots(),
         },
     )
 

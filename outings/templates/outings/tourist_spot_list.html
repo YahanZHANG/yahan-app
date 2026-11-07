@@ -395,10 +395,30 @@
     outline-offset: 2px;
 }
 
+.trip-kids-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: var(--outings-accent-soft);
+    color: var(--outings-accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.trip-kids-link span { flex: 1; }
 
 </style>
 
 <div class="trip-page">
+
+    <a class="trip-kids-link" href="{% url 'outings:kids_list' %}">
+        <i class="bi bi-balloon" aria-hidden="true"></i>
+        <span>子連れスポット（いつでも行ける場所）</span>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    </a>
 
     <form method="get" class="trip-search">
 

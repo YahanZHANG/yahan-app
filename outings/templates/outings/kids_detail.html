@@ -1,0 +1,116 @@
+{% extends "outings/base.html" %}
+
+{% block title %}{{ spot.title }} | 子連れスポット | おでかけ{% endblock %}
+
+{% block content %}
+<div class="ev-page kids-detail">
+
+    <a class="kids-back" href="{% url 'outings:kids_list' %}"><i class="bi bi-chevron-left" aria-hidden="true"></i>子連れスポット</a>
+
+    {% if spot.image_url %}
+        <figure class="kids-photo">
+            <img src="{{ spot.image_url }}" alt="" onerror="this.parentNode.remove();">
+            {% if spot.image_credit %}<figcaption>{{ spot.image_credit }}</figcaption>{% endif %}
+        </figure>
+    {% endif %}
+
+    <p class="kids-kind">{{ spot.emoji }} {{ spot.get_kind_display }}・{{ spot.place_label }}</p>
+    <h1 class="kids-title">{{ spot.title }}</h1>
+    {% if spot.name_ja %}<p class="kids-original">{{ spot.name }}</p>{% endif %}
+
+    {% if spot.badges %}
+        <ul class="ev-badges">
+            {% for label, kind in spot.badges %}
+                <li class="ev-badge ev-badge--{{ kind }}">{{ label }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if spot.summary_ja %}<p class="kids-summary">{{ spot.summary_ja|linebreaksbr }}</p>{% endif %}
+
+    <dl class="kids-facts">
+        <dt><i class="bi bi-cash-coin" aria-hidden="true"></i>料金</dt>
+        <dd>{{ spot.get_price_display }}{% if spot.price_note %}<br>{{ spot.price_note|linebreaksbr }}{% endif %}</dd>
+        {% if spot.hours_note %}
+            <dt><i class="bi bi-clock" aria-hidden="true"></i>開いている日</dt>
+            <dd>{{ spot.hours_note|linebreaksbr }}</dd>
+        {% endif %}
+        {% if spot.age_note %}
+            <dt><i class="bi bi-person-arms-up" aria-hidden="true"></i>年齢</dt>
+            <dd>{{ spot.age_note|linebreaksbr }}</dd>
+        {% endif %}
+        {% if spot.parking_note %}
+            <dt><i class="bi bi-car-front" aria-hidden="true"></i>駐車場</dt>
+            <dd>{{ spot.parking_note|linebreaksbr }}</dd>
+        {% endif %}
+        {% if spot.food_note %}
+            <dt><i class="bi bi-cup-hot" aria-hidden="true"></i>食事</dt>
+            <dd>{{ spot.food_note|linebreaksbr }}</dd>
+        {% endif %}
+        {% if spot.address %}
+            <dt><i class="bi bi-geo-alt" aria-hidden="true"></i>住所</dt>
+            <dd>{{ spot.address }}{% if spot.town %}, {{ spot.town }}{% endif %}</dd>
+        {% endif %}
+    </dl>
+
+    {% if spot.tips_ja %}
+        <section class="kids-tips">
+            <h2>💡 行く前に</h2>
+            <p>{{ spot.tips_ja|linebreaksbr }}</p>
+        </section>
+    {% endif %}
+
+    <div class="kids-actions">
+        <a class="kids-btn kids-btn--main" href="{{ spot.directions_url }}" target="_blank" rel="noopener">
+            <i class="bi bi-map" aria-hidden="true"></i>Googleマップで開く
+        </a>
+        {% if spot.official_url %}
+            <a class="kids-btn" href="{{ spot.official_url }}" target="_blank" rel="noopener">
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>公式サイト
+            </a>
+        {% endif %}
+    </div>
+
+    {% if spot.checked_on %}
+        <p class="kids-checked">情報の確認日：{{ spot.checked_on|date:"Y年n月j日" }}。行く前に公式サイトで最新の情報を確認してください。</p>
+    {% endif %}
+
+    {% if others %}
+        <section class="kids-others">
+            <h2>ほかの{{ spot.get_kind_display }}</h2>
+            <div class="kids-grid">
+                {% for spot in others %}
+                    {% include "outings/includes/kids_card.html" %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+</div>
+
+<style>
+.kids-detail { max-width: 760px; }
+.kids-back { display: inline-flex; align-items: center; gap: 4px; color: var(--outings-accent); text-decoration: none; font-weight: 600; margin-bottom: 12px; }
+.kids-photo { margin: 0 0 14px; }
+.kids-photo img { width: 100%; max-height: 360px; object-fit: cover; border-radius: 16px; }
+.kids-photo figcaption { font-size: .75rem; color: var(--outings-muted); margin-top: 4px; }
+.kids-kind { color: var(--outings-accent); font-weight: 700; font-size: .85rem; margin: 0 0 4px; }
+.kids-title { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 750; margin: 0 0 2px; }
+.kids-original { color: var(--outings-muted); margin: 0 0 10px; }
+.kids-summary { line-height: 1.8; margin: 14px 0; }
+.kids-facts { display: grid; grid-template-columns: max-content 1fr; gap: 10px 14px; margin: 18px 0; padding: 16px; border: 1px solid var(--outings-border); border-radius: 14px; }
+.kids-facts dt { font-weight: 700; color: var(--outings-text); white-space: nowrap; }
+.kids-facts dt i { margin-right: 6px; color: var(--outings-accent); }
+.kids-facts dd { margin: 0; line-height: 1.7; }
+.kids-tips { background: var(--outings-peach); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+.kids-tips h2 { font-size: 1rem; font-weight: 700; margin: 0 0 6px; }
+.kids-tips p { margin: 0; line-height: 1.8; }
+.kids-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
+.kids-btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 16px; border-radius: 12px; border: 1px solid var(--outings-accent); color: var(--outings-accent); text-decoration: none; font-weight: 600; }
+.kids-btn--main { background: var(--outings-accent); color: var(--outings-surface); }
+.kids-checked { font-size: .8rem; color: var(--outings-muted); }
+.kids-others h2 { font-size: 1.05rem; font-weight: 700; margin: 26px 0 10px; }
+.kids-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+@media (max-width: 550px) { .kids-facts { grid-template-columns: 1fr; gap: 2px; } .kids-facts dd { margin-bottom: 8px; } }
+</style>
+{% endblock %}

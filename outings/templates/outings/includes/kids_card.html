@@ -1,0 +1,28 @@
+{% comment %}A 子連れスポット card. Expects `spot` decorated by kids_views.decorate.{% endcomment %}
+<article class="ev-card{% if spot.image_url %} has-image{% endif %}">
+    <a class="ev-card__link" href="{% url 'outings:kids_detail' spot.pk %}">
+        <div class="ev-card__visual" aria-hidden="true">
+            {% if spot.image_url %}
+                <img src="{{ spot.image_url }}" alt="" loading="lazy" onerror="this.remove();">
+            {% endif %}
+            <span class="ev-card__emoji">{{ spot.emoji }}</span>
+        </div>
+        <div class="ev-card__body">
+            <p class="ev-card__when">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ spot.place_label }}
+                <span class="ev-card__more">{{ spot.get_kind_display }}</span>
+            </p>
+            <h3 class="ev-card__title">{{ spot.title }}</h3>
+            {% if spot.summary_ja %}
+                <p class="ev-card__summary">{{ spot.summary_ja|truncatechars:70 }}</p>
+            {% endif %}
+            {% if spot.badges %}
+                <ul class="ev-badges">
+                    {% for label, kind in spot.badges %}
+                        <li class="ev-badge ev-badge--{{ kind }}">{{ label }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </a>
+</article>

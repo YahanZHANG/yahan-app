@@ -21,6 +21,7 @@ REGIONS = (
     ("SO", "ゾロトゥルン", "Solothurn"),
     ("NW", "ニトヴァルデン", "Nidwalden"),
     ("OW", "オプヴァルデン", "Obwalden"),
+    ("SG", "ザンクト・ガレン", "St. Gallen"),
 )
 
 REGION_CODES = frozenset(code for code, _, _ in REGIONS)

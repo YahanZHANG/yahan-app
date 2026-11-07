@@ -33,6 +33,16 @@ from outings.models import TouristSpot
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
+# USD per 1M tokens (input, output), for the cost line printed at the end.
+MODEL_PRICES = {
+    "gpt-4.1-mini": (0.40, 1.60),
+    "gpt-4.1-nano": (0.10, 0.40),
+    "gpt-4o-mini": (0.15, 0.60),
+}
+
+# Filled by call_openai: tokens used during this run.
+USAGE = {"input": 0, "output": 0}
+
 SPOT_TYPES = (
     "attractions",
     "tours",
@@ -103,6 +113,11 @@ def call_openai(api_key, model, prompt, data, schema):
         )
 
     payload = response.json()
+
+    usage = payload.get("usage") or {}
+    USAGE["input"] += int(usage.get("prompt_tokens") or 0)
+    USAGE["output"] += int(usage.get("completion_tokens") or 0)
+
     choice = payload["choices"][0]
 
     if choice.get("finish_reason") != "stop":
@@ -402,6 +417,10 @@ def make_source_record(spot):
         if key in details
     }
 
+    # Long tour itineraries cost tokens without helping the text.
+    if isinstance(safe_details.get("itinerary"), list):
+        safe_details["itinerary"] = safe_details["itinerary"][:5]
+
     return {
         "id": spot.pk,
         "type": spot.spot_type,
@@ -422,8 +441,12 @@ def make_source_record(spot):
 
 def choose_spots(limit, force):
 
+    # Pending = imported but not yet shown; this run publishes them.
     queryset = TouristSpot.objects.filter(
-        status=TouristSpot.Status.PUBLISHED
+        status__in=[
+            TouristSpot.Status.PUBLISHED,
+            TouristSpot.Status.PENDING,
+        ]
     )
 
     if not force:
@@ -592,6 +615,7 @@ def process_batch(spots, api_key, model):
 
         comparison_records.append({
             **record,
+            "description": record["description"][:600],
             "japanese_subtitle": subtitle,
             "summary_ja": summary,
         })
@@ -685,8 +709,12 @@ def process_batch(spots, api_key, model):
 
             spot.details = details
 
+            if spot.status == TouristSpot.Status.PENDING:
+                spot.status = TouristSpot.Status.PUBLISHED
+
             spot.save(
                 update_fields=[
+                    "status",
                     "title_ja",
                     "summary_ja",
                     "ai_quality_score",
@@ -742,9 +770,9 @@ class Command(BaseCommand):
         force = options["force"]
         commit = options["commit"]
 
-        if not 1 <= limit <= 500:
+        if not 1 <= limit <= 3000:
             raise CommandError(
-                "--limit must be between 1 and 500"
+                "--limit must be between 1 and 3000"
             )
 
         if not 1 <= batch_size <= 20:
@@ -768,11 +796,14 @@ class Command(BaseCommand):
             f"Selected: {len(spots)} records"
         )
 
-        for spot in spots:
+        for spot in spots[:30]:
             self.stdout.write(
                 f"[{spot.pk}] [{spot.spot_type}] "
                 f"{spot.title_original}"
             )
+
+        if len(spots) > 30:
+            self.stdout.write(f"... and {len(spots) - 30} more")
 
         if not commit:
             self.stdout.write("")
@@ -828,6 +859,7 @@ class Command(BaseCommand):
                 TypeError,
             ) as exc:
 
+                self.write_cost(model)
                 raise CommandError(
                     f"Batch {number} failed. "
                     f"Completed batches remain saved. "
@@ -863,4 +895,19 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 f"COMPLETE: {completed} records processed."
             )
+        )
+        self.write_cost(model)
+
+    def write_cost(self, model):
+
+        input_price, output_price = MODEL_PRICES.get(
+            model, MODEL_PRICES["gpt-4.1-mini"]
+        )
+        cost = (
+            USAGE["input"] * input_price
+            + USAGE["output"] * output_price
+        ) / 1_000_000
+        self.stdout.write(
+            f"AI tokens: input {USAGE['input']}, "
+            f"output {USAGE['output']}, about ${cost:.3f}"
         )
