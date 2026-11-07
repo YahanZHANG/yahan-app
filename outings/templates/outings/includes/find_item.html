@@ -1,0 +1,25 @@
+{% comment %}One result on さがす: an event, a trip or a 子連れスポット. Expects `item` from find_views.{% endcomment %}
+<article class="og-item og-item--{{ item.kind }}">
+    <a class="og-item__link" href="{{ item.url }}">
+        <span class="og-item__visual" aria-hidden="true">
+            {% if item.image %}<img src="{{ item.image }}" alt="" loading="lazy" onerror="this.remove();">{% endif %}
+            <span class="og-item__emoji">{{ item.emoji }}</span>
+        </span>
+        <span class="og-item__body">
+            <small class="og-item__kind og-item__kind--{{ item.kind }}">{{ item.kind_label }}{% if item.sub %}・{{ item.sub }}{% endif %}</small>
+            <strong class="og-item__title">{{ item.title }}</strong>
+            {% if item.when_label %}<span class="og-item__when"><i class="bi bi-calendar3" aria-hidden="true"></i>{{ item.when_label }}</span>{% endif %}
+            {% if item.desc %}<span class="og-item__desc">{{ item.desc }}</span>{% endif %}
+            <span class="og-item__meta">
+                <span class="og-stars" title="おすすめ度 {{ item.score }}/5" aria-label="おすすめ度 5点中{{ item.score }}点">{{ item.stars }}</span>
+                {% if item.member_count %}<small>みんな ★{{ item.member_avg }}（{{ item.member_count }}）</small>{% endif %}
+                {% for label, kind in item.badges %}<span class="og-badge og-badge--{{ kind }}">{{ label }}</span>{% endfor %}
+            </span>
+        </span>
+        {% if item.wx %}
+            <span class="og-item__wx og-item__wx--{{ item.wx.0.cls }}" title="その日の天気（いちばん近い予報地点）">
+                {% for w in item.wx %}<span><small>{{ w.day }}</small>{{ w.emoji }}<small>{{ w.temp }}</small></span>{% endfor %}
+            </span>
+        {% endif %}
+    </a>
+</article>

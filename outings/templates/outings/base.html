@@ -89,14 +89,14 @@
                 </span>
             </a>
 
-            {% if name != 'search' %}
-                <form class="nav-search" action="{% url 'outings:search' %}#results" method="get" role="search">
+            {% if name != 'find' %}
+                <form class="nav-search" action="{% url 'outings:find' %}#results" method="get" role="search">
                     <i class="bi bi-search" aria-hidden="true"></i>
                     <input type="search" name="q" placeholder="スポット・イベントを探す" aria-label="スポット・イベントを探す" enterkeyhint="search">
                 </form>
             {% endif %}
 
-            <a href="{% url 'outings:search' %}" class="nav-find{% if name == 'search' %} active{% endif %}" aria-label="探す">
+            <a href="{% url 'outings:find' %}" class="nav-find{% if name == 'find' %} active{% endif %}" aria-label="さがす">
                 <i class="bi bi-search" aria-hidden="true"></i>
             </a>
 
@@ -121,10 +121,8 @@
         <!-- PC: menu on the left, like the board. -->
         <nav class="og-side" aria-label="メニュー">
             <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}on{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
-            <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}on{% endif %}"><i class="bi bi-calendar-event" aria-hidden="true"></i>イベント</a>
-            <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-compass" aria-hidden="true"></i>旅行</a>
-            <a href="{% url 'outings:sunny' %}" class="{% if name == 'sunny' %}on{% endif %}"><i class="bi bi-sun" aria-hidden="true"></i>晴れの場所</a>
-            <a href="{% url 'outings:search' %}" class="{% if name == 'search' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>くわしく探す</a>
+            <a href="{% url 'outings:find' %}?when=weekend&amp;sort=sunny&amp;tab=weekend" class="{% if name == 'find' and request.GET.tab == 'weekend' %}on{% endif %}"><i class="bi bi-sun" aria-hidden="true"></i>今週末</a>
+            <a href="{% url 'outings:find' %}" class="{% if name == 'find' and request.GET.tab != 'weekend' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>さがす</a>
             <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
             <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' %}on{% endif %}"><i class="bi bi-person" aria-hidden="true"></i>マイページ</a>
         </nav>
@@ -136,27 +134,27 @@
 
     </div>
 
-    <!-- Phone: the five places people go most, 晴れの場所 in the middle (search is in the header). -->
+    <!-- Phone: HOME・さがす・今週末 (centre)・お気に入り・マイページ. -->
     <nav class="outings-bottom-nav tabbar" aria-label="メインメニュー">
         <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}"{% if name == 'home' %} aria-current="page"{% endif %}>
             <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>HOME</span>
         </a>
-        <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
-            <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>イベント</span>
+        <a href="{% url 'outings:find' %}" class="{% if name == 'find' and request.GET.tab != 'weekend' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <span>さがす</span>
         </a>
-        <a href="{% url 'outings:sunny' %}" class="tabbar__search{% if name == 'sunny' %} active{% endif %}">
+        <a href="{% url 'outings:find' %}?when=weekend&amp;sort=sunny&amp;tab=weekend" class="tabbar__search{% if name == 'find' and request.GET.tab == 'weekend' %} active{% endif %}">
             <span class="tabbar__search-icon"><i class="bi bi-sun" aria-hidden="true"></i></span>
-            <span>晴れの場所</span>
-        </a>
-        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
-            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>旅行</span>
+            <span>今週末</span>
         </a>
         <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
             <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>お気に入り</span>
+        </a>
+        <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' or name == 'my_preferences' %}active{% endif %}">
+            <i class="bi bi-person{% if name == 'my_page' or name == 'my_preferences' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>マイページ</span>
         </a>
     </nav>
     {% endwith %}
@@ -253,7 +251,10 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
         var button = event.target.closest("button[data-og-map]");
         if (!button) return;
         var bar = button.parentElement;
-        var panel = bar.nextElementSibling && bar.nextElementSibling.classList.contains("og-resultmap") ? bar.nextElementSibling : null;
+        var slot = document.querySelector("[data-og-map-slot]");
+        var side = slot && getComputedStyle(slot).display !== "none";
+        var holder = side ? slot : bar.nextElementSibling;
+        var panel = holder && (holder.classList.contains("og-resultmap") ? holder : holder.querySelector(":scope > .og-resultmap"));
         if (panel) {
             var open = panel.hidden;
             panel.hidden = !open;
@@ -264,7 +265,7 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
         panel = document.createElement("div");
         panel.className = "og-resultmap";
         panel.innerHTML = '<div class="og-resultmap__map"></div><p class="og-resultmap__note">地図を読み込み中…</p>';
-        bar.parentNode.insertBefore(panel, bar.nextSibling);
+        if (side) slot.appendChild(panel); else bar.parentNode.insertBefore(panel, bar.nextSibling);
         button.setAttribute("aria-expanded", "true");
         var note = panel.querySelector(".og-resultmap__note");
         Promise.all([
@@ -283,8 +284,8 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
             data.points.forEach(function (p) {
                 bounds.push([p.lat, p.lon]);
                 L.marker([p.lat, p.lon], {
-                    icon: L.divIcon({ className: "", html: '<span class="og-resultmap__pin">' + esc(p.emoji) + "</span>", iconSize: [30, 30], iconAnchor: [15, 15] })
-                }).bindPopup('<a href="' + p.url + '"><strong>' + esc(p.title) + "</strong></a>" + (p.sub ? "<br><small>" + esc(p.sub) + "</small>" : "")).addTo(map);
+                    icon: L.divIcon({ className: "", html: '<span class="og-resultmap__pin' + (p.cls ? " og-resultmap__pin--" + p.cls : "") + '">' + esc(p.emoji) + "</span>", iconSize: [30, 30], iconAnchor: [15, 15] })
+                }).bindPopup('<a href="' + p.url + '"><strong>' + esc(p.title) + "</strong></a>" + (p.sub || p.wx ? "<br><small>" + esc((p.wx ? p.wx + " " : "") + (p.sub || "")) + "</small>" : "")).addTo(map);
             });
             if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
             else map.fitBounds(SWITZERLAND);
@@ -296,6 +297,10 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
             note.textContent = "地図を読み込めませんでした。少しあとでもう一度お試しください。";
         });
     });
+    // PC: the map sits beside the list from the start.
+    var slot = document.querySelector("[data-og-map-slot]");
+    var button = document.querySelector("button[data-og-map]");
+    if (slot && button && getComputedStyle(slot).display !== "none") button.click();
 })();
 
 // もっと見る: load the next page and add its items below, instead of a page switch.

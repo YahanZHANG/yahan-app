@@ -213,10 +213,10 @@ html[data-outings-theme="dark"] .trip-source a {
 <div class="trip-detail">
 
     <a
-        href="{% url 'outings:tourist_spot_list' %}"
+        href="{% url 'outings:find' %}?type=trip"
         class="trip-back"
     >
-        ← 日帰り・プチ旅行へ戻る
+        ← 旅行の一覧へ
     </a>
 
     {% with photo=details.approved_image %}

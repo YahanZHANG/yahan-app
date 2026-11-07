@@ -31,7 +31,7 @@
         </p>
         <nav class="og-quick" aria-label="条件で探す">
             {% for q in quick_filters %}
-                <a href="{% url 'outings:tourist_spot_list' %}?kids=1&amp;{{ q.qs }}">{% if q.emoji %}<span aria-hidden="true">{{ q.emoji }}</span>{% endif %}{{ q.label }}</a>
+                <a href="{% url 'outings:find' %}?type=kids&amp;family=1&amp;{{ q.qs }}">{% if q.emoji %}<span aria-hidden="true">{{ q.emoji }}</span>{% endif %}{{ q.label }}</a>
             {% endfor %}
         </nav>
     </section>
@@ -41,7 +41,7 @@
     <section class="og-section">
         <header class="og-section__head">
             <h2>{% if rainy %}雨でも楽しめる場所{% elif weekday %}平日のおすすめ{% else %}今週末のおすすめ{% endif %}</h2>
-            <a href="{% url 'outings:tourist_spot_list' %}?kids=1{% if rainy %}&amp;rainy=1{% endif %}">すべて見る（{{ spot_count }}）</a>
+            <a href="{% url 'outings:find' %}?type=kids&amp;family=1{% if rainy %}&amp;rainy=1{% endif %}">すべて見る（{{ spot_count }}）</a>
         </header>
         {% if weekend_spots %}
             <div class="og-spots og-spots--scroll">
@@ -56,7 +56,7 @@
         <section class="og-section">
             <header class="og-section__head">
                 <h2>{% if weekday %}平日の{% else %}今週末の{% endif %}{% if kids %}子連れ{% endif %}イベント</h2>
-                <a href="{% url 'outings:event_home' %}{% if not weekday %}?when=weekend{% endif %}">すべて見る</a>
+                <a href="{% url 'outings:find' %}?type=event&amp;when=weekend">すべて見る</a>
             </header>
             <ul class="og-rows">
                 {% for event in weekend_events %}
@@ -80,7 +80,7 @@
         <section class="og-section">
             <header class="og-section__head">
                 <h2>1泊で行くなら</h2>
-                <a href="{% url 'outings:tourist_spot_list' %}?kids=1&amp;trip=overnight">すべて見る</a>
+                <a href="{% url 'outings:find' %}?type=kids&amp;family=1&amp;trip=overnight">すべて見る</a>
             </header>
             <div class="og-spots og-spots--scroll">
                 {% for spot in overnight_spots %}{% include "outings/includes/spot_card.html" %}{% endfor %}
@@ -88,7 +88,7 @@
         </section>
     {% endif %}
 
-    <a class="og-banner" href="{% url 'outings:tourist_spot_list' %}">
+    <a class="og-banner" href="{% url 'outings:find' %}?type=trip">
         <span aria-hidden="true">🧭</span>
         <span><strong>スイスの旅行先をさがす</strong><small>町・山・湖など、全国の観光地</small></span>
         <i class="bi bi-chevron-right" aria-hidden="true"></i>

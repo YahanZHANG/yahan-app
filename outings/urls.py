@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import sunny, visits, views, discovery_views, event_views, search_views, spot_views
+from . import find_views, sunny, visits, views, discovery_views, event_views, search_views, spot_views
 
 
 app_name = "outings"
@@ -19,9 +19,10 @@ urlpatterns = [
         spot_views.home,
         name="home",
     ),
+    path("find/", find_views.find, name="find"),
     path(
         "events/",
-        event_views.event_home,
+        find_views.from_events,
         name="event_home",
     ),
     path(
@@ -36,7 +37,7 @@ urlpatterns = [
     ),
     path(
         "sunny/",
-        sunny.sunny_page,
+        find_views.from_sunny,
         name="sunny",
     ),
     path(
@@ -57,7 +58,7 @@ urlpatterns = [
     ),
     path(
         "search/",
-        search_views.search,
+        find_views.from_search,
         name="search",
     ),
 

@@ -768,3 +768,80 @@ html[data-og-view="list"] .og-rows__desc { display: none; }
 }
 .og-page .og-profile__save { flex: 1; }
 @media (min-width: 900px) { .og-page .og-profile__actions { bottom: 16px; } }
+
+/* ---------- さがす (one page for everything) ---------- */
+.og-find__head h1 { margin: 0; }
+.og-find__days { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 2px 0 10px; color: var(--outings-muted); font-size: 13px; }
+.og-find__days span { color: #A86B0C; font-weight: 600; }
+.og-types { display: flex; gap: 4px; margin: 0 0 12px; overflow-x: auto; border-bottom: 1px solid var(--outings-border); }
+.og-types__tab { flex: none; padding: 8px 12px; border-bottom: 3px solid transparent; color: var(--outings-muted); font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.og-types__tab small { margin-left: 4px; font-weight: 400; font-size: 11px; }
+.og-types__tab.is-active { border-bottom-color: var(--outings-accent); color: var(--outings-accent); }
+.og-find__group { margin: 0 0 10px; padding: 0; border: 0; min-width: 0; }
+.og-find__group legend { margin: 0 0 4px; padding: 0; font-size: 12px; font-weight: 700; color: var(--outings-muted); }
+.og-find__day, .og-find__q { padding: 6px 10px; border: 1px solid var(--outings-border); border-radius: 999px; background: var(--outings-surface); color: var(--outings-text); font: inherit; font-size: 13px; }
+.og-find__q { width: 100%; border-radius: 10px; }
+.og-find__note { margin: 0 0 10px; color: var(--outings-muted); font-size: 12px; }
+.og-sorts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -2px 0 12px; }
+.og-sorts__item { padding: 4px 10px; border: 1px solid var(--outings-border); border-radius: 999px; color: var(--outings-muted); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+.og-sorts__item.is-active { border-color: var(--outings-accent); background: var(--outings-accent-soft); color: var(--outings-accent); }
+.og-sorts small { width: 100%; color: var(--outings-muted); font-size: 11px; }
+
+.og-items { display: grid; gap: 12px; }
+.og-item { position: relative; border: 1px solid var(--outings-border); border-radius: 14px; background: var(--outings-surface); overflow: hidden; }
+.og-item__link { display: flex; flex-direction: column; color: var(--outings-text); text-decoration: none; }
+.og-item__visual { position: relative; display: flex; align-items: center; justify-content: center; height: 160px; background: var(--outings-accent-soft); overflow: hidden; }
+.og-item--event .og-item__visual { background: var(--outings-blue-soft, #e6f0fb); }
+.og-item__visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.og-item__emoji { font-size: 44px; }
+.og-item__body { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 10px 12px 12px; }
+.og-item__kind { color: var(--outings-muted); font-size: 12px; }
+.og-item__kind--event { color: #3768a8; }
+.og-item__title { font-size: 15.5px; line-height: 1.4; }
+.og-item__when { color: var(--outings-accent); font-size: 13px; font-weight: 600; }
+.og-item__when i { margin-right: 4px; }
+.og-item__desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--outings-muted); font-size: 13px; line-height: 1.55; }
+.og-item__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 2px; font-size: 12px; }
+.og-item__meta small { color: var(--outings-muted); }
+.og-item__wx {
+    position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; padding: 4px 8px; border-radius: 10px;
+    background: rgba(255, 255, 255, .94); color: #1f2d33; font-size: 18px; line-height: 1.1; box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.og-item__wx > span { display: flex; flex-direction: column; align-items: center; }
+.og-item__wx small { font-size: 10px; color: #5b6b72; }
+.og-item__wx--sunny { box-shadow: 0 0 0 2px #E8A317; }
+.og-item__wx--wet { background: rgba(236, 240, 243, .96); }
+
+/* 写真小 */
+html[data-og-view="thumb"] .og-items { gap: 0; }
+html[data-og-view="thumb"] .og-item,
+html[data-og-view="list"] .og-item { border: 0; border-bottom: 1px solid var(--outings-border); border-radius: 0; background: transparent; }
+html[data-og-view="thumb"] .og-item__link { flex-direction: row; align-items: center; gap: 12px; padding: 10px 2px; }
+html[data-og-view="thumb"] .og-item__visual { flex: 0 0 64px; height: 64px; border-radius: 10px; }
+html[data-og-view="thumb"] .og-item__emoji { font-size: 28px; }
+html[data-og-view="thumb"] .og-item__body { flex: 1; padding: 0; }
+html[data-og-view="thumb"] .og-item__desc,
+html[data-og-view="list"] .og-item__desc { -webkit-line-clamp: 1; }
+html[data-og-compact] .og-item__wx { position: static; flex: none; padding: 0; background: none; box-shadow: none; font-size: 16px; }
+html[data-og-compact] .og-item__wx--sunny { box-shadow: none; }
+/* リスト */
+html[data-og-view="list"] .og-items { gap: 0; }
+html[data-og-view="list"] .og-item__visual { display: none; }
+html[data-og-view="list"] .og-item__link { flex-direction: row; align-items: center; gap: 10px; padding: 10px 2px; }
+html[data-og-view="list"] .og-item__body { flex: 1; padding: 0; }
+html[data-og-view="list"] .og-item__meta .og-badge { display: none; }
+
+.og-find__map { display: none; }
+.og-resultmap__pin--sunny { box-shadow: 0 0 0 3px #E8A317, 0 1px 4px rgba(0,0,0,.3); }
+.og-resultmap__pin--wet { background: #8a99a3; }
+@media (min-width: 640px) {
+    html:not([data-og-compact]) .og-items { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+    .og-find__body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 42%); gap: 16px; align-items: start; }
+    .og-find__map { display: block; position: sticky; top: 76px; }
+    .og-find__map .og-resultmap__map { height: calc(100vh - 140px); }
+    .og-find .og-mapbtn { display: none; }
+}
+.og-find__group .ev-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.og-find__group .ev-chip, .og-find__group .og-check { flex: none; height: auto; min-height: 0; padding-top: 6px; padding-bottom: 6px; line-height: 1.3; border-radius: 999px; }
