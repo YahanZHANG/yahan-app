@@ -695,6 +695,55 @@ class TripPhotoTests(TestCase):
         self.assertEqual(spot.details["approved_image"]["file_title"], "File:Zug Altstadt.jpg")
 
 
+class PlacePhotoTests(TestCase):
+    """子連れスポット and events get Wikimedia photos like trips do."""
+
+    def run_command(self, commons, *args):
+        with mock.patch("outings.management.commands.auto_assign_place_images.requests.Session", return_value=commons):
+            call_command("auto_assign_place_images", "--commit", "--pause", "0", *args, stdout=open(os.devnull, "w"))
+
+    def setUp(self):
+        from outings.models import FamilySpot
+        FamilySpot.objects.all().delete()
+
+    def test_family_spot_gets_a_photo_and_credit(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.create(name="Zoo Zürich", town="Zürich", latitude=47.38, longitude=8.57, status="published")
+        kept = FamilySpot.objects.create(name="Own Photo Park", image_url="https://example.com/a.jpg", status="published")
+        self.run_command(FakeCommons([commons_page("File:Zoo Zürich Eingang.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        kept.refresh_from_db()
+        self.assertTrue(spot.image_url)
+        self.assertIn("Wikimedia Commons", spot.image_credit)
+        self.assertTrue(spot.image_search_done)
+        self.assertEqual(kept.image_url, "https://example.com/a.jpg")
+        self.assertContains(self.client.get(reverse("outings:spot_detail", args=[spot.pk])), "写真：")
+
+    def test_spot_without_a_match_is_searched_only_once(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.create(name="Hidden Spielplatz", latitude=47.0, longitude=8.0, status="published")
+        self.run_command(FakeCommons([commons_page("File:Unrelated.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        self.assertEqual(spot.image_url, "")
+        self.assertTrue(spot.image_search_done)
+        self.run_command(FakeCommons([commons_page("File:Hidden Spielplatz.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        self.assertEqual(spot.image_url, "")
+
+    def test_upcoming_event_gets_a_nearby_venue_photo(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from outings.models import Event, EventLocation, EventOccurrence
+        place = EventLocation.objects.create(name="Gemeindesaal", city="Uster", canton="ZH", latitude=47.35, longitude=8.72)
+        event = Event.objects.create(title="Fest", location=place, status=Event.Status.PUBLISHED)
+        EventOccurrence.objects.create(event=event, start_at=timezone.now() + timedelta(days=2))
+        self.run_command(FakeCommons([], [commons_page("File:Uster Dorf.jpg", lat=47.351, lon=8.72)]), "--target", "events")
+        event.refresh_from_db()
+        self.assertTrue(event.image_url)
+        self.assertTrue(event.image_credit)
+        self.assertContains(self.client.get(reverse("outings:event_detail", args=[event.pk])), "会場や町のようす")
+
+
 class PublicUserAccessTests(PageTestCase):
     def test_signed_up_public_users_can_open_outings(self):
         from django.contrib.auth.models import Group, User

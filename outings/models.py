@@ -301,6 +301,11 @@ class Event(models.Model):
 
     image_url = models.URLField(max_length=1000, blank=True)
 
+    # Set when image_url is a Wikimedia photo of the venue or town, picked automatically.
+    image_credit = models.CharField("写真のクレジット", max_length=300, blank=True)
+
+    image_search_done = models.BooleanField("写真の自動検索済み", default=False)
+
 
 
     source = models.ForeignKey(
@@ -1297,6 +1302,7 @@ class FamilySpot(models.Model):
     maps_url = models.URLField("Googleマップのリンク", blank=True)
     image_url = models.URLField("写真URL", blank=True)
     image_credit = models.CharField("写真のクレジット", max_length=200, blank=True)
+    image_search_done = models.BooleanField("写真の自動検索済み", default=False)
 
     status = models.CharField("状態", max_length=10, choices=Status.choices, default=Status.DRAFT, db_index=True)
     sort_order = models.IntegerField("並び順（小さいほど上）", default=100)

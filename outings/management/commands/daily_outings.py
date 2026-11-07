@@ -95,6 +95,9 @@ class Command(BaseCommand):
             self.step('import', lambda: import_items(selected, log=self.stdout.write, warn=self.stderr.write))
             if opts['images']:
                 self.step('images', lambda: upload_images_for_selected(selected, raw, max_uploads=opts['max_new']))
+        if opts['images']:
+            # Wikimedia photos for events and 子連れスポット that still have none.
+            self.step('place photos', lambda: call_command('auto_assign_place_images', limit=60, commit=True))
         if opts['cleanup']:
             self.step('cleanup', lambda: call_command('cleanup_outings', commit=True))
         if opts['trip_ai']:

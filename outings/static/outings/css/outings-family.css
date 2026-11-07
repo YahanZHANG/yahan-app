@@ -652,3 +652,4 @@ html:not([data-og-view="list"]) .og-wx-group .og-rows__icon.has-photo { display:
 [data-og-view="list"] .outings-saved-more { display: none !important; }
 [data-og-view="list"] .outings-saved-body { padding: 10px 44px 10px 14px; }
 [data-og-view="list"] .outings-saved-body h2 { margin: 2px 0 0; font-size: 15px; }
+.ev-detail__credit { margin: 4px 0 8px; color: var(--outings-muted); font-size: 11px; }
