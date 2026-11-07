@@ -32,7 +32,7 @@
         <div class="ev-empty og-saved-empty">
             {% if tab == "heart" %}<p>♡ を押したイベントや旅行先がここに並びます。</p>
             {% elif tab == "want" %}<p>「行ってみたい！」を押した場所がここに並びます。</p>
-            {% else %}<p>「行ったことがある！」を押した場所がここに並びます。</p>{% endif %}
+            {% else %}<p>「行った！」を押した場所がここに並びます。</p>{% endif %}
             <a href="{% url 'outings:browse' %}">一覧から探す</a>
         </div>
     {% endif %}

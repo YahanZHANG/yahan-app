@@ -229,6 +229,7 @@ html[data-outings-theme="dark"] .trip-source a {
                 </figcaption>
             </figure>
         {% endif %}
+        {% include "outings/includes/staff_photo.html" with photo_target="trip" photo_pk=spot.pk photo_url=photo.url %}
     {% endwith %}
 
     <div>

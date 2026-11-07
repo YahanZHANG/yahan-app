@@ -1,7 +1,6 @@
 """お気に入り: ♡ お気に入り, ✨ 行ってみたい and 🙌 行った on one page,
 for the visitor alone or for the whole family."""
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
@@ -106,5 +105,4 @@ def family_page(request):
             HouseholdInvite.objects.filter(household=mine.household, status="pending").select_related("invited_user")
             if mine else []
         ),
-        "messages_list": messages.get_messages(request),
     })

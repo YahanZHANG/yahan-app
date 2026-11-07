@@ -20,10 +20,8 @@ DETAIL_URL = {
 }
 
 # Events are one day, so the buttons read a little differently.
-LABELS = {
-    Target.EVENT: ("行った！", "行きたい！"),
-}
-DEFAULT_LABELS = ("行ったことがある！", "行ってみたい！")
+LABELS = {}
+DEFAULT_LABELS = ("行った！", "行ってみたい！")  # the same words everywhere (Taro)
 
 MEMBER_RATINGS_NEEDED = 3  # members' average replaces our own おすすめ度 from here on
 

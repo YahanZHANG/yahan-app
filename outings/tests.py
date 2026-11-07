@@ -933,7 +933,7 @@ class FamilySpotTests(PageTestCase):
         from outings.models import OutingsVisit
         url = reverse("outings:save_visit", args=["kids", self.park.pk])
         detail = reverse("outings:spot_detail", args=[self.park.pk])
-        self.assertContains(self.client.get(detail), "行ったことがある！")
+        self.assertContains(self.client.get(detail), "行った！")
         self.client.post(url, {"action": "want"})
         self.assertEqual(OutingsVisit.objects.get().status, "want")
         self.client.post(url, {"action": "went"})
@@ -1285,3 +1285,65 @@ class SavedFamilyBrowseTests(FamilySpotTests):
         titles = [i["title"] for i in response.context["page_obj"].paginator.object_list]
         self.assertIn(self.park.title, titles)
         self.assertEqual(response.context["f"]["areas"], [])
+
+
+class StaffPhotoTests(FamilySpotTests):
+    """Admins replace or remove photos on the normal pages; removed photos stay removed."""
+
+    def login_staff(self):
+        from django.contrib.auth import get_user_model
+        self.client.force_login(get_user_model().objects.create_user("admin", password="x", is_staff=True))
+
+    def post(self, target, pk, **data):
+        return self.client.post(reverse("outings:staff_photo", args=[target, pk]), data)
+
+    def test_only_staff_can_change_photos_and_see_the_buttons(self):
+        self.park.image_url = "https://example.com/a.jpg"
+        self.park.save()
+        self.post("kids", self.park.pk, action="remove")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://example.com/a.jpg")
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertNotContains(self.client.get(detail), "写真を変える")
+        self.login_staff()
+        self.assertContains(self.client.get(detail), "写真を変える")
+        self.assertContains(self.client.get(reverse("outings:find") + "?type=kids&when=any"), "写真を削除")
+
+    def test_remove_and_replace_kids_spot_photo(self):
+        self.login_staff()
+        self.park.image_url = "https://example.com/a.jpg"
+        self.park.save()
+        response = self.post("kids", self.park.pk, action="remove", next=reverse("outings:browse"))
+        self.assertRedirects(response, reverse("outings:browse"), fetch_redirect_response=False)
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "")
+        self.assertTrue(self.park.image_removed)
+        self.post("kids", self.park.pk, action="upload", url="https://example.com/b.jpg", credit="Me")
+        self.park.refresh_from_db()
+        self.assertEqual((self.park.image_url, self.park.image_credit, self.park.image_removed), ("https://example.com/b.jpg", "Me", False))
+
+    def test_removed_trip_photo_is_not_searched_again(self):
+        self.login_staff()
+        spot = TouristSpot.objects.create(
+            external_id="x", spot_type=TouristSpot.SpotType.ATTRACTION, title_original="Rheinfall",
+            official_url="https://example.com", status=TouristSpot.Status.PUBLISHED,
+            details={"approved_image": {"url": "https://example.com/wrong.jpg"}},
+        )
+        self.post("trip", spot.pk, action="remove")
+        spot.refresh_from_db()
+        self.assertNotIn("approved_image", spot.details)
+        self.assertTrue(spot.details["photo_removed"])
+        commons = mock.Mock()
+        with mock.patch("outings.management.commands.auto_assign_tourist_images.requests.Session", return_value=commons):
+            call_command("auto_assign_tourist_images", "--commit", "--retry", stdout=open(os.devnull, "w"))
+        commons.get.assert_not_called()
+
+    def test_removed_event_photo_is_not_put_back_by_the_import(self):
+        self.login_staff()
+        event = make_event("写真つき", start=self.now + timedelta(days=1))
+        event.image_url = "https://example.com/e.jpg"
+        event.save()
+        self.post("event", event.pk, action="remove")
+        event.refresh_from_db()
+        self.assertTrue(event.image_removed)
+        self.assertEqual(event.image_url, "")

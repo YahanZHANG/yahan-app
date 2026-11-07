@@ -232,7 +232,7 @@ class Command(BaseCommand):
             details = dict(spot.details or {})
 
             # Never overwrite already approved images.
-            if details.get("approved_image"):
+            if details.get("approved_image") or details.get("photo_removed"):
                 continue
 
             if details.get("commons_search_checked") and not options["retry"]:

@@ -14,6 +14,7 @@
         <span aria-hidden="true">{{ spot.emoji }}</span>
     </div>
     {% if spot.image_url and spot.image_credit %}<p class="og-detail__credit">写真：{{ spot.image_credit }}</p>{% endif %}
+    {% include "outings/includes/staff_photo.html" with photo_target="kids" photo_pk=spot.pk photo_url=spot.image_url %}
 
     <p class="og-detail__kind">{{ spot.get_kind_display }}・{{ spot.place_label }}</p>
     <h1 class="og-detail__title">{{ spot.title }}</h1>

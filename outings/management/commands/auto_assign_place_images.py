@@ -93,7 +93,7 @@ class Command(BaseCommand):
         session = make_session()
         results = []
         if opts["target"] in ("family", "all"):
-            spots = FamilySpot.objects.filter(image_url="")
+            spots = FamilySpot.objects.filter(image_url="", image_removed=False)
             if not opts["retry"]:
                 spots = spots.filter(image_search_done=False)
             results.append(self.run("子連れスポット", spots.order_by("sort_order", "pk"), family_photo, session, opts))
@@ -101,7 +101,7 @@ class Command(BaseCommand):
             now = timezone.now()
             upcoming = Q(occurrences__end_at__gt=now) | Q(occurrences__end_at__isnull=True, occurrences__start_at__gt=now)
             events = Event.objects.filter(
-                upcoming, image_url="", status=Event.Status.PUBLISHED,
+                upcoming, image_url="", image_removed=False, status=Event.Status.PUBLISHED,
             ).distinct().select_related("location")
             if not opts["retry"]:
                 events = events.filter(image_search_done=False)

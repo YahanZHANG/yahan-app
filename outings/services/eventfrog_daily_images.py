@@ -44,7 +44,7 @@ def upload_images_for_selected(selected, raw, *, max_uploads=15):
             by_event[event_id].append(raw_by_id[external_id]['image_url'])
 
     events = Event.objects.filter(source__name__iexact='Eventfrog', status=Event.Status.PUBLISHED,
-                                  pk__in=list(by_event)).only('pk', 'image_url', 'external_id')
+                                  pk__in=list(by_event), image_removed=False).only('pk', 'image_url', 'external_id', 'image_search_done')
     stats = {'uploaded': 0, 'failed': 0, 'already_saved': 0, 'no_image': 0}
     upload_url = f'https://api.cloudinary.com/v1_1/{cloud}/image/upload'
     with requests.Session() as session:
@@ -52,7 +52,7 @@ def upload_images_for_selected(selected, raw, *, max_uploads=15):
         for event in events:
             if sum((stats['uploaded'], stats['failed'])) >= max_uploads:
                 break
-            if 'res.cloudinary.com/' in (event.image_url or ''):
+            if 'res.cloudinary.com/' in (event.image_url or '') or (event.image_search_done and event.image_url):
                 stats['already_saved'] += 1
                 continue
             choices = by_event.get(event.pk) or []

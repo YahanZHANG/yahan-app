@@ -46,7 +46,7 @@
 
     {% if not skippable %}
         <fieldset>
-            <legend>🙌 行ったことがある場所<span class="og-profile__q">HOME・さがす・一覧に出すかどうか（お気に入りには残ります）</span></legend>
+            <legend>🙌 行った場所<span class="og-profile__q">HOME・さがす・一覧に出すかどうか（お気に入りには残ります）</span></legend>
             <div class="og-choices">
                 <label><input type="radio" name="hide_went" value="0"{% if not profile.hide_went %} checked{% endif %}><span>表示する</span></label>
                 <label><input type="radio" name="hide_went" value="1"{% if profile.hide_went %} checked{% endif %}><span>表示しない</span></label>

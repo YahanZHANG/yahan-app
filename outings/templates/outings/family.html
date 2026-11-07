@@ -10,8 +10,6 @@
     </header>
     <p class="og-family__lead">家族を招待すると、お気に入りのページで家族の「行った・行ってみたい・お気に入り」も見られます。スイスで和食の家族と共通です。</p>
 
-    {% for message in messages_list %}<p class="og-saved" role="status">{{ message }}</p>{% endfor %}
-
     {% for invite in received_invites %}
         <div class="og-family__box">
             <p>{{ invite.invited_by|outings_display_name }} さんから家族への招待が届いています。</p>

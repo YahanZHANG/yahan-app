@@ -135,6 +135,7 @@
         </nav>
 
         <main class="outings-main">
+            {% if messages %}{% for message in messages %}<p class="og-saved og-flash{% if message.tags == 'error' %} og-flash--error{% endif %}" role="status">{{ message }}</p>{% endfor %}{% endif %}
             {% block content %}{% endblock %}
         </main>
 

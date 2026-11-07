@@ -24,4 +24,12 @@
             </span>
         {% endif %}
     </a>
+    {% if user.is_staff and item.image %}
+        {# Staff: remove a wrong photo straight from the list. #}
+        <form method="post" action="{% url 'outings:staff_photo' item.kind item.pk %}" class="og-item__staff">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" name="action" value="remove" onclick="return confirm('この写真を削除しますか？');" title="管理者だけに表示"><i class="bi bi-trash" aria-hidden="true"></i>写真を削除</button>
+        </form>
+    {% endif %}
 </article>

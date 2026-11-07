@@ -306,6 +306,8 @@ class Event(models.Model):
     image_credit = models.CharField("写真のクレジット", max_length=300, blank=True)
 
     image_search_done = models.BooleanField("写真の自動検索済み", default=False)
+    # Removed by an admin on the page: the Eventfrog photo step leaves it empty.
+    image_removed = models.BooleanField("写真を削除済み", default=False)
 
 
 
@@ -1332,6 +1334,7 @@ class FamilySpot(models.Model):
     image_url = models.URLField("写真URL", blank=True)
     image_credit = models.CharField("写真のクレジット", max_length=200, blank=True)
     image_search_done = models.BooleanField("写真の自動検索済み", default=False)
+    image_removed = models.BooleanField("写真を削除済み", default=False)
 
     status = models.CharField("状態", max_length=10, choices=Status.choices, default=Status.DRAFT, db_index=True)
     sort_order = models.IntegerField("並び順（小さいほど上）", default=100)
@@ -1394,7 +1397,7 @@ class OutingsVisit(models.Model):
         EVENT = "event", "イベント"
 
     class Status(models.TextChoices):
-        WENT = "went", "行ったことがある"
+        WENT = "went", "行った"
         WANT = "want", "行ってみたい"
 
     target = models.CharField("対象", max_length=10, choices=Target.choices)

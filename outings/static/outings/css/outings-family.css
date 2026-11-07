@@ -1054,3 +1054,20 @@ html.og-sheet-open, html.og-sheet-open body { overflow: hidden; }
 }
 @media (min-width: 1000px) { .og-detail__side .og-facts div { grid-template-columns: 112px 1fr; } }
 @media (max-width: 480px) { .og-saved-tabs .og-types__tab { padding-left: 8px; padding-right: 8px; font-size: 14px; } }
+
+/* ---------- Staff: photo replace / remove on the normal pages ---------- */
+.og-flash { margin: 0 0 12px; }
+.og-flash--error { border-color: #e0526b; color: #b3243c; background: #fdecef; }
+.og-staffphoto { margin: 6px 0 12px; padding: 8px 12px; border: 1px dashed #c98a1b; border-radius: 12px; background: #fff8ea; font-size: 13px; }
+.og-staffphoto summary { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #8a5a00; font-weight: 700; }
+.og-staffphoto summary small { margin-left: auto; font-weight: 400; color: var(--outings-muted); }
+.og-staffphoto__form { display: grid; gap: 8px; margin-top: 10px; }
+.og-staffphoto__form label { display: grid; gap: 4px; font-size: 12px; color: var(--outings-muted); }
+.og-staffphoto__form input[type=url], .og-staffphoto__form input[type=text] { padding: 8px 10px; border: 1px solid var(--outings-border); border-radius: 8px; font-size: 16px; background: #fff; color: #1d2b30; }
+.og-staffphoto__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.og-staffphoto__save { padding: 8px 16px; border: 0; border-radius: 999px; background: var(--outings-accent); color: #fff; font-weight: 700; cursor: pointer; }
+.og-staffphoto__remove { padding: 8px 16px; border: 1px solid #e0526b; border-radius: 999px; background: #fff; color: #b3243c; font-weight: 700; cursor: pointer; }
+.og-item { position: relative; }
+.og-item__staff { position: absolute; top: 8px; left: 8px; z-index: 2; margin: 0; }
+.og-item__staff button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 0; border-radius: 999px; background: rgba(179, 36, 60, .9); color: #fff; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+html[data-og-view="list"] .og-item__staff { position: static; margin: 0 0 8px 2px; }
