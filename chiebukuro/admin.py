@@ -171,11 +171,17 @@ class ItemAdmin(admin.ModelAdmin):
 @admin.register(Notice)
 class NoticeAdmin(admin.ModelAdmin):
 
-    list_display = ["title", "kind", "status", "region", "nickname", "expires_at", "created_at"]
+    list_display = ["title", "kind", "status", "is_sample", "region", "nickname", "expires_at", "created_at"]
     list_editable = ["status"]
-    list_filter = ["kind", "status", "region"]
+    list_filter = ["is_sample", "kind", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
+    actions = ["delete_samples"]
+
+    @admin.action(description="テスト用（架空）の告知をすべて消す（選んだものに関係なく）")
+    def delete_samples(self, request, queryset):
+        count, _ = Notice.objects.filter(is_sample=True).delete()
+        self.message_user(request, f"テスト用の告知と、その問い合わせを消しました（{count}件）。")
 
 
 class MessageInline(admin.TabularInline):

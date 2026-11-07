@@ -1118,7 +1118,7 @@ def notice_list(request):
 @login_required
 def notice_new(request):
 
-    mine = active_notices().filter(owner=request.user).first()
+    mine = active_notices().filter(owner=request.user, is_sample=False).first()
     if mine:
         messages.info(request, f"募集・告知は1人1件までです。いまの告知は、あと{mine.days_left}日で終わります（取り下げると、すぐに新しく出せます）。")
         return redirect("chiebukuro:notice", pk=mine.pk)
@@ -1400,7 +1400,7 @@ def my_page(request):
                 "answers": Answer.objects.filter(author=user, status=Status.PUBLISHED).count(),
                 "wanted": Interest.objects.filter(user=user, question__status=Status.PUBLISHED).count(),
                 "items": Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).count()
-                + Notice.objects.filter(owner=user, status=Status.PUBLISHED).count(),
+                + Notice.objects.filter(owner=user, status=Status.PUBLISHED, is_sample=False).count(),
             },
         },
     )
@@ -1452,7 +1452,7 @@ def my_list(request, section):
         )
     else:
         context["items"] = list(Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).order_by("-created_at")[:50])
-        context["notices"] = list(Notice.objects.filter(owner=user, status=Status.PUBLISHED).order_by("-created_at")[:10])
+        context["notices"] = list(Notice.objects.filter(owner=user, status=Status.PUBLISHED, is_sample=False).order_by("-created_at")[:10])
 
     return render(request, "chiebukuro/my_list.html", context)
 

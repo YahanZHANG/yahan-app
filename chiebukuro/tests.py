@@ -766,3 +766,21 @@ class PreviewLinkTests(TestCase):
         # 作り直すと、古いリンクの人は見られなくなる
         settings_row.new_preview_key()
         self.assertContains(self.client.get(home), "いま準備しています")
+
+
+class SampleNoticeTests(BoardTestCase):
+
+    def test_sample_notice_badge_and_bulk_delete(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from chiebukuro.models import Notice
+
+        notice = Notice.objects.create(
+            kind="lesson", title="架空の教室", body="テスト", owner=self.alice, nickname="サンプル教室",
+            is_sample=True, expires_at=timezone.now() + timedelta(days=30),
+        )
+        self.assertContains(self.client.get(reverse("chiebukuro:notices")), "テスト用・架空")
+        self.assertContains(self.client.get(reverse("chiebukuro:notice", args=[notice.pk])), "架空の告知です")
+        # 架空の告知があっても、本物の告知は出せる (1人1件に数えない)
+        self.client.force_login(self.alice)
+        self.assertEqual(self.client.get(reverse("chiebukuro:notice_new")).status_code, 200)

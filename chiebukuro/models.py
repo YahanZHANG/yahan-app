@@ -347,6 +347,7 @@ class Notice(models.Model):
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     expires_at = models.DateTimeField("掲載の終わり", db_index=True)
+    is_sample = models.BooleanField("テスト用（架空）", default=False, help_text="先行テスト用の架空の告知。「テスト用・架空」の印が付きます。公開前に管理画面からまとめて消してください。")
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
