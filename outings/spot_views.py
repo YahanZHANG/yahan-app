@@ -226,13 +226,13 @@ def weekend_events(now, limit=6, days=None, family=True, cantons=()):
     return picked[:limit]
 
 
-def weekend_forecast(now, days=None):
-    """[{day, emoji, label, temp, rain}] for Zurich on the days off, and whether rain is likely."""
-    forecasts = weather._forecasts([HOME_POINT])
+def weekend_forecast(now, days=None, point=HOME_POINT):
+    """[{day, emoji, label, temp, rain}] at `point` on the days off, and whether rain is likely."""
+    forecasts = weather._forecasts([point])
     rows = []
     rainy = False
     for day in (days or weather.weekend_days(now))[:3]:
-        raw = forecasts.get(HOME_POINT, {}).get(day.isoformat())
+        raw = forecasts.get(point, {}).get(day.isoformat())
         text = weather.describe(raw)
         if text:
             rows.append({"day": weather.WEEKDAYS_JA[day.weekday()], **text})
@@ -291,52 +291,31 @@ def home(request):
     preference = visitor_profile.get_profile(visitor_id)
     days = visitor_profile.days_off(now, preference)
     weekday = bool(preference and preference.days_off == OutingsPreference.DaysOff.WEEKDAY)
-    forecast, rainy = weekend_forecast(now, days)
-
-    def ranked(spots):
-        # Weekly shuffle, then the visitor's areas, ages and language first.
-        spots = weekly_pick(spots, len(spots), now)
-        spots.sort(key=lambda s: -visitor_profile.spot_score(s, preference))
-        return spots
-
-    from . import sunny
-    forecasts = weather._forecasts(sunny.POINTS)
-    open_now = [s for s in published_spots() if s.open_in(month)]
-    for spot in [s for s in open_now if s.latitude is None][:sunny.MAX_LOOKUPS]:
-        sunny.locate(spot)
-    for spot in open_now:
-        spot.wx = place_weather(spot.latitude, spot.longitude, days, forecasts)
-    day_spots = ranked([s for s in open_now if s.trip != FamilySpot.Trip.OVERNIGHT])
-    # Where the weather is good on the days off (or indoors) first; the order above stays within.
-    day_spots.sort(key=lambda s: weather_class(s.wx, s.rainy_ok))
-    weekend_spots = day_spots[:6]
-    overnight = ranked([s for s in open_now if s.trip != FamilySpot.Trip.DAY])
-    overnight.sort(key=lambda s: weather_class(s.wx, s.rainy_ok))
-    overnight = overnight[:6]
+    from . import find_views
+    # The weather row: around the visitor's first area, else Zurich.
+    area = (preference.areas or [None])[0] if preference else None
+    point = find_views.AREA_CENTRES.get(area, HOME_POINT)
+    forecast, _ = weekend_forecast(now, days, point)
+    picks, events, overnight, mode = find_views.home_picks(preference, now, days)
+    hero = next((i for i in picks if i["image"]), None)
+    sunny_names = find_views.sunny_area_names(days) if mode == "sunny" else []
     kids = visitor_profile.wants_kids(preference)
-
-    quick = [
-        {"label": "雨の日OK", "emoji": "☔", "qs": "rainy=1"},
-        {"label": "言葉なしでOK", "emoji": "😊", "qs": "easy=1"},
-        {"label": "無料あり", "emoji": "🆓", "qs": "free=1"},
-        {"label": "日帰り", "emoji": "🚆", "qs": "trip=day"},
-    ] + [{"label": label, "emoji": "", "qs": f"age={key}"} for key, label, *_ in AGE_GROUPS]
+    area_label = dict((k, l) for k, l, _ in AREAS).get(area, "チューリッヒ周辺")
 
     response = render(request, "outings/home.html", {
         "forecast": forecast,
-        "rainy": rainy,
+        "forecast_area": area_label,
+        "mode": mode,
+        "sunny_names": sunny_names[:4],
         "weekday": weekday,
         "kids": kids is not False,
         "ask": not (preference and preference.setup),
+        "personal": bool(preference and preference.setup == "done"),
         "profile": profile_form_context(preference),
-        "weekend_spots": [decorate(s) for s in weekend_spots],
-        "weekend_events": with_event_weather(weekend_events(
-            now, days=days, family=kids is not False, cantons=visitor_profile.area_cantons(preference),
-        ), forecasts),
-        "overnight_spots": [decorate(s) for s in overnight],
-        "quick_filters": quick,
-        "spot_count": published_spots().count(),
-        "region_names": REGION_NAMES_JA,
+        "picks": picks,
+        "hero": hero,
+        "events": events,
+        "overnight": overnight,
     })
     return set_visitor_cookie(request, response, visitor_id)
 

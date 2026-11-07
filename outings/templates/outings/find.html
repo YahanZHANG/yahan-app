@@ -17,63 +17,71 @@
 
     <form method="get" action="#results" class="og-filterform og-find__form">
         {% if f.type != "all" %}<input type="hidden" name="type" value="{{ f.type }}">{% endif %}
+        <details class="og-find__filters" data-og-remember="find-filters">
+            <summary>
+                <span class="og-find__filters-label"><i class="bi bi-sliders" aria-hidden="true"></i>条件</span>
+                <span class="og-find__bits">{% for bit in summary_bits %}<span>{{ bit }}</span>{% endfor %}</span>
+                <span class="og-find__toggle" aria-hidden="true"><span class="og-closed">変える</span><span class="og-open">閉じる</span></span>
+            </summary>
 
-        <fieldset class="og-find__group">
-            <legend>いつ</legend>
-            <div class="ev-chips">
-                {% for w in whens %}
-                    <label class="ev-chip og-pick"><input type="radio" name="when" value="{{ w.key }}"{% if w.active %} checked{% endif %}>{{ w.label }}</label>
-                {% endfor %}
-                <select name="day" class="og-find__day" aria-label="日にちを選ぶ">
-                    <option value="">日にちを選ぶ</option>
-                    {% for d in day_options %}<option value="{{ d.value }}"{% if d.active %} selected{% endif %}>{{ d.label }}</option>{% endfor %}
-                </select>
-            </div>
-        </fieldset>
+            <div class="og-find__panel">
+                <fieldset class="og-find__group">
+                    <legend>いつ</legend>
+                    <div class="ev-chips">
+                        {% for w in whens %}
+                            <label class="ev-chip og-pick"><input type="radio" name="when" value="{{ w.key }}"{% if w.active %} checked{% endif %}>{{ w.label }}</label>
+                        {% endfor %}
+                        <select name="day" class="og-find__day" aria-label="日にちを選ぶ">
+                            <option value="">日にちを選ぶ</option>
+                            {% for d in day_options %}<option value="{{ d.value }}"{% if d.active %} selected{% endif %}>{{ d.label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </fieldset>
 
-        <fieldset class="og-find__group">
-            <legend>誰と</legend>
-            <div class="ev-chips">
-                <input type="hidden" name="family" value="0">
-                <label class="og-check og-pick-check">
-                    <input type="checkbox" name="family" value="1"{% if f.family %} checked{% endif %}>
-                    <i class="bi bi-square og-off" aria-hidden="true"></i><i class="bi bi-check-square-fill og-on" aria-hidden="true"></i>子連れ
-                </label>
-                {% for a in ages %}
-                    <label class="ev-chip og-pick"><input type="radio" name="age" value="{{ a.key }}"{% if a.active %} checked{% endif %}>{{ a.label }}</label>
-                {% endfor %}
-                <label class="ev-chip og-pick"><input type="radio" name="age" value=""{% if not f.age %} checked{% endif %}>年齢を問わない</label>
-            </div>
-        </fieldset>
+                <fieldset class="og-find__group">
+                    <legend>誰と</legend>
+                    <div class="ev-chips">
+                        <input type="hidden" name="family" value="0">
+                        <label class="og-check og-pick-check">
+                            <input type="checkbox" name="family" value="1"{% if f.family %} checked{% endif %}>
+                            <i class="bi bi-square og-off" aria-hidden="true"></i><i class="bi bi-check-square-fill og-on" aria-hidden="true"></i>子連れ
+                        </label>
+                        {% for a in ages %}
+                            <label class="ev-chip og-pick"><input type="radio" name="age" value="{{ a.key }}"{% if a.active %} checked{% endif %}>{{ a.label }}</label>
+                        {% endfor %}
+                        <label class="ev-chip og-pick"><input type="radio" name="age" value=""{% if not f.age %} checked{% endif %}>年齢を問わない</label>
+                    </div>
+                </fieldset>
 
-        <details class="ev-filters"{% if f.areas or f.free or f.rainy or f.easy or f.q %} open{% endif %}>
-            <summary><i class="bi bi-sliders" aria-hidden="true"></i>どこ・条件・キーワード</summary>
-            <fieldset class="ev-filters__group">
-                <legend>どこ（いくつでも）</legend>
-                <div class="ev-chips">
-                    {% for a in areas %}
-                        <label class="ev-chip og-pick"><input type="checkbox" name="area" value="{{ a.key }}"{% if a.active %} checked{% endif %}>{{ a.label }}</label>
-                    {% endfor %}
+                <fieldset class="og-find__group">
+                    <legend>どこ<small>いくつでも</small></legend>
+                    <div class="ev-chips">
+                        {% for a in areas %}
+                            <label class="ev-chip og-pick"><input type="checkbox" name="area" value="{{ a.key }}"{% if a.active %} checked{% endif %}>{{ a.label }}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <fieldset class="og-find__group">
+                    <legend>条件</legend>
+                    <div class="ev-chips">
+                        {% for c in conditions %}
+                            <label class="ev-chip og-pick"><input type="checkbox" name="{{ c.key }}" value="1"{% if c.active %} checked{% endif %}>{{ c.label }}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <fieldset class="og-find__group">
+                    <legend>キーワード</legend>
+                    <input type="search" name="q" value="{{ f.q }}" class="og-find__q" placeholder="地名・施設名など（ドイツ語でも）">
+                </fieldset>
+
+                <div class="og-filterform__actions">
+                    <button type="submit" class="og-filterform__go"><i class="bi bi-search" aria-hidden="true"></i>この条件で探す</button>
+                    <a href="{% url 'outings:find' %}?reset=1{% if f.type != 'all' %}&amp;type={{ f.type }}{% endif %}" class="og-filterform__reset">条件をリセット</a>
                 </div>
-            </fieldset>
-            <fieldset class="ev-filters__group">
-                <legend>条件</legend>
-                <div class="ev-chips">
-                    {% for c in conditions %}
-                        <label class="ev-chip og-pick"><input type="checkbox" name="{{ c.key }}" value="1"{% if c.active %} checked{% endif %}>{{ c.label }}</label>
-                    {% endfor %}
-                </div>
-            </fieldset>
-            <fieldset class="ev-filters__group">
-                <legend>キーワード</legend>
-                <input type="search" name="q" value="{{ f.q }}" class="og-find__q" placeholder="地名・施設名など（ドイツ語でも）">
-            </fieldset>
+            </div>
         </details>
-
-        <div class="og-filterform__actions">
-            <button type="submit" class="og-filterform__go"><i class="bi bi-search" aria-hidden="true"></i>この条件で探す</button>
-            {% if is_filtered %}<a href="{% url 'outings:find' %}{% if f.type != 'all' %}?type={{ f.type }}{% endif %}" class="og-filterform__reset">条件を解除</a>{% endif %}
-        </div>
     </form>
 
     {% if f.partial %}
@@ -83,15 +91,19 @@
         <p class="og-find__note">旅行は「子連れ」「無料」「雨でもOK」の条件を持っていないので、子連れのときは子連れスポットを出しています。</p>
     {% endif %}
 
-    <div class="og-countbar og-results" id="results">
-        <p class="og-count">{{ count }}件</p>
-        {% include "outings/includes/map_button.html" %}
-        {% include "outings/includes/view_toggle.html" %}
+    <div class="og-resultbar og-results" id="results">
+        <p class="og-count"><strong>{{ count }}</strong>件</p>
+        <nav class="og-sorts" aria-label="並び順">
+            {% for s in sorts %}<a href="?{{ s.qs }}#results" class="og-sorts__item{% if s.active %} is-active{% endif %}">{{ s.label }}</a>{% endfor %}
+        </nav>
+        <div class="og-resultbar__tools">
+            {% include "outings/includes/map_button.html" %}
+            {% include "outings/includes/view_toggle.html" %}
+        </div>
     </div>
-    <nav class="og-sorts" aria-label="並び順">
-        {% for s in sorts %}<a href="?{{ s.qs }}#results" class="og-sorts__item{% if s.active %} is-active{% endif %}">{{ s.label }}</a>{% endfor %}
-        <small>おすすめ度（★）は、場所のよさとその日の天気から出しています。</small>
-    </nav>
+
+    <div class="og-find__map" data-og-map-slot aria-label="地図"></div>
+    <p class="og-find__hint">★はおすすめ度です。場所のよさと、その日の天気から出しています。</p>
 
     <div class="og-find__body">
         <div class="og-find__list">
@@ -103,11 +115,10 @@
             {% else %}
                 <div class="ev-empty">
                     <p>条件に合うものが見つかりませんでした。</p>
-                    <a href="{% url 'outings:find' %}">条件を解除する</a>
+                    <a href="{% url 'outings:find' %}?reset=1">条件を解除する</a>
                 </div>
             {% endif %}
         </div>
-        <aside class="og-find__map" data-og-map-slot aria-label="地図"></aside>
     </div>
 </div>
 {% endblock %}

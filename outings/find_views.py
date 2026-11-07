@@ -237,7 +237,7 @@ def kids_items(f, month):
             "sub": spot.town or spot.area_label, "emoji": spot.emoji, "image": spot.image_url,
             "desc": sunny.short_text(spot.summary_ja or spot.intro_ja, 80), "badges": spot.badges[:3],
             "lat": spot.latitude, "lon": spot.longitude, "area": area,
-            "base": spot.recommend, "rain_ok": spot.rainy_ok, "canton": spot.canton,
+            "base": spot.recommend, "rain_ok": spot.rainy_ok, "canton": spot.canton, "ages": (spot.age_min, spot.age_max),
             "new": spot.updated_at, "relevance": relevance,
         })
     return items
@@ -282,8 +282,31 @@ def sort_items(items, sort):
 # Page
 # ---------------------------------------------------------------------------
 
-def read_filters(request, now, preference):
+# Conditions remembered between visits (子連れ has its own cookie; type and keyword are not kept).
+REMEMBER = ("when", "day", "area", "age", "free", "rainy", "easy", "sort")
+REMEMBER_COOKIE = "outings_find"
+
+
+def effective_query(request):
+    """(query, save): the request's conditions, or the last ones used when none are given."""
+    from django.http import QueryDict
     get = request.GET
+    if get.get("reset") == "1":
+        return QueryDict(mutable=True), "clear"
+    if any(key in get for key in REMEMBER):
+        return get, "save"
+    saved = request.COOKIES.get(REMEMBER_COOKIE, "")
+    if not saved:
+        return get, ""
+    query = get.copy()
+    for key, values in QueryDict(saved).lists():
+        if key in REMEMBER:
+            query.setlist(key, values)
+    return query, ""
+
+
+def read_filters(request, now, preference, get=None):
+    get = request.GET if get is None else get
     kind = get.get("type", "all")
     if kind not in dict(TYPES):
         kind = "all"
@@ -329,10 +352,11 @@ def find(request):
     now = timezone.now()
     visitor_id = get_visitor_id(request)
     preference = visitor_profile.get_profile(visitor_id)
-    f = read_filters(request, now, preference)
+    query, remember = effective_query(request)
+    f = read_filters(request, now, preference, query)
     f["words"] = text_search.tokens(f["q"])
     f["need"] = len(f["words"])
-    if f["q"] and not request.GET.get("sort"):
+    if f["q"] and not query.get("sort"):
         f["sort"] = "recommended"  # keyword: best matches first
     days = window(f["when"], f["day"], now, preference)
     month = (days[0] if days else timezone.localdate(now)).month
@@ -361,8 +385,9 @@ def find(request):
 
     page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
 
-    params = request.GET.copy()
-    params.pop("page", None)
+    params = query.copy()
+    for key in ("page", "reset", "map"):
+        params.pop(key, None)
 
     def qs(**changes):
         p = params.copy()
@@ -382,6 +407,17 @@ def find(request):
         sunny_areas = [p["name"] for p in sorted((p for p in points if p["sunny"]), key=lambda p: p["rank"])][:6]
 
     counts = {"event": len(found["event"]), "trip": len(found["trip"]), "kids": len(found["kids"])}
+    bits = []
+    if f["day"]:
+        bits.append(next(label for d, label in f["days"] if d == f["day"]))
+    else:
+        bits.append(dict(WHEN)[f["when"]])
+    if f["family"]:
+        bits.append("子連れ" + (f"（{f['age'][1]}）" if f["age"] else ""))
+    bits += [label for key, label, _ in AREAS if key in f["areas"]]
+    bits += [label for key, label in CONDITIONS if f[key]]
+    if f["q"]:
+        bits.append(f"「{f['q']}」")
     is_filtered = bool(f["areas"] or f["age"] or f["free"] or f["rainy"] or f["easy"] or f["q"] or f["day"] or f["when"] != "weekend")
     response = render(request, "outings/find.html", {
         "f": f,
@@ -402,10 +438,20 @@ def find(request):
         "sunny_areas": sunny_areas,
         "has_forecast": bool(forecasts),
         "is_filtered": is_filtered,
+        "summary_bits": bits,
         "trips_hidden": f["type"] in ("all", "trip") and (f["family"] or f["free"] or f["rainy"]),
     })
     if f["family_explicit"]:
         remember_kids(response, f["family"])
+    if remember == "save":
+        from django.http import QueryDict
+        kept = QueryDict(mutable=True)
+        for key in REMEMBER:
+            if key in query and key != "day":
+                kept.setlist(key, query.getlist(key))
+        response.set_cookie(REMEMBER_COOKIE, kept.urlencode(), max_age=180 * 24 * 3600, samesite="Lax")
+    elif remember == "clear":
+        response.delete_cookie(REMEMBER_COOKIE)
     return set_visitor_cookie(request, response, visitor_id)
 
 
@@ -472,3 +518,80 @@ def from_search(request):
         "family": "1" if g.get("tag") == "family" else g.get("family", ""), "free": g.get("free", ""),
         "sort": "sunny" if g.get("sort") == "sunny" else ("date" if g.get("sort") == "date" else ""),
     })
+
+
+# ---------------------------------------------------------------------------
+# HOME: picks for this visitor, from the same items as さがす
+# ---------------------------------------------------------------------------
+
+def base_filters(family, **changes):
+    f = {
+        "type": "all", "when": "weekend", "day": None, "days": [], "family": family, "family_explicit": False,
+        "areas": [], "age": None, "free": False, "rainy": False, "easy": False, "q": "", "words": [], "need": 0,
+        "sort": "sunny", "kind": "", "trip": "", "partial": False,
+    }
+    f.update(changes)
+    return f
+
+
+def sunny_area_names(days):
+    names = []
+    for day in days[:2]:
+        for point in sorted((p for p in sunny.point_forecasts(day) if p["sunny"]), key=lambda p: p["rank"]):
+            if point["name"] not in names:
+                names.append(point["name"])
+    return names
+
+
+def home_picks(preference, now, days, limit=8):
+    """(picks, events, overnight, mode): mode is 'sunny' (show sunny places first),
+    'rainy' (rain everywhere: places that work in the rain) or '' (no forecast)."""
+    family = visitor_profile.wants_kids(preference) is not False
+    age = None
+    ages = visitor_profile.age_range(preference)
+    month = (days[0] if days else timezone.localdate(now)).month
+    forecasts = weather._forecasts(sunny.POINTS) if days else {}
+
+    f = base_filters(family, trip="day", age=age)
+    found = collect(f, now, days, month)
+    items = found["event"] + found["trip"] + found["kids"]
+    if ages and family:
+        group = ("", "", ages[0], ages[1])
+        items = [i for i in items if i["kind"] != "kids" or ages_fit(*i["ages"], group)]
+    score_items(items, days, forecasts, preference)
+    # A different order among equals each week, the same all week long.
+    import random
+    week = timezone.localdate(now).isocalendar()
+    random.Random(f"{week[0]}-{week[1]}").shuffle(items)
+
+    mode = ""
+    if forecasts:
+        sunny_somewhere = any(i["wx"] and i["wx_rank"][0] <= 1 for i in items)
+        if sunny_somewhere:
+            mode = "sunny"
+            sort_items(items, "sunny")
+        else:
+            mode = "rainy"
+            dry = [i for i in items if i["rain_ok"]]
+            items = dry or items
+            sort_items(items, "recommended")
+    else:
+        sort_items(items, "recommended")
+
+    # A mix: no more than half events, so places and events both show.
+    picks, events_taken = [], 0
+    for item in items:
+        if item["kind"] == "event":
+            if events_taken >= limit // 2:
+                continue
+            events_taken += 1
+        picks.append(item)
+        if len(picks) == limit:
+            break
+
+    events = [i for i in items if i["kind"] == "event" and i not in picks][:6]
+    over = collect(base_filters(family, type="kids", trip="overnight"), now, days, month)["kids"]
+    score_items(over, days, forecasts, preference)
+    sort_items(over, "sunny" if mode == "sunny" else "recommended")
+    return picks, events, over[:6], mode
+

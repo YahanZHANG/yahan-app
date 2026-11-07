@@ -321,6 +321,18 @@ class PageTests(PageTestCase):
         html = self.find(type="event", when="any", sort="recommended").content.decode()
         self.assertLess(html.index("ベルンの講演"), html.index("チューリッヒの祭り"))
 
+    def test_find_remembers_conditions(self):
+        make_event("ベルンの講演", start=self.now + timedelta(days=2), canton="BE", city="Bern")
+        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2))
+        self.find(type="event", when="any", area="bern")
+        response = self.find(type="event")
+        self.assertEqual(response.context["f"]["areas"], ["bern"])
+        self.assertNotContains(response, "チューリッヒの祭り")
+        self.assertIn("ベルン周辺", response.context["summary_bits"])
+        response = self.find(type="event", reset="1")
+        self.assertEqual(response.context["f"]["areas"], [])
+        self.assertEqual(self.find(type="event").context["f"]["areas"], [])
+
     def test_period_filter(self):
         make_event("明日のイベント", start=timezone.localtime(self.now).replace(hour=12, minute=0) + timedelta(days=1))
         make_event("来月のイベント", start=self.now + timedelta(days=20))
@@ -411,7 +423,7 @@ class PageTests(PageTestCase):
         FamilySpot.objects.all().delete()
         FamilySpot.objects.create(name="Open Park", summary_ja="公園", status="published")
         html = self.client.get(reverse("outings:home")).content.decode()
-        self.assertIn("今週末どこ行く", html)
+        self.assertIn("今週末、どこ行く", html)
         self.assertIn("週末の親子会", html)
         self.assertNotIn("週末の大人会", html)
         self.assertIn("Open Park", html)
@@ -528,13 +540,14 @@ class SearchTests(PageTestCase):
 
 class NavigationTests(PageTestCase):
 
-    def test_search_is_in_the_header_and_weekend_in_the_tab_bar(self):
+    def test_search_is_in_the_header_and_the_tab_bar(self):
         html = self.client.get(reverse("outings:find")).content.decode()
         self.assertIn("nav-find active", html)
         tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
-        self.assertIn('href="%s?when=weekend&amp;sort=sunny&amp;tab=weekend" class="tabbar__search"' % reverse("outings:find"), tabbar)
-        self.assertIn("今週末", tabbar)
+        self.assertIn("さがす", tabbar)
         self.assertIn("マイページ", tabbar)
+        self.assertNotIn("今週末", tabbar)
+        self.assertIn("og-totop", html)
 
 
 class ScheduleLabelTests(TestCase):
@@ -843,8 +856,10 @@ class FamilySpotTests(PageTestCase):
         self.assertEqual(preference.kid_ages, ["0"])
         self.assertIn("BE", preference.favorite_regions)
         home = self.client.get(reverse("outings:home"))
-        self.assertNotContains(home, 'id="og-ask-title"')
-        self.assertEqual(home.context["weekend_spots"][0].name, "Bern Park")
+        self.assertNotContains(home, 'class="og-askbar"')
+        kids = [i for i in home.context["picks"] if i["kind"] == "kids"]
+        self.assertEqual(kids[0]["title"], "Bern Park")  # their area and age first
+        self.assertContains(home, "あなたへのおすすめ")
         # The 子連れ tick follows the answer.
         self.assertTrue(self.client.get(reverse("outings:find")).context["f"]["family"])
         self.assertEqual(FamilySpot.objects.count(), 4)
@@ -853,10 +868,10 @@ class FamilySpotTests(PageTestCase):
         from outings.models import OutingsPreference
         self.client.post(reverse("outings:profile_save"), {"skip": "1"})
         self.assertEqual(OutingsPreference.objects.get().setup, "skipped")
-        self.assertNotContains(self.client.get(reverse("outings:home")), 'id="og-ask-title"')
+        self.assertNotContains(self.client.get(reverse("outings:home")), 'class="og-askbar"')
         self.client.post(reverse("outings:profile_save"), {"kids": "no", "days_off": "weekday"})
         home = self.client.get(reverse("outings:home"))
-        self.assertContains(home, "平日のおすすめ")
+        self.assertContains(home, "次の平日、どこ行く")
         self.assertFalse(self.client.get(reverse("outings:find")).context["f"]["family"])
         page = self.client.get(reverse("outings:my_preferences"))
         self.assertContains(page, 'value="weekday" checked')
