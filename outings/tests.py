@@ -50,7 +50,7 @@ def article(**overrides):
 
 
 def make_event(title="テスト", *, start, end=None, canton="ZH", city="Zürich", status=Event.Status.PUBLISHED,
-               tier=Event.ListingTier.STANDARD, source=True, tags=(), **fields):
+               tier=Event.ListingTier.STANDARD, source=True, tags=("family",), **fields):
     location = EventLocation.objects.create(name="Halle", city=city, canton=canton)
     src = EventSource.objects.get_or_create(name="Eventfrog")[0] if source else None
     event = Event.objects.create(
@@ -280,14 +280,26 @@ class PageTests(PageTestCase):
         self.assertEqual(OutingsPreference.objects.get().favorite_regions, ["BE", "ZH"])
 
     def test_event_list_filters(self):
-        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2), tags=["family"])
+        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2))
         make_event("ベルンの講演", start=self.now + timedelta(days=2), canton="BE", city="Bern")
         response = self.client.get(reverse("outings:event_home"), {"region": "BE"})
         self.assertContains(response, "ベルンの講演")
         self.assertNotContains(response, "チューリッヒの祭り")
-        response = self.client.get(reverse("outings:event_home"), {"family": "1"})
-        self.assertContains(response, "チューリッヒの祭り")
-        self.assertNotContains(response, "ベルンの講演")
+
+    def test_event_list_shows_only_one_off_family_events(self):
+        make_event("親子コンサート", start=self.now + timedelta(days=2))
+        make_event("大人の講演", start=self.now + timedelta(days=2), tags=())
+        weekly = make_event("毎週の教室", start=self.now + timedelta(days=1))
+        for week in range(1, 4):
+            EventOccurrence.objects.create(event=weekly, start_at=self.now + timedelta(days=1 + 7 * week))
+        hand = make_event("図書館の読み聞かせ", start=self.now + timedelta(days=1), source=False)
+        for week in range(1, 4):
+            EventOccurrence.objects.create(event=hand, start_at=self.now + timedelta(days=1 + 7 * week))
+        response = self.client.get(reverse("outings:event_home"), {"region": "all"})
+        self.assertContains(response, "親子コンサート")
+        self.assertContains(response, "図書館の読み聞かせ")
+        self.assertNotContains(response, "大人の講演")
+        self.assertNotContains(response, "毎週の教室")
 
     def test_event_list_uses_favourite_regions_by_default(self):
         visitor = OutingsPreference.objects.create(favorite_regions=["BE"]).visitor_id
@@ -378,12 +390,20 @@ class PageTests(PageTestCase):
         self.assertContains(response, "TWINTで送金")
         self.assertContains(response, "+41 79 000 00 00")
 
-    def test_home_lists_recommended_before_new(self):
-        make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+    def test_home_shows_weekend_family_events_and_spots(self):
+        from outings.models import FamilySpot
+        from outings.services import weather as wx
+        saturday = wx.weekend_days(self.now)[-1]
+        start = timezone.make_aware(datetime.combine(saturday, datetime.min.time())) + timedelta(hours=14)
+        make_event("週末の親子会", start=start)
+        make_event("週末の大人会", start=start, tags=())
+        FamilySpot.objects.all().delete()
+        FamilySpot.objects.create(name="Open Park", summary_ja="公園", status="published")
         html = self.client.get(reverse("outings:home")).content.decode()
-        self.assertLess(html.index("おすすめ"), html.index("新着"))
-
-
+        self.assertIn("今週末どこ行く", html)
+        self.assertIn("週末の親子会", html)
+        self.assertNotIn("週末の大人会", html)
+        self.assertIn("Open Park", html)
 
 
 class FeedbackTests(PageTestCase):
@@ -475,7 +495,7 @@ class SearchTests(PageTestCase):
 
     def test_old_family_parameter_still_works(self):
         make_event("親子の会", start=self.now + timedelta(days=2), tags=["family"])
-        make_event("大人の会", start=self.now + timedelta(days=2))
+        make_event("大人の会", start=self.now + timedelta(days=2), tags=())
         response = self.search(tag="family")
         self.assertContains(response, "親子の会")
         self.assertNotContains(response, "大人の会")
@@ -489,35 +509,6 @@ class NavigationTests(PageTestCase):
         self.assertIn("tabbar__search active", tabbar)
         # The events tab is no longer highlighted on the search page.
         self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
-
-    def test_home_shows_three_recommended_events_without_a_toggle(self):
-        for i in range(5):
-            make_event(f"注目{i}", start=self.now + timedelta(days=i + 1), tier=Event.ListingTier.FEATURED)
-        html = self.client.get(reverse("outings:home")).content.decode()
-        picks = html[html.index("home-picks"):html.index("home-fresh")]
-        self.assertEqual(picks.count('class="discovery-card"'), 3)
-        self.assertNotIn("data-discovery-toggle", html)
-
-    def test_recommended_events_with_photo_come_first(self):
-        make_event("写真なし", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
-        make_event("写真あり", start=self.now + timedelta(days=3), tier=Event.ListingTier.FEATURED,
-                   image_url="https://example.com/a.jpg")
-        html = self.client.get(reverse("outings:home")).content.decode()
-        self.assertLess(html.index("写真あり"), html.index("写真なし"))
-        self.assertIn("card-tone--", html)
-
-    def test_new_items_are_grouped_into_events_and_trips(self):
-        make_event("新しいイベント", start=self.now + timedelta(days=2))
-        TouristSpot.objects.create(
-            external_id="t1", spot_type=TouristSpot.SpotType.DESTINATION, title_original="Arosa",
-            title_ja="新しい旅行先", official_url="https://example.com", status=TouristSpot.Status.PUBLISHED,
-        )
-        html = self.client.get(reverse("outings:home")).content.decode()
-        fresh = html[html.index('home-fresh"'):html.index("home-about")]
-        self.assertEqual(fresh.count('class="home-fresh__list"'), 2)
-        self.assertLess(fresh.index("bi-calendar-event"), fresh.index("新しいイベント"))
-        self.assertLess(fresh.index("新しいイベント"), fresh.index("bi-compass"))
-        self.assertLess(fresh.index("bi-compass"), fresh.index("新しい旅行先"))
 
 
 class ScheduleLabelTests(TestCase):
@@ -705,37 +696,48 @@ class FamilySpotTests(PageTestCase):
         from outings.models import FamilySpot
         FamilySpot.objects.all().delete()  # drop the seeded spots
         self.park = self.make("Sunny Park", name_ja="ひなた公園", price=FamilySpot.Price.FREE)
-        self.museum = self.make("Rain Museum", kind=FamilySpot.Kind.MUSEUM, canton="AG", rainy_ok=True,
-                                price=FamilySpot.Price.PAID, open_sunday=False)
+        self.museum = self.make("Rain Museum", kind=FamilySpot.Kind.MUSEUM, canton="BE", rainy_ok=True,
+                                price=FamilySpot.Price.PAID, language="helps", age_min=6, age_max=12,
+                                trip=FamilySpot.Trip.OVERNIGHT)
         self.draft = self.make("Secret Draft", status=FamilySpot.Status.DRAFT)
 
     def names(self, query=""):
-        response = self.client.get(reverse("outings:kids_list") + query)
+        response = self.client.get(reverse("outings:spot_list") + query)
         self.assertEqual(response.status_code, 200)
-        return [spot.name for spot in response.context["spots"]]
+        return sorted(spot.name for spot in response.context["spots"])
 
     def test_list_shows_published_only_and_filters(self):
-        self.assertEqual(sorted(self.names()), ["Rain Museum", "Sunny Park"])
+        self.assertEqual(self.names(), ["Rain Museum", "Sunny Park"])
         self.assertEqual(self.names("?rainy=1"), ["Rain Museum"])
         self.assertEqual(self.names("?free=1"), ["Sunny Park"])
-        self.assertEqual(self.names("?sunday=1"), ["Sunny Park"])
+        self.assertEqual(self.names("?easy=1"), ["Sunny Park"])
         self.assertEqual(self.names("?kind=museum"), ["Rain Museum"])
-        self.assertEqual(self.names("?canton=AG"), ["Rain Museum"])
+        self.assertEqual(self.names("?area=bern"), ["Rain Museum"])
+        self.assertEqual(self.names("?age=0"), ["Sunny Park"])
+        self.assertEqual(self.names("?age=6"), ["Rain Museum", "Sunny Park"])
+        self.assertEqual(self.names("?trip=day"), ["Sunny Park"])
+        self.assertEqual(self.names("?trip=overnight"), ["Rain Museum"])
         self.assertEqual(self.names("?kind=bogus"), self.names())
 
+    def test_season(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot(season=FamilySpot.Season.WARM)
+        self.assertTrue(spot.open_in(7))
+        self.assertFalse(spot.open_in(1))
+
     def test_detail_has_map_link_and_hides_drafts(self):
-        response = self.client.get(reverse("outings:kids_detail", args=[self.park.pk]))
+        response = self.client.get(reverse("outings:spot_detail", args=[self.park.pk]))
         self.assertContains(response, "ひなた公園")
         self.assertContains(response, "Googleマップで開く")
         self.assertContains(response, "https://www.google.com/maps/search/")
-        self.assertEqual(self.client.get(reverse("outings:kids_detail", args=[self.draft.pk])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("outings:spot_detail", args=[self.draft.pk])).status_code, 404)
 
-    def test_home_and_trips_link_to_kids_spots(self):
+    def test_home_and_trips_link_to_spots(self):
         home = self.client.get(reverse("outings:home"))
-        self.assertContains(home, reverse("outings:kids_detail", args=[self.park.pk]))
+        self.assertContains(home, reverse("outings:spot_detail", args=[self.park.pk]))
         self.assertNotContains(home, "Secret Draft")
         trips = self.client.get(reverse("outings:tourist_spot_list"))
-        self.assertContains(trips, reverse("outings:kids_list"))
+        self.assertContains(trips, reverse("outings:spot_list"))
 
     def test_seed_spots_exist(self):
         from importlib import import_module

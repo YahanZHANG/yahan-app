@@ -1,0 +1,58 @@
+{% extends "outings/base.html" %}
+
+{% block title %}子連れスポット | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page">
+
+    <header class="og-page__head">
+        <h1>子連れスポット</h1>
+        <p>{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
+    </header>
+
+    <nav class="og-chips og-chips--scroll" aria-label="よく使う条件">
+        {% for chip in chips.toggles %}
+            <a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}"{% if chip.active %} aria-current="true"{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <details class="og-filters" data-open-on-pc{% if filter_count %} open{% endif %}>
+        <summary><i class="bi bi-sliders" aria-hidden="true"></i>年齢・地域・種類で絞り込む</summary>
+        <div class="og-filters__body">
+            <div class="og-filters__group">
+                <h2>年齢</h2>
+                <div class="og-chips">{% for chip in chips.ages %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
+            </div>
+            <div class="og-filters__group">
+                <h2>チューリッヒから</h2>
+                <div class="og-chips">{% for chip in chips.trips %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
+            </div>
+            {% if chips.areas|length > 1 %}
+                <div class="og-filters__group">
+                    <h2>地域</h2>
+                    <div class="og-chips">{% for chip in chips.areas %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.label }}</a>{% endfor %}</div>
+                </div>
+            {% endif %}
+            <div class="og-filters__group">
+                <h2>種類</h2>
+                <div class="og-chips">{% for chip in chips.kinds %}<a href="?{{ chip.qs }}" class="og-chip{% if chip.active %} is-on{% endif %}">{{ chip.emoji }} {{ chip.label }}</a>{% endfor %}</div>
+            </div>
+        </div>
+    </details>
+
+    {% if spots %}
+        <div class="og-spots og-spots--list">
+            {% for spot in spots %}{% include "outings/includes/spot_card.html" %}{% endfor %}
+        </div>
+    {% else %}
+        <p class="og-empty">条件に合う場所がありません。{% if filtered %}<a href="?{{ clear_qs }}">条件を解除する</a>{% endif %}</p>
+    {% endif %}
+
+</div>
+<script>
+// PC has room: show the filters open.
+if (window.matchMedia && window.matchMedia("(min-width: 960px)").matches) {
+    document.querySelectorAll("[data-open-on-pc]").forEach(function (el) { el.open = true; });
+}
+</script>
+{% endblock %}

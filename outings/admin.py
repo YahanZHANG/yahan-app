@@ -395,13 +395,13 @@ class OutingsFeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(FamilySpot)
 class FamilySpotAdmin(admin.ModelAdmin):
-    list_display = ("name", "name_ja", "kind", "canton", "price", "rainy_ok", "status", "sort_order", "checked_on")
+    list_display = ("name", "name_ja", "kind", "canton", "trip", "season", "price", "rainy_ok", "status", "sort_order", "checked_on")
     list_editable = ("status", "sort_order")
-    list_filter = ("status", "kind", "canton", "price", "rainy_ok")
+    list_filter = ("status", "checked_on", "kind", "trip", "season", "language", "canton", "price", "rainy_ok")
     search_fields = ("name", "name_ja", "town", "summary_ja")
     fieldsets = (
-        (None, {"fields": ("status", "sort_order", "name", "name_ja", "kind", "summary_ja", "tips_ja")}),
+        (None, {"fields": ("status", "sort_order", "name", "name_ja", "kind", "emoji", "summary_ja", "tips_ja")}),
         ("場所", {"fields": ("canton", "town", "address", "latitude", "longitude", "maps_url")}),
-        ("条件", {"fields": ("price", "price_note", "rainy_ok", "open_sunday", "hours_note", "stroller_ok", "age_note", "parking_note", "food_note")}),
+        ("条件", {"fields": ("age_min", "age_max", "age_note", "language", "season", "rainy_ok", "trip", "price", "price_note", "open_sunday", "hours_note", "stroller_ok", "parking_note", "food_note")}),
         ("リンク・写真", {"fields": ("official_url", "image_url", "image_credit", "checked_on")}),
     )

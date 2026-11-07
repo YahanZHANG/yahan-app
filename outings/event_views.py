@@ -66,6 +66,22 @@ def live_occurrences(now):
     )
 
 
+FAMILY_TAGS = {"family", "children", "baby"}
+
+
+def is_family_event(event):
+    """Events shown in Outings: for families, and one-off for Eventfrog
+    imports (long runs and weekly repeats suit 子連れスポット better).
+    Events added by hand, like a library storytime, may repeat."""
+    tags = {t.slug for t in event.tags.all()}
+    if not tags & FAMILY_TAGS and not (event.category and event.category.slug == "family"):
+        return False
+    if event.source and event.source.name.lower() == "eventfrog":
+        dates = getattr(event, "upcoming_dates", None) or []
+        return bool(dates) and not schedule.is_long_running(dates) and not schedule.is_recurring(dates)
+    return True
+
+
 def live_events(now, statuses=(Event.Status.PUBLISHED,)):
     """Events with at least one occurrence that is neither cancelled nor over."""
     return (
@@ -74,7 +90,7 @@ def live_events(now, statuses=(Event.Status.PUBLISHED,)):
             status__in=statuses,
             pk__in=live_occurrences(now).values("event_id"),
         )
-        .select_related("category", "location")
+        .select_related("category", "location", "source")
         .prefetch_related(
             "tags",
             Prefetch("occurrences", queryset=live_occurrences(now), to_attr="upcoming_dates"),
@@ -169,16 +185,13 @@ def event_home(request):
         regions = favorites
         using_favorites = bool(favorites)
 
-    events = list(live_events(now, statuses))
+    events = [e for e in live_events(now, statuses) if is_family_event(e)]
     win_start, win_end = period_range(period, now)
 
     def matches(event, *, skip_region=False):
         if not skip_region and regions and not (event.location and event.location.canton in regions):
             return False
         if category_slug and not (event.category and event.category.slug == category_slug):
-            return False
-        tags = {t.slug for t in event.tags.all()}
-        if family and not tags & {"family", "children", "baby"}:
             return False
         if no_language and event.language_barrier not in ("none", "english", "japanese"):
             return False
@@ -293,8 +306,7 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
         ],
         "regions": [{"label": "すべての地域", "active": not regions, "qs": querystring(params, region=["all"], page="")}],
         "toggles": [
-            {"label": "家族向け", "icon": "bi-people", "active": family, "qs": querystring(params, family="" if family else "1", page="")},
-            {"label": "言葉の壁が低い", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
+            {"label": "言葉なしでOK", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
             {"label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
         ],
         "categories": [{"label": "すべて", "active": not category, "qs": querystring(params, category="", page="")}],

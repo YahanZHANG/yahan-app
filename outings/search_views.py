@@ -18,6 +18,7 @@ from .event_views import (
     _visible_statuses,
     first_in_range,
     hearted_ids_for,
+    is_family_event,
     live_events,
     period_range,
     querystring,
@@ -113,7 +114,7 @@ def search(request):
     # Match every live event once; the same matcher counts what dropping a
     # condition would add, for the "no results" suggestions.
     # ------------------------------------------------------------------
-    events = list(live_events(now, statuses))
+    events = [e for e in live_events(now, statuses) if is_family_event(e)]
     documents = {e.pk: text_search.event_document(e) for e in events} if words else {}
 
     def matches(event, state):

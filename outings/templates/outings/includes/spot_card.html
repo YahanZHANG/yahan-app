@@ -1,0 +1,17 @@
+{% comment %}A 子連れスポット card. Expects `spot` decorated by spot_views.decorate.{% endcomment %}
+<a class="og-spot" href="{% url 'outings:spot_detail' spot.pk %}">
+    <span class="og-spot__tile og-tone--{{ spot.kind }}" aria-hidden="true">
+        {% if spot.image_url %}<img src="{{ spot.image_url }}" alt="" loading="lazy" onerror="this.remove();">{% endif %}
+        <span>{{ spot.emoji }}</span>
+    </span>
+    <span class="og-spot__body">
+        <small class="og-spot__where">{{ spot.get_kind_display }}・{{ spot.town|default:spot.area_label }}</small>
+        <strong class="og-spot__title">{{ spot.title }}</strong>
+        <span class="og-spot__summary">{{ spot.summary_ja|truncatechars:48 }}</span>
+        {% if spot.badges %}
+            <span class="og-badges">
+                {% for label, kind in spot.badges %}<span class="og-badge og-badge--{{ kind }}">{{ label }}</span>{% endfor %}
+            </span>
+        {% endif %}
+    </span>
+</a>

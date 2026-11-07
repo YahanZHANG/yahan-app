@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import views, discovery_views, event_views, kids_views, search_views
+from . import views, discovery_views, event_views, search_views, spot_views
 
 
 app_name = "outings"
@@ -14,7 +14,7 @@ urlpatterns = [
 
     path(
         "",
-        discovery_views.home,
+        spot_views.home,
         name="home",
     ),
     path(
@@ -23,14 +23,14 @@ urlpatterns = [
         name="event_home",
     ),
     path(
-        "kids/",
-        kids_views.spot_list,
-        name="kids_list",
+        "spots/",
+        spot_views.spot_list,
+        name="spot_list",
     ),
     path(
-        "kids/<int:pk>/",
-        kids_views.spot_detail,
-        name="kids_detail",
+        "spots/<int:pk>/",
+        spot_views.spot_detail,
+        name="spot_detail",
     ),
     path(
         "about/",

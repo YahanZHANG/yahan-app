@@ -1260,6 +1260,7 @@ class FamilySpot(models.Model):
     language = models.CharField("言葉", max_length=10, choices=Language.choices, default=Language.NONE)
     season = models.CharField("行ける季節", max_length=20, choices=Season.choices, default=Season.YEAR)
     trip = models.CharField("チューリッヒから", max_length=10, choices=Trip.choices, default=Trip.DAY)
+    emoji = models.CharField("絵文字（写真がないときに表示）", max_length=8, blank=True)
 
     official_url = models.URLField("公式サイト", blank=True)
     maps_url = models.URLField("Googleマップのリンク", blank=True)
