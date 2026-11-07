@@ -47,7 +47,7 @@ class GateTests(TestCase):
         staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)
         self.client.force_login(staff)
         response = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(response, "いまは運営だけが見られます")
+        self.assertContains(response, "いまは運営と、先行公開のリンクを開いた人だけが見られます")
 
     def test_old_board_moved(self):
         self.assertEqual(reverse("swiss_board:home"), "/swiss-board-old/")
@@ -745,3 +745,24 @@ class WeatherHereTests(BoardTestCase):
         with mock.patch("chiebukuro.views.today_in_switzerland", return_value=fake) as today:
             self.client.get(reverse("chiebukuro:today") + "?lat=35.68&lon=139.76")  # 東京: スイスの外
         today.assert_called_with("")
+
+
+class PreviewLinkTests(TestCase):
+
+    def test_preview_link_opens_closed_board(self):
+        from chiebukuro.models import BoardSettings
+
+        settings_row = BoardSettings.current()
+        settings_row.is_open = False
+        settings_row.save()
+        home = reverse("chiebukuro:home")
+        self.assertContains(self.client.get(home), "いま準備しています")
+        self.assertContains(self.client.get(home + "?preview=wrong"), "いま準備しています")
+        key = settings_row.new_preview_key()
+        page = self.client.get(home + f"?preview={key}")
+        self.assertContains(page, "先行公開中です")
+        # 2回目からは鍵なしでも見られる
+        self.assertContains(self.client.get(reverse("chiebukuro:questions")), "先行公開中です")
+        # 作り直すと、古いリンクの人は見られなくなる
+        settings_row.new_preview_key()
+        self.assertContains(self.client.get(home), "いま準備しています")

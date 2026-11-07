@@ -104,11 +104,34 @@ def board_open(view):
 
     @wraps(view)
     def wrapper(request, *args, **kwargs):
-        if not BoardSettings.current().is_open and not request.user.is_staff:
+        if not can_preview(request):
             return render(request, "chiebukuro/closed.html", status=200)
         return view(request, *args, **kwargs)
 
     return wrapper
+
+
+PREVIEW_SESSION_KEY = "chiebukuro_preview"
+
+
+def can_preview(request):
+    """
+    公開中ならだれでも。公開前は、運営と、先行公開のリンク (?preview=鍵) を開いた人だけ。
+    リンクの鍵はセッションに覚えるので、2回目からは鍵なしの URL でも見られる。
+    """
+
+    settings_row = BoardSettings.current()
+    if settings_row.is_open or request.user.is_staff:
+        return True
+    key = settings_row.preview_key
+    if not key:
+        return False
+    if request.GET.get("preview") == key:
+        request.session[PREVIEW_SESSION_KEY] = key
+    if request.session.get(PREVIEW_SESSION_KEY) == key:
+        request.board_preview = True
+        return True
+    return False
 
 
 def clean_choice(value, choices):
@@ -168,6 +191,7 @@ def board_context(request, tab, region=None):
     return {
         "tab": tab,
         "board_is_open": BoardSettings.current().is_open,
+        "board_preview": getattr(request, "board_preview", False),
         "unread": unread_notifications(request.user),
         "fab_label": fab[0] if fab else "",
         "fab_url": reverse(fab[1]) if fab else "",

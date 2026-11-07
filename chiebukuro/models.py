@@ -50,6 +50,12 @@ class BoardSettings(models.Model):
         default="auto",
         help_text="自動: 春 4/1〜4/25、建国記念日 7/25〜8/1、ハロウィン 10/18〜10/31、秋 11月、クリスマス 12/1〜12/26、お正月 12/30〜1/7",
     )
+    preview_key = models.CharField(
+        "先行公開のリンクの鍵",
+        max_length=40,
+        blank=True,
+        help_text="公開前でも、この鍵つきのリンクを開いた人は掲示板を見られます。管理画面のボタンで作り直すと、古いリンクは使えなくなります。",
+    )
     rules_updated_at = models.DateTimeField(
         "ルールを更新した日時",
         null=True,
@@ -69,6 +75,13 @@ class BoardSettings(models.Model):
     def current(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def new_preview_key(self):
+        import secrets
+
+        self.preview_key = secrets.token_urlsafe(12)
+        self.save(update_fields=["preview_key", "updated_at"])
+        return self.preview_key
 
     def season(self, today):
         """HOME上部に使う季節のデザイン ("" ならいつもの)"""

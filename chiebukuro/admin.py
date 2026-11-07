@@ -36,6 +36,7 @@ class BoardSettingsAdmin(admin.ModelAdmin):
 
     list_display = ["__str__", "is_open", "hero_season", "rules_updated_at", "updated_at"]
     list_editable = ["is_open", "hero_season"]
+    readonly_fields = ["preview_key"]
     list_display_links = ["__str__"]
     change_list_template = "admin/chiebukuro/boardsettings/change_list.html"
 
@@ -45,14 +46,26 @@ class BoardSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def changelist_view(self, request, extra_context=None):
-        BoardSettings.current()
-        return super().changelist_view(request, extra_context)
 
     def get_urls(self):
         return [
             path("import-survey/", self.admin_site.admin_view(self.import_survey), name="chiebukuro_import_survey"),
+            path("preview-link/", self.admin_site.admin_view(self.preview_link), name="chiebukuro_preview_link"),
         ] + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        settings_row = BoardSettings.current()
+        link = ""
+        if settings_row.preview_key:
+            link = request.build_absolute_uri(reverse("chiebukuro:home")) + f"?preview={settings_row.preview_key}"
+        extra_context = dict(extra_context or {}, preview_link=link)
+        return super().changelist_view(request, extra_context)
+
+    def preview_link(self, request):
+        if request.method == "POST":
+            BoardSettings.current().new_preview_key()
+            messages.success(request, "先行公開のリンクを作りました。前のリンクは使えなくなりました。")
+        return redirect(reverse("admin:chiebukuro_boardsettings_changelist"))
 
     def import_survey(self, request):
         if request.method == "POST":

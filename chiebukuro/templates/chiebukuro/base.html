@@ -44,7 +44,9 @@
 </header>
 
 {% if user.is_staff and not board_is_open %}
-    <p class="cb-staff-note">いまは運営だけが見られます（管理画面「掲示板の設定」で公開）</p>
+    <p class="cb-staff-note">いまは運営と、先行公開のリンクを開いた人だけが見られます（管理画面「掲示板の設定」で公開・リンクの作成）</p>
+{% elif board_preview %}
+    <p class="cb-staff-note">先行公開中です。このリンクは、ほかの人には教えないでください。</p>
 {% endif %}
 
 <div class="cb-layout">
