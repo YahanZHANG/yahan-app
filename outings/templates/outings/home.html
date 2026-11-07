@@ -36,6 +36,8 @@
         </nav>
     </section>
 
+    {% include "outings/includes/sunny_button.html" %}
+
     <section class="og-section">
         <header class="og-section__head">
             <h2>{% if rainy %}雨でも楽しめる場所{% elif weekday %}平日のおすすめ{% else %}今週末のおすすめ{% endif %}</h2>

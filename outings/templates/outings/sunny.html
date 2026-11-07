@@ -1,0 +1,95 @@
+{% extends "outings/base.html" %}
+
+{% block title %}晴れの場所をさがす | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page og-sunny">
+    <header class="og-page__head">
+        <h1>☀️ 晴れの場所をさがす</h1>
+    </header>
+
+    <nav class="og-chips og-chips--scroll" aria-label="日にち">
+        {% for d in days %}
+            <a href="?what={{ what }}&amp;day={{ d.value }}" class="og-chip{% if d.active %} is-on{% endif %}">{{ d.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <nav class="og-tabs" aria-label="さがすもの">
+        {% for w in whats %}
+            <a href="?what={{ w.key }}&amp;day={{ day|date:'Y-m-d' }}" class="{% if w.active %}is-active{% endif %}">{{ w.label }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if has_forecast %}
+        <p class="og-sunny__lead">
+            {% if sunny_areas %}
+                晴れの予報：{{ sunny_areas|join:"、" }}{% if sunny_count %}（{{ sunny_count }}件）{% endif %}
+            {% else %}
+                この日は、晴れの予報の地域がありません。雨でも楽しめる場所を探してみてください。
+            {% endif %}
+        </p>
+    {% else %}
+        <p class="og-sunny__lead">天気予報を取得できませんでした。少し時間をおいて開き直してください。</p>
+    {% endif %}
+
+    <div id="og-map" class="og-map" aria-label="地図"></div>
+
+    {% for group in groups %}
+        {% if group.rows %}
+            <section class="og-section">
+                <header class="og-section__head"><h2>{{ group.label }}<small>{{ group.total }}件</small></h2></header>
+                <ul class="og-rows">
+                    {% for item in group.rows %}
+                        <li>
+                            <a href="{{ item.url }}">
+                                <span class="og-rows__icon" aria-hidden="true">{{ item.emoji }}</span>
+                                <span class="og-rows__text">
+                                    <strong>{{ item.title }}</strong>
+                                    <small>{{ item.sub }}</small>
+                                </span>
+                                {% if item.weather %}
+                                    <span class="og-rows__wx" title="{{ item.area }}の予報">{{ item.weather.emoji }}<small>{{ item.weather.temp|default:"" }}{% if item.weather.rain %} ☔{{ item.weather.rain }}{% endif %}</small></span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if group.total > group.rows|length %}<p class="og-count">全{{ group.total }}件のうち、上位だけ表示しています。</p>{% endif %}
+            </section>
+        {% endif %}
+    {% endfor %}
+    {% if not count %}
+        <p class="og-empty">この日に見られる場所がまだありません。</p>
+    {% endif %}
+
+    <p class="og-count">天気：Open-Meteo（近くの町の予報）・地図：© OpenStreetMap contributors</p>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+{{ map_data|json_script:"og-map-data" }}
+<script>
+(function () {
+    if (!window.L) return;
+    var data = JSON.parse(document.getElementById("og-map-data").textContent);
+    var map = L.map("og-map", { scrollWheelZoom: false }).setView([46.8, 8.2], 7);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18, attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+    function esc(text) { var d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
+    data.points.forEach(function (p) {
+        if (!p.emoji) return;
+        L.marker([p.lat, p.lon], {
+            interactive: false, keyboard: false,
+            icon: L.divIcon({ className: "og-wx-pin" + (p.sunny ? " is-sunny" : ""), html: "<span>" + p.emoji + "</span><small>" + esc(p.temp.split(" ")[0] || "") + "</small>", iconSize: [44, 40] })
+        }).addTo(map);
+    });
+    data.items.forEach(function (item) {
+        L.circleMarker([item.lat, item.lon], {
+            radius: 6, weight: 2, color: "#fff", fillOpacity: 0.95,
+            fillColor: item.sunny ? "#e8a317" : "#237b83"
+        }).bindPopup('<a href="' + item.url + '">' + esc(item.emoji + " " + item.title) + "</a>").addTo(map);
+    });
+})();
+</script>
+{% endblock %}

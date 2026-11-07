@@ -538,3 +538,30 @@ html[data-outings-theme="dark"] {
 [data-og-view="list"] .trip-card-main { padding: 0; }
 [data-og-view="list"] .trip-card-heart-form { top: 8px; right: 0; }
 [data-og-view="list"] .trip-card-heart-button { width: 32px; height: 32px; border: 0; background: transparent; box-shadow: none; }
+
+/* ---------- 晴れの場所をさがす ---------- */
+
+.og-sunny-btn {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0 0 12px; padding: 12px 14px;
+    border-radius: 14px; background: linear-gradient(135deg, #fff4d6, #ffe6a8);
+    color: #6b4a00; text-decoration: none; font-weight: 700;
+}
+.og-sunny-btn span:first-child { font-size: 24px; }
+.og-sunny-btn small { display: block; font-weight: 400; font-size: 12px; color: #7a5c14; }
+.og-sunny-btn .bi { margin-left: auto; }
+:root[data-outings-theme="dark"] .og-sunny-btn { background: linear-gradient(135deg, #4a3a12, #5c4614); color: #ffe7a6; }
+:root[data-outings-theme="dark"] .og-sunny-btn small { color: #f1d891; }
+
+.og-tabs { display: flex; gap: 4px; margin: 4px 0 10px; border-bottom: 1px solid var(--outings-border); }
+.og-tabs a { padding: 8px 12px; color: var(--outings-muted); font-weight: 700; font-size: 14px; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.og-tabs a.is-active { color: var(--outings-accent); border-bottom-color: var(--outings-accent); }
+.og-sunny__lead { margin: 0 0 10px; font-size: 14px; color: var(--outings-text); }
+.og-map { height: 340px; margin: 0 0 16px; border-radius: 14px; border: 1px solid var(--outings-border); background: var(--outings-surface); z-index: 0; }
+@media (min-width: 960px) { .og-map { height: 460px; } }
+.og-wx-pin { display: flex; flex-direction: column; align-items: center; line-height: 1; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+.og-wx-pin span { font-size: 22px; }
+.og-wx-pin small { font-size: 11px; font-weight: 700; color: #1f2937; }
+.og-rows__wx { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-size: 20px; line-height: 1.1; }
+.og-rows__wx small { font-size: 11px; color: var(--outings-muted); }
+.og-section__head h2 small { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--outings-muted); }

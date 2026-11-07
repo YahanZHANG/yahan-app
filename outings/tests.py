@@ -760,6 +760,31 @@ class FamilySpotTests(PageTestCase):
         page = self.client.get(reverse("outings:my_preferences"))
         self.assertContains(page, 'value="weekday" checked')
 
+    def test_sunny_page_puts_sunny_places_first(self):
+        from outings import sunny
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(latitude=47.37, longitude=8.54)    # Zurich
+        FamilySpot.objects.filter(pk=self.museum.pk).update(latitude=46.0, longitude=8.95,   # Lugano
+                                                              season=FamilySpot.Season.YEAR)
+        today = timezone.localdate().isoformat()
+
+        def forecasts(points):
+            # Rain in Zurich, sun in Lugano.
+            return {p: {today: {"code": 0 if p == (46.0, 8.95) else 63, "max": 15, "min": 5, "rain": 10 if p == (46.0, 8.95) else 90}}
+                    for p in points}
+
+        with mock.patch.object(sunny.weather, "_forecasts", side_effect=forecasts), \
+                mock.patch.object(sunny, "locate", return_value=None):
+            response = self.client.get(reverse("outings:sunny"), {"what": "kids", "day": today})
+        self.assertEqual(response.status_code, 200)
+        groups = {g["key"]: [i["title"] for i in g["rows"]] for g in response.context["groups"]}
+        self.assertEqual(groups["sunny"], ["Rain Museum"])
+        self.assertEqual(groups["wet"], ["ひなた公園"])
+        self.assertIn("ルガーノ", response.context["sunny_areas"])
+        self.assertContains(response, "og-map-data")
+        for name in ("outings:event_home", "outings:tourist_spot_list"):
+            self.assertContains(self.client.get(reverse(name)), "晴れの場所をさがす")
+
     def test_season(self):
         from outings.models import FamilySpot
         spot = FamilySpot(season=FamilySpot.Season.WARM)

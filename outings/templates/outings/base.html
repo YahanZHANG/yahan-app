@@ -117,6 +117,7 @@
             <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}on{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
             <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}on{% endif %}"><i class="bi bi-calendar-event" aria-hidden="true"></i>イベント</a>
             <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-compass" aria-hidden="true"></i>旅行</a>
+            <a href="{% url 'outings:sunny' %}" class="{% if name == 'sunny' %}on{% endif %}"><i class="bi bi-sun" aria-hidden="true"></i>晴れの場所</a>
             <a href="{% url 'outings:search' %}" class="{% if name == 'search' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>くわしく探す</a>
             <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
             <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' %}on{% endif %}"><i class="bi bi-person" aria-hidden="true"></i>マイページ</a>

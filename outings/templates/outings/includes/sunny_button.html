@@ -1,0 +1,6 @@
+{# Entry to 晴れの場所をさがす. Optional `what`. #}
+<a class="og-sunny-btn" href="{% url 'outings:sunny' %}{% if what %}?what={{ what }}{% endif %}">
+    <span aria-hidden="true">☀️</span>
+    <span>晴れの場所をさがす<small>日にちを選ぶと、晴れの地域から順に並びます（地図つき）</small></span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>
