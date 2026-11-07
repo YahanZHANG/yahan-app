@@ -18,6 +18,7 @@ python manage.py import_myswitzerland --all --commit   # save everything
 python manage.py import_myswitzerland --all --max-new 200 --commit   # only 200 new
 """
 
+from django.core.management import call_command
 from django.core.management.base import (
     BaseCommand,
     CommandError,
@@ -197,6 +198,8 @@ class Command(BaseCommand):
         )
 
         if commit:
+            # Hand-written introductions for spots that just arrived.
+            call_command("apply_tourist_intros", stdout=self.stdout)
             self.stdout.write(
                 self.style.SUCCESS(
                     "Database changes saved."

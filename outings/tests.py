@@ -950,6 +950,28 @@ class TripImportTests(TestCase):
         self.assertContains(page, "夏も涼しい。")
         self.assertNotContains(page, "AIの文")
 
+    def test_intros_file_fills_matching_spots(self):
+        import json
+        from outings.management.commands import apply_tourist_intros as apply
+        self.assertGreaterEqual(len(apply.load_intros()), 50)  # the shipped file parses
+        spot = TouristSpot.objects.create(
+            external_id="e1", spot_type="attractions", title_original='Detektiv-Trail Bern "Detektiv Dachs"',
+            official_url="https://www.myswitzerland.com/de/e1/", status=TouristSpot.Status.PENDING,
+        )
+        edited = TouristSpot.objects.create(
+            external_id="e2", spot_type="tours", title_original="Gürbe–Sense, Etappe 1/2", intro_ja="管理画面で直した",
+            official_url="https://www.myswitzerland.com/de/e2/", status=TouristSpot.Status.PUBLISHED,
+        )
+        data = {"Detektiv-Trail Bern “Detektiv Dachs”": "探偵の道。", "Gürbe-Sense, Etappe 1/2": "自転車の道。"}
+        path = Path(tempfile.mkdtemp()) / "intros.json"
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        with mock.patch.object(apply, "DATA", path):
+            call_command("apply_tourist_intros", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        edited.refresh_from_db()
+        self.assertEqual((spot.intro_ja, spot.status), ("探偵の道。", TouristSpot.Status.PUBLISHED))
+        self.assertEqual(edited.intro_ja, "管理画面で直した")
+
     def test_nightly_trip_text_is_off_unless_turned_on(self):
         with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
             self.assertNotIn("--trip-ai", outings_scheduler.daily_command())

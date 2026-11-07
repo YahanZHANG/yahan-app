@@ -24,6 +24,9 @@ python manage.py import_pre_survey_questions
 # スイス生活の知恵袋: 事前アンケートの質問と、公開に同意した答えのうち、まだ取り込んでいないものを取り込む
 python manage.py import_chiebukuro_survey
 
+# おでかけ: 手書きの旅行紹介文 (outings/data/tourist_intros.json) を、まだ入っていない場所に入れる
+python manage.py apply_tourist_intros
+
 
 # =====================================================
 # Start Outings scheduler
