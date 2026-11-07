@@ -399,6 +399,16 @@ class FamilySpotAdmin(admin.ModelAdmin):
     list_editable = ("status", "sort_order")
     list_filter = ("status", "checked_on", "kind", "trip", "season", "language", "canton", "price", "rainy_ok")
     search_fields = ("name", "name_ja", "town", "summary_ja")
+    actions = ["publish", "unpublish"]
+
+    @admin.action(description="選んだスポットを公開する")
+    def publish(self, request, queryset):
+        self.message_user(request, f"{queryset.update(status=FamilySpot.Status.PUBLISHED)}件を公開しました。")
+
+    @admin.action(description="選んだスポットを下書きに戻す")
+    def unpublish(self, request, queryset):
+        self.message_user(request, f"{queryset.update(status=FamilySpot.Status.DRAFT)}件を下書きに戻しました。")
+
     fieldsets = (
         (None, {"fields": ("status", "sort_order", "name", "name_ja", "kind", "emoji", "summary_ja", "tips_ja")}),
         ("場所", {"fields": ("canton", "town", "address", "latitude", "longitude", "maps_url")}),
