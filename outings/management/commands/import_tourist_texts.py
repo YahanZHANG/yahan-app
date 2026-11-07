@@ -4,7 +4,8 @@
     python manage.py import_tourist_texts tourist_texts.csv --commit
 
 Only rows with text in 「私の紹介文」 are used; an empty cell never clears
-an introduction that is already there.
+an introduction that is already there. Spots still waiting for AI text are
+published once they get an introduction.
 """
 
 import csv
@@ -55,7 +56,10 @@ class Command(BaseCommand):
             updated += 1
             if options["commit"]:
                 spot.intro_ja = text
-                spot.save(update_fields=["intro_ja", "updated_at"])
+                # A spot waiting for AI text is ready once it has a hand-written introduction.
+                if spot.status == TouristSpot.Status.PENDING:
+                    spot.status = TouristSpot.Status.PUBLISHED
+                spot.save(update_fields=["intro_ja", "status", "updated_at"])
 
         verb = "Updated" if options["commit"] else "Would update"
         self.stdout.write(self.style.SUCCESS(f"{verb} {updated}; already the same {unchanged}."))

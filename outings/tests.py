@@ -926,10 +926,10 @@ class TripImportTests(TestCase):
         import csv, tempfile
         spot = TouristSpot.objects.create(
             external_id="ext-1", spot_type="attractions", title_original="Aareschlucht", summary_ja="AIの文",
-            official_url="https://www.myswitzerland.com/de/a/", status=TouristSpot.Status.PUBLISHED,
+            official_url="https://www.myswitzerland.com/de/a/", status=TouristSpot.Status.PENDING,
         )
         path = tempfile.mktemp(suffix=".csv")
-        call_command("export_tourist_texts", path, stdout=open(os.devnull, "w"))
+        call_command("export_tourist_texts", path, "--all", stdout=open(os.devnull, "w"))
         with open(path, encoding="utf-8-sig", newline="") as handle:
             rows = list(csv.DictReader(handle))
         self.assertEqual(rows[0]["external_id"], "ext-1")
@@ -945,6 +945,7 @@ class TripImportTests(TestCase):
         call_command("import_tourist_texts", path, "--commit", stdout=open(os.devnull, "w"))
         spot.refresh_from_db()
         self.assertEqual(spot.intro_ja, "岩の間を歩く峡谷。\n夏も涼しい。")
+        self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
         page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
         self.assertContains(page, "夏も涼しい。")
         self.assertNotContains(page, "AIの文")
