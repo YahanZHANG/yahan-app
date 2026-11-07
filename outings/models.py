@@ -1202,7 +1202,28 @@ class FamilySpot(models.Model):
         MUSEUM = "museum", "博物館・体験"
         INDOOR = "indoor", "室内遊び場"
         NATURE = "nature", "自然・ハイキング"
+        MOUNTAIN = "mountain", "山・ロープウェイ"
+        WATER = "water", "プール・水遊び"
+        FARM = "farm", "農場"
+        HISTORY = "history", "お城・歴史"
+        THEME = "theme", "遊園地・テーマパーク"
         OTHER = "other", "そのほか"
+
+    class Language(models.TextChoices):
+        NONE = "none", "言葉はいらない"
+        LITTLE = "little", "言葉はほぼいらない"
+        HELPS = "helps", "言葉がわかるともっと楽しい"
+
+    class Season(models.TextChoices):
+        YEAR = "year", "一年中"
+        WARM = "warm", "春〜秋"
+        SUMMER = "summer", "夏"
+        SUMMER_WINTER = "summer_winter", "夏と冬"
+
+    class Trip(models.TextChoices):
+        DAY = "day", "日帰り"
+        BOTH = "both", "日帰りも1泊も"
+        OVERNIGHT = "overnight", "1泊がおすすめ"
 
     class Price(models.TextChoices):
         FREE = "free", "無料"
@@ -1234,6 +1255,11 @@ class FamilySpot(models.Model):
     food_note = models.CharField("食事", max_length=200, blank=True)
     stroller_ok = models.BooleanField("ベビーカーOK", default=False)
     age_note = models.CharField("おすすめの年齢", max_length=100, blank=True)
+    age_min = models.PositiveSmallIntegerField("何歳から", null=True, blank=True)
+    age_max = models.PositiveSmallIntegerField("何歳まで", null=True, blank=True)
+    language = models.CharField("言葉", max_length=10, choices=Language.choices, default=Language.NONE)
+    season = models.CharField("行ける季節", max_length=20, choices=Season.choices, default=Season.YEAR)
+    trip = models.CharField("チューリッヒから", max_length=10, choices=Trip.choices, default=Trip.DAY)
 
     official_url = models.URLField("公式サイト", blank=True)
     maps_url = models.URLField("Googleマップのリンク", blank=True)
@@ -1269,3 +1295,22 @@ class FamilySpot(models.Model):
             return self.maps_url
         query = self.address or f"{self.name} {self.town}"
         return "https://www.google.com/maps/search/?api=1&query=" + quote(query)
+
+    @property
+    def age_label(self):
+        if self.age_min is not None and self.age_max is not None:
+            return f"{self.age_min}〜{self.age_max}歳"
+        if self.age_min is not None:
+            return f"{self.age_min}歳〜"
+        return self.age_note
+
+    # Months a season usually covers; the exact dates are in hours_note.
+    SEASON_MONTHS = {
+        "year": set(range(1, 13)),
+        "warm": set(range(4, 11)),
+        "summer": set(range(6, 10)),
+        "summer_winter": {12, 1, 2, 3, 6, 7, 8, 9, 10},
+    }
+
+    def open_in(self, month):
+        return month in self.SEASON_MONTHS.get(self.season, set(range(1, 13)))
