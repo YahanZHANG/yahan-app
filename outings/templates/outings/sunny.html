@@ -74,8 +74,13 @@
     var data = JSON.parse(document.getElementById("og-map-data").textContent);
     var map = L.map("og-map", { scrollWheelZoom: false }).setView([46.8, 8.2], 7);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18, attribution: "© OpenStreetMap contributors"
+        maxZoom: 18, attribution: "© OpenStreetMap contributors",
+        // OSM refuses tiles without a Referer; Django's default policy (same-origin) sends none.
+        referrerPolicy: "strict-origin-when-cross-origin"
     }).addTo(map);
+    // Re-measure once the page has its final size (otherwise only a corner of the map draws).
+    window.addEventListener("load", function () { map.invalidateSize(); });
+    setTimeout(function () { map.invalidateSize(); }, 300);
     function esc(text) { var d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
     data.points.forEach(function (p) {
         if (!p.emoji) return;
