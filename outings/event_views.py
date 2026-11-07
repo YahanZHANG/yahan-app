@@ -50,6 +50,10 @@ FEATURED_LIMIT = 6
 # Helpers
 # =========================================================
 
+from .visits import Target, visit_context  # noqa: E402
+from .map_points import event_point, map_response, wants_map  # noqa: E402
+
+
 def _visible_statuses(request):
     statuses = [Event.Status.PUBLISHED]
     if request.user.is_authenticated and request.user.is_staff and request.GET.get("preview") == "1":
@@ -234,6 +238,8 @@ def event_home(request):
             region_counts[event.location.canton] = region_counts.get(event.location.canton, 0) + 1
 
     matched = [e for e in events if matches(e)]
+    if wants_map(request):
+        return map_response([event_point(e) for e in matched])
     hearted = hearted_ids_for(visitor_id, matched)
     for event in matched:
         decorate(event, now, hearted)
@@ -434,6 +440,7 @@ def event_detail(request, pk):
         "comments": comments,
         "comment_count": OutingsComment.objects.filter(event=event, is_deleted=False).count(),
         "comment_form": OutingsCommentForm(),
+        "visits": visit_context(request, Target.EVENT, event, visitor_id),
     })
     return set_visitor_cookie(request, response, visitor_id)
 

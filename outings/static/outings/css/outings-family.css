@@ -507,37 +507,37 @@ html[data-outings-theme="dark"] {
 .og-view button[aria-pressed="true"] { background: var(--outings-accent); color: var(--outings-surface); }
 
 /* List view: no pictures, one tight row per place or event. */
-[data-og-view="list"] .og-spots--list,
-[data-og-view="list"] .trip-grid,
-[data-og-view="list"] .ev-list { display: block; }
-[data-og-view="list"] .og-spot__tile,
-[data-og-view="list"] .trip-card-image,
-[data-og-view="list"] .trip-card-placeholder,
-[data-og-view="list"] .trip-card-credit,
-[data-og-view="list"] .trip-card-bottom,
-[data-og-view="list"] .ev-list .ev-card__visual { display: none !important; }
+html[data-og-compact] .og-spots--list,
+html[data-og-compact] .trip-grid,
+html[data-og-compact] .ev-list { display: block; }
+html[data-og-view="list"] .og-spot__tile,
+html[data-og-view="list"] .trip-card-image,
+html[data-og-view="list"] .trip-card-placeholder,
+html[data-og-view="list"] .trip-card-credit,
+html[data-og-view="list"] .trip-card-bottom,
+html[data-og-view="list"] .ev-list .ev-card__visual { display: none !important; }
 
-[data-og-view="list"] .og-spots--list .og-spot,
-[data-og-view="list"] .trip-card,
-[data-og-view="list"] .ev-list .ev-card {
+html[data-og-compact] .og-spots--list .og-spot,
+html[data-og-compact] .trip-card,
+html[data-og-compact] .ev-list .ev-card {
     margin: 0; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--outings-border);
     border-radius: 0; box-shadow: none; background: transparent; transform: none;
 }
-[data-og-view="list"] .og-spots--list .og-spot { display: block; }
-[data-og-view="list"] .ev-list .ev-card__link { display: block; padding: 0; }
-[data-og-view="list"] .og-spot__summary,
-[data-og-view="list"] .trip-card p,
-[data-og-view="list"] .ev-list .ev-card__summary,
-[data-og-view="list"] .ev-list .ev-card__highlight {
+html[data-og-compact] .og-spots--list .og-spot { display: block; }
+html[data-og-compact] .ev-list .ev-card__link { display: block; padding: 0; }
+html[data-og-compact] .og-spot__summary,
+html[data-og-compact] .trip-card p,
+html[data-og-compact] .ev-list .ev-card__summary,
+html[data-og-compact] .ev-list .ev-card__highlight {
     display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0;
 }
-[data-og-view="list"] .trip-card h2 { margin: 0; font-size: 15px; }
-[data-og-view="list"] .trip-card-type { margin: 0 0 2px; }
-[data-og-view="list"] .trip-card { position: relative; padding-right: 40px; }
-[data-og-view="list"] .og-badges, [data-og-view="list"] .ev-list .ev-badges { margin-top: 4px; }
-[data-og-view="list"] .trip-card-main { padding: 0; }
-[data-og-view="list"] .trip-card-heart-form { top: 8px; right: 0; }
-[data-og-view="list"] .trip-card-heart-button { width: 32px; height: 32px; border: 0; background: transparent; box-shadow: none; }
+html[data-og-compact] .trip-card h2 { margin: 0; font-size: 15px; }
+html[data-og-compact] .trip-card-type { margin: 0 0 2px; }
+html[data-og-compact] .trip-card { position: relative; padding-right: 40px; }
+html[data-og-compact] .og-badges, html[data-og-compact] .ev-list .ev-badges { margin-top: 4px; }
+html[data-og-compact] .trip-card-main { padding: 0; }
+html[data-og-compact] .trip-card-heart-form { top: 8px; right: 0; }
+html[data-og-compact] .trip-card-heart-button { width: 32px; height: 32px; border: 0; background: transparent; box-shadow: none; }
 
 /* ---------- 晴れの場所をさがす ---------- */
 
@@ -640,16 +640,112 @@ html[data-outings-theme="dark"] .og-pick:has(input:checked) { color: #10232a; }
 .og-rows__icon.has-photo { display: none; }
 html:not([data-og-view="list"]) .og-wx-group .og-rows__icon { width: 56px; height: 56px; font-size: 28px; display: grid; place-items: center; border-radius: 10px; background: var(--outings-accent-soft); }
 html:not([data-og-view="list"]) .og-wx-group .og-rows__icon.has-photo { display: none; }
-[data-og-view="list"] .og-rows__photo { display: none; }
-[data-og-view="list"] .og-rows__icon.has-photo { display: inline; }
+html[data-og-view="list"] .og-rows__photo { display: none; }
+html[data-og-view="list"] .og-rows__icon.has-photo { display: inline; }
 .sx-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .sx-summary .og-view { margin-left: auto; }
-[data-og-view="list"] .outings-saved-grid { display: block; }
-[data-og-view="list"] .outings-saved-card { margin: 0 0 8px; }
-[data-og-view="list"] .outings-saved-card img,
-[data-og-view="list"] .outings-saved-placeholder,
-[data-og-view="list"] .outings-saved-body p,
-[data-og-view="list"] .outings-saved-more { display: none !important; }
-[data-og-view="list"] .outings-saved-body { padding: 10px 44px 10px 14px; }
-[data-og-view="list"] .outings-saved-body h2 { margin: 2px 0 0; font-size: 15px; }
+html[data-og-compact] .outings-saved-grid { display: block; }
+html[data-og-compact] .outings-saved-card { margin: 0 0 8px; }
+html[data-og-view="list"] .outings-saved-card img,
+html[data-og-view="list"] .outings-saved-placeholder,
+html[data-og-view="list"] .outings-saved-body p,
+html[data-og-view="list"] .outings-saved-more { display: none !important; }
+html[data-og-compact] .outings-saved-body { padding: 10px 44px 10px 14px; }
+html[data-og-compact] .outings-saved-body h2 { margin: 2px 0 0; font-size: 15px; }
 .ev-detail__credit { margin: 4px 0 8px; color: var(--outings-muted); font-size: 11px; }
+
+/* ---------- 3 ways to show a list: 写真 (big) | 写真小 (row + small photo) | リスト (text only) ---------- */
+/* 写真: events and 子連れスポット get the picture on top, like the featured cards. */
+html:not([data-og-compact]) .ev-list .ev-card__link { flex-direction: column; padding: 0 0 12px; }
+html:not([data-og-compact]) .ev-list .ev-card__visual { flex: 0 0 auto; width: 100%; height: 150px; border-radius: 0; }
+html:not([data-og-compact]) .ev-list .ev-card__emoji { font-size: 3rem; }
+html:not([data-og-compact]) .ev-list .ev-card__body { padding: 0 48px 0 12px; }
+html:not([data-og-compact]) .og-spots--list .og-spot { flex-direction: column; padding: 0 0 12px; overflow: hidden; }
+html:not([data-og-compact]) .og-spots--list .og-spot__tile { flex: 0 0 auto; width: 100%; height: 150px; border-radius: 0; font-size: 48px; }
+html:not([data-og-compact]) .og-spots--list .og-spot__body { padding: 0 12px; }
+html:not([data-og-compact]) .og-wx-group .og-rows__photo { width: 96px; height: 96px; }
+
+/* 写真小: one row per item with a small square photo. */
+html[data-og-view="thumb"] .og-spots--list .og-spot,
+html[data-og-view="thumb"] .ev-list .ev-card__link { display: flex; gap: 12px; align-items: center; }
+html[data-og-view="thumb"] .og-spot__tile,
+html[data-og-view="thumb"] .ev-list .ev-card__visual { flex: 0 0 60px; width: 60px; height: 60px; border-radius: 10px; font-size: 26px; }
+html[data-og-view="thumb"] .ev-list .ev-card__emoji { font-size: 26px; }
+html[data-og-view="thumb"] .trip-card-main { display: grid; grid-template-columns: 60px 1fr; column-gap: 12px; align-items: center; }
+html[data-og-view="thumb"] .trip-card-main > * { grid-column: 2; }
+html[data-og-view="thumb"] .trip-card-main > .trip-card-image,
+html[data-og-view="thumb"] .trip-card-main > .trip-card-placeholder { grid-column: 1; grid-row: 1 / span 3; width: 60px; height: 60px; min-height: 0; border-radius: 10px; object-fit: cover; font-size: 20px; }
+html[data-og-view="thumb"] .trip-card-credit,
+html[data-og-view="thumb"] .trip-card-bottom,
+html[data-og-view="thumb"] .outings-saved-body p,
+html[data-og-view="thumb"] .outings-saved-more { display: none !important; }
+html[data-og-view="thumb"] .outings-saved-card-link { display: flex; align-items: center; }
+html[data-og-view="thumb"] .outings-saved-card img,
+html[data-og-view="thumb"] .outings-saved-placeholder { flex: 0 0 60px; width: 60px; height: 60px; min-height: 0; margin-left: 10px; border-radius: 10px; object-fit: cover; aspect-ratio: auto; }
+html[data-og-view="thumb"] .og-wx-group .og-rows__photo { width: 56px; height: 56px; }
+.og-view button { white-space: nowrap; }
+
+/* もっと見る */
+.og-more-wrap { margin: 16px 0 8px; text-align: center; }
+.og-more {
+    display: inline-flex; flex-direction: column; align-items: center; min-width: 220px; padding: 10px 24px;
+    border: 1px solid var(--outings-accent); border-radius: 999px; background: var(--outings-surface);
+    color: var(--outings-accent); font-weight: 700; text-decoration: none;
+}
+.og-more small { color: var(--outings-muted); font-size: 11px; font-weight: 400; }
+.og-more.is-loading { opacity: .6; pointer-events: none; }
+
+/* ---------- みんなの声: 行った／行きたい, ★ and comments ---------- */
+.og-visits { margin: 20px 0; padding: 14px; border: 1px solid var(--outings-border); border-radius: 14px; background: var(--outings-surface); }
+.og-visits__title { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font-size: 17px; }
+.og-visits__avg { font-size: 15px; font-weight: 700; }
+.og-visits__avg small { color: var(--outings-muted); font-weight: 400; font-size: 12px; }
+.og-stars { color: #E2A33B; letter-spacing: 1px; }
+.og-visits__buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.og-visit-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px;
+    border: 1px solid var(--outings-border); border-radius: 12px; background: var(--outings-surface);
+    color: var(--outings-text); font-weight: 700; font-size: 14px; cursor: pointer;
+}
+.og-visit-btn small { color: var(--outings-muted); font-weight: 400; }
+.og-visit-btn--went[aria-pressed="true"] { border-color: var(--outings-accent); background: var(--outings-accent-soft); color: var(--outings-accent); }
+.og-visit-btn--want[aria-pressed="true"] { border-color: #E2A33B; background: rgba(226, 163, 59, .14); color: #A86B0C; }
+.og-review { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--outings-border); }
+.og-review__label { margin: 0 0 4px; font-weight: 700; }
+.og-rate { display: inline-flex; flex-direction: row-reverse; gap: 2px; }
+.og-rate input { position: absolute; opacity: 0; pointer-events: none; }
+.og-rate label { font-size: 30px; line-height: 1; color: var(--outings-border); cursor: pointer; }
+.og-rate input:checked ~ label, .og-rate label:hover, .og-rate label:hover ~ label { color: #E2A33B; }
+.og-rate input:focus-visible + label { outline: 2px solid var(--outings-accent); border-radius: 4px; }
+.og-review textarea { display: block; width: 100%; margin: 8px 0; padding: 8px 10px; border: 1px solid var(--outings-border); border-radius: 10px; font: inherit; background: var(--outings-surface); color: var(--outings-text); }
+.og-review__login { margin: 6px 0; color: var(--outings-muted); font-size: 13px; }
+.og-review__save { padding: 8px 20px; border: 0; border-radius: 999px; background: var(--outings-accent); color: var(--outings-surface); font-weight: 700; cursor: pointer; }
+.og-reviews { margin: 14px 0 0; padding: 0; list-style: none; }
+.og-reviews li { padding: 10px 0; border-top: 1px solid var(--outings-border); }
+.og-reviews__head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin: 0; font-size: 13px; }
+.og-reviews__head time { color: var(--outings-muted); font-size: 12px; }
+.og-reviews__body { margin: 4px 0 0; font-size: 14px; line-height: 1.7; }
+
+/* 晴れの場所: short description and おすすめ度 */
+.og-rows__desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; color: var(--outings-muted); font-size: 12px; line-height: 1.5; font-weight: 400; }
+.og-rows__score { display: block; margin-top: 2px; font-size: 12px; }
+.og-rows__score .og-stars { font-size: 13px; }
+.og-rows__score small { color: var(--outings-muted); }
+html[data-og-view="list"] .og-rows__desc { display: none; }
+.og-sunny-note { margin: 4px 0 10px; color: var(--outings-muted); font-size: 12px; }
+
+/* 地図: results of the current filters on a map */
+.og-mapbtn {
+    margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px;
+    border: 1px solid var(--outings-border); border-radius: 10px; background: var(--outings-surface);
+    color: var(--outings-muted); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.og-mapbtn[aria-expanded="true"] { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); }
+.og-mapbtn + .og-view { margin-left: 0 !important; }
+.og-countbar, .sx-summary { flex-wrap: wrap; }
+.og-countbar .og-count, .og-countbar .ev-count { margin-right: auto; }
+.og-resultmap { margin: 0 0 14px; }
+.og-resultmap__map { height: 360px; border: 1px solid var(--outings-border); border-radius: 14px; overflow: hidden; background: var(--outings-accent-soft); }
+.og-resultmap__note { margin: 4px 0 0; color: var(--outings-muted); font-size: 12px; }
+.og-resultmap__pin { display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid #fff; border-radius: 50%; background: var(--outings-accent, #237b83); box-shadow: 0 1px 4px rgba(0,0,0,.3); font-size: 15px; }
+@media (min-width: 900px) { .og-resultmap__map { height: 440px; } }

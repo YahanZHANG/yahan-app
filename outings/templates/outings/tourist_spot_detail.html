@@ -204,6 +204,10 @@ html[data-outings-theme="dark"] .trip-source a {
 .trip-highlights { margin: 0; padding-left: 1.2em; line-height: 1.8; }
 .trip-highlights li { margin-bottom: 4px; }
 .trip-guide p { margin: 0 0 10px; line-height: 1.9; }
+.trip-detail-photo { margin: 0 0 14px; }
+.trip-detail-photo img { display: block; width: 100%; max-height: 340px; object-fit: cover; border-radius: 14px; }
+.trip-detail-photo figcaption { margin-top: 4px; color: var(--outings-muted); font-size: 11px; }
+.trip-detail-photo figcaption a { color: inherit; }
 </style>
 
 <div class="trip-detail">
@@ -214,6 +218,18 @@ html[data-outings-theme="dark"] .trip-source a {
     >
         ← 日帰り・プチ旅行へ戻る
     </a>
+
+    {% with photo=details.approved_image %}
+        {% if photo.url %}
+            <figure class="trip-detail-photo">
+                <img src="{{ photo.url }}" alt="{{ spot.title_ja|default:spot.title_original }}" onerror="this.closest('figure').remove();">
+                <figcaption>
+                    写真：{% if photo.source_url %}<a href="{{ photo.source_url }}" target="_blank" rel="noopener noreferrer">{{ photo.credit|default:"Wikimedia Commons" }}</a>{% else %}{{ photo.credit|default:"Wikimedia Commons" }}{% endif %}
+                    {% if photo.license_url %}・<a href="{{ photo.license_url }}" target="_blank" rel="noopener noreferrer">ライセンス</a>{% endif %}
+                </figcaption>
+            </figure>
+        {% endif %}
+    {% endwith %}
 
     <div>
         <span class="trip-detail-type">
@@ -402,6 +418,8 @@ html[data-outings-theme="dark"] .trip-source a {
         </a>
 
     </section>
+
+    {% include "outings/includes/visits.html" %}
 
     <div class="trip-source">
 

@@ -5,6 +5,7 @@ from outings.models import TouristSpot
 
 
 from .models import (
+    OutingsVisit,
     Event,
     FamilySpot,
     EventCategory,
@@ -411,8 +412,21 @@ class FamilySpotAdmin(admin.ModelAdmin):
         self.message_user(request, f"{queryset.update(status=FamilySpot.Status.DRAFT)}件を下書きに戻しました。")
 
     fieldsets = (
-        (None, {"fields": ("status", "sort_order", "name", "name_ja", "kind", "emoji", "summary_ja", "tips_ja")}),
+        (None, {"fields": ("status", "sort_order", "recommend", "name", "name_ja", "kind", "emoji", "summary_ja", "intro_ja", "tips_ja")}),
         ("場所", {"fields": ("canton", "town", "address", "latitude", "longitude", "maps_url")}),
         ("条件", {"fields": ("age_min", "age_max", "age_note", "language", "season", "rainy_ok", "trip", "price", "price_note", "open_sunday", "hours_note", "stroller_ok", "parking_note", "food_note")}),
-        ("リンク・写真", {"fields": ("official_url", "image_url", "image_credit", "checked_on")}),
+        ("リンク・写真", {"fields": ("official_url", "image_url", "image_credit", "image_search_done", "checked_on")}),
     )
+
+
+@admin.register(OutingsVisit)
+class OutingsVisitAdmin(admin.ModelAdmin):
+    list_display = ("target", "object_id", "status", "rating", "short_comment", "user", "is_hidden", "updated_at")
+    list_editable = ("is_hidden",)
+    list_filter = ("target", "status", "rating", "is_hidden")
+    search_fields = ("comment",)
+    readonly_fields = ("target", "object_id", "visitor_id", "user", "created_at", "updated_at")
+
+    @admin.display(description="コメント")
+    def short_comment(self, obj):
+        return obj.comment[:40]

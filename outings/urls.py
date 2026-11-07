@@ -1,12 +1,14 @@
 
 from django.urls import path
-from . import sunny, views, discovery_views, event_views, search_views, spot_views
+from . import sunny, visits, views, discovery_views, event_views, search_views, spot_views
 
 
 app_name = "outings"
 
 
 urlpatterns = [
+
+    path("visit/<str:target>/<int:pk>/", visits.save_visit, name="save_visit"),
 
     # =====================================================
     # HOME / Search

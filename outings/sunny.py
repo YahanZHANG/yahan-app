@@ -134,6 +134,42 @@ SPOT_TYPE_EMOJI = {"attractions": "📍", "tours": "🥾", "destinations": "🏘
 RAINY_OK = {"kids", "events"}  # kinds of places that know whether they work in the rain
 
 
+def short_text(text, limit=70):
+    """The first one or two sentences, for the one-line description."""
+    text = " ".join(str(text or "").split())
+    if not text:
+        return ""
+    out = ""
+    for sentence in text.replace("。", "。\n").split("\n"):
+        if not sentence.strip():
+            continue
+        if out and len(out) + len(sentence) > limit:
+            break
+        out += sentence
+        if len(out) >= limit * 0.6:
+            break
+    return out if len(out) <= limit else out[: limit - 1] + "…"
+
+
+def score_from_100(value):
+    """0-100 (AI quality) -> 1-5, 3 when unknown."""
+    if value is None:
+        return 3
+    return max(1, min(5, round(value / 20)))
+
+
+def recommend(base, rank, works_in_rain=False):
+    """おすすめ度 1-5: how good the place is, less on a cloudy or wet day
+    unless the place works in the rain."""
+    if rank[0] == 9:  # no forecast
+        pass
+    elif rank[0] >= 3 and not works_in_rain:
+        base -= 2
+    elif rank[0] == 2 and not works_in_rain:
+        base -= 1
+    return max(1, min(5, round(base)))
+
+
 def _items_kids(day, rainy=False):
     from .spot_views import decorate, published_spots
     items, lookups = [], 0
@@ -150,6 +186,8 @@ def _items_kids(day, rainy=False):
             "title": spot.title, "url": reverse("outings:spot_detail", args=[spot.pk]),
             "sub": f"{spot.get_kind_display()}・{spot.town}", "emoji": spot.emoji,
             "lat": spot.latitude, "lon": spot.longitude, "badges": spot.badges[:3], "image": spot.image_url,
+            "desc": short_text(spot.summary_ja or spot.intro_ja), "base": spot.recommend, "rain_ok": spot.rainy_ok,
+            "target": "kids", "pk": spot.pk,
         })
     return items
 
@@ -158,6 +196,7 @@ def _items_trips(day):
     from .tourist_views import tourist_spot_queryset
     spots = tourist_spot_queryset().filter(latitude__isnull=False, longitude__isnull=False).only(
         "pk", "title_ja", "title_original", "spot_type", "latitude", "longitude", "ai_quality_score", "details",
+        "intro_ja", "summary_ja",
     ).order_by("-ai_quality_score", "pk")[:1500]
     return [{
         "title": (spot.title_ja or spot.title_original).split("｜")[0],
@@ -165,6 +204,8 @@ def _items_trips(day):
         "sub": spot.get_spot_type_display(), "emoji": SPOT_TYPE_EMOJI.get(spot.spot_type, "📍"),
         "lat": float(spot.latitude), "lon": float(spot.longitude), "badges": [],
         "image": ((spot.details or {}).get("approved_image") or {}).get("url", ""),
+        "desc": short_text(spot.intro_ja or spot.summary_ja), "base": score_from_100(spot.ai_quality_score),
+        "rain_ok": False, "target": "trip", "pk": spot.pk,
     } for spot in spots]
 
 
@@ -190,8 +231,14 @@ def _items_events(day, now, family, rainy=False):
             "sub": f"{timezone.localtime(dates[0].start_at):%H:%M}・{location.city}", "emoji": event.display_emoji,
             "lat": float(location.latitude), "lon": float(location.longitude), "badges": [],
             "image": event.image_url,
+            "desc": short_text(event.highlight_ja or event.summary_ja), "base": score_from_100(event.ai_score),
+            "rain_ok": event.is_indoor, "target": "event", "pk": event.pk,
         })
     return items
+
+
+def what_target(what):
+    return {"kids": "kids", "trips": "trip", "events": "event"}[what]
 
 
 def sunny_page(request):
@@ -220,10 +267,20 @@ def sunny_page(request):
     else:
         items = _items_events(day, now, family=kids, rainy=rainy)
 
+    from .visits import MEMBER_RATINGS_NEEDED, ratings, stars_text
+    members = ratings(what_target(what), [item["pk"] for item in items])
     for item in items:
         point = points[nearest_point(item["lat"], item["lon"])]
         item.update(weather=point["text"], rank=point["rank"], sunny=point["sunny"], area=point["name"])
-    items.sort(key=lambda item: (item["rank"], item["title"]))
+        avg, count = members.get(item["pk"], (None, 0))
+        if count >= MEMBER_RATINGS_NEEDED:
+            item["base"] = avg
+        item["score"] = recommend(item["base"], point["rank"], item["rain_ok"])
+        item["stars"] = stars_text(item["score"])
+        item["member_avg"] = round(avg, 1) if avg else None
+        item["member_count"] = count
+    # Weather group first, then the best places.
+    items.sort(key=lambda item: (item["rank"][0], -item["score"], item["rank"], item["title"]))
 
     groups = [
         ("sunny", "☀️ 晴れ", [i for i in items if i["sunny"]]),

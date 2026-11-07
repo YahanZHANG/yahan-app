@@ -52,6 +52,8 @@
 
     {% if count %}<div class="og-countbar"><p class="og-count">{{ count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>{% endif %}
 
+    <p class="og-sunny-note">おすすめ度（★5段階）は、場所そのもののよさと、その日の天気から出しています。行った人の評価が3件以上あると、その評価を使います。</p>
+
     {% for group in groups %}
         {% if group.rows %}
             <section class="og-wx-group og-wx--{{ group.key }}" id="wx-{{ group.key }}">
@@ -65,6 +67,8 @@
                                 <span class="og-rows__text">
                                     <strong>{{ item.title }}</strong>
                                     <small>{{ item.sub }}</small>
+                                    {% if item.desc %}<span class="og-rows__desc">{{ item.desc }}</span>{% endif %}
+                                    <span class="og-rows__score" title="おすすめ度 {{ item.score }}/5">おすすめ度 <span class="og-stars" aria-label="5点中{{ item.score }}点">{{ item.stars }}</span>{% if item.member_count %} <small>みんなの評価 ★{{ item.member_avg }}（{{ item.member_count }}件）</small>{% endif %}</span>
                                 </span>
                                 {% if item.weather %}
                                     <span class="og-rows__wx" title="{{ item.area }}の予報">{{ item.weather.emoji }}<small>{{ item.weather.temp|default:"" }}{% if item.weather.rain %} ☔{{ item.weather.rain }}{% endif %}</small></span>

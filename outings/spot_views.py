@@ -120,6 +120,12 @@ def spot_list(request):
     )]
     # Places open this season first.
     spots.sort(key=lambda s: not s.open_in(month))
+    from .map_points import kids_point, map_response, wants_map
+    if wants_map(request):
+        from .sunny import MAX_LOOKUPS, locate
+        for spot in [s for s in spots if s.latitude is None][:MAX_LOOKUPS]:
+            locate(spot)  # town lookup, saved once
+        return map_response([kids_point(s) for s in spots])
 
     params = {"kids": "1", "kind": kind, "area": area, "age": age, "trip": trip,
               **{key: "1" if on else "" for key, on in flags.items()}}
@@ -184,11 +190,16 @@ def spot_detail(request, pk):
             canton__in=dict((k, c) for k, _, c in AREAS).get(AREA_OF_CANTON.get(spot.canton), ()),
         )[: 3 - len(others)]
         others += [decorate(s) for s in nearby]
-    return render(request, "outings/spot_detail.html", {
+    from .visitor import get_visitor_id, set_visitor_cookie
+    from .visits import Target, visit_context
+    visitor_id = get_visitor_id(request)
+    response = render(request, "outings/spot_detail.html", {
         "spot": spot,
         "others": others,
         "season_months": spot.get_season_display(),
+        "visits": visit_context(request, Target.KIDS, spot, visitor_id),
     })
+    return set_visitor_cookie(request, response, visitor_id)
 
 
 # =========================================================

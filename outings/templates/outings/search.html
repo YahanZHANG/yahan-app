@@ -114,7 +114,7 @@
             {% if query %}「{{ query }}」{% endif %}
             <strong>{{ result_count }}件</strong>のイベント
         </p>
-        {% include "outings/includes/view_toggle.html" %}
+        {% include "outings/includes/map_button.html" %}{% include "outings/includes/view_toggle.html" %}
         {% if result_count > 1 %}
             <div class="sx-sort" aria-label="並び順">
                 {% if query %}
@@ -163,7 +163,7 @@
         </section>
     {% endif %}
 
-    <div class="ev-list sx-results">
+    <div class="ev-list sx-results" data-og-items="search">
         {% for event in events %}
             {% include "outings/includes/event_card.html" %}
         {% empty %}
@@ -184,17 +184,7 @@
         {% endfor %}
     </div>
 
-    {% if page_obj.has_other_pages %}
-        <nav class="ev-pager" aria-label="検索結果のページ切り替え">
-            {% if page_obj.has_previous %}
-                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left" aria-hidden="true"></i>前へ</a>
-            {% endif %}
-            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
-            {% endif %}
-        </nav>
-    {% endif %}
+    {% include "outings/includes/more_button.html" with more_qs=page_qs_next name="search" %}
 
 </div>
 {% endblock %}

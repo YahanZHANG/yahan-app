@@ -48,10 +48,12 @@
             }
         } catch (error) {}
         document.documentElement.setAttribute("data-outings-theme", theme);
-        // List or photo view, chosen with the リスト｜写真 buttons.
+        // 写真｜写真小｜リスト, chosen with the buttons on the lists.
         try {
-            if (localStorage.getItem("yapp-outings-view") === "list") {
-                document.documentElement.setAttribute("data-og-view", "list");
+            var view = localStorage.getItem("yapp-outings-view");
+            if (view === "list" || view === "thumb") {
+                document.documentElement.setAttribute("data-og-view", view);
+                document.documentElement.setAttribute("data-og-compact", "");
             }
         } catch (error) {}
     })();
@@ -189,13 +191,17 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
 });
 </script>
 <script>
-// リスト｜写真 buttons on the lists.
+// 写真｜写真小｜リスト buttons on the lists.
 (function () {
     var root = document.documentElement;
+    var VIEWS = ["photo", "thumb", "list"];
+    function current() {
+        var view = root.getAttribute("data-og-view");
+        return VIEWS.indexOf(view) > 0 ? view : "photo";
+    }
     function show() {
-        var view = root.getAttribute("data-og-view") === "list" ? "list" : "photo";
-        document.querySelectorAll("[data-og-view]").forEach(function (button) {
-            if (button === root) return;
+        var view = current();
+        document.querySelectorAll("button[data-og-view]").forEach(function (button) {
             button.setAttribute("aria-pressed", String(button.getAttribute("data-og-view") === view));
         });
     }
@@ -203,11 +209,135 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
         var button = event.target.closest("button[data-og-view]");
         if (!button) return;
         var view = button.getAttribute("data-og-view");
-        if (view === "list") root.setAttribute("data-og-view", "list"); else root.removeAttribute("data-og-view");
+        if (view === "photo") {
+            root.removeAttribute("data-og-view");
+            root.removeAttribute("data-og-compact");
+        } else {
+            root.setAttribute("data-og-view", view);
+            root.setAttribute("data-og-compact", "");
+        }
         try { localStorage.setItem("yapp-outings-view", view); } catch (error) {}
         show();
     });
     show();
+})();
+
+// 地図: every result of the current filters on a map. Leaflet loads on first use.
+(function () {
+    var SWITZERLAND = [[45.82, 5.96], [47.81, 10.49]];
+    var leaflet = null;
+    function loadLeaflet() {
+        if (window.L) return Promise.resolve();
+        if (leaflet) return leaflet;
+        leaflet = new Promise(function (resolve, reject) {
+            var css = document.createElement("link");
+            css.rel = "stylesheet";
+            css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+            document.head.appendChild(css);
+            var js = document.createElement("script");
+            js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+            js.onload = resolve;
+            js.onerror = reject;
+            document.head.appendChild(js);
+        });
+        return leaflet;
+    }
+    function esc(text) { var d = document.createElement("div"); d.textContent = text || ""; return d.innerHTML; }
+    function mapUrl() {
+        var params = new URLSearchParams(window.location.search);
+        params.delete("page");
+        params.set("map", "1");
+        return window.location.pathname + "?" + params.toString();
+    }
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-og-map]");
+        if (!button) return;
+        var bar = button.parentElement;
+        var panel = bar.nextElementSibling && bar.nextElementSibling.classList.contains("og-resultmap") ? bar.nextElementSibling : null;
+        if (panel) {
+            var open = panel.hidden;
+            panel.hidden = !open;
+            button.setAttribute("aria-expanded", String(open));
+            if (open && panel._map) panel._map.invalidateSize();
+            return;
+        }
+        panel = document.createElement("div");
+        panel.className = "og-resultmap";
+        panel.innerHTML = '<div class="og-resultmap__map"></div><p class="og-resultmap__note">地図を読み込み中…</p>';
+        bar.parentNode.insertBefore(panel, bar.nextSibling);
+        button.setAttribute("aria-expanded", "true");
+        var note = panel.querySelector(".og-resultmap__note");
+        Promise.all([
+            loadLeaflet(),
+            fetch(mapUrl(), { credentials: "same-origin", headers: { "Accept": "application/json" } })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        ]).then(function (results) {
+            var data = results[1];
+            var map = L.map(panel.querySelector(".og-resultmap__map"), { scrollWheelZoom: false, zoomSnap: 0.25 });
+            panel._map = map;
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 18, attribution: "© OpenStreetMap contributors",
+                referrerPolicy: "strict-origin-when-cross-origin"
+            }).addTo(map);
+            var bounds = [];
+            data.points.forEach(function (p) {
+                bounds.push([p.lat, p.lon]);
+                L.marker([p.lat, p.lon], {
+                    icon: L.divIcon({ className: "", html: '<span class="og-resultmap__pin">' + esc(p.emoji) + "</span>", iconSize: [30, 30], iconAnchor: [15, 15] })
+                }).bindPopup('<a href="' + p.url + '"><strong>' + esc(p.title) + "</strong></a>" + (p.sub ? "<br><small>" + esc(p.sub) + "</small>" : "")).addTo(map);
+            });
+            if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
+            else map.fitBounds(SWITZERLAND);
+            setTimeout(function () { map.invalidateSize(); }, 200);
+            var missing = data.total - data.shown;
+            note.textContent = data.shown + "件を地図に表示しています。ピンを押すと名前とリンクが出ます。"
+                + (missing > 0 ? "（場所がわからない" + missing + "件は出ていません）" : "");
+        }).catch(function () {
+            note.textContent = "地図を読み込めませんでした。少しあとでもう一度お試しください。";
+        });
+    });
+})();
+
+// もっと見る: load the next page and add its items below, instead of a page switch.
+(function () {
+    document.addEventListener("click", function (event) {
+        var link = event.target.closest("a[data-og-more]");
+        if (!link || event.metaKey || event.ctrlKey) return;
+        var wrap = link.closest("[data-og-more-wrap]");
+        var name = link.getAttribute("data-og-more");
+        var list = document.querySelector('[data-og-items="' + name + '"]');
+        if (!wrap || !list) return;
+        event.preventDefault();
+        if (link.classList.contains("is-loading")) return;
+        link.classList.add("is-loading");
+        link.textContent = "読み込み中…";
+        fetch(link.href, { credentials: "same-origin" })
+            .then(function (response) { if (!response.ok) throw new Error(response.status); return response.text(); })
+            .then(function (html) {
+                var page = new DOMParser().parseFromString(html, "text/html");
+                var more = page.querySelector('[data-og-items="' + name + '"]');
+                if (more) {
+                    Array.prototype.slice.call(more.children).forEach(function (item) {
+                        // Same day heading as the last group: add the cards to it.
+                        var group = item.getAttribute("data-og-group");
+                        var last = list.lastElementChild;
+                        if (group && last && last.getAttribute("data-og-group") === group) {
+                            var into = last.querySelector("[data-og-group-items]");
+                            var from = item.querySelector("[data-og-group-items]");
+                            if (into && from) {
+                                Array.prototype.slice.call(from.children).forEach(function (child) { into.appendChild(child); });
+                                return;
+                            }
+                        }
+                        list.appendChild(document.importNode(item, true));
+                    });
+                }
+                var next = page.querySelector("[data-og-more-wrap]");
+                if (next && next.querySelector("a[data-og-more]")) wrap.replaceWith(document.importNode(next, true));
+                else wrap.remove();
+            })
+            .catch(function () { window.location.href = link.href; });
+    });
 })();
 </script>
 

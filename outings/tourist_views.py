@@ -79,6 +79,19 @@ def tourist_spot_queryset():
 # Tourist spot list
 # =========================================================
 
+from .visits import Target, visit_context  # noqa: E402
+from .map_points import MAX_POINTS, map_response, trip_point, wants_map  # noqa: E402
+
+
+def next_page_qs(request, page_obj):
+    """Query string of the next page, keeping every filter."""
+    if not page_obj.has_next():
+        return ""
+    params = request.GET.copy()
+    params["page"] = page_obj.next_page_number()
+    return params.urlencode()
+
+
 def tourist_spot_list(request):
 
     # 子連れ ticked: the hand-written family places instead.
@@ -193,6 +206,9 @@ def tourist_spot_list(request):
     # Pagination
     # =====================================================
 
+    if wants_map(request):
+        return map_response([trip_point(s) for s in spots.filter(latitude__isnull=False)[:MAX_POINTS]], spots.count())
+
     paginator = Paginator(
         spots,
         24,
@@ -252,6 +268,7 @@ def tourist_spot_list(request):
             "show_all": show_all,
             "sort": sort,
             "result_count": paginator.count,
+            "more_qs": next_page_qs(request, page_obj),
         },
     )
 
@@ -338,6 +355,7 @@ def tourist_spot_detail(request, pk):
                 )
             ),
             "is_hearted": is_hearted,
+            "visits": visit_context(request, Target.TRIP, spot, visitor_id),
         },
     )
 

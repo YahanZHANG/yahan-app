@@ -1,0 +1,12 @@
+{% comment %}
+「もっと見る」 under a list. Needs `page_obj`, `more_qs` (query string of the
+next page) and `name` (matches data-og-items on the list). Without JS it is a
+plain link to the next page.
+{% endcomment %}
+{% if page_obj.has_next %}
+    <div class="og-more-wrap" data-og-more-wrap>
+        <a class="og-more" href="?{{ more_qs }}" data-og-more="{{ name }}" rel="next">
+            もっと見る<small>{{ page_obj.end_index }} / {{ page_obj.paginator.count }}件</small>
+        </a>
+    </div>
+{% endif %}

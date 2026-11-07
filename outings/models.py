@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 from urllib.parse import quote
@@ -1297,6 +1298,10 @@ class FamilySpot(models.Model):
     season = models.CharField("行ける季節", max_length=20, choices=Season.choices, default=Season.YEAR)
     trip = models.CharField("チューリッヒから", max_length=10, choices=Trip.choices, default=Trip.DAY)
     emoji = models.CharField("絵文字（写真がないときに表示）", max_length=8, blank=True)
+    recommend = models.PositiveSmallIntegerField(
+        "おすすめ度（1〜5）", default=4, validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="晴れの場所ページの★のもと。みんなの評価が3件以上あると、そちらを使います。",
+    )
 
     official_url = models.URLField("公式サイト", blank=True)
     maps_url = models.URLField("Googleマップのリンク", blank=True)
@@ -1352,3 +1357,43 @@ class FamilySpot(models.Model):
 
     def open_in(self, month):
         return month in self.SEASON_MONTHS.get(self.season, set(range(1, 13)))
+
+
+class OutingsVisit(models.Model):
+    """行ったことがある！／行ってみたい！ on a trip, 子連れスポット or event.
+    Someone who went can add a 1-5 rating and, when signed in, a comment.
+    One row per browser (visitor_id), linked to the account when signed in."""
+
+    class Target(models.TextChoices):
+        TRIP = "trip", "旅行"
+        KIDS = "kids", "子連れスポット"
+        EVENT = "event", "イベント"
+
+    class Status(models.TextChoices):
+        WENT = "went", "行ったことがある"
+        WANT = "want", "行ってみたい"
+
+    target = models.CharField("対象", max_length=10, choices=Target.choices)
+    object_id = models.PositiveIntegerField("対象のID")
+    visitor_id = models.UUIDField(db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_visits", verbose_name="ユーザー",
+    )
+    status = models.CharField("状態", max_length=10, choices=Status.choices)
+    rating = models.PositiveSmallIntegerField(
+        "評価（1〜5）", null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    comment = models.TextField("コメント", max_length=500, blank=True)
+    is_hidden = models.BooleanField("非表示にする", default=False, help_text="評価とコメントを出さない")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "行った・行きたい"
+        verbose_name_plural = "行った・行きたい（評価とコメント）"
+        ordering = ["-updated_at", "-pk"]
+        indexes = [models.Index(fields=["target", "object_id"])]
+
+    def __str__(self):
+        return f"{self.get_target_display()} {self.object_id}: {self.get_status_display()}"

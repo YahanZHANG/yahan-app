@@ -744,6 +744,38 @@ class PlacePhotoTests(TestCase):
         self.assertContains(self.client.get(reverse("outings:event_detail", args=[event.pk])), "会場や町のようす")
 
 
+class ListPageTests(TestCase):
+    def test_trip_list_has_load_more_and_three_views(self):
+        for n in range(30):
+            TouristSpot.objects.create(
+                external_id=f"t{n}", spot_type=TouristSpot.SpotType.ATTRACTION, title_original=f"Ort {n}",
+                official_url="https://example.com", status=TouristSpot.Status.PUBLISHED, ai_quality_score=80,
+                summary_ja="説明", details={"approved_image": {"url": "https://example.com/p.jpg", "credit": "A / CC BY"}},
+            )
+        page = self.client.get(reverse("outings:tourist_spot_list"), {"sort": "name"})
+        self.assertContains(page, 'data-og-more="trips"')
+        self.assertContains(page, "page=2")
+        self.assertContains(page, 'data-og-view="thumb"')
+        self.assertNotContains(page, "trip-pagination\">")
+        second = self.client.get(reverse("outings:tourist_spot_list"), {"sort": "name", "page": 2})
+        self.assertContains(second, 'data-og-items="trips"')
+        self.assertNotContains(second, 'data-og-more="trips"')
+        self.assertContains(page, "data-og-map")
+        TouristSpot.objects.filter(title_original="Ort 1").update(latitude=46.9, longitude=7.4)
+        data = self.client.get(reverse("outings:tourist_spot_list"), {"sort": "name", "page": 2, "map": "1"}).json()
+        self.assertEqual([p["title"] for p in data["points"]], ["Ort 1"])
+        self.assertEqual(data["total"], 30)
+        events = self.client.get(reverse("outings:event_home"), {"map": "1"}).json()
+        self.assertEqual(events["points"], [])
+        kids = self.client.get(reverse("outings:tourist_spot_list"), {"kids": "1", "map": "1"})
+        self.assertIn("points", kids.json())
+        spot = TouristSpot.objects.first()
+        detail = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(detail, "trip-detail-photo")
+        self.assertContains(detail, "A / CC BY")
+        self.assertContains(detail, "行ってみたい！")
+
+
 class PublicUserAccessTests(PageTestCase):
     def test_signed_up_public_users_can_open_outings(self):
         from django.contrib.auth.models import Group, User
@@ -849,6 +881,60 @@ class FamilySpotTests(PageTestCase):
         self.assertContains(response, "og-map-data")
         for name in ("outings:event_home", "outings:tourist_spot_list"):
             self.assertContains(self.client.get(reverse(name)), "晴れの場所から探す")
+
+    def test_sunny_rows_show_a_short_text_and_stars(self):
+        from outings import sunny
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(
+            latitude=47.37, longitude=8.54, recommend=5,
+            summary_ja="広い芝生の公園です。遊具もあります。売店は夏だけです。とても長い説明がここに続きます。",
+        )
+        today = timezone.localdate().isoformat()
+        sun = lambda points: {p: {today: {"code": 0, "max": 15, "min": 5, "rain": 0}} for p in points}
+        with mock.patch.object(sunny.weather, "_forecasts", side_effect=sun), \
+                mock.patch.object(sunny, "locate", return_value=None):
+            response = self.client.get(reverse("outings:sunny"), {"what": "kids", "day": today})
+        row = next(i for g in response.context["groups"] for i in g["rows"] if i["pk"] == self.park.pk)
+        self.assertEqual(row["score"], 5)
+        self.assertTrue(row["desc"].startswith("広い芝生の公園です。"))
+        self.assertLessEqual(len(row["desc"]), 70)
+        self.assertContains(response, "★★★★★")
+        self.assertEqual(sunny.recommend(5, (3, 90)), 3)
+        self.assertEqual(sunny.recommend(5, (3, 90), works_in_rain=True), 5)
+        self.assertEqual(sunny.recommend(4, (9, 100)), 4)
+
+    def test_went_want_rating_and_comment(self):
+        from django.contrib.auth.models import User
+        from outings.models import OutingsVisit
+        url = reverse("outings:save_visit", args=["kids", self.park.pk])
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "行ったことがある！")
+        self.client.post(url, {"action": "want"})
+        self.assertEqual(OutingsVisit.objects.get().status, "want")
+        self.client.post(url, {"action": "went"})
+        visit = OutingsVisit.objects.get()
+        self.assertEqual(visit.status, "went")
+        # Guests can rate but not comment.
+        self.client.post(url, {"action": "review", "rating": "4", "comment": "spam"})
+        visit.refresh_from_db()
+        self.assertEqual((visit.rating, visit.comment), (4, ""))
+        self.assertContains(self.client.get(detail), "どうでしたか？")
+        # Signed in: the same browser's row gets the account and the comment.
+        user = User.objects.create_user("mama", password="pw-12345")
+        user.groups.add(__import__("django.contrib.auth.models", fromlist=["Group"]).Group.objects.get_or_create(name="public_users")[0])
+        self.client.force_login(user)
+        response = self.client.post(url, {"action": "review", "rating": "5", "comment": "芝生が気持ちいい", "next": detail})
+        self.assertRedirects(response, detail + "#visits", fetch_redirect_response=False)
+        visit.refresh_from_db()
+        self.assertEqual((visit.rating, visit.comment, visit.user), (5, "芝生が気持ちいい", user))
+        page = self.client.get(detail)
+        self.assertContains(page, "芝生が気持ちいい")
+        self.assertContains(page, "★</span>5.0")
+        # Pressing 行った again takes it back.
+        self.client.post(url, {"action": "went"})
+        self.assertFalse(OutingsVisit.objects.exists())
+        self.assertEqual(self.client.post(reverse("outings:save_visit", args=["kids", self.draft.pk]), {"action": "went"}).status_code, 404)
+        self.assertEqual(self.client.post(reverse("outings:save_visit", args=["nope", 1]), {"action": "went"}).status_code, 404)
 
     def test_season(self):
         from outings.models import FamilySpot

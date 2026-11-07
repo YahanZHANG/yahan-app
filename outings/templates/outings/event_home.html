@@ -108,12 +108,13 @@
     {% endif %}
 
     <!-- By day -->
-    <div class="og-countbar og-results" id="results"><p class="ev-count">{{ result_count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>
+    <div class="og-countbar og-results" id="results"><p class="ev-count">{{ result_count }}件</p>{% include "outings/includes/map_button.html" %}{% include "outings/includes/view_toggle.html" %}</div>
 
+    <div data-og-items="events">
     {% for group in day_groups %}
-        <section class="ev-day" aria-label="{{ group.label }}">
+        <section class="ev-day" aria-label="{{ group.label }}" data-og-group="{{ group.label }}">
             <h2 class="ev-day__title">{{ group.label }}</h2>
-            <div class="ev-list">
+            <div class="ev-list" data-og-group-items>
                 {% for event in group.events %}
                     {% include "outings/includes/event_card.html" %}
                 {% endfor %}
@@ -130,17 +131,8 @@
         {% endif %}
     {% endfor %}
 
-    {% if page_obj.has_other_pages %}
-        <nav class="ev-pager" aria-label="ページ">
-            {% if page_obj.has_previous %}
-                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left"></i>前へ</a>
-            {% endif %}
-            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right"></i></a>
-            {% endif %}
-        </nav>
-    {% endif %}
+    </div>
+    {% include "outings/includes/more_button.html" with more_qs=page_qs_next name="events" %}
 
     <!-- Ongoing exhibitions and long runs -->
     {% if ongoing_events %}

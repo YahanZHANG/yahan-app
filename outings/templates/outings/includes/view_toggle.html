@@ -1,5 +1,6 @@
-{# リスト（写真なし、詰めて）｜写真（大きなカード）. Remembered per browser. #}
+{# 写真（大きく）｜写真小（小さい写真つきの行）｜リスト（文字だけ）. Remembered per browser. #}
 <div class="og-view" role="group" aria-label="表示のしかた">
-    <button type="button" data-og-view="list" aria-pressed="false"><i class="bi bi-list-ul" aria-hidden="true"></i>リスト</button>
-    <button type="button" data-og-view="photo" aria-pressed="true"><i class="bi bi-image" aria-hidden="true"></i>写真</button>
+    <button type="button" data-og-view="photo" aria-pressed="true" title="大きい写真"><i class="bi bi-image" aria-hidden="true"></i>写真</button>
+    <button type="button" data-og-view="thumb" aria-pressed="false" title="小さい写真つきのリスト"><i class="bi bi-card-list" aria-hidden="true"></i>写真小</button>
+    <button type="button" data-og-view="list" aria-pressed="false" title="文字だけのリスト"><i class="bi bi-list-ul" aria-hidden="true"></i>リスト</button>
 </div>

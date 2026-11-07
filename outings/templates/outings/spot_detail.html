@@ -52,6 +52,8 @@
         {% if spot.official_url %}<a class="og-btn" href="{{ spot.official_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>公式サイト</a>{% endif %}
     </div>
 
+    {% include "outings/includes/visits.html" %}
+
     <p class="og-detail__checked">{% if spot.checked_on %}情報の確認日：{{ spot.checked_on|date:"Y年n月j日" }}。{% endif %}営業日や料金は変わることがあるので、行く前に公式サイトで確認してください。</p>
 
     {% if others %}

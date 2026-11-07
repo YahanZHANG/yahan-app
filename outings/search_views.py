@@ -8,6 +8,8 @@ matching trips are listed above the events.
 from datetime import datetime, time, timedelta
 
 from django.core.paginator import Paginator
+
+from .map_points import wants_map
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -210,6 +212,9 @@ def search(request):
     # ------------------------------------------------------------------
     # Page of event results
     # ------------------------------------------------------------------
+    if wants_map(request):
+        from .map_points import event_point, map_response
+        return map_response([event_point(row[0]) for row in found])
     page_obj = Paginator(found, PAGE_SIZE).get_page(get.get("page", 1))
     visitor_id = get_visitor_id(request)
     page_events = [row[0] for row in page_obj.object_list]
