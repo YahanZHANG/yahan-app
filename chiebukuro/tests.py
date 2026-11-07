@@ -784,3 +784,11 @@ class SampleNoticeTests(BoardTestCase):
         # 架空の告知があっても、本物の告知は出せる (1人1件に数えない)
         self.client.force_login(self.alice)
         self.assertEqual(self.client.get(reverse("chiebukuro:notice_new")).status_code, 200)
+
+
+class InstallGuideTests(BoardTestCase):
+
+    def test_install_page_and_header_link(self):
+        page = self.client.get(reverse("chiebukuro:install"))
+        self.assertContains(page, "ホーム画面に追加しよう")
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), reverse("chiebukuro:install"))

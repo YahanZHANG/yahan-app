@@ -1748,3 +1748,16 @@ def notify_staff(request, subject, text, admin_path):
         return
     body = f"{text}\n\n{request.build_absolute_uri(admin_path)}\n"
     threading.Thread(target=_send, args=(f"[知恵袋] {subject}", body, recipient), daemon=True).start()
+
+
+@board_open
+def install_guide(request):
+    """ホーム画面に追加する方法 (SwissNews・和食と同じ案内)"""
+
+    from config.pwa import install_guide_context
+
+    return render(
+        request,
+        "chiebukuro/install.html",
+        {**board_context(request, "install", current_region(request)), **install_guide_context(request, reverse("chiebukuro:home"))},
+    )
