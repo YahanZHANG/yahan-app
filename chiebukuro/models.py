@@ -50,6 +50,12 @@ class BoardSettings(models.Model):
         default="auto",
         help_text="自動: 春 4/1〜4/25、建国記念日 7/25〜8/1、ハロウィン 10/18〜10/31、秋 11月、クリスマス 12/1〜12/26、お正月 12/30〜1/7",
     )
+    rules_updated_at = models.DateTimeField(
+        "ルールを更新した日時",
+        null=True,
+        blank=True,
+        help_text="ルールを変えたら、ここを「今日」「現在」にして保存してください。これより前に同意した人には、次に書きこむときにもう一度同意の画面が出ます。",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:

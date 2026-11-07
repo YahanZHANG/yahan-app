@@ -713,6 +713,25 @@ class RulesAgreementTests(BoardTestCase):
         self.assertEqual(self.client.post(reverse("chiebukuro:rules_agree")).status_code, 200)
         self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "cb-rules-dialog")
 
+    def test_rules_dialog_again_after_rules_update(self):
+        from django.utils import timezone
+        from chiebukuro.models import BoardSettings
+
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:rules_agree"))
+        settings_row = BoardSettings.current()
+        settings_row.rules_updated_at = timezone.now()
+        settings_row.save()
+        page = self.client.get(reverse("chiebukuro:posts"))
+        self.assertContains(page, "cb-rules-dialog")
+        self.assertContains(page, "ルールが新しくなりました")
+        self.client.post(reverse("chiebukuro:rules_agree"))
+        self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "cb-rules-dialog")
+
+    def test_rules_page_shows_full_text(self):
+        page = self.client.get(reverse("chiebukuro:rules"))
+        self.assertContains(page, "ご利用にあたって")
+
 
 class WeatherHereTests(BoardTestCase):
 

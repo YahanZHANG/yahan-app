@@ -180,10 +180,19 @@ def board_context(request, tab, region=None):
 
 
 def needs_rules(user):
-    """まだ掲示板のルールに同意していない (はじめて書きこむ前に、ルールの画面を出す)"""
+    """
+    書きこむ前に、ルールの同意画面を出すか。
+    "first" = まだ同意していない / "updated" = 同意のあとにルールが変わった / "" = 不要
+    """
     if not user.is_authenticated:
-        return False
-    return not BoardProfile.objects.filter(user=user, rules_agreed_at__isnull=False).exists()
+        return ""
+    agreed_at = BoardProfile.objects.filter(user=user).values_list("rules_agreed_at", flat=True).first()
+    if not agreed_at:
+        return "first"
+    updated_at = BoardSettings.current().rules_updated_at
+    if updated_at and agreed_at < updated_at:
+        return "updated"
+    return ""
 
 
 def my_talks(user):
@@ -1580,9 +1589,8 @@ def profile_edit(request):
 @require_POST
 def rules_agree(request):
     profile, _ = BoardProfile.objects.get_or_create(user=request.user)
-    if not profile.rules_agreed_at:
-        profile.rules_agreed_at = timezone.now()
-        profile.save(update_fields=["rules_agreed_at"])
+    profile.rules_agreed_at = timezone.now()
+    profile.save(update_fields=["rules_agreed_at"])
     from django.http import JsonResponse
 
     return JsonResponse({"ok": True})

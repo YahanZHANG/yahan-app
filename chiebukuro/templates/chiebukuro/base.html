@@ -147,19 +147,19 @@ document.querySelectorAll("[data-count]").forEach(function (area) {
 {% if needs_rules %}
 <dialog class="cb-rules-dialog" id="cb-rules-dialog" data-url="{% url 'chiebukuro:rules_agree' %}" aria-labelledby="cb-rules-title">
     <form method="dialog" class="cb-rules-box">
-        <h2 id="cb-rules-title">書きこむ前に、掲示板のルールをご確認ください</h2>
-        {% include "chiebukuro/_rules.html" %}
+        <h2 id="cb-rules-title">{% if needs_rules == "updated" %}掲示板のルールが新しくなりました。書きこむ前に、もう一度ご確認ください{% else %}書きこむ前に、掲示板のルールをご確認ください{% endif %}</h2>
+        <div class="cb-rules-scroll">{% include "chiebukuro/_rules_full.html" %}</div>
         <label class="cb-rules-check"><input type="checkbox" id="cb-rules-ok"> ルールを読んで、同意します</label>
         <div class="cb-rules-actions">
             <button type="submit" value="cancel" class="cb-btn cb-btn-s">やめる</button>
             <button type="button" id="cb-rules-agree" class="cb-btn cb-btn-primary cb-btn-s" disabled>同意して送る</button>
         </div>
-        <p class="cb-note">同意は一度だけです。次からはこの画面は出ません。</p>
+        <p class="cb-note">ルールが変わったときは、もう一度この画面が出ます。</p>
     </form>
 </dialog>
 <script>
 (function () {
-    // はじめて書きこむときだけ: ルールに同意してから送る
+    // はじめて書きこむとき、ルールが変わったあと: ルールに同意してから送る
     var dialog = document.getElementById("cb-rules-dialog");
     if (!dialog || !dialog.showModal) return;
     var check = document.getElementById("cb-rules-ok");
