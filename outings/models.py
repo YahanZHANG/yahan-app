@@ -1274,6 +1274,7 @@ class FamilySpot(models.Model):
     longitude = models.FloatField("経度", null=True, blank=True)
 
     summary_ja = models.TextField("紹介（自分たちの言葉で）")
+    intro_ja = models.TextField("くわしい紹介文（手書き）", blank=True)
     tips_ja = models.TextField("知っておくと便利なこと", blank=True)
 
     rainy_ok = models.BooleanField("雨の日もOK（室内あり）", default=False)

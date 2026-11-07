@@ -989,6 +989,15 @@ class TripImportTests(TestCase):
         self.assertEqual(bare.status, TouristSpot.Status.HIDDEN)
         self.assertEqual(written.status, TouristSpot.Status.PUBLISHED)
 
+    def test_family_intros_fill_spots_and_show_on_the_page(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.get(name="Park im Grüene")
+        FamilySpot.objects.filter(pk=spot.pk).update(intro_ja="")
+        call_command("apply_family_intros", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertIn("ロバ", spot.intro_ja)
+        self.assertContains(self.client.get(reverse("outings:spot_detail", args=[spot.pk])), "ロバ")
+
     def test_markdown_intro_batches_parse(self):
         from outings.management.commands.merge_tourist_intros_md import parse
         text = """# 第2弾

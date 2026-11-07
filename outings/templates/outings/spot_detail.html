@@ -21,7 +21,11 @@
         <p class="og-badges">{% for label, kind in spot.badges %}<span class="og-badge og-badge--{{ kind }}">{{ label }}</span>{% endfor %}</p>
     {% endif %}
 
-    <p class="og-detail__summary">{{ spot.summary_ja|linebreaksbr }}</p>
+    {% if spot.intro_ja %}
+        <div class="og-detail__summary">{{ spot.intro_ja|linebreaks }}</div>
+    {% else %}
+        <p class="og-detail__summary">{{ spot.summary_ja|linebreaksbr }}</p>
+    {% endif %}
 
     <dl class="og-facts">
         {% if spot.age_label %}<div><dt>年齢</dt><dd>{{ spot.age_label }}{% if spot.age_note and spot.age_note != spot.age_label %}<br>{{ spot.age_note }}{% endif %}</dd></div>{% endif %}

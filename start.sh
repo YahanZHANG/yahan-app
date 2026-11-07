@@ -26,6 +26,7 @@ python manage.py import_chiebukuro_survey
 
 # おでかけ: 手書きの旅行紹介文 (outings/data/tourist_intros.json) を、まだ入っていない場所に入れる
 python manage.py apply_tourist_intros
+python manage.py apply_family_intros
 
 
 # =====================================================

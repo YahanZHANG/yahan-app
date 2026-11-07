@@ -14,6 +14,7 @@ import re
 
 from django.core.management.base import BaseCommand
 
+from .apply_family_intros import FAMILY_DATA
 from .apply_tourist_intros import DATA
 
 HEADER = re.compile(r"^(\d+)\. (.+?)(（[^）]*確定版）)?\s*$")
@@ -29,6 +30,7 @@ def is_source(line):
 def parse(text):
     entries, current = {}, None
     for line in text.splitlines():
+        heading = re.match(r"^#{1,2}\s", line)  # "# …" / "## …" = a section, not a spot
         line = re.sub(r"^#+\s*", "", line.rstrip())  # Markdown headings
         line = re.sub(r"^\*\*(.+)\*\*$", r"\1", line)  # **bold** lines
         match = HEADER.match(line)
@@ -38,7 +40,7 @@ def parse(text):
             continue
         if current is None:
             continue
-        if SECTION.match(line):
+        if heading or SECTION.match(line):
             current = None
             continue
         if line.strip():
@@ -59,11 +61,16 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("path")
+        parser.add_argument("--family", action="store_true", help="子連れスポット (family_intros.json, keyed by name)")
 
     def handle(self, *args, **options):
         new = parse(open(options["path"], encoding="utf-8").read())
-        current = json.loads(DATA.read_text(encoding="utf-8")) if DATA.exists() else {}
+        data = DATA
+        if options["family"]:
+            data = FAMILY_DATA
+            new = {re.sub(r"（[^）]*）$", "", title).strip(): text for title, text in new.items()}  # drop the Japanese name
+        current = json.loads(data.read_text(encoding="utf-8")) if data.exists() else {}
         added = sum(1 for title in new if title not in current)
         current.update(new)
-        DATA.write_text(json.dumps(current, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        data.write_text(json.dumps(current, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         self.stdout.write(f"{len(new)} introductions read ({added} new); {len(current)} in the file.")
