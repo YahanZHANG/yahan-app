@@ -525,11 +525,11 @@ class SearchTests(PageTestCase):
 
 class NavigationTests(PageTestCase):
 
-    def test_search_is_in_the_phone_tab_bar_and_marked_active(self):
+    def test_search_is_in_the_header_and_sunny_in_the_tab_bar(self):
         html = self.client.get(reverse("outings:search")).content.decode()
+        self.assertIn("nav-find active", html)
         tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
-        self.assertIn("tabbar__search active", tabbar)
-        # The events tab is no longer highlighted on the search page.
+        self.assertIn('href="%s" class="tabbar__search"' % reverse("outings:sunny"), tabbar)
         self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
 
 
@@ -799,7 +799,7 @@ class FamilySpotTests(PageTestCase):
         self.assertIn("ルガーノ", response.context["sunny_areas"])
         self.assertContains(response, "og-map-data")
         for name in ("outings:event_home", "outings:tourist_spot_list"):
-            self.assertContains(self.client.get(reverse(name)), "晴れの場所をさがす")
+            self.assertContains(self.client.get(reverse(name)), "晴れの場所から探す")
 
     def test_season(self):
         from outings.models import FamilySpot

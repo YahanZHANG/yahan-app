@@ -131,11 +131,14 @@ WHAT = [("kids", "子連れスポット"), ("trips", "旅行"), ("events", "イ�
 SPOT_TYPE_EMOJI = {"attractions": "📍", "tours": "🥾", "destinations": "🏘️", "offers": "🎟️"}
 
 
-def _items_kids(day):
+RAINY_OK = {"kids", "events"}  # kinds of places that know whether they work in the rain
+
+
+def _items_kids(day, rainy=False):
     from .spot_views import decorate, published_spots
     items, lookups = [], 0
     for spot in published_spots():
-        if not spot.open_in(day.month):
+        if not spot.open_in(day.month) or (rainy and not spot.rainy_ok):
             continue
         if spot.latitude is None and lookups < MAX_LOOKUPS:
             lookups += 1
@@ -164,13 +167,15 @@ def _items_trips(day):
     } for spot in spots]
 
 
-def _items_events(day, now, family):
+def _items_events(day, now, family, rainy=False):
     from .cards import decorate
     from .event_views import is_family, is_one_off, live_events
     items, lookups = [], 0
     for event in live_events(now):
         dates = [d for d in event.upcoming_dates if timezone.localdate(d.start_at) == day]
         if not dates or event.location is None or not is_one_off(event) or (family and not is_family(event)):
+            continue
+        if rainy and not event.is_indoor:
             continue
         location = event.location
         if location.latitude is None and lookups < MAX_LOOKUPS:
@@ -203,13 +208,15 @@ def sunny_page(request):
     if what not in dict(WHAT):
         what = "kids" if kids else "trips"
 
+    rainy = what in RAINY_OK and request.GET.get("rainy") == "1"
+
     points = point_forecasts(day)
     if what == "kids":
-        items = _items_kids(day)
+        items = _items_kids(day, rainy=rainy)
     elif what == "trips":
         items = _items_trips(day)
     else:
-        items = _items_events(day, now, family=kids)
+        items = _items_events(day, now, family=kids, rainy=rainy)
 
     for item in items:
         point = points[nearest_point(item["lat"], item["lon"])]
@@ -241,6 +248,8 @@ def sunny_page(request):
         "days": [{"label": label, "value": option.isoformat(), "active": option == day} for option, label in days],
         "what": what,
         "whats": [{"key": key, "label": label, "active": key == what} for key, label in WHAT],
+        "rainy": rainy,
+        "rainy_possible": what in RAINY_OK,
         "groups": groups,
         "count": len(items),
         "sunny_count": groups[0]["total"],

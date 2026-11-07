@@ -10,22 +10,28 @@
 
     <nav class="og-chips og-chips--scroll" aria-label="日にち">
         {% for d in days %}
-            <a href="?what={{ what }}&amp;day={{ d.value }}" class="og-chip{% if d.active %} is-on{% endif %}">{{ d.label }}</a>
+            <a href="?what={{ what }}&amp;day={{ d.value }}{% if rainy %}&amp;rainy=1{% endif %}" class="og-chip{% if d.active %} is-on{% endif %}">{{ d.label }}</a>
         {% endfor %}
     </nav>
 
     <nav class="og-tabs" aria-label="さがすもの">
         {% for w in whats %}
-            <a href="?what={{ w.key }}&amp;day={{ day|date:'Y-m-d' }}" class="{% if w.active %}is-active{% endif %}">{{ w.label }}</a>
+            <a href="?what={{ w.key }}&amp;day={{ day|date:'Y-m-d' }}{% if rainy %}&amp;rainy=1{% endif %}" class="{% if w.active %}is-active{% endif %}">{{ w.label }}</a>
         {% endfor %}
     </nav>
+
+    {% if rainy_possible %}
+        <a href="?what={{ what }}&amp;day={{ day|date:'Y-m-d' }}{% if not rainy %}&amp;rainy=1{% endif %}" class="og-check og-rainy-pick{% if rainy %} is-on{% endif %}" role="checkbox" aria-checked="{% if rainy %}true{% else %}false{% endif %}">
+            <i class="bi bi-{% if rainy %}check-square-fill{% else %}square{% endif %}" aria-hidden="true"></i>☔ 雨でも楽しめる場所だけ
+        </a>
+    {% endif %}
 
     {% if has_forecast %}
         <p class="og-sunny__lead">
             {% if sunny_areas %}
                 晴れの予報：{{ sunny_areas|join:"、" }}{% if sunny_count %}（{{ sunny_count }}件）{% endif %}
             {% else %}
-                この日は、晴れの予報の地域がありません。雨でも楽しめる場所を探してみてください。
+                この日は、晴れの予報の地域がありません。{% if rainy_possible and not rainy %}上の「☔ 雨でも楽しめる場所だけ」で室内の場所にしぼれます。{% elif not rainy_possible %}<a href="?what=kids&amp;day={{ day|date:'Y-m-d' }}&amp;rainy=1">☔ 雨でも楽しめる子連れスポットを見る</a>{% endif %}
             {% endif %}
         </p>
     {% else %}
@@ -82,15 +88,18 @@
 (function () {
     if (!window.L) return;
     var data = JSON.parse(document.getElementById("og-map-data").textContent);
-    var map = L.map("og-map", { scrollWheelZoom: false }).setView([46.8, 8.2], 7);
+    // Start with the whole of Switzerland in view.
+    var SWITZERLAND = [[45.82, 5.96], [47.81, 10.49]];
+    var map = L.map("og-map", { scrollWheelZoom: false, zoomSnap: 0.25 }).fitBounds(SWITZERLAND, { padding: [6, 6] });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18, attribution: "© OpenStreetMap contributors",
         // OSM refuses tiles without a Referer; Django's default policy (same-origin) sends none.
         referrerPolicy: "strict-origin-when-cross-origin"
     }).addTo(map);
     // Re-measure once the page has its final size (otherwise only a corner of the map draws).
-    window.addEventListener("load", function () { map.invalidateSize(); });
-    setTimeout(function () { map.invalidateSize(); }, 300);
+    function refit() { map.invalidateSize(); map.fitBounds(SWITZERLAND, { padding: [6, 6] }); }
+    window.addEventListener("load", refit);
+    setTimeout(refit, 300);
     function esc(text) { var d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
     data.points.forEach(function (p) {
         if (!p.emoji) return;

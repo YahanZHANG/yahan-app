@@ -6,20 +6,23 @@
 <div class="og-page">
 
     <header class="og-page__head">
-        <h1>旅行・おでかけ先</h1>
+        <h1>旅行</h1>
     </header>
 
     {% include "outings/includes/sunny_button.html" with what="kids" %}
-    <a href="{% url 'outings:tourist_spot_list' %}?kids=0" class="og-check is-on" role="checkbox" aria-checked="true">
-        <i class="bi bi-check-square-fill" aria-hidden="true"></i>子連れで行ける場所だけ
-    </a>
-    <div class="og-countbar"><p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>{% include "outings/includes/view_toggle.html" %}</div>
+    <div class="og-modebar">
+        <a href="{% url 'outings:tourist_spot_list' %}?kids=0" class="og-check is-on" role="checkbox" aria-checked="true">
+            <i class="bi bi-check-square-fill" aria-hidden="true"></i>子連れで行ける場所だけ
+        </a>
+        {% include "outings/includes/view_toggle.html" %}
+    </div>
+    <p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
 
     <form method="get" action="" class="og-filterform">
         <input type="hidden" name="kids" value="1">
         <div class="og-chips og-chips--scroll" role="group" aria-label="よく使う条件">
             {% for chip in chips.toggles %}
-                <label class="og-chip og-chip--pick"><input type="checkbox" name="{{ chip.key }}" value="1"{% if chip.active %} checked{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</label>
+                <label class="og-chip og-pick"><input type="checkbox" name="{{ chip.key }}" value="1"{% if chip.active %} checked{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</label>
             {% endfor %}
         </div>
 
@@ -30,9 +33,9 @@
                     <fieldset class="og-filters__group">
                         <legend>{{ group.title }}</legend>
                         <div class="og-chips">
-                            <label class="og-chip og-chip--pick"><input type="radio" name="{{ group.name }}" value=""{% if not group.value %} checked{% endif %}>指定なし</label>
+                            <label class="og-chip og-pick"><input type="radio" name="{{ group.name }}" value=""{% if not group.value %} checked{% endif %}>指定なし</label>
                             {% for value, label in group.options %}
-                                <label class="og-chip og-chip--pick"><input type="radio" name="{{ group.name }}" value="{{ value }}"{% if value == group.value %} checked{% endif %}>{{ label }}</label>
+                                <label class="og-chip og-pick"><input type="radio" name="{{ group.name }}" value="{{ value }}"{% if value == group.value %} checked{% endif %}>{{ label }}</label>
                             {% endfor %}
                         </div>
                     </fieldset>
@@ -56,14 +59,6 @@
 
 </div>
 <script>
-// Drop empty choices from the address (?kind=&area= …) when searching.
-document.querySelectorAll(".og-filterform").forEach(function (form) {
-    form.addEventListener("submit", function () {
-        form.querySelectorAll("input").forEach(function (input) {
-            if ((input.type === "radio" && input.checked && !input.value)) input.disabled = true;
-        });
-    });
-});
 // PC has room: show the filters open.
 if (window.matchMedia && window.matchMedia("(min-width: 960px)").matches) {
     document.querySelectorAll("[data-open-on-pc]").forEach(function (el) { el.open = true; });

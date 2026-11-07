@@ -584,13 +584,50 @@ html[data-outings-theme="dark"] {
 [data-outings-theme="dark"] .og-wx--wet { --wx-bg: #1c2b3d; --wx-line: #5b8fd1; --wx-ink: #b7d3f5; }
 
 /* 子連れスポットの条件フォーム: choose everything, then 探す */
-.og-chip--pick { cursor: pointer; position: relative; user-select: none; }
-.og-chip--pick input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.og-chip--pick:has(input:checked) { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); }
-.og-chip--pick:has(input:focus-visible) { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
+.og-pick, .og-pick-check { cursor: pointer; position: relative; user-select: none; }
+.og-pick input, .og-pick-check input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.og-pick:has(input:checked) { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); }
+.og-pick:has(input:focus-visible), .og-pick-check:has(input:focus-visible) { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
+.og-pick-check .og-on { display: none; }
+.og-pick-check:has(input:checked) .og-on { display: inline; color: var(--outings-accent); }
+.og-pick-check:has(input:checked) .og-off { display: none; }
+.og-pick-check:has(input:checked) { border-color: var(--outings-accent); }
+.og-filterform__actions.is-idle { display: none; }
+.og-filterform__actions.is-changed .og-filterform__go { box-shadow: 0 6px 18px rgba(35, 123, 131, .35); }
+.ev-filters__group { border: 0; margin: 0; padding: 0; min-width: 0; }
+.ev-filters__group legend { padding: 0; margin: 0 0 6px; font-size: 12px; font-weight: 700; color: var(--outings-muted); }
 .og-filters__group { border: 0; margin: 0; padding: 0; min-width: 0; }
 .og-filters__group legend { padding: 0; margin: 0 0 6px; font-size: 12px; font-weight: 700; color: var(--outings-muted); }
 .og-filterform__actions { position: sticky; bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 5; display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; padding: 8px 0; background: var(--outings-bg, transparent); }
 .og-filterform__go { flex: 1; display: inline-flex; justify-content: center; align-items: center; gap: 6px; padding: 12px 16px; border: 0; border-radius: 999px; background: var(--outings-accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
 .og-filterform__reset { font-size: 13px; color: var(--outings-muted); white-space: nowrap; }
 @media (min-width: 960px) { .og-filterform__actions { position: static; } .og-filterform__go { flex: 0 0 auto; padding: 10px 28px; } }
+
+/* Phone header: search as a round button next to マイページ (PC keeps the search box) */
+.outings-header-inner { gap: 8px; }
+.nav-find { display: grid; place-items: center; flex: 0 0 auto; width: 42px; height: 42px; margin-left: auto; border: 1px solid var(--outings-border); border-radius: 50%; background: var(--outings-surface); color: var(--outings-text); font-size: 18px; text-decoration: none; }
+.nav-find.active { border-color: var(--outings-accent); color: var(--outings-accent); }
+@media (min-width: 900px) { .nav-find { display: none; } }
+
+/* 晴れの場所: rainy-day filter */
+.og-rainy-pick { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; }
+.og-sunny__lead a { color: var(--outings-accent); font-weight: 700; }
+
+/* 旅行: 子連れ☑ and リスト｜写真 on one line, in the same place on both lists */
+.og-modebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
+.og-modebar .og-check { margin: 0; }
+.og-modebar .og-view { margin-left: auto; }
+.og-pick-check:has(input:checked) { background: var(--outings-accent-soft); color: var(--outings-accent); }
+.ev-chip.og-pick:has(input:checked) small { color: inherit; opacity: .8; }
+html[data-outings-theme="dark"] .og-pick:has(input:checked) { color: #10232a; }
+
+/* Slimmer sunny entry (it is also the centre tab on phones) */
+.og-sunny-btn { padding: 8px 12px; border-radius: 12px; font-size: 14px; }
+.og-sunny-btn span:first-child { font-size: 18px; }
+.og-sunny-btn small { display: inline; margin-left: 8px; font-size: 11px; }
+@media (max-width: 380px) { .og-sunny-btn small { display: none; } }
+
+/* Same side margins on every list page (main already has its padding) */
+.og-layout .ev-page { max-width: none; padding: 0 0 96px; }
+.og-layout .ev-page__header { margin-top: 0; }
+.og-sunny-btn > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

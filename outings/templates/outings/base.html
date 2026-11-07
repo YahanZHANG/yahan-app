@@ -94,6 +94,10 @@
                 </form>
             {% endif %}
 
+            <a href="{% url 'outings:search' %}" class="nav-find{% if name == 'search' %} active{% endif %}" aria-label="探す">
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </a>
+
             <a
                 href="{% url 'outings:my_page' %}"
                 class="nav-me{% if name == 'my_page' or name == 'my_notifications' or name == 'my_preferences' or name == 'about_outings' %} active{% endif %}"
@@ -130,7 +134,7 @@
 
     </div>
 
-    <!-- Phone: the five places people go most, search in the middle. -->
+    <!-- Phone: the five places people go most, 晴れの場所 in the middle (search is in the header). -->
     <nav class="outings-bottom-nav tabbar" aria-label="メインメニュー">
         <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}"{% if name == 'home' %} aria-current="page"{% endif %}>
             <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
@@ -140,9 +144,9 @@
             <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>イベント</span>
         </a>
-        <a href="{% url 'outings:search' %}" class="tabbar__search{% if name == 'search' %} active{% endif %}">
-            <span class="tabbar__search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
-            <span>探す</span>
+        <a href="{% url 'outings:sunny' %}" class="tabbar__search{% if name == 'sunny' %} active{% endif %}">
+            <span class="tabbar__search-icon"><i class="bi bi-sun" aria-hidden="true"></i></span>
+            <span>晴れの場所</span>
         </a>
         <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
             <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
@@ -160,6 +164,30 @@
 
 
 <script src="{% static 'outings/js/hearts.js' %}" defer></script>
+<script>
+// Condition forms: the 探す button shows once something changed; empty
+// choices are left out of the address.
+document.querySelectorAll(".og-filterform").forEach(function (form) {
+    var actions = form.querySelector(".og-filterform__actions");
+    var start = new URLSearchParams(new FormData(form)).toString();
+    if (actions && !actions.querySelector(".og-filterform__reset")) actions.classList.add("is-idle");
+    form.addEventListener("change", function () {
+        if (!actions) return;
+        var changed = new URLSearchParams(new FormData(form)).toString() !== start;
+        actions.classList.toggle("is-idle", !changed && !actions.querySelector(".og-filterform__reset"));
+        actions.classList.toggle("is-changed", changed);
+    });
+    form.addEventListener("submit", function () {
+        form.querySelectorAll("input").forEach(function (input) {
+            if (input.type === "radio" && input.checked && !input.value) input.disabled = true;
+        });
+        var regions = form.querySelectorAll('input[name="region"][type="checkbox"]:checked');
+        if (regions.length) form.querySelectorAll('input[name="region"][type="hidden"]').forEach(function (h) { h.disabled = true; });
+        var family = form.querySelector('input[name="family"][type="checkbox"]');
+        if (family && family.checked) form.querySelectorAll('input[name="family"][type="hidden"]').forEach(function (h) { h.disabled = true; });
+    });
+});
+</script>
 <script>
 // リスト｜写真 buttons on the lists.
 (function () {

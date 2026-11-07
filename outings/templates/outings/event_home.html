@@ -21,68 +21,68 @@
 
     {% include "outings/includes/sunny_button.html" with what="events" %}
 
-    <!-- When -->
-    <nav class="ev-chips ev-chips--period" aria-label="期間">
-        {% for chip in chips.periods %}
-            <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}</a>
-        {% endfor %}
-    </nav>
+    <!-- Conditions: pick everything, then press 探す once. -->
+    <form method="get" action="" class="og-filterform">
+        <nav class="ev-chips ev-chips--period" aria-label="期間">
+            {% for chip in chips.periods %}
+                <label class="ev-chip og-pick"><input type="radio" name="when" value="{{ chip.key }}"{% if chip.active %} checked{% endif %}>{{ chip.label }}</label>
+            {% endfor %}
+        </nav>
 
-    {% with kids=chips.toggles.0 %}
-        <a href="?{{ kids.qs }}" class="og-check{% if kids.active %} is-on{% endif %}" role="checkbox" aria-checked="{% if kids.active %}true{% else %}false{% endif %}">
-            <i class="bi {% if kids.active %}bi-check-square-fill{% else %}bi-square{% endif %}" aria-hidden="true"></i>子連れで楽しめるものだけ
-        </a>
-    {% endwith %}
+        {% with kids=chips.toggles.0 %}
+            <input type="hidden" name="family" value="0">
+            <label class="og-check og-pick-check">
+                <input type="checkbox" name="family" value="1"{% if kids.active %} checked{% endif %}>
+                <i class="bi bi-square og-off" aria-hidden="true"></i><i class="bi bi-check-square-fill og-on" aria-hidden="true"></i>子連れで楽しめるものだけ
+            </label>
+        {% endwith %}
 
-    <!-- Filters -->
-    <details class="ev-filters"{% if is_filtered and not using_favorites %} open{% endif %}>
-        <summary>
-            <i class="bi bi-sliders" aria-hidden="true"></i>
-            絞り込み
-            {% if using_favorites %}
-                <span class="ev-filters__hint">お気に入りの地域（{{ favorite_names|join:"・" }}）で表示中</span>
-            {% endif %}
-        </summary>
+        <details class="ev-filters"{% if is_filtered and not using_favorites %} open{% endif %}>
+            <summary>
+                <i class="bi bi-sliders" aria-hidden="true"></i>
+                地域・条件・ジャンル
+                {% if using_favorites %}
+                    <span class="ev-filters__hint">お気に入りの地域（{{ favorite_names|join:"・" }}）で表示中</span>
+                {% endif %}
+            </summary>
 
-        <div class="ev-filters__group">
-            <h2>地域</h2>
-            <div class="ev-chips">
-                {% for chip in chips.regions %}
-                    <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
-                        {{ chip.label }}{% if chip.count %} <small>{{ chip.count }}</small>{% endif %}
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="ev-filters__group">
-            <h2>条件</h2>
-            <div class="ev-chips">
-                {% for chip in chips.toggles|slice:"1:" %}
-                    <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
-                        <i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-
-        {% if chips.categories|length > 1 %}
-            <div class="ev-filters__group">
-                <h2>ジャンル</h2>
+            <fieldset class="ev-filters__group">
+                <legend>地域（いくつでも）</legend>
+                <input type="hidden" name="region" value="all">
                 <div class="ev-chips">
-                    {% for chip in chips.categories %}
-                        <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">{{ chip.label }}</a>
+                    {% for chip in chips.regions|slice:"1:" %}
+                        <label class="ev-chip og-pick"><input type="checkbox" name="region" value="{{ chip.code }}"{% if chip.active %} checked{% endif %}>{{ chip.label }}{% if chip.count %} <small>{{ chip.count }}</small>{% endif %}</label>
                     {% endfor %}
                 </div>
-            </div>
-        {% endif %}
+            </fieldset>
 
-        {% if is_filtered %}
-            <a class="ev-filters__clear" href="?{{ clear_qs }}">
-                <i class="bi bi-x-circle" aria-hidden="true"></i>条件をすべて解除
-            </a>
-        {% endif %}
-    </details>
+            <fieldset class="ev-filters__group">
+                <legend>条件</legend>
+                <div class="ev-chips">
+                    {% for chip in chips.toggles|slice:"1:" %}
+                        <label class="ev-chip og-pick"><input type="checkbox" name="{{ chip.name }}" value="1"{% if chip.active %} checked{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            {% if chips.categories|length > 1 %}
+                <fieldset class="ev-filters__group">
+                    <legend>ジャンル</legend>
+                    <div class="ev-chips">
+                        <label class="ev-chip og-pick"><input type="radio" name="category" value=""{% if chips.categories.0.active %} checked{% endif %}>すべて</label>
+                        {% for chip in chips.categories|slice:"1:" %}
+                            <label class="ev-chip og-pick"><input type="radio" name="category" value="{{ chip.slug }}"{% if chip.active %} checked{% endif %}>{{ chip.label }}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            {% endif %}
+        </details>
+
+        <div class="og-filterform__actions">
+            <button type="submit" class="og-filterform__go"><i class="bi bi-search" aria-hidden="true"></i>この条件で探す</button>
+            {% if is_filtered %}<a href="?{{ clear_qs }}" class="og-filterform__reset">条件を解除</a>{% endif %}
+        </div>
+    </form>
 
     {% if using_favorites %}
         <p class="ev-notice ev-notice--soft">

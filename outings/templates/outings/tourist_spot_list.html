@@ -11,7 +11,7 @@
 .trip-page {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 6px 16px 60px;
+    padding: 0 0 60px;
 }
 
 .trip-heading {
@@ -399,11 +399,17 @@
 </style>
 
 <div class="trip-page">
+    <header class="og-page__head">
+        <h1>旅行</h1>
+    </header>
     {% include "outings/includes/sunny_button.html" with what="trips" %}
 
-    <a href="?kids=1" class="og-check" role="checkbox" aria-checked="false">
-        <i class="bi bi-square" aria-hidden="true"></i>子連れで行ける場所だけ
-    </a>
+    <div class="og-modebar">
+        <a href="?kids=1" class="og-check" role="checkbox" aria-checked="false">
+            <i class="bi bi-square" aria-hidden="true"></i>子連れで行ける場所だけ
+        </a>
+        {% include "outings/includes/view_toggle.html" %}
+    </div>
 
     <form method="get" class="trip-search">
 
@@ -449,7 +455,6 @@
         <span class="trip-result-count">
             {{ result_count }}件の観光情報
         </span>
-        {% include "outings/includes/view_toggle.html" %}
 
         <div class="trip-list-actions">
 

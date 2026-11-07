@@ -332,14 +332,14 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
     """Every filter chip with its label, state and link, so templates stay simple."""
     chips = {
         "periods": [
-            {"label": label, "active": key == period, "qs": querystring(params, when="" if key == "all" else key, page="")}
+            {"key": "" if key == "all" else key, "label": label, "active": key == period, "qs": querystring(params, when="" if key == "all" else key, page="")}
             for key, label in PERIODS
         ],
         "regions": [{"label": "すべての地域", "active": not regions, "qs": querystring(params, region=["all"], page="")}],
         "toggles": [
-            {"label": "子連れ", "icon": "bi-check2-square", "active": family, "qs": querystring(params, family="0" if family else "1", page="")},
-            {"label": "言葉なしでOK", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
-            {"label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
+            {"name": "family", "label": "子連れ", "icon": "bi-check2-square", "active": family, "qs": querystring(params, family="0" if family else "1", page="")},
+            {"name": "easy", "label": "言葉なしでOK", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
+            {"name": "free", "label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
         ],
         "categories": [{"label": "すべて", "active": not category, "qs": querystring(params, category="", page="")}],
     }
@@ -349,12 +349,12 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
             continue
         chosen = [c for c in regions if c != code] if code in regions else regions + [code]
         chips["regions"].append({
-            "label": name, "count": count, "active": code in regions,
+            "code": code, "label": name, "count": count, "active": code in regions,
             "qs": querystring(params, region=chosen or ["all"], page=""),
         })
     for c in categories:
         chips["categories"].append({
-            "label": c.name, "active": c.slug == category,
+            "slug": c.slug, "label": c.name, "active": c.slug == category,
             "qs": querystring(params, category="" if c.slug == category else c.slug, page=""),
         })
     return chips
