@@ -17,7 +17,7 @@ from django.core.management.base import BaseCommand
 from .apply_tourist_intros import DATA
 
 HEADER = re.compile(r"^(\d+)\. (.+?)(（[^）]*確定版）)?\s*$")
-SECTION = re.compile(r"^\d+〜\d+件|^第\d+弾|^ーー|^以上で")
+SECTION = re.compile(r"^\d+〜\d+件|^第\d+弾|^ーー|^以上で|^ここから")
 JAPANESE = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
 
 
