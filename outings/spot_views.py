@@ -241,6 +241,41 @@ def weekend_forecast(now, days=None):
     return rows, rainy
 
 
+def place_weather(lat, lon, days, forecasts):
+    """[{day, emoji, temp, rank}] at the nearest weather point for each day off."""
+    from . import sunny
+    if lat is None or lon is None:
+        return []
+    point = sunny.POINTS[sunny.nearest_point(float(lat), float(lon))]
+    rows = []
+    for day in days[:2]:
+        raw = forecasts.get(point, {}).get(day.isoformat())
+        text = weather.describe(raw)
+        if text:
+            rows.append({
+                "day": weather.WEEKDAYS_JA[day.weekday()], "emoji": text["emoji"],
+                "temp": text.get("temp", "").split(" ")[0], "rank": sunny.sun_rank(raw),
+            })
+    return rows
+
+
+def with_event_weather(events, forecasts):
+    for event in events:
+        location = event.location
+        day = timezone.localdate(event.weekend_start)
+        rows = place_weather(location.latitude, location.longitude, [day], forecasts) if location else []
+        event.wx = rows[0] if rows else None
+    return events
+
+
+def weather_class(rows, works_in_rain=False):
+    """0 sunny ... 4 snow on the best day off; places that work in the rain count as fine."""
+    if not rows:
+        return 1
+    best = min(row["rank"][0] for row in rows)
+    return min(best, 1) if works_in_rain else best
+
+
 def weekly_pick(spots, count, now):
     """A different handful each week, the same all week long."""
     week = timezone.localdate(now).isocalendar()
@@ -264,13 +299,20 @@ def home(request):
         spots.sort(key=lambda s: -visitor_profile.spot_score(s, preference))
         return spots
 
+    from . import sunny
+    forecasts = weather._forecasts(sunny.POINTS)
     open_now = [s for s in published_spots() if s.open_in(month)]
+    for spot in [s for s in open_now if s.latitude is None][:sunny.MAX_LOOKUPS]:
+        sunny.locate(spot)
+    for spot in open_now:
+        spot.wx = place_weather(spot.latitude, spot.longitude, days, forecasts)
     day_spots = ranked([s for s in open_now if s.trip != FamilySpot.Trip.OVERNIGHT])
-    if rainy:
-        # Rain: indoor places first.
-        day_spots = [s for s in day_spots if s.rainy_ok] + [s for s in day_spots if not s.rainy_ok]
+    # Where the weather is good on the days off (or indoors) first; the order above stays within.
+    day_spots.sort(key=lambda s: weather_class(s.wx, s.rainy_ok))
     weekend_spots = day_spots[:6]
-    overnight = ranked([s for s in open_now if s.trip != FamilySpot.Trip.DAY])[:6]
+    overnight = ranked([s for s in open_now if s.trip != FamilySpot.Trip.DAY])
+    overnight.sort(key=lambda s: weather_class(s.wx, s.rainy_ok))
+    overnight = overnight[:6]
     kids = visitor_profile.wants_kids(preference)
 
     quick = [
@@ -288,9 +330,9 @@ def home(request):
         "ask": not (preference and preference.setup),
         "profile": profile_form_context(preference),
         "weekend_spots": [decorate(s) for s in weekend_spots],
-        "weekend_events": weekend_events(
+        "weekend_events": with_event_weather(weekend_events(
             now, days=days, family=kids is not False, cantons=visitor_profile.area_cantons(preference),
-        ),
+        ), forecasts),
         "overnight_spots": [decorate(s) for s in overnight],
         "quick_filters": quick,
         "spot_count": published_spots().count(),

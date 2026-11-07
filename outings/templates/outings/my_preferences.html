@@ -7,8 +7,14 @@
     <header class="og-page__head">
         <h1>あなたに合わせる</h1>
     </header>
-    <p class="og-count">答えに合わせて、HOMEのおすすめとイベントの地域が変わります。</p>
-    {% if saved %}<p class="og-saved" role="status">保存しました。</p>{% endif %}
+    {% if saved %}<p class="og-saved" role="status">保存しました。HOME のおすすめに反映されます。</p>{% endif %}
+    <p class="og-pref-summary">
+        {% if not profile.preference.setup %}まだ設定していません。下の質問に答えて保存してください。{% else %}いまの設定：
+        <strong>{% for key, label, on in profile.areas %}{% if on %}{{ label }} {% endif %}{% endfor %}</strong>
+        {% for value, label, on in profile.days %}{% if on %}・お休みは<strong>{{ label }}</strong>{% endif %}{% endfor %}
+        {% if profile.kids %}・<strong>子どもと</strong>（{% for key, label, on in profile.ages %}{% if on %}{{ label }} {% endif %}{% endfor %}）{% elif profile.kids == False %}・<strong>大人だけ</strong>{% endif %}{% endif %}
+        <br><small>答えに合わせて、HOME のおすすめと天気、イベントの地域が変わります。</small>
+    </p>
     {% include "outings/includes/profile_form.html" with next=request.path|add:"?saved=1" %}
 </div>
 {% endblock %}

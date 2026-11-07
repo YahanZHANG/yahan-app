@@ -466,10 +466,10 @@ html[data-outings-theme="dark"] {
 .og-profile__ages { margin-top: 10px; }
 .og-profile__ages[hidden] { display: none; }
 
-.og-pick { display: flex; flex-wrap: wrap; gap: 6px; }
-.og-pick label { position: relative; cursor: pointer; }
-.og-pick input { position: absolute; opacity: 0; pointer-events: none; }
-.og-pick label span {
+.og-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.og-choices label { position: relative; cursor: pointer; }
+.og-choices input { position: absolute; opacity: 0; pointer-events: none; }
+.og-choices label span {
     display: inline-block;
     padding: 7px 12px;
     border: 1.5px solid var(--outings-border);
@@ -478,8 +478,8 @@ html[data-outings-theme="dark"] {
     color: var(--outings-text);
     font-size: 13px;
 }
-.og-pick input:checked + span { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); font-weight: 700; }
-.og-pick input:focus-visible + span { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
+.og-choices input:checked + span { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); font-weight: 700; }
+.og-choices input:focus-visible + span { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
 
 .og-profile__actions { display: flex; gap: 10px; align-items: center; }
 .og-profile__save {
@@ -749,3 +749,22 @@ html[data-og-view="list"] .og-rows__desc { display: none; }
 .og-resultmap__note { margin: 4px 0 0; color: var(--outings-muted); font-size: 12px; }
 .og-resultmap__pin { display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid #fff; border-radius: 50%; background: var(--outings-accent, #237b83); box-shadow: 0 1px 4px rgba(0,0,0,.3); font-size: 15px; }
 @media (min-width: 900px) { .og-resultmap__map { height: 440px; } }
+.og-spot__wx { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--outings-text); font-size: 12px; font-weight: 600; }
+
+/* 「あなたに合わせる」: one card per question, save bar stays at the bottom */
+.og-pref-summary { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--outings-accent-soft); color: var(--outings-text); font-size: 13px; line-height: 1.6; }
+.og-pref-summary strong { color: var(--outings-accent); }
+.og-page .og-profile fieldset {
+    margin: 0 0 12px; padding: 14px; border: 1px solid var(--outings-border); border-radius: 14px; background: var(--outings-surface);
+}
+.og-page .og-profile legend { float: left; width: 100%; margin: 0 0 10px; font-size: 15px; }
+.og-page .og-profile legend + * { clear: both; }
+.og-profile__q { display: block; margin: 2px 0 0; color: var(--outings-muted); font-size: 12px; font-weight: 400; }
+.og-choices label span { padding: 9px 14px; font-size: 14px; }
+.og-page .og-profile__actions {
+    position: sticky; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); z-index: 5;
+    display: flex; gap: 8px; padding: 10px; border: 1px solid var(--outings-border); border-radius: 14px;
+    background: var(--outings-surface); box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.og-page .og-profile__save { flex: 1; }
+@media (min-width: 900px) { .og-page .og-profile__actions { bottom: 16px; } }

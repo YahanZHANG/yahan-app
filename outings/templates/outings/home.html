@@ -67,6 +67,7 @@
                                 <strong>{{ event.title }}</strong>
                                 <small>{{ event.weekend_start|date:"n/j（D）H:i" }}{% if event.location %}・{{ event.location.city }}{% endif %}{% if event.language_barrier == "none" %}・言葉なしでOK{% endif %}</small>
                             </span>
+                            {% if event.wx %}<span class="og-rows__wx" title="その日の天気">{{ event.wx.emoji }}<small>{{ event.wx.temp }}</small></span>{% endif %}
                             <i class="bi bi-chevron-right" aria-hidden="true"></i>
                         </a>
                     </li>

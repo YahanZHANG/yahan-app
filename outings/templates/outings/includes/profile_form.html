@@ -4,8 +4,8 @@
     <input type="hidden" name="next" value="{{ next }}">
 
     <fieldset>
-        <legend>よく出かける地域<small>いくつでも</small></legend>
-        <div class="og-pick">
+        <legend>📍 よく出かける地域<small>いくつでも</small><span class="og-profile__q">選んだ地域のイベントや場所が先に出ます</span></legend>
+        <div class="og-choices">
             {% for key, label, on in profile.areas %}
                 <label><input type="checkbox" name="areas" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
             {% endfor %}
@@ -13,8 +13,8 @@
     </fieldset>
 
     <fieldset>
-        <legend>ドイツ語やフランス語は？</legend>
-        <div class="og-pick">
+        <legend>💬 ドイツ語やフランス語は？<span class="og-profile__q">言葉がいらないイベントを優先するかどうかに使います</span></legend>
+        <div class="og-choices">
             {% for value, label, on in profile.german %}
                 <label><input type="radio" name="german" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
             {% endfor %}
@@ -22,12 +22,12 @@
     </fieldset>
 
     <fieldset>
-        <legend>子どもと出かけますか？</legend>
-        <div class="og-pick">
+        <legend>👨‍👩‍👧 子どもと出かけますか？<span class="og-profile__q">「はい」なら子連れ向けを優先します</span></legend>
+        <div class="og-choices">
             <label><input type="radio" name="kids" value="yes"{% if profile.kids %} checked{% endif %}><span>はい</span></label>
             <label><input type="radio" name="kids" value="no"{% if profile.kids == False %} checked{% endif %}><span>いいえ</span></label>
         </div>
-        <div class="og-pick og-profile__ages" data-ages>
+        <div class="og-choices og-profile__ages" data-ages>
             <span class="og-profile__hint">子どもの年齢<small>いくつでも</small></span>
             {% for key, label, on in profile.ages %}
                 <label><input type="checkbox" name="ages" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
@@ -36,8 +36,8 @@
     </fieldset>
 
     <fieldset>
-        <legend>お休みは？</legend>
-        <div class="og-pick">
+        <legend>📅 お休みは？<span class="og-profile__q">HOME の天気とおすすめを、お休みの日に合わせます</span></legend>
+        <div class="og-choices">
             {% for value, label, on in profile.days %}
                 <label><input type="radio" name="days_off" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
             {% endfor %}

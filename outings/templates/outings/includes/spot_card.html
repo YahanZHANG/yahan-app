@@ -7,6 +7,7 @@
     <span class="og-spot__body">
         <small class="og-spot__where">{{ spot.get_kind_display }}・{{ spot.town|default:spot.area_label }}</small>
         <strong class="og-spot__title">{{ spot.title }}</strong>
+        {% if spot.wx %}<span class="og-spot__wx" title="お休みの日の天気（いちばん近い予報地点）">{% for w in spot.wx %}<span>{{ w.day }} {{ w.emoji }}{% if w.temp %} {{ w.temp }}{% endif %}</span>{% endfor %}</span>{% endif %}
         <span class="og-spot__summary">{{ spot.summary_ja|truncatechars:48 }}</span>
         {% if spot.badges %}
             <span class="og-badges">
