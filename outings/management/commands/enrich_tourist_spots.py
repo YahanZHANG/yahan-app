@@ -33,6 +33,16 @@ from outings.models import TouristSpot
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
+# USD per 1M tokens (input, output), for the cost line printed at the end.
+MODEL_PRICES = {
+    "gpt-4.1-mini": (0.40, 1.60),
+    "gpt-4.1-nano": (0.10, 0.40),
+    "gpt-4o-mini": (0.15, 0.60),
+}
+
+# Filled by call_openai: tokens used during this run.
+USAGE = {"input": 0, "output": 0}
+
 SPOT_TYPES = (
     "attractions",
     "tours",
@@ -103,6 +113,11 @@ def call_openai(api_key, model, prompt, data, schema):
         )
 
     payload = response.json()
+
+    usage = payload.get("usage") or {}
+    USAGE["input"] += int(usage.get("prompt_tokens") or 0)
+    USAGE["output"] += int(usage.get("completion_tokens") or 0)
+
     choice = payload["choices"][0]
 
     if choice.get("finish_reason") != "stop":
@@ -149,6 +164,8 @@ TRANSLATION_SCHEMA = result_schema({
     "id": {"type": "integer"},
     "japanese_subtitle": {"type": "string"},
     "summary_ja": {"type": "string"},
+    "highlights_ja": {"type": "array", "items": {"type": "string"}},
+    "guide_ja": {"type": "string"},
 })
 
 
@@ -212,6 +229,22 @@ Interlaken → Interlaken
 - 他の地名・施設名も原語表記を保つ。
 - 情報不足なら短くする。
 - 文章の根拠がない場合は空文字列としてよい。
+
+【見どころ（highlights_ja）】
+
+- その場所でできること・見られるものを最大3つ。
+- 1つ20〜40文字程度の短い文。
+- 元の情報に書かれていることだけ。なければ空の配列。
+
+【くわしい説明（guide_ja）】
+
+- 詳しいページに載せる説明。原則250〜450文字。
+- どんな場所か、何ができるか、行き方や所要時間・季節など
+  元の情報に書かれている実用的なことをまとめる。
+- 子ども連れに関わる情報（遊び場、ベビーカー、年齢など）が
+  元の情報にあれば必ず入れる。なければ触れない。
+- 段落の区切りは改行1つ。
+- 元の情報が少なければ短くてよい。紹介文と同じ文を繰り返さない。
 
 【禁止】
 
@@ -402,6 +435,10 @@ def make_source_record(spot):
         if key in details
     }
 
+    # Long tour itineraries cost tokens without helping the text.
+    if isinstance(safe_details.get("itinerary"), list):
+        safe_details["itinerary"] = safe_details["itinerary"][:5]
+
     return {
         "id": spot.pk,
         "type": spot.spot_type,
@@ -420,13 +457,20 @@ def make_source_record(spot):
 # Selection and validation
 # =========================================================
 
-def choose_spots(limit, force):
+def choose_spots(limit, force, missing_guide=False):
 
+    # Pending = imported but not yet shown; this run publishes them.
     queryset = TouristSpot.objects.filter(
-        status=TouristSpot.Status.PUBLISHED
+        status__in=[
+            TouristSpot.Status.PUBLISHED,
+            TouristSpot.Status.PENDING,
+        ]
     )
 
-    if not force:
+    if missing_guide:
+        # Written before the longer guide existed: write it now.
+        queryset = queryset.filter(ai_reviewed_at__isnull=False).exclude(details__has_key="guide_ja")
+    elif not force:
         queryset = queryset.filter(
             ai_reviewed_at__isnull=True
         )
@@ -477,46 +521,22 @@ def validate_results(payload, expected_ids):
             "AI results is not a list"
         )
 
+    # The model sometimes repeats or drops an ID. Keep the first answer per
+    # expected ID; spots without one stay pending and are retried next run.
+    expected = set(expected_ids)
     results = {}
 
     for item in items:
 
         if not isinstance(item, dict):
-            raise ValueError(
-                "Invalid AI result"
-            )
+            continue
 
         item_id = item.get("id")
 
-        if isinstance(item_id, bool) or not isinstance(
-            item_id, int
-        ):
-            raise ValueError(
-                f"Invalid AI ID: {item_id!r}"
-            )
-
-        if item_id in results:
-            raise ValueError(
-                f"Duplicate AI ID: {item_id}"
-            )
+        if isinstance(item_id, bool) or item_id not in expected or item_id in results:
+            continue
 
         results[item_id] = item
-
-    expected = set(expected_ids)
-    actual = set(results.keys())
-
-    missing = sorted(expected - actual)
-    unexpected = sorted(actual - expected)
-
-    if missing or unexpected:
-
-        raise ValueError(
-            "AI ID mismatch. "
-            f"Expected: {sorted(expected)}; "
-            f"Received: {sorted(actual)}; "
-            f"Missing: {missing}; "
-            f"Unexpected: {unexpected}"
-        )
 
     return results
 
@@ -579,19 +599,21 @@ def process_batch(spots, api_key, model):
 
     for record in source_records:
 
-        result = translations[record["id"]]
+        result = translations.get(record["id"])
 
-        subtitle = result["japanese_subtitle"]
-        summary = result["summary_ja"]
+        if result is None:
+            continue
 
-        if not isinstance(subtitle, str):
-            raise ValueError("Invalid Japanese subtitle")
+        subtitle = result.get("japanese_subtitle")
+        summary = result.get("summary_ja")
 
-        if not isinstance(summary, str):
-            raise ValueError("Invalid Japanese summary")
+        if not isinstance(subtitle, str) or not isinstance(summary, str):
+            translations.pop(record["id"])
+            continue
 
         comparison_records.append({
             **record,
+            "description": record["description"][:600],
             "japanese_subtitle": subtitle,
             "summary_ja": summary,
         })
@@ -604,21 +626,24 @@ def process_batch(spots, api_key, model):
             {"spots": comparison_records},
             SCORING_SCHEMA,
         ),
-        expected_ids,
-    )
+        list(translations),
+    ) if comparison_records else {}
 
     prepared = {}
 
     for spot in spots:
 
-        translation = translations[spot.pk]
-        result = scoring_results[spot.pk]
+        translation = translations.get(spot.pk)
+        result = scoring_results.get(spot.pk)
+
+        if translation is None or result is None:
+            continue
 
         breakdown = {}
 
         for key, maximum in SCORE_FIELDS.items():
 
-            value = result[key]
+            value = result.get(key)
 
             if (
                 isinstance(value, bool)
@@ -626,18 +651,14 @@ def process_batch(spots, api_key, model):
                 or value < 0
                 or value > maximum
             ):
-                raise ValueError(
-                    f"Invalid score {key} for {spot.pk}"
-                )
+                break
 
             breakdown[key] = value
 
-        reason = result["reason"]
+        reason = result.get("reason")
 
-        if not isinstance(reason, str):
-            raise ValueError(
-                f"Invalid reason for {spot.pk}"
-            )
+        if len(breakdown) != len(SCORE_FIELDS) or not isinstance(reason, str):
+            continue
 
         title = make_title(
             spot,
@@ -649,7 +670,14 @@ def process_batch(spots, api_key, model):
         if not summary:
             summary = ""
 
+        highlights = translation.get("highlights_ja")
+        highlights = [h.strip()[:120] for h in highlights if isinstance(h, str) and h.strip()][:3] if isinstance(highlights, list) else []
+        guide = translation.get("guide_ja")
+        guide = guide.strip()[:1500] if isinstance(guide, str) else ""
+
         prepared[spot.pk] = {
+            "highlights_ja": highlights,
+            "guide_ja": guide,
             "title_ja": title,
             "summary_ja": summary,
             "breakdown": breakdown,
@@ -665,7 +693,10 @@ def process_batch(spots, api_key, model):
 
         for spot in spots:
 
-            result = prepared[spot.pk]
+            result = prepared.get(spot.pk)
+
+            if result is None:
+                continue
 
             spot.title_ja = result["title_ja"]
             spot.summary_ja = result["summary_ja"]
@@ -679,14 +710,20 @@ def process_batch(spots, api_key, model):
             details["ai_score_breakdown"] = (
                 result["breakdown"]
             )
+            details["highlights_ja"] = result["highlights_ja"]
+            details["guide_ja"] = result["guide_ja"]
             details["ai_score_version"] = (
                 SCORING_VERSION
             )
 
             spot.details = details
 
+            if spot.status == TouristSpot.Status.PENDING:
+                spot.status = TouristSpot.Status.PUBLISHED
+
             spot.save(
                 update_fields=[
+                    "status",
                     "title_ja",
                     "summary_ja",
                     "ai_quality_score",
@@ -731,6 +768,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--missing-guide",
+            action="store_true",
+            help="Rewrite spots that have no longer Japanese guide yet.",
+        )
+
+        parser.add_argument(
             "--commit",
             action="store_true",
         )
@@ -742,9 +785,9 @@ class Command(BaseCommand):
         force = options["force"]
         commit = options["commit"]
 
-        if not 1 <= limit <= 500:
+        if not 1 <= limit <= 3000:
             raise CommandError(
-                "--limit must be between 1 and 500"
+                "--limit must be between 1 and 3000"
             )
 
         if not 1 <= batch_size <= 20:
@@ -755,6 +798,7 @@ class Command(BaseCommand):
         spots = choose_spots(
             limit=limit,
             force=force,
+            missing_guide=options["missing_guide"],
         )
 
         if not spots:
@@ -768,11 +812,14 @@ class Command(BaseCommand):
             f"Selected: {len(spots)} records"
         )
 
-        for spot in spots:
+        for spot in spots[:30]:
             self.stdout.write(
                 f"[{spot.pk}] [{spot.spot_type}] "
                 f"{spot.title_original}"
             )
+
+        if len(spots) > 30:
+            self.stdout.write(f"... and {len(spots) - 30} more")
 
         if not commit:
             self.stdout.write("")
@@ -796,6 +843,7 @@ class Command(BaseCommand):
         ).strip()
 
         completed = 0
+        failures = 0
 
         for start in range(0, len(spots), batch_size):
 
@@ -828,22 +876,30 @@ class Command(BaseCommand):
                 TypeError,
             ) as exc:
 
-                raise CommandError(
-                    f"Batch {number} failed. "
-                    f"Completed batches remain saved. "
-                    f"Error: {exc}"
-                ) from exc
+                failures += 1
+                self.stdout.write(self.style.WARNING(
+                    f"Batch {number} skipped (retried next run): {exc}"
+                ))
+                if failures >= 3:
+                    self.write_cost(model)
+                    raise CommandError(
+                        "Three batches failed. "
+                        "Completed batches remain saved."
+                    ) from exc
+                continue
 
-            completed += len(batch)
+            completed += len(results)
+            skipped = len(batch) - len(results)
 
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Batch {number} saved."
+                    + (f" {skipped} skipped (retried next run)." if skipped else "")
                 )
             )
 
             for spot in sorted(
-                batch,
+                [item for item in batch if item.pk in results],
                 key=lambda item: (
                     -results[item.pk]["score"],
                     item.pk,
@@ -863,4 +919,19 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 f"COMPLETE: {completed} records processed."
             )
+        )
+        self.write_cost(model)
+
+    def write_cost(self, model):
+
+        input_price, output_price = MODEL_PRICES.get(
+            model, MODEL_PRICES["gpt-4.1-mini"]
+        )
+        cost = (
+            USAGE["input"] * input_price
+            + USAGE["output"] * output_price
+        ) / 1_000_000
+        self.stdout.write(
+            f"AI tokens: input {USAGE['input']}, "
+            f"output {USAGE['output']}, about ${cost:.3f}"
         )

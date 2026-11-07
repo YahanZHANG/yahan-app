@@ -50,7 +50,7 @@ def article(**overrides):
 
 
 def make_event(title="テスト", *, start, end=None, canton="ZH", city="Zürich", status=Event.Status.PUBLISHED,
-               tier=Event.ListingTier.STANDARD, source=True, tags=(), **fields):
+               tier=Event.ListingTier.STANDARD, source=True, tags=("family",), **fields):
     location = EventLocation.objects.create(name="Halle", city=city, canton=canton)
     src = EventSource.objects.get_or_create(name="Eventfrog")[0] if source else None
     event = Event.objects.create(
@@ -279,31 +279,64 @@ class PageTests(PageTestCase):
         self.client.post(reverse("outings:save_preferences"), {"regions": ["BE", "ZH", "XX"], "personalization": "on"})
         self.assertEqual(OutingsPreference.objects.get().favorite_regions, ["BE", "ZH"])
 
-    def test_event_list_filters(self):
-        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2), tags=["family"])
-        make_event("ベルンの講演", start=self.now + timedelta(days=2), canton="BE", city="Bern")
-        response = self.client.get(reverse("outings:event_home"), {"region": "BE"})
-        self.assertContains(response, "ベルンの講演")
-        self.assertNotContains(response, "チューリッヒの祭り")
-        response = self.client.get(reverse("outings:event_home"), {"family": "1"})
-        self.assertContains(response, "チューリッヒの祭り")
-        self.assertNotContains(response, "ベルンの講演")
+    def find(self, **params):
+        return self.client.get(reverse("outings:find"), params)
 
-    def test_event_list_uses_favourite_regions_by_default(self):
-        visitor = OutingsPreference.objects.create(favorite_regions=["BE"]).visitor_id
+    def test_event_list_filters(self):
         make_event("チューリッヒの祭り", start=self.now + timedelta(days=2))
         make_event("ベルンの講演", start=self.now + timedelta(days=2), canton="BE", city="Bern")
-        self.client.cookies[COOKIE_NAME] = str(visitor)
-        response = self.client.get(reverse("outings:event_home"))
+        response = self.find(type="event", when="any", area="bern")
         self.assertContains(response, "ベルンの講演")
         self.assertNotContains(response, "チューリッヒの祭り")
-        response = self.client.get(reverse("outings:event_home"), {"region": "all"})
-        self.assertContains(response, "チューリッヒの祭り")
+        # Old links still land on the same list.
+        old = self.client.get(reverse("outings:event_home"), {"region": "BE"})
+        self.assertRedirects(old, reverse("outings:find") + "?type=event&area=bern", fetch_redirect_response=False)
+
+    def test_event_list_shows_one_off_events_and_kids_tick_narrows(self):
+        make_event("親子コンサート", start=self.now + timedelta(days=2))
+        make_event("大人の講演", start=self.now + timedelta(days=2), tags=())
+        weekly = make_event("毎週の教室", start=self.now + timedelta(days=1))
+        for week in range(1, 4):
+            EventOccurrence.objects.create(event=weekly, start_at=self.now + timedelta(days=1 + 7 * week))
+        hand = make_event("図書館の読み聞かせ", start=self.now + timedelta(days=1), source=False)
+        for week in range(1, 4):
+            EventOccurrence.objects.create(event=hand, start_at=self.now + timedelta(days=1 + 7 * week))
+        response = self.find(type="event", when="any", family="0")
+        self.assertContains(response, "親子コンサート")
+        self.assertContains(response, "図書館の読み聞かせ")
+        self.assertContains(response, "大人の講演")
+        self.assertNotContains(response, "毎週の教室")
+        response = self.find(type="event", when="any", family="1")
+        self.assertContains(response, "親子コンサート")
+        self.assertNotContains(response, "大人の講演")
+        # The tick is remembered on the next visit.
+        response = self.find(type="event", when="any")
+        self.assertNotContains(response, "大人の講演")
+
+    def test_favourite_areas_come_first(self):
+        visitor = OutingsPreference.objects.create(areas=["bern"], favorite_regions=["BE"]).visitor_id
+        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2))
+        make_event("ベルンの講演", start=self.now + timedelta(days=3), canton="BE", city="Bern")
+        self.client.cookies[COOKIE_NAME] = str(visitor)
+        html = self.find(type="event", when="any", sort="recommended").content.decode()
+        self.assertLess(html.index("ベルンの講演"), html.index("チューリッヒの祭り"))
+
+    def test_find_remembers_conditions(self):
+        make_event("ベルンの講演", start=self.now + timedelta(days=2), canton="BE", city="Bern")
+        make_event("チューリッヒの祭り", start=self.now + timedelta(days=2))
+        self.find(type="event", when="any", area="bern")
+        response = self.find(type="event")
+        self.assertEqual(response.context["f"]["areas"], ["bern"])
+        self.assertNotContains(response, "チューリッヒの祭り")
+        self.assertIn("ベルン周辺", response.context["summary_bits"])
+        response = self.find(type="event", reset="1")
+        self.assertEqual(response.context["f"]["areas"], [])
+        self.assertEqual(self.find(type="event").context["f"]["areas"], [])
 
     def test_period_filter(self):
         make_event("明日のイベント", start=timezone.localtime(self.now).replace(hour=12, minute=0) + timedelta(days=1))
         make_event("来月のイベント", start=self.now + timedelta(days=20))
-        response = self.client.get(reverse("outings:event_home"), {"when": "tomorrow"})
+        response = self.find(type="event", when="tomorrow")
         self.assertContains(response, "明日のイベント")
         self.assertNotContains(response, "来月のイベント")
 
@@ -311,14 +344,14 @@ class PageTests(PageTestCase):
         event = make_event("中止のイベント", start=self.now + timedelta(days=2))
         event.occurrences.update(is_cancelled=True)
         make_event("終わったイベント", start=self.now - timedelta(days=2), end=self.now - timedelta(days=2) + timedelta(hours=2))
-        response = self.client.get(reverse("outings:event_home"))
+        response = self.find(when="any")
         self.assertNotContains(response, "中止のイベント")
         self.assertNotContains(response, "終わったイベント")
 
     def test_search_understands_other_spellings(self):
         make_event("音楽の夜", start=self.now + timedelta(days=2), city="Zürich")
         for query in ("Zurich", "チューリッヒ", "Zuerich"):
-            self.assertContains(self.client.get(reverse("outings:search"), {"q": query}), "音楽の夜", msg_prefix=query)
+            self.assertContains(self.find(q=query), "音楽の夜", msg_prefix=query)
 
     def test_detail_lists_only_upcoming_dates_and_offers_calendar(self):
         event = make_event("連続公演", start=self.now - timedelta(days=3), end=self.now - timedelta(days=3) + timedelta(hours=2))
@@ -337,7 +370,7 @@ class PageTests(PageTestCase):
         event.save()
         self.client.cookies[COOKIE_NAME] = str(visitor)
         response = self.client.get(reverse("outings:saved_all"))
-        self.assertContains(response, "終了しました")
+        # Ended or cancelled events drop out of the list (cleanup deletes them anyway).
         self.assertNotContains(response, 'href="%s"' % reverse("outings:event_detail", args=[event.pk]))
         self.client.post(reverse("outings:toggle_heart", args=[event.pk]), HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertFalse(EventHeart.objects.exists())
@@ -349,8 +382,10 @@ class PageTests(PageTestCase):
 
     def test_home_and_other_pages_render(self):
         make_event("ホーム", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
-        for name in ("home", "event_home", "search", "saved_all", "my_page", "my_preferences"):
+        for name in ("home", "find", "browse", "saved_all", "my_page", "my_preferences"):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 200, name)
+        for name in ("event_home", "search", "sunny", "tourist_spot_list"):
+            self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 302, name)
 
 
     def test_about_shows_yapp_and_links_to_the_shared_support_page(self):
@@ -378,12 +413,20 @@ class PageTests(PageTestCase):
         self.assertContains(response, "TWINTで送金")
         self.assertContains(response, "+41 79 000 00 00")
 
-    def test_home_lists_recommended_before_new(self):
-        make_event("おすすめ公演", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
+    def test_home_shows_weekend_family_events_and_spots(self):
+        from outings.models import FamilySpot
+        from outings.services import weather as wx
+        saturday = wx.weekend_days(self.now)[-1]
+        start = timezone.make_aware(datetime.combine(saturday, datetime.min.time())) + timedelta(hours=14)
+        make_event("週末の親子会", start=start)
+        make_event("週末の大人会", start=start, tags=())
+        FamilySpot.objects.all().delete()
+        FamilySpot.objects.create(name="Open Park", summary_ja="公園", status="published")
         html = self.client.get(reverse("outings:home")).content.decode()
-        self.assertLess(html.index("おすすめ"), html.index("新着"))
-
-
+        self.assertIn("今週末、どこ行く", html)
+        self.assertIn("週末の親子会", html)
+        self.assertNotIn("週末の大人会", html)
+        self.assertIn("Open Park", html)
 
 
 class FeedbackTests(PageTestCase):
@@ -413,7 +456,8 @@ class SearchTests(PageTestCase):
     """Search page: every word must match, ranked by where it matched."""
 
     def search(self, **params):
-        return self.client.get(reverse("outings:search"), params)
+        params.setdefault("when", "any")
+        return self.client.get(reverse("outings:find"), params)
 
     def test_all_words_must_match_and_synonyms_count(self):
         make_event("バーゼルのジャズ", start=self.now + timedelta(days=2), canton="BS", city="Basel")
@@ -439,28 +483,41 @@ class SearchTests(PageTestCase):
         make_event("ベルンの朝市", start=self.now + timedelta(days=2), canton="BE", city="Bern")
         response = self.search(q="Bern 花火")
         self.assertContains(response, "ベルンの朝市")
-        self.assertContains(response, "一部の言葉に一致")
+        self.assertContains(response, "どれかの言葉に合うもの")
 
     def test_no_results_suggests_which_condition_to_drop(self):
         make_event("有料の公演", start=self.now + timedelta(days=2))
-        response = self.search(free="1")
+        response = self.search(free="1", type="event")
         self.assertContains(response, "見つかりませんでした")
-        self.assertContains(response, "無料を外す")
+        self.assertContains(response, "条件を解除する")
 
-    def test_next_weekend_and_regions(self):
-        today = timezone.localdate(self.now)
-        saturday = today + timedelta(days=(5 - today.weekday()) % 7 or 7)
-        if today.weekday() == 6:
-            saturday = today + timedelta(days=6)
-        noon = timezone.make_aware(datetime.combine(saturday + timedelta(days=7), datetime.min.time())) + timedelta(hours=12)
-        make_event("来週末の祭り", start=noon, canton="BE", city="Bern")
-        make_event("明日の講演", start=self.now + timedelta(days=1))
-        response = self.search(when="next_weekend")
-        self.assertContains(response, "来週末の祭り")
+    def test_day_and_areas(self):
+        day = timezone.localdate(self.now) + timedelta(days=3)
+        noon = timezone.make_aware(datetime.combine(day, datetime.min.time())) + timedelta(hours=12)
+        make_event("その日の祭り", start=noon, canton="BE", city="Bern")
+        make_event("明日の講演", start=self.now + timedelta(days=1) if (self.now + timedelta(days=1)).date() != day else self.now + timedelta(days=5))
+        response = self.search(day=day.isoformat(), type="event")
+        self.assertContains(response, "その日の祭り")
         self.assertNotContains(response, "明日の講演")
-        response = self.search(region=["BE", "ZH"])
-        self.assertContains(response, "来週末の祭り")
+        response = self.search(area=["bern", "zurich"], type="event")
+        self.assertContains(response, "その日の祭り")
         self.assertContains(response, "明日の講演")
+
+    def test_sunny_sort_puts_sunny_places_first(self):
+        from outings import sunny
+        day = timezone.localdate(self.now) + timedelta(days=1)
+        start = timezone.make_aware(datetime.combine(day, datetime.min.time())) + timedelta(hours=12)
+        wet = make_event("雨の町の会", start=start)
+        dry = make_event("晴れの町の会", start=start + timedelta(hours=1))
+        for event, (lat, lon) in ((wet, sunny.POINTS[0]), (dry, sunny.POINTS[-1])):
+            event.location.latitude, event.location.longitude = lat, lon
+            event.location.save()
+        forecasts = {sunny.POINTS[0]: {day.isoformat(): {"code": 61, "rain": 80}},
+                     sunny.POINTS[-1]: {day.isoformat(): {"code": 0, "rain": 0}}}
+        with mock.patch.object(sunny.weather, "_forecasts", return_value=forecasts):
+            body = self.search(sort="sunny", day=day.isoformat(), type="event").content.decode()
+        self.assertLess(body.index("晴れの町の会"), body.index("雨の町の会"))
+        self.assertIn("晴れ優先", body)
 
     def test_keyword_also_finds_trips(self):
         from outings.models import TouristSpot
@@ -469,55 +526,30 @@ class SearchTests(PageTestCase):
             title_ja="アローザ", summary_ja="山あいのリゾート", official_url="https://example.com",
             status=TouristSpot.Status.PUBLISHED,
         )
-        response = self.search(q="あろーざ")
-        self.assertContains(response, "旅行先")
+        response = self.search(q="あろーざ", family="0")
+        self.assertContains(response, "町・村")
         self.assertContains(response, "アローザ")
 
     def test_old_family_parameter_still_works(self):
         make_event("親子の会", start=self.now + timedelta(days=2), tags=["family"])
-        make_event("大人の会", start=self.now + timedelta(days=2))
-        response = self.search(tag="family")
+        make_event("大人の会", start=self.now + timedelta(days=2), tags=())
+        response = self.client.get(reverse("outings:search"), {"tag": "family"}, follow=True)
         self.assertContains(response, "親子の会")
         self.assertNotContains(response, "大人の会")
 
 
 class NavigationTests(PageTestCase):
 
-    def test_search_is_in_the_phone_tab_bar_and_marked_active(self):
-        html = self.client.get(reverse("outings:search")).content.decode()
+    def test_search_is_in_the_header_and_the_tab_bar(self):
+        html = self.client.get(reverse("outings:find")).content.decode()
+        self.assertIn("data-og-search-toggle", html)
+        self.assertIn('name="kw"', html)
         tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
-        self.assertIn("tabbar__search active", tabbar)
-        # The events tab is no longer highlighted on the search page.
-        self.assertIn('href="%s" class=""' % reverse("outings:event_home"), tabbar)
-
-    def test_home_shows_three_recommended_events_without_a_toggle(self):
-        for i in range(5):
-            make_event(f"注目{i}", start=self.now + timedelta(days=i + 1), tier=Event.ListingTier.FEATURED)
-        html = self.client.get(reverse("outings:home")).content.decode()
-        picks = html[html.index("home-picks"):html.index("home-fresh")]
-        self.assertEqual(picks.count('class="discovery-card"'), 3)
-        self.assertNotIn("data-discovery-toggle", html)
-
-    def test_recommended_events_with_photo_come_first(self):
-        make_event("写真なし", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
-        make_event("写真あり", start=self.now + timedelta(days=3), tier=Event.ListingTier.FEATURED,
-                   image_url="https://example.com/a.jpg")
-        html = self.client.get(reverse("outings:home")).content.decode()
-        self.assertLess(html.index("写真あり"), html.index("写真なし"))
-        self.assertIn("card-tone--", html)
-
-    def test_new_items_are_grouped_into_events_and_trips(self):
-        make_event("新しいイベント", start=self.now + timedelta(days=2))
-        TouristSpot.objects.create(
-            external_id="t1", spot_type=TouristSpot.SpotType.DESTINATION, title_original="Arosa",
-            title_ja="新しい旅行先", official_url="https://example.com", status=TouristSpot.Status.PUBLISHED,
-        )
-        html = self.client.get(reverse("outings:home")).content.decode()
-        fresh = html[html.index('home-fresh"'):html.index("home-about")]
-        self.assertEqual(fresh.count('class="home-fresh__list"'), 2)
-        self.assertLess(fresh.index("bi-calendar-event"), fresh.index("新しいイベント"))
-        self.assertLess(fresh.index("新しいイベント"), fresh.index("bi-compass"))
-        self.assertLess(fresh.index("bi-compass"), fresh.index("新しい旅行先"))
+        self.assertIn("さがす", tabbar)
+        self.assertIn("一覧", tabbar)
+        self.assertIn("マイページ", tabbar)
+        self.assertNotIn("今週末", tabbar)
+        self.assertIn("og-totop", html)
 
 
 class ScheduleLabelTests(TestCase):
@@ -682,11 +714,636 @@ class TripPhotoTests(TestCase):
         self.assertEqual(spot.details["approved_image"]["file_title"], "File:Zug Altstadt.jpg")
 
 
+class PlacePhotoTests(TestCase):
+    """子連れスポット and events get Wikimedia photos like trips do."""
+
+    def run_command(self, commons, *args):
+        with mock.patch("outings.management.commands.auto_assign_place_images.requests.Session", return_value=commons):
+            call_command("auto_assign_place_images", "--commit", "--pause", "0", *args, stdout=open(os.devnull, "w"))
+
+    def setUp(self):
+        from outings.models import FamilySpot
+        FamilySpot.objects.all().delete()
+
+    def test_family_spot_gets_a_photo_and_credit(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.create(name="Zoo Zürich", town="Zürich", latitude=47.38, longitude=8.57, status="published")
+        kept = FamilySpot.objects.create(name="Own Photo Park", image_url="https://example.com/a.jpg", status="published")
+        self.run_command(FakeCommons([commons_page("File:Zoo Zürich Eingang.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        kept.refresh_from_db()
+        self.assertTrue(spot.image_url)
+        self.assertIn("Wikimedia Commons", spot.image_credit)
+        self.assertTrue(spot.image_search_done)
+        self.assertEqual(kept.image_url, "https://example.com/a.jpg")
+        self.assertContains(self.client.get(reverse("outings:spot_detail", args=[spot.pk])), "写真：")
+
+    def test_spot_without_a_match_is_searched_only_once(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.create(name="Hidden Spielplatz", latitude=47.0, longitude=8.0, status="published")
+        self.run_command(FakeCommons([commons_page("File:Unrelated.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        self.assertEqual(spot.image_url, "")
+        self.assertTrue(spot.image_search_done)
+        self.run_command(FakeCommons([commons_page("File:Hidden Spielplatz.jpg")], []), "--target", "family")
+        spot.refresh_from_db()
+        self.assertEqual(spot.image_url, "")
+
+    def test_upcoming_event_gets_a_nearby_venue_photo(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from outings.models import Event, EventLocation, EventOccurrence
+        place = EventLocation.objects.create(name="Gemeindesaal", city="Uster", canton="ZH", latitude=47.35, longitude=8.72)
+        event = Event.objects.create(title="Fest", location=place, status=Event.Status.PUBLISHED)
+        EventOccurrence.objects.create(event=event, start_at=timezone.now() + timedelta(days=2))
+        self.run_command(FakeCommons([], [commons_page("File:Uster Dorf.jpg", lat=47.351, lon=8.72)]), "--target", "events")
+        event.refresh_from_db()
+        self.assertTrue(event.image_url)
+        self.assertTrue(event.image_credit)
+        self.assertContains(self.client.get(reverse("outings:event_detail", args=[event.pk])), "会場や町のようす")
+
+
+class ListPageTests(TestCase):
+    def test_find_has_load_more_three_views_and_map(self):
+        for n in range(30):
+            TouristSpot.objects.create(
+                external_id=f"t{n}", spot_type=TouristSpot.SpotType.ATTRACTION, title_original=f"Ort {n}",
+                official_url="https://example.com", status=TouristSpot.Status.PUBLISHED, ai_quality_score=80,
+                summary_ja="説明", details={"approved_image": {"url": "https://example.com/p.jpg", "credit": "A / CC BY"}},
+            )
+        url = reverse("outings:find")
+        page = self.client.get(url, {"type": "trip", "when": "any", "family": "0"})
+        self.assertContains(page, 'data-og-more="find"')
+        self.assertContains(page, "page=2")
+        self.assertContains(page, 'data-og-view="thumb"')
+        self.assertContains(page, "data-og-map")
+        second = self.client.get(url, {"type": "trip", "when": "any", "family": "0", "page": 2})
+        self.assertContains(second, 'data-og-items="find"')
+        self.assertNotContains(second, 'data-og-more="find"')
+        TouristSpot.objects.filter(title_original="Ort 1").update(latitude=46.9, longitude=7.4)
+        data = self.client.get(url, {"type": "trip", "when": "any", "family": "0", "page": 2, "map": "1"}).json()
+        self.assertEqual([p["title"] for p in data["points"]], ["Ort 1"])
+        self.assertEqual(data["total"], 30)
+        # Trips have no 子連れ info: with 子連れ ticked, the family places show instead.
+        kids = self.client.get(url, {"type": "trip", "when": "any", "family": "1"})
+        self.assertFalse([i for i in kids.context["items"] if i["kind"] == "trip"])
+        spot = TouristSpot.objects.first()
+        detail = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(detail, "trip-detail-photo")
+        self.assertContains(detail, "A / CC BY")
+        self.assertContains(detail, "行ってみたい！")
+
+
 class PublicUserAccessTests(PageTestCase):
     def test_signed_up_public_users_can_open_outings(self):
         from django.contrib.auth.models import Group, User
         user = User.objects.create_user("friend", password="pw-12345")
         user.groups.add(Group.objects.get_or_create(name="public_users")[0])
         self.client.force_login(user)
-        for name in ("outings:home", "outings:search", "outings:about_outings"):
+        for name in ("outings:home", "outings:find", "outings:about_outings"):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
+
+
+class FamilySpotTests(PageTestCase):
+
+    def make(self, name, **fields):
+        from outings.models import FamilySpot
+        defaults = dict(kind=FamilySpot.Kind.PARK, canton="ZH", town="Zürich", status=FamilySpot.Status.PUBLISHED)
+        defaults.update(fields)
+        return FamilySpot.objects.create(name=name, **defaults)
+
+    def setUp(self):
+        super().setUp()
+        from outings.models import FamilySpot
+        FamilySpot.objects.all().delete()  # drop the seeded spots
+        self.park = self.make("Sunny Park", name_ja="ひなた公園", price=FamilySpot.Price.FREE)
+        self.museum = self.make("Rain Museum", kind=FamilySpot.Kind.MUSEUM, canton="BE", rainy_ok=True,
+                                price=FamilySpot.Price.PAID, language="helps", age_min=6, age_max=12,
+                                trip=FamilySpot.Trip.OVERNIGHT)
+        self.draft = self.make("Secret Draft", status=FamilySpot.Status.DRAFT)
+
+    def names(self, query=""):
+        query = "?type=kids&family=1&when=any" + ("&" + query.lstrip("?") if query else "")
+        response = self.client.get(reverse("outings:find") + query)
+        self.assertEqual(response.status_code, 200)
+        from outings.models import FamilySpot
+        pks = [i["pk"] for i in response.context["page_obj"].paginator.object_list if i["kind"] == "kids"]
+        return sorted(FamilySpot.objects.filter(pk__in=pks).values_list("name", flat=True))
+
+    def test_list_shows_published_only_and_filters(self):
+        self.assertEqual(self.names(), ["Rain Museum", "Sunny Park"])
+        self.assertEqual(self.names("?rainy=1"), ["Rain Museum"])
+        self.assertEqual(self.names("?free=1"), ["Sunny Park"])
+        self.assertEqual(self.names("?easy=1"), ["Sunny Park"])
+        self.assertEqual(self.names("?kind=museum"), ["Rain Museum"])
+        self.assertEqual(self.names("?area=bern"), ["Rain Museum"])
+        self.assertEqual(self.names("?age=0"), ["Sunny Park"])
+        self.assertEqual(self.names("?age=6"), ["Rain Museum", "Sunny Park"])
+        self.assertEqual(self.names("?trip=day"), ["Sunny Park"])
+        self.assertEqual(self.names("?trip=overnight"), ["Rain Museum"])
+        self.assertEqual(self.names("?kind=bogus"), self.names())
+
+    def test_profile_card_asks_once_and_tailors_home(self):
+        from outings.models import FamilySpot, OutingsPreference
+        self.make("Bern Park", canton="BE", age_min=0, age_max=3)
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, "あなたに合わせる")
+        response = self.client.post(reverse("outings:profile_save"), {
+            "areas": ["bern", "bogus"], "german": "none", "kids": "yes", "ages": ["0"],
+            "days_off": "weekend", "next": "/outings/",
+        })
+        self.assertRedirects(response, "/outings/", fetch_redirect_response=False)
+        preference = OutingsPreference.objects.get()
+        self.assertEqual(preference.areas, ["bern"])
+        self.assertEqual(preference.kid_ages, ["0"])
+        self.assertIn("BE", preference.favorite_regions)
+        home = self.client.get(reverse("outings:home"))
+        self.assertNotContains(home, 'class="og-askbar"')
+        kids = [i for i in home.context["picks"] if i["kind"] == "kids"]
+        self.assertEqual(kids[0]["title"], "Bern Park")  # their area and age first
+        self.assertContains(home, "あなたへのおすすめ")
+        # The 子連れ tick follows the answer.
+        self.assertTrue(self.client.get(reverse("outings:find")).context["f"]["family"])
+        self.assertEqual(FamilySpot.objects.count(), 4)
+
+    def test_profile_skip_and_weekday(self):
+        from outings.models import OutingsPreference
+        self.client.post(reverse("outings:profile_save"), {"skip": "1"})
+        self.assertEqual(OutingsPreference.objects.get().setup, "skipped")
+        self.assertNotContains(self.client.get(reverse("outings:home")), 'class="og-askbar"')
+        self.client.post(reverse("outings:profile_save"), {"kids": "no", "days_off": "weekday"})
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, "次の平日、どこ行く")
+        self.assertFalse(self.client.get(reverse("outings:find")).context["f"]["family"])
+        page = self.client.get(reverse("outings:my_preferences"))
+        self.assertContains(page, 'value="weekday" checked')
+
+    def find_kids(self, day, forecasts):
+        from outings import sunny
+        with mock.patch.object(sunny.weather, "_forecasts", side_effect=forecasts), \
+                mock.patch.object(sunny, "locate", return_value=None):
+            response = self.client.get(reverse("outings:find"), {"type": "kids", "family": "1", "day": day})
+        self.assertEqual(response.status_code, 200)
+        return response
+
+    def test_sunny_sort_puts_sunny_places_first(self):
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(latitude=47.37, longitude=8.54)    # Zurich
+        FamilySpot.objects.filter(pk=self.museum.pk).update(latitude=46.0, longitude=8.95,   # Lugano
+                                                              season=FamilySpot.Season.YEAR, rainy_ok=False)
+        today = timezone.localdate().isoformat()
+
+        def forecasts(points):
+            # Rain in Zurich, sun in Lugano.
+            return {p: {today: {"code": 0 if p == (46.0, 8.95) else 63, "max": 15, "min": 5, "rain": 10 if p == (46.0, 8.95) else 90}}
+                    for p in points}
+
+        response = self.find_kids(today, forecasts)
+        titles = [i["title"] for i in response.context["items"]]
+        self.assertEqual(titles, ["Rain Museum", "ひなた公園"])
+        self.assertEqual(response.context["items"][0]["wx"][0]["cls"], "sunny")
+        self.assertIn("ルガーノ", response.context["sunny_areas"])
+        self.assertContains(response, "data-og-map-slot")
+        old = self.client.get(reverse("outings:sunny"), {"what": "kids", "day": today})
+        self.assertRedirects(old, reverse("outings:find") + f"?type=kids&family=1&day={today}&sort=sunny", fetch_redirect_response=False)
+
+    def test_cards_show_a_short_text_stars_and_weather(self):
+        from outings import sunny
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(
+            latitude=47.37, longitude=8.54, recommend=5,
+            summary_ja="広い芝生の公園です。遊具もあります。売店は夏だけです。とても長い説明がここに続きます。",
+        )
+        today = timezone.localdate().isoformat()
+        response = self.find_kids(today, lambda points: {p: {today: {"code": 0, "max": 15, "min": 5, "rain": 0}} for p in points})
+        row = next(i for i in response.context["items"] if i["pk"] == self.park.pk)
+        self.assertEqual(row["score"], 5)
+        self.assertTrue(row["desc"].startswith("広い芝生の公園です。"))
+        self.assertLessEqual(len(row["desc"]), 80)
+        self.assertContains(response, "★★★★★")
+        self.assertContains(response, "og-item__wx--sunny")
+        self.assertEqual(sunny.recommend(5, (3, 90)), 3)
+        self.assertEqual(sunny.recommend(5, (3, 90), works_in_rain=True), 5)
+        self.assertEqual(sunny.recommend(4, (9, 100)), 4)
+        data = self.client.get(reverse("outings:find"), {"type": "kids", "family": "1", "day": today, "map": "1"}).json()
+        self.assertEqual([p["title"] for p in data["points"]], ["ひなた公園"])
+
+    def test_went_want_rating_and_comment(self):
+        from django.contrib.auth.models import User
+        from outings.models import OutingsVisit
+        url = reverse("outings:save_visit", args=["kids", self.park.pk])
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "行った！")
+        self.client.post(url, {"action": "want"})
+        self.assertEqual(OutingsVisit.objects.get().status, "want")
+        self.client.post(url, {"action": "went"})
+        visit = OutingsVisit.objects.get()
+        self.assertEqual(visit.status, "went")
+        # Guests can rate but not comment.
+        self.client.post(url, {"action": "review", "rating": "4", "comment": "spam"})
+        visit.refresh_from_db()
+        self.assertEqual((visit.rating, visit.comment), (4, ""))
+        self.assertContains(self.client.get(detail), "どうでしたか？")
+        # Signed in: the same browser's row gets the account and the comment.
+        user = User.objects.create_user("mama", password="pw-12345")
+        user.groups.add(__import__("django.contrib.auth.models", fromlist=["Group"]).Group.objects.get_or_create(name="public_users")[0])
+        self.client.force_login(user)
+        response = self.client.post(url, {"action": "review", "rating": "5", "comment": "芝生が気持ちいい", "next": detail})
+        self.assertRedirects(response, detail + "#visits", fetch_redirect_response=False)
+        visit.refresh_from_db()
+        self.assertEqual((visit.rating, visit.comment, visit.user), (5, "芝生が気持ちいい", user))
+        page = self.client.get(detail)
+        self.assertContains(page, "芝生が気持ちいい")
+        self.assertContains(page, "★</span>5.0")
+        # Pressing 行った again takes it back.
+        self.client.post(url, {"action": "went"})
+        self.assertFalse(OutingsVisit.objects.exists())
+        self.assertEqual(self.client.post(reverse("outings:save_visit", args=["kids", self.draft.pk]), {"action": "went"}).status_code, 404)
+        self.assertEqual(self.client.post(reverse("outings:save_visit", args=["nope", 1]), {"action": "went"}).status_code, 404)
+
+    def test_season(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot(season=FamilySpot.Season.WARM)
+        self.assertTrue(spot.open_in(7))
+        self.assertFalse(spot.open_in(1))
+
+    def test_detail_has_map_link_and_hides_drafts(self):
+        response = self.client.get(reverse("outings:spot_detail", args=[self.park.pk]))
+        self.assertContains(response, "ひなた公園")
+        self.assertContains(response, "Googleマップで開く")
+        self.assertContains(response, "https://www.google.com/maps/search/")
+        self.assertEqual(self.client.get(reverse("outings:spot_detail", args=[self.draft.pk])).status_code, 404)
+
+    def test_home_and_trips_link_to_spots(self):
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, reverse("outings:spot_detail", args=[self.park.pk]))
+        self.assertNotContains(home, "Secret Draft")
+        old = self.client.get(reverse("outings:spot_list") + "?rainy=1")
+        self.assertRedirects(old, reverse("outings:tourist_spot_list") + "?rainy=1&kids=1", fetch_redirect_response=False)
+        older = self.client.get(reverse("outings:tourist_spot_list") + "?rainy=1&kids=1")
+        self.assertRedirects(older, reverse("outings:find") + "?type=kids&family=1&rainy=1", fetch_redirect_response=False)
+
+    def test_kids_tick_is_remembered(self):
+        url = reverse("outings:find")
+        self.client.get(url + "?family=1")
+        self.assertTrue(self.client.get(url).context["f"]["family"])
+        self.client.get(url + "?family=0")
+        self.assertFalse(self.client.get(url).context["f"]["family"])
+
+    def test_seed_spots_exist(self):
+        from importlib import import_module
+        from django.apps import apps as django_apps
+        from outings.models import FamilySpot
+        import_module("outings.migrations.0018_family_spot_seed").add_spots(django_apps, None)
+        self.assertTrue(FamilySpot.objects.filter(name="Park im Grüene", status="published").exists())
+
+
+class TripImportTests(TestCase):
+
+    def test_rate_limit_waits_and_retries(self):
+        from outings.services.myswitzerland import _get_with_backoff
+
+        class Reply:
+            def __init__(self, status):
+                self.status_code, self.headers = status, {}
+
+        replies = [Reply(429), Reply(429), Reply(200)]
+        waits = []
+
+        class Session:
+            def get(self, url, params, timeout):
+                return replies.pop(0)
+
+        with self.settings():
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                response = _get_with_backoff(Session(), "u", {}, sleep=waits.append)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(waits, [20, 40])
+
+
+    def item(self, identifier, name):
+        return {"identifier": identifier, "name": name, "url": f"https://www.myswitzerland.com/de/{identifier}/",
+                "abstract": "Kurz", "description": "Lang", "geo": {"latitude": 47.0, "longitude": 8.0}}
+
+    def test_new_spots_wait_hidden_and_existing_keep_status(self):
+        hidden = TouristSpot.objects.create(
+            external_id="old", spot_type="attractions", title_original="Old", official_url="https://www.myswitzerland.com/de/old/",
+            status=TouristSpot.Status.HIDDEN,
+        )
+        pages = [[self.item("new", "Neu"), self.item("old", "Old renamed")]]
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", return_value=iter(pages)):
+            call_command("import_myswitzerland", "--type", "attractions", "--all", "--commit", stdout=open(os.devnull, "w"))
+        self.assertEqual(TouristSpot.objects.get(external_id="new").status, TouristSpot.Status.PENDING)
+        hidden.refresh_from_db()
+        self.assertEqual(hidden.status, TouristSpot.Status.HIDDEN)
+        self.assertEqual(hidden.title_original, "Old renamed")
+
+    def test_dry_run_saves_nothing(self):
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", return_value=iter([[self.item("a", "A")]])):
+            call_command("import_myswitzerland", "--type", "attractions", "--all", stdout=open(os.devnull, "w"))
+        self.assertFalse(TouristSpot.objects.exists())
+
+    @mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test"})
+    def test_enrichment_publishes_waiting_spots(self):
+        from outings.management.commands import enrich_tourist_spots as enrich
+        spot = TouristSpot.objects.create(
+            external_id="w", spot_type="attractions", title_original="Rheinfall",
+            official_url="https://www.myswitzerland.com/de/w/", status=TouristSpot.Status.PENDING,
+        )
+        hidden = TouristSpot.objects.create(
+            external_id="h", spot_type="attractions", title_original="Hidden",
+            official_url="https://www.myswitzerland.com/de/h/", status=TouristSpot.Status.HIDDEN,
+        )
+
+        def fake(api_key, model, prompt, data, schema):
+            enrich.USAGE["input"] += 1000
+            ids = [record["id"] for record in data["spots"]]
+            if prompt == enrich.TRANSLATION_PROMPT:
+                return {"results": [{"id": i, "japanese_subtitle": "ライン滝", "summary_ja": "大きな滝。",
+                                     "highlights_ja": ["滝の近くまで船で行ける"], "guide_ja": "ヨーロッパ最大級の滝。"} for i in ids]}
+            return {"results": [{"id": i, "reason": "迫力", **{k: 5 for k in enrich.SCORE_FIELDS}} for i in ids]}
+
+        with mock.patch.object(enrich, "call_openai", side_effect=fake):
+            call_command("enrich_tourist_spots", "--limit", "10", "--commit", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        hidden.refresh_from_db()
+        self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
+        self.assertEqual(spot.summary_ja, "大きな滝。")
+        self.assertEqual(spot.details["highlights_ja"], ["滝の近くまで船で行ける"])
+        self.assertIsNone(hidden.ai_reviewed_at)
+        page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "ヨーロッパ最大級の滝。")
+        # Older spots without the guide can be rewritten once.
+        from outings.management.commands.enrich_tourist_spots import choose_spots
+        self.assertEqual(choose_spots(10, False, missing_guide=True), [])
+
+    @mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test"})
+    def test_enrichment_survives_repeated_and_missing_ai_ids(self):
+        from outings.management.commands import enrich_tourist_spots as enrich
+        spots = [TouristSpot.objects.create(
+            external_id=f"d{n}", spot_type="attractions", title_original=f"Spot {n}",
+            official_url=f"https://www.myswitzerland.com/de/d{n}/", status=TouristSpot.Status.PENDING,
+        ) for n in range(3)]
+        first, second, third = (s.pk for s in spots)
+
+        def fake(api_key, model, prompt, data, schema):
+            if prompt == enrich.TRANSLATION_PROMPT:
+                # Repeats the first ID and forgets the third.
+                return {"results": [{"id": i, "japanese_subtitle": "x", "summary_ja": "説明"} for i in (first, first, second)]}
+            return {"results": [{"id": i, "reason": "r", **{k: 1 for k in enrich.SCORE_FIELDS}} for i in (first, second, 999)]}
+
+        with mock.patch.object(enrich, "call_openai", side_effect=fake):
+            call_command("enrich_tourist_spots", "--limit", "10", "--commit", stdout=open(os.devnull, "w"))
+        statuses = [TouristSpot.objects.get(pk=pk).status for pk in (first, second, third)]
+        self.assertEqual(statuses, [TouristSpot.Status.PUBLISHED, TouristSpot.Status.PUBLISHED, TouristSpot.Status.PENDING])
+
+    def test_hand_written_introductions_round_trip(self):
+        import csv, tempfile
+        spot = TouristSpot.objects.create(
+            external_id="ext-1", spot_type="attractions", title_original="Aareschlucht", summary_ja="AIの文",
+            official_url="https://www.myswitzerland.com/de/a/", status=TouristSpot.Status.PENDING,
+        )
+        path = tempfile.mktemp(suffix=".csv")
+        call_command("export_tourist_texts", path, "--all", stdout=open(os.devnull, "w"))
+        with open(path, encoding="utf-8-sig", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        self.assertEqual(rows[0]["external_id"], "ext-1")
+        rows[0]["私の紹介文"] = "岩の間を歩く峡谷。\n夏も涼しい。"
+        rows.append({**rows[0], "external_id": "nope", "名前": "Unknown"})
+        with open(path, "w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+        call_command("import_tourist_texts", path, stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertEqual(spot.intro_ja, "")  # check only
+        call_command("import_tourist_texts", path, "--commit", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertEqual(spot.intro_ja, "岩の間を歩く峡谷。\n夏も涼しい。")
+        self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
+        page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "夏も涼しい。")
+        self.assertNotContains(page, "AIの文")
+
+    def test_intros_file_fills_matching_spots(self):
+        import json
+        from outings.management.commands import apply_tourist_intros as apply
+        self.assertGreaterEqual(len(apply.load_intros()), 50)  # the shipped file parses
+        spot = TouristSpot.objects.create(
+            external_id="e1", spot_type="attractions", title_original='Detektiv-Trail Bern "Detektiv Dachs"',
+            official_url="https://www.myswitzerland.com/de/e1/", status=TouristSpot.Status.PENDING,
+        )
+        edited = TouristSpot.objects.create(
+            external_id="e2", spot_type="tours", title_original="Gürbe–Sense, Etappe 1/2", intro_ja="管理画面で直した",
+            official_url="https://www.myswitzerland.com/de/e2/", status=TouristSpot.Status.PUBLISHED,
+        )
+        data = {"Detektiv-Trail Bern “Detektiv Dachs”": "探偵の道。", "Gürbe-Sense, Etappe 1/2": "自転車の道。"}
+        path = Path(tempfile.mkdtemp()) / "intros.json"
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        with mock.patch.object(apply, "DATA", path):
+            call_command("apply_tourist_intros", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        edited.refresh_from_db()
+        self.assertEqual((spot.intro_ja, spot.status), ("探偵の道。", TouristSpot.Status.PUBLISHED))
+        self.assertEqual(edited.intro_ja, "管理画面で直した")
+
+    def test_unverified_spots_are_hidden_until_they_have_an_intro(self):
+        from outings.management.commands import apply_tourist_intros as apply
+        self.assertIn(apply.normalize("Sagenwege"), apply.load_unverified())  # the shipped list parses
+        bare = TouristSpot.objects.create(
+            external_id="u1", spot_type="tours", title_original="Sagenwege",
+            official_url="https://www.myswitzerland.com/de/u1/", status=TouristSpot.Status.PUBLISHED,
+        )
+        written = TouristSpot.objects.create(
+            external_id="u2", spot_type="tours", title_original="Moorweg", intro_ja="自分で書いた",
+            official_url="https://www.myswitzerland.com/de/u2/", status=TouristSpot.Status.PUBLISHED,
+        )
+        call_command("apply_tourist_intros", stdout=open(os.devnull, "w"))
+        bare.refresh_from_db()
+        written.refresh_from_db()
+        self.assertEqual(bare.status, TouristSpot.Status.HIDDEN)
+        self.assertEqual(written.status, TouristSpot.Status.PUBLISHED)
+
+    def test_family_intros_fill_spots_and_show_on_the_page(self):
+        from outings.models import FamilySpot
+        spot = FamilySpot.objects.get(name="Park im Grüene")
+        FamilySpot.objects.filter(pk=spot.pk).update(intro_ja="")
+        call_command("apply_family_intros", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertIn("ロバ", spot.intro_ja)
+        self.assertContains(self.client.get(reverse("outings:spot_detail", args=[spot.pk])), "ロバ")
+
+    def test_markdown_intro_batches_parse(self):
+        from outings.management.commands.merge_tourist_intros_md import parse
+        text = """# 第2弾
+## 51〜60件
+### 51. Alpenpässe-Weg, Etappe 4/43
+散策・ハイキング｜グラウビュンデン州
+峠を越える長い道。
+[image](https://www.google.com/s2/favicons?domain=https://schweizmobil.ch)
+SchweizMobil
+52. Bierhübeli
+体験・ツアー｜ベルン
+ライブハウス。
+Bierhübeli+1
+52. Bierhübeli（公式情報に基づく確定版）
+体験・ツアー｜ベルン
+ベルンのライブハウス。
+以上で第2弾の50件が完成。
+次の対象：101〜150件
+"""
+        self.assertEqual(parse(text), {"Alpenpässe-Weg, Etappe 4/43": "峠を越える長い道。", "Bierhübeli": "ベルンのライブハウス。"})
+
+    def test_nightly_trip_text_is_off_unless_turned_on(self):
+        with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
+            self.assertNotIn("--trip-ai", outings_scheduler.daily_command())
+        with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": "250"}):
+            command = outings_scheduler.daily_command()
+        self.assertEqual(command[command.index("--trip-ai") + 1], "250")
+
+    def test_max_new_shares_the_limit_between_types(self):
+        def pages(spot_type, **kwargs):
+            return iter([[self.item(f"{spot_type}-{n}", f"{spot_type} {n}") for n in range(5)]])
+        with mock.patch("outings.management.commands.import_myswitzerland.iter_spot_pages", side_effect=pages):
+            call_command("import_myswitzerland", "--all", "--max-new", "6", "--commit", stdout=open(os.devnull, "w"))
+        counts = {t: TouristSpot.objects.filter(spot_type=t).count() for t in ("attractions", "tours", "destinations", "offers")}
+        self.assertEqual(sum(counts.values()), 6)
+        self.assertTrue(all(counts.values()), counts)
+
+
+class SavedFamilyBrowseTests(FamilySpotTests):
+    """お気に入り (♡・行ってみたい・行った, also for the family), 一覧 and hiding places already visited."""
+
+    def visit(self, spot, status, **extra):
+        from outings.models import OutingsVisit
+        return OutingsVisit.objects.create(target="kids", object_id=spot.pk, status=status, **extra)
+
+    def test_saved_tabs_list_want_and_went(self):
+        visitor = OutingsPreference.objects.create().visitor_id
+        self.client.cookies[COOKIE_NAME] = str(visitor)
+        self.visit(self.park, "went", visitor_id=visitor, rating=4)
+        self.visit(self.museum, "want", visitor_id=visitor)
+        went = self.client.get(reverse("outings:saved_all") + "?tab=went")
+        self.assertEqual([i["title"] for i in went.context["items"]], [self.park.title])
+        self.assertEqual(went.context["items"][0]["my_rating"], 4)
+        want = self.client.get(reverse("outings:saved_all") + "?tab=want")
+        self.assertEqual([i["title"] for i in want.context["items"]], [self.museum.title])
+        self.assertEqual({t["key"]: t["count"] for t in want.context["tabs"]}, {"heart": 0, "want": 1, "went": 1})
+
+    def test_family_sees_each_others_places(self):
+        from django.contrib.auth import get_user_model
+        from washoku.models import Household, HouseholdMember
+        User = get_user_model()
+        taro, hanako = User.objects.create_user("taro", password="x"), User.objects.create_user("hanako", password="x")
+        home = Household.objects.create(created_by=taro)
+        HouseholdMember.objects.create(household=home, user=taro)
+        HouseholdMember.objects.create(household=home, user=hanako)
+        import uuid
+        self.visit(self.museum, "want", visitor_id=uuid.uuid4(), user=hanako)
+        self.client.force_login(taro)
+        mine = self.client.get(reverse("outings:saved_all") + "?tab=want")
+        self.assertEqual(mine.context["items"], [])
+        self.assertTrue(mine.context["has_family"])
+        family = self.client.get(reverse("outings:saved_all") + "?tab=want&who=family")
+        self.assertEqual([i["title"] for i in family.context["items"]], [self.museum.title])
+        self.assertEqual(family.context["items"][0]["by"], [hanako])
+        self.assertEqual(self.client.get(reverse("outings:family")).status_code, 200)
+
+    def test_family_invite_from_outings_comes_back_here(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        taro = User.objects.create_user("taro", password="x")
+        User.objects.create_user("hanako", password="x")
+        self.client.force_login(taro)
+        response = self.client.post(reverse("washoku:family_invite"), {"username": "hanako", "next": reverse("outings:family")})
+        self.assertRedirects(response, reverse("outings:family"), fetch_redirect_response=False)
+
+    def test_hide_went_leaves_visited_places_out(self):
+        preference = OutingsPreference.objects.create(hide_went=True)
+        self.client.cookies[COOKIE_NAME] = str(preference.visitor_id)
+        self.visit(self.park, "went", visitor_id=preference.visitor_id)
+        self.assertEqual(self.names(), ["Rain Museum"])
+        titles = [i["title"] for i in self.client.get(reverse("outings:browse")).context["page_obj"].paginator.object_list]
+        self.assertNotIn(self.park.title, titles)
+        preference.hide_went = False
+        preference.save()
+        self.assertEqual(self.names(), ["Rain Museum", "Sunny Park"])
+
+    def test_browse_lists_everything_newest_first_with_new_badge(self):
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(created_at=self.now - timedelta(days=60))
+        response = self.client.get(reverse("outings:browse") + "?type=kids")
+        items = response.context["page_obj"].paginator.object_list
+        self.assertEqual([i["title"] for i in items], [self.museum.title, self.park.title])
+        self.assertEqual([i["is_new"] for i in items], [True, False])
+        self.assertContains(response, "NEW")
+
+    def test_header_keyword_search_ignores_saved_conditions(self):
+        self.client.get(reverse("outings:find") + "?when=weekend&area=bern&type=kids")
+        response = self.client.get(reverse("outings:find") + "?q=Park&kw=1&type=kids")
+        titles = [i["title"] for i in response.context["page_obj"].paginator.object_list]
+        self.assertIn(self.park.title, titles)
+        self.assertEqual(response.context["f"]["areas"], [])
+
+
+class StaffPhotoTests(FamilySpotTests):
+    """Admins replace or remove photos on the normal pages; removed photos stay removed."""
+
+    def login_staff(self):
+        from django.contrib.auth import get_user_model
+        self.client.force_login(get_user_model().objects.create_user("admin", password="x", is_staff=True))
+
+    def post(self, target, pk, **data):
+        return self.client.post(reverse("outings:staff_photo", args=[target, pk]), data)
+
+    def test_only_staff_can_change_photos_and_see_the_buttons(self):
+        self.park.image_url = "https://example.com/a.jpg"
+        self.park.save()
+        self.post("kids", self.park.pk, action="remove")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://example.com/a.jpg")
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertNotContains(self.client.get(detail), "写真を変える")
+        self.login_staff()
+        self.assertContains(self.client.get(detail), "写真を変える")
+        self.assertContains(self.client.get(reverse("outings:find") + "?type=kids&when=any"), "写真を削除")
+
+    def test_remove_and_replace_kids_spot_photo(self):
+        self.login_staff()
+        self.park.image_url = "https://example.com/a.jpg"
+        self.park.save()
+        response = self.post("kids", self.park.pk, action="remove", next=reverse("outings:browse"))
+        self.assertRedirects(response, reverse("outings:browse"), fetch_redirect_response=False)
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "")
+        self.assertTrue(self.park.image_removed)
+        self.post("kids", self.park.pk, action="upload", url="https://example.com/b.jpg", credit="Me")
+        self.park.refresh_from_db()
+        self.assertEqual((self.park.image_url, self.park.image_credit, self.park.image_removed), ("https://example.com/b.jpg", "Me", False))
+
+    def test_removed_trip_photo_is_not_searched_again(self):
+        self.login_staff()
+        spot = TouristSpot.objects.create(
+            external_id="x", spot_type=TouristSpot.SpotType.ATTRACTION, title_original="Rheinfall",
+            official_url="https://example.com", status=TouristSpot.Status.PUBLISHED,
+            details={"approved_image": {"url": "https://example.com/wrong.jpg"}},
+        )
+        self.post("trip", spot.pk, action="remove")
+        spot.refresh_from_db()
+        self.assertNotIn("approved_image", spot.details)
+        self.assertTrue(spot.details["photo_removed"])
+        commons = mock.Mock()
+        with mock.patch("outings.management.commands.auto_assign_tourist_images.requests.Session", return_value=commons):
+            call_command("auto_assign_tourist_images", "--commit", "--retry", stdout=open(os.devnull, "w"))
+        commons.get.assert_not_called()
+
+    def test_removed_event_photo_is_not_put_back_by_the_import(self):
+        self.login_staff()
+        event = make_event("写真つき", start=self.now + timedelta(days=1))
+        event.image_url = "https://example.com/e.jpg"
+        event.save()
+        self.post("event", event.pk, action="remove")
+        event.refresh_from_db()
+        self.assertTrue(event.image_removed)
+        self.assertEqual(event.image_url, "")

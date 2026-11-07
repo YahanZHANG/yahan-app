@@ -12,7 +12,7 @@
     {% endif %}
 
     <!-- Keyword -->
-    <form method="get" action="{% url 'outings:search' %}" class="sx-bar" role="search">
+    <form method="get" action="{% url 'outings:search' %}#results" class="sx-bar" role="search">
         {% for key, value in keyword_hidden %}
             <input type="hidden" name="{{ key }}" value="{{ value }}">
         {% endfor %}
@@ -31,6 +31,8 @@
         </label>
         <button type="submit" class="sx-bar__submit">検索</button>
     </form>
+
+    {% if not query %}{% include "outings/includes/sunny_button.html" with what="events" %}{% endif %}
 
     {% if not query %}
         <div class="sx-suggest" aria-label="よく使われるキーワード">
@@ -52,7 +54,7 @@
             <i class="bi bi-calendar3" aria-hidden="true"></i>
             日付を指定する
         </summary>
-        <form method="get" action="{% url 'outings:search' %}" class="sx-dates__form">
+        <form method="get" action="{% url 'outings:search' %}#results" class="sx-dates__form">
             {% for key, value in date_hidden %}
                 <input type="hidden" name="{{ key }}" value="{{ value }}">
             {% endfor %}
@@ -107,15 +109,21 @@
     </details>
 
     <!-- Results -->
-    <div class="sx-summary">
+    <div class="sx-summary og-results" id="results">
         <p class="sx-summary__count">
             {% if query %}「{{ query }}」{% endif %}
             <strong>{{ result_count }}件</strong>のイベント
         </p>
-        {% if query and result_count > 1 %}
+        {% include "outings/includes/map_button.html" %}{% include "outings/includes/view_toggle.html" %}
+        {% if result_count > 1 %}
             <div class="sx-sort" aria-label="並び順">
-                <a href="?{{ sort_relevance_qs }}" class="{% if not sort %}is-active{% endif %}">関連度順</a>
-                <a href="?{{ sort_date_qs }}" class="{% if sort == 'date' %}is-active{% endif %}">日付順</a>
+                {% if query %}
+                    <a href="?{{ sort_relevance_qs }}" class="{% if not sort %}is-active{% endif %}">関連度順</a>
+                    <a href="?{{ sort_date_qs }}" class="{% if sort == 'date' %}is-active{% endif %}">日付順</a>
+                {% else %}
+                    <a href="?{{ sort_relevance_qs }}" class="{% if sort != 'sunny' %}is-active{% endif %}">日付順</a>
+                {% endif %}
+                <a href="?{{ sort_sunny_qs }}" class="{% if sort == 'sunny' %}is-active{% endif %}">☀️ 晴れ優先</a>
             </div>
         {% endif %}
     </div>
@@ -155,7 +163,7 @@
         </section>
     {% endif %}
 
-    <div class="ev-list sx-results">
+    <div class="ev-list sx-results" data-og-items="search">
         {% for event in events %}
             {% include "outings/includes/event_card.html" %}
         {% empty %}
@@ -176,17 +184,7 @@
         {% endfor %}
     </div>
 
-    {% if page_obj.has_other_pages %}
-        <nav class="ev-pager" aria-label="検索結果のページ切り替え">
-            {% if page_obj.has_previous %}
-                <a href="?{{ page_qs_prev }}"><i class="bi bi-chevron-left" aria-hidden="true"></i>前へ</a>
-            {% endif %}
-            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-                <a href="?{{ page_qs_next }}">次へ<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
-            {% endif %}
-        </nav>
-    {% endif %}
+    {% include "outings/includes/more_button.html" with more_qs=page_qs_next name="search" %}
 
 </div>
 {% endblock %}

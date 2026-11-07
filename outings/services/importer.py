@@ -192,7 +192,7 @@ def _import_one(item, ed, dates, source, claimed, warn):
         for key, value in values.items():
             setattr(event, key, value)
         # Keep an image already copied to Cloudinary.
-        if image and 'res.cloudinary.com/' not in (event.image_url or ''):
+        if image and not event.image_removed and not (event.image_search_done and event.image_url) and 'res.cloudinary.com/' not in (event.image_url or ''):
             event.image_url = image if urlparse(image).scheme == 'https' else event.image_url
         event.save()
         outcome = 'updated'

@@ -48,14 +48,26 @@
             }
         } catch (error) {}
         document.documentElement.setAttribute("data-outings-theme", theme);
+        // 写真｜写真小｜リスト, chosen with the buttons on the lists.
+        try {
+            var view = localStorage.getItem("yapp-outings-view");
+            if (view === "list" || view === "thumb") {
+                document.documentElement.setAttribute("data-og-view", view);
+                document.documentElement.setAttribute("data-og-compact", "");
+            }
+        } catch (error) {}
     })();
     </script>
     <link
         rel="stylesheet"
         href="{% static 'outings/css/outings-v2.css' %}"
     >
+    <link
+        rel="stylesheet"
+        href="{% static 'outings/css/outings-family.css' %}"
+    >
     <meta name="theme-color" content="#237b83">
-    <meta name="description" content="スイスに住む日本語話者のための、週末のおでかけ・イベント情報">
+    <meta name="description" content="スイスに住む日本語話者のための、週末のおでかけ情報（旅行先・イベント・天気）">
 
     {% include "includes/app_icons.html" %}
 
@@ -70,38 +82,23 @@
     <header class="outings-header">
         <div class="outings-header-inner">
             <a href="{% url 'outings:home' %}" class="outings-brand">
-                <span class="brand-icon">🎈</span>
+                <img class="og-brand-icon" src="{% static 'pwa/outings/icon-192.png' %}" alt="" width="34" height="34">
                 <span>
                     <strong>おでかけ</strong>
-                    <small>スイスの週末をもっと楽しく</small>
+                    <small>スイスの週末を、もっと楽しく</small>
                 </span>
             </a>
 
-            <nav class="outings-desktop-nav" aria-label="PCメニュー">
-                <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}">
-                    <i class="bi bi-house" aria-hidden="true"></i>HOME
-                </a>
-                <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
-                    <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
-                </a>
-                <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
-                    <i class="bi bi-compass" aria-hidden="true"></i>旅行
-                </a>
-                <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
-                    <i class="bi bi-heart" aria-hidden="true"></i>お気に入り
-                </a>
-            </nav>
+            {# PC: keyword search on the right. Phone: 🔍 opens the same box under the header. #}
+            <form class="nav-search" action="{% url 'outings:find' %}#results" method="get" role="search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="q" value="{% if request.GET.kw %}{{ request.GET.q }}{% endif %}" placeholder="キーワードで検索" aria-label="キーワードで検索" enterkeyhint="search">
+                <input type="hidden" name="kw" value="1">
+            </form>
 
-            {% if name != 'search' %}
-                <form class="nav-search" action="{% url 'outings:search' %}" method="get" role="search">
-                    <i class="bi bi-search" aria-hidden="true"></i>
-                    <input type="search" name="q" placeholder="イベント・旅行先を探す" aria-label="イベント・旅行先を探す" enterkeyhint="search">
-                    <a href="{% url 'outings:search' %}" class="nav-search__more" title="日付・地域・ジャンルで探す">
-                        <i class="bi bi-sliders" aria-hidden="true"></i>
-                        <span>詳しく探す</span>
-                    </a>
-                </form>
-            {% endif %}
+            <button type="button" class="nav-find" aria-label="キーワードで検索" aria-controls="og-searchbar" aria-expanded="false" data-og-search-toggle>
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
 
             <a
                 href="{% url 'outings:my_page' %}"
@@ -117,34 +114,57 @@
                 <span class="nav-me__label">マイページ</span>
             </a>
         </div>
+        <div class="og-searchbar" id="og-searchbar" hidden>
+            <form action="{% url 'outings:find' %}#results" method="get" role="search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="q" placeholder="例：動物園、Luzern、クリスマス" aria-label="キーワードで検索" enterkeyhint="search">
+                <input type="hidden" name="kw" value="1">
+            </form>
+        </div>
     </header>
 
-    <main class="outings-main">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="og-layout">
 
-        
-    <!-- Phone: the five places people go most, search in the middle. -->
+        <!-- PC: menu on the left, like the board. -->
+        <nav class="og-side" aria-label="メニュー">
+            <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}on{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
+            <a href="{% url 'outings:find' %}" class="{% if name == 'find' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>さがす</a>
+            <a href="{% url 'outings:browse' %}" class="{% if name == 'browse' %}on{% endif %}"><i class="bi bi-grid" aria-hidden="true"></i>一覧</a>
+            <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' or name == 'family' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
+            <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' %}on{% endif %}"><i class="bi bi-person" aria-hidden="true"></i>マイページ</a>
+        </nav>
+
+        <main class="outings-main">
+            {% if messages %}{% for message in messages %}<p class="og-saved og-flash{% if message.tags == 'error' %} og-flash--error{% endif %}" role="status">{{ message }}</p>{% endfor %}{% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+
+    </div>
+
+    <button type="button" class="og-totop" aria-label="ページの上に戻る" title="上に戻る"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+
+    <!-- Phone: HOME・さがす・一覧・お気に入り・マイページ. -->
     <nav class="outings-bottom-nav tabbar" aria-label="メインメニュー">
         <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}"{% if name == 'home' %} aria-current="page"{% endif %}>
             <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>HOME</span>
         </a>
-        <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
-            <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>イベント</span>
+        <a href="{% url 'outings:find' %}" class="{% if name == 'find' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <span>さがす</span>
         </a>
-        <a href="{% url 'outings:search' %}" class="tabbar__search{% if name == 'search' %} active{% endif %}">
-            <span class="tabbar__search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
-            <span>探す</span>
-        </a>
-        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
-            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>旅行</span>
+        <a href="{% url 'outings:browse' %}" class="{% if name == 'browse' %}active{% endif %}">
+            <i class="bi bi-grid{% if name == 'browse' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>一覧</span>
         </a>
         <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
             <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>お気に入り</span>
+        </a>
+        <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' or name == 'my_preferences' %}active{% endif %}">
+            <i class="bi bi-person{% if name == 'my_page' or name == 'my_preferences' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>マイページ</span>
         </a>
     </nav>
     {% endwith %}
@@ -154,6 +174,246 @@
 
 
 <script src="{% static 'outings/js/hearts.js' %}" defer></script>
+<script>
+// Condition forms: the 探す button shows once something changed; empty
+// choices are left out of the address.
+document.querySelectorAll(".og-filterform").forEach(function (form) {
+    var actions = form.querySelector(".og-filterform__actions");
+    var start = new URLSearchParams(new FormData(form)).toString();
+    if (actions && !actions.querySelector(".og-filterform__reset")) actions.classList.add("is-idle");
+    form.addEventListener("change", function () {
+        if (!actions) return;
+        var changed = new URLSearchParams(new FormData(form)).toString() !== start;
+        actions.classList.toggle("is-idle", !changed && !actions.querySelector(".og-filterform__reset"));
+        actions.classList.toggle("is-changed", changed);
+    });
+    form.addEventListener("submit", function () {
+        form.querySelectorAll("input").forEach(function (input) {
+            if (input.type === "radio" && input.checked && !input.value) input.disabled = true;
+        });
+        var regions = form.querySelectorAll('input[name="region"][type="checkbox"]:checked');
+        if (regions.length) form.querySelectorAll('input[name="region"][type="hidden"]').forEach(function (h) { h.disabled = true; });
+        var family = form.querySelector('input[name="family"][type="checkbox"]');
+        if (family && family.checked) form.querySelectorAll('input[name="family"][type="hidden"]').forEach(function (h) { h.disabled = true; });
+    });
+});
+</script>
+<script>
+// 写真｜写真小｜リスト buttons on the lists.
+(function () {
+    var root = document.documentElement;
+    var VIEWS = ["photo", "thumb", "list"];
+    function current() {
+        var view = root.getAttribute("data-og-view");
+        return VIEWS.indexOf(view) > 0 ? view : "photo";
+    }
+    function show() {
+        var view = current();
+        document.querySelectorAll("button[data-og-view]").forEach(function (button) {
+            button.setAttribute("aria-pressed", String(button.getAttribute("data-og-view") === view));
+        });
+    }
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-og-view]");
+        if (!button) return;
+        var view = button.getAttribute("data-og-view");
+        if (view === "photo") {
+            root.removeAttribute("data-og-view");
+            root.removeAttribute("data-og-compact");
+        } else {
+            root.setAttribute("data-og-view", view);
+            root.setAttribute("data-og-compact", "");
+        }
+        try { localStorage.setItem("yapp-outings-view", view); } catch (error) {}
+        show();
+    });
+    show();
+})();
+
+// 地図: every result of the current filters on a map. Leaflet loads on first use.
+(function () {
+    var SWITZERLAND = [[45.82, 5.96], [47.81, 10.49]];
+    var leaflet = null;
+    function loadLeaflet() {
+        if (window.L) return Promise.resolve();
+        if (leaflet) return leaflet;
+        leaflet = new Promise(function (resolve, reject) {
+            var css = document.createElement("link");
+            css.rel = "stylesheet";
+            css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+            document.head.appendChild(css);
+            var js = document.createElement("script");
+            js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+            js.onload = resolve;
+            js.onerror = reject;
+            document.head.appendChild(js);
+        });
+        return leaflet;
+    }
+    function esc(text) { var d = document.createElement("div"); d.textContent = text || ""; return d.innerHTML; }
+    function mapUrl() {
+        var params = new URLSearchParams(window.location.search);
+        params.delete("page");
+        params.set("map", "1");
+        return window.location.pathname + "?" + params.toString();
+    }
+    function mapSheet() {
+        var sheet = document.querySelector(".og-mapsheet");
+        if (sheet) return sheet;
+        sheet = document.createElement("div");
+        sheet.className = "og-mapsheet";
+        sheet.hidden = true;
+        sheet.setAttribute("role", "dialog");
+        sheet.setAttribute("aria-label", "地図");
+        sheet.innerHTML = '<div class="og-mapsheet__bar"><strong>地図</strong><button type="button" class="og-mapsheet__close" data-og-map-close><i class="bi bi-list-ul" aria-hidden="true"></i>リストに戻る</button></div><div class="og-mapsheet__body"></div>';
+        document.body.appendChild(sheet);
+        return sheet;
+    }
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest("[data-og-map-close]")) return;
+        var sheet = document.querySelector(".og-mapsheet");
+        if (sheet) sheet.hidden = true;
+        document.documentElement.classList.remove("og-sheet-open");
+    });
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-og-map]");
+        if (!button) return;
+        var bar = button.closest(".og-resultbar") || button.parentElement;
+        var slot = document.querySelector("[data-og-map-slot]");
+        var side = slot && getComputedStyle(slot).display !== "none";
+        // Phone with a floating 地図 button: the map opens over the whole screen.
+        var sheet = !side && button.hasAttribute("data-og-map-sheet") ? mapSheet() : null;
+        var holder = side ? slot : sheet ? sheet.querySelector(".og-mapsheet__body") : bar.nextElementSibling;
+        var panel = holder && (holder.classList.contains("og-resultmap") ? holder : holder.querySelector(":scope > .og-resultmap"));
+        if (sheet) {
+            sheet.hidden = false;
+            document.documentElement.classList.add("og-sheet-open");
+            if (panel) { if (panel._map) panel._map.invalidateSize(); return; }
+        } else if (panel) {
+            var open = panel.hidden;
+            panel.hidden = !open;
+            button.setAttribute("aria-expanded", String(open));
+            if (open && panel._map) panel._map.invalidateSize();
+            return;
+        }
+        panel = document.createElement("div");
+        panel.className = "og-resultmap";
+        panel.innerHTML = '<div class="og-resultmap__map"></div><p class="og-resultmap__note">地図を読み込み中…</p>';
+        if (side || sheet) holder.appendChild(panel); else bar.parentNode.insertBefore(panel, bar.nextSibling);
+        button.setAttribute("aria-expanded", "true");
+        var note = panel.querySelector(".og-resultmap__note");
+        Promise.all([
+            loadLeaflet(),
+            fetch(mapUrl(), { credentials: "same-origin", headers: { "Accept": "application/json" } })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        ]).then(function (results) {
+            var data = results[1];
+            var map = L.map(panel.querySelector(".og-resultmap__map"), { scrollWheelZoom: false, zoomSnap: 0.25 });
+            panel._map = map;
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 18, attribution: "© OpenStreetMap contributors",
+                referrerPolicy: "strict-origin-when-cross-origin"
+            }).addTo(map);
+            var bounds = [];
+            data.points.forEach(function (p) {
+                bounds.push([p.lat, p.lon]);
+                L.marker([p.lat, p.lon], {
+                    icon: L.divIcon({ className: "", html: '<span class="og-resultmap__pin' + (p.cls ? " og-resultmap__pin--" + p.cls : "") + '">' + esc(p.emoji) + "</span>", iconSize: [30, 30], iconAnchor: [15, 15] })
+                }).bindPopup('<a href="' + p.url + '"><strong>' + esc(p.title) + "</strong></a>" + (p.sub || p.wx ? "<br><small>" + esc((p.wx ? p.wx + " " : "") + (p.sub || "")) + "</small>" : "")).addTo(map);
+            });
+            // Wide map (PC): start with all of Switzerland; phone: zoom to the results.
+            if (side || !bounds.length) map.fitBounds(SWITZERLAND, { padding: [4, 4] });
+            else map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
+            panel._fit = function () { map.invalidateSize(); if (side) map.fitBounds(SWITZERLAND, { padding: [4, 4] }); };
+            window.addEventListener("resize", function () { map.invalidateSize(); });
+            setTimeout(panel._fit, 200);
+            var missing = data.total - data.shown;
+            note.textContent = data.shown + "件を地図に表示しています。ピンを押すと名前とリンクが出ます。"
+                + (missing > 0 ? "（場所がわからない" + missing + "件は出ていません）" : "");
+        }).catch(function () {
+            note.textContent = "地図を読み込めませんでした。少しあとでもう一度お試しください。";
+        });
+    });
+    // PC: the map sits beside the list from the start.
+    var slot = document.querySelector("[data-og-map-slot]");
+    var button = document.querySelector("button[data-og-map]");
+    if (slot && button && getComputedStyle(slot).display !== "none") button.click();
+})();
+
+// <details data-og-remember>: stays open or closed the way the visitor left it.
+document.querySelectorAll("details[data-og-remember]").forEach(function (box) {
+    var key = "yapp-outings-open-" + box.getAttribute("data-og-remember");
+    try { var saved = localStorage.getItem(key); if (saved !== null) box.open = saved === "1"; } catch (error) {}
+    box.addEventListener("toggle", function () {
+        try { localStorage.setItem(key, box.open ? "1" : "0"); } catch (error) {}
+    });
+});
+
+// Phone 🔍: opens the keyword box under the header.
+(function () {
+    var toggle = document.querySelector("[data-og-search-toggle]");
+    var bar = document.getElementById("og-searchbar");
+    if (!toggle || !bar) return;
+    toggle.addEventListener("click", function () {
+        var open = bar.hidden;
+        bar.hidden = !open;
+        toggle.setAttribute("aria-expanded", String(open));
+        if (open) bar.querySelector("input[name=q]").focus();
+    });
+})();
+
+// 上に戻る
+(function () {
+    var button = document.querySelector(".og-totop");
+    if (!button) return;
+    function show() { button.classList.toggle("is-shown", window.scrollY > 500); }
+    window.addEventListener("scroll", show, { passive: true });
+    button.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+    show();
+})();
+
+// もっと見る: load the next page and add its items below, instead of a page switch.
+(function () {
+    document.addEventListener("click", function (event) {
+        var link = event.target.closest("a[data-og-more]");
+        if (!link || event.metaKey || event.ctrlKey) return;
+        var wrap = link.closest("[data-og-more-wrap]");
+        var name = link.getAttribute("data-og-more");
+        var list = document.querySelector('[data-og-items="' + name + '"]');
+        if (!wrap || !list) return;
+        event.preventDefault();
+        if (link.classList.contains("is-loading")) return;
+        link.classList.add("is-loading");
+        link.textContent = "読み込み中…";
+        fetch(link.href, { credentials: "same-origin" })
+            .then(function (response) { if (!response.ok) throw new Error(response.status); return response.text(); })
+            .then(function (html) {
+                var page = new DOMParser().parseFromString(html, "text/html");
+                var more = page.querySelector('[data-og-items="' + name + '"]');
+                if (more) {
+                    Array.prototype.slice.call(more.children).forEach(function (item) {
+                        // Same day heading as the last group: add the cards to it.
+                        var group = item.getAttribute("data-og-group");
+                        var last = list.lastElementChild;
+                        if (group && last && last.getAttribute("data-og-group") === group) {
+                            var into = last.querySelector("[data-og-group-items]");
+                            var from = item.querySelector("[data-og-group-items]");
+                            if (into && from) {
+                                Array.prototype.slice.call(from.children).forEach(function (child) { into.appendChild(child); });
+                                return;
+                            }
+                        }
+                        list.appendChild(document.importNode(item, true));
+                    });
+                }
+                var next = page.querySelector("[data-og-more-wrap]");
+                if (next && next.querySelector("a[data-og-more]")) wrap.replaceWith(document.importNode(next, true));
+                else wrap.remove();
+            })
+            .catch(function () { window.location.href = link.href; });
+    });
+})();
+</script>
 
 <script>
 (function () {

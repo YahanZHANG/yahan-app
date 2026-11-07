@@ -1,0 +1,73 @@
+{# The four 「あなたに合わせる」 questions. Needs `profile` and `next`. #}
+<form method="post" action="{% url 'outings:profile_save' %}" class="og-profile">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <fieldset>
+        <legend>📍 よく出かける地域<small>いくつでも</small><span class="og-profile__q">選んだ地域のイベントや場所が先に出ます</span></legend>
+        <div class="og-choices">
+            {% for key, label, on in profile.areas %}
+                <label><input type="checkbox" name="areas" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>💬 ドイツ語やフランス語は？<span class="og-profile__q">言葉がいらないイベントを優先するかどうかに使います</span></legend>
+        <div class="og-choices">
+            {% for value, label, on in profile.german %}
+                <label><input type="radio" name="german" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>👥 誰と出かけることが多いですか？<span class="og-profile__q">子どもと一緒なら、子連れ向けの場所を先に出します</span></legend>
+        <div class="og-choices">
+            <label><input type="radio" name="kids" value="yes"{% if profile.kids %} checked{% endif %}><span>子どもと</span></label>
+            <label><input type="radio" name="kids" value="no"{% if profile.kids == False %} checked{% endif %}><span>大人だけ・ひとり</span></label>
+        </div>
+        <div class="og-choices og-profile__ages" data-ages>
+            <span class="og-profile__hint">子どもの年齢<small>いくつでも</small></span>
+            {% for key, label, on in profile.ages %}
+                <label><input type="checkbox" name="ages" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>📅 お休みは？<span class="og-profile__q">HOME の天気とおすすめを、お休みの日に合わせます</span></legend>
+        <div class="og-choices">
+            {% for value, label, on in profile.days %}
+                <label><input type="radio" name="days_off" value="{{ value }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    {% if not skippable %}
+        <fieldset>
+            <legend>🙌 行った場所<span class="og-profile__q">HOME・さがす・一覧に出すかどうか（お気に入りには残ります）</span></legend>
+            <div class="og-choices">
+                <label><input type="radio" name="hide_went" value="0"{% if not profile.hide_went %} checked{% endif %}><span>表示する</span></label>
+                <label><input type="radio" name="hide_went" value="1"{% if profile.hide_went %} checked{% endif %}><span>表示しない</span></label>
+            </div>
+        </fieldset>
+    {% endif %}
+
+    <div class="og-profile__actions">
+        <button type="submit" class="og-profile__save">保存する</button>
+        {% if skippable %}<button type="submit" name="skip" value="1" class="og-profile__skip" formnovalidate>あとで</button>{% endif %}
+    </div>
+</form>
+<script>
+// Ages only matter when going out with children.
+document.querySelectorAll(".og-profile").forEach(function (form) {
+    var ages = form.querySelector("[data-ages]");
+    function sync() {
+        var yes = form.querySelector('input[name="kids"][value="yes"]');
+        ages.hidden = !(yes && yes.checked);
+    }
+    form.addEventListener("change", sync);
+    sync();
+});
+</script>

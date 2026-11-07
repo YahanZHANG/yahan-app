@@ -7,6 +7,7 @@ Does not modify the Django database.
 """
 
 import os
+import time
 from urllib.parse import urlparse
 
 import requests
@@ -26,12 +27,14 @@ class MySwitzerlandAPIError(Exception):
     pass
 
 
-def fetch_spots(
+def iter_spot_pages(
     spot_type,
     pages=1,
     page_size=10,
     language="de",
 ):
+    """Yield one page of items at a time, so a full import never holds
+    every record (with its raw data) in memory at once."""
 
     if spot_type not in SUPPORTED_TYPES:
         raise ValueError(
@@ -61,25 +64,23 @@ def fetch_spots(
         "User-Agent": "YappOutings/1.0",
     })
 
-    all_items = []
     seen_ids = set()
 
     try:
         for page_number in range(pages):
 
-            response = session.get(
-                f"{BASE_URL}/{spot_type}/",
-                params={
-                    "lang": language,
-                    "limit": page_size,
-                    "page": page_number,
-                    "expand": "true",
-                    "striphtml": "true",
-                },
-                timeout=45,
-            )
-
             try:
+                response = _get_with_backoff(
+                    session,
+                    f"{BASE_URL}/{spot_type}/",
+                    {
+                        "lang": language,
+                        "limit": page_size,
+                        "page": page_number,
+                        "expand": "true",
+                        "striphtml": "true",
+                    },
+                )
                 response.raise_for_status()
                 payload = response.json()
             except (
@@ -106,6 +107,8 @@ def fetch_spots(
             if not items:
                 break
 
+            page_items = []
+
             for item in items:
 
                 if not isinstance(item, dict):
@@ -115,14 +118,13 @@ def fetch_spots(
                     item.get("identifier") or ""
                 ).strip()
 
-                if not identifier:
-                    continue
-
-                if identifier in seen_ids:
+                if not identifier or identifier in seen_ids:
                     continue
 
                 seen_ids.add(identifier)
-                all_items.append(item)
+                page_items.append(item)
+
+            yield page_items
 
             page_info = (
                 payload.get("meta", {})
@@ -139,13 +141,26 @@ def fetch_spots(
             ):
                 break
 
-    except requests.RequestException as exc:
-        raise MySwitzerlandAPIError(
-            f"API request failed: {exc}"
-        ) from exc
-
     finally:
         session.close()
+
+
+def fetch_spots(
+    spot_type,
+    pages=1,
+    page_size=10,
+    language="de",
+):
+
+    all_items = []
+
+    for page_items in iter_spot_pages(
+        spot_type,
+        pages=pages,
+        page_size=page_size,
+        language=language,
+    ):
+        all_items.extend(page_items)
 
     return all_items
 
@@ -321,3 +336,21 @@ def normalize_spot(item, spot_type):
         )[:300],
         "raw_data": item,
     }
+
+
+# The API allows only so many calls a minute: on 429, wait and try again.
+RATE_LIMIT_WAITS = (20, 40, 60, 90)
+
+
+def _get_with_backoff(session, url, params, sleep=time.sleep):
+    for wait in RATE_LIMIT_WAITS + (None,):
+        response = session.get(url, params=params, timeout=45)
+        if response.status_code != 429 or wait is None:
+            return response
+        try:
+            wait = max(wait, int(response.headers.get("Retry-After", 0)))
+        except ValueError:
+            pass
+        print(f"  MySwitzerland says too many requests; waiting {wait}s...", flush=True)
+        sleep(wait)
+    return response

@@ -21,7 +21,29 @@ REGIONS = (
     ("SO", "ゾロトゥルン", "Solothurn"),
     ("NW", "ニトヴァルデン", "Nidwalden"),
     ("OW", "オプヴァルデン", "Obwalden"),
+    ("SG", "ザンクト・ガレン", "St. Gallen"),
+    ("TG", "トゥールガウ", "Thurgau"),
+    ("GL", "グラールス", "Glarus"),
+    ("GR", "グラウビュンデン", "Graubünden"),
+    ("FR", "フリブール", "Fribourg"),
+    ("VD", "ヴォー", "Vaud"),
+    ("VS", "ヴァレー", "Valais"),
+    ("TI", "ティチーノ", "Ticino"),
 )
+
+# Larger areas for the 子連れスポット filter, so families pick
+# "Bern area" instead of scanning twenty cantons.
+AREAS = (
+    ("zurich", "チューリッヒ周辺", ("ZH", "ZG", "AG", "SZ", "TG")),
+    ("east", "東スイス・グラウビュンデン", ("SG", "GR", "GL")),
+    ("central", "中央スイス", ("LU", "NW", "OW")),
+    ("bern", "ベルン周辺", ("BE", "SO")),
+    ("basel", "バーゼル周辺", ("BS", "BL")),
+    ("west", "スイス西部", ("FR", "VD", "VS")),
+    ("ticino", "ティチーノ", ("TI",)),
+)
+
+AREA_OF_CANTON = {code: key for key, _, codes in AREAS for code in codes}
 
 REGION_CODES = frozenset(code for code, _, _ in REGIONS)
 

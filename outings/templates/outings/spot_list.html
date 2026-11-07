@@ -1,0 +1,67 @@
+{% extends "outings/base.html" %}
+
+{% block title %}子連れで行ける場所 | 旅行 | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page">
+
+    <header class="og-page__head">
+        <h1>旅行</h1>
+    </header>
+
+    {% include "outings/includes/sunny_button.html" with what="kids" %}
+    <div class="og-modebar">
+        <a href="{% url 'outings:tourist_spot_list' %}?kids=0" class="og-check is-on" role="checkbox" aria-checked="true">
+            <i class="bi bi-check-square-fill" aria-hidden="true"></i>子連れで行ける場所だけ
+        </a>
+        {% include "outings/includes/map_button.html" %}{% include "outings/includes/view_toggle.html" %}
+    </div>
+    <p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
+
+    <form method="get" action="#results" class="og-filterform">
+        <input type="hidden" name="kids" value="1">
+        <div class="og-chips og-chips--scroll" role="group" aria-label="よく使う条件">
+            {% for chip in chips.toggles %}
+                <label class="og-chip og-pick"><input type="checkbox" name="{{ chip.key }}" value="1"{% if chip.active %} checked{% endif %}><i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}</label>
+            {% endfor %}
+        </div>
+
+        <details class="og-filters" data-open-on-pc{% if filter_count %} open{% endif %}>
+            <summary><i class="bi bi-sliders" aria-hidden="true"></i>年齢・地域・種類で絞り込む</summary>
+            <div class="og-filters__body">
+                {% for group in groups %}
+                    <fieldset class="og-filters__group">
+                        <legend>{{ group.title }}</legend>
+                        <div class="og-chips">
+                            <label class="og-chip og-pick"><input type="radio" name="{{ group.name }}" value=""{% if not group.value %} checked{% endif %}>指定なし</label>
+                            {% for value, label in group.options %}
+                                <label class="og-chip og-pick"><input type="radio" name="{{ group.name }}" value="{{ value }}"{% if value == group.value %} checked{% endif %}>{{ label }}</label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                {% endfor %}
+            </div>
+        </details>
+
+        <div class="og-filterform__actions">
+            <button type="submit" class="og-filterform__go"><i class="bi bi-search" aria-hidden="true"></i>この条件で探す</button>
+            {% if filtered %}<a href="?{{ clear_qs }}" class="og-filterform__reset">条件を解除</a>{% endif %}
+        </div>
+    </form>
+
+    {% if spots %}
+        <div class="og-spots og-spots--list og-results" id="results">
+            {% for spot in spots %}{% include "outings/includes/spot_card.html" %}{% endfor %}
+        </div>
+    {% else %}
+        <p class="og-empty">条件に合う場所がありません。{% if filtered %}<a href="?{{ clear_qs }}">条件を解除する</a>{% endif %}</p>
+    {% endif %}
+
+</div>
+<script>
+// PC has room: show the filters open.
+if (window.matchMedia && window.matchMedia("(min-width: 960px)").matches) {
+    document.querySelectorAll("[data-open-on-pc]").forEach(function (el) { el.open = true; });
+}
+</script>
+{% endblock %}

@@ -1,13 +1,13 @@
 
 from django.urls import path
 
-from . import tourist_views
+from . import find_views, tourist_views
 
 
 urlpatterns = [
     path(
         "",
-        tourist_views.tourist_spot_list,
+        find_views.from_trips,
         name="tourist_spot_list",
     ),
     path(

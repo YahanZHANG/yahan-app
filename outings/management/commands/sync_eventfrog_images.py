@@ -71,7 +71,7 @@ class Command(BaseCommand):
 
         # Also match source/external_id in case some occurrence links are absent.
         published = list(
-            Event.objects.filter(source__name__iexact='Eventfrog', status=Event.Status.PUBLISHED)
+            Event.objects.filter(source__name__iexact='Eventfrog', status=Event.Status.PUBLISHED, image_removed=False)
             .only('id', 'external_id', 'image_url', 'title')
         )
         selected = []

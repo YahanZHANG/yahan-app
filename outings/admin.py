@@ -5,7 +5,9 @@ from outings.models import TouristSpot
 
 
 from .models import (
+    OutingsVisit,
     Event,
+    FamilySpot,
     EventCategory,
     EventLocation,
     EventOccurrence,
@@ -349,6 +351,7 @@ class TouristSpotAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "title_ja",
+                    "intro_ja",
                     "summary_ja",
                 ),
             },
@@ -390,3 +393,40 @@ class OutingsFeedbackAdmin(admin.ModelAdmin):
     list_filter = ("is_read",)
     search_fields = ("message",)
     readonly_fields = ("message", "created_at")
+
+
+@admin.register(FamilySpot)
+class FamilySpotAdmin(admin.ModelAdmin):
+    list_display = ("name", "name_ja", "kind", "canton", "trip", "season", "price", "rainy_ok", "status", "sort_order", "checked_on")
+    list_editable = ("status", "sort_order")
+    list_filter = ("status", "checked_on", "kind", "trip", "season", "language", "canton", "price", "rainy_ok")
+    search_fields = ("name", "name_ja", "town", "summary_ja")
+    actions = ["publish", "unpublish"]
+
+    @admin.action(description="選んだスポットを公開する")
+    def publish(self, request, queryset):
+        self.message_user(request, f"{queryset.update(status=FamilySpot.Status.PUBLISHED)}件を公開しました。")
+
+    @admin.action(description="選んだスポットを下書きに戻す")
+    def unpublish(self, request, queryset):
+        self.message_user(request, f"{queryset.update(status=FamilySpot.Status.DRAFT)}件を下書きに戻しました。")
+
+    fieldsets = (
+        (None, {"fields": ("status", "sort_order", "recommend", "name", "name_ja", "kind", "emoji", "summary_ja", "intro_ja", "tips_ja")}),
+        ("場所", {"fields": ("canton", "town", "address", "latitude", "longitude", "maps_url")}),
+        ("条件", {"fields": ("age_min", "age_max", "age_note", "language", "season", "rainy_ok", "trip", "price", "price_note", "open_sunday", "hours_note", "stroller_ok", "parking_note", "food_note")}),
+        ("リンク・写真", {"fields": ("official_url", "image_url", "image_credit", "image_search_done", "checked_on")}),
+    )
+
+
+@admin.register(OutingsVisit)
+class OutingsVisitAdmin(admin.ModelAdmin):
+    list_display = ("target", "object_id", "status", "rating", "short_comment", "user", "is_hidden", "updated_at")
+    list_editable = ("is_hidden",)
+    list_filter = ("target", "status", "rating", "is_hidden")
+    search_fields = ("comment",)
+    readonly_fields = ("target", "object_id", "visitor_id", "user", "created_at", "updated_at")
+
+    @admin.display(description="コメント")
+    def short_comment(self, obj):
+        return obj.comment[:40]

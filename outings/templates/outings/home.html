@@ -1,134 +1,100 @@
 {% extends "outings/base.html" %}
 
-{% block title %}おでかけ | Yapp{% endblock %}
+{% block title %}おでかけ | スイスの週末を、もっと楽しく{% endblock %}
 
 {% block content %}
-<div class="outings-discovery-home">
+<div class="og-page og-home">
 
-    <section class="discovery-intro">
-        <div class="discovery-shortcuts">
-            <a href="{% url 'outings:event_home' %}?when=weekend">
-                <i class="bi bi-calendar-heart" aria-hidden="true"></i>
-                <span>今週末のイベント</span>
-                <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            </a>
-            <a href="{% url 'outings:tourist_spot_list' %}">
-                <i class="bi bi-compass" aria-hidden="true"></i>
-                <span>旅行</span>
-            </a>
+
+
+    <!-- One hero: the days off, the weather and where to go, over a photo of the top pick. -->
+    <section class="og-hero{% if hero %} og-hero--photo{% endif %}"{% if hero %} style="--og-hero-photo: url('{{ hero.image }}')"{% endif %}>
+        <div class="og-hero__inner">
+            <p class="og-hero__kicker">{% if weekday %}次の平日、どこ行く？{% else %}今週末、どこ行く？{% endif %}</p>
+            {% if forecast %}
+                <ul class="og-hero__weather" aria-label="{{ forecast_area }}の天気">
+                    {% for day in forecast %}
+                        <li><b>{{ day.day }}</b><span class="og-hero__wx">{{ day.emoji }}</span>{{ day.temp|default:"" }}{% if day.rain %}<small>☔{{ day.rain }}</small>{% endif %}</li>
+                    {% endfor %}
+                    <li class="og-hero__where">{{ forecast_area }}</li>
+                </ul>
+            {% endif %}
+            <p class="og-hero__lead">
+                {% if mode == "sunny" %}{% if sunny_names %}晴れるのは {{ sunny_names|join:"・" }} など。{% endif %}天気のいい場所から、あなたへのおすすめを選びました。
+                {% elif mode == "rainy" %}どこも雨の予報です。雨でも楽しめる場所を選びました。
+                {% else %}スイスの旅行先とイベントを、天気と一緒に探せます。{% endif %}
+            </p>
+            {% if mode == "rainy" %}
+                <a class="og-hero__go" href="{% url 'outings:find' %}?when=weekend&amp;rainy=1&amp;sort=recommended#results">☔ 雨でもOKの場所をもっと見る<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+            {% else %}
+                <a class="og-hero__go" href="{% url 'outings:find' %}?when=weekend&amp;sort=sunny#results">☀️ 晴れの場所から探す<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+            {% endif %}
         </div>
+        {% if hero %}<a class="og-hero__credit" href="{{ hero.url }}">写真：{{ hero.title }}</a>{% endif %}
     </section>
 
-    <!-- Recommended first: the main reason to open the app.
-         One row of events, one row of trips. -->
-    <section class="discovery-section home-picks">
-        <div class="discovery-section-heading">
-            <div>
-                <h2>
-                    <i class="bi bi-award" aria-hidden="true"></i>
-                    おすすめ
-                </h2>
-                <p>注目のイベントと魅力的な旅行先</p>
-            </div>
-        </div>
-        {% if recommended_event_cards %}
-            <h3 class="home-picks__label">
-                <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
-                <a href="{% url 'outings:event_home' %}">すべて見る</a>
-            </h3>
-            <div class="discovery-card-track">
-                {% for card in recommended_event_cards %}
-                    {% include "outings/includes/discovery_card.html" %}
-                {% endfor %}
-            </div>
-        {% endif %}
-        {% if recommended_trip_cards %}
-            <h3 class="home-picks__label">
-                <i class="bi bi-compass" aria-hidden="true"></i>旅行
-                <a href="{% url 'outings:tourist_spot_list' %}">すべて見る</a>
-            </h3>
-            <div class="discovery-card-track">
-                {% for card in recommended_trip_cards %}
-                    {% include "outings/includes/discovery_card.html" %}
-                {% endfor %}
-            </div>
-        {% endif %}
-        {% if not recommended_event_cards and not recommended_trip_cards %}
-            <p class="empty-state">おすすめを準備中です。</p>
-        {% endif %}
-    </section>
+    {% if ask %}
+        <a class="og-askbar" href="{% url 'outings:my_preferences' %}">
+            <span aria-hidden="true">✨</span>
+            <span><strong>あなたに合わせる</strong><small>4つの質問に答えると、おすすめがあなた向けになります</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    {% elif request.GET.saved %}
+        <p class="og-saved" role="status">あなた向けのおすすめにしました。マイページでいつでも変えられます。</p>
+    {% endif %}
 
-    <!-- New: a compact list. -->
-    <section class="discovery-section home-fresh">
-        <div class="discovery-section-heading">
-            <div>
-                <h2>
-                    <i class="bi bi-stars" aria-hidden="true"></i>
-                    新着
-                </h2>
-                <p>最近追加されたイベントと旅行</p>
+    <section class="og-section">
+        <header class="og-section__head">
+            <h2>{% if personal %}あなたへのおすすめ{% else %}おすすめ{% endif %}</h2>
+            <a href="{% url 'outings:find' %}?when=weekend&amp;sort={% if mode == 'rainy' %}recommended&amp;rainy=1{% else %}sunny{% endif %}#results">もっと見る</a>
+        </header>
+        <p class="og-section__note">
+            {% if personal %}あなたの地域・{% if profile.kids %}一緒に行く人・{% endif %}{% endif %}{% if weekday %}次の平日{% else %}今週末{% endif %}の天気に合わせて選びました。
+            <a href="{% url 'outings:my_preferences' %}">{% if personal %}設定を変える{% else %}あなたに合わせる{% endif %}</a>
+        </p>
+        {% if picks %}
+            <div class="og-items og-items--scroll">
+                {% for item in picks %}{% include "outings/includes/find_item.html" %}{% endfor %}
             </div>
-        </div>
-        {% if fresh_event_cards %}
-            <h3 class="home-picks__label">
-                <i class="bi bi-calendar-event" aria-hidden="true"></i>イベント
-                <a href="{% url 'outings:event_home' %}">すべて見る</a>
-            </h3>
-            <ul class="home-fresh__list">
-                {% for card in fresh_event_cards %}
-                    <li>
-                        <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
-                            <span class="home-fresh__text">
-                                <strong>{{ card.title }}</strong>
-                                {% if card.date_label or card.location %}
-                                    <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
-                                {% elif card.label %}
-                                    <small>{{ card.label }}</small>
-                                {% endif %}
-                            </span>
-                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        {% if fresh_trip_cards %}
-            <h3 class="home-picks__label">
-                <i class="bi bi-compass" aria-hidden="true"></i>旅行
-                <a href="{% url 'outings:tourist_spot_list' %}">すべて見る</a>
-            </h3>
-            <ul class="home-fresh__list">
-                {% for card in fresh_trip_cards %}
-                    <li>
-                        <a href="{% if card.kind == 'event' %}{% url 'outings:event_detail' card.id %}{% else %}{% url 'outings:tourist_spot_detail' card.id %}{% endif %}">
-                            <span class="home-fresh__text">
-                                <strong>{{ card.title }}</strong>
-                                {% if card.date_label or card.location %}
-                                    <small>{{ card.date_label }}{% if card.date_label and card.location %}・{% endif %}{{ card.location }}</small>
-                                {% elif card.label %}
-                                    <small>{{ card.label }}</small>
-                                {% endif %}
-                            </span>
-                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        {% if not fresh_event_cards and not fresh_trip_cards %}
-            <p class="empty-state">新しい情報を準備中です。</p>
+        {% else %}
+            <p class="og-empty">おすすめを準備中です。</p>
         {% endif %}
     </section>
 
-    <!-- About Yapp and support -->
-    <a class="home-about" href="{% url 'outings:about_outings' %}#yapp">
-        <span class="home-about__icon" aria-hidden="true">🎈</span>
-        <span class="home-about__text">
-            <strong>Yappについて・ご意見・応援</strong>
-            <small>スイス在住の個人が作っています。ご要望もお気軽に</small>
-        </span>
+    {% if events %}
+        <section class="og-section">
+            <header class="og-section__head">
+                <h2>{% if weekday %}次の平日の{% else %}今週末の{% endif %}{% if kids %}子連れ{% endif %}イベント</h2>
+                <a href="{% url 'outings:find' %}?type=event&amp;when=weekend#results">すべて見る</a>
+            </header>
+            <div class="og-items og-items--scroll">
+                {% for item in events %}{% include "outings/includes/find_item.html" %}{% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if overnight %}
+        <section class="og-section">
+            <header class="og-section__head">
+                <h2>1泊で行くなら</h2>
+                <a href="{% url 'outings:find' %}?type=kids&amp;family=1&amp;trip=overnight&amp;when=any#results">すべて見る</a>
+            </header>
+            <div class="og-items og-items--scroll">
+                {% for item in overnight %}{% include "outings/includes/find_item.html" %}{% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <a class="og-banner" href="{% url 'outings:find' %}?type=trip">
+        <span aria-hidden="true">🧭</span>
+        <span><strong>スイスの旅行先をさがす</strong><small>町・山・湖など、全国の観光地</small></span>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    </a>
+
+    <a class="og-banner og-banner--quiet og-phone-only" href="{% url 'outings:about_outings' %}#yapp">
+        <span aria-hidden="true">🎈</span>
+        <span><strong>Yappについて・ご意見</strong><small>スイス在住の個人が作っています</small></span>
         <i class="bi bi-chevron-right" aria-hidden="true"></i>
     </a>
 </div>
-
 {% endblock %}

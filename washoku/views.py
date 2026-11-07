@@ -2121,6 +2121,14 @@ def family(request):
     )
 
 
+def _family_back(request):
+    """Back to the family page, or to the おでかけ family page when sent from there."""
+    target = request.POST.get("next", "")
+    if target.startswith("/outings/") and "//" not in target:
+        return redirect(target)
+    return redirect("washoku:family")
+
+
 @login_required
 @require_POST
 def family_invite(request):
@@ -2133,15 +2141,15 @@ def family_invite(request):
 
     if invited_user is None:
         messages.error(request, "そのユーザー名は見つかりませんでした。")
-        return redirect("washoku:family")
+        return _family_back(request)
 
     if invited_user == request.user:
         messages.error(request, "自分自身は招待できません。")
-        return redirect("washoku:family")
+        return _family_back(request)
 
     if HouseholdMember.objects.filter(user=invited_user).exists():
         messages.error(request, "そのユーザーはすでに家族に参加しています。")
-        return redirect("washoku:family")
+        return _family_back(request)
 
     with transaction.atomic():
 
@@ -2168,7 +2176,7 @@ def family_invite(request):
     else:
         messages.error(request, "そのユーザーはすでに招待中です。")
 
-    return redirect("washoku:family")
+    return _family_back(request)
 
 
 @login_required
@@ -2187,7 +2195,7 @@ def family_respond(request, invite_id):
 
         if HouseholdMember.objects.filter(user=request.user).exists():
             messages.error(request, "すでに別の家族に参加しています。先に抜けてください。")
-            return redirect("washoku:family")
+            return _family_back(request)
 
         HouseholdMember.objects.create(
             household=invite.household,
@@ -2208,7 +2216,7 @@ def family_respond(request, invite_id):
         invite.status = "declined"
         invite.save(update_fields=["status", "updated_at"])
 
-    return redirect("washoku:family")
+    return _family_back(request)
 
 
 @login_required
@@ -2229,7 +2237,7 @@ def family_leave(request):
 
         messages.success(request, "家族から抜けました。")
 
-    return redirect("washoku:family")
+    return _family_back(request)
 
 
 # =========================================================

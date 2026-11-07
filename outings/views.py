@@ -35,7 +35,7 @@ from .models import (
     OutingsNotification
 )
 
-from .regions import REGION_CHOICES, clean_regions
+from .regions import clean_regions
 
 from .visitor import get_visitor_id, set_visitor_cookie
 
@@ -193,14 +193,14 @@ def my_preferences(request):
         )
     )
 
-    regions = REGION_CHOICES
+    from .spot_views import profile_form_context
 
     response = render(
         request,
         "outings/my_preferences.html",
         {
-            "preference": preference,
-            "regions": regions,
+            "profile": profile_form_context(preference),
+            "saved": request.GET.get("saved") == "1",
         },
     )
 

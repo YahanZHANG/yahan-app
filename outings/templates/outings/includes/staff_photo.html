@@ -1,0 +1,20 @@
+{% comment %}
+Staff only: replace or remove this page's photo. Needs `photo_target`
+(trip / kids / event), `photo_pk` and `photo_url`.
+{% endcomment %}
+{% if user.is_staff %}
+<details class="og-staffphoto">
+    <summary><i class="bi bi-camera" aria-hidden="true"></i>写真を変える<small>管理者だけに表示</small></summary>
+    <form method="post" action="{% url 'outings:staff_photo' photo_target photo_pk %}" enctype="multipart/form-data" class="og-staffphoto__form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label>写真をアップロード<input type="file" name="photo" accept="image/*"></label>
+        <label>または写真のURL<input type="url" name="url" placeholder="https://…"></label>
+        <label>クレジット（任意）<input type="text" name="credit" maxlength="200" placeholder="例：Wikimedia Commons / 撮影者名"></label>
+        <div class="og-staffphoto__actions">
+            <button type="submit" name="action" value="upload" class="og-staffphoto__save">差し替える</button>
+            {% if photo_url %}<button type="submit" name="action" value="remove" class="og-staffphoto__remove" formnovalidate onclick="return confirm('この写真を削除しますか？');">写真を削除</button>{% endif %}
+        </div>
+    </form>
+</details>
+{% endif %}

@@ -8,6 +8,8 @@ matching trips are listed above the events.
 from datetime import datetime, time, timedelta
 
 from django.core.paginator import Paginator
+
+from .map_points import wants_map
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -18,6 +20,7 @@ from .event_views import (
     _visible_statuses,
     first_in_range,
     hearted_ids_for,
+    is_one_off,
     live_events,
     period_range,
     querystring,
@@ -40,9 +43,9 @@ PERIODS = [
 ]
 
 TOGGLES = [
-    ("family", "家族向け", "bi-people"),
+    ("family", "子連れ", "bi-check2-square"),
     ("free", "無料", "bi-cash-coin"),
-    ("easy", "言葉の壁が低い", "bi-translate"),
+    ("easy", "言葉なしでOK", "bi-translate"),
 ]
 
 SUGGESTED_WORDS = ["コンサート", "マーケット", "子ども", "美術館", "ハイキング", "Zürich", "Basel", "Luzern"]
@@ -97,7 +100,7 @@ def search(request):
         "easy": get.get("easy") == "1",
     }
     sort = get.get("sort", "")
-    if sort not in ("", "date"):
+    if sort not in ("", "date", "sunny"):
         sort = ""
 
     params = {
@@ -113,7 +116,7 @@ def search(request):
     # Match every live event once; the same matcher counts what dropping a
     # condition would add, for the "no results" suggestions.
     # ------------------------------------------------------------------
-    events = list(live_events(now, statuses))
+    events = [e for e in live_events(now, statuses) if is_one_off(e)]
     documents = {e.pk: text_search.event_document(e) for e in events} if words else {}
 
     def matches(event, state):
@@ -161,7 +164,22 @@ def search(request):
         found = run({**state, "need": 1})
         partial = bool(found)
 
-    if words and sort != "date":
+    if sort == "sunny":
+        # Sunniest first, using the forecast of the nearest weather point on
+        # the event's day; days beyond the 7-day forecast go last, by date.
+        from . import sunny
+        forecasts = sunny.weather._forecasts(sunny.POINTS)
+
+        def sun(row):
+            location = row[0].location
+            if not location or location.latitude is None:
+                return sunny.sun_rank(None)
+            point = sunny.POINTS[sunny.nearest_point(float(location.latitude), float(location.longitude))]
+            day = timezone.localdate(row[1].start_at).isoformat()
+            return sunny.sun_rank(forecasts.get(point, {}).get(day))
+
+        found.sort(key=lambda row: (sun(row), row[1].start_at, row[0].pk))
+    elif words and sort != "date":
         # More query words matched first, then where they matched, with a
         # small lift for well-rated and featured events.
         found.sort(key=lambda row: (
@@ -194,6 +212,9 @@ def search(request):
     # ------------------------------------------------------------------
     # Page of event results
     # ------------------------------------------------------------------
+    if wants_map(request):
+        from .map_points import event_point, map_response
+        return map_response([event_point(row[0]) for row in found])
     page_obj = Paginator(found, PAGE_SIZE).get_page(get.get("page", 1))
     visitor_id = get_visitor_id(request)
     page_events = [row[0] for row in page_obj.object_list]
@@ -276,6 +297,7 @@ def search(request):
         "sort": sort,
         "sort_relevance_qs": link(sort=""),
         "sort_date_qs": link(sort="date"),
+        "sort_sunny_qs": link(sort="sunny"),
         # Hidden fields that keep the other conditions when a form is sent.
         "keyword_hidden": _hidden(params, "q", "page"),
         "date_hidden": _hidden(params, "when", "date_from", "date_to", "page"),

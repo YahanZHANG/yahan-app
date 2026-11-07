@@ -80,6 +80,9 @@ def badges(event):
         result.append((event.get_language_barrier_display().split("（")[0] + "が必要", "warn"))
     if tags & {"family", "children", "baby"}:
         result.append(("子連れOK" if "baby" in tags else "家族向け", "family"))
+    age = str((event.ai_details or {}).get("age_note") or "").strip()
+    if age:
+        result.append(("👶 " + age, "family"))
     if "japan" in tags:
         result.append(("日本関連", "japan"))
     if event.source_id is None:

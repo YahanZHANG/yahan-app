@@ -16,6 +16,7 @@ Run the Outings daily update inside the Render Web Service.
 """
 
 import fcntl
+import os
 import subprocess
 import sys
 import time
@@ -50,9 +51,23 @@ DAILY_OPTIONS = dict(
 )
 
 
+def trip_ai_per_night():
+    """Japanese text for up to this many imported trip spots per night.
+    Off (0) unless OUTINGS_TRIP_AI_PER_NIGHT is set on Render, so no AI
+    credit is spent on trips without asking."""
+    try:
+        return max(0, min(3000, int(os.environ.get("OUTINGS_TRIP_AI_PER_NIGHT", "0"))))
+    except ValueError:
+        return 0
+
+
+
 def daily_command():
     command = [sys.executable, "-u", str(Path(settings.BASE_DIR) / "manage.py"), "daily_outings"]
-    for name, value in DAILY_OPTIONS.items():
+    options = dict(DAILY_OPTIONS)
+    if trip_ai_per_night():
+        options["trip_ai"] = trip_ai_per_night()
+    for name, value in options.items():
         flag = "--" + name.replace("_", "-")
         if value is True:
             command.append(flag)

@@ -1,0 +1,126 @@
+{% extends "outings/base.html" %}
+
+{% block title %}晴れの場所をさがす | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page og-sunny">
+    <header class="og-page__head">
+        <h1>☀️ 晴れの場所をさがす</h1>
+    </header>
+
+    <nav class="og-chips og-chips--scroll" aria-label="日にち">
+        {% for d in days %}
+            <a href="?what={{ what }}&amp;day={{ d.value }}{% if rainy %}&amp;rainy=1{% endif %}" class="og-chip{% if d.active %} is-on{% endif %}">{{ d.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <nav class="og-tabs" aria-label="さがすもの">
+        {% for w in whats %}
+            <a href="?what={{ w.key }}&amp;day={{ day|date:'Y-m-d' }}{% if rainy %}&amp;rainy=1{% endif %}" class="{% if w.active %}is-active{% endif %}">{{ w.label }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if rainy_possible %}
+        <a href="?what={{ what }}&amp;day={{ day|date:'Y-m-d' }}{% if not rainy %}&amp;rainy=1{% endif %}" class="og-check og-rainy-pick{% if rainy %} is-on{% endif %}" role="checkbox" aria-checked="{% if rainy %}true{% else %}false{% endif %}">
+            <i class="bi bi-{% if rainy %}check-square-fill{% else %}square{% endif %}" aria-hidden="true"></i>☔ 雨でも楽しめる場所だけ
+        </a>
+    {% endif %}
+
+    {% if has_forecast %}
+        <p class="og-sunny__lead">
+            {% if sunny_areas %}
+                晴れの予報：{{ sunny_areas|join:"、" }}{% if sunny_count %}（{{ sunny_count }}件）{% endif %}
+            {% else %}
+                この日は、晴れの予報の地域がありません。{% if rainy_possible and not rainy %}上の「☔ 雨でも楽しめる場所だけ」で室内の場所にしぼれます。{% elif not rainy_possible %}<a href="?what=kids&amp;day={{ day|date:'Y-m-d' }}&amp;rainy=1">☔ 雨でも楽しめる子連れスポットを見る</a>{% endif %}
+            {% endif %}
+        </p>
+    {% else %}
+        <p class="og-sunny__lead">天気予報を取得できませんでした。少し時間をおいて開き直してください。</p>
+    {% endif %}
+
+    <div id="og-map" class="og-map" aria-label="地図"></div>
+
+    {% if count %}
+        <nav class="og-wx-jump" aria-label="天気ごとの件数">
+            {% for group in groups %}
+                {% if group.total %}
+                    <a href="#wx-{{ group.key }}" class="og-wx-jump__item og-wx--{{ group.key }}">{{ group.label }}<strong>{{ group.total }}</strong></a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+    {% endif %}
+
+    {% if count %}<div class="og-countbar"><p class="og-count">{{ count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>{% endif %}
+
+    <p class="og-sunny-note">おすすめ度（★5段階）は、場所そのもののよさと、その日の天気から出しています。行った人の評価が3件以上あると、その評価を使います。</p>
+
+    {% for group in groups %}
+        {% if group.rows %}
+            <section class="og-wx-group og-wx--{{ group.key }}" id="wx-{{ group.key }}">
+                <h2 class="og-wx-group__head">{{ group.label }}<span>{{ group.total }}件</span></h2>
+                <ul class="og-rows">
+                    {% for item in group.rows %}
+                        <li>
+                            <a href="{{ item.url }}">
+                                {% if item.image %}<img class="og-rows__photo" src="{{ item.image }}" alt="" loading="lazy">{% endif %}
+                                <span class="og-rows__icon{% if item.image %} has-photo{% endif %}" aria-hidden="true">{{ item.emoji }}</span>
+                                <span class="og-rows__text">
+                                    <strong>{{ item.title }}</strong>
+                                    <small>{{ item.sub }}</small>
+                                    {% if item.desc %}<span class="og-rows__desc">{{ item.desc }}</span>{% endif %}
+                                    <span class="og-rows__score" title="おすすめ度 {{ item.score }}/5">おすすめ度 <span class="og-stars" aria-label="5点中{{ item.score }}点">{{ item.stars }}</span>{% if item.member_count %} <small>みんなの評価 ★{{ item.member_avg }}（{{ item.member_count }}件）</small>{% endif %}</span>
+                                </span>
+                                {% if item.weather %}
+                                    <span class="og-rows__wx" title="{{ item.area }}の予報">{{ item.weather.emoji }}<small>{{ item.weather.temp|default:"" }}{% if item.weather.rain %} ☔{{ item.weather.rain }}{% endif %}</small></span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if group.total > group.rows|length %}<p class="og-count">全{{ group.total }}件のうち、上位だけ表示しています。</p>{% endif %}
+            </section>
+        {% endif %}
+    {% endfor %}
+    {% if not count %}
+        <p class="og-empty">この日に見られる場所がまだありません。</p>
+    {% endif %}
+
+    <p class="og-count">天気：Open-Meteo（近くの町の予報）・地図：© OpenStreetMap contributors</p>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+{{ map_data|json_script:"og-map-data" }}
+<script>
+(function () {
+    if (!window.L) return;
+    var data = JSON.parse(document.getElementById("og-map-data").textContent);
+    // Start with the whole of Switzerland in view.
+    var SWITZERLAND = [[45.82, 5.96], [47.81, 10.49]];
+    var map = L.map("og-map", { scrollWheelZoom: false, zoomSnap: 0.25 }).fitBounds(SWITZERLAND, { padding: [6, 6] });
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18, attribution: "© OpenStreetMap contributors",
+        // OSM refuses tiles without a Referer; Django's default policy (same-origin) sends none.
+        referrerPolicy: "strict-origin-when-cross-origin"
+    }).addTo(map);
+    // Re-measure once the page has its final size (otherwise only a corner of the map draws).
+    function refit() { map.invalidateSize(); map.fitBounds(SWITZERLAND, { padding: [6, 6] }); }
+    window.addEventListener("load", refit);
+    setTimeout(refit, 300);
+    function esc(text) { var d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
+    data.points.forEach(function (p) {
+        if (!p.emoji) return;
+        L.marker([p.lat, p.lon], {
+            interactive: false, keyboard: false,
+            icon: L.divIcon({ className: "og-wx-pin" + (p.sunny ? " is-sunny" : ""), html: "<span>" + p.emoji + "</span><small>" + esc(p.temp.split(" ")[0] || "") + "</small>", iconSize: [44, 40] })
+        }).addTo(map);
+    });
+    data.items.forEach(function (item) {
+        L.circleMarker([item.lat, item.lon], {
+            radius: 6, weight: 2, color: "#fff", fillOpacity: 0.95,
+            fillColor: item.sunny ? "#e8a317" : "#237b83"
+        }).bindPopup('<a href="' + item.url + '">' + esc(item.emoji + " " + item.title) + "</a>").addTo(map);
+    });
+})();
+</script>
+{% endblock %}

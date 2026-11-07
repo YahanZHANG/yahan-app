@@ -8,7 +8,9 @@
 
     {% if event.image_url %}
         <img src="{{ event.image_url }}" alt="" class="detail-image" onerror="this.remove();">
+        {% if event.image_credit %}<p class="ev-detail__credit">写真（会場や町のようす）：{{ event.image_credit }}</p>{% endif %}
     {% endif %}
+    {% include "outings/includes/staff_photo.html" with photo_target="event" photo_pk=event.pk photo_url=event.image_url %}
 
     {% if event.status == "draft" %}
         <div class="ev-notice">
@@ -182,6 +184,8 @@
         ===================================================== -->
 
 
+
+    {% include "outings/includes/visits.html" %}
 
     <section id="comments" class="outings-comments">
 

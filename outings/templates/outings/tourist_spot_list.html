@@ -11,7 +11,7 @@
 .trip-page {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 6px 16px 60px;
+    padding: 0 0 60px;
 }
 
 .trip-heading {
@@ -399,8 +399,19 @@
 </style>
 
 <div class="trip-page">
+    <header class="og-page__head">
+        <h1>旅行</h1>
+    </header>
+    {% include "outings/includes/sunny_button.html" with what="trips" %}
 
-    <form method="get" class="trip-search">
+    <div class="og-modebar">
+        <a href="?kids=1" class="og-check" role="checkbox" aria-checked="false">
+            <i class="bi bi-square" aria-hidden="true"></i>子連れで行ける場所だけ
+        </a>
+        {% include "outings/includes/map_button.html" %}{% include "outings/includes/view_toggle.html" %}
+    </div>
+
+    <form method="get" action="#results" class="trip-search">
 
         {% if selected_category != "all" %}
             <input
@@ -439,7 +450,7 @@
     </div>
 
         
-    <div class="trip-list-toolbar">
+    <div class="trip-list-toolbar og-results" id="results">
 
         <span class="trip-result-count">
             {{ result_count }}件の観光情報
@@ -517,7 +528,7 @@
     {% if page_obj.object_list %}
 
 
-    <div class="trip-grid">
+    <div class="trip-grid" data-og-items="trips">
 
         {% for spot in page_obj %}
 
@@ -612,7 +623,11 @@
 
                     <p>
 
-                        {% if spot.summary_ja %}
+                        {% if spot.intro_ja %}
+
+                            {{ spot.intro_ja|truncatechars:125 }}
+
+                        {% elif spot.summary_ja %}
 
                             {{ spot.summary_ja|truncatechars:125 }}
 
@@ -692,30 +707,7 @@
 
 
                 
-        <nav class="trip-pagination">
-
-            {% if page_obj.has_previous %}
-                <a
-                    href="?category={{ selected_category }}&q={{ query|urlencode }}&sort={{ sort }}&all={% if show_all %}1{% else %}0{% endif %}&page={{ page_obj.previous_page_number }}"
-                >
-                    ← 前へ
-                </a>
-            {% endif %}
-
-            <span>
-                {{ page_obj.number }} /
-                {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-                <a
-                    href="?category={{ selected_category }}&q={{ query|urlencode }}&sort={{ sort }}&all={% if show_all %}1{% else %}0{% endif %}&page={{ page_obj.next_page_number }}"
-                >
-                    次へ →
-                </a>
-            {% endif %}
-
-        </nav>
+        {% include "outings/includes/more_button.html" with name="trips" %}
 
 
     {% else %}

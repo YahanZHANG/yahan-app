@@ -113,7 +113,7 @@ def distance_m(lat1, lon1, lat2, lon2):
     return 6371000 * 2 * math.asin(math.sqrt(a))
 
 
-def search_nearby(session, spot):
+def search_nearby(session, spot, radius=None):
     """
     Geotagged Commons photos taken near the spot,
     closest first.
@@ -128,7 +128,7 @@ def search_nearby(session, spot):
             "action": "query",
             "generator": "geosearch",
             "ggscoord": f"{spot.latitude}|{spot.longitude}",
-            "ggsradius": GEO_RADIUS.get(spot.spot_type, 1500),
+            "ggsradius": radius or GEO_RADIUS.get(spot.spot_type, 1500),
             "ggsnamespace": 6,
             "ggslimit": 30,
             "prop": "imageinfo|coordinates",
@@ -232,7 +232,7 @@ class Command(BaseCommand):
             details = dict(spot.details or {})
 
             # Never overwrite already approved images.
-            if details.get("approved_image"):
+            if details.get("approved_image") or details.get("photo_removed"):
                 continue
 
             if details.get("commons_search_checked") and not options["retry"]:

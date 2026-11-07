@@ -36,10 +36,10 @@ from .visitor import (
 
 SPOT_CATEGORIES = {
     "all": "すべて",
-    "attractions": "観光・体験",
-    "tours": "散策・ハイキング",
-    "destinations": "旅行先・地域",
+    "attractions": "観光スポット",
     "offers": "体験・ツアー",
+    "tours": "散策・ハイキング",
+    "destinations": "町・村",
 }
 
 
@@ -79,7 +79,28 @@ def tourist_spot_queryset():
 # Tourist spot list
 # =========================================================
 
+from .visits import Target, visit_context  # noqa: E402
+from .map_points import MAX_POINTS, map_response, trip_point, wants_map  # noqa: E402
+
+
+def next_page_qs(request, page_obj):
+    """Query string of the next page, keeping every filter."""
+    if not page_obj.has_next():
+        return ""
+    params = request.GET.copy()
+    params["page"] = page_obj.next_page_number()
+    return params.urlencode()
+
+
 def tourist_spot_list(request):
+
+    # 子連れ ticked: the hand-written family places instead.
+    from .event_views import kids_choice, remember_kids
+    kids, kids_explicit = kids_choice(request, "kids")
+    if kids:
+        from .spot_views import spot_list
+        response = spot_list(request)
+        return remember_kids(response, True) if kids_explicit else response
 
     # =====================================================
     # Request parameters
@@ -185,6 +206,9 @@ def tourist_spot_list(request):
     # Pagination
     # =====================================================
 
+    if wants_map(request):
+        return map_response([trip_point(s) for s in spots.filter(latitude__isnull=False)[:MAX_POINTS]], spots.count())
+
     paginator = Paginator(
         spots,
         24,
@@ -244,9 +268,12 @@ def tourist_spot_list(request):
             "show_all": show_all,
             "sort": sort,
             "result_count": paginator.count,
+            "more_qs": next_page_qs(request, page_obj),
         },
     )
 
+    if kids_explicit:
+        remember_kids(response, False)
     return set_visitor_cookie(
         request,
         response,
@@ -328,6 +355,7 @@ def tourist_spot_detail(request, pk):
                 )
             ),
             "is_hearted": is_hearted,
+            "visits": visit_context(request, Target.TRIP, spot, visitor_id),
         },
     )
 
@@ -356,6 +384,7 @@ def toggle_tourist_heart(request, pk):
         TouristSpotHeart.objects.get_or_create(
             spot=spot,
             visitor_id=visitor_id,
+            defaults={"user": request.user if request.user.is_authenticated else None},
         )
     )
 

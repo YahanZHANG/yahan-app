@@ -1,0 +1,6 @@
+{# Entry to 晴れの場所をさがす. Optional `what`. One slim line: the phone tab bar also has it. #}
+<a class="og-sunny-btn" href="{% url 'outings:sunny' %}{% if what %}?what={{ what }}{% endif %}">
+    <span aria-hidden="true">☀️</span>
+    <span>晴れの場所から探す<small>晴れの地域から順に</small></span>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+</a>

@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import views, discovery_views, event_views, search_views
+from . import find_views, photo_admin, saved_views, sunny, visits, views, discovery_views, event_views, search_views, spot_views
 
 
 app_name = "outings"
@@ -8,19 +8,42 @@ app_name = "outings"
 
 urlpatterns = [
 
+    path("visit/<str:target>/<int:pk>/", visits.save_visit, name="save_visit"),
+
     # =====================================================
     # HOME / Search
     # =====================================================
 
     path(
         "",
-        discovery_views.home,
+        spot_views.home,
         name="home",
     ),
+    path("find/", find_views.find, name="find"),
     path(
         "events/",
-        event_views.event_home,
+        find_views.from_events,
         name="event_home",
+    ),
+    path(
+        "spots/",
+        spot_views.spot_list_redirect,
+        name="spot_list",
+    ),
+    path(
+        "spots/<int:pk>/",
+        spot_views.spot_detail,
+        name="spot_detail",
+    ),
+    path(
+        "sunny/",
+        find_views.from_sunny,
+        name="sunny",
+    ),
+    path(
+        "profile/",
+        spot_views.profile_save,
+        name="profile_save",
     ),
     path(
         "about/",
@@ -28,14 +51,13 @@ urlpatterns = [
         name="about_outings",
     ),
 
-    path(
-        "my/saved/all/",
-        discovery_views.saved_all,
-        name="saved_all",
-    ),
+    path("my/saved/all/", saved_views.saved, name="saved_all"),
+    path("my/family/", saved_views.family_page, name="family"),
+    path("list/", find_views.browse, name="browse"),
+    path("photo/<str:target>/<int:pk>/", photo_admin.staff_photo, name="staff_photo"),
     path(
         "search/",
-        search_views.search,
+        find_views.from_search,
         name="search",
     ),
 

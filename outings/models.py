@@ -1,10 +1,15 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 
+
+from urllib.parse import quote
 
 from django.conf import settings
 
 from django.db import models
 
 from django.db.models import Q
+
+from outings.regions import REGION_CHOICES, REGION_NAMES_JA
 
 
 
@@ -297,6 +302,13 @@ class Event(models.Model):
 
     image_url = models.URLField(max_length=1000, blank=True)
 
+    # Set when image_url is a Wikimedia photo of the venue or town, picked automatically.
+    image_credit = models.CharField("写真のクレジット", max_length=300, blank=True)
+
+    image_search_done = models.BooleanField("写真の自動検索済み", default=False)
+    # Removed by an admin on the page: the Eventfrog photo step leaves it empty.
+    image_removed = models.BooleanField("写真を削除済み", default=False)
+
 
 
     source = models.ForeignKey(
@@ -509,6 +521,12 @@ class EventHeart(models.Model):
 
     visitor_id = models.UUIDField(db_index=True)
 
+    # Signed in: the account too, so the family can see it.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_event_hearts",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -552,6 +570,30 @@ class OutingsPreference(models.Model):
     favorite_regions = models.JSONField(default=list)
 
     personalization_enabled = models.BooleanField(default=True)
+
+    # 「あなたに合わせる」: four questions asked once on HOME.
+    class German(models.TextChoices):
+        NONE = "none", "ほとんどわからない"
+        LITTLE = "little", "少しわかる"
+        FINE = "fine", "問題ない"
+
+    class DaysOff(models.TextChoices):
+        WEEKEND = "weekend", "土日"
+        WEEKDAY = "weekday", "平日"
+        ANY = "any", "決まっていない"
+
+    class Setup(models.TextChoices):
+        NEW = "", "まだ"
+        DONE = "done", "答えた"
+        SKIPPED = "skipped", "スキップ"
+
+    areas = models.JSONField("よく出かける地域", default=list, blank=True)
+    german = models.CharField("現地の言葉", max_length=10, choices=German.choices, blank=True)
+    with_kids = models.BooleanField("子どもと出かける", null=True, blank=True)
+    kid_ages = models.JSONField("子どもの年齢", default=list, blank=True)
+    days_off = models.CharField("お休み", max_length=10, choices=DaysOff.choices, blank=True)
+    setup = models.CharField("質問", max_length=10, choices=Setup.choices, blank=True, default="")
+    hide_went = models.BooleanField("行った場所を一覧に出さない", default=False)
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -912,9 +954,9 @@ class EventfrogOccurrenceLink(models.Model):
 class TouristSpot(models.Model):
 
     class SpotType(models.TextChoices):
-        ATTRACTION = "attractions", "観光・体験"
+        ATTRACTION = "attractions", "観光スポット"
         TOUR = "tours", "散策・ハイキング"
-        DESTINATION = "destinations", "旅行先・地域"
+        DESTINATION = "destinations", "町・村"
         OFFER = "offers", "体験・ツアー"
 
     class Status(models.TextChoices):
@@ -954,6 +996,13 @@ class TouristSpot(models.Model):
     )
 
     summary_ja = models.TextField(
+        blank=True,
+    )
+
+    # Written by hand (import_tourist_texts or admin). Shown before the
+    # AI text and never overwritten by it.
+    intro_ja = models.TextField(
+        "紹介文（手書き）",
         blank=True,
     )
 
@@ -1027,6 +1076,9 @@ class TouristSpot(models.Model):
         auto_now_add=True,
     )
 
+    # First time it went public (for 新着 on the 一覧 page).
+    published_at = models.DateTimeField("公開日", null=True, blank=True)
+
     updated_at = models.DateTimeField(
         auto_now=True,
     )
@@ -1051,6 +1103,14 @@ class TouristSpot(models.Model):
             ),
         ]
 
+    def save(self, *args, **kwargs):
+        if self.status == self.Status.PUBLISHED and self.published_at is None:
+            from django.utils import timezone
+            self.published_at = timezone.now()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = list(kwargs["update_fields"]) + ["published_at"]
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return (
             self.title_ja
@@ -1072,6 +1132,12 @@ class TouristSpotHeart(models.Model):
 
     visitor_id = models.UUIDField(
         db_index=True,
+    )
+
+    # Signed in: the account too, so the family can see it.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_trip_hearts",
     )
 
     created_at = models.DateTimeField(
@@ -1185,3 +1251,176 @@ class OutingsFeedback(models.Model):
 
     def __str__(self):
         return self.message[:50]
+
+
+class FamilySpot(models.Model):
+    """A place families can visit any day: parks, animal parks, museums,
+    indoor play. Written by hand in our own words, never copied from other
+    sites; the details parents ask about first get their own fields."""
+
+    class Kind(models.TextChoices):
+        PARK = "park", "公園・遊び場"
+        ANIMALS = "animals", "動物"
+        MUSEUM = "museum", "博物館・体験"
+        INDOOR = "indoor", "室内遊び場"
+        NATURE = "nature", "自然・ハイキング"
+        MOUNTAIN = "mountain", "山・ロープウェイ"
+        WATER = "water", "プール・水遊び"
+        FARM = "farm", "農場"
+        HISTORY = "history", "お城・歴史"
+        THEME = "theme", "遊園地・テーマパーク"
+        OTHER = "other", "そのほか"
+
+    class Language(models.TextChoices):
+        NONE = "none", "言葉はいらない"
+        LITTLE = "little", "言葉はほぼいらない"
+        HELPS = "helps", "言葉がわかるともっと楽しい"
+
+    class Season(models.TextChoices):
+        YEAR = "year", "一年中"
+        WARM = "warm", "春〜秋"
+        SUMMER = "summer", "夏"
+        SUMMER_WINTER = "summer_winter", "夏と冬"
+
+    class Trip(models.TextChoices):
+        DAY = "day", "日帰り"
+        BOTH = "both", "日帰りも1泊も"
+        OVERNIGHT = "overnight", "1泊がおすすめ"
+
+    class Price(models.TextChoices):
+        FREE = "free", "無料"
+        PARTLY = "partly", "入場無料（一部有料）"
+        PAID = "paid", "有料"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "下書き"
+        PUBLISHED = "published", "公開"
+
+    name = models.CharField("名前（現地語）", max_length=200)
+    name_ja = models.CharField("名前（日本語）", max_length=200, blank=True)
+    kind = models.CharField("種類", max_length=20, choices=Kind.choices, default=Kind.PARK)
+    canton = models.CharField("州", max_length=2, choices=REGION_CHOICES, blank=True)
+    town = models.CharField("町", max_length=100, blank=True)
+    address = models.CharField("住所", max_length=200, blank=True)
+    latitude = models.FloatField("緯度", null=True, blank=True)
+    longitude = models.FloatField("経度", null=True, blank=True)
+
+    summary_ja = models.TextField("紹介（自分たちの言葉で）")
+    intro_ja = models.TextField("くわしい紹介文（手書き）", blank=True)
+    tips_ja = models.TextField("知っておくと便利なこと", blank=True)
+
+    rainy_ok = models.BooleanField("雨の日もOK（室内あり）", default=False)
+    price = models.CharField("料金", max_length=10, choices=Price.choices, default=Price.PAID)
+    price_note = models.CharField("料金メモ", max_length=200, blank=True)
+    open_sunday = models.BooleanField("日曜も営業", default=True)
+    hours_note = models.CharField("営業日・時間メモ", max_length=300, blank=True)
+    parking_note = models.CharField("駐車場", max_length=200, blank=True)
+    food_note = models.CharField("食事", max_length=200, blank=True)
+    stroller_ok = models.BooleanField("ベビーカーOK", default=False)
+    age_note = models.CharField("おすすめの年齢", max_length=100, blank=True)
+    age_min = models.PositiveSmallIntegerField("何歳から", null=True, blank=True)
+    age_max = models.PositiveSmallIntegerField("何歳まで", null=True, blank=True)
+    language = models.CharField("言葉", max_length=10, choices=Language.choices, default=Language.NONE)
+    season = models.CharField("行ける季節", max_length=20, choices=Season.choices, default=Season.YEAR)
+    trip = models.CharField("チューリッヒから", max_length=10, choices=Trip.choices, default=Trip.DAY)
+    emoji = models.CharField("絵文字（写真がないときに表示）", max_length=8, blank=True)
+    recommend = models.PositiveSmallIntegerField(
+        "おすすめ度（1〜5）", default=4, validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="晴れの場所ページの★のもと。みんなの評価が3件以上あると、そちらを使います。",
+    )
+
+    official_url = models.URLField("公式サイト", blank=True)
+    maps_url = models.URLField("Googleマップのリンク", blank=True)
+    image_url = models.URLField("写真URL", blank=True)
+    image_credit = models.CharField("写真のクレジット", max_length=200, blank=True)
+    image_search_done = models.BooleanField("写真の自動検索済み", default=False)
+    image_removed = models.BooleanField("写真を削除済み", default=False)
+
+    status = models.CharField("状態", max_length=10, choices=Status.choices, default=Status.DRAFT, db_index=True)
+    sort_order = models.IntegerField("並び順（小さいほど上）", default=100)
+    checked_on = models.DateField("情報を確認した日", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "子連れスポット"
+        verbose_name_plural = "子連れスポット"
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name_ja or self.name
+
+    @property
+    def title(self):
+        return self.name_ja or self.name
+
+    @property
+    def place_label(self):
+        canton = REGION_NAMES_JA.get(self.canton, "")
+        return "・".join(part for part in (self.town, canton) if part)
+
+    @property
+    def directions_url(self):
+        if self.maps_url:
+            return self.maps_url
+        query = self.address or f"{self.name} {self.town}"
+        return "https://www.google.com/maps/search/?api=1&query=" + quote(query)
+
+    @property
+    def age_label(self):
+        if self.age_min is not None and self.age_max is not None:
+            return f"{self.age_min}〜{self.age_max}歳"
+        if self.age_min is not None:
+            return f"{self.age_min}歳〜"
+        return self.age_note
+
+    # Months a season usually covers; the exact dates are in hours_note.
+    SEASON_MONTHS = {
+        "year": set(range(1, 13)),
+        "warm": set(range(4, 11)),
+        "summer": set(range(6, 10)),
+        "summer_winter": {12, 1, 2, 3, 6, 7, 8, 9, 10},
+    }
+
+    def open_in(self, month):
+        return month in self.SEASON_MONTHS.get(self.season, set(range(1, 13)))
+
+
+class OutingsVisit(models.Model):
+    """行ったことがある！／行ってみたい！ on a trip, 子連れスポット or event.
+    Someone who went can add a 1-5 rating and, when signed in, a comment.
+    One row per browser (visitor_id), linked to the account when signed in."""
+
+    class Target(models.TextChoices):
+        TRIP = "trip", "旅行"
+        KIDS = "kids", "子連れスポット"
+        EVENT = "event", "イベント"
+
+    class Status(models.TextChoices):
+        WENT = "went", "行った"
+        WANT = "want", "行ってみたい"
+
+    target = models.CharField("対象", max_length=10, choices=Target.choices)
+    object_id = models.PositiveIntegerField("対象のID")
+    visitor_id = models.UUIDField(db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_visits", verbose_name="ユーザー",
+    )
+    status = models.CharField("状態", max_length=10, choices=Status.choices)
+    rating = models.PositiveSmallIntegerField(
+        "評価（1〜5）", null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    comment = models.TextField("コメント", max_length=500, blank=True)
+    is_hidden = models.BooleanField("非表示にする", default=False, help_text="評価とコメントを出さない")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "行った・行きたい"
+        verbose_name_plural = "行った・行きたい（評価とコメント）"
+        ordering = ["-updated_at", "-pk"]
+        indexes = [models.Index(fields=["target", "object_id"])]
+
+    def __str__(self):
+        return f"{self.get_target_display()} {self.object_id}: {self.get_status_display()}"

@@ -50,6 +50,10 @@ FEATURED_LIMIT = 6
 # Helpers
 # =========================================================
 
+from .visits import Target, visit_context  # noqa: E402
+from .map_points import event_point, map_response, wants_map  # noqa: E402
+
+
 def _visible_statuses(request):
     statuses = [Event.Status.PUBLISHED]
     if request.user.is_authenticated and request.user.is_staff and request.GET.get("preview") == "1":
@@ -66,6 +70,49 @@ def live_occurrences(now):
     )
 
 
+FAMILY_TAGS = {"family", "children", "baby"}
+
+# The 子連れ checkbox is remembered per browser, for events and trips alike.
+KIDS_COOKIE = "outings_kids"
+
+
+def kids_choice(request, param):
+    """(ticked, explicit): from ?param=1/0 when given, else the remembered choice or the profile."""
+    value = request.GET.get(param)
+    if value in ("0", "1"):
+        return value == "1", True
+    remembered = request.COOKIES.get(KIDS_COOKIE)
+    if remembered in ("0", "1"):
+        return remembered == "1", False
+    # Not ticked by hand yet: follow 「あなたに合わせる」.
+    preference = _preference(get_visitor_id(request))
+    return bool(preference and preference.with_kids), False
+
+
+def remember_kids(response, ticked):
+    response.set_cookie(KIDS_COOKIE, "1" if ticked else "0", max_age=400 * 24 * 3600, samesite="Lax")
+    return response
+
+
+def is_one_off(event):
+    """Eventfrog imports are listed only when one-off: long runs and weekly
+    repeats suit the places list better. Events added by hand, like a
+    library storytime, may repeat."""
+    if event.source and event.source.name.lower() == "eventfrog":
+        dates = getattr(event, "upcoming_dates", None) or []
+        return bool(dates) and not schedule.is_long_running(dates) and not schedule.is_recurring(dates)
+    return True
+
+
+def is_family(event):
+    tags = {t.slug for t in event.tags.all()}
+    return bool(tags & FAMILY_TAGS) or bool(event.category and event.category.slug == "family")
+
+
+def is_family_event(event):
+    return is_family(event) and is_one_off(event)
+
+
 def live_events(now, statuses=(Event.Status.PUBLISHED,)):
     """Events with at least one occurrence that is neither cancelled nor over."""
     return (
@@ -74,7 +121,7 @@ def live_events(now, statuses=(Event.Status.PUBLISHED,)):
             status__in=statuses,
             pk__in=live_occurrences(now).values("event_id"),
         )
-        .select_related("category", "location")
+        .select_related("category", "location", "source")
         .prefetch_related(
             "tags",
             Prefetch("occurrences", queryset=live_occurrences(now), to_attr="upcoming_dates"),
@@ -152,7 +199,7 @@ def event_home(request):
     if period not in dict(PERIODS):
         period = "all"
     category_slug = request.GET.get("category", "").strip()
-    family = request.GET.get("family") == "1"
+    family, family_explicit = kids_choice(request, "family")
     no_language = request.GET.get("easy") == "1"
     free = request.GET.get("free") == "1"
 
@@ -169,7 +216,7 @@ def event_home(request):
         regions = favorites
         using_favorites = bool(favorites)
 
-    events = list(live_events(now, statuses))
+    events = [e for e in live_events(now, statuses) if is_one_off(e)]
     win_start, win_end = period_range(period, now)
 
     def matches(event, *, skip_region=False):
@@ -177,8 +224,7 @@ def event_home(request):
             return False
         if category_slug and not (event.category and event.category.slug == category_slug):
             return False
-        tags = {t.slug for t in event.tags.all()}
-        if family and not tags & {"family", "children", "baby"}:
+        if family and not is_family(event):
             return False
         if no_language and event.language_barrier not in ("none", "english", "japanese"):
             return False
@@ -192,6 +238,8 @@ def event_home(request):
             region_counts[event.location.canton] = region_counts.get(event.location.canton, 0) + 1
 
     matched = [e for e in events if matches(e)]
+    if wants_map(request):
+        return map_response([event_point(e) for e in matched])
     hearted = hearted_ids_for(visitor_id, matched)
     for event in matched:
         decorate(event, now, hearted)
@@ -239,7 +287,7 @@ def event_home(request):
         "when": "" if period == "all" else period,
         "region": regions if raw_regions else [],
         "category": category_slug,
-        "family": "1" if family else "",
+        "family": "1" if family else "0",
         "easy": "1" if no_language else "",
         "free": "1" if free else "",
     }
@@ -270,6 +318,8 @@ def event_home(request):
         "clear_qs": querystring({}, region=["all"]),
         "preview_mode": Event.Status.DRAFT in statuses,
     })
+    if family_explicit:
+        remember_kids(response, family)
     return set_visitor_cookie(request, response, visitor_id)
 
 
@@ -288,14 +338,14 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
     """Every filter chip with its label, state and link, so templates stay simple."""
     chips = {
         "periods": [
-            {"label": label, "active": key == period, "qs": querystring(params, when="" if key == "all" else key, page="")}
+            {"key": "" if key == "all" else key, "label": label, "active": key == period, "qs": querystring(params, when="" if key == "all" else key, page="")}
             for key, label in PERIODS
         ],
         "regions": [{"label": "すべての地域", "active": not regions, "qs": querystring(params, region=["all"], page="")}],
         "toggles": [
-            {"label": "家族向け", "icon": "bi-people", "active": family, "qs": querystring(params, family="" if family else "1", page="")},
-            {"label": "言葉の壁が低い", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
-            {"label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
+            {"name": "family", "label": "子連れ", "icon": "bi-check2-square", "active": family, "qs": querystring(params, family="0" if family else "1", page="")},
+            {"name": "easy", "label": "言葉なしでOK", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
+            {"name": "free", "label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
         ],
         "categories": [{"label": "すべて", "active": not category, "qs": querystring(params, category="", page="")}],
     }
@@ -305,12 +355,12 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
             continue
         chosen = [c for c in regions if c != code] if code in regions else regions + [code]
         chips["regions"].append({
-            "label": name, "count": count, "active": code in regions,
+            "code": code, "label": name, "count": count, "active": code in regions,
             "qs": querystring(params, region=chosen or ["all"], page=""),
         })
     for c in categories:
         chips["categories"].append({
-            "label": c.name, "active": c.slug == category,
+            "slug": c.slug, "label": c.name, "active": c.slug == category,
             "qs": querystring(params, category="" if c.slug == category else c.slug, page=""),
         })
     return chips
@@ -390,6 +440,7 @@ def event_detail(request, pk):
         "comments": comments,
         "comment_count": OutingsComment.objects.filter(event=event, is_deleted=False).count(),
         "comment_form": OutingsCommentForm(),
+        "visits": visit_context(request, Target.EVENT, event, visitor_id),
     })
     return set_visitor_cookie(request, response, visitor_id)
 
@@ -422,7 +473,10 @@ def toggle_heart(request, pk):
         hearted = False
     else:
         event = get_object_or_404(Event, pk=pk, status=Event.Status.PUBLISHED)
-        EventHeart.objects.get_or_create(event=event, visitor_id=visitor_id)
+        EventHeart.objects.get_or_create(
+            event=event, visitor_id=visitor_id,
+            defaults={"user": request.user if request.user.is_authenticated else None},
+        )
         hearted = True
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
