@@ -5,10 +5,20 @@
 {% block content %}
 <div class="og-page og-home">
 
+    {% if ask %}
+        <section class="og-ask" aria-labelledby="og-ask-title">
+            <h2 id="og-ask-title">あなたに合わせる</h2>
+            <p>4つ答えると、おすすめがあなた向けになります。あとからマイページで変えられます。</p>
+            {% include "outings/includes/profile_form.html" with next="/outings/?saved=1" skippable=True %}
+        </section>
+    {% elif request.GET.saved %}
+        <p class="og-saved" role="status">あなた向けのおすすめにしました。マイページでいつでも変えられます。</p>
+    {% endif %}
+
     <section class="og-hero">
-        <p class="og-hero__kicker">今週末どこ行く？</p>
+        <p class="og-hero__kicker">{% if weekday %}次の平日、どこ行く？{% else %}今週末どこ行く？{% endif %}</p>
         {% if forecast %}
-            <ul class="og-hero__weather" aria-label="チューリッヒの週末の天気">
+            <ul class="og-hero__weather" aria-label="チューリッヒの天気">
                 {% for day in forecast %}
                     <li><b>{{ day.day }}</b><span class="og-hero__wx">{{ day.emoji }}</span>{{ day.temp|default:"" }}{% if day.rain %}<small>☔{{ day.rain }}</small>{% endif %}</li>
                 {% endfor %}
@@ -16,7 +26,7 @@
         {% endif %}
         <p class="og-hero__lead">
             {% if rainy %}雨の予報です。室内で遊べる場所から並べました。
-            {% elif forecast %}外遊びにぴったりの週末です。
+            {% elif forecast %}外遊びにぴったりの{% if weekday %}お天気{% else %}週末{% endif %}です。
             {% else %}子どもと行ける場所を集めました。{% endif %}
         </p>
         <nav class="og-quick" aria-label="条件で探す">
@@ -28,7 +38,7 @@
 
     <section class="og-section">
         <header class="og-section__head">
-            <h2>{% if rainy %}雨でも楽しめる場所{% else %}今週末のおすすめ{% endif %}</h2>
+            <h2>{% if rainy %}雨でも楽しめる場所{% elif weekday %}平日のおすすめ{% else %}今週末のおすすめ{% endif %}</h2>
             <a href="{% url 'outings:tourist_spot_list' %}?kids=1{% if rainy %}&amp;rainy=1{% endif %}">すべて見る（{{ spot_count }}）</a>
         </header>
         {% if weekend_spots %}
@@ -43,8 +53,8 @@
     {% if weekend_events %}
         <section class="og-section">
             <header class="og-section__head">
-                <h2>今週末の子連れイベント</h2>
-                <a href="{% url 'outings:event_home' %}?when=weekend">すべて見る</a>
+                <h2>{% if weekday %}平日の{% else %}今週末の{% endif %}{% if kids %}子連れ{% endif %}イベント</h2>
+                <a href="{% url 'outings:event_home' %}{% if not weekday %}?when=weekend{% endif %}">すべて見る</a>
             </header>
             <ul class="og-rows">
                 {% for event in weekend_events %}

@@ -7,12 +7,15 @@ plain links like the event list, so every state has its own URL.
 import random
 
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.utils import timezone
 
-from .event_views import is_family_event, live_events, querystring
+from . import profile as visitor_profile
+from .event_views import is_family_event, is_one_off, live_events, querystring
 from .cards import decorate as decorate_event
-from .models import FamilySpot
+from .models import FamilySpot, OutingsPreference
+from .profile import AGE_GROUPS
 from .regions import AREA_OF_CANTON, AREAS, REGION_NAMES_JA
 from .services import weather
 from .visitor import get_visitor_id, set_visitor_cookie
@@ -26,13 +29,6 @@ KIND_EMOJI = {
 
 LANGUAGE_MARK = {"none": "◎", "little": "○", "helps": "△"}
 
-# (key, label, lowest age, highest age)
-AGE_GROUPS = [
-    ("0", "0〜2歳", 0, 2),
-    ("3", "3〜5歳", 3, 5),
-    ("6", "6〜9歳", 6, 9),
-    ("10", "10歳〜", 10, 18),
-]
 
 # (key, label, icon) of the yes/no filters.
 TOGGLES = [
@@ -188,28 +184,32 @@ def spot_detail(request, pk):
 # HOME
 # =========================================================
 
-def weekend_events(now, limit=6):
-    days = {d.isoformat() for d in weather.weekend_days(now)}
+def weekend_events(now, limit=6, days=None, family=True, cantons=()):
+    days = {d.isoformat() for d in (days or weather.weekend_days(now))}
     picked = []
     for event in live_events(now):
-        if not is_family_event(event):
+        if not (is_family_event(event) if family else is_one_off(event)):
             continue
         decorate_event(event, now)
         dates = [d for d in event.upcoming_dates if timezone.localdate(d.start_at).isoformat() in days]
         if dates:
             event.weekend_start = dates[0].start_at
             picked.append(event)
-    # Language-free events first, then by time.
-    picked.sort(key=lambda e: (e.language_barrier not in ("none", "japanese"), e.weekend_start))
+    # Nearby first, then language-free, then by time.
+    picked.sort(key=lambda e: (
+        bool(cantons) and not (e.location and e.location.canton in cantons),
+        e.language_barrier not in ("none", "japanese"),
+        e.weekend_start,
+    ))
     return picked[:limit]
 
 
-def weekend_forecast(now):
-    """[{day, emoji, label, temp, rain}] for Zurich this weekend, and whether rain is likely."""
+def weekend_forecast(now, days=None):
+    """[{day, emoji, label, temp, rain}] for Zurich on the days off, and whether rain is likely."""
     forecasts = weather._forecasts([HOME_POINT])
     rows = []
     rainy = False
-    for day in weather.weekend_days(now):
+    for day in (days or weather.weekend_days(now))[:3]:
         raw = forecasts.get(HOME_POINT, {}).get(day.isoformat())
         text = weather.describe(raw)
         if text:
@@ -230,17 +230,26 @@ def weekly_pick(spots, count, now):
 def home(request):
     now = timezone.now()
     month = timezone.localdate(now).month
-    forecast, rainy = weekend_forecast(now)
+    visitor_id = get_visitor_id(request)
+    preference = visitor_profile.get_profile(visitor_id)
+    days = visitor_profile.days_off(now, preference)
+    weekday = bool(preference and preference.days_off == OutingsPreference.DaysOff.WEEKDAY)
+    forecast, rainy = weekend_forecast(now, days)
+
+    def ranked(spots):
+        # Weekly shuffle, then the visitor's areas, ages and language first.
+        spots = weekly_pick(spots, len(spots), now)
+        spots.sort(key=lambda s: -visitor_profile.spot_score(s, preference))
+        return spots
 
     open_now = [s for s in published_spots() if s.open_in(month)]
-    day_spots = [s for s in open_now if s.trip != FamilySpot.Trip.OVERNIGHT]
+    day_spots = ranked([s for s in open_now if s.trip != FamilySpot.Trip.OVERNIGHT])
     if rainy:
         # Rain: indoor places first.
         day_spots = [s for s in day_spots if s.rainy_ok] + [s for s in day_spots if not s.rainy_ok]
-        weekend_spots = day_spots[:6]
-    else:
-        weekend_spots = weekly_pick(day_spots, 6, now)
-    overnight = weekly_pick([s for s in open_now if s.trip != FamilySpot.Trip.DAY], 6, now)
+    weekend_spots = day_spots[:6]
+    overnight = ranked([s for s in open_now if s.trip != FamilySpot.Trip.DAY])[:6]
+    kids = visitor_profile.wants_kids(preference)
 
     quick = [
         {"label": "雨の日OK", "emoji": "☔", "qs": "rainy=1"},
@@ -249,15 +258,58 @@ def home(request):
         {"label": "日帰り", "emoji": "🚆", "qs": "trip=day"},
     ] + [{"label": label, "emoji": "", "qs": f"age={key}"} for key, label, *_ in AGE_GROUPS]
 
-    visitor_id = get_visitor_id(request)
     response = render(request, "outings/home.html", {
         "forecast": forecast,
         "rainy": rainy,
+        "weekday": weekday,
+        "kids": kids is not False,
+        "ask": not (preference and preference.setup),
+        "profile": profile_form_context(preference),
         "weekend_spots": [decorate(s) for s in weekend_spots],
-        "weekend_events": weekend_events(now),
+        "weekend_events": weekend_events(
+            now, days=days, family=kids is not False, cantons=visitor_profile.area_cantons(preference),
+        ),
         "overnight_spots": [decorate(s) for s in overnight],
         "quick_filters": quick,
         "spot_count": published_spots().count(),
         "region_names": REGION_NAMES_JA,
     })
+    return set_visitor_cookie(request, response, visitor_id)
+
+
+# =========================================================
+# 「あなたに合わせる」
+# =========================================================
+
+def profile_form_context(preference):
+    """Choices and current answers for the four questions."""
+    return {
+        "preference": preference,
+        "areas": [(key, label, key in (preference.areas if preference else [])) for key, label, _ in AREAS],
+        "german": [(v, l, preference is not None and preference.german == v) for v, l in OutingsPreference.German.choices],
+        "kids": preference.with_kids if preference else None,
+        "ages": [(k, l, k in (preference.kid_ages if preference else [])) for k, l, *_ in AGE_GROUPS],
+        "days": [(v, l, preference is not None and preference.days_off == v) for v, l in OutingsPreference.DaysOff.choices],
+    }
+
+
+def _safe_next(request, default):
+    target = request.POST.get("next", "")
+    return target if target.startswith("/outings/") else default
+
+
+@require_POST
+def profile_save(request):
+    visitor_id = get_visitor_id(request)
+    preference, _ = OutingsPreference.objects.get_or_create(visitor_id=visitor_id)
+    if request.POST.get("skip"):
+        preference.setup = OutingsPreference.Setup.SKIPPED
+        preference.save(update_fields=["setup", "updated_at"])
+    else:
+        visitor_profile.save_answers(preference, request.POST)
+    target = reverse("outings:home") if request.POST.get("skip") else _safe_next(request, reverse("outings:home"))
+    response = redirect(target)
+    if preference.with_kids is not None:
+        # The 子連れ tick follows the answer until it is changed by hand.
+        response.delete_cookie("outings_kids")
     return set_visitor_cookie(request, response, visitor_id)

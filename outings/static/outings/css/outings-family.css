@@ -445,3 +445,51 @@ html[data-outings-theme="dark"] {
 .og-check.is-on { border-color: var(--outings-accent); background: var(--outings-accent-soft); color: var(--outings-accent); }
 .og-check.is-on i { color: var(--outings-accent); }
 .og-count { margin: 0 0 10px; color: var(--outings-muted); font-size: 14px; }
+
+/* ---------- あなたに合わせる (HOME card, My page) ---------- */
+
+.og-ask {
+    margin: 0 0 16px;
+    padding: 16px;
+    border: 1.5px solid var(--outings-accent);
+    border-radius: 16px;
+    background: var(--outings-accent-soft);
+}
+.og-ask h2 { margin: 0 0 4px; font-size: 17px; color: var(--outings-accent); }
+.og-ask > p { margin: 0 0 12px; color: var(--outings-text); font-size: 13px; }
+
+.og-profile fieldset { margin: 0 0 14px; padding: 0; border: 0; min-width: 0; }
+.og-profile legend { margin: 0 0 6px; padding: 0; font-size: 14px; font-weight: 700; color: var(--outings-text); }
+.og-profile legend small,
+.og-profile__hint small { margin-left: 6px; font-weight: 400; color: var(--outings-muted); font-size: 12px; }
+.og-profile__hint { width: 100%; font-size: 13px; font-weight: 700; color: var(--outings-text); }
+.og-profile__ages { margin-top: 10px; }
+.og-profile__ages[hidden] { display: none; }
+
+.og-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.og-pick label { position: relative; cursor: pointer; }
+.og-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.og-pick label span {
+    display: inline-block;
+    padding: 7px 12px;
+    border: 1.5px solid var(--outings-border);
+    border-radius: 999px;
+    background: var(--outings-surface);
+    color: var(--outings-text);
+    font-size: 13px;
+}
+.og-pick input:checked + span { border-color: var(--outings-accent); background: var(--outings-accent); color: var(--outings-surface); font-weight: 700; }
+.og-pick input:focus-visible + span { outline: 2px solid var(--outings-accent); outline-offset: 2px; }
+
+.og-profile__actions { display: flex; gap: 10px; align-items: center; }
+.og-profile__save {
+    padding: 10px 22px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--outings-accent);
+    color: var(--outings-surface);
+    font-weight: 700;
+    font-size: 15px;
+}
+.og-profile__skip { padding: 10px 12px; border: 0; background: none; color: var(--outings-muted); font-size: 14px; text-decoration: underline; }
+.og-saved { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--outings-accent-soft); color: var(--outings-accent); font-weight: 700; font-size: 14px; }

@@ -726,6 +726,40 @@ class FamilySpotTests(PageTestCase):
         self.assertEqual(self.names("?trip=overnight"), ["Rain Museum"])
         self.assertEqual(self.names("?kind=bogus"), self.names())
 
+    def test_profile_card_asks_once_and_tailors_home(self):
+        from outings.models import FamilySpot, OutingsPreference
+        self.make("Bern Park", canton="BE", age_min=0, age_max=3)
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, "あなたに合わせる")
+        response = self.client.post(reverse("outings:profile_save"), {
+            "areas": ["bern", "bogus"], "german": "none", "kids": "yes", "ages": ["0"],
+            "days_off": "weekend", "next": "/outings/",
+        })
+        self.assertRedirects(response, "/outings/", fetch_redirect_response=False)
+        preference = OutingsPreference.objects.get()
+        self.assertEqual(preference.areas, ["bern"])
+        self.assertEqual(preference.kid_ages, ["0"])
+        self.assertIn("BE", preference.favorite_regions)
+        home = self.client.get(reverse("outings:home"))
+        self.assertNotContains(home, 'id="og-ask-title"')
+        self.assertEqual(home.context["weekend_spots"][0].name, "Bern Park")
+        # The 子連れ tick follows the answer.
+        trips = self.client.get(reverse("outings:tourist_spot_list"))
+        self.assertIn("spots", trips.context)
+        self.assertEqual(FamilySpot.objects.count(), 4)
+
+    def test_profile_skip_and_weekday(self):
+        from outings.models import OutingsPreference
+        self.client.post(reverse("outings:profile_save"), {"skip": "1"})
+        self.assertEqual(OutingsPreference.objects.get().setup, "skipped")
+        self.assertNotContains(self.client.get(reverse("outings:home")), 'id="og-ask-title"')
+        self.client.post(reverse("outings:profile_save"), {"kids": "no", "days_off": "weekday"})
+        home = self.client.get(reverse("outings:home"))
+        self.assertContains(home, "平日のおすすめ")
+        self.assertNotIn("spots", self.client.get(reverse("outings:tourist_spot_list")).context)
+        page = self.client.get(reverse("outings:my_preferences"))
+        self.assertContains(page, 'value="weekday" checked')
+
     def test_season(self):
         from outings.models import FamilySpot
         spot = FamilySpot(season=FamilySpot.Season.WARM)

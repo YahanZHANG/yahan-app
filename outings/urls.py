@@ -33,6 +33,11 @@ urlpatterns = [
         name="spot_detail",
     ),
     path(
+        "profile/",
+        spot_views.profile_save,
+        name="profile_save",
+    ),
+    path(
         "about/",
         views.about_outings,
         name="about_outings",

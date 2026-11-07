@@ -73,11 +73,16 @@ KIDS_COOKIE = "outings_kids"
 
 
 def kids_choice(request, param):
-    """(ticked, explicit): from ?param=1/0 when given, else the remembered choice."""
+    """(ticked, explicit): from ?param=1/0 when given, else the remembered choice or the profile."""
     value = request.GET.get(param)
     if value in ("0", "1"):
         return value == "1", True
-    return request.COOKIES.get(KIDS_COOKIE) == "1", False
+    remembered = request.COOKIES.get(KIDS_COOKIE)
+    if remembered in ("0", "1"):
+        return remembered == "1", False
+    # Not ticked by hand yet: follow 「あなたに合わせる」.
+    preference = _preference(get_visitor_id(request))
+    return bool(preference and preference.with_kids), False
 
 
 def remember_kids(response, ticked):

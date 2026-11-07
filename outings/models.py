@@ -557,6 +557,29 @@ class OutingsPreference(models.Model):
 
     personalization_enabled = models.BooleanField(default=True)
 
+    # 「あなたに合わせる」: four questions asked once on HOME.
+    class German(models.TextChoices):
+        NONE = "none", "ほとんどわからない"
+        LITTLE = "little", "少しわかる"
+        FINE = "fine", "問題ない"
+
+    class DaysOff(models.TextChoices):
+        WEEKEND = "weekend", "土日"
+        WEEKDAY = "weekday", "平日"
+        ANY = "any", "決まっていない"
+
+    class Setup(models.TextChoices):
+        NEW = "", "まだ"
+        DONE = "done", "答えた"
+        SKIPPED = "skipped", "スキップ"
+
+    areas = models.JSONField("よく出かける地域", default=list, blank=True)
+    german = models.CharField("現地の言葉", max_length=10, choices=German.choices, blank=True)
+    with_kids = models.BooleanField("子どもと出かける", null=True, blank=True)
+    kid_ages = models.JSONField("子どもの年齢", default=list, blank=True)
+    days_off = models.CharField("お休み", max_length=10, choices=DaysOff.choices, blank=True)
+    setup = models.CharField("質問", max_length=10, choices=Setup.choices, blank=True, default="")
+
     updated_at = models.DateTimeField(auto_now=True)
 
 
