@@ -384,6 +384,7 @@ def toggle_tourist_heart(request, pk):
         TouristSpotHeart.objects.get_or_create(
             spot=spot,
             visitor_id=visitor_id,
+            defaults={"user": request.user if request.user.is_authenticated else None},
         )
     )
 

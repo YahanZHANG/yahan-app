@@ -1,0 +1,60 @@
+{% extends "outings/base.html" %}
+{% load outings_names %}
+
+{% block title %}家族 | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page og-family">
+    <header class="og-page__head">
+        <h1>家族</h1>
+    </header>
+    <p class="og-family__lead">家族を招待すると、お気に入りのページで家族の「行った・行ってみたい・お気に入り」も見られます。スイスで和食の家族と共通です。</p>
+
+    {% for message in messages_list %}<p class="og-saved" role="status">{{ message }}</p>{% endfor %}
+
+    {% for invite in received_invites %}
+        <div class="og-family__box">
+            <p>{{ invite.invited_by|outings_display_name }} さんから家族への招待が届いています。</p>
+            <form method="post" action="{% url 'washoku:family_respond' invite.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" name="action" value="accept" class="og-family__go">参加する</button>
+                <button type="submit" name="action" value="decline" class="og-family__plain">断る</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <section class="og-family__box">
+        <h2>メンバー</h2>
+        <ul class="og-family__members">
+            {% for member in members %}
+                <li><i class="bi bi-person-circle" aria-hidden="true"></i>{{ member|outings_display_name }}{% if member == user %}<small>（あなた）</small>{% endif %}</li>
+            {% endfor %}
+        </ul>
+        {% for invite in sent_invites %}
+            <p class="og-family__note">{{ invite.invited_user|outings_display_name }} さんを招待中です。</p>
+        {% endfor %}
+    </section>
+
+    <section class="og-family__box">
+        <h2>家族を招待する</h2>
+        <form method="post" action="{% url 'washoku:family_invite' %}" class="og-family__invite">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <input type="text" name="username" placeholder="Yapp のユーザー名" required aria-label="ユーザー名" autocapitalize="off">
+            <button type="submit" class="og-family__go">招待する</button>
+        </form>
+        <p class="og-family__note">相手がこのページを開くと、招待が表示されます。</p>
+    </section>
+
+    {% if membership %}
+        <form method="post" action="{% url 'washoku:family_leave' %}" class="og-family__leave" onsubmit="return confirm('家族から抜けますか？');">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'outings:saved_all' %}">
+            <button type="submit" class="og-family__plain">家族から抜ける</button>
+        </form>
+    {% endif %}
+
+    <p><a href="{% url 'outings:saved_all' %}" class="og-family__back"><i class="bi bi-arrow-left" aria-hidden="true"></i>お気に入りに戻る</a></p>
+</div>
+{% endblock %}

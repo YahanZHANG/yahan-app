@@ -193,8 +193,14 @@ def spot_detail(request, pk):
     from .visitor import get_visitor_id, set_visitor_cookie
     from .visits import Target, visit_context
     visitor_id = get_visitor_id(request)
+    days = visitor_profile.days_off(timezone.now(), visitor_profile.get_profile(visitor_id))
+    wx = []
+    if spot.latitude is not None:
+        from . import sunny
+        wx = place_weather(spot.latitude, spot.longitude, days, weather._forecasts(sunny.POINTS))
     response = render(request, "outings/spot_detail.html", {
         "spot": spot,
+        "wx": wx,
         "others": others,
         "season_months": spot.get_season_display(),
         "visits": visit_context(request, Target.KIDS, spot, visitor_id),
@@ -296,7 +302,10 @@ def home(request):
     area = (preference.areas or [None])[0] if preference else None
     point = find_views.AREA_CENTRES.get(area, HOME_POINT)
     forecast, _ = weekend_forecast(now, days, point)
-    picks, events, overnight, mode = find_views.home_picks(preference, now, days)
+    from .visits import hidden_keys
+    picks, events, overnight, mode = find_views.home_picks(
+        preference, now, days, hide=hidden_keys(request, visitor_id, preference),
+    )
     hero = next((i for i in picks if i["image"]), None)
     sunny_names = find_views.sunny_area_names(days) if mode == "sunny" else []
     kids = visitor_profile.wants_kids(preference)
@@ -333,6 +342,7 @@ def profile_form_context(preference):
         "kids": preference.with_kids if preference else None,
         "ages": [(k, l, k in (preference.kid_ages if preference else [])) for k, l, *_ in AGE_GROUPS],
         "days": [(v, l, preference is not None and preference.days_off == v) for v, l in OutingsPreference.DaysOff.choices],
+        "hide_went": bool(preference and preference.hide_went),
     }
 
 

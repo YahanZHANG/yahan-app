@@ -134,3 +134,27 @@ def save_visit(request, target, pk):
         next_url = reverse(DETAIL_URL[target], args=[obj.pk])
     response = redirect(next_url.split("#")[0] + "#visits")
     return set_visitor_cookie(request, response, visitor_id)
+
+
+KIND_OF_TARGET = {Target.EVENT: "event", Target.TRIP: "trip", Target.KIDS: "kids"}
+
+
+def mine_q(request, visitor_id):
+    """Rows of this browser, or of the signed-in account on any device."""
+    q = Q(visitor_id=visitor_id)
+    if request.user.is_authenticated:
+        q |= Q(user=request.user)
+    return q
+
+
+def went_keys(request, visitor_id):
+    """{(kind, pk)} the visitor marked 行ったことがある, as find_views item keys."""
+    rows = OutingsVisit.objects.filter(mine_q(request, visitor_id), status=OutingsVisit.Status.WENT)
+    return {(KIND_OF_TARGET[t], pk) for t, pk in rows.values_list("target", "object_id")}
+
+
+def hidden_keys(request, visitor_id, preference):
+    """Places to leave out of HOME, さがす and 一覧 (マイページ setting)."""
+    if preference is None or not preference.hide_went:
+        return set()
+    return went_keys(request, visitor_id)

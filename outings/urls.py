@@ -1,6 +1,6 @@
 
 from django.urls import path
-from . import find_views, sunny, visits, views, discovery_views, event_views, search_views, spot_views
+from . import find_views, saved_views, sunny, visits, views, discovery_views, event_views, search_views, spot_views
 
 
 app_name = "outings"
@@ -51,11 +51,9 @@ urlpatterns = [
         name="about_outings",
     ),
 
-    path(
-        "my/saved/all/",
-        discovery_views.saved_all,
-        name="saved_all",
-    ),
+    path("my/saved/all/", saved_views.saved, name="saved_all"),
+    path("my/family/", saved_views.family_page, name="family"),
+    path("list/", find_views.browse, name="browse"),
     path(
         "search/",
         find_views.from_search,

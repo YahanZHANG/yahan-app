@@ -97,16 +97,13 @@
             {% for s in sorts %}<a href="?{{ s.qs }}#results" class="og-sorts__item{% if s.active %} is-active{% endif %}">{{ s.label }}</a>{% endfor %}
         </nav>
         <div class="og-resultbar__tools">
-            {% include "outings/includes/map_button.html" %}
             {% include "outings/includes/view_toggle.html" %}
         </div>
     </div>
 
-    <div class="og-find__map" data-og-map-slot aria-label="地図"></div>
-    <p class="og-find__hint">★はおすすめ度です。場所のよさと、その日の天気から出しています。</p>
-
     <div class="og-find__body">
         <div class="og-find__list">
+            <p class="og-find__hint">★はおすすめ度です。場所のよさと、その日の天気から出しています。</p>
             {% if items %}
                 <div class="og-items" data-og-items="find">
                     {% for item in items %}{% include "outings/includes/find_item.html" %}{% endfor %}
@@ -119,6 +116,13 @@
                 </div>
             {% endif %}
         </div>
+        {# PC: the map stays on the right while the list scrolls. #}
+        <aside class="og-find__map" data-og-map-slot aria-label="地図"></aside>
     </div>
+
+    {% if items %}
+        {# Phone: a floating button opens the map over the whole screen. #}
+        <button type="button" class="og-mapfab" data-og-map data-og-map-sheet aria-label="地図で見る"><i class="bi bi-map" aria-hidden="true"></i>地図</button>
+    {% endif %}
 </div>
 {% endblock %}

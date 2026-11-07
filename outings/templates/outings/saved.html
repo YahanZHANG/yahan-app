@@ -1,0 +1,46 @@
+{% extends "outings/base.html" %}
+
+{% block title %}お気に入り | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-page og-saved-page">
+    <header class="og-page__head og-saved-page__head">
+        <h1>お気に入り</h1>
+        {% if has_family %}
+            <nav class="og-switch" aria-label="誰の">
+                <a href="?tab={{ tab }}" class="{% if who == 'me' %}is-active{% endif %}">自分</a>
+                <a href="?tab={{ tab }}&amp;who=family" class="{% if who == 'family' %}is-active{% endif %}">家族みんな</a>
+            </nav>
+        {% endif %}
+    </header>
+
+    <nav class="og-types og-saved-tabs" aria-label="種類">
+        {% for t in tabs %}
+            <a href="?tab={{ t.key }}{% if who == 'family' %}&amp;who=family{% endif %}" class="og-types__tab{% if t.active %} is-active{% endif %}"{% if t.active %} aria-current="page"{% endif %}><span aria-hidden="true">{{ t.icon }}</span>{{ t.label }}<small>{{ t.count }}</small></a>
+        {% endfor %}
+    </nav>
+
+    {% if items %}
+        <div class="og-resultbar">
+            <p class="og-count"><strong>{{ items|length }}</strong>件</p>
+            <div class="og-resultbar__tools">{% include "outings/includes/view_toggle.html" %}</div>
+        </div>
+        <div class="og-items">
+            {% for item in items %}{% include "outings/includes/find_item.html" %}{% endfor %}
+        </div>
+    {% else %}
+        <div class="ev-empty og-saved-empty">
+            {% if tab == "heart" %}<p>♡ を押したイベントや旅行先がここに並びます。</p>
+            {% elif tab == "want" %}<p>「行ってみたい！」を押した場所がここに並びます。</p>
+            {% else %}<p>「行ったことがある！」を押した場所がここに並びます。</p>{% endif %}
+            <a href="{% url 'outings:browse' %}">一覧から探す</a>
+        </div>
+    {% endif %}
+
+    <p class="og-saved-family">
+        {% if has_family %}<a href="{% url 'outings:family' %}"><i class="bi bi-people" aria-hidden="true"></i>家族の設定</a>
+        {% elif user.is_authenticated %}<a href="{% url 'outings:family' %}"><i class="bi bi-people" aria-hidden="true"></i>家族を招待する</a><small>家族の「行った・行ってみたい・お気に入り」も見られるようになります。</small>
+        {% else %}<small>ログインすると、家族を招待して「行った・行ってみたい・お気に入り」を共有できます。</small>{% endif %}
+    </p>
+</div>
+{% endblock %}

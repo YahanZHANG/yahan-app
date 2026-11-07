@@ -7,6 +7,8 @@
 
     <a class="og-back" href="{% url 'outings:find' %}?type=kids&amp;family=1"><i class="bi bi-chevron-left" aria-hidden="true"></i>子連れで行ける場所</a>
 
+    <div class="og-detail__grid">
+    <div class="og-detail__main">
     <div class="og-detail__visual og-tone--{{ spot.kind }}">
         {% if spot.image_url %}<img src="{{ spot.image_url }}" alt="" onerror="this.remove();">{% endif %}
         <span aria-hidden="true">{{ spot.emoji }}</span>
@@ -27,6 +29,15 @@
         <p class="og-detail__summary">{{ spot.summary_ja|linebreaksbr }}</p>
     {% endif %}
 
+    </div>
+
+    <aside class="og-detail__side">
+        {% if wx %}
+            <div class="og-detail__wx">
+                <h2>お休みの日の天気</h2>
+                <ul>{% for w in wx %}<li><b>{{ w.day }}</b><span>{{ w.emoji }}</span>{{ w.temp }}</li>{% endfor %}</ul>
+            </div>
+        {% endif %}
     <dl class="og-facts">
         {% if spot.age_label %}<div><dt>年齢</dt><dd>{{ spot.age_label }}{% if spot.age_note and spot.age_note != spot.age_label %}<br>{{ spot.age_note }}{% endif %}</dd></div>{% endif %}
         <div><dt>言葉</dt><dd>{{ spot.language_mark }} {{ spot.get_language_display }}</dd></div>
@@ -40,6 +51,14 @@
         {% if spot.address %}<div><dt>住所</dt><dd>{{ spot.address }}{% if spot.town %}, {{ spot.town }}{% endif %}</dd></div>{% endif %}
     </dl>
 
+    <div class="og-actions">
+        <a class="og-btn og-btn--main" href="{{ spot.directions_url }}" target="_blank" rel="noopener"><i class="bi bi-map" aria-hidden="true"></i>Googleマップで開く</a>
+        {% if spot.official_url %}<a class="og-btn" href="{{ spot.official_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>公式サイト</a>{% endif %}
+    </div>
+    <p class="og-detail__checked">{% if spot.checked_on %}情報の確認日：{{ spot.checked_on|date:"Y年n月j日" }}。{% endif %}営業日や料金は変わることがあるので、行く前に公式サイトで確認してください。</p>
+    </aside>
+
+    <div class="og-detail__more">
     {% if spot.tips_ja %}
         <section class="og-tips">
             <h2>💡 行く前に</h2>
@@ -47,14 +66,9 @@
         </section>
     {% endif %}
 
-    <div class="og-actions">
-        <a class="og-btn og-btn--main" href="{{ spot.directions_url }}" target="_blank" rel="noopener"><i class="bi bi-map" aria-hidden="true"></i>Googleマップで開く</a>
-        {% if spot.official_url %}<a class="og-btn" href="{{ spot.official_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>公式サイト</a>{% endif %}
-    </div>
-
     {% include "outings/includes/visits.html" %}
-
-    <p class="og-detail__checked">{% if spot.checked_on %}情報の確認日：{{ spot.checked_on|date:"Y年n月j日" }}。{% endif %}営業日や料金は変わることがあるので、行く前に公式サイトで確認してください。</p>
+    </div>
+    </div>
 
     {% if others %}
         <section class="og-section">

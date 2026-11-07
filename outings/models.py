@@ -519,6 +519,12 @@ class EventHeart(models.Model):
 
     visitor_id = models.UUIDField(db_index=True)
 
+    # Signed in: the account too, so the family can see it.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_event_hearts",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -585,6 +591,7 @@ class OutingsPreference(models.Model):
     kid_ages = models.JSONField("子どもの年齢", default=list, blank=True)
     days_off = models.CharField("お休み", max_length=10, choices=DaysOff.choices, blank=True)
     setup = models.CharField("質問", max_length=10, choices=Setup.choices, blank=True, default="")
+    hide_went = models.BooleanField("行った場所を一覧に出さない", default=False)
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1067,6 +1074,9 @@ class TouristSpot(models.Model):
         auto_now_add=True,
     )
 
+    # First time it went public (for 新着 on the 一覧 page).
+    published_at = models.DateTimeField("公開日", null=True, blank=True)
+
     updated_at = models.DateTimeField(
         auto_now=True,
     )
@@ -1091,6 +1101,14 @@ class TouristSpot(models.Model):
             ),
         ]
 
+    def save(self, *args, **kwargs):
+        if self.status == self.Status.PUBLISHED and self.published_at is None:
+            from django.utils import timezone
+            self.published_at = timezone.now()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = list(kwargs["update_fields"]) + ["published_at"]
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return (
             self.title_ja
@@ -1112,6 +1130,12 @@ class TouristSpotHeart(models.Model):
 
     visitor_id = models.UUIDField(
         db_index=True,
+    )
+
+    # Signed in: the account too, so the family can see it.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_trip_hearts",
     )
 
     created_at = models.DateTimeField(

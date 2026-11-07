@@ -22,10 +22,10 @@
     </fieldset>
 
     <fieldset>
-        <legend>👨‍👩‍👧 子どもと出かけますか？<span class="og-profile__q">「はい」なら子連れ向けを優先します</span></legend>
+        <legend>👥 誰と出かけることが多いですか？<span class="og-profile__q">子どもと一緒なら、子連れ向けの場所を先に出します</span></legend>
         <div class="og-choices">
-            <label><input type="radio" name="kids" value="yes"{% if profile.kids %} checked{% endif %}><span>はい</span></label>
-            <label><input type="radio" name="kids" value="no"{% if profile.kids == False %} checked{% endif %}><span>いいえ</span></label>
+            <label><input type="radio" name="kids" value="yes"{% if profile.kids %} checked{% endif %}><span>子どもと</span></label>
+            <label><input type="radio" name="kids" value="no"{% if profile.kids == False %} checked{% endif %}><span>大人だけ・ひとり</span></label>
         </div>
         <div class="og-choices og-profile__ages" data-ages>
             <span class="og-profile__hint">子どもの年齢<small>いくつでも</small></span>
@@ -43,6 +43,16 @@
             {% endfor %}
         </div>
     </fieldset>
+
+    {% if not skippable %}
+        <fieldset>
+            <legend>🙌 行ったことがある場所<span class="og-profile__q">HOME・さがす・一覧に出すかどうか（お気に入りには残ります）</span></legend>
+            <div class="og-choices">
+                <label><input type="radio" name="hide_went" value="0"{% if not profile.hide_went %} checked{% endif %}><span>表示する</span></label>
+                <label><input type="radio" name="hide_went" value="1"{% if profile.hide_went %} checked{% endif %}><span>表示しない</span></label>
+            </div>
+        </fieldset>
+    {% endif %}
 
     <div class="og-profile__actions">
         <button type="submit" class="og-profile__save">保存する</button>

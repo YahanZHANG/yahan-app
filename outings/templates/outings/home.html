@@ -1,6 +1,6 @@
 {% extends "outings/base.html" %}
 
-{% block title %}おでかけ | 子どもと行くスイスの週末{% endblock %}
+{% block title %}おでかけ | スイスの週末を、もっと楽しく{% endblock %}
 
 {% block content %}
 <div class="og-page og-home">
@@ -22,7 +22,7 @@
             <p class="og-hero__lead">
                 {% if mode == "sunny" %}{% if sunny_names %}晴れるのは {{ sunny_names|join:"・" }} など。{% endif %}天気のいい場所から、あなたへのおすすめを選びました。
                 {% elif mode == "rainy" %}どこも雨の予報です。雨でも楽しめる場所を選びました。
-                {% else %}子どもと行ける場所とイベントを集めました。{% endif %}
+                {% else %}スイスの旅行先とイベントを、天気と一緒に探せます。{% endif %}
             </p>
             {% if mode == "rainy" %}
                 <a class="og-hero__go" href="{% url 'outings:find' %}?when=weekend&amp;rainy=1&amp;sort=recommended#results">☔ 雨でもOKの場所をもっと見る<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
@@ -49,7 +49,7 @@
             <a href="{% url 'outings:find' %}?when=weekend&amp;sort={% if mode == 'rainy' %}recommended&amp;rainy=1{% else %}sunny{% endif %}#results">もっと見る</a>
         </header>
         <p class="og-section__note">
-            {% if personal %}あなたの地域・お子さんの年齢・{% endif %}{% if weekday %}次の平日{% else %}今週末{% endif %}の天気に合わせて選びました。
+            {% if personal %}あなたの地域・{% if profile.kids %}一緒に行く人・{% endif %}{% endif %}{% if weekday %}次の平日{% else %}今週末{% endif %}の天気に合わせて選びました。
             <a href="{% url 'outings:my_preferences' %}">{% if personal %}設定を変える{% else %}あなたに合わせる{% endif %}</a>
         </p>
         {% if picks %}

@@ -26,7 +26,7 @@ from .services import weather
 from .spot_views import decorate as decorate_spot
 from .spot_views import published_spots
 from .visitor import get_visitor_id, set_visitor_cookie
-from .visits import MEMBER_RATINGS_NEEDED, ratings, stars_text
+from .visits import MEMBER_RATINGS_NEEDED, hidden_keys, ratings, stars_text
 
 PAGE_SIZE = 24
 
@@ -165,7 +165,7 @@ def trip_items(f):
     if not f["words"]:
         spots = spots.only(
             "pk", "title_ja", "title_original", "spot_type", "latitude", "longitude", "ai_quality_score",
-            "details", "intro_ja", "summary_ja", "updated_at",
+            "details", "intro_ja", "summary_ja", "updated_at", "published_at", "imported_at",
         )
     items = []
     for spot in spots:
@@ -188,7 +188,7 @@ def trip_items(f):
             "desc": sunny.short_text(spot.intro_ja or spot.summary_ja, 80), "badges": [],
             "lat": spot.latitude, "lon": spot.longitude, "area": area,
             "base": sunny.score_from_100(spot.ai_quality_score), "rain_ok": False, "canton": "",
-            "new": spot.updated_at, "relevance": relevance,
+            "new": spot.published_at or spot.imported_at, "relevance": relevance,
         })
     return items
 
@@ -209,7 +209,7 @@ def kids_items(f, month):
         spots = spots.exclude(trip=FamilySpot.Trip.DAY)
     items, lookups = [], 0
     for spot in spots:
-        if not spot.open_in(month):
+        if month and not spot.open_in(month):
             continue
         area = AREA_OF_CANTON.get(spot.canton, "")
         if f["areas"] and area not in f["areas"]:
@@ -238,7 +238,7 @@ def kids_items(f, month):
             "desc": sunny.short_text(spot.summary_ja or spot.intro_ja, 80), "badges": spot.badges[:3],
             "lat": spot.latitude, "lon": spot.longitude, "area": area,
             "base": spot.recommend, "rain_ok": spot.rainy_ok, "canton": spot.canton, "ages": (spot.age_min, spot.age_max),
-            "new": spot.updated_at, "relevance": relevance,
+            "new": spot.created_at, "relevance": relevance,
         })
     return items
 
@@ -293,6 +293,8 @@ def effective_query(request):
     get = request.GET
     if get.get("reset") == "1":
         return QueryDict(mutable=True), "clear"
+    if get.get("kw") == "1":
+        return get, ""  # header keyword search: every day, not the saved conditions
     if any(key in get for key in REMEMBER):
         return get, "save"
     saved = request.COOKIES.get(REMEMBER_COOKIE, "")
@@ -354,6 +356,8 @@ def find(request):
     preference = visitor_profile.get_profile(visitor_id)
     query, remember = effective_query(request)
     f = read_filters(request, now, preference, query)
+    if query.get("kw") == "1" and not f["family_explicit"]:
+        f["family"] = False
     f["words"] = text_search.tokens(f["q"])
     f["need"] = len(f["words"])
     if f["q"] and not query.get("sort"):
@@ -368,6 +372,10 @@ def find(request):
         f["need"] = 1
         found = collect(f, now, days, month)
         f["partial"] = any(found.values())
+    hide = hidden_keys(request, visitor_id, preference)
+    if hide:
+        for key in found:
+            found[key] = [i for i in found[key] if (i["kind"], i["pk"]) not in hide]
     items = found["event"] + found["trip"] + found["kids"]
     forecasts = weather._forecasts(sunny.POINTS) if days else {}
     score_items(items, days, forecasts, preference)
@@ -543,7 +551,7 @@ def sunny_area_names(days):
     return names
 
 
-def home_picks(preference, now, days, limit=8):
+def home_picks(preference, now, days, limit=8, hide=frozenset()):
     """(picks, events, overnight, mode): mode is 'sunny' (show sunny places first),
     'rainy' (rain everywhere: places that work in the rain) or '' (no forecast)."""
     family = visitor_profile.wants_kids(preference) is not False
@@ -554,7 +562,7 @@ def home_picks(preference, now, days, limit=8):
 
     f = base_filters(family, trip="day", age=age)
     found = collect(f, now, days, month)
-    items = found["event"] + found["trip"] + found["kids"]
+    items = [i for i in found["event"] + found["trip"] + found["kids"] if (i["kind"], i["pk"]) not in hide]
     if ages and family:
         group = ("", "", ages[0], ages[1])
         items = [i for i in items if i["kind"] != "kids" or ages_fit(*i["ages"], group)]
@@ -590,8 +598,67 @@ def home_picks(preference, now, days, limit=8):
             break
 
     events = [i for i in items if i["kind"] == "event" and i not in picks][:6]
-    over = collect(base_filters(family, type="kids", trip="overnight"), now, days, month)["kids"]
+    over = [i for i in collect(base_filters(family, type="kids", trip="overnight"), now, days, month)["kids"]
+            if (i["kind"], i["pk"]) not in hide]
     score_items(over, days, forecasts, preference)
     sort_items(over, "sunny" if mode == "sunny" else "recommended")
     return picks, events, over[:6], mode
 
+
+
+# ---------------------------------------------------------------------------
+# 一覧: everything, no conditions, newest first
+# ---------------------------------------------------------------------------
+
+# Events arrive every night, so only the last few days count as new for them.
+NEW_DAYS = {"event": 3, "trip": 14, "kids": 14}
+BROWSE_SORTS = [("new", "新着順"), ("recommended", "おすすめ順"), ("date", "日付順")]
+
+
+def browse(request):
+    now = timezone.now()
+    visitor_id = get_visitor_id(request)
+    preference = visitor_profile.get_profile(visitor_id)
+    kind = request.GET.get("type", "all")
+    if kind not in dict(TYPES):
+        kind = "all"
+    sort = request.GET.get("sort", "new")
+    if sort not in dict(BROWSE_SORTS):
+        sort = "new"
+    found = collect(base_filters(False, when="any", sort="recommended"), now, [], None)
+    hide = hidden_keys(request, visitor_id, preference)
+    for key in found:
+        found[key] = [i for i in found[key] if (i["kind"], i["pk"]) not in hide]
+        for item in found[key]:
+            item["is_new"] = bool(item["new"] and item["new"] >= now - timedelta(days=NEW_DAYS[item["kind"]]))
+    items = found["event"] + found["trip"] + found["kids"] if kind == "all" else found[kind]
+    score_items(items, [], {}, preference)
+    if sort == "new":
+        oldest = timezone.make_aware(datetime(2000, 1, 1))
+        items.sort(key=lambda i: (i["new"] or oldest, i["order"]), reverse=True)
+    else:
+        sort_items(items, sort)
+    page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
+
+    def qs(**changes):
+        params = {"type": kind, "sort": sort}
+        params.update(changes)
+        from django.utils.http import urlencode
+        return urlencode({k: v for k, v in params.items() if v and not (k == "type" and v == "all") and not (k == "sort" and v == "new")})
+
+    more = ""
+    if page_obj.has_next():
+        more = qs(page=page_obj.next_page_number())
+    counts = {k: len(v) for k, v in found.items()}
+    response = render(request, "outings/browse.html", {
+        "items": page_obj.object_list,
+        "page_obj": page_obj,
+        "more_qs": more,
+        "count": len(items),
+        "new_count": sum(1 for i in items if i["is_new"]),
+        "types": [{"key": k, "label": l, "active": k == kind, "qs": qs(type=k),
+                   "count": sum(counts.values()) if k == "all" else counts.get(k, 0)} for k, l in TYPES],
+        "sorts": [{"key": k, "label": l, "active": k == sort, "qs": qs(sort=k)} for k, l in BROWSE_SORTS],
+        "hiding_went": bool(hide),
+    })
+    return set_visitor_cookie(request, response, visitor_id)

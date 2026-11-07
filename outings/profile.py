@@ -37,6 +37,8 @@ def save_answers(preference, data):
     preference.kid_ages = [a for a in dict.fromkeys(data.getlist("ages")) if a in ages] if preference.with_kids else []
     days = data.get("days_off", "")
     preference.days_off = days if days in OutingsPreference.DaysOff.values else ""
+    if "hide_went" in data:
+        preference.hide_went = data.get("hide_went") == "1"
     preference.setup = OutingsPreference.Setup.DONE
     # The event list starts on these areas, like the old favourite regions.
     cantons = [code for key, _, codes in AREAS if key in preference.areas for code in codes if code in REGION_CODES]

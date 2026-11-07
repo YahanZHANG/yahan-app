@@ -473,7 +473,10 @@ def toggle_heart(request, pk):
         hearted = False
     else:
         event = get_object_or_404(Event, pk=pk, status=Event.Status.PUBLISHED)
-        EventHeart.objects.get_or_create(event=event, visitor_id=visitor_id)
+        EventHeart.objects.get_or_create(
+            event=event, visitor_id=visitor_id,
+            defaults={"user": request.user if request.user.is_authenticated else None},
+        )
         hearted = True
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":

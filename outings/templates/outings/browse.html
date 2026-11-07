@@ -1,0 +1,36 @@
+{% extends "outings/base.html" %}
+
+{% block title %}一覧 | おでかけ{% endblock %}
+
+{% block content %}
+<div class="og-find og-browse">
+    <header class="og-find__head">
+        <h1>一覧</h1>
+        <p class="og-browse__lead">条件をつけずに、全部を見られます。{% if new_count %}<span class="og-item__new">NEW</span>新しく入ったものが{{ new_count }}件あります。{% endif %}</p>
+    </header>
+
+    <nav class="og-types" aria-label="種類">
+        {% for t in types %}
+            <a href="?{{ t.qs }}" class="og-types__tab{% if t.active %} is-active{% endif %}"{% if t.active %} aria-current="page"{% endif %}>{{ t.label }}<small>{{ t.count }}</small></a>
+        {% endfor %}
+    </nav>
+
+    <div class="og-resultbar" id="results">
+        <p class="og-count"><strong>{{ count }}</strong>件</p>
+        <nav class="og-sorts" aria-label="並び順">
+            {% for s in sorts %}<a href="?{{ s.qs }}#results" class="og-sorts__item{% if s.active %} is-active{% endif %}">{{ s.label }}</a>{% endfor %}
+        </nav>
+        <div class="og-resultbar__tools">{% include "outings/includes/view_toggle.html" %}</div>
+    </div>
+    {% if hiding_went %}<p class="og-find__hint">行ったことがある場所は出していません（マイページで変えられます）。</p>{% endif %}
+
+    {% if items %}
+        <div class="og-items" data-og-items="browse">
+            {% for item in items %}{% include "outings/includes/find_item.html" %}{% endfor %}
+        </div>
+        {% include "outings/includes/more_button.html" with name="browse" %}
+    {% else %}
+        <div class="ev-empty"><p>まだ何もありません。</p></div>
+    {% endif %}
+</div>
+{% endblock %}

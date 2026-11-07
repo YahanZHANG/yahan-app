@@ -67,7 +67,7 @@
         href="{% static 'outings/css/outings-family.css' %}"
     >
     <meta name="theme-color" content="#237b83">
-    <meta name="description" content="スイスに住む日本語話者の家族のための、子どもと行けるおでかけ情報">
+    <meta name="description" content="スイスに住む日本語話者のための、週末のおでかけ情報（旅行先・イベント・天気）">
 
     {% include "includes/app_icons.html" %}
 
@@ -82,23 +82,23 @@
     <header class="outings-header">
         <div class="outings-header-inner">
             <a href="{% url 'outings:home' %}" class="outings-brand">
-                <span class="brand-icon">🎈</span>
+                <img class="og-brand-icon" src="{% static 'pwa/outings/icon-192.png' %}" alt="" width="34" height="34">
                 <span>
                     <strong>おでかけ</strong>
-                    <small>子どもと行くスイスの週末</small>
+                    <small>スイスの週末を、もっと楽しく</small>
                 </span>
             </a>
 
-            {% if name != 'find' %}
-                <form class="nav-search" action="{% url 'outings:find' %}#results" method="get" role="search">
-                    <i class="bi bi-search" aria-hidden="true"></i>
-                    <input type="search" name="q" placeholder="スポット・イベントを探す" aria-label="スポット・イベントを探す" enterkeyhint="search">
-                </form>
-            {% endif %}
-
-            <a href="{% url 'outings:find' %}" class="nav-find{% if name == 'find' %} active{% endif %}" aria-label="さがす">
+            {# PC: keyword search on the right. Phone: 🔍 opens the same box under the header. #}
+            <form class="nav-search" action="{% url 'outings:find' %}#results" method="get" role="search">
                 <i class="bi bi-search" aria-hidden="true"></i>
-            </a>
+                <input type="search" name="q" value="{% if request.GET.kw %}{{ request.GET.q }}{% endif %}" placeholder="キーワードで検索" aria-label="キーワードで検索" enterkeyhint="search">
+                <input type="hidden" name="kw" value="1">
+            </form>
+
+            <button type="button" class="nav-find" aria-label="キーワードで検索" aria-controls="og-searchbar" aria-expanded="false" data-og-search-toggle>
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
 
             <a
                 href="{% url 'outings:my_page' %}"
@@ -114,6 +114,13 @@
                 <span class="nav-me__label">マイページ</span>
             </a>
         </div>
+        <div class="og-searchbar" id="og-searchbar" hidden>
+            <form action="{% url 'outings:find' %}#results" method="get" role="search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" name="q" placeholder="例：動物園、Luzern、クリスマス" aria-label="キーワードで検索" enterkeyhint="search">
+                <input type="hidden" name="kw" value="1">
+            </form>
+        </div>
     </header>
 
     <div class="og-layout">
@@ -122,7 +129,8 @@
         <nav class="og-side" aria-label="メニュー">
             <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}on{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
             <a href="{% url 'outings:find' %}" class="{% if name == 'find' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>さがす</a>
-            <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
+            <a href="{% url 'outings:browse' %}" class="{% if name == 'browse' %}on{% endif %}"><i class="bi bi-grid" aria-hidden="true"></i>一覧</a>
+            <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' or name == 'family' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
             <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' %}on{% endif %}"><i class="bi bi-person" aria-hidden="true"></i>マイページ</a>
         </nav>
 
@@ -135,7 +143,7 @@
 
     <button type="button" class="og-totop" aria-label="ページの上に戻る" title="上に戻る"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
 
-    <!-- Phone: HOME・さがす・お気に入り・マイページ. -->
+    <!-- Phone: HOME・さがす・一覧・お気に入り・マイページ. -->
     <nav class="outings-bottom-nav tabbar" aria-label="メインメニュー">
         <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}active{% endif %}"{% if name == 'home' %} aria-current="page"{% endif %}>
             <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
@@ -144,6 +152,10 @@
         <a href="{% url 'outings:find' %}" class="{% if name == 'find' or name == 'event_detail' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
             <i class="bi bi-search" aria-hidden="true"></i>
             <span>さがす</span>
+        </a>
+        <a href="{% url 'outings:browse' %}" class="{% if name == 'browse' %}active{% endif %}">
+            <i class="bi bi-grid{% if name == 'browse' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>一覧</span>
         </a>
         <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
             <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
@@ -244,15 +256,39 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
         params.set("map", "1");
         return window.location.pathname + "?" + params.toString();
     }
+    function mapSheet() {
+        var sheet = document.querySelector(".og-mapsheet");
+        if (sheet) return sheet;
+        sheet = document.createElement("div");
+        sheet.className = "og-mapsheet";
+        sheet.hidden = true;
+        sheet.setAttribute("role", "dialog");
+        sheet.setAttribute("aria-label", "地図");
+        sheet.innerHTML = '<div class="og-mapsheet__bar"><strong>地図</strong><button type="button" class="og-mapsheet__close" data-og-map-close><i class="bi bi-list-ul" aria-hidden="true"></i>リストに戻る</button></div><div class="og-mapsheet__body"></div>';
+        document.body.appendChild(sheet);
+        return sheet;
+    }
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest("[data-og-map-close]")) return;
+        var sheet = document.querySelector(".og-mapsheet");
+        if (sheet) sheet.hidden = true;
+        document.documentElement.classList.remove("og-sheet-open");
+    });
     document.addEventListener("click", function (event) {
         var button = event.target.closest("button[data-og-map]");
         if (!button) return;
-        var bar = button.parentElement;
+        var bar = button.closest(".og-resultbar") || button.parentElement;
         var slot = document.querySelector("[data-og-map-slot]");
         var side = slot && getComputedStyle(slot).display !== "none";
-        var holder = side ? slot : bar.nextElementSibling;
+        // Phone with a floating 地図 button: the map opens over the whole screen.
+        var sheet = !side && button.hasAttribute("data-og-map-sheet") ? mapSheet() : null;
+        var holder = side ? slot : sheet ? sheet.querySelector(".og-mapsheet__body") : bar.nextElementSibling;
         var panel = holder && (holder.classList.contains("og-resultmap") ? holder : holder.querySelector(":scope > .og-resultmap"));
-        if (panel) {
+        if (sheet) {
+            sheet.hidden = false;
+            document.documentElement.classList.add("og-sheet-open");
+            if (panel) { if (panel._map) panel._map.invalidateSize(); return; }
+        } else if (panel) {
             var open = panel.hidden;
             panel.hidden = !open;
             button.setAttribute("aria-expanded", String(open));
@@ -262,7 +298,7 @@ document.querySelectorAll(".og-filterform").forEach(function (form) {
         panel = document.createElement("div");
         panel.className = "og-resultmap";
         panel.innerHTML = '<div class="og-resultmap__map"></div><p class="og-resultmap__note">地図を読み込み中…</p>';
-        if (side) slot.appendChild(panel); else bar.parentNode.insertBefore(panel, bar.nextSibling);
+        if (side || sheet) holder.appendChild(panel); else bar.parentNode.insertBefore(panel, bar.nextSibling);
         button.setAttribute("aria-expanded", "true");
         var note = panel.querySelector(".og-resultmap__note");
         Promise.all([
@@ -311,6 +347,19 @@ document.querySelectorAll("details[data-og-remember]").forEach(function (box) {
         try { localStorage.setItem(key, box.open ? "1" : "0"); } catch (error) {}
     });
 });
+
+// Phone 🔍: opens the keyword box under the header.
+(function () {
+    var toggle = document.querySelector("[data-og-search-toggle]");
+    var bar = document.getElementById("og-searchbar");
+    if (!toggle || !bar) return;
+    toggle.addEventListener("click", function () {
+        var open = bar.hidden;
+        bar.hidden = !open;
+        toggle.setAttribute("aria-expanded", String(open));
+        if (open) bar.querySelector("input[name=q]").focus();
+    });
+})();
 
 // 上に戻る
 (function () {

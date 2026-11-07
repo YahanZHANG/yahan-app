@@ -370,7 +370,7 @@ class PageTests(PageTestCase):
         event.save()
         self.client.cookies[COOKIE_NAME] = str(visitor)
         response = self.client.get(reverse("outings:saved_all"))
-        self.assertContains(response, "終了しました")
+        # Ended or cancelled events drop out of the list (cleanup deletes them anyway).
         self.assertNotContains(response, 'href="%s"' % reverse("outings:event_detail", args=[event.pk]))
         self.client.post(reverse("outings:toggle_heart", args=[event.pk]), HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertFalse(EventHeart.objects.exists())
@@ -382,7 +382,7 @@ class PageTests(PageTestCase):
 
     def test_home_and_other_pages_render(self):
         make_event("ホーム", start=self.now + timedelta(days=1), tier=Event.ListingTier.FEATURED)
-        for name in ("home", "find", "saved_all", "my_page", "my_preferences"):
+        for name in ("home", "find", "browse", "saved_all", "my_page", "my_preferences"):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 200, name)
         for name in ("event_home", "search", "sunny", "tourist_spot_list"):
             self.assertEqual(self.client.get(reverse(f"outings:{name}")).status_code, 302, name)
@@ -542,9 +542,11 @@ class NavigationTests(PageTestCase):
 
     def test_search_is_in_the_header_and_the_tab_bar(self):
         html = self.client.get(reverse("outings:find")).content.decode()
-        self.assertIn("nav-find active", html)
+        self.assertIn("data-og-search-toggle", html)
+        self.assertIn('name="kw"', html)
         tabbar = html[html.index('class="outings-bottom-nav tabbar"'):]
         self.assertIn("さがす", tabbar)
+        self.assertIn("一覧", tabbar)
         self.assertIn("マイページ", tabbar)
         self.assertNotIn("今週末", tabbar)
         self.assertIn("og-totop", html)
@@ -1208,3 +1210,78 @@ Bierhübeli+1
         counts = {t: TouristSpot.objects.filter(spot_type=t).count() for t in ("attractions", "tours", "destinations", "offers")}
         self.assertEqual(sum(counts.values()), 6)
         self.assertTrue(all(counts.values()), counts)
+
+
+class SavedFamilyBrowseTests(FamilySpotTests):
+    """お気に入り (♡・行ってみたい・行った, also for the family), 一覧 and hiding places already visited."""
+
+    def visit(self, spot, status, **extra):
+        from outings.models import OutingsVisit
+        return OutingsVisit.objects.create(target="kids", object_id=spot.pk, status=status, **extra)
+
+    def test_saved_tabs_list_want_and_went(self):
+        visitor = OutingsPreference.objects.create().visitor_id
+        self.client.cookies[COOKIE_NAME] = str(visitor)
+        self.visit(self.park, "went", visitor_id=visitor, rating=4)
+        self.visit(self.museum, "want", visitor_id=visitor)
+        went = self.client.get(reverse("outings:saved_all") + "?tab=went")
+        self.assertEqual([i["title"] for i in went.context["items"]], [self.park.title])
+        self.assertEqual(went.context["items"][0]["my_rating"], 4)
+        want = self.client.get(reverse("outings:saved_all") + "?tab=want")
+        self.assertEqual([i["title"] for i in want.context["items"]], [self.museum.title])
+        self.assertEqual({t["key"]: t["count"] for t in want.context["tabs"]}, {"heart": 0, "want": 1, "went": 1})
+
+    def test_family_sees_each_others_places(self):
+        from django.contrib.auth import get_user_model
+        from washoku.models import Household, HouseholdMember
+        User = get_user_model()
+        taro, hanako = User.objects.create_user("taro", password="x"), User.objects.create_user("hanako", password="x")
+        home = Household.objects.create(created_by=taro)
+        HouseholdMember.objects.create(household=home, user=taro)
+        HouseholdMember.objects.create(household=home, user=hanako)
+        import uuid
+        self.visit(self.museum, "want", visitor_id=uuid.uuid4(), user=hanako)
+        self.client.force_login(taro)
+        mine = self.client.get(reverse("outings:saved_all") + "?tab=want")
+        self.assertEqual(mine.context["items"], [])
+        self.assertTrue(mine.context["has_family"])
+        family = self.client.get(reverse("outings:saved_all") + "?tab=want&who=family")
+        self.assertEqual([i["title"] for i in family.context["items"]], [self.museum.title])
+        self.assertEqual(family.context["items"][0]["by"], [hanako])
+        self.assertEqual(self.client.get(reverse("outings:family")).status_code, 200)
+
+    def test_family_invite_from_outings_comes_back_here(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        taro = User.objects.create_user("taro", password="x")
+        User.objects.create_user("hanako", password="x")
+        self.client.force_login(taro)
+        response = self.client.post(reverse("washoku:family_invite"), {"username": "hanako", "next": reverse("outings:family")})
+        self.assertRedirects(response, reverse("outings:family"), fetch_redirect_response=False)
+
+    def test_hide_went_leaves_visited_places_out(self):
+        preference = OutingsPreference.objects.create(hide_went=True)
+        self.client.cookies[COOKIE_NAME] = str(preference.visitor_id)
+        self.visit(self.park, "went", visitor_id=preference.visitor_id)
+        self.assertEqual(self.names(), ["Rain Museum"])
+        titles = [i["title"] for i in self.client.get(reverse("outings:browse")).context["page_obj"].paginator.object_list]
+        self.assertNotIn(self.park.title, titles)
+        preference.hide_went = False
+        preference.save()
+        self.assertEqual(self.names(), ["Rain Museum", "Sunny Park"])
+
+    def test_browse_lists_everything_newest_first_with_new_badge(self):
+        from outings.models import FamilySpot
+        FamilySpot.objects.filter(pk=self.park.pk).update(created_at=self.now - timedelta(days=60))
+        response = self.client.get(reverse("outings:browse") + "?type=kids")
+        items = response.context["page_obj"].paginator.object_list
+        self.assertEqual([i["title"] for i in items], [self.museum.title, self.park.title])
+        self.assertEqual([i["is_new"] for i in items], [True, False])
+        self.assertContains(response, "NEW")
+
+    def test_header_keyword_search_ignores_saved_conditions(self):
+        self.client.get(reverse("outings:find") + "?when=weekend&area=bern&type=kids")
+        response = self.client.get(reverse("outings:find") + "?q=Park&kw=1&type=kids")
+        titles = [i["title"] for i in response.context["page_obj"].paginator.object_list]
+        self.assertIn(self.park.title, titles)
+        self.assertEqual(response.context["f"]["areas"], [])
