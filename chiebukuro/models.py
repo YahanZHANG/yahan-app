@@ -228,7 +228,6 @@ class Genre(models.TextChoices):
     KITCHEN = "kitchen", "キッチン・食器"
     CLOTHES = "clothes", "服・靴"
     SPORTS = "sports", "スポーツ・アウトドア"
-    FOOD = "food", "食べもの"
     OTHER = "other", "その他"
 
 
