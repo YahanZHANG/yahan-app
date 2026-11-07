@@ -972,6 +972,27 @@ class TripImportTests(TestCase):
         self.assertEqual((spot.intro_ja, spot.status), ("探偵の道。", TouristSpot.Status.PUBLISHED))
         self.assertEqual(edited.intro_ja, "管理画面で直した")
 
+    def test_markdown_intro_batches_parse(self):
+        from outings.management.commands.merge_tourist_intros_md import parse
+        text = """# 第2弾
+## 51〜60件
+### 51. Alpenpässe-Weg, Etappe 4/43
+散策・ハイキング｜グラウビュンデン州
+峠を越える長い道。
+[image](https://www.google.com/s2/favicons?domain=https://schweizmobil.ch)
+SchweizMobil
+52. Bierhübeli
+体験・ツアー｜ベルン
+ライブハウス。
+Bierhübeli+1
+52. Bierhübeli（公式情報に基づく確定版）
+体験・ツアー｜ベルン
+ベルンのライブハウス。
+以上で第2弾の50件が完成。
+次の対象：101〜150件
+"""
+        self.assertEqual(parse(text), {"Alpenpässe-Weg, Etappe 4/43": "峠を越える長い道。", "Bierhübeli": "ベルンのライブハウス。"})
+
     def test_nightly_trip_text_is_off_unless_turned_on(self):
         with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
             self.assertNotIn("--trip-ai", outings_scheduler.daily_command())

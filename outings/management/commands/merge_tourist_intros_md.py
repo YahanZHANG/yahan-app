@@ -2,7 +2,8 @@
 
 The Markdown lists spots as "12. <MySwitzerland title>", then a line like
 "散策・ハイキング｜ベルン州", then the introduction; source lines such as
-"Schweiz Tourismus+1" are dropped. A later "26. <title>（…確定版）" entry
+"Schweiz Tourismus+1" or favicon links are dropped, and so is anything
+after "以上で…". A later "26. <title>（…確定版）" entry
 replaces the earlier one.
 
     python manage.py merge_tourist_intros_md batch.md
@@ -16,14 +17,20 @@ from django.core.management.base import BaseCommand
 from .apply_tourist_intros import DATA
 
 HEADER = re.compile(r"^(\d+)\. (.+?)(（[^）]*確定版）)?\s*$")
-SOURCE = re.compile(r"^(Schweiz Tourismus|Switzerland Tourism|[A-Za-z .]+)(\+\d+)?$")
-SECTION = re.compile(r"^\d+〜\d+件|^第\d+弾|^ーー")
+SECTION = re.compile(r"^\d+〜\d+件|^第\d+弾|^ーー|^以上で")
+JAPANESE = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
+
+
+def is_source(line):
+    """Reference lines: link/favicon markdown, or a short line with no Japanese (SchweizMobil, Führung+1)."""
+    return bool(re.search(r"\]\(https?://", line)) or (len(line) < 60 and not JAPANESE.search(line))
 
 
 def parse(text):
     entries, current = {}, None
     for line in text.splitlines():
-        line = line.rstrip()
+        line = re.sub(r"^#+\s*", "", line.rstrip())  # Markdown headings
+        line = re.sub(r"^\*\*(.+)\*\*$", r"\1", line)  # **bold** lines
         match = HEADER.match(line)
         if match:
             current = {"title": match.group(2).strip(), "lines": []}
@@ -41,7 +48,7 @@ def parse(text):
         lines = entries[number]["lines"]
         if lines and "｜" in lines[0] and len(lines[0]) < 60:
             lines = lines[1:]  # category｜region
-        body = "\n".join(line for line in lines if not SOURCE.match(line))
+        body = "\n".join(line for line in lines if not is_source(line))
         if body:
             result[entries[number]["title"]] = body
     return result
