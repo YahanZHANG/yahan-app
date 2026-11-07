@@ -350,6 +350,7 @@ class TouristSpotAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "title_ja",
+                    "intro_ja",
                     "summary_ja",
                 ),
             },

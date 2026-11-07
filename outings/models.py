@@ -984,6 +984,13 @@ class TouristSpot(models.Model):
         blank=True,
     )
 
+    # Written by hand (import_tourist_texts or admin). Shown before the
+    # AI text and never overwritten by it.
+    intro_ja = models.TextField(
+        "紹介文（手書き）",
+        blank=True,
+    )
+
     # AI recommendation evaluation
     ai_quality_score = models.PositiveSmallIntegerField(
         null=True,

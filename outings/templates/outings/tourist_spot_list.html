@@ -617,7 +617,11 @@
 
                     <p>
 
-                        {% if spot.summary_ja %}
+                        {% if spot.intro_ja %}
+
+                            {{ spot.intro_ja|truncatechars:125 }}
+
+                        {% elif spot.summary_ja %}
 
                             {{ spot.summary_ja|truncatechars:125 }}
 

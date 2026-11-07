@@ -897,6 +897,33 @@ class TripImportTests(TestCase):
         statuses = [TouristSpot.objects.get(pk=pk).status for pk in (first, second, third)]
         self.assertEqual(statuses, [TouristSpot.Status.PUBLISHED, TouristSpot.Status.PUBLISHED, TouristSpot.Status.PENDING])
 
+    def test_hand_written_introductions_round_trip(self):
+        import csv, tempfile
+        spot = TouristSpot.objects.create(
+            external_id="ext-1", spot_type="attractions", title_original="Aareschlucht", summary_ja="AIの文",
+            official_url="https://www.myswitzerland.com/de/a/", status=TouristSpot.Status.PUBLISHED,
+        )
+        path = tempfile.mktemp(suffix=".csv")
+        call_command("export_tourist_texts", path, stdout=open(os.devnull, "w"))
+        with open(path, encoding="utf-8-sig", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        self.assertEqual(rows[0]["external_id"], "ext-1")
+        rows[0]["私の紹介文"] = "岩の間を歩く峡谷。\n夏も涼しい。"
+        rows.append({**rows[0], "external_id": "nope", "名前": "Unknown"})
+        with open(path, "w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+        call_command("import_tourist_texts", path, stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertEqual(spot.intro_ja, "")  # check only
+        call_command("import_tourist_texts", path, "--commit", stdout=open(os.devnull, "w"))
+        spot.refresh_from_db()
+        self.assertEqual(spot.intro_ja, "岩の間を歩く峡谷。\n夏も涼しい。")
+        page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "夏も涼しい。")
+        self.assertNotContains(page, "AIの文")
+
     def test_nightly_trip_text_is_off_unless_turned_on(self):
         with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
             self.assertNotIn("--trip-ai", outings_scheduler.daily_command())

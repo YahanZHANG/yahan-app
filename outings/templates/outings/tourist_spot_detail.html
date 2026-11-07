@@ -259,7 +259,9 @@ html[data-outings-theme="dark"] .trip-source a {
 
         <div class="trip-description">
 
-            {% if spot.summary_ja %}
+            {% if spot.intro_ja %}
+                {{ spot.intro_ja|linebreaks }}
+            {% elif spot.summary_ja %}
                 {{ spot.summary_ja }}
             {% elif spot.summary_original %}
                 {{ spot.summary_original }}
@@ -282,7 +284,7 @@ html[data-outings-theme="dark"] .trip-source a {
         </section>
     {% endif %}
 
-    {% if details.guide_ja %}
+    {% if details.guide_ja and not spot.intro_ja %}
         <section class="trip-detail-section">
             <h2>くわしく</h2>
             <div class="trip-guide">{{ details.guide_ja|linebreaks }}</div>
