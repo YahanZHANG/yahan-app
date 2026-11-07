@@ -104,11 +104,34 @@ def board_open(view):
 
     @wraps(view)
     def wrapper(request, *args, **kwargs):
-        if not BoardSettings.current().is_open and not request.user.is_staff:
+        if not can_preview(request):
             return render(request, "chiebukuro/closed.html", status=200)
         return view(request, *args, **kwargs)
 
     return wrapper
+
+
+PREVIEW_SESSION_KEY = "chiebukuro_preview"
+
+
+def can_preview(request):
+    """
+    公開中ならだれでも。公開前は、運営と、先行公開のリンク (?preview=鍵) を開いた人だけ。
+    リンクの鍵はセッションに覚えるので、2回目からは鍵なしの URL でも見られる。
+    """
+
+    settings_row = BoardSettings.current()
+    if settings_row.is_open or request.user.is_staff:
+        return True
+    key = settings_row.preview_key
+    if not key:
+        return False
+    if request.GET.get("preview") == key:
+        request.session[PREVIEW_SESSION_KEY] = key
+    if request.session.get(PREVIEW_SESSION_KEY) == key:
+        request.board_preview = True
+        return True
+    return False
 
 
 def clean_choice(value, choices):
@@ -168,6 +191,7 @@ def board_context(request, tab, region=None):
     return {
         "tab": tab,
         "board_is_open": BoardSettings.current().is_open,
+        "board_preview": getattr(request, "board_preview", False),
         "unread": unread_notifications(request.user),
         "fab_label": fab[0] if fab else "",
         "fab_url": reverse(fab[1]) if fab else "",
@@ -180,10 +204,19 @@ def board_context(request, tab, region=None):
 
 
 def needs_rules(user):
-    """まだ掲示板のルールに同意していない (はじめて書きこむ前に、ルールの画面を出す)"""
+    """
+    書きこむ前に、ルールの同意画面を出すか。
+    "first" = まだ同意していない / "updated" = 同意のあとにルールが変わった / "" = 不要
+    """
     if not user.is_authenticated:
-        return False
-    return not BoardProfile.objects.filter(user=user, rules_agreed_at__isnull=False).exists()
+        return ""
+    agreed_at = BoardProfile.objects.filter(user=user).values_list("rules_agreed_at", flat=True).first()
+    if not agreed_at:
+        return "first"
+    updated_at = BoardSettings.current().rules_updated_at
+    if updated_at and agreed_at < updated_at:
+        return "updated"
+    return ""
 
 
 def my_talks(user):
@@ -1085,7 +1118,7 @@ def notice_list(request):
 @login_required
 def notice_new(request):
 
-    mine = active_notices().filter(owner=request.user).first()
+    mine = active_notices().filter(owner=request.user, is_sample=False).first()
     if mine:
         messages.info(request, f"募集・告知は1人1件までです。いまの告知は、あと{mine.days_left}日で終わります（取り下げると、すぐに新しく出せます）。")
         return redirect("chiebukuro:notice", pk=mine.pk)
@@ -1367,7 +1400,7 @@ def my_page(request):
                 "answers": Answer.objects.filter(author=user, status=Status.PUBLISHED).count(),
                 "wanted": Interest.objects.filter(user=user, question__status=Status.PUBLISHED).count(),
                 "items": Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).count()
-                + Notice.objects.filter(owner=user, status=Status.PUBLISHED).count(),
+                + Notice.objects.filter(owner=user, status=Status.PUBLISHED, is_sample=False).count(),
             },
         },
     )
@@ -1419,7 +1452,7 @@ def my_list(request, section):
         )
     else:
         context["items"] = list(Item.objects.filter(owner=user).exclude(status=Status.HIDDEN).order_by("-created_at")[:50])
-        context["notices"] = list(Notice.objects.filter(owner=user, status=Status.PUBLISHED).order_by("-created_at")[:10])
+        context["notices"] = list(Notice.objects.filter(owner=user, status=Status.PUBLISHED, is_sample=False).order_by("-created_at")[:10])
 
     return render(request, "chiebukuro/my_list.html", context)
 
@@ -1580,9 +1613,8 @@ def profile_edit(request):
 @require_POST
 def rules_agree(request):
     profile, _ = BoardProfile.objects.get_or_create(user=request.user)
-    if not profile.rules_agreed_at:
-        profile.rules_agreed_at = timezone.now()
-        profile.save(update_fields=["rules_agreed_at"])
+    profile.rules_agreed_at = timezone.now()
+    profile.save(update_fields=["rules_agreed_at"])
     from django.http import JsonResponse
 
     return JsonResponse({"ok": True})

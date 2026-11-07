@@ -50,6 +50,18 @@ class BoardSettings(models.Model):
         default="auto",
         help_text="自動: 春 4/1〜4/25、建国記念日 7/25〜8/1、ハロウィン 10/18〜10/31、秋 11月、クリスマス 12/1〜12/26、お正月 12/30〜1/7",
     )
+    preview_key = models.CharField(
+        "先行公開のリンクの鍵",
+        max_length=40,
+        blank=True,
+        help_text="公開前でも、この鍵つきのリンクを開いた人は掲示板を見られます。管理画面のボタンで作り直すと、古いリンクは使えなくなります。",
+    )
+    rules_updated_at = models.DateTimeField(
+        "ルールを更新した日時",
+        null=True,
+        blank=True,
+        help_text="ルールを変えたら、ここを「今日」「現在」にして保存してください。これより前に同意した人には、次に書きこむときにもう一度同意の画面が出ます。",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -63,6 +75,13 @@ class BoardSettings(models.Model):
     def current(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def new_preview_key(self):
+        import secrets
+
+        self.preview_key = secrets.token_urlsafe(12)
+        self.save(update_fields=["preview_key", "updated_at"])
+        return self.preview_key
 
     def season(self, today):
         """HOME上部に使う季節のデザイン ("" ならいつもの)"""
@@ -222,7 +241,6 @@ class Genre(models.TextChoices):
     KITCHEN = "kitchen", "キッチン・食器"
     CLOTHES = "clothes", "服・靴"
     SPORTS = "sports", "スポーツ・アウトドア"
-    FOOD = "food", "食べもの"
     OTHER = "other", "その他"
 
 
@@ -329,6 +347,7 @@ class Notice(models.Model):
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     expires_at = models.DateTimeField("掲載の終わり", db_index=True)
+    is_sample = models.BooleanField("テスト用（架空）", default=False, help_text="先行テスト用の架空の告知。「テスト用・架空」の印が付きます。公開前に管理画面からまとめて消してください。")
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 

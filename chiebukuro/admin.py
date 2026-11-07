@@ -34,8 +34,9 @@ from .services import import_from_survey
 @admin.register(BoardSettings)
 class BoardSettingsAdmin(admin.ModelAdmin):
 
-    list_display = ["__str__", "is_open", "hero_season", "updated_at"]
+    list_display = ["__str__", "is_open", "hero_season", "rules_updated_at", "updated_at"]
     list_editable = ["is_open", "hero_season"]
+    readonly_fields = ["preview_key"]
     list_display_links = ["__str__"]
     change_list_template = "admin/chiebukuro/boardsettings/change_list.html"
 
@@ -45,14 +46,26 @@ class BoardSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def changelist_view(self, request, extra_context=None):
-        BoardSettings.current()
-        return super().changelist_view(request, extra_context)
 
     def get_urls(self):
         return [
             path("import-survey/", self.admin_site.admin_view(self.import_survey), name="chiebukuro_import_survey"),
+            path("preview-link/", self.admin_site.admin_view(self.preview_link), name="chiebukuro_preview_link"),
         ] + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        settings_row = BoardSettings.current()
+        link = ""
+        if settings_row.preview_key:
+            link = request.build_absolute_uri(reverse("chiebukuro:home")) + f"?preview={settings_row.preview_key}"
+        extra_context = dict(extra_context or {}, preview_link=link)
+        return super().changelist_view(request, extra_context)
+
+    def preview_link(self, request):
+        if request.method == "POST":
+            BoardSettings.current().new_preview_key()
+            messages.success(request, "先行公開のリンクを作りました。前のリンクは使えなくなりました。")
+        return redirect(reverse("admin:chiebukuro_boardsettings_changelist"))
 
     def import_survey(self, request):
         if request.method == "POST":
@@ -158,11 +171,17 @@ class ItemAdmin(admin.ModelAdmin):
 @admin.register(Notice)
 class NoticeAdmin(admin.ModelAdmin):
 
-    list_display = ["title", "kind", "status", "region", "nickname", "expires_at", "created_at"]
+    list_display = ["title", "kind", "status", "is_sample", "region", "nickname", "expires_at", "created_at"]
     list_editable = ["status"]
-    list_filter = ["kind", "status", "region"]
+    list_filter = ["is_sample", "kind", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
+    actions = ["delete_samples"]
+
+    @admin.action(description="テスト用（架空）の告知をすべて消す（選んだものに関係なく）")
+    def delete_samples(self, request, queryset):
+        count, _ = Notice.objects.filter(is_sample=True).delete()
+        self.message_user(request, f"テスト用の告知と、その問い合わせを消しました（{count}件）。")
 
 
 class MessageInline(admin.TabularInline):

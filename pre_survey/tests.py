@@ -686,7 +686,7 @@ class ImportTests(TestCase):
     def test_import_is_idempotent(self):
         call_command("import_pre_survey_questions", verbosity=0)
         count = Question.objects.count()
-        self.assertEqual(count, 80)
+        self.assertEqual(count, 107)
         self.assertEqual(set(Question.objects.values_list("theme", flat=True)),
                          {"life", "shopping", "childcare", "work", "language", "outing", "health", "money", "culture"})
         Question.objects.filter(seed_key="q01").update(body="直した")
