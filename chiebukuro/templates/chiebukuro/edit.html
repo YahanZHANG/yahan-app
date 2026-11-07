@@ -1,0 +1,40 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}{{ kind_label }}を直す | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{{ back_url }}">{% include "chiebukuro/_icon.html" with name="back" %}もどる</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">{{ kind_label }}を直す</h1>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="cb-form">
+        {% csrf_token %}
+        {% for field in fields %}
+            <label class="cb-field">
+                <span>{{ field.label }}{% if not field.required %}（任意）{% endif %}</span>
+                {% if field.type == "textarea" %}
+                    <textarea name="{{ field.name }}" rows="6" {% if field.limit %}maxlength="{{ field.limit }}" data-count="left-{{ field.name }}"{% endif %} {% if field.required %}required{% endif %}>{{ field.value }}</textarea>
+                    {% if field.limit %}<small class="cb-sub">あと <span id="left-{{ field.name }}"></span> 文字</small>{% endif %}
+                {% elif field.type == "select" %}
+                    <select name="{{ field.name }}">{% for value, label in field.choices %}<option value="{{ value }}" {% if value == field.value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                {% elif field.type == "date" %}
+                    <input type="date" name="{{ field.name }}" value="{{ field.value }}">
+                {% else %}
+                    <input type="{% if field.type == 'url' %}url{% else %}text{% endif %}" name="{{ field.name }}" value="{{ field.value }}" {% if field.limit %}maxlength="{{ field.limit }}"{% endif %} {% if field.required %}required{% endif %}>
+                {% endif %}
+            </label>
+        {% endfor %}
+        {% if obj.photo_url %}
+            <div class="cb-field">
+                <span>いまの写真</span>
+                <img src="{{ obj.photo_url }}" alt="" class="cb-edit-photo">
+                <label class="cb-check"><input type="checkbox" name="remove_photo" value="yes"> 写真を消す</label>
+            </div>
+        {% endif %}
+        {% include "chiebukuro/_photo_field.html" %}
+        <div class="cb-edit-actions">
+            <button type="submit" class="cb-btn cb-btn-primary">直して保存</button>
+            <a href="{{ back_url }}" class="cb-btn">やめる</a>
+        </div>
+        <p class="cb-note">住所・電話番号など、個人が特定できる情報は書かないでください。</p>
+    </form>
+</section>
+{% endblock %}

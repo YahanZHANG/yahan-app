@@ -792,3 +792,58 @@ class InstallGuideTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:install"))
         self.assertContains(page, "ホーム画面に追加しよう")
         self.assertContains(self.client.get(reverse("chiebukuro:home")), reverse("chiebukuro:install"))
+
+
+class EditMineTests(BoardTestCase):
+
+    def test_edit_and_delete_own_question(self):
+        from chiebukuro.models import Question
+
+        question = Question.objects.create(body="元の質問", theme="life", source="member", author=self.alice, nickname="アリス")
+        self.client.force_login(self.alice)
+        url = reverse("chiebukuro:edit", args=["question", question.pk])
+        self.assertContains(self.client.get(url), "元の質問")
+        response = self.client.post(url, {"body": "直した質問", "theme": "life", "region": ""})
+        self.assertRedirects(response, reverse("chiebukuro:question", args=[question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.body, "直した質問")
+        self.assertIsNotNone(question.edited_at)
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "編集済み")
+        self.client.post(reverse("chiebukuro:delete", args=["question", question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.status, "hidden")
+
+    def test_cannot_edit_others_or_delete_answered_question(self):
+        from chiebukuro.models import Answer, Question
+
+        question = Question.objects.create(body="質問", theme="life", source="member", author=self.alice, nickname="アリス")
+        self.client.force_login(self.bob)
+        self.assertEqual(self.client.get(reverse("chiebukuro:edit", args=["question", question.pk])).status_code, 404)
+        Answer.objects.create(question=question, body="答え", author=self.bob, nickname="ボブ")
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:delete", args=["question", question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.status, "published")
+
+    def test_every_kind_edit_page_opens(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from chiebukuro.models import Answer, Item, Notice, Post, PostReply, Question
+
+        q = Question.objects.create(body="質問", theme="life", source="member", author=self.alice)
+        post = Post.objects.create(body="つぶやき", author=self.alice)
+        objs = {
+            "post": post,
+            "reply": PostReply.objects.create(post=post, body="返信", author=self.alice),
+            "question": q,
+            "answer": Answer.objects.create(question=q, body="答え", author=self.alice),
+            "item": Item.objects.create(kind="give", genre="books", title="本", owner=self.alice),
+            "notice": Notice.objects.create(kind="event", title="会", body="内容", owner=self.alice, expires_at=timezone.now() + timedelta(days=30)),
+        }
+        self.client.force_login(self.alice)
+        for kind, obj in objs.items():
+            self.assertEqual(self.client.get(reverse("chiebukuro:edit", args=[kind, obj.pk])).status_code, 200, kind)
+        self.client.post(reverse("chiebukuro:edit", args=["notice", objs["notice"].pk]),
+                         {"title": "新しい会", "body": "内容", "region": "", "place": "", "event_date": "2026-12-01", "link": ""})
+        objs["notice"].refresh_from_db()
+        self.assertEqual(objs["notice"].title, "新しい会")

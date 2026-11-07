@@ -9,6 +9,7 @@
     <p class="cb-post-foot">
         <span class="cb-sub">{{ post.created_at|date:"Y年n月j日 H:i" }}</span>
         {% if user.is_authenticated and post.author_id == user.pk %}
+            <a href="{% url 'chiebukuro:edit' 'post' post.pk %}" class="cb-textbtn">編集</a>
             <form method="post" action="{% url 'chiebukuro:delete_post' post.pk %}" onsubmit="return confirm('このつぶやきを消しますか？');">
                 {% csrf_token %}<button type="submit" class="cb-textbtn">消す</button>
             </form>
@@ -23,7 +24,7 @@
         <article class="cb-reply" id="r{{ reply.pk }}">
             <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face reply.author reply.display_name %}</a>
             <div>
-                <p class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a><span class="cb-sub">{{ reply.created_at|ago }}</span></p>
+                <p class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a><span class="cb-sub">{{ reply.created_at|ago }}</span>{% if reply.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% if user.is_authenticated and reply.author_id == user.pk %}<span class="cb-mine-tools"><a href="{% url 'chiebukuro:edit' 'reply' reply.pk %}" class="cb-textbtn">編集</a><form method="post" action="{% url 'chiebukuro:delete' 'reply' reply.pk %}" onsubmit="return confirm('この返信を消しますか？');">{% csrf_token %}<button type="submit" class="cb-textbtn">消す</button></form></span>{% endif %}</p>
                 <div class="cb-post-body">{{ reply.body|urlize|linebreaksbr }}</div>
                 {% include "chiebukuro/_photo.html" with url=reply.photo_url %}
                 {% include "chiebukuro/_stamps.html" with obj=reply target="reply" prefix="r" %}

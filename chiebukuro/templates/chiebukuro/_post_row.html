@@ -5,7 +5,7 @@
         <p class="cb-post-head">
             <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-name">{{ post.display_name }}</a>
             {% if post.get_region_display %}<span class="cb-sub">{{ post.get_region_display }}</span>{% endif %}
-            <a href="{% url 'chiebukuro:post' post.pk %}" class="cb-sub cb-time">{{ post.created_at|ago }}</a>
+            <a href="{% url 'chiebukuro:post' post.pk %}" class="cb-sub cb-time">{{ post.created_at|ago }}</a>{% if post.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}
         </p>
         <div class="cb-post-body">{% if clip %}<a href="{% url 'chiebukuro:post' post.pk %}" class="cb-clip">{{ post.body|linebreaksbr }}</a>{% else %}{{ post.body|urlize|linebreaksbr }}{% endif %}</div>
         {% if post.theme %}<p class="cb-hashtags"><a href="{% url 'chiebukuro:posts' %}?theme={{ post.theme }}">#{{ post.get_theme_display }}</a></p>{% endif %}
