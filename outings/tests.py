@@ -972,6 +972,23 @@ class TripImportTests(TestCase):
         self.assertEqual((spot.intro_ja, spot.status), ("探偵の道。", TouristSpot.Status.PUBLISHED))
         self.assertEqual(edited.intro_ja, "管理画面で直した")
 
+    def test_unverified_spots_are_hidden_until_they_have_an_intro(self):
+        from outings.management.commands import apply_tourist_intros as apply
+        self.assertIn(apply.normalize("Sagenwege"), apply.load_unverified())  # the shipped list parses
+        bare = TouristSpot.objects.create(
+            external_id="u1", spot_type="tours", title_original="Sagenwege",
+            official_url="https://www.myswitzerland.com/de/u1/", status=TouristSpot.Status.PUBLISHED,
+        )
+        written = TouristSpot.objects.create(
+            external_id="u2", spot_type="tours", title_original="Moorweg", intro_ja="自分で書いた",
+            official_url="https://www.myswitzerland.com/de/u2/", status=TouristSpot.Status.PUBLISHED,
+        )
+        call_command("apply_tourist_intros", stdout=open(os.devnull, "w"))
+        bare.refresh_from_db()
+        written.refresh_from_db()
+        self.assertEqual(bare.status, TouristSpot.Status.HIDDEN)
+        self.assertEqual(written.status, TouristSpot.Status.PUBLISHED)
+
     def test_markdown_intro_batches_parse(self):
         from outings.management.commands.merge_tourist_intros_md import parse
         text = """# 第2弾

@@ -5,6 +5,8 @@ hand-written Japanese introduction. Runs on every deploy (start.sh) and
 after each trip import, so spots imported later still get their text.
 An introduction already set (e.g. edited in admin) is kept unless
 --overwrite. A spot waiting for AI text is published with it.
+Spots listed in tourist_unverified.json (Taro could not confirm their
+details) are hidden while they have no introduction.
 
     python manage.py apply_tourist_intros            # fill empty ones
     python manage.py apply_tourist_intros --overwrite
@@ -20,6 +22,7 @@ from django.core.management.base import BaseCommand
 from outings.models import TouristSpot
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "tourist_intros.json"
+UNVERIFIED = DATA.with_name("tourist_unverified.json")
 
 
 def normalize(title):
@@ -36,6 +39,25 @@ def load_intros(path=None):
     return {normalize(title): text.strip() for title, text in json.loads(path.read_text(encoding="utf-8")).items() if text.strip()}
 
 
+def load_unverified(path=None):
+    path = path or UNVERIFIED
+    if not path.exists():
+        return set()
+    return {normalize(title) for title in json.loads(path.read_text(encoding="utf-8"))}
+
+
+def hide_unverified():
+    """Hide listed spots that still have no introduction; returns how many."""
+    unverified = load_unverified()
+    hidden = 0
+    for spot in TouristSpot.objects.exclude(status=TouristSpot.Status.HIDDEN).filter(intro_ja="").only("pk", "title_original", "status"):
+        if normalize(spot.title_original) in unverified:
+            spot.status = TouristSpot.Status.HIDDEN
+            spot.save(update_fields=["status", "updated_at"])
+            hidden += 1
+    return hidden
+
+
 class Command(BaseCommand):
     help = "Fill hand-written trip introductions from outings/data/tourist_intros.json."
 
@@ -43,6 +65,9 @@ class Command(BaseCommand):
         parser.add_argument("--overwrite", action="store_true")
 
     def handle(self, *args, **options):
+        hidden = hide_unverified()
+        if hidden:
+            self.stdout.write(f"Trip introductions: {hidden} unverified spots hidden.")
         intros = load_intros()
         if not intros:
             return
