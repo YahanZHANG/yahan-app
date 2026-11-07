@@ -48,6 +48,12 @@
             }
         } catch (error) {}
         document.documentElement.setAttribute("data-outings-theme", theme);
+        // List or photo view, chosen with the リスト｜写真 buttons.
+        try {
+            if (localStorage.getItem("yapp-outings-view") === "list") {
+                document.documentElement.setAttribute("data-og-view", "list");
+            }
+        } catch (error) {}
     })();
     </script>
     <link
@@ -153,6 +159,28 @@
 
 
 <script src="{% static 'outings/js/hearts.js' %}" defer></script>
+<script>
+// リスト｜写真 buttons on the lists.
+(function () {
+    var root = document.documentElement;
+    function show() {
+        var view = root.getAttribute("data-og-view") === "list" ? "list" : "photo";
+        document.querySelectorAll("[data-og-view]").forEach(function (button) {
+            if (button === root) return;
+            button.setAttribute("aria-pressed", String(button.getAttribute("data-og-view") === view));
+        });
+    }
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-og-view]");
+        if (!button) return;
+        var view = button.getAttribute("data-og-view");
+        if (view === "list") root.setAttribute("data-og-view", "list"); else root.removeAttribute("data-og-view");
+        try { localStorage.setItem("yapp-outings-view", view); } catch (error) {}
+        show();
+    });
+    show();
+})();
+</script>
 
 <script>
 (function () {

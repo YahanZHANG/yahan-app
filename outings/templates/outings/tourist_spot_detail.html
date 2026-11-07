@@ -201,6 +201,9 @@ html[data-outings-theme="dark"] .trip-source a {
     color: #7dcbd0;
 }
 
+.trip-highlights { margin: 0; padding-left: 1.2em; line-height: 1.8; }
+.trip-highlights li { margin-bottom: 4px; }
+.trip-guide p { margin: 0 0 10px; line-height: 1.9; }
 </style>
 
 <div class="trip-detail">
@@ -269,6 +272,22 @@ html[data-outings-theme="dark"] .trip-source a {
         </div>
 
     </section>
+
+    {% if details.highlights_ja %}
+        <section class="trip-detail-section">
+            <h2>見どころ</h2>
+            <ul class="trip-highlights">
+                {% for line in details.highlights_ja %}<li>{{ line }}</li>{% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {% if details.guide_ja %}
+        <section class="trip-detail-section">
+            <h2>くわしく</h2>
+            <div class="trip-guide">{{ details.guide_ja|linebreaks }}</div>
+        </section>
+    {% endif %}
 
     {% if details.specs %}
 

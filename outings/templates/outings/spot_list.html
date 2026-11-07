@@ -12,7 +12,7 @@
     <a href="{% url 'outings:tourist_spot_list' %}?kids=0" class="og-check is-on" role="checkbox" aria-checked="true">
         <i class="bi bi-check-square-fill" aria-hidden="true"></i>子連れで行ける場所だけ
     </a>
-    <p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
+    <div class="og-countbar"><p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>{% include "outings/includes/view_toggle.html" %}</div>
 
     <nav class="og-chips og-chips--scroll" aria-label="よく使う条件">
         {% for chip in chips.toggles %}

@@ -493,3 +493,48 @@ html[data-outings-theme="dark"] {
 }
 .og-profile__skip { padding: 10px 12px; border: 0; background: none; color: var(--outings-muted); font-size: 14px; text-decoration: underline; }
 .og-saved { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--outings-accent-soft); color: var(--outings-accent); font-weight: 700; font-size: 14px; }
+
+/* ---------- リスト｜写真 ---------- */
+
+.og-countbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 10px; }
+.og-countbar .og-count, .og-countbar .ev-count { margin: 0; }
+.og-view { display: inline-flex; flex: none; padding: 2px; border: 1px solid var(--outings-border); border-radius: 10px; background: var(--outings-surface); }
+.og-view button {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border: 0; border-radius: 8px;
+    background: none; color: var(--outings-muted); font-size: 13px; font-weight: 600;
+}
+.og-view button[aria-pressed="true"] { background: var(--outings-accent); color: var(--outings-surface); }
+
+/* List view: no pictures, one tight row per place or event. */
+[data-og-view="list"] .og-spots--list,
+[data-og-view="list"] .trip-grid,
+[data-og-view="list"] .ev-list { display: block; }
+[data-og-view="list"] .og-spot__tile,
+[data-og-view="list"] .trip-card-image,
+[data-og-view="list"] .trip-card-placeholder,
+[data-og-view="list"] .trip-card-credit,
+[data-og-view="list"] .trip-card-bottom,
+[data-og-view="list"] .ev-list .ev-card__visual { display: none !important; }
+
+[data-og-view="list"] .og-spots--list .og-spot,
+[data-og-view="list"] .trip-card,
+[data-og-view="list"] .ev-list .ev-card {
+    margin: 0; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--outings-border);
+    border-radius: 0; box-shadow: none; background: transparent; transform: none;
+}
+[data-og-view="list"] .og-spots--list .og-spot { display: block; }
+[data-og-view="list"] .ev-list .ev-card__link { display: block; padding: 0; }
+[data-og-view="list"] .og-spot__summary,
+[data-og-view="list"] .trip-card p,
+[data-og-view="list"] .ev-list .ev-card__summary,
+[data-og-view="list"] .ev-list .ev-card__highlight {
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0;
+}
+[data-og-view="list"] .trip-card h2 { margin: 0; font-size: 15px; }
+[data-og-view="list"] .trip-card-type { margin: 0 0 2px; }
+[data-og-view="list"] .trip-card { position: relative; padding-right: 40px; }
+[data-og-view="list"] .og-badges, [data-og-view="list"] .ev-list .ev-badges { margin-top: 4px; }
+[data-og-view="list"] .trip-card-main { padding: 0; }
+[data-og-view="list"] .trip-card-heart-form { top: 8px; right: 0; }
+[data-og-view="list"] .trip-card-heart-button { width: 32px; height: 32px; border: 0; background: transparent; box-shadow: none; }

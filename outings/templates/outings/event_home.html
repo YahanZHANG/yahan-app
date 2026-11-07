@@ -106,7 +106,7 @@
     {% endif %}
 
     <!-- By day -->
-    <p class="ev-count">{{ result_count }}件</p>
+    <div class="og-countbar"><p class="ev-count">{{ result_count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>
 
     {% for group in day_groups %}
         <section class="ev-day" aria-label="{{ group.label }}">

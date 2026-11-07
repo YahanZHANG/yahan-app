@@ -164,6 +164,8 @@ TRANSLATION_SCHEMA = result_schema({
     "id": {"type": "integer"},
     "japanese_subtitle": {"type": "string"},
     "summary_ja": {"type": "string"},
+    "highlights_ja": {"type": "array", "items": {"type": "string"}},
+    "guide_ja": {"type": "string"},
 })
 
 
@@ -227,6 +229,22 @@ Interlaken → Interlaken
 - 他の地名・施設名も原語表記を保つ。
 - 情報不足なら短くする。
 - 文章の根拠がない場合は空文字列としてよい。
+
+【見どころ（highlights_ja）】
+
+- その場所でできること・見られるものを最大3つ。
+- 1つ20〜40文字程度の短い文。
+- 元の情報に書かれていることだけ。なければ空の配列。
+
+【くわしい説明（guide_ja）】
+
+- 詳しいページに載せる説明。原則250〜450文字。
+- どんな場所か、何ができるか、行き方や所要時間・季節など
+  元の情報に書かれている実用的なことをまとめる。
+- 子ども連れに関わる情報（遊び場、ベビーカー、年齢など）が
+  元の情報にあれば必ず入れる。なければ触れない。
+- 段落の区切りは改行1つ。
+- 元の情報が少なければ短くてよい。紹介文と同じ文を繰り返さない。
 
 【禁止】
 
@@ -439,7 +457,7 @@ def make_source_record(spot):
 # Selection and validation
 # =========================================================
 
-def choose_spots(limit, force):
+def choose_spots(limit, force, missing_guide=False):
 
     # Pending = imported but not yet shown; this run publishes them.
     queryset = TouristSpot.objects.filter(
@@ -449,7 +467,10 @@ def choose_spots(limit, force):
         ]
     )
 
-    if not force:
+    if missing_guide:
+        # Written before the longer guide existed: write it now.
+        queryset = queryset.filter(ai_reviewed_at__isnull=False).exclude(details__has_key="guide_ja")
+    elif not force:
         queryset = queryset.filter(
             ai_reviewed_at__isnull=True
         )
@@ -649,7 +670,14 @@ def process_batch(spots, api_key, model):
         if not summary:
             summary = ""
 
+        highlights = translation.get("highlights_ja")
+        highlights = [h.strip()[:120] for h in highlights if isinstance(h, str) and h.strip()][:3] if isinstance(highlights, list) else []
+        guide = translation.get("guide_ja")
+        guide = guide.strip()[:1500] if isinstance(guide, str) else ""
+
         prepared[spot.pk] = {
+            "highlights_ja": highlights,
+            "guide_ja": guide,
             "title_ja": title,
             "summary_ja": summary,
             "breakdown": breakdown,
@@ -682,6 +710,8 @@ def process_batch(spots, api_key, model):
             details["ai_score_breakdown"] = (
                 result["breakdown"]
             )
+            details["highlights_ja"] = result["highlights_ja"]
+            details["guide_ja"] = result["guide_ja"]
             details["ai_score_version"] = (
                 SCORING_VERSION
             )
@@ -738,6 +768,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--missing-guide",
+            action="store_true",
+            help="Rewrite spots that have no longer Japanese guide yet.",
+        )
+
+        parser.add_argument(
             "--commit",
             action="store_true",
         )
@@ -762,6 +798,7 @@ class Command(BaseCommand):
         spots = choose_spots(
             limit=limit,
             force=force,
+            missing_guide=options["missing_guide"],
         )
 
         if not spots:

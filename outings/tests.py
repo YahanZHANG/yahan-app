@@ -859,7 +859,8 @@ class TripImportTests(TestCase):
             enrich.USAGE["input"] += 1000
             ids = [record["id"] for record in data["spots"]]
             if prompt == enrich.TRANSLATION_PROMPT:
-                return {"results": [{"id": i, "japanese_subtitle": "ライン滝", "summary_ja": "大きな滝。"} for i in ids]}
+                return {"results": [{"id": i, "japanese_subtitle": "ライン滝", "summary_ja": "大きな滝。",
+                                     "highlights_ja": ["滝の近くまで船で行ける"], "guide_ja": "ヨーロッパ最大級の滝。"} for i in ids]}
             return {"results": [{"id": i, "reason": "迫力", **{k: 5 for k in enrich.SCORE_FIELDS}} for i in ids]}
 
         with mock.patch.object(enrich, "call_openai", side_effect=fake):
@@ -868,7 +869,13 @@ class TripImportTests(TestCase):
         hidden.refresh_from_db()
         self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
         self.assertEqual(spot.summary_ja, "大きな滝。")
+        self.assertEqual(spot.details["highlights_ja"], ["滝の近くまで船で行ける"])
         self.assertIsNone(hidden.ai_reviewed_at)
+        page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "ヨーロッパ最大級の滝。")
+        # Older spots without the guide can be rewritten once.
+        from outings.management.commands.enrich_tourist_spots import choose_spots
+        self.assertEqual(choose_spots(10, False, missing_guide=True), [])
 
     @mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test"})
     def test_enrichment_survives_repeated_and_missing_ai_ids(self):
