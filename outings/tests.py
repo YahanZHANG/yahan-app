@@ -286,7 +286,7 @@ class PageTests(PageTestCase):
         self.assertContains(response, "ベルンの講演")
         self.assertNotContains(response, "チューリッヒの祭り")
 
-    def test_event_list_shows_only_one_off_family_events(self):
+    def test_event_list_shows_one_off_events_and_kids_tick_narrows(self):
         make_event("親子コンサート", start=self.now + timedelta(days=2))
         make_event("大人の講演", start=self.now + timedelta(days=2), tags=())
         weekly = make_event("毎週の教室", start=self.now + timedelta(days=1))
@@ -298,8 +298,14 @@ class PageTests(PageTestCase):
         response = self.client.get(reverse("outings:event_home"), {"region": "all"})
         self.assertContains(response, "親子コンサート")
         self.assertContains(response, "図書館の読み聞かせ")
-        self.assertNotContains(response, "大人の講演")
+        self.assertContains(response, "大人の講演")
         self.assertNotContains(response, "毎週の教室")
+        response = self.client.get(reverse("outings:event_home"), {"region": "all", "family": "1"})
+        self.assertContains(response, "親子コンサート")
+        self.assertNotContains(response, "大人の講演")
+        # The tick is remembered on the next visit.
+        response = self.client.get(reverse("outings:event_home"), {"region": "all"})
+        self.assertNotContains(response, "大人の講演")
 
     def test_event_list_uses_favourite_regions_by_default(self):
         visitor = OutingsPreference.objects.create(favorite_regions=["BE"]).visitor_id
@@ -702,7 +708,8 @@ class FamilySpotTests(PageTestCase):
         self.draft = self.make("Secret Draft", status=FamilySpot.Status.DRAFT)
 
     def names(self, query=""):
-        response = self.client.get(reverse("outings:spot_list") + query)
+        query = "?kids=1" + ("&" + query.lstrip("?") if query else "")
+        response = self.client.get(reverse("outings:tourist_spot_list") + query)
         self.assertEqual(response.status_code, 200)
         return sorted(spot.name for spot in response.context["spots"])
 
@@ -737,7 +744,16 @@ class FamilySpotTests(PageTestCase):
         self.assertContains(home, reverse("outings:spot_detail", args=[self.park.pk]))
         self.assertNotContains(home, "Secret Draft")
         trips = self.client.get(reverse("outings:tourist_spot_list"))
-        self.assertContains(trips, reverse("outings:spot_list"))
+        self.assertContains(trips, "?kids=1")
+        old = self.client.get(reverse("outings:spot_list") + "?rainy=1")
+        self.assertRedirects(old, reverse("outings:tourist_spot_list") + "?rainy=1&kids=1", fetch_redirect_response=False)
+
+    def test_kids_tick_is_remembered(self):
+        url = reverse("outings:tourist_spot_list")
+        self.client.get(url + "?kids=1")
+        self.assertIn("spots", self.client.get(url).context)
+        self.client.get(url + "?kids=0")
+        self.assertNotIn("spots", self.client.get(url).context)
 
     def test_seed_spots_exist(self):
         from importlib import import_module

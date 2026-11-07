@@ -1,6 +1,6 @@
 /* おでかけ (family rebuild, 2026-11). Loaded last.
    Phone: one column, tab bar at the bottom.
-   PC (>= 960px): menu on the left like the board; >= 1220px: extra column on the right. */
+   PC (>= 960px): menu on the left like the board, wide centre. */
 
 :root {
     --og-tone-park: #e7f6ed;
@@ -47,8 +47,7 @@ html[data-outings-theme="dark"] {
 
 /* ---------- Layout ---------- */
 
-.og-side,
-.og-aside { display: none; }
+.og-side { display: none; }
 
 .og-layout .outings-main { min-width: 0; }
 
@@ -70,11 +69,13 @@ html[data-outings-theme="dark"] {
     .og-header-heart { display: none; }
     .og-phone-only { display: none !important; }
 
+    .outings-header .outings-header-inner { max-width: 1320px; }
+
     .og-layout {
         display: grid;
-        grid-template-columns: 200px minmax(0, 1fr);
-        gap: 28px;
-        max-width: 1176px;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: 32px;
+        max-width: 1320px;
         margin: 0 auto;
         padding: 0 24px;
     }
@@ -113,40 +114,10 @@ html[data-outings-theme="dark"] {
     .og-side a.on i { color: var(--outings-accent); }
 }
 
-@media (min-width: 1220px) {
-    .og-layout { grid-template-columns: 200px minmax(0, 1fr) 260px; }
-
-    .og-aside {
-        position: sticky;
-        top: 76px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        align-self: start;
-        padding-top: 24px;
-    }
-}
-
-.og-aside-box {
-    display: block;
-    padding: 14px 16px;
-    border: 1px solid var(--outings-border);
-    border-radius: 12px;
-    background: var(--outings-surface);
-    color: var(--outings-text);
-    text-decoration: none;
-}
-
-.og-aside-box h2 { margin: 0 0 8px; font-size: 14px; font-weight: 700; }
-.og-aside-links { display: grid; gap: 4px; }
-.og-aside-links a { color: var(--outings-text); text-decoration: none; font-size: 14px; padding: 4px 0; }
-.og-aside-links a:hover { color: var(--outings-accent); }
-.og-aside-about strong { display: block; font-size: 14px; }
-.og-aside-about small { color: var(--outings-muted); }
-
 /* ---------- Page basics ---------- */
 
-.og-page { max-width: 760px; }
+.og-page { max-width: none; }
+.og-detail { max-width: 820px; }
 .og-page__head h1 { margin: 0 0 2px; font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 750; }
 .og-page__head p { margin: 0 0 12px; color: var(--outings-muted); font-size: 14px; }
 .og-empty { color: var(--outings-muted); padding: 20px 0; }
@@ -282,6 +253,11 @@ html[data-outings-theme="dark"] {
         padding: 0;
     }
     .og-spots--scroll .og-spot { flex: none; }
+}
+
+@media (min-width: 1180px) {
+    .og-spots--list,
+    .og-spots--scroll { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ---------- Badges and chips ---------- */
@@ -447,3 +423,25 @@ html[data-outings-theme="dark"] {
 @media (min-width: 960px) {
     .og-detail__visual { height: 260px; }
 }
+
+/* ---------- 子連れ checkbox (events, trips) ---------- */
+
+.og-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 12px;
+    padding: 9px 14px;
+    border: 1.5px solid var(--outings-border);
+    border-radius: 12px;
+    background: var(--outings-surface);
+    color: var(--outings-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.og-check i { font-size: 18px; color: var(--outings-muted); }
+.og-check.is-on { border-color: var(--outings-accent); background: var(--outings-accent-soft); color: var(--outings-accent); }
+.og-check.is-on i { color: var(--outings-accent); }
+.og-count { margin: 0 0 10px; color: var(--outings-muted); font-size: 14px; }

@@ -81,6 +81,14 @@ def tourist_spot_queryset():
 
 def tourist_spot_list(request):
 
+    # 子連れ ticked: the hand-written family places instead.
+    from .event_views import kids_choice, remember_kids
+    kids, kids_explicit = kids_choice(request, "kids")
+    if kids:
+        from .spot_views import spot_list
+        response = spot_list(request)
+        return remember_kids(response, True) if kids_explicit else response
+
     # =====================================================
     # Request parameters
     # =====================================================
@@ -247,6 +255,8 @@ def tourist_spot_list(request):
         },
     )
 
+    if kids_explicit:
+        remember_kids(response, False)
     return set_visitor_cookie(
         request,
         response,

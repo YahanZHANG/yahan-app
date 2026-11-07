@@ -24,7 +24,7 @@ urlpatterns = [
     ),
     path(
         "spots/",
-        spot_views.spot_list,
+        spot_views.spot_list_redirect,
         name="spot_list",
     ),
     path(

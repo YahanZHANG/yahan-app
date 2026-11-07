@@ -26,6 +26,12 @@
         {% endfor %}
     </nav>
 
+    {% with kids=chips.toggles.0 %}
+        <a href="?{{ kids.qs }}" class="og-check{% if kids.active %} is-on{% endif %}" role="checkbox" aria-checked="{% if kids.active %}true{% else %}false{% endif %}">
+            <i class="bi {% if kids.active %}bi-check-square-fill{% else %}bi-square{% endif %}" aria-hidden="true"></i>子連れで楽しめるものだけ
+        </a>
+    {% endwith %}
+
     <!-- Filters -->
     <details class="ev-filters"{% if is_filtered and not using_favorites %} open{% endif %}>
         <summary>
@@ -50,7 +56,7 @@
         <div class="ev-filters__group">
             <h2>条件</h2>
             <div class="ev-chips">
-                {% for chip in chips.toggles %}
+                {% for chip in chips.toggles|slice:"1:" %}
                     <a href="?{{ chip.qs }}" class="ev-chip{% if chip.active %} is-active{% endif %}">
                         <i class="bi {{ chip.icon }}" aria-hidden="true"></i>{{ chip.label }}
                     </a>

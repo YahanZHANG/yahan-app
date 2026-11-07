@@ -18,7 +18,7 @@ from .event_views import (
     _visible_statuses,
     first_in_range,
     hearted_ids_for,
-    is_family_event,
+    is_one_off,
     live_events,
     period_range,
     querystring,
@@ -41,9 +41,9 @@ PERIODS = [
 ]
 
 TOGGLES = [
-    ("family", "家族向け", "bi-people"),
+    ("family", "子連れ", "bi-check2-square"),
     ("free", "無料", "bi-cash-coin"),
-    ("easy", "言葉の壁が低い", "bi-translate"),
+    ("easy", "言葉なしでOK", "bi-translate"),
 ]
 
 SUGGESTED_WORDS = ["コンサート", "マーケット", "子ども", "美術館", "ハイキング", "Zürich", "Basel", "Luzern"]
@@ -114,7 +114,7 @@ def search(request):
     # Match every live event once; the same matcher counts what dropping a
     # condition would add, for the "no results" suggestions.
     # ------------------------------------------------------------------
-    events = [e for e in live_events(now, statuses) if is_family_event(e)]
+    events = [e for e in live_events(now, statuses) if is_one_off(e)]
     documents = {e.pk: text_search.event_document(e) for e in events} if words else {}
 
     def matches(event, state):

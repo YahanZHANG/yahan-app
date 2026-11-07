@@ -68,18 +68,40 @@ def live_occurrences(now):
 
 FAMILY_TAGS = {"family", "children", "baby"}
 
+# The 子連れ checkbox is remembered per browser, for events and trips alike.
+KIDS_COOKIE = "outings_kids"
 
-def is_family_event(event):
-    """Events shown in Outings: for families, and one-off for Eventfrog
-    imports (long runs and weekly repeats suit 子連れスポット better).
-    Events added by hand, like a library storytime, may repeat."""
-    tags = {t.slug for t in event.tags.all()}
-    if not tags & FAMILY_TAGS and not (event.category and event.category.slug == "family"):
-        return False
+
+def kids_choice(request, param):
+    """(ticked, explicit): from ?param=1/0 when given, else the remembered choice."""
+    value = request.GET.get(param)
+    if value in ("0", "1"):
+        return value == "1", True
+    return request.COOKIES.get(KIDS_COOKIE) == "1", False
+
+
+def remember_kids(response, ticked):
+    response.set_cookie(KIDS_COOKIE, "1" if ticked else "0", max_age=400 * 24 * 3600, samesite="Lax")
+    return response
+
+
+def is_one_off(event):
+    """Eventfrog imports are listed only when one-off: long runs and weekly
+    repeats suit the places list better. Events added by hand, like a
+    library storytime, may repeat."""
     if event.source and event.source.name.lower() == "eventfrog":
         dates = getattr(event, "upcoming_dates", None) or []
         return bool(dates) and not schedule.is_long_running(dates) and not schedule.is_recurring(dates)
     return True
+
+
+def is_family(event):
+    tags = {t.slug for t in event.tags.all()}
+    return bool(tags & FAMILY_TAGS) or bool(event.category and event.category.slug == "family")
+
+
+def is_family_event(event):
+    return is_family(event) and is_one_off(event)
 
 
 def live_events(now, statuses=(Event.Status.PUBLISHED,)):
@@ -168,7 +190,7 @@ def event_home(request):
     if period not in dict(PERIODS):
         period = "all"
     category_slug = request.GET.get("category", "").strip()
-    family = request.GET.get("family") == "1"
+    family, family_explicit = kids_choice(request, "family")
     no_language = request.GET.get("easy") == "1"
     free = request.GET.get("free") == "1"
 
@@ -185,13 +207,15 @@ def event_home(request):
         regions = favorites
         using_favorites = bool(favorites)
 
-    events = [e for e in live_events(now, statuses) if is_family_event(e)]
+    events = [e for e in live_events(now, statuses) if is_one_off(e)]
     win_start, win_end = period_range(period, now)
 
     def matches(event, *, skip_region=False):
         if not skip_region and regions and not (event.location and event.location.canton in regions):
             return False
         if category_slug and not (event.category and event.category.slug == category_slug):
+            return False
+        if family and not is_family(event):
             return False
         if no_language and event.language_barrier not in ("none", "english", "japanese"):
             return False
@@ -252,7 +276,7 @@ def event_home(request):
         "when": "" if period == "all" else period,
         "region": regions if raw_regions else [],
         "category": category_slug,
-        "family": "1" if family else "",
+        "family": "1" if family else "0",
         "easy": "1" if no_language else "",
         "free": "1" if free else "",
     }
@@ -283,6 +307,8 @@ def event_home(request):
         "clear_qs": querystring({}, region=["all"]),
         "preview_mode": Event.Status.DRAFT in statuses,
     })
+    if family_explicit:
+        remember_kids(response, family)
     return set_visitor_cookie(request, response, visitor_id)
 
 
@@ -306,6 +332,7 @@ def _chips(params, period, regions, region_counts, family, easy, free, category,
         ],
         "regions": [{"label": "すべての地域", "active": not regions, "qs": querystring(params, region=["all"], page="")}],
         "toggles": [
+            {"label": "子連れ", "icon": "bi-check2-square", "active": family, "qs": querystring(params, family="0" if family else "1", page="")},
             {"label": "言葉なしでOK", "icon": "bi-translate", "active": easy, "qs": querystring(params, easy="" if easy else "1", page="")},
             {"label": "無料", "icon": "bi-cash-coin", "active": free, "qs": querystring(params, free="" if free else "1", page="")},
         ],

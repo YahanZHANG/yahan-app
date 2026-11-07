@@ -6,7 +6,8 @@ plain links like the event list, so every state has its own URL.
 
 import random
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from .event_views import is_family_event, live_events, querystring
@@ -124,7 +125,7 @@ def spot_list(request):
     # Places open this season first.
     spots.sort(key=lambda s: not s.open_in(month))
 
-    params = {"kind": kind, "area": area, "age": age, "trip": trip,
+    params = {"kids": "1", "kind": kind, "area": area, "age": age, "trip": trip,
               **{key: "1" if on else "" for key, on in flags.items()}}
 
     def link(**changes):
@@ -157,8 +158,15 @@ def spot_list(request):
         "chips": chips,
         "filtered": filtered,
         "filter_count": sum(bool(v) for v in (kind, area, age, trip)) + sum(flags.values()),
-        "clear_qs": "",
+        "clear_qs": "kids=1",
     })
+
+
+def spot_list_redirect(request):
+    """Old /outings/spots/ links: the list now lives under 旅行 with 子連れ ticked."""
+    query = request.GET.copy()
+    query["kids"] = "1"
+    return redirect(reverse("outings:tourist_spot_list") + "?" + query.urlencode())
 
 
 def spot_detail(request, pk):

@@ -88,10 +88,6 @@
                 </form>
             {% endif %}
 
-            <a href="{% url 'outings:saved_all' %}" class="og-header-heart{% if name == 'saved_all' or name == 'saved_events' %} active{% endif %}" aria-label="お気に入り">
-                <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
-            </a>
-
             <a
                 href="{% url 'outings:my_page' %}"
                 class="nav-me{% if name == 'my_page' or name == 'my_notifications' or name == 'my_preferences' or name == 'about_outings' %} active{% endif %}"
@@ -113,9 +109,8 @@
         <!-- PC: menu on the left, like the board. -->
         <nav class="og-side" aria-label="メニュー">
             <a href="{% url 'outings:home' %}" class="{% if name == 'home' %}on{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>
-            <a href="{% url 'outings:spot_list' %}" class="{% if name == 'spot_list' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-balloon" aria-hidden="true"></i>子連れスポット</a>
             <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}on{% endif %}"><i class="bi bi-calendar-event" aria-hidden="true"></i>イベント</a>
-            <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}on{% endif %}"><i class="bi bi-compass" aria-hidden="true"></i>旅行</a>
+            <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}on{% endif %}"><i class="bi bi-compass" aria-hidden="true"></i>旅行</a>
             <a href="{% url 'outings:search' %}" class="{% if name == 'search' %}on{% endif %}"><i class="bi bi-search" aria-hidden="true"></i>くわしく探す</a>
             <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}on{% endif %}"><i class="bi bi-heart" aria-hidden="true"></i>お気に入り</a>
             <a href="{% url 'outings:my_page' %}" class="{% if name == 'my_page' %}on{% endif %}"><i class="bi bi-person" aria-hidden="true"></i>マイページ</a>
@@ -125,24 +120,6 @@
             {% block content %}{% endblock %}
         </main>
 
-        <!-- Wide PC: extra column on the right. -->
-        <aside class="og-aside">
-            {% block aside %}
-                <div class="og-aside-box">
-                    <h2>すぐ探す</h2>
-                    <div class="og-aside-links">
-                        <a href="{% url 'outings:spot_list' %}?rainy=1">☔ 雨の日OK</a>
-                        <a href="{% url 'outings:spot_list' %}?easy=1">😊 言葉なしでOK</a>
-                        <a href="{% url 'outings:spot_list' %}?free=1">🆓 無料あり</a>
-                        <a href="{% url 'outings:spot_list' %}?trip=overnight">🏨 1泊で行く</a>
-                    </div>
-                </div>
-                <a class="og-aside-box og-aside-about" href="{% url 'outings:about_outings' %}#yapp">
-                    <strong>Yappについて・ご意見</strong>
-                    <small>スイス在住の個人が作っています。</small>
-                </a>
-            {% endblock %}
-        </aside>
 
     </div>
 
@@ -152,21 +129,21 @@
             <i class="bi bi-house{% if name == 'home' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>HOME</span>
         </a>
-        <a href="{% url 'outings:spot_list' %}" class="{% if name == 'spot_list' or name == 'spot_detail' %}active{% endif %}">
-            <i class="bi bi-balloon{% if name == 'spot_list' or name == 'spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>スポット</span>
+        <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
+            <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>イベント</span>
         </a>
         <a href="{% url 'outings:search' %}" class="tabbar__search{% if name == 'search' %} active{% endif %}">
             <span class="tabbar__search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
             <span>探す</span>
         </a>
-        <a href="{% url 'outings:event_home' %}" class="{% if name == 'event_home' or name == 'event_detail' %}active{% endif %}">
-            <i class="bi bi-calendar-event{% if name == 'event_home' or name == 'event_detail' %}-fill{% endif %}" aria-hidden="true"></i>
-            <span>イベント</span>
-        </a>
-        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}active{% endif %}">
-            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
+        <a href="{% url 'outings:tourist_spot_list' %}" class="{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}active{% endif %}">
+            <i class="bi bi-compass{% if name == 'tourist_spot_list' or name == 'tourist_spot_detail' or name == 'spot_detail' %}-fill{% endif %}" aria-hidden="true"></i>
             <span>旅行</span>
+        </a>
+        <a href="{% url 'outings:saved_all' %}" class="{% if name == 'saved_all' or name == 'saved_events' %}active{% endif %}">
+            <i class="bi bi-heart{% if name == 'saved_all' or name == 'saved_events' %}-fill{% endif %}" aria-hidden="true"></i>
+            <span>お気に入り</span>
         </a>
     </nav>
     {% endwith %}

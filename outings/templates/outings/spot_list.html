@@ -1,14 +1,18 @@
 {% extends "outings/base.html" %}
 
-{% block title %}子連れスポット | おでかけ{% endblock %}
+{% block title %}子連れで行ける場所 | 旅行 | おでかけ{% endblock %}
 
 {% block content %}
 <div class="og-page">
 
     <header class="og-page__head">
-        <h1>子連れスポット</h1>
-        <p>{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
+        <h1>旅行・おでかけ先</h1>
     </header>
+
+    <a href="{% url 'outings:tourist_spot_list' %}?kids=0" class="og-check is-on" role="checkbox" aria-checked="true">
+        <i class="bi bi-check-square-fill" aria-hidden="true"></i>子連れで行ける場所だけ
+    </a>
+    <p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
 
     <nav class="og-chips og-chips--scroll" aria-label="よく使う条件">
         {% for chip in chips.toggles %}

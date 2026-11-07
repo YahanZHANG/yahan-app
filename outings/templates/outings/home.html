@@ -21,7 +21,7 @@
         </p>
         <nav class="og-quick" aria-label="条件で探す">
             {% for q in quick_filters %}
-                <a href="{% url 'outings:spot_list' %}?{{ q.qs }}">{% if q.emoji %}<span aria-hidden="true">{{ q.emoji }}</span>{% endif %}{{ q.label }}</a>
+                <a href="{% url 'outings:tourist_spot_list' %}?kids=1&amp;{{ q.qs }}">{% if q.emoji %}<span aria-hidden="true">{{ q.emoji }}</span>{% endif %}{{ q.label }}</a>
             {% endfor %}
         </nav>
     </section>
@@ -29,7 +29,7 @@
     <section class="og-section">
         <header class="og-section__head">
             <h2>{% if rainy %}雨でも楽しめる場所{% else %}今週末のおすすめ{% endif %}</h2>
-            <a href="{% url 'outings:spot_list' %}{% if rainy %}?rainy=1{% endif %}">すべて見る（{{ spot_count }}）</a>
+            <a href="{% url 'outings:tourist_spot_list' %}?kids=1{% if rainy %}&amp;rainy=1{% endif %}">すべて見る（{{ spot_count }}）</a>
         </header>
         {% if weekend_spots %}
             <div class="og-spots og-spots--scroll">
@@ -67,7 +67,7 @@
         <section class="og-section">
             <header class="og-section__head">
                 <h2>1泊で行くなら</h2>
-                <a href="{% url 'outings:spot_list' %}?trip=overnight">すべて見る</a>
+                <a href="{% url 'outings:tourist_spot_list' %}?kids=1&amp;trip=overnight">すべて見る</a>
             </header>
             <div class="og-spots og-spots--scroll">
                 {% for spot in overnight_spots %}{% include "outings/includes/spot_card.html" %}{% endfor %}
