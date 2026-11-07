@@ -7,6 +7,7 @@ Does not modify the Django database.
 """
 
 import os
+import time
 from urllib.parse import urlparse
 
 import requests
@@ -69,16 +70,16 @@ def iter_spot_pages(
         for page_number in range(pages):
 
             try:
-                response = session.get(
+                response = _get_with_backoff(
+                    session,
                     f"{BASE_URL}/{spot_type}/",
-                    params={
+                    {
                         "lang": language,
                         "limit": page_size,
                         "page": page_number,
                         "expand": "true",
                         "striphtml": "true",
                     },
-                    timeout=45,
                 )
                 response.raise_for_status()
                 payload = response.json()
@@ -335,3 +336,21 @@ def normalize_spot(item, spot_type):
         )[:300],
         "raw_data": item,
     }
+
+
+# The API allows only so many calls a minute: on 429, wait and try again.
+RATE_LIMIT_WAITS = (20, 40, 60, 90)
+
+
+def _get_with_backoff(session, url, params, sleep=time.sleep):
+    for wait in RATE_LIMIT_WAITS + (None,):
+        response = session.get(url, params=params, timeout=45)
+        if response.status_code != 429 or wait is None:
+            return response
+        try:
+            wait = max(wait, int(response.headers.get("Retry-After", 0)))
+        except ValueError:
+            pass
+        print(f"  MySwitzerland says too many requests; waiting {wait}s...", flush=True)
+        sleep(wait)
+    return response

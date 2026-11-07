@@ -500,46 +500,22 @@ def validate_results(payload, expected_ids):
             "AI results is not a list"
         )
 
+    # The model sometimes repeats or drops an ID. Keep the first answer per
+    # expected ID; spots without one stay pending and are retried next run.
+    expected = set(expected_ids)
     results = {}
 
     for item in items:
 
         if not isinstance(item, dict):
-            raise ValueError(
-                "Invalid AI result"
-            )
+            continue
 
         item_id = item.get("id")
 
-        if isinstance(item_id, bool) or not isinstance(
-            item_id, int
-        ):
-            raise ValueError(
-                f"Invalid AI ID: {item_id!r}"
-            )
-
-        if item_id in results:
-            raise ValueError(
-                f"Duplicate AI ID: {item_id}"
-            )
+        if isinstance(item_id, bool) or item_id not in expected or item_id in results:
+            continue
 
         results[item_id] = item
-
-    expected = set(expected_ids)
-    actual = set(results.keys())
-
-    missing = sorted(expected - actual)
-    unexpected = sorted(actual - expected)
-
-    if missing or unexpected:
-
-        raise ValueError(
-            "AI ID mismatch. "
-            f"Expected: {sorted(expected)}; "
-            f"Received: {sorted(actual)}; "
-            f"Missing: {missing}; "
-            f"Unexpected: {unexpected}"
-        )
 
     return results
 
@@ -602,16 +578,17 @@ def process_batch(spots, api_key, model):
 
     for record in source_records:
 
-        result = translations[record["id"]]
+        result = translations.get(record["id"])
 
-        subtitle = result["japanese_subtitle"]
-        summary = result["summary_ja"]
+        if result is None:
+            continue
 
-        if not isinstance(subtitle, str):
-            raise ValueError("Invalid Japanese subtitle")
+        subtitle = result.get("japanese_subtitle")
+        summary = result.get("summary_ja")
 
-        if not isinstance(summary, str):
-            raise ValueError("Invalid Japanese summary")
+        if not isinstance(subtitle, str) or not isinstance(summary, str):
+            translations.pop(record["id"])
+            continue
 
         comparison_records.append({
             **record,
@@ -628,21 +605,24 @@ def process_batch(spots, api_key, model):
             {"spots": comparison_records},
             SCORING_SCHEMA,
         ),
-        expected_ids,
-    )
+        list(translations),
+    ) if comparison_records else {}
 
     prepared = {}
 
     for spot in spots:
 
-        translation = translations[spot.pk]
-        result = scoring_results[spot.pk]
+        translation = translations.get(spot.pk)
+        result = scoring_results.get(spot.pk)
+
+        if translation is None or result is None:
+            continue
 
         breakdown = {}
 
         for key, maximum in SCORE_FIELDS.items():
 
-            value = result[key]
+            value = result.get(key)
 
             if (
                 isinstance(value, bool)
@@ -650,18 +630,14 @@ def process_batch(spots, api_key, model):
                 or value < 0
                 or value > maximum
             ):
-                raise ValueError(
-                    f"Invalid score {key} for {spot.pk}"
-                )
+                break
 
             breakdown[key] = value
 
-        reason = result["reason"]
+        reason = result.get("reason")
 
-        if not isinstance(reason, str):
-            raise ValueError(
-                f"Invalid reason for {spot.pk}"
-            )
+        if len(breakdown) != len(SCORE_FIELDS) or not isinstance(reason, str):
+            continue
 
         title = make_title(
             spot,
@@ -689,7 +665,10 @@ def process_batch(spots, api_key, model):
 
         for spot in spots:
 
-            result = prepared[spot.pk]
+            result = prepared.get(spot.pk)
+
+            if result is None:
+                continue
 
             spot.title_ja = result["title_ja"]
             spot.summary_ja = result["summary_ja"]
@@ -827,6 +806,7 @@ class Command(BaseCommand):
         ).strip()
 
         completed = 0
+        failures = 0
 
         for start in range(0, len(spots), batch_size):
 
@@ -859,23 +839,30 @@ class Command(BaseCommand):
                 TypeError,
             ) as exc:
 
-                self.write_cost(model)
-                raise CommandError(
-                    f"Batch {number} failed. "
-                    f"Completed batches remain saved. "
-                    f"Error: {exc}"
-                ) from exc
+                failures += 1
+                self.stdout.write(self.style.WARNING(
+                    f"Batch {number} skipped (retried next run): {exc}"
+                ))
+                if failures >= 3:
+                    self.write_cost(model)
+                    raise CommandError(
+                        "Three batches failed. "
+                        "Completed batches remain saved."
+                    ) from exc
+                continue
 
-            completed += len(batch)
+            completed += len(results)
+            skipped = len(batch) - len(results)
 
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Batch {number} saved."
+                    + (f" {skipped} skipped (retried next run)." if skipped else "")
                 )
             )
 
             for spot in sorted(
-                batch,
+                [item for item in batch if item.pk in results],
                 key=lambda item: (
                     -results[item.pk]["score"],
                     item.pk,

@@ -799,6 +799,28 @@ class FamilySpotTests(PageTestCase):
 
 class TripImportTests(TestCase):
 
+    def test_rate_limit_waits_and_retries(self):
+        from outings.services.myswitzerland import _get_with_backoff
+
+        class Reply:
+            def __init__(self, status):
+                self.status_code, self.headers = status, {}
+
+        replies = [Reply(429), Reply(429), Reply(200)]
+        waits = []
+
+        class Session:
+            def get(self, url, params, timeout):
+                return replies.pop(0)
+
+        with self.settings():
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                response = _get_with_backoff(Session(), "u", {}, sleep=waits.append)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(waits, [20, 40])
+
+
     def item(self, identifier, name):
         return {"identifier": identifier, "name": name, "url": f"https://www.myswitzerland.com/de/{identifier}/",
                 "abstract": "Kurz", "description": "Lang", "geo": {"latitude": 47.0, "longitude": 8.0}}
@@ -847,6 +869,26 @@ class TripImportTests(TestCase):
         self.assertEqual(spot.status, TouristSpot.Status.PUBLISHED)
         self.assertEqual(spot.summary_ja, "大きな滝。")
         self.assertIsNone(hidden.ai_reviewed_at)
+
+    @mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test"})
+    def test_enrichment_survives_repeated_and_missing_ai_ids(self):
+        from outings.management.commands import enrich_tourist_spots as enrich
+        spots = [TouristSpot.objects.create(
+            external_id=f"d{n}", spot_type="attractions", title_original=f"Spot {n}",
+            official_url=f"https://www.myswitzerland.com/de/d{n}/", status=TouristSpot.Status.PENDING,
+        ) for n in range(3)]
+        first, second, third = (s.pk for s in spots)
+
+        def fake(api_key, model, prompt, data, schema):
+            if prompt == enrich.TRANSLATION_PROMPT:
+                # Repeats the first ID and forgets the third.
+                return {"results": [{"id": i, "japanese_subtitle": "x", "summary_ja": "説明"} for i in (first, first, second)]}
+            return {"results": [{"id": i, "reason": "r", **{k: 1 for k in enrich.SCORE_FIELDS}} for i in (first, second, 999)]}
+
+        with mock.patch.object(enrich, "call_openai", side_effect=fake):
+            call_command("enrich_tourist_spots", "--limit", "10", "--commit", stdout=open(os.devnull, "w"))
+        statuses = [TouristSpot.objects.get(pk=pk).status for pk in (first, second, third)]
+        self.assertEqual(statuses, [TouristSpot.Status.PUBLISHED, TouristSpot.Status.PUBLISHED, TouristSpot.Status.PENDING])
 
     def test_nightly_trip_text_is_off_unless_turned_on(self):
         with mock.patch.dict(os.environ, {"OUTINGS_TRIP_AI_PER_NIGHT": ""}):
