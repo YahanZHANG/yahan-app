@@ -77,6 +77,7 @@ INSTALLED_APPS = [
 
     # スイス掲示板
     "swiss_board.apps.SwissBoardConfig",
+    "chiebukuro.apps.ChiebukuroConfig",
     
     # スイスおでかけ
     "outings.apps.OutingsConfig",

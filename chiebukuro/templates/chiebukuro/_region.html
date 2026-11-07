@@ -1,0 +1,10 @@
+<form method="get" class="cb-regionbar">
+    {% for key, value in request.GET.items %}{% if key != "region" and key != "page" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+    {% include "chiebukuro/_icon.html" with name="pin" %}
+    <label class="cb-sr" for="region-select">地域</label>
+    <select name="region" id="region-select" data-autosubmit>
+        <option value="">スイス全体</option>
+        {% for value, label in regions %}<option value="{{ value }}" {% if region == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <noscript><button type="submit">表示</button></noscript>
+</form>

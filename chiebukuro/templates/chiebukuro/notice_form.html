@@ -1,0 +1,43 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}告知する | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:notices' %}">{% include "chiebukuro/_icon.html" with name="back" %}募集・告知</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">募集・告知する</h1>
+    <p class="cb-sub">1人1件まで、{{ days }}日間のせられます。終わったら、また新しく出せます。</p>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
+        {% csrf_token %}
+        <label class="cb-field"><span>種類</span>
+            <select name="kind" required><option value="">選んでください</option>{% for value, label in kinds %}<option value="{{ value }}" {% if value == values.kind %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            <small class="cb-sub">お店・サービスと教室・レッスンには「PR」の印がつきます。</small>
+        </label>
+        <label class="cb-field"><span>タイトル</span>
+            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required placeholder="例: 子ども向け日本語の読み聞かせ会（毎月第1土曜）">
+        </label>
+        <label class="cb-field"><span>内容</span>
+            <textarea name="body" rows="6" maxlength="{{ body_max }}" required placeholder="何を・だれに・いつ・どこで・料金など">{{ values.body }}</textarea>
+        </label>
+        {% include "chiebukuro/_photo_field.html" %}
+        <div class="cb-field-row">
+            <label class="cb-field"><span>日にち（イベントなど・任意）</span><input type="date" name="event_date" value="{{ values.event_date }}"></label>
+            <label class="cb-field"><span>地域</span>
+                <select name="notice_region"><option value="">スイス全体</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == values.notice_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            </label>
+        </div>
+        <label class="cb-field"><span>場所（任意）</span><input type="text" name="place" value="{{ values.place }}" maxlength="80" placeholder="例: Winterthur 駅前の公民館"></label>
+        <label class="cb-field"><span>リンク（お店のサイトなど・任意）</span><input type="url" name="link" value="{{ values.link }}" maxlength="500" placeholder="https://"></label>
+        <div class="cb-rules">
+            <p><strong>ルール</strong></p>
+            <ul>
+                <li>物の売り買いには使えません。</li>
+                <li>電話番号・住所は書かず、問い合わせは「2人だけのやりとり」で受けてください。</li>
+                <li>シッターの募集では、はじめに保護者もいっしょに会うなど、安全に気をつけてください。</li>
+                <li>内容は出した人の責任です。運営は仲介や保証はしません。</li>
+            </ul>
+            <label class="cb-check"><input type="checkbox" name="agree" value="yes" required> ルールを確認しました</label>
+        </div>
+        <button type="submit" class="cb-btn cb-btn-primary">告知を出す</button>
+    </form>
+</section>
+{% endblock %}

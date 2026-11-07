@@ -1,0 +1,196 @@
+{% load static board %}<!DOCTYPE html>
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}スイス生活の知恵袋{% endblock %} | Yapp</title>
+    <script>
+    (function () {
+        var root = document.documentElement;
+        var preference = root.dataset.yappTheme || "system";
+        var dark = preference === "dark" || (preference === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.yappResolvedTheme = dark ? "dark" : "light";
+    })();
+    </script>
+    <meta name="theme-color" content="#ffffff">
+    {% if not board_is_open %}<meta name="robots" content="noindex, nofollow">{% endif %}
+    <meta name="description" content="スイスで暮らす日本人の掲示板。つぶやき・質問・ゆずりあい・募集告知。">
+    <link rel="stylesheet" href="{% static 'chiebukuro/chiebukuro.css' %}">
+    {% include "includes/app_icons.html" %}
+</head>
+<body class="cb-page-{{ tab }}">
+
+<header class="cb-header">
+    <div class="cb-header-in">
+        <a href="{% url 'chiebukuro:home' %}" class="cb-brand">
+            <img src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" class="cb-brand-mark" width="28" height="28">
+            <span class="cb-brand-name">スイス生活の知恵袋</span>
+        </a>
+        <div class="cb-header-tools">
+            <a href="{% url 'chiebukuro:search' %}" class="cb-tool {% if tab == 'search' %}on{% endif %}" aria-label="検索" aria-controls="cb-searchbar" aria-expanded="false" id="cb-search-toggle">{% include "chiebukuro/_icon.html" with name="search" %}</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'chiebukuro:notifications' %}" class="cb-tool {% if tab == 'bell' %}on{% endif %}" aria-label="お知らせ{% if unread %}（{{ unread }}件）{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}{% if unread %}<b class="cb-badge">{{ unread }}</b>{% endif %}</a>
+                <a href="{% url 'chiebukuro:me' %}" class="cb-tool cb-tool-me {% if tab == 'me' %}on{% endif %}" aria-label="マイページ"><span class="cb-av cb-av-s {{ user.pk|avatar }}">{% face user user.profile.display_name|default:user.username %}</span></a>
+            {% else %}
+                <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="cb-login">ログイン</a>
+            {% endif %}
+        </div>
+    </div>
+    <form method="get" action="{% url 'chiebukuro:search' %}" class="cb-searchbar" id="cb-searchbar" role="search" hidden>
+        {% include "chiebukuro/_icon.html" with name="search" %}
+        <input type="search" name="q" value="{{ query|default:'' }}" placeholder="掲示板の中を検索（例: 保険、日本食、歯医者）" aria-label="掲示板の中を検索">
+        <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">検索</button>
+    </form>
+</header>
+
+{% if user.is_staff and not board_is_open %}
+    <p class="cb-staff-note">いまは運営だけが見られます（管理画面「掲示板の設定」で公開）</p>
+{% endif %}
+
+<div class="cb-layout">
+    <nav class="cb-side" aria-label="メニュー">
+        <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}HOME</a>
+        <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}つぶやき</a>
+        <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
+        <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
+        <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'chiebukuro:notifications' %}" class="{% if tab == 'bell' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}お知らせ{% if unread %}<b class="cb-badge cb-badge-inline">{{ unread }}</b>{% endif %}</a>
+            <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="user" %}マイページ</a>
+        {% endif %}
+        <a href="{% if fab_url %}{{ fab_url }}{% else %}{% url 'chiebukuro:new' %}{% endif %}" class="cb-side-write">{% if fab_label and fab_label != "書く" %}{{ fab_label }}{% else %}書く{% endif %}</a>
+    </nav>
+
+    <main class="cb-main">
+        {% for message in messages %}
+            <p class="cb-flash cb-flash-{{ message.tags }}" role="status">{{ message }}</p>
+        {% endfor %}
+        {% block content %}{% endblock %}
+        <footer class="cb-footer">
+            <a href="{% url 'portal:home' %}">Yapp</a>
+            <a href="{% url 'portal:help' %}">ヘルプ</a>
+            <a href="{% url 'portal:support' %}?from=board">お問い合わせ</a>
+        </footer>
+    </main>
+
+    <aside class="cb-aside">
+        {% block aside %}
+        <form method="get" action="{% url 'chiebukuro:search' %}" class="cb-aside-search">
+            <input type="search" name="q" placeholder="掲示板の中を検索" aria-label="掲示板の中を検索">
+        </form>
+        <section class="cb-aside-box">
+            <h2>この掲示板のルール</h2>
+            {% include "chiebukuro/_rules.html" %}
+        </section>
+        {% endblock %}
+    </aside>
+</div>
+
+{% if fab_url %}
+    <a href="{{ fab_url }}" class="cb-fab" aria-label="{{ fab_label }}">{% include "chiebukuro/_icon.html" with name="plus" %}<span>{{ fab_label }}</span></a>
+{% endif %}
+
+<nav class="cb-tabbar" aria-label="メニュー">
+    <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}<span>HOME</span></a>
+    <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}<span>つぶやき</span></a>
+    <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}<span>質問</span></a>
+    <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}<span>ゆずりあい</span></a>
+    <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}<span>募集・告知</span></a>
+</nav>
+
+<script src="{% static 'washoku/photo_upload.js' %}" defer></script>
+<script>
+(function () {
+    // 🔍: ページを移らず、ヘッダーの下に検索バーを出す
+    var toggle = document.getElementById("cb-search-toggle");
+    var bar = document.getElementById("cb-searchbar");
+    if (!toggle || !bar) return;
+    toggle.addEventListener("click", function (event) {
+        event.preventDefault();
+        bar.hidden = !bar.hidden;
+        toggle.setAttribute("aria-expanded", String(!bar.hidden));
+        toggle.classList.toggle("on", !bar.hidden);
+        if (!bar.hidden) bar.querySelector("input").focus();
+    });
+})();
+document.addEventListener("change", function (event) {
+    // 写真を選んだら、ファイル名を見せる
+    var input = event.target;
+    if (!input.matches || !input.matches('input[type="file"][name="photo"]')) return;
+    var holder = input.closest("label");
+    if (!holder) return;
+    var name = input.files && input.files[0] ? input.files[0].name : "";
+    holder.classList.toggle("has-file", !!name);
+    holder.dataset.file = name ? "📷 " + name : "";
+});
+document.addEventListener("submit", function (event) {
+    var form = event.target;
+    if (form.method.toLowerCase() !== "post") { return; }
+    if (form.dataset.sent) { event.preventDefault(); return; }
+    form.dataset.sent = "1";
+    setTimeout(function () { delete form.dataset.sent; }, 4000);
+});
+document.querySelectorAll("[data-autosubmit]").forEach(function (field) {
+    field.addEventListener("change", function () { field.form.submit(); });
+});
+document.querySelectorAll("textarea[data-grow]").forEach(function (area) {
+    var grow = function () { area.style.height = "auto"; area.style.height = area.scrollHeight + "px"; };
+    area.addEventListener("input", grow);
+});
+document.querySelectorAll("[data-count]").forEach(function (area) {
+    var out = document.getElementById(area.dataset.count);
+    var max = parseInt(area.getAttribute("maxlength"), 10);
+    var update = function () { if (out) { out.textContent = max - area.value.length; } };
+    area.addEventListener("input", update); update();
+});
+</script>
+{% if needs_rules %}
+<dialog class="cb-rules-dialog" id="cb-rules-dialog" data-url="{% url 'chiebukuro:rules_agree' %}" aria-labelledby="cb-rules-title">
+    <form method="dialog" class="cb-rules-box">
+        <h2 id="cb-rules-title">書きこむ前に、掲示板のルールをご確認ください</h2>
+        {% include "chiebukuro/_rules.html" %}
+        <label class="cb-rules-check"><input type="checkbox" id="cb-rules-ok"> ルールを読んで、同意します</label>
+        <div class="cb-rules-actions">
+            <button type="submit" value="cancel" class="cb-btn cb-btn-s">やめる</button>
+            <button type="button" id="cb-rules-agree" class="cb-btn cb-btn-primary cb-btn-s" disabled>同意して送る</button>
+        </div>
+        <p class="cb-note">同意は一度だけです。次からはこの画面は出ません。</p>
+    </form>
+</dialog>
+<script>
+(function () {
+    // はじめて書きこむときだけ: ルールに同意してから送る
+    var dialog = document.getElementById("cb-rules-dialog");
+    if (!dialog || !dialog.showModal) return;
+    var check = document.getElementById("cb-rules-ok");
+    var agree = document.getElementById("cb-rules-agree");
+    var pending = null;
+    var agreed = false;
+    check.addEventListener("change", function () { agree.disabled = !check.checked; });
+    document.addEventListener("submit", function (event) {
+        var form = event.target;
+        if (agreed || !form.matches || !form.matches("form[data-rules]")) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        pending = form;
+        dialog.showModal();
+    }, true);
+    agree.addEventListener("click", function () {
+        if (!pending) return;
+        var token = pending.querySelector('input[name="csrfmiddlewaretoken"]');
+        agree.disabled = true;
+        fetch(dialog.dataset.url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "X-CSRFToken": token ? token.value : "" }
+        }).finally(function () {
+            agreed = true;
+            dialog.close();
+            if (pending.requestSubmit) pending.requestSubmit(); else pending.submit();
+        });
+    });
+})();
+</script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}ゆずりあい | スイス生活の知恵袋{% endblock %}
+{% block content %}
+
+<h1 class="cb-page-title">ゆずりあい</h1>
+<p class="cb-page-lead">いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。</p>
+
+<nav class="cb-seg cb-seg-tight" aria-label="種類">
+    <a href="?{% if genre %}genre={{ genre }}{% endif %}" class="{% if not kind %}on{% endif %}">すべて</a>
+    {% for value, label in kinds %}
+        <a href="?kind={{ value }}{% if genre %}&genre={{ genre }}{% endif %}" class="{% if kind == value %}on{% endif %}">{{ label }}</a>
+    {% endfor %}
+</nav>
+
+<div class="cb-filterbar">
+    <form method="get" class="cb-inline-form">
+        {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+        <select name="genre" aria-label="ジャンル" data-autosubmit>
+            <option value="">すべてのジャンル</option>
+            {% for value, label in genres %}<option value="{{ value }}" {% if genre == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <label class="cb-check-s"><input type="checkbox" name="all" value="1" {% if show_done %}checked{% endif %} data-autosubmit> おわったものも</label>
+    </form>
+    {% include "chiebukuro/_region.html" %}
+</div>
+
+<section class="cb-block cb-block-flat">
+    {% for item in page.object_list %}
+        {% include "chiebukuro/_item_row.html" %}
+    {% empty %}
+        <div class="cb-empty">
+            <p>この条件の書きこみはまだありません。</p>
+            <p><a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">出してみる</a></p>
+        </div>
+    {% endfor %}
+</section>
+
+{% include "chiebukuro/_pager.html" %}
+{% endblock %}

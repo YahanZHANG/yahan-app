@@ -1,0 +1,18 @@
+{% load board %}
+<article class="cb-post" id="p{{ post.pk }}">
+    <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-av {{ post.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face post.author post.display_name %}</a>
+    <div class="cb-post-main">
+        <p class="cb-post-head">
+            <a href="{% url 'chiebukuro:profile' post.author.username %}" class="cb-name">{{ post.display_name }}</a>
+            {% if post.get_region_display %}<span class="cb-sub">{{ post.get_region_display }}</span>{% endif %}
+            <a href="{% url 'chiebukuro:post' post.pk %}" class="cb-sub cb-time">{{ post.created_at|ago }}</a>
+        </p>
+        <div class="cb-post-body">{% if clip %}<a href="{% url 'chiebukuro:post' post.pk %}" class="cb-clip">{{ post.body|linebreaksbr }}</a>{% else %}{{ post.body|urlize|linebreaksbr }}{% endif %}</div>
+        {% if post.theme %}<p class="cb-hashtags"><a href="{% url 'chiebukuro:posts' %}?theme={{ post.theme }}">#{{ post.get_theme_display }}</a></p>{% endif %}
+        {% include "chiebukuro/_photo.html" with url=post.photo_url %}
+        <div class="cb-post-actions">
+            <a href="{% url 'chiebukuro:post' post.pk %}#replies" class="cb-act">{% include "chiebukuro/_icon.html" with name="reply" %}<span>{% if post.reply_total %}{{ post.reply_total }}{% else %}返信{% endif %}</span></a>
+            {% include "chiebukuro/_stamps.html" with obj=post target="post" prefix="p" %}
+        </div>
+    </div>
+</article>

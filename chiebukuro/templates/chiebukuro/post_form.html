@@ -1,0 +1,28 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}つぶやく | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:posts' %}">{% include "chiebukuro/_icon.html" with name="back" %}つぶやき</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">つぶやく</h1>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
+        {% csrf_token %}
+        <label class="cb-field">
+            <span>「{{ nickname }}」として載ります</span>
+            <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！" data-count="post-left">{{ body }}</textarea>
+            <small class="cb-sub">あと <span id="post-left"></span> 文字</small>
+        </label>
+        {% include "chiebukuro/_photo_field.html" %}
+        <div class="cb-field-row">
+            <label class="cb-field"><span>テーマ（任意）</span>
+                <select name="theme"><option value="">なし</option>{% for value, label in themes %}<option value="{{ value }}" {% if value == theme %}selected{% endif %}>#{{ label }}</option>{% endfor %}</select>
+            </label>
+            <label class="cb-field"><span>地域（任意）</span>
+                <select name="post_region"><option value="">なし</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == post_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            </label>
+        </div>
+        <button type="submit" class="cb-btn cb-btn-primary">つぶやく</button>
+        <p class="cb-note">住所・電話番号など、個人が特定できる情報は書かないでください。</p>
+    </form>
+</section>
+{% endblock %}

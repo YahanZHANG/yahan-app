@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#FFD24A"/><stop offset="1" stop-color="#F2A900"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- 電球 = ひらめき・知恵。中にスイスの旗 -->
+  <g stroke="#1F2A44" stroke-width="22" stroke-linecap="round" opacity=".9">
+    <path d="M512 150 v-60"/><path d="M290 240 l-40 -40"/><path d="M734 240 l40 -40"/><path d="M200 440 h-60"/><path d="M824 440 h60"/>
+  </g>
+  <path d="M512 230 C380 230 290 330 290 450 C290 540 340 600 390 650 C420 680 430 710 430 750 L594 750 C594 710 604 680 634 650 C684 600 734 540 734 450 C734 330 644 230 512 230Z" fill="#FFFFFF"/>
+  <rect x="430" y="770" width="164" height="40" rx="14" fill="#1F2A44"/>
+  <rect x="446" y="826" width="132" height="40" rx="14" fill="#1F2A44"/>
+  <rect x="476" y="882" width="72" height="28" rx="14" fill="#1F2A44"/>
+  <g transform="translate(512 470)"><rect x="-96" y="-96" width="192" height="192" rx="34" fill="#D52B1E"/><rect x="-22" y="-62" width="44" height="124" rx="3" fill="#fff"/><rect x="-62" y="-22" width="124" height="44" rx="3" fill="#fff"/></g>
+</svg>

@@ -1,0 +1,46 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}質問 | スイス生活の知恵袋{% endblock %}
+{% block content %}
+
+<h1 class="cb-page-title">質問</h1>
+
+<form method="get" class="cb-search cb-search-page">
+    {% include "chiebukuro/_icon.html" with name="search" %}
+    <input type="hidden" name="sort" value="{{ sort }}">
+    {% if theme %}<input type="hidden" name="theme" value="{{ theme }}">{% endif %}
+    <input type="search" name="q" value="{{ query }}" placeholder="知りたいことを検索（例: 歯医者、滞在許可）" aria-label="質問を検索">
+</form>
+
+<nav class="cb-seg" aria-label="並べ方">
+    {% for key, label in sorts.items %}
+        <a href="?sort={{ key }}{% if theme %}&theme={{ theme }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}" class="{% if sort == key %}on{% endif %}">{{ label }}{% if key == "open" and open_total %}<b>{{ open_total }}</b>{% endif %}</a>
+    {% endfor %}
+</nav>
+
+<div class="cb-filterbar">
+    <form method="get" class="cb-inline-form">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <select name="theme" aria-label="テーマで絞りこむ" data-autosubmit>
+            <option value="">すべてのテーマ</option>
+            {% for value, label in themes %}<option value="{{ value }}" {% if theme == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </form>
+    {% include "chiebukuro/_region.html" %}
+</div>
+
+{% if query %}<p class="cb-result-note">「{{ query }}」の質問 {{ page.paginator.count }}件</p>{% endif %}
+
+<section class="cb-block cb-block-flat">
+    {% for question in page.object_list %}
+        {% include "chiebukuro/_question_row.html" %}
+    {% empty %}
+        <div class="cb-empty">
+            {% if query %}<p>「{{ query }}」に合う質問は見つかりませんでした。</p>{% else %}<p>この条件の質問はまだありません。</p>{% endif %}
+            <p><a href="{% url 'chiebukuro:ask' %}" class="cb-btn cb-btn-primary cb-btn-s">質問してみる</a></p>
+        </div>
+    {% endfor %}
+</section>
+
+{% include "chiebukuro/_pager.html" %}
+{% endblock %}

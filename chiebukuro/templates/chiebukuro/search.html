@@ -1,0 +1,32 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}検索 | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<h1 class="cb-page-title">検索</h1>
+<form method="get" class="cb-search cb-search-page">
+    {% include "chiebukuro/_icon.html" with name="search" %}
+    <input type="search" name="q" value="{{ query }}" placeholder="キーワード（例: 保険、日本食、ベビーカー）" aria-label="キーワード" {% if not query %}autofocus{% endif %}>
+</form>
+{% if query %}
+    {% if not found %}<p class="cb-empty">「{{ query }}」は見つかりませんでした。<a href="{% url 'chiebukuro:ask' %}">質問してみる</a></p>{% endif %}
+    {% if results.questions %}
+    <section class="cb-block"><header class="cb-block-head"><h2>質問</h2><a href="{% url 'chiebukuro:questions' %}?q={{ query|urlencode }}" class="cb-more">もっと見る</a></header>
+        {% for question in results.questions %}{% include "chiebukuro/_question_row.html" %}{% endfor %}
+    </section>
+    {% endif %}
+    {% if results.posts %}
+    <section class="cb-block"><header class="cb-block-head"><h2>つぶやき</h2></header>
+        {% for post in results.posts %}{% include "chiebukuro/_post_row.html" with clip=True %}{% endfor %}
+    </section>
+    {% endif %}
+    {% if results.items %}
+    <section class="cb-block"><header class="cb-block-head"><h2>ゆずりあい</h2></header>
+        {% for item in results.items %}{% include "chiebukuro/_item_row.html" %}{% endfor %}
+    </section>
+    {% endif %}
+    {% if results.notices %}
+    <section class="cb-block"><header class="cb-block-head"><h2>募集・告知</h2></header>
+        {% for notice in results.notices %}{% include "chiebukuro/_notice_row.html" %}{% endfor %}
+    </section>
+    {% endif %}
+{% endif %}
+{% endblock %}

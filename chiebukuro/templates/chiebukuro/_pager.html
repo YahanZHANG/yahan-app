@@ -1,0 +1,7 @@
+{% if page.has_other_pages %}
+<nav class="cb-pager" aria-label="ページ">
+    {% if page.has_previous %}<a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page.previous_page_number }}" class="cb-btn cb-btn-s">‹ 前へ</a>{% endif %}
+    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page.next_page_number }}" class="cb-btn cb-btn-s">次へ ›</a>{% endif %}
+</nav>
+{% endif %}

@@ -1,0 +1,64 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}{{ item.title }} | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:items' %}?kind={{ item.kind }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ item.get_kind_display }}</a></p>
+
+<section class="cb-block cb-detail">
+    {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="{{ item.title }}" class="cb-detail-image">{% endif %}
+    <div class="cb-detail-in">
+        <p class="cb-meta"><span class="cb-kind cb-kind-{{ item.kind }}">{{ item.get_kind_display }}</span><span class="cb-cat">{{ item.get_genre_display }}</span><span class="cb-state {% if item.state == 'open' %}is-open{% endif %}">{{ item.state_label }}</span></p>
+        <h1 class="cb-detail-title">{{ item.title }}</h1>
+        {% if item.body %}<div class="cb-detail-body">{{ item.body|urlize|linebreaksbr }}</div>{% endif %}
+        <dl class="cb-facts">
+            {% if item_region %}<div><dt>地域</dt><dd>{{ item_region }}</dd></div>{% endif %}
+            {% if item.place %}<div><dt>受け渡し</dt><dd>{{ item.place }}</dd></div>{% endif %}
+            <div><dt>出した人</dt><dd><a href="{% url 'chiebukuro:profile' item.owner.username %}">{{ item.display_name }}</a></dd></div>
+            <div><dt>日にち</dt><dd>{{ item.created_at|date:"n月j日" }}（{{ item.created_at|ago }}）</dd></div>
+        </dl>
+    </div>
+</section>
+
+{% if is_owner %}
+    <section class="cb-block">
+        <header class="cb-block-head"><h2>届いた「{{ item.request_word }}」 {{ requests_for_owner|length }}件</h2></header>
+        {% for req in requests_for_owner %}
+            <a href="{% url 'chiebukuro:talk' req.pk %}" class="cb-linkrow">
+                <span>{{ req.display_name }}さん{% if req.is_chosen %}<em class="cb-state is-open">決定</em>{% endif %}</span>
+                <span class="cb-sub">やりとりを開く</span>
+            </a>
+        {% empty %}
+            <p class="cb-empty">まだありません。届いたら🔔でお知らせします。</p>
+        {% endfor %}
+        <form method="post" action="{% url 'chiebukuro:item_state' item.pk %}" class="cb-owner-tools">
+            {% csrf_token %}
+            {% if item.state != 'open' %}<button type="submit" name="state" value="open" class="cb-btn cb-btn-s">受付中に戻す</button>{% endif %}
+            {% if item.state != 'done' %}<button type="submit" name="state" value="done" class="cb-btn cb-btn-s">おわりにする</button>{% endif %}
+            <button type="submit" name="delete" value="yes" class="cb-textbtn" onclick="return confirm('この書きこみを取り下げますか？');">取り下げる</button>
+        </form>
+    </section>
+{% elif my_request %}
+    <section class="cb-block cb-form-block">
+        <p>「{{ item.request_word }}」を送りました。</p>
+        <a href="{% url 'chiebukuro:talk' my_request.pk %}" class="cb-btn cb-btn-primary">{{ item.display_name }}さんとのやりとりを開く</a>
+    </section>
+{% elif item.state == 'open' %}
+    <section class="cb-block cb-form-block">
+        <h2 class="cb-form-title">「{{ item.request_word }}」を送る</h2>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'chiebukuro:item_request' item.pk %}" class="cb-form" data-rules>
+                {% csrf_token %}
+                <textarea name="body" rows="3" maxlength="{{ message_max }}" required placeholder="{% if item.is_offer %}ひとこと（例: 3歳の娘に使いたいです。平日の夕方なら受け取りに行けます）{% else %}ひとこと（例: 使っていないのがあります。週末なら Oerlikon で渡せます）{% endif %}"></textarea>
+                <button type="submit" class="cb-btn cb-btn-primary">「{{ item.request_word }}」を送る</button>
+            </form>
+            <p class="cb-note">このメッセージは {{ item.display_name }}さんだけが読めます。ほかの人には見えません。</p>
+        {% else %}
+            <a href="{{ login_url }}" class="cb-btn cb-btn-primary">ログインして「{{ item.request_word }}」を送る</a>
+        {% endif %}
+    </section>
+{% else %}
+    <p class="cb-empty">この書きこみは、もう相手が決まっています。</p>
+{% endif %}
+
+{% if not is_owner %}<div class="cb-detail-foot">{% with report_target="item" report_id=item.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}</div>{% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}{{ nickname }} | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<section class="cb-block cb-profile-head">
+    <span class="cb-av cb-av-l {{ person.pk|avatar }}" aria-hidden="true">{% face person nickname %}</span>
+    <div class="cb-profile-text">
+        <h1>{{ nickname }}</h1>
+        {% if home_region %}<p class="cb-sub">{{ home_region }}</p>{% endif %}
+        {% if intro %}<p class="cb-intro">{{ intro }}</p>{% endif %}
+        <p class="cb-stats"><span><b>{{ posts|length }}</b>つぶやき</span><span><b>{{ answers|length }}</b>回答</span><span><b>{{ questions|length }}</b>質問</span><span><b>{{ helpful }}</b>役に立った</span></p>
+        {% if is_me %}<p class="cb-profile-links"><a href="{% url 'chiebukuro:profile_edit' %}" class="cb-btn cb-btn-s">プロフィールを編集</a></p>{% endif %}
+    </div>
+</section>
+
+<nav class="cb-seg" aria-label="表示">
+    <a href="?show=posts" class="{% if show == 'posts' %}on{% endif %}">つぶやき</a>
+    <a href="?show=answers" class="{% if show == 'answers' %}on{% endif %}">回答</a>
+    <a href="?show=questions" class="{% if show == 'questions' %}on{% endif %}">質問</a>
+    <a href="?show=items" class="{% if show == 'items' %}on{% endif %}">ゆずりあい</a>
+</nav>
+
+<section class="cb-block cb-block-flat">
+{% if show == "posts" %}
+    {% for post in posts %}{% include "chiebukuro/_post_row.html" with clip=True %}{% empty %}<p class="cb-empty">まだつぶやきがありません。</p>{% endfor %}
+{% elif show == "answers" %}
+    {% for answer in answers %}
+        <a href="{% url 'chiebukuro:question' answer.question_id %}#a{{ answer.pk }}" class="cb-arow">
+            <span class="cb-arow-q"><i>Q</i>{{ answer.question.body|truncatechars:70 }}</span>
+            <span class="cb-arow-a">{{ answer.body|truncatechars:140 }}</span>
+            <span class="cb-meta"><span>{{ answer.created_at|ago }}</span></span>
+        </a>
+    {% empty %}<p class="cb-empty">まだ回答がありません。</p>{% endfor %}
+{% elif show == "questions" %}
+    {% for question in questions %}{% include "chiebukuro/_question_row.html" with hide_best=True %}{% empty %}<p class="cb-empty">まだ質問がありません。</p>{% endfor %}
+{% else %}
+    {% for item in items %}{% include "chiebukuro/_item_row.html" %}{% empty %}<p class="cb-empty">いま出しているものはありません。</p>{% endfor %}
+{% endif %}
+</section>
+{% endblock %}

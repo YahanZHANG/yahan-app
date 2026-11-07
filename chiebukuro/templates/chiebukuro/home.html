@@ -1,0 +1,171 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block content %}
+
+{% include "chiebukuro/_hero.html" %}
+
+{% if not user.is_authenticated %}
+<section class="cb-welcome">
+    <p>読むのは登録なしでどうぞ。書きこむにはYappのアカウント（無料）が必要です。</p>
+    <p class="cb-welcome-links"><a href="{% url 'portal:signup' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-primary cb-btn-s">無料で登録</a><a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-s">ログイン</a></p>
+</section>
+{% endif %}
+
+{% if poll %}
+<div class="cb-hpoll">
+    {% include "chiebukuro/_poll.html" %}
+    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">これまでのアンケート</a></p>
+</div>
+{% endif %}
+
+{% if featured %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>今週の注目</h2><a href="{% url 'chiebukuro:questions' %}?sort=popular" class="cb-more">人気の質問</a></header>
+    <ol class="cb-feat">
+        {% for card in featured %}
+            <li>
+                <a href="{{ card.url }}" class="cb-feat-card cb-feat-{{ card.kind }}">
+                    <span class="cb-feat-no" aria-hidden="true">{{ forloop.counter }}</span>
+                    <span class="cb-feat-main">
+                        <span class="cb-feat-label">{{ card.label }}</span>
+                        {% if card.kind == "answer" %}<span class="cb-feat-q">Q. {{ card.context|truncatechars:60 }}</span>{% endif %}
+                        <span class="cb-feat-text">{{ card.text|truncatechars:120 }}</span>
+                        <span class="cb-feat-by">
+                            <span class="cb-av cb-av-s {{ card.user.pk|avatar }}" aria-hidden="true">{% face card.user card.name %}</span>{{ card.name }}
+                            {% if card.kind != "answer" and card.context %}<span class="cb-feat-ctx">{{ card.context }}</span>{% endif %}
+                        </span>
+                    </span>
+                    {% if card.photo %}<img src="{{ card.photo }}" alt="" class="cb-feat-photo" loading="lazy">{% endif %}
+                </a>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
+{% if gives %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>ゆずります<small>無料</small></h2><a href="{% url 'chiebukuro:items' %}?kind=give" class="cb-more">すべて見る</a></header>
+    <div class="cb-strip">
+        {% for item in gives %}
+            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-tile">
+                <img src="{{ item.photo_url }}" alt="" loading="lazy">
+                <span class="cb-tile-title">{{ item.title }}</span>
+                <span class="cb-tile-sub">{% if item.get_region_display %}{{ item.get_region_display }}・{% endif %}{{ item.created_at|ago }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if outings %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>今週末のおでかけ</h2><a href="{% url 'outings:home' %}" class="cb-more">おでかけアプリ</a></header>
+    <div class="cb-strip">
+        {% for event in outings %}
+            <a href="{% url 'outings:event_detail' event.pk %}" class="cb-tile cb-tile-wide">
+                {% if event.image_url %}<img src="{{ event.image_url }}" alt="" loading="lazy">{% else %}<span class="cb-tile-noimg" aria-hidden="true">{% include "chiebukuro/_icon.html" with name="pin" %}</span>{% endif %}
+                <span class="cb-tile-date">{{ event.when|date:"n/j" }}（{{ event.when|date:"D" }}）{% if event.is_free %}・無料{% endif %}</span>
+                <span class="cb-tile-title">{{ event.title }}</span>
+                {% if event.location %}<span class="cb-tile-sub">{{ event.location.city }}</span>{% endif %}
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if sponsor %}
+<a href="{% url 'chiebukuro:sponsor' sponsor.pk %}" class="cb-sponsor" rel="sponsored noopener" target="_blank">
+    {% if sponsor.image_url %}<img src="{{ sponsor.image_url }}" alt="" loading="lazy">{% endif %}
+    <span class="cb-sponsor-text">
+        <span class="cb-sponsor-name"><span class="cb-pr">PR</span>{{ sponsor.name }}</span>
+        <strong>{{ sponsor.title }}</strong>
+        {% if sponsor.text %}<small>{{ sponsor.text }}</small>{% endif %}
+    </span>
+</a>
+{% else %}
+<p class="cb-sponsor-empty"><span class="cb-pr">PR</span>この枠に、お店・サービスの広告を出せます。<a href="{% url 'portal:support' %}?from=board-ad">広告について問い合わせる</a></p>
+{% endif %}
+
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>あなたの知恵を貸してください</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
+    <div class="cb-hsec-body">
+    {% for question in waiting %}
+        {% include "chiebukuro/_question_row.html" %}
+    {% empty %}
+        <p class="cb-empty">いまは、答えを待っている質問はありません。</p>
+    {% endfor %}
+    </div>
+</section>
+
+{% if headlines %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>スイスの今日のニュース</h2><a href="{% url 'news:home' %}" class="cb-more">SwissNews</a></header>
+    <div class="cb-hsec-body">
+    {% for article in headlines %}
+        <a href="{% url 'news:article_detail' article.pk %}" class="cb-nrow"><span class="cb-ntext">{{ article.title_ja }}</span><span class="cb-meta"><span>{{ article.published_at|ago }}</span></span></a>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<details class="cb-rules-mobile">
+    <summary>この掲示板のルール</summary>
+    {% include "chiebukuro/_rules.html" %}
+</details>
+
+<script>
+(function () {
+    // 日本の時刻 (端末の時計から、30秒ごとに)
+    var clock = document.getElementById("cb-japan-time");
+    if (clock && window.Intl) {
+        var format = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", minute: "2-digit", hour12: false });
+        var tick = function () { clock.textContent = format.format(new Date()); };
+        tick(); setInterval(tick, 30000);
+    }
+})();
+(function () {
+    var box = document.getElementById("cb-today");
+    var hero = document.getElementById("cb-hero");
+    var hereButton = document.getElementById("cb-here");
+    if (!box || !window.fetch) return;
+    function load(coords) {
+        var url = box.dataset.url + (coords ? "?lat=" + coords.latitude.toFixed(3) + "&lon=" + coords.longitude.toFixed(3) : "");
+        return fetch(url, { credentials: "same-origin" })
+            .then(function (r) { return r.ok ? r.text() : ""; })
+            .then(function (html) {
+                if (!html) return;
+                box.innerHTML = html;
+                var sky = box.querySelector("[data-sky]");
+                if (sky && hero) hero.dataset.sky = sky.dataset.sky;
+            })
+            .catch(function () {});
+    }
+    function locate(ask) {
+        // 現在地: すでに許可されているとき (またはボタンを押したとき) だけ。勝手に許可を求めない
+        navigator.geolocation.getCurrentPosition(function (position) {
+            try { localStorage.setItem("cb_weather_here", "1"); } catch (e) {}
+            if (hereButton) hereButton.hidden = true;
+            load(position.coords);
+        }, function () {
+            if (ask && hereButton) hereButton.textContent = "📍 現在地を使えませんでした";
+        }, { maximumAge: 30 * 60 * 1000, timeout: 8000 });
+    }
+    load(null);
+    if (!navigator.geolocation) return;
+    var wanted = false;
+    try { wanted = localStorage.getItem("cb_weather_here") === "1"; } catch (e) {}
+    var show = function () { if (hereButton) { hereButton.hidden = false; hereButton.onclick = function () { locate(true); }; } };
+    if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: "geolocation" }).then(function (status) {
+            if (status.state === "granted") locate(false);
+            else if (status.state === "prompt") show();
+        }).catch(function () { if (wanted) locate(false); else show(); });
+    } else if (wanted) {
+        locate(false);
+    } else {
+        show();
+    }
+})();
+</script>
+{% endblock %}

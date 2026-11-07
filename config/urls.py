@@ -275,8 +275,12 @@ urlpatterns = [
     # Swiss Board
     # =====================================================
     
+    # 新しい掲示板「スイス生活の知恵袋」
+    path("swiss-board/", include("chiebukuro.urls", namespace="chiebukuro")),
+
+    # 以前の下書きの掲示板 (運営だけが見る。新しい掲示板の公開後に片付ける)
     path(
-        "swiss-board/",
+        "swiss-board-old/",
         include(
             "swiss_board.urls",
             namespace="swiss_board",

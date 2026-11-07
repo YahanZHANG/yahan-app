@@ -1,0 +1,35 @@
+{% comment %}HOME のいちばん上: 小さめのウィジェット。天気のマスの色は時間 (朝・昼・夕方・夜) と今日の天気で変わる{% endcomment %}
+<section class="cb-hero" id="cb-hero" data-time="{{ hero_time }}" data-sky="clear" data-season="{{ hero_season }}">
+    <div class="cb-hero-panel">
+        <svg class="cb-wx" viewBox="0 0 140 110" aria-hidden="true" focusable="false">
+            <defs>
+                <path id="cbCloud" d="M20 70 a16 16 0 0 1 6 -31 a22 22 0 0 1 42 -6 a17 17 0 0 1 22 16 a14 14 0 0 1 -2 28 h-62 a14 14 0 0 1 -6 -7z"/>
+                <radialGradient id="cbSunGlow"><stop offset="0" stop-color="#FFE27A" stop-opacity=".7"/><stop offset="1" stop-color="#FFE27A" stop-opacity="0"/></radialGradient>
+            </defs>
+            <g class="cb-wx-sun"><circle cx="92" cy="44" r="44" fill="url(#cbSunGlow)"/><g class="cb-wx-rays" stroke="#FFD54A" stroke-width="4" stroke-linecap="round"><path d="M92 4v10M92 74v10M52 44h10M122 44h10M64 16l7 7M113 65l7 7M120 16l-7 7M71 65l-7 7"/></g><circle cx="92" cy="44" r="22" fill="#FFD54A"/></g>
+            <g class="cb-wx-moon"><circle cx="92" cy="44" r="36" fill="url(#cbSunGlow)" opacity=".35"/><circle cx="92" cy="44" r="24" fill="#FFFFFF" opacity=".2" stroke="#FFF1C1" stroke-opacity=".35" stroke-width="1"/>{% if moon_art %}<path d="{{ moon_art }}" fill="#FFF1C1"/>{% endif %}
+                <g fill="#fff"><circle cx="40" cy="22" r="1.6"/><circle cx="58" cy="60" r="1.2"/><circle cx="128" cy="86" r="1.3"/><circle cx="30" cy="52" r="1"/></g></g>
+            <use href="#cbCloud" class="cb-wx-cloud cb-wx-cloud-front" transform="translate(30 6)"/>
+            <use href="#cbCloud" class="cb-wx-cloud cb-wx-cloud-back" transform="translate(-6 0) scale(.8)"/>
+            <g class="cb-wx-rain" stroke="#BFE3FF" stroke-width="3" stroke-linecap="round"><path d="M60 88 l-4 10M78 88 l-4 10M96 88 l-4 10M114 88 l-4 10"/></g>
+            <g class="cb-wx-snow" fill="#fff"><circle cx="60" cy="92" r="3"/><circle cx="80" cy="97" r="3"/><circle cx="100" cy="92" r="3"/><circle cx="118" cy="97" r="3"/></g>
+        </svg>
+        <div class="cb-hero-top">
+            <p class="cb-hero-date">
+                <span class="cb-hero-md">{{ today|date:"n" }}<small>月</small>{{ today|date:"j" }}<small>日</small></span>
+                <span class="cb-hero-wd">{{ today|date:"D" }}曜日</span>
+                {% if cal.rokuyo %}<span class="cb-hero-koyomi{% if cal.rokuyo == '大安' %} is-taian{% endif %}" title="六曜（日本の暦）">{{ cal.rokuyo }}</span>{% endif %}
+                <svg class="cb-moon-mini" viewBox="0 0 40 40" role="img" aria-label="今日の月"><title>今日の月</title><circle cx="20" cy="20" r="14" class="cb-moon-dark"/>{% if moon_mini %}<path d="{{ moon_mini }}" class="cb-moon-lit"/>{% endif %}</svg>
+                <span class="cb-hero-jp" title="日本の時刻">日本 <b id="cb-japan-time">{{ japan_now|date:"G:i" }}</b></span>
+                {% if season_label %}<span class="cb-hero-season">{{ season_label }}</span>{% endif %}
+            </p>
+        </div>
+        <div class="cb-tiles">
+            <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite">
+                <div class="cb-tile2 cb-tile2-weather"><span class="cb-tile2-cap">天気</span><span class="cb-tile2-wait">読みこみ中…</span></div>
+                <div class="cb-tile2 cb-tile2-fx"><span class="cb-tile2-cap">1 CHF</span><span class="cb-tile2-wait">読みこみ中…</span></div>
+            </div>
+        </div>
+        <div class="cb-hero-foot">{% include "chiebukuro/_region.html" %}<button type="button" class="cb-here-btn" id="cb-here" hidden>📍 現在地の天気にする</button></div>
+    </div>
+</section>

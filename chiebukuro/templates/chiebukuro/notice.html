@@ -1,0 +1,61 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}{{ notice.title }} | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:notices' %}">{% include "chiebukuro/_icon.html" with name="back" %}募集・告知</a></p>
+
+<section class="cb-block cb-detail">
+    <div class="cb-detail-in">
+        <p class="cb-meta">{% if notice.is_pr %}<span class="cb-pr">PR</span>{% endif %}<span class="cb-kind cb-kind-n-{{ notice.kind }}">{{ notice.get_kind_display }}</span>{% if not notice.is_active %}<span class="cb-state">掲載おわり</span>{% endif %}</p>
+        <h1 class="cb-detail-title">{{ notice.title }}</h1>
+        <div class="cb-detail-body">{{ notice.body|urlize|linebreaksbr }}</div>
+        {% include "chiebukuro/_photo.html" with url=notice.photo_url %}
+        <dl class="cb-facts">
+            {% if notice.event_date %}<div><dt>日にち</dt><dd>{{ notice.event_date|date:"Y年n月j日(D)" }}</dd></div>{% endif %}
+            {% if notice_region %}<div><dt>地域</dt><dd>{{ notice_region }}</dd></div>{% endif %}
+            {% if notice.place %}<div><dt>場所</dt><dd>{{ notice.place }}</dd></div>{% endif %}
+            {% if notice.link %}<div><dt>リンク</dt><dd><a href="{{ notice.link }}" target="_blank" rel="noopener nofollow ugc">{{ notice.link|truncatechars:48 }}</a></dd></div>{% endif %}
+            <div><dt>出した人</dt><dd><a href="{% url 'chiebukuro:profile' notice.owner.username %}">{{ notice.display_name }}</a></dd></div>
+            <div><dt>掲載</dt><dd>{{ notice.created_at|date:"n月j日" }}から{% if notice.is_active %}（あと{{ notice.days_left }}日）{% endif %}</dd></div>
+        </dl>
+    </div>
+</section>
+
+{% if notice.is_sitter %}{% include "chiebukuro/_sitter_safety.html" %}{% endif %}
+
+{% if is_owner %}
+    <section class="cb-block">
+        <header class="cb-block-head"><h2>届いた問い合わせ {{ inquiries|length }}件</h2></header>
+        {% for req in inquiries %}
+            <a href="{% url 'chiebukuro:talk' req.pk %}" class="cb-linkrow"><span>{{ req.display_name }}さん</span><span class="cb-sub">{{ req.last_message_at|ago }}</span></a>
+        {% empty %}
+            <p class="cb-empty">まだありません。届いたら🔔でお知らせします。</p>
+        {% endfor %}
+        <form method="post" action="{% url 'chiebukuro:notice_withdraw' notice.pk %}" class="cb-owner-tools">
+            {% csrf_token %}
+            <button type="submit" class="cb-textbtn" onclick="return confirm('この告知を取り下げますか？');">取り下げる（すぐに新しい告知を出せます）</button>
+        </form>
+    </section>
+{% elif my_request %}
+    <section class="cb-block cb-form-block">
+        <p>問い合わせを送りました。</p>
+        <a href="{% url 'chiebukuro:talk' my_request.pk %}" class="cb-btn cb-btn-primary">{{ notice.display_name }}さんとのやりとりを開く</a>
+    </section>
+{% elif notice.is_active %}
+    <section class="cb-block cb-form-block">
+        <h2 class="cb-form-title">問い合わせる</h2>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'chiebukuro:notice_request' notice.pk %}" class="cb-form" data-rules>
+                {% csrf_token %}
+                <textarea name="body" rows="3" maxlength="{{ message_max }}" required placeholder="聞きたいことを書いてください"></textarea>
+                <button type="submit" class="cb-btn cb-btn-primary">問い合わせを送る</button>
+            </form>
+            <p class="cb-note">このメッセージは {{ notice.display_name }}さんだけが読めます。</p>
+        {% else %}
+            <a href="{{ login_url }}" class="cb-btn cb-btn-primary">ログインして問い合わせる</a>
+        {% endif %}
+    </section>
+{% endif %}
+
+{% if not is_owner %}<div class="cb-detail-foot">{% with report_target="notice" report_id=notice.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}</div>{% endif %}
+{% endblock %}

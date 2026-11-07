@@ -1,0 +1,11 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}みんなのアンケート | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:home' %}">{% include "chiebukuro/_icon.html" with name="back" %}HOME</a></p>
+<h1 class="cb-page-title">みんなのアンケート</h1>
+{% for poll in polls %}
+    <div class="cb-block cb-block-pad">{% include "chiebukuro/_poll.html" %}</div>
+{% empty %}
+    <p class="cb-empty">まだアンケートはありません。</p>
+{% endfor %}
+{% endblock %}

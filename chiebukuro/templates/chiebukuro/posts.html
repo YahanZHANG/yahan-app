@@ -1,0 +1,54 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}つぶやき | スイス生活の知恵袋{% endblock %}
+{% block content %}
+
+<h1 class="cb-page-title">つぶやき</h1>
+
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'chiebukuro:post_new' %}" enctype="multipart/form-data" class="cb-compose" id="compose" data-rules>
+    {% csrf_token %}
+    <span class="cb-av {{ user.pk|avatar }}" aria-hidden="true">{% face user user.profile.display_name|default:user.username %}</span>
+    <div class="cb-compose-main">
+        <label class="cb-sr" for="compose-body">つぶやく</label>
+        <textarea name="body" id="compose-body" rows="2" maxlength="{{ max_length }}" placeholder="いまどうしてる？ スイスの暮らしで気づいたこと、ちょっと聞きたいこと" data-grow data-count="compose-left" required></textarea>
+        <div class="cb-compose-bar">
+            <select name="theme" aria-label="テーマ（任意）">
+                <option value="">#テーマ</option>
+                {% for value, label in themes %}<option value="{{ value }}" {% if theme == value %}selected{% endif %}>#{{ label }}</option>{% endfor %}
+            </select>
+            <select name="post_region" aria-label="地域（任意）">
+                <option value="">地域なし</option>
+                {% for value, label in regions %}<option value="{{ value }}" {% if region == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <label class="cb-photo-icon" title="写真を付ける"><span aria-hidden="true">📷</span><span class="cb-sr">写真を付ける</span><input type="file" name="photo" accept="image/*"></label>
+            <span class="cb-left" id="compose-left" aria-live="polite"></span>
+            <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">つぶやく</button>
+        </div>
+    </div>
+</form>
+{% else %}
+<p class="cb-compose-guest"><a href="{% url 'login' %}?next={{ request.path|urlencode }}">ログイン</a>すると、つぶやいたり返信したりできます。</p>
+{% endif %}
+
+<div class="cb-filterbar">
+    <form method="get" class="cb-inline-form">
+        <select name="theme" aria-label="テーマで絞りこむ" data-autosubmit>
+            <option value="">すべてのテーマ</option>
+            {% for value, label in themes %}<option value="{{ value }}" {% if theme == value %}selected{% endif %}>#{{ label }}</option>{% endfor %}
+        </select>
+    </form>
+    {% include "chiebukuro/_region.html" %}
+</div>
+
+<section class="cb-block cb-block-flat">
+    {% for post in page.object_list %}
+        {% include "chiebukuro/_post_row.html" with clip=True %}
+    {% empty %}
+        <p class="cb-empty">{% if theme or region %}この条件のつぶやきはまだありません。{% else %}まだつぶやきがありません。最初のひとことをどうぞ。{% endif %}</p>
+    {% endfor %}
+</section>
+
+{% include "chiebukuro/_pager.html" %}
+
+{% endblock %}

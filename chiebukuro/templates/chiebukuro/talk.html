@@ -1,0 +1,43 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}{{ other_name }}さんとのやりとり | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+
+<section class="cb-block cb-talk-head">
+    {% if item %}
+        <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-linkrow">
+            <span><span class="cb-kind cb-kind-{{ item.kind }}">{{ item.get_kind_display }}</span><strong>{{ item.title }}</strong></span>
+            <span class="cb-sub">{{ item.state_label }}</span>
+        </a>
+    {% else %}
+        <a href="{% url 'chiebukuro:notice' notice.pk %}" class="cb-linkrow">
+            <span><span class="cb-kind cb-kind-n-{{ notice.kind }}">{{ notice.get_kind_display }}</span><strong>{{ notice.title }}</strong></span>
+            <span class="cb-sub">告知</span>
+        </a>
+    {% endif %}
+    <p class="cb-talk-with">{{ other_name }}さんとの、2人だけのやりとり</p>
+    {% if item and is_owner and not talk.is_chosen and item.state == 'open' %}
+        <form method="post" action="{% url 'chiebukuro:talk_choose' talk.pk %}" class="cb-talk-choose">
+            {% csrf_token %}
+            <button type="submit" class="cb-btn cb-btn-primary cb-btn-s" onclick="return confirm('{{ talk.display_name }}さんに決めますか？');">{{ talk.display_name }}さんに決める</button>
+        </form>
+    {% endif %}
+</section>
+
+<div class="cb-messages">
+    {% for message in talk_messages %}
+        <div class="cb-bubble {% if message.sender_id == user.pk %}mine{% endif %}">
+            <p>{{ message.body|linebreaksbr }}</p>
+            <span>{{ message.created_at|date:"n/j H:i" }}</span>
+        </div>
+    {% endfor %}
+</div>
+
+<form method="post" class="cb-inline-compose cb-talk-form" id="bottom" data-rules>
+    {% csrf_token %}
+    <label class="cb-sr" for="talk-body">メッセージ</label>
+    <textarea name="body" id="talk-body" rows="1" maxlength="{{ message_max }}" required placeholder="メッセージ" data-grow></textarea>
+    <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">送る</button>
+</form>
+<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったときは<a href="{% url 'portal:support' %}?from=board">運営にお問い合わせ</a>ください。</p>
+{% endblock %}

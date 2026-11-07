@@ -29,6 +29,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from outings.services.alerts import send_admin_alert
+from chiebukuro.push import run_if_due as run_board_daily_digest
 from washoku.weekly_push import run_if_due as run_washoku_weekly_push
 
 
@@ -132,6 +133,7 @@ class Command(BaseCommand):
                     self.run(state_dir, now, attempt)
                     prune(state_dir, now)
                 self.washoku_weekly_push(db_path.parent / "washoku_scheduler")
+                self.board_daily_digest(db_path.parent / "chiebukuro_scheduler")
                 time.sleep(CHECK_INTERVAL_SECONDS)
 
     def washoku_weekly_push(self, state_dir):
@@ -140,6 +142,13 @@ class Command(BaseCommand):
             run_washoku_weekly_push(state_dir, write=self.stdout.write)
         except Exception as exc:
             self.stderr.write(f"Washoku weekly push FAILED: {type(exc).__name__}: {exc}")
+
+    def board_daily_digest(self, state_dir):
+        # 掲示板の「1日1回まとめて」の通知 (19時)。失敗しても Outings の更新は止めない
+        try:
+            run_board_daily_digest(state_dir, write=self.stdout.write)
+        except Exception as exc:
+            self.stderr.write(f"Board daily digest FAILED: {type(exc).__name__}: {exc}")
 
     def run(self, state_dir, now, attempt):
         day = now.strftime("%Y-%m-%d")

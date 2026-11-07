@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+{{ block.super }}
+<div style="margin:12px 0 18px;padding:14px 16px;border:1px solid #ddd;border-radius:10px;max-width:640px;">
+    <p style="margin:0 0 8px;">「公開する」にチェックを入れて保存すると、だれでも掲示板を見られるようになります。オフの間は運営だけが見られます。</p>
+    <p style="margin:0 0 10px;">事前アンケートの新しい質問と、公開に同意した答えは、デプロイのたびに自動で取り込みます。今すぐ取り込みたいときは、下のボタンを押してください（取り込み済みのもの・掲示板で消したものは、もう一度は入りません）。</p>
+    <form method="post" action="{% url 'admin:chiebukuro_import_survey' %}">
+        {% csrf_token %}
+        <button type="submit" class="button">事前アンケートから取り込む</button>
+    </form>
+    <p style="margin:10px 0 0;"><a href="{% url 'chiebukuro:home' %}" target="_blank">掲示板を開く ›</a></p>
+</div>
+{% endblock %}

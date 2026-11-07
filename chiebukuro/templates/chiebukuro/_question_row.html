@@ -1,0 +1,14 @@
+{% load board %}
+<a href="{% url 'chiebukuro:question' question.pk %}" class="cb-qrow">
+    <span class="cb-qcount {% if question.answer_total %}has{% endif %}"><b>{{ question.answer_total }}</b>回答</span>
+    <span class="cb-qmain">
+        <span class="cb-qtext">{{ question.body }}</span>
+        {% if question.best and not hide_best %}<span class="cb-qbest"><i>A</i>{{ question.best.body|truncatechars:90 }}</span>{% endif %}
+        <span class="cb-meta">
+            <span class="cb-cat">{{ question.get_theme_display }}</span>
+            {% if question.get_region_display %}<span>{{ question.get_region_display }}</span>{% endif %}
+            {% if question.interest_total %}<span>知りたい {{ question.interest_total }}</span>{% endif %}
+            <span>{% if question.last_answered_at %}{{ question.last_answered_at|ago }}{% else %}{{ question.created_at|ago }}{% endif %}</span>
+        </span>
+    </span>
+</a>

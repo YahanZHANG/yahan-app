@@ -1,0 +1,11 @@
+{% load board %}
+<a href="{% url 'chiebukuro:notice' notice.pk %}" class="cb-nrow">
+    <span class="cb-ititle">{% if notice.is_pr %}<span class="cb-pr">PR</span>{% endif %}<span class="cb-kind cb-kind-n-{{ notice.kind }}">{{ notice.get_kind_display }}</span>{{ notice.title }}</span>
+    <span class="cb-meta">
+        {% if notice.event_date %}<span class="cb-date">{{ notice.event_date|date:"n月j日(D)" }}</span>{% endif %}
+        {% if notice.get_region_display %}<span>{{ notice.get_region_display }}</span>{% endif %}
+        {% if notice.place %}<span>{{ notice.place }}</span>{% endif %}
+        <span>{{ notice.display_name }}</span>
+        <span>{{ notice.created_at|ago }}</span>
+    </span>
+</a>

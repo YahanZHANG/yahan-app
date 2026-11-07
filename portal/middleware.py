@@ -44,6 +44,7 @@ ALLOWED_NAMESPACES = {
     "board",
     "games",
     "swiss_board",
+    "chiebukuro",
     "pre_survey",
 }
 
