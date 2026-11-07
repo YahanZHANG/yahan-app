@@ -50,6 +50,8 @@
         </nav>
     {% endif %}
 
+    {% if count %}<div class="og-countbar"><p class="og-count">{{ count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>{% endif %}
+
     {% for group in groups %}
         {% if group.rows %}
             <section class="og-wx-group og-wx--{{ group.key }}" id="wx-{{ group.key }}">
@@ -58,7 +60,8 @@
                     {% for item in group.rows %}
                         <li>
                             <a href="{{ item.url }}">
-                                <span class="og-rows__icon" aria-hidden="true">{{ item.emoji }}</span>
+                                {% if item.image %}<img class="og-rows__photo" src="{{ item.image }}" alt="" loading="lazy">{% endif %}
+                                <span class="og-rows__icon{% if item.image %} has-photo{% endif %}" aria-hidden="true">{{ item.emoji }}</span>
                                 <span class="og-rows__text">
                                     <strong>{{ item.title }}</strong>
                                     <small>{{ item.sub }}</small>

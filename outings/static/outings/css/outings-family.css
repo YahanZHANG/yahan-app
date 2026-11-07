@@ -631,3 +631,24 @@ html[data-outings-theme="dark"] .og-pick:has(input:checked) { color: #10232a; }
 .og-layout .ev-page { max-width: none; padding: 0 0 96px; }
 .og-layout .ev-page__header { margin-top: 0; }
 .og-sunny-btn > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* After 探す/検索 the page opens at the results, a little below the top edge */
+.og-results { scroll-margin-top: 84px; }
+
+/* リスト｜写真 on the sunny page, search and お気に入り */
+.og-rows__photo { flex: none; width: 76px; height: 76px; border-radius: 10px; object-fit: cover; }
+.og-rows__icon.has-photo { display: none; }
+html:not([data-og-view="list"]) .og-wx-group .og-rows__icon { width: 56px; height: 56px; font-size: 28px; display: grid; place-items: center; border-radius: 10px; background: var(--outings-accent-soft); }
+html:not([data-og-view="list"]) .og-wx-group .og-rows__icon.has-photo { display: none; }
+[data-og-view="list"] .og-rows__photo { display: none; }
+[data-og-view="list"] .og-rows__icon.has-photo { display: inline; }
+.sx-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.sx-summary .og-view { margin-left: auto; }
+[data-og-view="list"] .outings-saved-grid { display: block; }
+[data-og-view="list"] .outings-saved-card { margin: 0 0 8px; }
+[data-og-view="list"] .outings-saved-card img,
+[data-og-view="list"] .outings-saved-placeholder,
+[data-og-view="list"] .outings-saved-body p,
+[data-og-view="list"] .outings-saved-more { display: none !important; }
+[data-og-view="list"] .outings-saved-body { padding: 10px 44px 10px 14px; }
+[data-og-view="list"] .outings-saved-body h2 { margin: 2px 0 0; font-size: 15px; }

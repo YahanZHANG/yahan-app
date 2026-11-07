@@ -88,7 +88,7 @@
             </a>
 
             {% if name != 'search' %}
-                <form class="nav-search" action="{% url 'outings:search' %}" method="get" role="search">
+                <form class="nav-search" action="{% url 'outings:search' %}#results" method="get" role="search">
                     <i class="bi bi-search" aria-hidden="true"></i>
                     <input type="search" name="q" placeholder="スポット・イベントを探す" aria-label="スポット・イベントを探す" enterkeyhint="search">
                 </form>

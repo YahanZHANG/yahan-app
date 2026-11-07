@@ -36,10 +36,10 @@ from .visitor import (
 
 SPOT_CATEGORIES = {
     "all": "すべて",
-    "attractions": "観光・体験",
-    "tours": "散策・ハイキング",
-    "destinations": "旅行先・地域",
+    "attractions": "観光スポット",
     "offers": "体験・ツアー",
+    "tours": "散策・ハイキング",
+    "destinations": "町・村",
 }
 
 

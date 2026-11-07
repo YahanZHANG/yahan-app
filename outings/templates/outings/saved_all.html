@@ -66,6 +66,7 @@
 
     {% if cards %}
 
+        <div class="og-countbar"><p class="og-count">{{ cards|length }}件</p>{% include "outings/includes/view_toggle.html" %}</div>
         <div class="outings-saved-grid">
 
             {% for card in cards %}

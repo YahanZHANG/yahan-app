@@ -18,7 +18,7 @@
     </div>
     <p class="og-count">{{ spots|length }}か所{% if filtered %}（条件で絞り込み中・<a href="?{{ clear_qs }}">解除</a>）{% endif %}</p>
 
-    <form method="get" action="" class="og-filterform">
+    <form method="get" action="#results" class="og-filterform">
         <input type="hidden" name="kids" value="1">
         <div class="og-chips og-chips--scroll" role="group" aria-label="よく使う条件">
             {% for chip in chips.toggles %}
@@ -50,7 +50,7 @@
     </form>
 
     {% if spots %}
-        <div class="og-spots og-spots--list">
+        <div class="og-spots og-spots--list og-results" id="results">
             {% for spot in spots %}{% include "outings/includes/spot_card.html" %}{% endfor %}
         </div>
     {% else %}

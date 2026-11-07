@@ -939,9 +939,9 @@ class EventfrogOccurrenceLink(models.Model):
 class TouristSpot(models.Model):
 
     class SpotType(models.TextChoices):
-        ATTRACTION = "attractions", "観光・体験"
+        ATTRACTION = "attractions", "観光スポット"
         TOUR = "tours", "散策・ハイキング"
-        DESTINATION = "destinations", "旅行先・地域"
+        DESTINATION = "destinations", "町・村"
         OFFER = "offers", "体験・ツアー"
 
     class Status(models.TextChoices):

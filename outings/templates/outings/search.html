@@ -12,7 +12,7 @@
     {% endif %}
 
     <!-- Keyword -->
-    <form method="get" action="{% url 'outings:search' %}" class="sx-bar" role="search">
+    <form method="get" action="{% url 'outings:search' %}#results" class="sx-bar" role="search">
         {% for key, value in keyword_hidden %}
             <input type="hidden" name="{{ key }}" value="{{ value }}">
         {% endfor %}
@@ -54,7 +54,7 @@
             <i class="bi bi-calendar3" aria-hidden="true"></i>
             日付を指定する
         </summary>
-        <form method="get" action="{% url 'outings:search' %}" class="sx-dates__form">
+        <form method="get" action="{% url 'outings:search' %}#results" class="sx-dates__form">
             {% for key, value in date_hidden %}
                 <input type="hidden" name="{{ key }}" value="{{ value }}">
             {% endfor %}
@@ -109,11 +109,12 @@
     </details>
 
     <!-- Results -->
-    <div class="sx-summary">
+    <div class="sx-summary og-results" id="results">
         <p class="sx-summary__count">
             {% if query %}「{{ query }}」{% endif %}
             <strong>{{ result_count }}件</strong>のイベント
         </p>
+        {% include "outings/includes/view_toggle.html" %}
         {% if result_count > 1 %}
             <div class="sx-sort" aria-label="並び順">
                 {% if query %}

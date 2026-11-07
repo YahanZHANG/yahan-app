@@ -22,7 +22,7 @@
     {% include "outings/includes/sunny_button.html" with what="events" %}
 
     <!-- Conditions: pick everything, then press 探す once. -->
-    <form method="get" action="" class="og-filterform">
+    <form method="get" action="#results" class="og-filterform">
         <nav class="ev-chips ev-chips--period" aria-label="期間">
             {% for chip in chips.periods %}
                 <label class="ev-chip og-pick"><input type="radio" name="when" value="{{ chip.key }}"{% if chip.active %} checked{% endif %}>{{ chip.label }}</label>
@@ -108,7 +108,7 @@
     {% endif %}
 
     <!-- By day -->
-    <div class="og-countbar"><p class="ev-count">{{ result_count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>
+    <div class="og-countbar og-results" id="results"><p class="ev-count">{{ result_count }}件</p>{% include "outings/includes/view_toggle.html" %}</div>
 
     {% for group in day_groups %}
         <section class="ev-day" aria-label="{{ group.label }}">

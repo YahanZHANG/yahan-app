@@ -149,7 +149,7 @@ def _items_kids(day, rainy=False):
         items.append({
             "title": spot.title, "url": reverse("outings:spot_detail", args=[spot.pk]),
             "sub": f"{spot.get_kind_display()}・{spot.town}", "emoji": spot.emoji,
-            "lat": spot.latitude, "lon": spot.longitude, "badges": spot.badges[:3],
+            "lat": spot.latitude, "lon": spot.longitude, "badges": spot.badges[:3], "image": spot.image_url,
         })
     return items
 
@@ -157,13 +157,14 @@ def _items_kids(day, rainy=False):
 def _items_trips(day):
     from .tourist_views import tourist_spot_queryset
     spots = tourist_spot_queryset().filter(latitude__isnull=False, longitude__isnull=False).only(
-        "pk", "title_ja", "title_original", "spot_type", "latitude", "longitude", "ai_quality_score",
+        "pk", "title_ja", "title_original", "spot_type", "latitude", "longitude", "ai_quality_score", "details",
     ).order_by("-ai_quality_score", "pk")[:1500]
     return [{
         "title": (spot.title_ja or spot.title_original).split("｜")[0],
         "url": reverse("outings:tourist_spot_detail", args=[spot.pk]),
         "sub": spot.get_spot_type_display(), "emoji": SPOT_TYPE_EMOJI.get(spot.spot_type, "📍"),
         "lat": float(spot.latitude), "lon": float(spot.longitude), "badges": [],
+        "image": ((spot.details or {}).get("approved_image") or {}).get("url", ""),
     } for spot in spots]
 
 
@@ -188,6 +189,7 @@ def _items_events(day, now, family, rainy=False):
             "title": event.title, "url": reverse("outings:event_detail", args=[event.pk]),
             "sub": f"{timezone.localtime(dates[0].start_at):%H:%M}・{location.city}", "emoji": event.display_emoji,
             "lat": float(location.latitude), "lon": float(location.longitude), "badges": [],
+            "image": event.image_url,
         })
     return items
 
