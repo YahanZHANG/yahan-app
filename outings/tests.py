@@ -418,6 +418,7 @@ class PageTests(PageTestCase):
         from outings.services import weather as wx
         saturday = wx.weekend_days(self.now)[-1]
         start = timezone.make_aware(datetime.combine(saturday, datetime.min.time())) + timedelta(hours=14)
+        start = max(start, timezone.now() + timedelta(minutes=10))  # Sunday afternoon: still ahead
         make_event("週末の親子会", start=start)
         make_event("週末の大人会", start=start, tags=())
         FamilySpot.objects.all().delete()
@@ -576,6 +577,20 @@ class FakeResponse:
         return self.data
 
 
+def hourly_forecast(days, suffix=""):
+    """Open-Meteo hourly answer: each day {day: (code, high, low, rain)} for the daytime hours."""
+    times, codes, temps, rains = [], [], [], []
+    for day, (code, high, low, rain) in days.items():
+        for hour in range(24):
+            times.append(f"{day}T{hour:02d}:00")
+            daytime = 8 <= hour <= 18
+            codes.append(code if daytime else 0)
+            temps.append(high if hour == 14 else low if hour == 8 else (high + low) / 2 if daytime else low - 5)
+            rains.append(rain if daytime else 0)
+    return {"hourly": {"time": times, f"weather_code{suffix}": codes,
+                       f"temperature_2m{suffix}": temps, f"precipitation_probability{suffix}": rains}}
+
+
 class WeatherTests(TestCase):
 
     def setUp(self):
@@ -590,10 +605,7 @@ class WeatherTests(TestCase):
             weather.GEOCODE_URL: {"results": [
                 {"country_code": "CH", "admin1": "Bern", "latitude": 46.948, "longitude": 7.447},
             ]},
-            weather.FORECAST_URL: {"daily": {
-                "time": [day], "weather_code": [61], "temperature_2m_max": [14.4],
-                "temperature_2m_min": [6.2], "precipitation_probability_max": [70],
-            }},
+            weather.FORECAST_URL: hourly_forecast({day: (61, 14.4, 6.2, 70)}, "_meteoswiss_icon_seamless"),
         }
         with mock.patch("outings.services.weather.requests.get", side_effect=lambda url, **kw: FakeResponse(responses[url])) as get:
             weather.attach([event], now)
@@ -624,11 +636,7 @@ class WeatherTests(TestCase):
         self.assertEqual([d.isoformat() for d in weather.weekend_days(sunday)], ["2026-10-25"])
         spot = SimpleNamespace(latitude=46.8, longitude=9.7)
         no_coords = SimpleNamespace(latitude=None, longitude=None)
-        forecast = {"daily": {
-            "time": ["2026-10-24", "2026-10-25"], "weather_code": [0, 71],
-            "temperature_2m_max": [12, 3], "temperature_2m_min": [2, -4],
-            "precipitation_probability_max": [0, 80],
-        }}
+        forecast = hourly_forecast({"2026-10-24": (0, 12, 2, 0), "2026-10-25": (71, 3, -4, 80)})
         with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
             weather.attach_weekend([spot, no_coords], wednesday)
         self.assertEqual([(d["day"], d["emoji"], d["temp"]) for d in spot.weekend_weather],
@@ -636,24 +644,55 @@ class WeatherTests(TestCase):
         self.assertIsNone(no_coords.weekend_weather)
 
 
-    def test_half_days_show_the_worst_weather_of_each_half(self):
+    def test_half_days_show_the_main_weather_of_each_half(self):
         from datetime import date
         hours = [f"2026-11-14T{h:02d}:00" for h in range(24)]
         codes = [0] * 24
-        codes[10] = 61  # rain at 10:00 makes the whole morning rainy
+        codes[10] = 61  # one rainy hour does not make the morning rainy
+        for h in (13, 14, 15, 16):
+            codes[h] = 63  # most of the afternoon does
         forecast = {"hourly": {
             "time": hours, "weather_code": codes,
             "temperature_2m": [5 + h / 2 for h in range(24)],
             "precipitation_probability": [60 if h == 10 else 5 for h in range(24)],
         }}
-        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
+        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)) as get:
             rows = weather.half_days((47.37, 8.54), [date(2026, 11, 14), date(2026, 11, 15)])
+        self.assertIn("meteoswiss_icon_seamless", get.call_args.kwargs["params"]["models"])
         self.assertEqual(len(rows), 1)  # no data for Sunday: left out
         self.assertEqual((rows[0]["day"], rows[0]["date"]), ("土", "11/14"))
         morning, afternoon = rows[0]["halves"]
-        self.assertEqual((morning["name"], morning["emoji"], morning["rain"]), ("午前", "🌧️", 60))
-        self.assertEqual((afternoon["name"], afternoon["emoji"], afternoon["temp"]), ("午後", "☀️", 14))
+        self.assertEqual((morning["name"], morning["emoji"], morning["rain"]), ("午前", "☀️", 60))
+        self.assertEqual((afternoon["name"], afternoon["emoji"], afternoon["temp"]), ("午後", "🌧️", 14))
         self.assertEqual(weather.WEATHER_CODES[45][0], "☁️")
+
+    def test_rainy_morning_then_sun_reads_as_sun_and_meteoswiss_first(self):
+        now = timezone.make_aware(datetime(2026, 11, 8, 13, 0))  # 13:00 in Zurich
+        hours = [f"2026-11-08T{h:02d}:00" for h in range(24)] + [f"2026-11-14T{h:02d}:00" for h in range(24)]
+        swiss = [63 if h < 12 else 0 for h in range(24)] + [None] * 24  # MeteoSwiss: no data that far ahead
+        fallback = [3] * 48
+        forecast = {"hourly": {
+            "time": hours,
+            "weather_code_meteoswiss_icon_seamless": swiss, "weather_code_best_match": fallback,
+            "temperature_2m_meteoswiss_icon_seamless": [10] * 24 + [None] * 24, "temperature_2m_best_match": [8] * 48,
+            "precipitation_probability_meteoswiss_icon_seamless": [90 if h < 12 else 5 for h in range(24)] + [None] * 24,
+            "precipitation_probability_best_match": [20] * 48,
+        }}
+        hours_by_day = weather._parse_hourly(forecast)
+        days = weather.daily_from_hours(hours_by_day, now)
+        # The rainy morning is over: the rest of today is sunny.
+        self.assertEqual((days["2026-11-08"]["code"], days["2026-11-08"]["rain"]), (0, 5))
+        # Later days come from the fallback model.
+        self.assertEqual((days["2026-11-14"]["code"], days["2026-11-14"]["max"]), (3, 8))
+
+    def test_forecasts_refresh_hourly_by_day_and_every_three_hours_at_night(self):
+        def at(hour, minute=0):
+            return timezone.make_aware(datetime(2026, 11, 8, hour, minute))
+        self.assertEqual(weather.cache_seconds(at(13, 20)), 40 * 60)
+        self.assertEqual(weather.cache_seconds(at(21, 30)), 150 * 60)  # next: midnight
+        self.assertEqual(weather.cache_seconds(at(1, 0)), 2 * 60 * 60)  # next: 3:00
+        self.assertEqual(weather.cache_seconds(at(4, 0)), 2 * 60 * 60)  # next: 6:00
+        self.assertEqual(weather.cache_seconds(at(5, 59, )), 60)
 
     def test_trip_page_shows_a_map_link_but_no_coordinates(self):
         spot = TouristSpot.objects.create(
