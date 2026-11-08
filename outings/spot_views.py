@@ -311,7 +311,14 @@ def home(request):
     picks, events, overnight, mode = find_views.home_picks(
         preference, now, days, hide=hidden_keys(request, visitor_id, preference),
     )
-    hero = next((i for i in picks if i["image"]), None)
+    # The hero photo can be switched to the next picks with photos.
+    heroes, seen = [], set()
+    for i in picks + events + overnight:
+        if i["image"] and i["url"] not in seen:
+            seen.add(i["url"])
+            heroes.append({"image": i["image"], "url": i["url"], "title": i["title"]})
+    heroes = heroes[:8]
+    hero = heroes[0] if heroes else None
     sunny_names = find_views.sunny_area_names(days) if mode == "sunny" else []
     kids = visitor_profile.wants_kids(preference)
     area_label = dict((k, l) for k, l, _ in AREAS).get(area, "チューリッヒ周辺")
@@ -327,7 +334,7 @@ def home(request):
         "personal": bool(preference and preference.setup == "done"),
         "profile": profile_form_context(preference),
         "picks": picks,
-        "hero": hero,
+        "hero": hero, "heroes": heroes,
         "events": events,
         "overnight": overnight,
     })

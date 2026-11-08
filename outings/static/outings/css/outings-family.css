@@ -1163,3 +1163,10 @@ html[data-og-view="list"] .og-item__staff { position: static; margin: 0 0 8px 2p
     .ev-side .official-link { margin-top: 14px; padding: 12px; }
     .ev-detail .og-detail__more { margin-top: 8px; }
 }
+
+/* HOME hero: switch the photo to the next pick */
+.og-hero__swap { position: absolute; z-index: 1; top: 34px; right: 12px; display: flex; gap: 6px; }
+.og-hero__swapbtn { padding: 5px 11px; border: 1px solid rgba(255, 255, 255, .55); border-radius: 999px; background: rgba(0, 0, 0, .32); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; backdrop-filter: blur(4px); }
+.og-hero__swapbtn:hover { background: rgba(0, 0, 0, .5); }
+.og-hero__swapbtn[hidden] { display: none; }
+.og-hero--photo:has(.og-hero__swap) .og-hero__inner { padding-top: 72px; }

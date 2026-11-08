@@ -419,3 +419,7 @@ html[data-outings-theme="dark"] :is(
     border-color: var(--outings-border);
     color: var(--outings-text);
 }
+
+/* Filled buttons keep dark text on the light accent (dark link colour made them unreadable). */
+html[data-outings-theme="dark"] .og-page a.og-btn.og-btn--main,
+html[data-outings-theme="dark"] .og-page a.og-btn.og-btn--main:hover { background: #2f8f96; color: #fff; }

@@ -666,6 +666,17 @@ class WeatherTests(TestCase):
         self.assertContains(page, "Googleマップで開く")
         self.assertNotContains(page, "緯度")
 
+    def test_home_hero_can_switch_to_other_picks(self):
+        picks = [{"image": f"https://example.com/{n}.jpg" if n != 1 else "", "url": f"/outings/kids/{n}/",
+                  "title": f"場所{n}", "kind": "kids", "pk": n} for n in range(4)]
+        with mock.patch("outings.find_views.home_picks", return_value=(picks, [], [picks[0]], "")), \
+                mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            page = self.client.get(reverse("outings:home"))
+        # Photos only, no duplicates, in pick order.
+        self.assertEqual([h["title"] for h in page.context["heroes"]], ["場所0", "場所2", "場所3"])
+        self.assertContains(page, "ほかのおすすめ")
+        self.assertContains(page, 'id="og-heroes"')
+
 
 def commons_page(title, lat=None, lon=None, width=1200, author="Jane", license_name="CC BY-SA 4.0"):
     page = {
