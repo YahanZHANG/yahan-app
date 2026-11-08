@@ -1522,3 +1522,4 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-hero-foot .cb-regionbar { flex: 0 1 auto; min-width: 0; }
 .cb-hero-foot .cb-regionbar select { min-width: 0; max-width: 100%; }
 .cb-hero-foot .cb-here-btn, .cb-hero-foot .cb-hero-daily { flex: none; white-space: nowrap; }
+.cb-pollbar-home { margin-top: 8px; border-top: 1px solid var(--line); }
