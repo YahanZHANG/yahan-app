@@ -11,13 +11,6 @@
 </section>
 {% endif %}
 
-{% if poll %}
-<div class="cb-hpoll">
-    {% include "chiebukuro/_poll.html" %}
-    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">これまでのアンケート</a></p>
-</div>
-{% endif %}
-
 {% if featured %}
 <section class="cb-hsec">
     <header class="cb-hsec-head"><h2>今週の注目</h2><a href="{% url 'chiebukuro:questions' %}?sort=popular" class="cb-more">人気の質問</a></header>
@@ -41,6 +34,13 @@
         {% endfor %}
     </ol>
 </section>
+{% endif %}
+
+{% if poll %}
+<div class="cb-hpoll">
+    {% include "chiebukuro/_poll.html" %}
+    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">これまでのアンケート</a></p>
+</div>
 {% endif %}
 
 {% if gives %}
@@ -123,6 +123,27 @@
         var tick = function () { clock.textContent = format.format(new Date()); };
         tick(); setInterval(tick, 30000);
     }
+})();
+(function () {
+    // 為替をタップしたら、30日の推移を開く (はじめて開いたときだけ読みこむ)
+    var box = document.getElementById("cb-today");
+    var panel = document.getElementById("cb-fx-panel");
+    if (!box || !panel || !window.fetch) return;
+    box.addEventListener("click", function (event) {
+        var button = event.target.closest && event.target.closest("[data-fx]");
+        if (!button) return;
+        var open = panel.hidden;
+        panel.hidden = !open;
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open && !panel.dataset.loaded) {
+            panel.dataset.loaded = "1";
+            panel.innerHTML = '<p class="cb-fx-src">読みこみ中…</p>';
+            fetch(panel.dataset.url, { credentials: "same-origin" })
+                .then(function (r) { return r.ok ? r.text() : ""; })
+                .then(function (html) { panel.innerHTML = html || '<p class="cb-fx-src">いまは推移を取得できません。</p>'; })
+                .catch(function () { panel.dataset.loaded = ""; });
+        }
+    });
 })();
 (function () {
     var box = document.getElementById("cb-today");

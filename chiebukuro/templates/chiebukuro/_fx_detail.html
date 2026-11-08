@@ -1,0 +1,14 @@
+{% if rows %}
+<div class="cb-fx-detail">
+    {% for row in rows %}
+        <div class="cb-fx-row">
+            <p class="cb-fx-head"><b>1 CHF → {{ row.label }}</b><span class="{% if row.change > 0 %}up{% elif row.change < 0 %}down{% endif %}">30日で {% if row.change > 0 %}▲{% elif row.change < 0 %}▼{% endif %}{{ row.change|stringformat:".1f"|cut:"-" }}%</span></p>
+            <svg viewBox="0 0 {{ row.line.width }} {{ row.line.height }}" class="cb-fx-chart" role="img" aria-label="{{ row.label }}の30日の推移"><polyline points="{{ row.line.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="{{ row.line.last.0 }}" cy="{{ row.line.last.1 }}" r="3.5" fill="currentColor"/></svg>
+            <p class="cb-fx-range"><span>{{ row.since }} {{ row.first|floatformat:row.digits }}</span><span>最高 {{ row.line.high|floatformat:row.digits }} ／ 最低 {{ row.line.low|floatformat:row.digits }}</span><span>いま <b>{{ row.last|floatformat:row.digits }}</b>{{ row.unit }}</span></p>
+        </div>
+    {% endfor %}
+    <p class="cb-fx-src">欧州中央銀行の参考レート（平日のみ）。両替や送金のレートとは少しちがいます。</p>
+</div>
+{% else %}
+<p class="cb-fx-detail cb-fx-src">いまは推移を取得できません。</p>
+{% endif %}

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import Answer, Question, Status, SurveyImport
 
@@ -558,3 +559,50 @@ def today_in_switzerland(region=""):
     except Exception:
         logger.exception("today in switzerland failed")
         return {"weather": None, "jpy": None, "eur": None}
+
+
+def fx_history(days=30):
+    """
+    1 CHF あたりの円・ユーロの、この30日の推移 (SwissNews と同じ Frankfurter、無料)。
+    {"JPY": [(date, rate), ...], "EUR": [...]}。取れないときは None。6時間キャッシュ。
+    """
+
+    from datetime import timedelta
+
+    import requests
+    from django.core.cache import cache
+
+    cached = cache.get("chie-fx-history")
+    if cached is not None:
+        return cached or None
+    data = {}
+    try:
+        start = (timezone.localdate() - timedelta(days=days)).isoformat()
+        response = requests.get(
+            f"https://api.frankfurter.dev/v1/{start}..",
+            params={"base": "CHF", "symbols": "JPY,EUR"},
+            timeout=4,
+        )
+        response.raise_for_status()
+        rates = response.json()["rates"]
+        for code in ("JPY", "EUR"):
+            data[code] = [(day, float(rates[day][code])) for day in sorted(rates) if code in rates[day]]
+    except Exception as error:
+        logger.warning("FX history unavailable: %s", error)
+        data = {}
+    cache.set("chie-fx-history", data, 6 * 60 * 60 if data else 10 * 60)
+    return data or None
+
+
+def sparkline(points, width=280, height=64, pad=4):
+    """推移の折れ線 (SVG の points) と、いちばん高い・低い値"""
+
+    values = [value for _, value in points]
+    low, high = min(values), max(values)
+    span = (high - low) or 1
+    step = (width - pad * 2) / max(len(values) - 1, 1)
+    coords = [
+        f"{pad + index * step:.1f},{pad + (high - value) / span * (height - pad * 2):.1f}"
+        for index, value in enumerate(values)
+    ]
+    return {"points": " ".join(coords), "low": low, "high": high, "last": coords[-1].split(","), "width": width, "height": height}

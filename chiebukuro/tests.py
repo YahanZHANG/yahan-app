@@ -847,3 +847,26 @@ class EditMineTests(BoardTestCase):
                          {"title": "新しい会", "body": "内容", "region": "", "place": "", "event_date": "2026-12-01", "link": ""})
         objs["notice"].refresh_from_db()
         self.assertEqual(objs["notice"].title, "新しい会")
+
+
+class SmallHomeImprovementTests(BoardTestCase):
+
+    def test_japan_holidays(self):
+        import datetime
+        from chiebukuro.japan_calendar import japan_holiday, japan_holidays
+
+        self.assertEqual(japan_holiday(datetime.date(2026, 11, 23)), "勤労感謝の日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 5, 6)), "振替休日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 9, 22)), "国民の休日")
+        self.assertEqual(japan_holiday(datetime.date(2027, 3, 22)), "振替休日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 11, 24)), "")
+        self.assertEqual(len(japan_holidays(2026)), 18)
+
+    def test_fx_detail(self):
+        history = {"JPY": [("2026-10-09", 180.0), ("2026-10-20", 185.0), ("2026-11-06", 189.0)], "EUR": [("2026-10-09", 1.07), ("2026-11-06", 1.08)]}
+        with mock.patch("chiebukuro.services.fx_history", return_value=history):
+            page = self.client.get(reverse("chiebukuro:fx"))
+        self.assertContains(page, "30日で ▲5.0%")
+        self.assertContains(page, "<polyline")
+        with mock.patch("chiebukuro.services.fx_history", return_value=None):
+            self.assertContains(self.client.get(reverse("chiebukuro:fx")), "取得できません")

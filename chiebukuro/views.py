@@ -26,7 +26,7 @@ from django.views.decorators.http import require_POST
 
 from . import avatar as avatar_art
 from .japan_calendar import JST as JAPAN_TZ
-from .japan_calendar import moon_path, today_info
+from .japan_calendar import japan_holiday, moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
     THEME_CHOICES,
@@ -313,6 +313,7 @@ def home(request):
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
             "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
+            "japan_holiday": japan_holiday(timezone.now().astimezone(JAPAN_TZ).date()),
             "season_label": SEASON_LABELS.get(season, ""),
         },
     )
@@ -387,6 +388,28 @@ def today_strip(request):
         "chiebukuro/_today.html",
         {**info, "sky": sky_for(info.get("weather")), "place": place, "is_here": bool(here)},
     )
+
+
+@board_open
+def fx_detail(request):
+    """HOME の為替をタップしたとき: この30日の推移"""
+
+    from .services import fx_history, sparkline
+
+    history = fx_history()
+    rows = []
+    for code, label, unit, digits in (("JPY", "円", "円", 1), ("EUR", "ユーロ", "€", 3)):
+        points = (history or {}).get(code) or []
+        if len(points) < 2:
+            continue
+        first, last = points[0][1], points[-1][1]
+        rows.append({
+            "label": label, "unit": unit, "digits": digits,
+            "line": sparkline(points),
+            "first": first, "last": last, "since": "{}月{}日".format(*[int(part) for part in points[0][0].split("-")[1:]]),
+            "change": round((last / first - 1) * 100, 1),
+        })
+    return render(request, "chiebukuro/_fx_detail.html", {"rows": rows})
 
 
 @board_open
