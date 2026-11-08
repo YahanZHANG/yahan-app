@@ -10380,7 +10380,7 @@
   ],
   "swiss_tips": "スイスのきゅうり（Gurke）は太くて種が多いので、縦半分に切ってスプーンで種を取ってから薄切りにすると水っぽくならない。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 35,
    "protein_g": 1,
@@ -10465,7 +10465,7 @@
   ],
   "swiss_tips": "Champignons のほか、ひらたけ（Austernpilze）や秋の Eierschwämmli（アンズタケ）でもおいしい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 90,
    "protein_g": 3,
@@ -10544,7 +10544,7 @@
   ],
   "swiss_tips": "小松菜はスイスではほとんど見かけないので、Pak Choi（チンゲン菜）やスイスチャード（Krautstiel）、ほうれん草で。炒めすぎず、シャキッと仕上げる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 80,
    "protein_g": 2,
@@ -10629,7 +10629,7 @@
   ],
   "swiss_tips": "スイスのにんじん（Rüebli）は甘みが強く、しりしりに向いている。冷蔵庫で3日ほど持つ。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 150,
    "protein_g": 7,
@@ -10725,7 +10725,7 @@
   ],
   "swiss_tips": "白菜は Chinakohl の名で Coop・Migros にある。ご飯にかけて中華丼にしてもおいしい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 180,
    "protein_g": 9,
@@ -10817,7 +10817,7 @@
   ],
   "swiss_tips": "スイスの Tofu nature は硬めなので崩れにくく、揚げ出しに向いている。片栗粉は揚げる直前にまぶすとカリッと仕上がる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 330,
    "protein_g": 15,
@@ -10896,7 +10896,7 @@
   ],
   "swiss_tips": "Kürbis Hokkaido は皮ごと食べられるので、皮を残すと色がきれい。ヨーグルトを少し入れると、さっぱり軽くなる。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 170,
    "protein_g": 3,
@@ -10981,7 +10981,7 @@
   ],
   "swiss_tips": "こんにゃくはアジアスーパーで手に入る。ちぎると味がしみやすい。冷蔵庫で4〜5日持つ。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 50,
    "protein_g": 0.5,
@@ -11042,7 +11042,7 @@
   ],
   "swiss_tips": "スイスの Aubergine は大きいので、焼き時間は長めに。オーブンなら一度にたくさん焼けて、冷やしてもおいしい。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 40,
    "protein_g": 2,
@@ -11114,7 +11114,7 @@
   ],
   "swiss_tips": "もやし（Sojasprossen）は Coop・Migros の野菜売り場にある。傷みやすいので、買った日に作るのがおすすめ。冷蔵で2日ほど持つ。",
   "origin": "ai",
-  "status": "draft",
+  "status": "published",
   "nutrition": {
    "energy_kcal": 80,
    "protein_g": 2,

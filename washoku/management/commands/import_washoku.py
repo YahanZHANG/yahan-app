@@ -21,6 +21,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils import timezone
 
 from washoku.geocode import geocode_missing_stores
 from washoku.models import (
@@ -344,6 +345,8 @@ class Command(BaseCommand):
         ingredients = {item.name: item for item in Ingredient.objects.all()}
         moods = {mood.name: mood for mood in MoodTag.objects.all()}
 
+        published_now = []
+
         for row in rows:
 
             steps = row["steps"]
@@ -372,6 +375,9 @@ class Command(BaseCommand):
                 },
             )
 
+            if created and recipe.status == "published":
+                published_now.append(recipe.pk)
+
             recipe.recipe_ingredients.all().delete()
 
             for order, item in enumerate(row.get("ingredients", []), start=1):
@@ -390,6 +396,10 @@ class Command(BaseCommand):
             )
 
             recipe.update_shop_rank()
+
+        # 一度に公開したレシピは同じ公開日時にして、HOME では1行にまとめる
+        if published_now:
+            Recipe.objects.filter(pk__in=published_now).update(published_at=timezone.now())
 
         return len(rows)
 
