@@ -48,6 +48,7 @@ from .models import (
     PollVote,
     Post,
     PostReply,
+    Contact,
     PushDevice,
     Question,
     Reaction,
@@ -1838,6 +1839,35 @@ def notify_staff(request, subject, text, admin_path):
         return
     body = f"{text}\n\n{request.build_absolute_uri(admin_path)}\n"
     threading.Thread(target=_send, args=(f"[知恵袋] {subject}", body, recipient), daemon=True).start()
+
+
+@board_open
+def contact(request):
+    """運営へのお問い合わせ (広告・掲示板について・そのほか)"""
+
+    kind = request.POST.get("kind") or request.GET.get("about") or Contact.Kind.BOARD
+    if kind not in Contact.Kind.values:
+        kind = Contact.Kind.BOARD
+    message = (request.POST.get("message") or "").strip()
+    email = (request.POST.get("email") or "").strip() or (request.user.email if request.user.is_authenticated else "")
+    error = ""
+    if request.method == "POST":
+        if request.POST.get("website"):  # ロボットよけ
+            return redirect("chiebukuro:home")
+        if not message:
+            error = "内容を書いてください。"
+        else:
+            Contact.objects.create(
+                kind=kind, message=message[:3000], email=email[:254],
+                user=request.user if request.user.is_authenticated else None,
+            )
+            notify_staff(request, "お問い合わせ", f"{Contact.Kind(kind).label}\n{email or '返信先なし'}\n\n{message[:3000]}", reverse("admin:chiebukuro_contact_changelist"))
+            messages.success(request, "お問い合わせを送りました。ありがとうございます。")
+            return redirect("chiebukuro:home")
+    return render(request, "chiebukuro/contact.html", {
+        **board_context(request, "contact"),
+        "kinds": Contact.Kind.choices, "kind": kind, "message": message, "email": email, "error": error,
+    })
 
 
 @board_open

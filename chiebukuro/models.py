@@ -528,6 +528,30 @@ class Message(models.Model):
         ordering = ["created_at"]
 
 
+class Contact(models.Model):
+    """運営へのお問い合わせ (広告・掲示板について・そのほか)。管理画面で見る。"""
+
+    class Kind(models.TextChoices):
+        AD = "ad", "広告を出したい"
+        BOARD = "board", "掲示板について（不具合・ご要望）"
+        OTHER = "other", "そのほか"
+
+    kind = models.CharField("種類", max_length=20, choices=Kind.choices, default=Kind.BOARD)
+    message = models.TextField("内容")
+    email = models.EmailField("返信先メール", blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="送った人", on_delete=models.SET_NULL, null=True, blank=True)
+    handled = models.BooleanField("対応済み", default=False)
+    created_at = models.DateTimeField("送った日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "お問い合わせ"
+        verbose_name_plural = "お問い合わせ"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message[:40]
+
+
 class Report(models.Model):
     """通報 (質問・答え・品物)。運営が管理画面で見る。"""
 

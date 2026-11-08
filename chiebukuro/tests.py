@@ -948,6 +948,16 @@ class DailyAndColorTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:home")).content.decode()
         self.assertIn('data-cb-color="', page)
 
+    def test_contact_form(self):
+        from chiebukuro.models import Contact
+
+        page = self.client.get(reverse("chiebukuro:contact") + "?about=ad")
+        self.assertContains(page, 'value="ad" checked')
+        self.client.post(reverse("chiebukuro:contact"), {"kind": "ad", "message": "広告を出したいです", "email": "shop@example.com"})
+        contact = Contact.objects.get()
+        self.assertEqual((contact.kind, contact.email), ("ad", "shop@example.com"))
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "portal/support")
+
     def test_share_buttons(self):
         from chiebukuro.models import Question
 

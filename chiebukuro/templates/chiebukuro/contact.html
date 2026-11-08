@@ -1,0 +1,24 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}お問い合わせ | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:home' %}">{% include "chiebukuro/_icon.html" with name="back" %}HOME</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">お問い合わせ</h1>
+    <p class="cb-sub">掲示板の運営に届きます。ほかの人には見えません。</p>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" class="cb-form">
+        {% csrf_token %}
+        <fieldset class="cb-field"><legend>どんなこと？</legend>
+            {% for value, label in kinds %}<label class="cb-radio"><input type="radio" name="kind" value="{{ value }}" {% if value == kind %}checked{% endif %}> {{ label }}</label>{% endfor %}
+        </fieldset>
+        <label class="cb-field"><span>内容</span>
+            <textarea name="message" rows="6" maxlength="3000" required placeholder="{% if kind == 'ad' %}例: チューリッヒで日本食材のお店をしています。広告の料金や期間を知りたいです。{% else %}例: 写真が送れません（iPhone・Safari）。{% endif %}">{{ message }}</textarea>
+        </label>
+        <label class="cb-field"><span>返信先のメールアドレス（返事がほしいとき）</span>
+            <input type="email" name="email" value="{{ email }}" maxlength="254" autocomplete="email">
+        </label>
+        <input type="text" name="website" class="cb-sr" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" class="cb-btn cb-btn-primary">送る</button>
+    </form>
+</section>
+{% endblock %}
