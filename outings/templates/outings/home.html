@@ -11,7 +11,23 @@
     <section class="og-hero{% if hero %} og-hero--photo{% endif %}"{% if hero %} style="--og-hero-photo: url('{{ hero.image }}')"{% endif %}>
         <div class="og-hero__inner">
             <p class="og-hero__kicker">{% if weekday %}次の平日、どこ行く？{% else %}今週末、どこ行く？{% endif %}</p>
-            {% if forecast %}
+            {% if halves %}
+                <p class="og-hero__where"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ forecast_area }}の天気</p>
+                <div class="og-hero__halfdays" aria-label="{{ forecast_area }}の天気">
+                    {% for day in halves %}
+                        <div class="og-hero__hrow">
+                            <span class="og-hero__dname">{{ day.day }}<small>{{ day.date }}</small></span>
+                            {% for h in day.halves %}
+                                <span class="og-hero__half">
+                                    <small class="og-hero__hname">{{ h.name }}</small>
+                                    <span class="og-hero__icon" aria-hidden="true">{{ h.emoji }}</span>
+                                    <span class="og-hero__hinfo"><b>{% if h.temp is not None %}{{ h.temp }}°{% endif %}</b><small>{{ h.label }}{% if h.rain is not None %} ☔{{ h.rain }}%{% endif %}</small></span>
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% elif forecast %}
                 <p class="og-hero__where"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ forecast_area }}の天気</p>
                 <ul class="og-hero__days" aria-label="{{ forecast_area }}の天気">
                     {% for day in forecast %}

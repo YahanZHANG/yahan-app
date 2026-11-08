@@ -35,8 +35,9 @@ WEATHER_CODES = {
     1: ("🌤️", "晴れ"),
     2: ("⛅", "くもり時々晴れ"),
     3: ("☁️", "くもり"),
-    45: ("🌫️", "霧"),
-    48: ("🌫️", "霧"),
+    # 🌫️ shows as a pale square on many phones: a cloud reads better.
+    45: ("☁️", "霧"),
+    48: ("☁️", "霧"),
     51: ("🌦️", "霧雨"),
     53: ("🌦️", "霧雨"),
     55: ("🌦️", "霧雨"),
@@ -207,6 +208,70 @@ def _forecasts(points):
             cache.set(f"outings-wx:{point[0]}:{point[1]}", days, CACHE_SECONDS)
             forecasts[point] = days
     return forecasts
+
+
+# Morning and afternoon on HOME: hours that count for each half.
+HALVES = (("午前", range(8, 12)), ("午後", range(12, 18)))
+# When the hours disagree, show the worst weather (rain over sun).
+SEVERITY = {code: rank for rank, code in enumerate([0, 1, 2, 3, 45, 48, 51, 53, 55, 80, 61, 63, 81, 71, 73, 85, 77, 56, 57, 66, 67, 65, 75, 86, 82, 95, 96, 99])}
+
+
+def _fetch_hourly(point):
+    try:
+        response = requests.get(
+            FORECAST_URL,
+            params={
+                "latitude": point[0], "longitude": point[1],
+                "hourly": "weather_code,temperature_2m,precipitation_probability",
+                "timezone": "Europe/Zurich", "forecast_days": FORECAST_DAYS + 1,
+            },
+            timeout=TIMEOUT,
+        )
+        response.raise_for_status()
+        hourly = response.json().get("hourly") or {}
+    except (requests.RequestException, ValueError) as exc:
+        logger.info("Hourly forecast failed: %s", exc)
+        return None
+    result = {}
+    for i, stamp in enumerate(hourly.get("time") or []):
+        try:
+            day, hour = stamp[:10], int(stamp[11:13])
+            result.setdefault(day, {})[hour] = (
+                hourly["weather_code"][i], hourly["temperature_2m"][i], hourly["precipitation_probability"][i],
+            )
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+    return result
+
+
+def half_days(point, days):
+    """[{day, date, halves: [{name, emoji, label, temp, rain}]}] for each day, morning and afternoon."""
+    key = f"outings-wx-hourly:{point[0]}:{point[1]}"
+    hours = cache.get(key)
+    if hours is None:
+        hours = _fetch_hourly(point)
+        if hours is None:
+            return []
+        cache.set(key, hours, CACHE_SECONDS)
+    rows = []
+    for day in days:
+        by_hour = hours.get(day.isoformat()) or {}
+        halves = []
+        for name, span in HALVES:
+            values = [by_hour[h] for h in span if h in by_hour and by_hour[h][0] is not None]
+            if not values:
+                continue
+            code = max((int(v[0]) for v in values), key=lambda c: SEVERITY.get(c, 0))
+            temps = [v[1] for v in values if v[1] is not None]
+            rains = [v[2] for v in values if v[2] is not None]
+            emoji, label = WEATHER_CODES.get(code, ("🌡️", ""))
+            halves.append({
+                "name": name, "emoji": emoji, "label": label,
+                "temp": round(max(temps)) if temps else None, "rain": round(max(rains)) if rains else None,
+            })
+        if halves:
+            rows.append({"day": WEEKDAYS_JA[day.weekday()], "date": f"{day.month}/{day.day}", "halves": halves})
+    return rows
 
 
 def attach_weekend(spots, now=None):

@@ -306,6 +306,7 @@ def home(request):
     area = (preference.areas or [None])[0] if preference else None
     point = find_views.AREA_CENTRES.get(area, HOME_POINT)
     forecast, _ = weekend_forecast(now, days, point)
+    halves = weather.half_days(point, days[:2]) if days else []
     from .visits import hidden_keys
     picks, events, overnight, mode = find_views.home_picks(
         preference, now, days, hide=hidden_keys(request, visitor_id, preference),
@@ -316,7 +317,7 @@ def home(request):
     area_label = dict((k, l) for k, l, _ in AREAS).get(area, "チューリッヒ周辺")
 
     response = render(request, "outings/home.html", {
-        "forecast": forecast,
+        "halves": halves, "forecast": forecast,
         "forecast_area": area_label,
         "mode": mode,
         "sunny_names": sunny_names[:4],

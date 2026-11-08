@@ -636,6 +636,37 @@ class WeatherTests(TestCase):
         self.assertIsNone(no_coords.weekend_weather)
 
 
+    def test_half_days_show_the_worst_weather_of_each_half(self):
+        from datetime import date
+        hours = [f"2026-11-14T{h:02d}:00" for h in range(24)]
+        codes = [0] * 24
+        codes[10] = 61  # rain at 10:00 makes the whole morning rainy
+        forecast = {"hourly": {
+            "time": hours, "weather_code": codes,
+            "temperature_2m": [5 + h / 2 for h in range(24)],
+            "precipitation_probability": [60 if h == 10 else 5 for h in range(24)],
+        }}
+        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
+            rows = weather.half_days((47.37, 8.54), [date(2026, 11, 14), date(2026, 11, 15)])
+        self.assertEqual(len(rows), 1)  # no data for Sunday: left out
+        self.assertEqual((rows[0]["day"], rows[0]["date"]), ("土", "11/14"))
+        morning, afternoon = rows[0]["halves"]
+        self.assertEqual((morning["name"], morning["emoji"], morning["rain"]), ("午前", "🌧️", 60))
+        self.assertEqual((afternoon["name"], afternoon["emoji"], afternoon["temp"]), ("午後", "☀️", 14))
+        self.assertEqual(weather.WEATHER_CODES[45][0], "☁️")
+
+    def test_trip_page_shows_a_map_link_but_no_coordinates(self):
+        spot = TouristSpot.objects.create(
+            external_id="m", spot_type="attractions", title_original="Rheinfall", title_ja="ライン滝",
+            official_url="https://www.myswitzerland.com/de/m/", status=TouristSpot.Status.PUBLISHED,
+            latitude=47.677, longitude=8.615,
+        )
+        with mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "Googleマップで開く")
+        self.assertNotContains(page, "緯度")
+
+
 def commons_page(title, lat=None, lon=None, width=1200, author="Jane", license_name="CC BY-SA 4.0"):
     page = {
         "title": title,
