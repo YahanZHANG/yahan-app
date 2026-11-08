@@ -12,7 +12,7 @@
         {% if post.theme %}<p class="cb-hashtags"><a href="{% url 'chiebukuro:posts' %}?theme={{ post.theme }}">#{{ post.get_theme_display }}</a></p>{% endif %}
         {% include "chiebukuro/_photo.html" with url=post.photo_url %}
         <div class="cb-post-actions">
-            <a href="{% url 'chiebukuro:post' post.pk %}#replies" class="cb-act">{% include "chiebukuro/_icon.html" with name="reply" %}<span>{% if post.reply_total %}{{ post.reply_total }}{% else %}返信{% endif %}</span></a>
+            <a href="{% url 'chiebukuro:post' post.pk %}#replies" class="cb-act">{% include "chiebukuro/_icon.html" with name="reply" %}<span>{% if post.reply_total and not single and post.reply_total > 2 %}{{ post.reply_total }}{% elif post.reply_total and not single and not post.first_replies %}{{ post.reply_total }}{% else %}返信{% endif %}</span></a>
             {% include "chiebukuro/_stamps.html" with obj=post target="post" prefix="p" %}
         </div>
         {% if post.first_replies %}
