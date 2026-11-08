@@ -1,4 +1,5 @@
-{% comment %}開いたときの「今日のひとこと」(1日1回だけ自動で出す。HOME の「今日のひとこと」ボタンでいつでも開ける){% endcomment %}
+{% comment %}開いたときの「今日のひとこと」: お守り占い → スイスドイツ語 → 豆知識 → アンケート を1枚ずつ。
+1日1回だけ自動で出す (マイページで選んだカードだけ)。HOME の「今日のひとこと」ボタンでは全部見られる。{% endcomment %}
 <dialog class="cb-daily" id="cb-daily" aria-labelledby="cb-daily-title" data-day="{{ daily.day|date:'Y-m-d' }}" data-auto="{% if show_daily %}1{% endif %}" {% if user.is_authenticated %}data-off-url="{% url 'chiebukuro:daily_off' %}"{% endif %}>
     <div class="cb-daily-box">
         <header class="cb-daily-head">
@@ -7,41 +8,41 @@
             <button type="button" class="cb-daily-x" data-daily-close aria-label="閉じる">×</button>
         </header>
 
-        <section class="cb-daily-charm">
-            <p class="cb-daily-label">今日のスイスのお守り占い</p>
-            <div class="cb-daily-charm-main">
-                <span class="cb-daily-emoji" aria-hidden="true">{{ daily.charm.emoji }}</span>
-                <div>
-                    <p class="cb-daily-charm-name">{{ daily.charm.name }}<small>{{ daily.charm.german }}</small></p>
-                    <p class="cb-daily-msg">{{ daily.charm.message }}</p>
-                    <p class="cb-daily-action">ラッキーアクション：{{ daily.charm.action }}</p>
-                </div>
-            </div>
+        <section class="cb-daily-card cb-daily-charm" data-card="charm" {% if "daily_charm" in daily_auto %}data-auto{% endif %}>
+            <p class="cb-daily-label">🍀 スイスのお守り占い</p>
+            <span class="cb-daily-emoji" aria-hidden="true">{{ daily.charm.emoji }}</span>
+            <p class="cb-daily-charm-name">{{ daily.charm.name }}<small>{{ daily.charm.german }}</small></p>
+            <p class="cb-daily-msg">{{ daily.charm.message }}</p>
+            <p class="cb-daily-action">ラッキーアクション：{{ daily.charm.action }}</p>
             <p class="cb-daily-origin">{{ daily.charm.origin }}</p>
         </section>
 
-        <section class="cb-daily-sec">
-            <p class="cb-daily-label">今日のスイスドイツ語</p>
-            <p class="cb-daily-word"><b lang="gsw">{{ daily.word.text }}</b><span>{{ daily.word.reading }}</span>＝{{ daily.word.meaning }}</p>
-            <p class="cb-daily-note">{{ daily.word.note }}</p>
+        <section class="cb-daily-card cb-daily-wordcard" data-card="word" {% if "daily_word" in daily_auto %}data-auto{% endif %} hidden>
+            <p class="cb-daily-label">🗣️ 今日のスイスドイツ語</p>
+            <p class="cb-daily-big" lang="gsw">{{ daily.word.text }}</p>
+            <p class="cb-daily-reading">{{ daily.word.reading }}</p>
+            <p class="cb-daily-msg">＝ {{ daily.word.meaning }}</p>
+            <p class="cb-daily-origin">{{ daily.word.note }}</p>
         </section>
 
-        <section class="cb-daily-sec">
-            <p class="cb-daily-label">今日の豆知識</p>
-            <p class="cb-daily-note cb-daily-trivia">{{ daily.trivia }}</p>
+        <section class="cb-daily-card cb-daily-triviacard" data-card="trivia" {% if "daily_trivia" in daily_auto %}data-auto{% endif %} hidden>
+            <p class="cb-daily-label">💡 今日の豆知識</p>
+            <span class="cb-daily-emoji" aria-hidden="true">🇨🇭</span>
+            <p class="cb-daily-msg cb-daily-trivia">{{ daily.trivia }}</p>
         </section>
 
-        {% if poll and not poll.my_choice_id %}
-            <section class="cb-daily-sec">
-                <p class="cb-daily-label">今日のアンケート</p>
-                <p class="cb-daily-note"><a href="#poll{{ poll.pk }}" data-daily-close>「{{ poll.question }}」に答える ›</a></p>
+        {% if poll %}
+            <section class="cb-daily-card cb-daily-pollcard" data-card="poll" data-poll="{{ poll.pk }}" {% if "daily_poll" in daily_auto %}data-auto{% endif %} hidden>
+                {% include "chiebukuro/_poll.html" %}
+                <p class="cb-daily-origin"><a href="{% url 'chiebukuro:polls' %}">これまでのアンケート ›</a></p>
             </section>
         {% endif %}
 
         <footer class="cb-daily-foot">
             {% csrf_token %}
-            <label class="cb-check-s"><input type="checkbox" id="cb-daily-never"> もう表示しない{% if user.is_authenticated %}（マイページの設定で戻せます）{% endif %}</label>
-            <button type="button" class="cb-btn cb-btn-primary cb-btn-s" data-daily-close>閉じる</button>
+            <span class="cb-daily-dots" aria-hidden="true"></span>
+            <button type="button" class="cb-btn cb-btn-primary cb-btn-s" data-daily-next>次へ</button>
+            <label class="cb-check-s"><input type="checkbox" id="cb-daily-never"> 明日から自動で出さない{% if user.is_authenticated %}（マイページで戻せます）{% endif %}</label>
         </footer>
     </div>
 </dialog>
@@ -50,17 +51,40 @@
     var dialog = document.getElementById("cb-daily");
     if (!dialog || !dialog.showModal) return;
     var day = dialog.dataset.day;
+    var allCards = Array.prototype.slice.call(dialog.querySelectorAll(".cb-daily-card"));
+    var nextButton = dialog.querySelector("[data-daily-next]");
+    var dots = dialog.querySelector(".cb-daily-dots");
+    var cards = allCards, index = 0;
     function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
     function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
 
-    // 1日の最初に開いたときだけ、自動で出す
-    // ログインしている人はマイページの設定で決める。ログインしていない人は、この端末の「もう表示しない」
+    function show() {
+        allCards.forEach(function (card) { card.hidden = card !== cards[index]; });
+        dots.innerHTML = cards.length > 1 ? cards.map(function (card, i) { return '<i class="' + (i === index ? "on" : "") + '"></i>'; }).join("") : "";
+        nextButton.textContent = index < cards.length - 1 ? "次へ" : "閉じる";
+    }
+    function open(list, start) {
+        cards = list.length ? list : allCards;
+        index = Math.max(0, cards.indexOf(start));
+        show();
+        if (!dialog.open) dialog.showModal();
+    }
+    function cardFor(name) { return dialog.querySelector('.cb-daily-card[data-card="' + name + '"]'); }
+
+    // 1日の最初に開いたときだけ、選ばれたカードを自動で出す
+    // ログインしている人はマイページの設定で決める。ログインしていない人は、この端末の「自動で出さない」
     var off = !dialog.dataset.offUrl && read("cb_daily_off") === "1";
-    if (dialog.dataset.auto && !off && read("cb_daily_seen") !== day) {
-        setTimeout(function () { dialog.showModal(); }, 400);
+    var poll = cardFor("poll");
+    if (poll && location.hash === "#poll" + poll.dataset.poll) {
+        // アンケートに答えたあと: 結果のカードを開く
+        history.replaceState(null, "", location.pathname + location.search);
+        open([poll], poll);
+    } else if (dialog.dataset.auto && !off && read("cb_daily_seen") !== day) {
+        var auto = allCards.filter(function (card) { return card.hasAttribute("data-auto"); });
+        if (auto.length) setTimeout(function () { open(auto); }, 400);
     }
     document.querySelectorAll("[data-daily-open]").forEach(function (button) {
-        button.addEventListener("click", function () { dialog.showModal(); });
+        button.addEventListener("click", function () { open(allCards, cardFor(button.dataset.dailyOpen)); });
     });
 
     function done() {
@@ -73,6 +97,9 @@
         }
         dialog.close();
     }
+    nextButton.addEventListener("click", function () {
+        if (index < cards.length - 1) { index += 1; show(); } else done();
+    });
     dialog.querySelectorAll("[data-daily-close]").forEach(function (element) { element.addEventListener("click", done); });
     dialog.addEventListener("cancel", function (event) { event.preventDefault(); done(); });
     dialog.addEventListener("click", function (event) { if (event.target === dialog) done(); });

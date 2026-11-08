@@ -20,10 +20,9 @@
                 <span class="cb-hero-wd">{{ today|date:"D" }}曜日</span>
                 {% if cal.rokuyo %}<span class="cb-hero-koyomi{% if cal.rokuyo == '大安' %} is-taian{% endif %}" title="六曜（日本の暦）">{{ cal.rokuyo }}</span>{% endif %}
                 <svg class="cb-moon-mini" viewBox="0 0 40 40" role="img" aria-label="今日の月"><title>今日の月</title><circle cx="20" cy="20" r="14" class="cb-moon-dark"/>{% if moon_mini %}<path d="{{ moon_mini }}" class="cb-moon-lit"/>{% endif %}</svg>
-                <span class="cb-hero-jp" title="日本の時刻">日本 <b id="cb-japan-time">{{ japan_now|date:"G:i" }}</b>{% if japan_holiday %}<span class="cb-hero-holiday" title="日本はきょう祝日です">祝日・{{ japan_holiday }}</span>{% endif %}</span>
-                {% if season_label %}<span class="cb-hero-season">{{ season_label }}</span>{% endif %}
-                <button type="button" class="cb-hero-daily" data-daily-open>{{ daily.charm.emoji }} 今日のひとこと</button>
+                <span class="cb-hero-jp" title="日本の時刻">日本 <b id="cb-japan-time">{{ japan_now|date:"G:i" }}</b></span>
             </p>
+            {% if day_events %}<p class="cb-hero-events">{% for label in day_events %}<span class="cb-hero-event">{{ label }}</span>{% endfor %}</p>{% endif %}
         </div>
         <div class="cb-tiles">
             <div class="cb-today" id="cb-today" data-url="{% url 'chiebukuro:today' %}" aria-live="polite">
@@ -32,6 +31,6 @@
             </div>
         </div>
         <div class="cb-fx-panel" id="cb-fx-panel" data-url="{% url 'chiebukuro:fx' %}" hidden></div>
-        <div class="cb-hero-foot">{% include "chiebukuro/_region.html" %}<button type="button" class="cb-here-btn" id="cb-here" hidden>📍 現在地の天気にする</button></div>
+        <div class="cb-hero-foot">{% include "chiebukuro/_region.html" %}<button type="button" class="cb-here-btn" id="cb-here" hidden title="現在地の天気にする">📍 現在地</button><button type="button" class="cb-hero-daily" data-daily-open>{{ daily.charm.emoji }} 今日のひとこと</button></div>
     </div>
 </section>

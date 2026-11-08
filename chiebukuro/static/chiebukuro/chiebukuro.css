@@ -1454,3 +1454,71 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 16px 14px; }
 .cb-post-single .cb-share { padding-left: 66px; }
 .cb-share-msg { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--sub); }
+
+/* つぶやき一覧: 最初の返信を小さく */
+.cb-post-peek { list-style: none; margin: 6px 0 0; padding: 4px 0 0 10px; border-left: 2px solid var(--line); display: grid; gap: 4px; }
+.cb-post-peek a { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--sub); font-size: 13px; line-height: 1.4; text-decoration: none; }
+.cb-post-peek a:hover { color: var(--text); }
+.cb-post-peek strong { flex: none; color: var(--text); font-weight: 600; font-size: 12.5px; }
+.cb-post-peek-body { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+.cb-post-peek-more a { color: var(--link); font-size: 12.5px; }
+.cb-av-xs { width: 18px; height: 18px; font-size: 9px; flex: none; }
+
+/* つぶやきの詳細: X のようにコンパクト。編集・消す・通報は「⋯」の中 */
+.cb-post-single .cb-post-head { position: relative; padding-right: 28px; }
+.cb-reply .cb-post-head { position: relative; padding-right: 28px; }
+.cb-kebab { position: absolute; top: -2px; right: 0; }
+.cb-kebab summary { list-style: none; cursor: pointer; padding: 0 6px; border-radius: 999px; color: var(--sub); font-size: 16px; line-height: 1.4; }
+.cb-kebab summary::-webkit-details-marker { display: none; }
+.cb-kebab summary:hover, .cb-kebab[open] summary { background: var(--line); color: var(--text); }
+.cb-kebab-menu { position: absolute; right: 0; top: 100%; z-index: 20; display: grid; min-width: 150px; margin-top: 2px; padding: 4px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.14); }
+.cb-kebab-menu a, .cb-kebab-menu button { display: block; width: 100%; padding: 7px 10px; border: 0; border-radius: 6px; background: none; color: var(--text); font: inherit; font-size: 13.5px; text-align: left; text-decoration: none; cursor: pointer; }
+.cb-kebab-menu a:hover, .cb-kebab-menu button:hover { background: var(--bg); }
+.cb-kebab-menu form { margin: 0; }
+.cb-kebab-report { display: grid; gap: 4px; padding: 4px; }
+.cb-kebab-report input { padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 13px; }
+.cb-kebab-report button { color: #c0392b; }
+.cb-post-single .cb-post-foot { gap: 10px; padding: 0 16px 10px 66px; }
+.cb-post-single .cb-share.cb-share-compact { display: inline-flex; gap: 12px; padding: 0; margin-left: auto; }
+.cb-share-compact .cb-share-msg { flex-basis: auto; }
+.cb-post-single .cb-reply-form { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 16px; }
+
+/* 今日のひとこと: 1枚ずつのカード */
+.cb-daily-card { margin: 0 14px; padding: 16px 14px; min-height: 210px; border-radius: 14px; background: color-mix(in srgb, var(--brand) 8%, var(--surface)); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.cb-daily-card[hidden] { display: none; }
+.cb-daily-card .cb-daily-label { margin-bottom: 8px; }
+.cb-daily-card .cb-daily-emoji { font-size: 52px; margin-bottom: 4px; }
+.cb-daily-card .cb-daily-msg { font-size: 15px; line-height: 1.6; }
+.cb-daily-card .cb-daily-origin { margin-top: 10px; }
+.cb-daily-big { margin: 4px 0 0; font-size: 28px; font-weight: 800; letter-spacing: .01em; }
+.cb-daily-reading { margin: 0; color: var(--sub); font-size: 13px; }
+.cb-daily-pollcard { text-align: left; align-items: stretch; background: var(--surface); padding: 0; min-height: 0; }
+.cb-daily-pollcard .cb-poll { margin: 0; }
+.cb-daily-pollcard .cb-daily-origin { text-align: center; }
+.cb-daily-foot { justify-content: center; }
+.cb-daily-foot .cb-btn { margin-left: auto; }
+.cb-daily-foot .cb-check-s { flex-basis: 100%; text-align: center; }
+.cb-daily-dots { display: inline-flex; gap: 6px; }
+.cb-daily-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+.cb-daily-dots i.on { background: var(--brand); }
+
+/* HOME: アンケートは1行だけ (押すと「今日のひとこと」のアンケートのカードが開く) */
+.cb-pollbar { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.cb-pollbar:hover { background: color-mix(in srgb, var(--brand) 5%, var(--surface)); }
+.cb-pollbar-tag { flex: none; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--brand) 12%, var(--surface)); color: var(--brand); font-size: 12px; font-weight: 800; }
+.cb-pollbar-q { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; font-weight: 600; }
+.cb-pollbar-go { flex: none; color: var(--sub); font-size: 18px; }
+@media (min-width: 900px) { .cb-pollbar { border: 1px solid var(--line); border-radius: 10px; margin-top: 12px; } }
+
+/* Hero: スイス・日本の祝日と行事 (ふつうの日は出さない) */
+.cb-hero-events { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; }
+.cb-hero-event { padding: 1px 9px; border-radius: 999px; background: rgba(255, 255, 255, .16); color: #fff; font-size: 12px; font-weight: 800; line-height: 20px; }
+.cb-hero-foot .cb-hero-daily { padding: 5px 12px; font-size: 12.5px; }
+.cb-daily-pollcard .cb-poll-label { color: var(--brand); }
+.cb-daily-pollcard .cb-poll-q { font-size: 17px; line-height: 1.45; }
+.cb-daily-pollcard .cb-poll-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cb-daily-pollcard .cb-poll-choices button { min-height: 46px; font-size: 14px; font-weight: 700; border-radius: 8px; }
+.cb-hero-foot { flex-wrap: nowrap; }
+.cb-hero-foot .cb-regionbar { flex: 0 1 auto; min-width: 0; }
+.cb-hero-foot .cb-regionbar select { min-width: 0; max-width: 100%; }
+.cb-hero-foot .cb-here-btn, .cb-hero-foot .cb-hero-daily { flex: none; white-space: nowrap; }

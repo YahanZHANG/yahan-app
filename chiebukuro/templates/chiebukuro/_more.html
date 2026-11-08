@@ -1,0 +1,22 @@
+{% comment %}控えめな「⋯」メニュー。自分の書きこみなら 編集・消す、ほかの人のなら 通報。
+渡すもの: more_kind (post / reply), more_id, more_mine, more_delete_url, more_confirm{% endcomment %}
+{% if user.is_authenticated %}
+<details class="cb-kebab">
+    <summary aria-label="メニュー" title="メニュー">⋯</summary>
+    <div class="cb-kebab-menu">
+        {% if more_mine %}
+            <a href="{% url 'chiebukuro:edit' more_kind more_id %}">編集する</a>
+            <form method="post" action="{{ more_delete_url }}" onsubmit="return confirm('{{ more_confirm }}');">{% csrf_token %}<button type="submit">消す</button></form>
+        {% else %}
+            <form method="post" action="{% url 'chiebukuro:report' %}" class="cb-kebab-report">
+                {% csrf_token %}
+                <input type="hidden" name="target" value="{{ more_kind }}">
+                <input type="hidden" name="target_id" value="{{ more_id }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="text" name="reason" maxlength="500" placeholder="理由（任意）" aria-label="通報の理由">
+                <button type="submit">運営に通報する</button>
+            </form>
+        {% endif %}
+    </div>
+</details>
+{% endif %}

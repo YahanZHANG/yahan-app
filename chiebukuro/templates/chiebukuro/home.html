@@ -4,6 +4,13 @@
 
 {% include "chiebukuro/_hero.html" %}
 {% include "chiebukuro/_daily.html" %}
+{% if poll %}
+<button type="button" class="cb-pollbar" data-daily-open="poll">
+    <span class="cb-pollbar-tag">📊 {% if poll.my_choice_id %}アンケートの結果{% else %}アンケート受付中{% endif %}</span>
+    <span class="cb-pollbar-q">{{ poll.question }}</span>
+    <span class="cb-pollbar-go" aria-hidden="true">›</span>
+</button>
+{% endif %}
 
 {% if not user.is_authenticated %}
 <section class="cb-welcome">
@@ -37,12 +44,6 @@
 </section>
 {% endif %}
 
-{% if poll %}
-<div class="cb-hpoll">
-    {% include "chiebukuro/_poll.html" %}
-    <p class="cb-block-foot"><a href="{% url 'chiebukuro:polls' %}" class="cb-more">これまでのアンケート</a></p>
-</div>
-{% endif %}
 
 {% if gives %}
 <section class="cb-hsec">
@@ -170,7 +171,7 @@
             if (hereButton) hereButton.hidden = true;
             load(position.coords);
         }, function () {
-            if (ask && hereButton) hereButton.textContent = "📍 現在地を使えませんでした";
+            if (ask && hereButton) hereButton.textContent = "📍 使えません";
         }, { maximumAge: 30 * 60 * 1000, timeout: 8000 });
     }
     load(null);

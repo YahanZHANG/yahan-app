@@ -27,7 +27,8 @@ from django.views.decorators.http import require_POST
 from . import avatar as avatar_art
 from .japan_calendar import JST as JAPAN_TZ
 from .daily import today_card
-from .japan_calendar import japan_holiday, moon_path, today_info
+from .events import day_events
+from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
     THEME_CHOICES,
@@ -282,6 +283,21 @@ def mark_liked(posts, user):
     return attach_stamps(posts, "post", user)
 
 
+def attach_first_replies(posts, limit=2):
+    """つぶやき一覧で、最初の返信を少しだけ見せるため"""
+
+    posts = list(posts)
+    by_post = {post.pk: [] for post in posts}
+    if by_post:
+        replies = PostReply.objects.filter(post_id__in=by_post, status=Status.PUBLISHED).select_related("author").order_by("created_at", "pk")
+        for reply in replies:
+            if len(by_post[reply.post_id]) < limit:
+                by_post[reply.post_id].append(reply)
+    for post in posts:
+        post.first_replies = by_post[post.pk]
+    return posts
+
+
 def active_notices():
     return Notice.objects.filter(status=Status.PUBLISHED, expires_at__gt=timezone.now())
 
@@ -295,6 +311,8 @@ def open_items():
 # =========================================================
 
 VOTER_COOKIE = "cb_voter"
+# 「今日のひとこと」のカード (BoardProfile の欄の名前)。この順に1枚ずつ出す
+DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia", "daily_poll"]
 
 
 @board_open
@@ -311,9 +329,14 @@ def home(request):
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
     poll = poll_for_home(request, voter_key)
-    show_daily = True
+    # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
+    daily_auto = set(DAILY_CARDS)
     if request.user.is_authenticated:
-        show_daily = BoardProfile.objects.filter(user=request.user, daily_popup=False).first() is None
+        profile = BoardProfile.objects.filter(user=request.user).first()
+        if profile:
+            daily_auto = {field for field in DAILY_CARDS if profile.daily_popup and getattr(profile, field)}
+    if not poll or poll.my_choice_id:
+        daily_auto.discard("daily_poll")
     daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
@@ -323,7 +346,8 @@ def home(request):
             **board_context(request, "home", region),
             "poll": poll,
             "daily": daily,
-            "show_daily": show_daily,
+            "show_daily": bool(daily_auto),
+            "daily_auto": daily_auto,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
@@ -337,23 +361,13 @@ def home(request):
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
             "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
-            "japan_holiday": japan_holiday(timezone.now().astimezone(JAPAN_TZ).date()),
-            "season_label": SEASON_LABELS.get(season, ""),
+            "day_events": day_events(timezone.localdate()),
         },
     )
     if not voter_key and not request.user.is_authenticated:
         response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
     return response
 
-
-SEASON_LABELS = {
-    "spring": "🌸 お花見の季節",
-    "nationalday": "🇨🇭 8月1日は建国記念日",
-    "halloween": "🎃 ハロウィン",
-    "autumn": "🍁 紅葉の季節",
-    "christmas": "🎄 アドベント",
-    "newyear": "🎍 お正月",
-}
 
 SKY_BY_EMOJI = {"☀️": "clear", "🌤️": "partly", "⛅": "partly", "☁️": "cloudy", "🌫️": "cloudy",
                 "🌦️": "rain", "🌧️": "rain", "⛈️": "rain", "🌨️": "snow", "❄️": "snow"}
@@ -509,6 +523,7 @@ def post_list(request):
         posts = posts.filter(theme=theme)
     page = Paginator(annotate_posts(posts).order_by("-created_at", "-pk"), POSTS_PER_PAGE).get_page(request.GET.get("page"))
     mark_liked(page.object_list, request.user)
+    attach_first_replies(page.object_list)
 
     return render(
         request,
@@ -1534,8 +1549,10 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles + ["daily_popup", "color_auto"]:
+        for field in toggles + DAILY_CARDS + ["color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
+        # 1枚もえらばなければ、自動では出さない
+        board_profile.daily_popup = any(getattr(board_profile, field) for field in DAILY_CARDS)
         if request.POST.get("color") in BoardProfile.Color.values:
             board_profile.color = request.POST["color"]
         board_profile.save()
@@ -1553,6 +1570,10 @@ def settings_view(request):
             "frequencies": BoardProfile.PushFrequency.choices,
             "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
+            "daily_cards": [
+                (field, label, board_profile.daily_popup and getattr(board_profile, field))
+                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識", "アンケート（まだ答えていないときだけ）"])
+            ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
         },
     )
@@ -1783,7 +1804,7 @@ def report(request):
 
     target = request.POST.get("target", "")
     target_id = request.POST.get("target_id", "")
-    if target in ("question", "answer", "item", "post", "notice") and target_id.isdigit():
+    if target in ("question", "answer", "item", "post", "reply", "notice") and target_id.isdigit():
         Report.objects.create(
             target=target,
             target_id=int(target_id),

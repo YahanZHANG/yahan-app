@@ -676,7 +676,7 @@ class SeasonTests(BoardTestCase):
         board.save()
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, 'data-season="christmas"')
-        self.assertContains(response, "🎄 アドベント")
+        self.assertNotContains(response, "🎄 アドベント")  # 季節のことばは出さない (祝日・行事の日だけ)
         self.assertContains(response, "cb-hero-md")
         self.assertNotContains(response, "cb-scene")
         self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")
@@ -883,12 +883,52 @@ class DailyAndColorTests(BoardTestCase):
         self.assertEqual(card, today_card(datetime.date(2026, 11, 8), "1"))
         self.assertTrue(card["charm"]["message"])
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, "今日のスイスのお守り占い")
+        self.assertContains(page, "スイスのお守り占い")
         self.assertContains(page, 'data-auto="1"')
         self.client.force_login(self.alice)
         self.client.post(reverse("chiebukuro:daily_off"))
         self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
         self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
+
+    def test_daily_cards_setting(self):
+        from chiebukuro.models import BoardProfile
+
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:settings"), {"daily_word": "1", "push_frequency": "instant"})
+        profile = BoardProfile.objects.get(user=self.alice)
+        self.assertTrue(profile.daily_popup)
+        self.assertFalse(profile.daily_charm)
+        page = self.client.get(reverse("chiebukuro:home")).content.decode()
+        self.assertIn('data-card="word" data-auto', page)
+        self.assertNotIn('data-card="charm" data-auto', page)
+        self.client.post(reverse("chiebukuro:settings"), {"push_frequency": "instant"})
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+
+    def test_day_events(self):
+        import datetime
+
+        from chiebukuro.events import day_events, easter, setsubun
+
+        self.assertEqual(easter(2026), datetime.date(2026, 4, 5))
+        self.assertEqual(setsubun(2026), datetime.date(2026, 2, 3))
+        self.assertEqual(setsubun(2025), datetime.date(2025, 2, 2))
+        self.assertEqual(day_events(datetime.date(2026, 11, 9)), [])
+        self.assertEqual(day_events(datetime.date(2026, 1, 1)), ["🇯🇵 元日", "🇨🇭 新年"])
+        self.assertEqual(day_events(datetime.date(2026, 3, 3)), ["🇯🇵 ひなまつり"])
+        self.assertEqual(day_events(datetime.date(2026, 5, 14)), ["🇨🇭 キリスト昇天祭"])
+        self.assertEqual(day_events(datetime.date(2026, 10, 31)), ["🎃 ハロウィン"])
+
+    def test_post_list_shows_first_replies(self):
+        from chiebukuro.models import Post, PostReply
+
+        post = Post.objects.create(body="ねえ聞いて", author=self.alice, nickname="アリス")
+        for number in range(3):
+            PostReply.objects.create(post=post, body=f"返事その{number}", author=self.alice, nickname="アリス")
+        page = self.client.get(reverse("chiebukuro:posts")).content.decode()
+        self.assertIn("返事その0", page)
+        self.assertIn("返事その1", page)
+        self.assertNotIn("返事その2", page)
+        self.assertIn("ほかの返信 1件を見る", page)
 
     def test_color_setting(self):
         self.client.force_login(self.alice)

@@ -415,6 +415,10 @@ class BoardProfile(models.Model):
     push_stamp = models.BooleanField("スタンプが押されたとき", default=False)
     push_talk = models.BooleanField("2人だけのやりとりにメッセージが来たとき", default=True)
     daily_popup = models.BooleanField("開いたときの「今日のひとこと」を出す", default=True)
+    daily_charm = models.BooleanField("今日のひとこと: お守り占い", default=True)
+    daily_word = models.BooleanField("今日のひとこと: スイスドイツ語", default=True)
+    daily_trivia = models.BooleanField("今日のひとこと: 豆知識", default=True)
+    daily_poll = models.BooleanField("今日のひとこと: アンケート", default=True)
 
     class Color(models.TextChoices):
         CLASSIC = "classic", "スイスレッド"
@@ -527,7 +531,7 @@ class Message(models.Model):
 class Report(models.Model):
     """通報 (質問・答え・品物)。運営が管理画面で見る。"""
 
-    target = models.CharField("対象", max_length=20)  # question / answer / item / post / notice
+    target = models.CharField("対象", max_length=20)  # question / answer / item / post / reply / notice
     target_id = models.PositiveIntegerField("対象ID")
     reason = models.TextField("理由", blank=True)
     reporter = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="通報した人", on_delete=models.SET_NULL, null=True, blank=True)
