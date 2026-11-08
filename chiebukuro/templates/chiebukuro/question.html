@@ -24,6 +24,7 @@
             {% with report_target="question" report_id=question.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
         {% endif %}
     </div>
+    {% if best_answer %}{% with share_sub="A. "|add:best_answer.body %}{% include "chiebukuro/_share.html" with share_label="Q. みんなに聞いてみた" share_text=question.body share_url=request.build_absolute_uri %}{% endwith %}{% else %}{% include "chiebukuro/_share.html" with share_label="Q. 知っている人、教えてください" share_text=question.body share_sub="" share_url=request.build_absolute_uri %}{% endif %}
 </section>
 
 <section class="cb-block" id="answers">

@@ -55,6 +55,7 @@ urlpatterns = [
     # HOME: アンケート・広告
     path("today/", views.today_strip, name="today"),
     path("fx/", views.fx_detail, name="fx"),
+    path("daily/off/", views.daily_off, name="daily_off"),
     path("polls/", views.poll_list, name="polls"),
     path("polls/<int:pk>/vote/", views.poll_vote, name="poll_vote"),
     path("ad/<int:pk>/", views.sponsor_click, name="sponsor"),

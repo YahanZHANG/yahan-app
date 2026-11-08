@@ -870,3 +870,38 @@ class SmallHomeImprovementTests(BoardTestCase):
         self.assertContains(page, "<polyline")
         with mock.patch("chiebukuro.services.fx_history", return_value=None):
             self.assertContains(self.client.get(reverse("chiebukuro:fx")), "取得できません")
+
+
+class DailyAndColorTests(BoardTestCase):
+
+    def test_daily_card_and_off(self):
+        import datetime
+        from chiebukuro.daily import today_card
+        from chiebukuro.models import BoardProfile
+
+        card = today_card(datetime.date(2026, 11, 8), "1")
+        self.assertEqual(card, today_card(datetime.date(2026, 11, 8), "1"))
+        self.assertTrue(card["charm"]["message"])
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "今日のスイスのお守り占い")
+        self.assertContains(page, 'data-auto="1"')
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:daily_off"))
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
+
+    def test_color_setting(self):
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:settings"), {"color": "sakura", "daily_popup": "1", "push_frequency": "instant"})
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-cb-color="sakura"')
+        self.client.post(reverse("chiebukuro:settings"), {"color": "mint", "color_auto": "1", "push_frequency": "instant"})
+        page = self.client.get(reverse("chiebukuro:home")).content.decode()
+        self.assertIn('data-cb-color="', page)
+
+    def test_share_buttons(self):
+        from chiebukuro.models import Question
+
+        question = Question.objects.create(body="おすすめの歯医者は？", theme="health", source="member", author=self.alice)
+        page = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
+        self.assertContains(page, "画像でシェア")
+        self.assertContains(page, "twitter.com/intent/tweet")

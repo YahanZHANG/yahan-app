@@ -1,5 +1,5 @@
 {% load static board %}<!DOCTYPE html>
-<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}">
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}" data-cb-color="{{ board_color|default:'classic' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -103,6 +103,7 @@
 </nav>
 
 <script src="{% static 'washoku/photo_upload.js' %}" defer></script>
+<script src="{% static 'chiebukuro/share.js' %}" defer></script>
 <script>
 (function () {
     // 🔍: ページを移らず、ヘッダーの下に検索バーを出す

@@ -414,6 +414,18 @@ class BoardProfile(models.Model):
     push_reply = models.BooleanField("つぶやきに返信があったとき", default=True)
     push_stamp = models.BooleanField("スタンプが押されたとき", default=False)
     push_talk = models.BooleanField("2人だけのやりとりにメッセージが来たとき", default=True)
+    daily_popup = models.BooleanField("開いたときの「今日のひとこと」を出す", default=True)
+
+    class Color(models.TextChoices):
+        CLASSIC = "classic", "スイスレッド"
+        SAKURA = "sakura", "さくら"
+        MINT = "mint", "ミント"
+        LAKE = "lake", "レマン湖"
+        LAVENDER = "lavender", "ラベンダー"
+        LEMON = "lemon", "レモン"
+
+    color = models.CharField("着せかえの色", max_length=20, choices=Color.choices, default=Color.CLASSIC)
+    color_auto = models.BooleanField("12時間ごとに色を変える", default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

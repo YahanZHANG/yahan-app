@@ -1,0 +1,80 @@
+{% comment %}開いたときの「今日のひとこと」(1日1回だけ自動で出す。HOME の「今日のひとこと」ボタンでいつでも開ける){% endcomment %}
+<dialog class="cb-daily" id="cb-daily" aria-labelledby="cb-daily-title" data-day="{{ daily.day|date:'Y-m-d' }}" data-auto="{% if show_daily %}1{% endif %}" {% if user.is_authenticated %}data-off-url="{% url 'chiebukuro:daily_off' %}"{% endif %}>
+    <div class="cb-daily-box">
+        <header class="cb-daily-head">
+            <p class="cb-daily-date">{{ daily.day|date:"n月j日" }}（{{ daily.day|date:"D" }}）</p>
+            <h2 id="cb-daily-title">今日のひとこと</h2>
+            <button type="button" class="cb-daily-x" data-daily-close aria-label="閉じる">×</button>
+        </header>
+
+        <section class="cb-daily-charm">
+            <p class="cb-daily-label">今日のスイスのお守り占い</p>
+            <div class="cb-daily-charm-main">
+                <span class="cb-daily-emoji" aria-hidden="true">{{ daily.charm.emoji }}</span>
+                <div>
+                    <p class="cb-daily-charm-name">{{ daily.charm.name }}<small>{{ daily.charm.german }}</small></p>
+                    <p class="cb-daily-msg">{{ daily.charm.message }}</p>
+                    <p class="cb-daily-action">ラッキーアクション：{{ daily.charm.action }}</p>
+                </div>
+            </div>
+            <p class="cb-daily-origin">{{ daily.charm.origin }}</p>
+        </section>
+
+        <section class="cb-daily-sec">
+            <p class="cb-daily-label">今日のスイスドイツ語</p>
+            <p class="cb-daily-word"><b lang="gsw">{{ daily.word.text }}</b><span>{{ daily.word.reading }}</span>＝{{ daily.word.meaning }}</p>
+            <p class="cb-daily-note">{{ daily.word.note }}</p>
+        </section>
+
+        <section class="cb-daily-sec">
+            <p class="cb-daily-label">今日の豆知識</p>
+            <p class="cb-daily-note cb-daily-trivia">{{ daily.trivia }}</p>
+        </section>
+
+        {% if poll and not poll.my_choice_id %}
+            <section class="cb-daily-sec">
+                <p class="cb-daily-label">今日のアンケート</p>
+                <p class="cb-daily-note"><a href="#poll{{ poll.pk }}" data-daily-close>「{{ poll.question }}」に答える ›</a></p>
+            </section>
+        {% endif %}
+
+        <footer class="cb-daily-foot">
+            {% csrf_token %}
+            <label class="cb-check-s"><input type="checkbox" id="cb-daily-never"> もう表示しない{% if user.is_authenticated %}（マイページの設定で戻せます）{% endif %}</label>
+            <button type="button" class="cb-btn cb-btn-primary cb-btn-s" data-daily-close>閉じる</button>
+        </footer>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-daily");
+    if (!dialog || !dialog.showModal) return;
+    var day = dialog.dataset.day;
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+    // 1日の最初に開いたときだけ、自動で出す
+    // ログインしている人はマイページの設定で決める。ログインしていない人は、この端末の「もう表示しない」
+    var off = !dialog.dataset.offUrl && read("cb_daily_off") === "1";
+    if (dialog.dataset.auto && !off && read("cb_daily_seen") !== day) {
+        setTimeout(function () { dialog.showModal(); }, 400);
+    }
+    document.querySelectorAll("[data-daily-open]").forEach(function (button) {
+        button.addEventListener("click", function () { dialog.showModal(); });
+    });
+
+    function done() {
+        write("cb_daily_seen", day);
+        if (document.getElementById("cb-daily-never").checked) {
+            if (!dialog.dataset.offUrl) write("cb_daily_off", "1");
+            var url = dialog.dataset.offUrl;
+            var token = dialog.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (url) fetch(url, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": token ? token.value : "" } }).catch(function () {});
+        }
+        dialog.close();
+    }
+    dialog.querySelectorAll("[data-daily-close]").forEach(function (element) { element.addEventListener("click", done); });
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); done(); });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) done(); });
+})();
+</script>

@@ -1,0 +1,6 @@
+{% load static %}{% comment %}シェア: 画像カード (インスタのストーリーなど) と X。share_label / share_text / share_sub / share_url を渡す{% endcomment %}
+<div class="cb-share" data-share data-label="{{ share_label }}" data-text="{{ share_text|truncatechars:140 }}" data-sub="{{ share_sub|default:''|truncatechars:120 }}" data-url="{{ share_url }}" data-icon="{% static 'pwa/swiss-board/icon-192.png' %}">
+    <button type="button" class="cb-btn cb-btn-s cb-share-image" data-share-image>📷 画像でシェア</button>
+    <a class="cb-btn cb-btn-s" href="https://twitter.com/intent/tweet?text={{ share_text|truncatechars:80|urlencode }}%20%23スイス知恵袋&amp;url={{ share_url|urlencode }}" target="_blank" rel="noopener">𝕏 でシェア</a>
+    <p class="cb-share-msg" data-share-msg role="status" hidden></p>
+</div>

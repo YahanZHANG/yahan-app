@@ -81,7 +81,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     position: sticky;
     top: 0;
     z-index: 30;
-    background: var(--surface);
+    background: var(--cb-head, var(--surface));
     border-bottom: 1px solid var(--line);
 }
 
@@ -747,7 +747,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
     grid-template-columns: repeat(5, 1fr);
     height: calc(var(--tab-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
-    background: var(--surface);
+    background: var(--cb-tab, var(--surface));
     border-top: 1px solid var(--line);
 }
 .cb-tabbar a {
@@ -756,7 +756,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
     align-items: center;
     justify-content: center;
     gap: 2px;
-    color: var(--sub);
+    color: var(--cb-tabink, var(--sub));
     font-size: 10.5px;
     font-weight: 600;
     white-space: nowrap;
@@ -1399,3 +1399,58 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 .cb-fx-range b { color: #fff; }
 .cb-fx-src { margin: 0; font-size: 11px; color: rgba(255, 255, 255, .65); }
 .cb-hero-holiday { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: rgba(255, 120, 120, .25); color: #FFC9C9; font-size: 11px; font-weight: 800; line-height: 18px; vertical-align: 1px; }
+
+/* 今日のひとこと (1日1回のポップアップ) */
+.cb-hero-daily { margin-left: auto; padding: 2px 10px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px; background: rgba(255, 255, 255, .12); color: #fff; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.cb-hero-daily:hover { background: rgba(255, 255, 255, .22); }
+.cb-daily { border: 0; border-radius: 18px; padding: 0; width: min(420px, calc(100vw - 28px)); max-height: calc(100vh - 40px); background: var(--surface); color: var(--text); box-shadow: 0 24px 70px rgba(0, 0, 0, .35); }
+.cb-daily::backdrop { background: rgba(10, 15, 25, .55); }
+.cb-daily-box { display: grid; gap: 12px; padding: 0 0 14px; }
+.cb-daily-head { position: relative; padding: 16px 18px 12px; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 55%, #ffb000)); color: #fff; }
+.cb-daily-date { margin: 0; font-size: 12px; font-weight: 700; opacity: .9; }
+.cb-daily-head h2 { margin: 0; font-size: 19px; }
+.cb-daily-x { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .2); color: #fff; font-size: 20px; cursor: pointer; }
+.cb-daily-label { margin: 0 0 4px; color: var(--sub); font-size: 11.5px; font-weight: 800; letter-spacing: .02em; }
+.cb-daily-charm { margin: 0 14px; padding: 12px; border-radius: 14px; background: color-mix(in srgb, var(--brand) 8%, var(--surface)); }
+.cb-daily-charm-main { display: flex; gap: 12px; align-items: flex-start; }
+.cb-daily-emoji { font-size: 44px; line-height: 1; }
+.cb-daily-charm-name { margin: 0; font-size: 16px; font-weight: 800; }
+.cb-daily-charm-name small { margin-left: 6px; color: var(--sub); font-size: 12px; font-weight: 600; }
+.cb-daily-msg { margin: 4px 0 0; font-size: 14px; }
+.cb-daily-action { margin: 6px 0 0; font-size: 12.5px; font-weight: 700; color: var(--brand); }
+.cb-daily-origin { margin: 8px 0 0; font-size: 11.5px; color: var(--sub); }
+.cb-daily-sec { margin: 0 18px; padding-top: 10px; border-top: 1px solid var(--line); }
+.cb-daily-word { margin: 0; font-size: 14px; }
+.cb-daily-word b { font-size: 18px; margin-right: 6px; }
+.cb-daily-word span { margin-right: 4px; color: var(--sub); font-size: 12px; }
+.cb-daily-note { margin: 2px 0 0; font-size: 13.5px; }
+.cb-daily-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 18px; padding-top: 10px; border-top: 1px solid var(--line); }
+
+/* ---------- 着せかえ (マイページの設定。ライトモードは背景・ヘッダー・下のメニューにも色、ダークモードはアクセントの色だけ) ---------- */
+[data-cb-color="sakura"]   { --brand: #d6336c; --bg: #fdf0f5; --cb-head: #ffe4ee; --cb-tab: #fff0f6; --cb-tabink: #b5577c; --link: #b02a62; }
+[data-cb-color="mint"]     { --brand: #0f8a6a; --bg: #ecf7f2; --cb-head: #d8f3e7; --cb-tab: #eef9f4; --cb-tabink: #3f8a73; --link: #0b6e55; }
+[data-cb-color="lake"]     { --brand: #1d6fb8; --bg: #edf4fb; --cb-head: #dcebfa; --cb-tab: #eef5fc; --cb-tabink: #4a7cab; --link: #175c99; }
+[data-cb-color="lavender"] { --brand: #6e56cf; --bg: #f3f0fc; --cb-head: #e8e2fb; --cb-tab: #f5f2fd; --cb-tabink: #7765b8; --link: #5b45b5; }
+[data-cb-color="lemon"]    { --brand: #b26b00; --bg: #fcf7e8; --cb-head: #fff0bf; --cb-tab: #fff8e0; --cb-tabink: #93702a; --link: #8a5300; }
+html[data-yapp-resolved-theme="dark"][data-cb-color] { --cb-head: var(--surface); --cb-tab: var(--surface); --cb-tabink: var(--sub); --bg: #0f1114; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="sakura"]   { --brand: #f06595; --link: #f48fb1; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="mint"]     { --brand: #38c9a0; --link: #6fdcbc; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="lake"]     { --brand: #5aa9f0; --link: #8cc4f5; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="lavender"] { --brand: #9d8cf2; --link: #bcb0f7; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="lemon"]    { --brand: #f2b33d; --link: #f5c86e; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="classic"]  { --brand: #e5484d; }
+
+.cb-colors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
+.cb-color-pick { position: relative; display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 2px solid var(--line); border-radius: 12px; background: var(--cb-head, var(--surface)); cursor: pointer; }
+.cb-color-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.cb-color-pick:has(input:checked) { border-color: var(--brand); }
+.cb-color-pick:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cb-color-swatch { width: 34px; height: 34px; border-radius: 50%; background: var(--brand); box-shadow: inset 0 0 0 4px var(--cb-tab, var(--surface-2)); }
+.cb-color-pick small { font-size: 12px; font-weight: 700; color: var(--text); }
+@media (min-width: 720px) { .cb-colors { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface-2); }
+
+/* シェア (画像カード・X) */
+.cb-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 16px 14px; }
+.cb-post-single .cb-share { padding-left: 66px; }
+.cb-share-msg { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--sub); }

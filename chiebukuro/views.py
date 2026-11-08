@@ -26,6 +26,7 @@ from django.views.decorators.http import require_POST
 
 from . import avatar as avatar_art
 from .japan_calendar import JST as JAPAN_TZ
+from .daily import today_card
 from .japan_calendar import japan_holiday, moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
@@ -186,9 +187,25 @@ FAB = {
 }
 
 
+def board_color(user):
+    """着せかえの色。12時間ごとに変える設定なら、半日ごとに順番に"""
+
+    if not user.is_authenticated:
+        return "classic"
+    row = BoardProfile.objects.filter(user=user).values("color", "color_auto").first()
+    if not row:
+        return "classic"
+    if row["color_auto"]:
+        now = timezone.localtime()
+        colors = BoardProfile.Color.values
+        return colors[(now.toordinal() * 2 + (1 if now.hour >= 12 else 0)) % len(colors)]
+    return row["color"]
+
+
 def board_context(request, tab, region=None):
     fab = FAB.get(tab)
     return {
+        "board_color": board_color(request.user),
         "tab": tab,
         "board_is_open": BoardSettings.current().is_open,
         "board_preview": getattr(request, "board_preview", False),
@@ -293,13 +310,20 @@ def home(request):
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
+    poll = poll_for_home(request, voter_key)
+    show_daily = True
+    if request.user.is_authenticated:
+        show_daily = BoardProfile.objects.filter(user=request.user, daily_popup=False).first() is None
+    daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
         request,
         "chiebukuro/home.html",
         {
             **board_context(request, "home", region),
-            "poll": poll_for_home(request, voter_key),
+            "poll": poll,
+            "daily": daily,
+            "show_daily": show_daily,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
@@ -388,6 +412,17 @@ def today_strip(request):
         "chiebukuro/_today.html",
         {**info, "sky": sky_for(info.get("weather")), "place": place, "is_here": bool(here)},
     )
+
+
+@login_required
+@require_POST
+def daily_off(request):
+    """「今日のひとこと」をもう出さない (マイページの設定で戻せる)"""
+
+    from django.http import JsonResponse
+
+    BoardProfile.objects.update_or_create(user=request.user, defaults={"daily_popup": False})
+    return JsonResponse({"ok": True})
 
 
 @board_open
@@ -1499,8 +1534,10 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles:
+        for field in toggles + ["daily_popup", "color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
+        if request.POST.get("color") in BoardProfile.Color.values:
+            board_profile.color = request.POST["color"]
         board_profile.save()
         messages.success(request, "設定を保存しました。")
         return redirect("chiebukuro:settings")
@@ -1514,6 +1551,7 @@ def settings_view(request):
             "theme": yapp_profile.theme_preference,
             "themes": UserProfile.THEME_CHOICES,
             "frequencies": BoardProfile.PushFrequency.choices,
+            "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
         },

@@ -16,6 +16,7 @@
         {% endif %}
         {% with report_target="post" report_id=post.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
     </p>
+    {% include "chiebukuro/_share.html" with share_label="つぶやき" share_text=post.body share_sub="" share_url=request.build_absolute_uri %}
 </section>
 
 <section class="cb-block" id="replies">
