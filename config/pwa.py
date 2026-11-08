@@ -74,6 +74,34 @@ DEFAULT_ICONS = {
 }
 
 
+# =========================================================
+# アプリとして扱う URL の先頭 (/news/ など)
+# ここにあるアプリ同士のリンクは、ホーム画面のアプリで開いているとき
+# 今のアプリの中ではなく、Safari や Chrome などのブラウザで開く
+# (static/pwa/app_links.js)。"" は Yapp トップ (/)。
+# ログイン・ヘルプ・サポートなど、どのアプリからも使うページは入れない。
+# =========================================================
+
+APP_PATHS = (
+    "",
+    "news",
+    "washoku",
+    "outings",
+    "swiss-board",
+    "pre-survey",
+    "analytics",
+    "games",
+    "travel",
+    "feeding",
+    "vaccination",
+    "colorcheck",
+    "recipes",
+    "board",
+    "chat",
+    "events",
+)
+
+
 def icons_for_path(path):
 
     first = path.lstrip("/").split("/", 1)[0]
@@ -90,6 +118,7 @@ def app_icons(request):
 
     return {
         "pwa_icons": icons_for_path(request.path),
+        "pwa_app_paths": ",".join(APP_PATHS),
     }
 
 

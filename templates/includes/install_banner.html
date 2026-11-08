@@ -46,7 +46,9 @@
     var key = "yapp_install_banner_closed{% if banner_key %}_{{ banner_key }}{% endif %}";
     var closedAt = 0;
     try { closedAt = parseInt(localStorage.getItem(key), 10) || 0; } catch (error) {}
-    if (!mobile || standalone || Date.now() - closedAt < 14 * 24 * 60 * 60 * 1000) return;
+    // LINE などのアプリの中では追加できないので出さない (上の「ブラウザで開く」案内を出す)
+    var inApp = /Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|TikTok|BytedanceWebview|; wv\)/.test(ua);
+    if (!mobile || standalone || inApp || Date.now() - closedAt < 14 * 24 * 60 * 60 * 1000) return;
     banner.hidden = false;
     banner.querySelector("[data-install-banner-close]").addEventListener("click", function (event) {
         event.preventDefault();
