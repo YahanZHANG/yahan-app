@@ -1531,3 +1531,9 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-dlist-row small { display: block; color: var(--sub); font-size: 11.5px; font-weight: 800; }
 .cb-dlist-row b { margin-right: 4px; }
 .cb-daily-past { flex-basis: 100%; margin: 0; text-align: center; font-size: 12.5px; }
+
+/* つぶやきの詳細: 時刻は名前の横、シェアはスタンプの右 */
+.cb-post-single .cb-post-actions { flex-wrap: wrap; }
+.cb-post-single .cb-post-actions .cb-share-compact { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; padding: 0; }
+.cb-share-ig { display: inline-flex; align-items: center; gap: 4px; }
+.cb-side-emoji { display: inline-block; width: 22px; text-align: center; font-size: 16px; }

@@ -84,6 +84,8 @@
         var button = event.target.closest && event.target.closest("[data-share-image]");
         if (!button) return;
         var box = button.closest("[data-share]");
+        // 先にリンクをコピー (インスタのストーリーの「リンク」スタンプに貼れるように)。押した直後でないとコピーできない
+        if (navigator.clipboard) navigator.clipboard.writeText(box.dataset.url).catch(function () {});
         button.disabled = true;
         loadIcon(box.dataset.icon).then(function (icon) {
             var canvas = draw(box, icon);
@@ -94,6 +96,7 @@
                 var data = { files: [file], text: box.dataset.text + " " + box.dataset.url };
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     navigator.share(data).catch(function () {});
+                    say(box, "リンクもコピーしました。インスタのストーリーでは「リンク」スタンプに貼れます。");
                     return;
                 }
                 // シェア画面がないとき (パソコンなど): 画像を保存して、リンクをコピー
@@ -101,7 +104,6 @@
                 link.href = URL.createObjectURL(blob);
                 link.download = file.name;
                 document.body.appendChild(link); link.click(); link.remove();
-                if (navigator.clipboard) navigator.clipboard.writeText(box.dataset.url).catch(function () {});
                 say(box, "画像を保存しました。リンクもコピーしたので、インスタのストーリーなどに貼ってください。");
             }, "image/png");
         });

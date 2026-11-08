@@ -58,6 +58,7 @@
         <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
         <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
         <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>
+        <a href="{% url 'chiebukuro:daily_list' %}" class="{% if tab == 'daily' %}on{% endif %}"><span class="cb-side-emoji" aria-hidden="true">🍀</span>今日のひとこと</a>
         {% if user.is_authenticated %}
             <a href="{% url 'chiebukuro:notifications' %}" class="{% if tab == 'bell' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}お知らせ{% if unread %}<b class="cb-badge cb-badge-inline">{{ unread }}</b>{% endif %}</a>
             <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="user" %}マイページ</a>

@@ -953,5 +953,5 @@ class DailyAndColorTests(BoardTestCase):
 
         question = Question.objects.create(body="おすすめの歯医者は？", theme="health", source="member", author=self.alice)
         page = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
-        self.assertContains(page, "画像でシェア")
+        self.assertContains(page, "Instagram でシェア")
         self.assertContains(page, "twitter.com/intent/tweet")

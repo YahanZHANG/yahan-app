@@ -433,7 +433,7 @@ def daily_list(request):
     """これまでの「今日のひとこと」(今日まで。明日からの分は見せない)"""
 
     person_key = str(request.user.pk) if request.user.is_authenticated else request.COOKIES.get(VOTER_COOKIE, "")
-    return render(request, "chiebukuro/daily_list.html", {**board_context(request, "home"), "cards": past_cards(timezone.localdate(), person_key)})
+    return render(request, "chiebukuro/daily_list.html", {**board_context(request, "daily"), "cards": past_cards(timezone.localdate(), person_key)})
 
 
 @login_required

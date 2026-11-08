@@ -6,10 +6,6 @@
 
 <section class="cb-block cb-block-flat cb-post-single">
     {% if user.is_authenticated and post.author_id == user.pk %}{% include "chiebukuro/_post_row.html" with single=True mine=True %}{% else %}{% include "chiebukuro/_post_row.html" with single=True %}{% endif %}
-    <div class="cb-post-foot">
-        <span class="cb-sub">{{ post.created_at|date:"Y年n月j日 H:i" }}</span>
-        {% include "chiebukuro/_share.html" with share_label="つぶやき" share_text=post.body share_sub="" share_url=request.build_absolute_uri compact=True %}
-    </div>
     <div class="cb-reply-form" id="replies">
         {% if user.is_authenticated %}
             <form method="post" enctype="multipart/form-data" class="cb-reply-compose" data-rules>
