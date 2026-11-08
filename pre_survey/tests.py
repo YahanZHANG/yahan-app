@@ -346,6 +346,16 @@ class DeliveryTests(FlowMixin, TestCase):
             self.act(question, "answer")
         self.assertEqual(order, ["newest empty", "older empty", "quiet", "busy"])
 
+    def test_questions_with_enough_answers_come_last_even_in_chosen_theme(self):
+        full = make_question("life full")
+        for _ in range(4):
+            Answer.objects.create(question=full, body="x")
+        needs = make_question("work needs answers", theme="work")
+        self.join(themes=("life",))
+        self.assertEqual(self.current(), needs)
+        self.act(needs, "answer")
+        self.assertEqual(self.current(), full)
+
     def test_answered_questions_never_come_back(self):
         question = make_question("Q1")
         self.join()

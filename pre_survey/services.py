@@ -166,6 +166,9 @@ POPULAR_EVERY = 3
 # 「私も知りたい」がこの票数以上なら人気の質問
 POPULAR_MIN_INTERESTS = 2
 
+# 回答がこの数以上集まった質問は、ほかの質問を全部見たあとにだけ出す (足りない質問を優先)
+ENOUGH_ANSWERS = 4
+
 
 def next_question(request, participant):
     """
@@ -177,6 +180,7 @@ def next_question(request, participant):
     - この参加でスキップ・「知りたい」にした質問は出さない
     - 前の参加でスキップ・「知りたい」にした質問は、まだ見ていない質問の後
     - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
+    - 回答が ENOUGH_ANSWERS 件以上集まった質問は、テーマに関係なくいちばん後
     - その中で、回答の少ない順 (0件が先) → 新しい順
     - ただし POPULAR_EVERY 問に1回は、「私も知りたい」が POPULAR_MIN_INTERESTS 票以上の
       人気の質問を、テーマに関係なく出す (知りたい票の多い順 → 回答の少ない順)
@@ -225,7 +229,7 @@ def next_question(request, participant):
                 interest_total=Count("interests", distinct=True),
                 answer_count=Count("answers", filter=Q(answers__is_hidden=False), distinct=True),
             )
-            .filter(interest_total__gte=POPULAR_MIN_INTERESTS)
+            .filter(interest_total__gte=POPULAR_MIN_INTERESTS, answer_count__lt=ENOUGH_ANSWERS)
             .order_by("-interest_total", "answer_count", "-created_at", "-pk")
             .first()
         )
@@ -244,7 +248,14 @@ def next_question(request, participant):
             skipped_before=Exists(seen_before),
             interested_before=Exists(interested_before),
         )
-        .order_by("other_theme", "skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
+        .annotate(
+            enough=Case(
+                When(answer_count__gte=ENOUGH_ANSWERS, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+        )
+        .order_by("enough", "other_theme", "skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
         .first()
     )
 
