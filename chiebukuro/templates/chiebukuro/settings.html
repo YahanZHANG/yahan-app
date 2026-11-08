@@ -48,7 +48,7 @@
         {% for field, label, on in daily_cards %}
             <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
         {% endfor %}
-        <p class="cb-sub">全部オフにしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。</p>
+        <p class="cb-sub">全部オフにしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
     </section>
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>

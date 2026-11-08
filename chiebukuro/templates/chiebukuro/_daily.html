@@ -43,6 +43,7 @@
             <span class="cb-daily-dots" aria-hidden="true"></span>
             <button type="button" class="cb-btn cb-btn-primary cb-btn-s" data-daily-next>次へ</button>
             <label class="cb-check-s"><input type="checkbox" id="cb-daily-never"> 明日から自動で出さない{% if user.is_authenticated %}（マイページで戻せます）{% endif %}</label>
+            <p class="cb-daily-past"><a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
         </footer>
     </div>
 </dialog>

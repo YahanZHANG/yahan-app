@@ -26,7 +26,7 @@ from django.views.decorators.http import require_POST
 
 from . import avatar as avatar_art
 from .japan_calendar import JST as JAPAN_TZ
-from .daily import today_card
+from .daily import past_cards, today_card
 from .events import day_events
 from .japan_calendar import moon_path, today_info
 from .models import (
@@ -426,6 +426,14 @@ def today_strip(request):
         "chiebukuro/_today.html",
         {**info, "sky": sky_for(info.get("weather")), "place": place, "is_here": bool(here)},
     )
+
+
+@board_open
+def daily_list(request):
+    """これまでの「今日のひとこと」(今日まで。明日からの分は見せない)"""
+
+    person_key = str(request.user.pk) if request.user.is_authenticated else request.COOKIES.get(VOTER_COOKIE, "")
+    return render(request, "chiebukuro/daily_list.html", {**board_context(request, "home"), "cards": past_cards(timezone.localdate(), person_key)})
 
 
 @login_required

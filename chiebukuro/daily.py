@@ -5,6 +5,10 @@
 """
 
 import hashlib
+from datetime import date, timedelta
+
+# この日から「今日のひとこと」を出している (これより前の日は一覧にも出さない)
+START_DAY = date(2026, 11, 8)
 
 
 # (スイスドイツ語, 読み (だいたい), 意味, ひとこと)
@@ -119,3 +123,14 @@ def today_card(day, person_key=""):
         "trivia": trivia,
         "charm": {"emoji": charm[0], "name": charm[1], "german": charm[2], "origin": charm[3], "message": message, "action": action},
     }
+
+
+def past_cards(today, person_key="", limit=30):
+    """これまでの「今日のひとこと」(新しい順)。今日より先の日は出さない (まだ見せていないため)"""
+
+    cards = []
+    day = today
+    while day >= START_DAY and len(cards) < limit:
+        cards.append(today_card(day, person_key))
+        day -= timedelta(days=1)
+    return cards

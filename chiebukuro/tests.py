@@ -890,6 +890,16 @@ class DailyAndColorTests(BoardTestCase):
         self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
         self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
 
+    def test_daily_list_hides_future_days(self):
+        import datetime
+
+        from chiebukuro.daily import START_DAY, past_cards
+
+        cards = past_cards(START_DAY + datetime.timedelta(days=2), "1")
+        self.assertEqual([card["day"] for card in cards], [START_DAY + datetime.timedelta(days=n) for n in (2, 1, 0)])
+        self.assertEqual(past_cards(START_DAY - datetime.timedelta(days=1)), [])
+        self.assertEqual(self.client.get(reverse("chiebukuro:daily_list")).status_code, 200)
+
     def test_daily_cards_setting(self):
         from chiebukuro.models import BoardProfile
 

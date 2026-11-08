@@ -1523,3 +1523,11 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-hero-foot .cb-regionbar select { min-width: 0; max-width: 100%; }
 .cb-hero-foot .cb-here-btn, .cb-hero-foot .cb-hero-daily { flex: none; white-space: nowrap; }
 .cb-pollbar-home { margin-top: 8px; border-top: 1px solid var(--line); }
+/* これまでの今日のひとこと */
+.cb-dlist { display: grid; gap: 8px; margin-bottom: 10px; }
+.cb-dlist-date { margin: 0; font-weight: 800; }
+.cb-dlist-date span { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--brand); color: #fff; font-size: 11px; }
+.cb-dlist-row { margin: 0; font-size: 14px; line-height: 1.6; }
+.cb-dlist-row small { display: block; color: var(--sub); font-size: 11.5px; font-weight: 800; }
+.cb-dlist-row b { margin-right: 4px; }
+.cb-daily-past { flex-basis: 100%; margin: 0; text-align: center; font-size: 12.5px; }
