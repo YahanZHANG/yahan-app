@@ -348,7 +348,7 @@ class DeliveryTests(FlowMixin, TestCase):
 
     def test_questions_with_enough_answers_come_last_even_in_chosen_theme(self):
         full = make_question("life full")
-        for _ in range(4):
+        for _ in range(3):
             Answer.objects.create(question=full, body="x")
         needs = make_question("work needs answers", theme="work")
         self.join(themes=("life",))

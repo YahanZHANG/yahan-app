@@ -167,7 +167,7 @@ POPULAR_EVERY = 3
 POPULAR_MIN_INTERESTS = 2
 
 # 回答がこの数以上集まった質問は、ほかの質問を全部見たあとにだけ出す (足りない質問を優先)
-ENOUGH_ANSWERS = 4
+ENOUGH_ANSWERS = 3
 
 
 def next_question(request, participant):
