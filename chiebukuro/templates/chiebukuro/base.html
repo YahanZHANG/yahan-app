@@ -73,8 +73,9 @@
         {% block content %}{% endblock %}
         <footer class="cb-footer">
             <a href="{% url 'portal:home' %}">Yapp</a>
-            <a href="{% url 'portal:help' %}">ヘルプ</a>
+            <a href="{% url 'portal:help' %}?from=board">ヘルプ</a>
             <a href="{% url 'chiebukuro:contact' %}">お問い合わせ</a>
+            <a href="{% url 'portal:support' %}?from=board">Yappを応援</a>
         </footer>
     </main>
 
