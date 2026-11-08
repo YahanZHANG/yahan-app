@@ -12,11 +12,19 @@
         <div class="og-hero__inner">
             <p class="og-hero__kicker">{% if weekday %}次の平日、どこ行く？{% else %}今週末、どこ行く？{% endif %}</p>
             {% if forecast %}
-                <ul class="og-hero__weather" aria-label="{{ forecast_area }}の天気">
+                <p class="og-hero__where"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ forecast_area }}の天気</p>
+                <ul class="og-hero__days" aria-label="{{ forecast_area }}の天気">
                     {% for day in forecast %}
-                        <li><b>{{ day.day }}</b><span class="og-hero__wx">{{ day.emoji }}</span>{{ day.temp|default:"" }}{% if day.rain %}<small>☔{{ day.rain }}</small>{% endif %}</li>
+                        <li class="og-hero__day">
+                            <span class="og-hero__dname">{{ day.day }}<small>{{ day.date }}</small></span>
+                            <span class="og-hero__icon" aria-hidden="true">{{ day.emoji }}</span>
+                            <span class="og-hero__info">
+                                <span class="og-hero__label">{{ day.label }}</span>
+                                {% if day.high is not None %}<span class="og-hero__temp"><b>{{ day.high }}°</b><small>{{ day.low }}°</small></span>{% endif %}
+                                {% if day.rain %}<span class="og-hero__rain">☔ 雨 {{ day.rain }}</span>{% endif %}
+                            </span>
+                        </li>
                     {% endfor %}
-                    <li class="og-hero__where">{{ forecast_area }}</li>
                 </ul>
             {% endif %}
             <p class="og-hero__lead">

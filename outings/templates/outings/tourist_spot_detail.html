@@ -421,6 +421,7 @@ html[data-outings-theme="dark"] .trip-source a {
     </section>
 
     {% include "outings/includes/visits.html" %}
+    {% include "outings/includes/report.html" with report_target="trip" report_pk=spot.pk %}
 
     <div class="trip-source">
 

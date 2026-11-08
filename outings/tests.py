@@ -1384,3 +1384,53 @@ class CommonsLinkTests(StaffPhotoTests):
 def requests_error():
     import requests
     return requests.ConnectionError("offline")
+
+
+class ReportTests(StaffPhotoTests):
+    """Visitors report mistakes, add information or send a photo; admins pick photos."""
+
+    def report(self, **data):
+        return self.client.post(reverse("outings:send_report", args=["kids", self.park.pk]), data)
+
+    def test_report_is_saved_and_mailed(self):
+        from outings.models import OutingsReport
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "間違いの報告・情報の追加・写真を送る")
+        with mock.patch("outings.reports.send_admin_alert") as alert:
+            response = self.report(kind="fix", message="月曜は休みです", next=detail)
+        self.assertRedirects(response, detail + "#report", fetch_redirect_response=False)
+        report = OutingsReport.objects.get()
+        self.assertEqual((report.kind, report.message, report.target, report.object_id), ("fix", "月曜は休みです", "kids", self.park.pk))
+        alert.assert_called_once()
+        # Too soon after the last one, and empty ones, are not saved.
+        self.report(kind="add", message="もう一つ")
+        self.assertEqual(OutingsReport.objects.count(), 1)
+
+    def test_bots_and_empty_reports_are_dropped(self):
+        from outings.models import OutingsReport
+        self.report(kind="fix", message="spam", website="x")
+        self.report(kind="fix", message="")
+        self.assertFalse(OutingsReport.objects.exists())
+
+    def test_admin_uses_a_sent_photo(self):
+        from outings.models import OutingsReport
+        report = OutingsReport.objects.create(target="kids", object_id=self.park.pk, kind="photo", photo_url="https://example.com/sent.jpg")
+        self.login_staff()
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "この写真にする")
+        self.post("kids", self.park.pk, action="use_report", report=report.pk)
+        self.park.refresh_from_db()
+        report.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://example.com/sent.jpg")
+        self.assertEqual(self.park.image_credit, "投稿：利用者")
+        self.assertTrue(report.is_done)
+
+
+class BrowseMapTests(PageTestCase):
+
+    def test_list_page_has_the_map(self):
+        html = self.client.get(reverse("outings:browse")).content.decode()
+        self.assertIn("data-og-map-slot", html)
+        self.assertIn("地図で見る", html)
+        data = self.client.get(reverse("outings:browse") + "?map=1", HTTP_ACCEPT="application/json").json()
+        self.assertIn("points", data)

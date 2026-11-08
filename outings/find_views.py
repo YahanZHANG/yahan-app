@@ -349,6 +349,17 @@ def collect(f, now, days, month):
     return found
 
 
+def map_json(items):
+    from django.http import JsonResponse
+    points = [
+        {"title": i["title"], "url": i["url"], "lat": round(float(i["lat"]), 5), "lon": round(float(i["lon"]), 5),
+         "emoji": i["emoji"], "sub": i["sub"], "wx": i["wx"][0]["emoji"] if i["wx"] else "",
+         "cls": i["wx"][0]["cls"] if i["wx"] else ""}
+        for i in items if i["lat"] is not None and i["lon"] is not None
+    ]
+    return JsonResponse({"points": points[:MAX_POINTS], "total": len(items), "shown": min(len(points), MAX_POINTS)})
+
+
 def find(request):
     from .map_points import wants_map
     now = timezone.now()
@@ -382,14 +393,7 @@ def find(request):
     sort_items(items, f["sort"])
 
     if wants_map(request):
-        from django.http import JsonResponse
-        points = [
-            {"title": i["title"], "url": i["url"], "lat": round(float(i["lat"]), 5), "lon": round(float(i["lon"]), 5),
-             "emoji": i["emoji"], "sub": i["sub"], "wx": i["wx"][0]["emoji"] if i["wx"] else "",
-             "cls": i["wx"][0]["cls"] if i["wx"] else ""}
-            for i in items if i["lat"] is not None and i["lon"] is not None
-        ]
-        return JsonResponse({"points": points[:MAX_POINTS], "total": len(items), "shown": min(len(points), MAX_POINTS)})
+        return map_json(items)
 
     page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
 
@@ -638,6 +642,9 @@ def browse(request):
         items.sort(key=lambda i: (i["new"] or oldest, i["order"]), reverse=True)
     else:
         sort_items(items, sort)
+    from .map_points import wants_map
+    if wants_map(request):
+        return map_json(items)
     page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
 
     def qs(**changes):

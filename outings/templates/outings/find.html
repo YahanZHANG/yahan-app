@@ -122,7 +122,7 @@
 
     {% if items %}
         {# Phone: a floating button opens the map over the whole screen. #}
-        <button type="button" class="og-mapfab" data-og-map data-og-map-sheet aria-label="地図で見る"><i class="bi bi-map" aria-hidden="true"></i>地図</button>
+        {% include "outings/includes/map_fab.html" %}
     {% endif %}
 </div>
 {% endblock %}

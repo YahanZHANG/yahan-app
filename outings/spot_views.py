@@ -241,7 +241,11 @@ def weekend_forecast(now, days=None, point=HOME_POINT):
         raw = forecasts.get(point, {}).get(day.isoformat())
         text = weather.describe(raw)
         if text:
-            rows.append({"day": weather.WEEKDAYS_JA[day.weekday()], **text})
+            rows.append({
+                "day": weather.WEEKDAYS_JA[day.weekday()], "date": f"{day.month}/{day.day}", **text,
+                "high": round(raw["max"]) if raw.get("max") is not None else None,
+                "low": round(raw["min"]) if raw.get("min") is not None else None,
+            })
             if (raw.get("rain") or 0) >= 60:
                 rainy = True
     return rows, rainy

@@ -128,7 +128,19 @@ def staff_photo(request, target, pk):
     action = request.POST.get("action")
     credit = request.POST.get("credit", "").strip()[:200]
     try:
-        if action == "remove":
+        if action == "use_report":
+            # A photo a visitor sent: show it, mark the report done.
+            from .models import OutingsReport
+            report = get_object_or_404(OutingsReport, pk=request.POST.get("report"), target=target, object_id=obj.pk)
+            from .templatetags.outings_names import outings_display_name
+            who = outings_display_name(report.user) if report.user_id else "利用者"
+            set_photo(target, obj, report.photo_url, credit or f"投稿：{who}", "member")
+            report.is_done = True
+            report.save(update_fields=["is_done"])
+            if old != report.photo_url:
+                _delete_old(old)
+            messages.success(request, "投稿された写真に差し替えました。")
+        elif action == "remove":
             remove_photo(target, obj)
             _delete_old(old)
             messages.success(request, "写真を削除しました。")
