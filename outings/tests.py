@@ -1347,3 +1347,40 @@ class StaffPhotoTests(FamilySpotTests):
         event.refresh_from_db()
         self.assertTrue(event.image_removed)
         self.assertEqual(event.image_url, "")
+
+
+class CommonsLinkTests(StaffPhotoTests):
+    """A Wikimedia file page link becomes the picture itself, with its credit."""
+
+    def test_file_page_links_are_recognised(self):
+        from outings.photo_admin import commons_file
+        self.assertEqual(commons_file("https://commons.wikimedia.org/wiki/File:Alpamare.jpg"), "Alpamare.jpg")
+        self.assertEqual(commons_file("https://de.wikipedia.org/wiki/Alpamare#/media/Datei:Alpamare_Pf%C3%A4ffikon.jpg"), "Alpamare Pfäffikon.jpg")
+        self.assertEqual(commons_file("https://upload.wikimedia.org/wikipedia/commons/a/ab/Alpamare.jpg"), "")
+        self.assertEqual(commons_file("https://example.com/File:x.jpg"), "")
+
+    def test_file_page_link_sets_the_picture(self):
+        self.login_staff()
+        api = mock.Mock()
+        api.json.return_value = {"query": {"pages": [{"imageinfo": [{
+            "thumburl": "https://upload.wikimedia.org/thumb/Alpamare.jpg/1600px-Alpamare.jpg",
+            "extmetadata": {"Artist": {"value": "<a>Jane</a>"}, "LicenseShortName": {"value": "CC BY-SA 4.0"}},
+        }]}]}}
+        with mock.patch("outings.photo_admin.requests.get", return_value=api):
+            self.post("kids", self.park.pk, url="https://commons.wikimedia.org/wiki/File:Alpamare.jpg")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://upload.wikimedia.org/thumb/Alpamare.jpg/1600px-Alpamare.jpg")
+        self.assertEqual(self.park.image_credit, "Jane / CC BY-SA 4.0")
+
+    def test_without_the_api_it_still_shows_the_picture(self):
+        self.login_staff()
+        with mock.patch("outings.photo_admin.requests.get", side_effect=requests_error()):
+            self.post("kids", self.park.pk, url="https://commons.wikimedia.org/wiki/File:Alpamare.jpg")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://commons.wikimedia.org/wiki/Special:FilePath/Alpamare.jpg?width=1600")
+        self.assertEqual(self.park.image_credit, "Wikimedia Commons")
+
+
+def requests_error():
+    import requests
+    return requests.ConnectionError("offline")
