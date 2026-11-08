@@ -592,6 +592,7 @@ class OutingsPreference(models.Model):
     with_kids = models.BooleanField("子どもと出かける", null=True, blank=True)
     kid_ages = models.JSONField("子どもの年齢", default=list, blank=True)
     days_off = models.CharField("お休み", max_length=10, choices=DaysOff.choices, blank=True)
+    interests = models.JSONField("興味のある分野", default=list, blank=True)
     setup = models.CharField("質問", max_length=10, choices=Setup.choices, blank=True, default="")
     hide_went = models.BooleanField("行った場所を一覧に出さない", default=False)
 

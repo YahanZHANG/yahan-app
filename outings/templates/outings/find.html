@@ -15,6 +15,12 @@
         {% endfor %}
     </nav>
 
+    <nav class="og-interests" aria-label="興味で絞り込む">
+        {% for i in interest_choices %}
+            <a href="?{{ i.qs }}#results" class="og-interests__chip{% if i.active %} is-active{% endif %}"{% if i.active %} aria-pressed="true"{% endif %}>{{ i.label }}</a>
+        {% endfor %}
+    </nav>
+
     <form method="get" action="#results" class="og-filterform og-find__form">
         {% if f.type != "all" %}<input type="hidden" name="type" value="{{ f.type }}">{% endif %}
         <details class="og-find__filters" data-og-remember="find-filters">
@@ -58,6 +64,15 @@
                     <div class="ev-chips">
                         {% for a in areas %}
                             <label class="ev-chip og-pick"><input type="checkbox" name="area" value="{{ a.key }}"{% if a.active %} checked{% endif %}>{{ a.label }}</label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <fieldset class="og-find__group">
+                    <legend>興味<small>いくつでも</small></legend>
+                    <div class="ev-chips">
+                        {% for i in interest_choices %}
+                            <label class="ev-chip og-pick"><input type="checkbox" name="interest" value="{{ i.key }}"{% if i.active %} checked{% endif %}>{{ i.label }}</label>
                         {% endfor %}
                     </div>
                 </fieldset>

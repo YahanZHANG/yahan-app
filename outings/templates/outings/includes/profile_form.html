@@ -1,4 +1,4 @@
-{# The four 「あなたに合わせる」 questions. Needs `profile` and `next`. #}
+{# The 「あなたに合わせる」 questions. Needs `profile` and `next`. #}
 <form method="post" action="{% url 'outings:profile_save' %}" class="og-profile">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
@@ -8,6 +8,15 @@
         <div class="og-choices">
             {% for key, label, on in profile.areas %}
                 <label><input type="checkbox" name="areas" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>✨ 興味のある分野<small>いくつでも</small><span class="og-profile__q">選んだ分野に合う場所やイベントが先に出ます</span></legend>
+        <div class="og-choices">
+            {% for key, label, on in profile.interests %}
+                <label><input type="checkbox" name="interests" value="{{ key }}"{% if on %} checked{% endif %}><span>{{ label }}</span></label>
             {% endfor %}
         </div>
     </fieldset>

@@ -920,6 +920,32 @@ class FamilySpotTests(PageTestCase):
         page = self.client.get(reverse("outings:my_preferences"))
         self.assertContains(page, 'value="weekday" checked')
 
+    def test_interests_tag_filter_and_rank(self):
+        from outings import interests
+        from outings.models import OutingsPreference
+        self.assertEqual(interests.tag("ユネスコ世界遺産の旧市街を歩く"), {"heritage"})
+        self.assertIn("hiking", interests.tag("", spot_type="tours"))
+        self.assertIn("food", interests.tag("Käse und Wein", category=""))
+        self.assertEqual(interests.tag("Super spass"), set())  # no accidental 'sup' / 'spa'
+        self.make("Cow Farm", kind="farm", name_ja="牛の農場")
+        # Filter: only items matching one of the chosen interests.
+        self.assertEqual(self.names("interest=animals"), ["Cow Farm"])
+        self.assertEqual(self.names("interest=art"), ["Rain Museum"])
+        self.assertEqual(self.names("interest=art&interest=animals"), ["Cow Farm", "Rain Museum"])
+        self.assertEqual(self.names("interest=bogus"), self.names())
+        page = self.client.get(reverse("outings:find") + "?type=kids&family=1&when=any&interest=art")
+        self.assertContains(page, "🎨 アート・博物館")
+        self.assertContains(page, "og-interests__chip is-active")
+        # Profile: saved and used for ranking.
+        self.client.post(reverse("outings:profile_save"), {"kids": "yes", "interests": ["animals", "bogus"]})
+        self.assertEqual(OutingsPreference.objects.get().interests, ["animals"])
+        response = self.client.get(reverse("outings:find") + "?type=kids&family=1&when=any&sort=recommended")
+        items = response.context["page_obj"].paginator.object_list
+        farm = next(i for i in items if i["title"].startswith("牛") or "Cow" in i["title"])
+        park = next(i for i in items if i["pk"] == self.park.pk)
+        self.assertGreater(farm["order"] - farm["score"], park["order"] - park["score"])
+        self.assertContains(self.client.get(reverse("outings:my_preferences")), 'value="animals" checked')
+
     def find_kids(self, day, forecasts):
         from outings import sunny
         with mock.patch.object(sunny.weather, "_forecasts", side_effect=forecasts), \

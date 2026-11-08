@@ -1,8 +1,9 @@
 """「あなたに合わせる」: four questions that tailor HOME.
 
 Answers are kept per browser on OutingsPreference (no login needed):
-areas people go to, how much German/French they read, whether they go
-out with children (and their ages) and which days they have off.
+areas people go to, what they are interested in, how much German/French
+they read, whether they go out with children (and their ages) and which
+days they have off.
 """
 
 from datetime import timedelta
@@ -37,6 +38,8 @@ def save_answers(preference, data):
     preference.kid_ages = [a for a in dict.fromkeys(data.getlist("ages")) if a in ages] if preference.with_kids else []
     days = data.get("days_off", "")
     preference.days_off = days if days in OutingsPreference.DaysOff.values else ""
+    from .interests import clean
+    preference.interests = clean(data.getlist("interests"))
     if "hide_went" in data:
         preference.hide_went = data.get("hide_went") == "1"
     preference.setup = OutingsPreference.Setup.DONE

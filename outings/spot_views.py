@@ -345,11 +345,15 @@ def home(request):
 # 「あなたに合わせる」
 # =========================================================
 
+from .interests import INTERESTS as INTEREST_CHOICES  # noqa: E402
+
+
 def profile_form_context(preference):
     """Choices and current answers for the four questions."""
     return {
         "preference": preference,
         "areas": [(key, label, key in (preference.areas if preference else [])) for key, label, _ in AREAS],
+        "interests": [(key, f"{emoji} {label}", key in (preference.interests if preference else [])) for key, label, emoji in INTEREST_CHOICES],
         "german": [(v, l, preference is not None and preference.german == v) for v, l in OutingsPreference.German.choices],
         "kids": preference.with_kids if preference else None,
         "ages": [(k, l, k in (preference.kid_ages if preference else [])) for k, l, *_ in AGE_GROUPS],

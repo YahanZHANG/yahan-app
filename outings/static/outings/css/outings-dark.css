@@ -423,3 +423,4 @@ html[data-outings-theme="dark"] :is(
 /* Filled buttons keep dark text on the light accent (dark link colour made them unreadable). */
 html[data-outings-theme="dark"] .og-page a.og-btn.og-btn--main,
 html[data-outings-theme="dark"] .og-page a.og-btn.og-btn--main:hover { background: #2f8f96; color: #fff; }
+html[data-outings-theme="dark"] .og-interests__chip.is-active { background: var(--outings-accent); color: #10252a; }

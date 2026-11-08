@@ -1170,3 +1170,11 @@ html[data-og-view="list"] .og-item__staff { position: static; margin: 0 0 8px 2p
 .og-hero__swapbtn:hover { background: rgba(0, 0, 0, .5); }
 .og-hero__swapbtn[hidden] { display: none; }
 .og-hero--photo:has(.og-hero__swap) .og-hero__inner { padding-top: 72px; }
+
+/* さがす: interest chips, one tap to filter (scrolls sideways on phones) */
+.og-interests { display: flex; gap: 6px; margin: 0 0 10px; padding: 2px 0 4px; overflow-x: auto; scrollbar-width: none; }
+.og-interests::-webkit-scrollbar { display: none; }
+.og-interests__chip { flex: 0 0 auto; padding: 6px 12px; border: 1px solid var(--outings-border); border-radius: 999px; background: var(--outings-surface); color: var(--outings-text); font-size: 13px; text-decoration: none; white-space: nowrap; }
+.og-interests__chip:hover { border-color: var(--outings-accent); color: var(--outings-text); }
+.og-interests__chip.is-active { border-color: var(--outings-accent); background: var(--outings-accent); color: #fff; font-weight: 700; }
+@media (min-width: 900px) { .og-interests { flex-wrap: wrap; overflow: visible; } }
