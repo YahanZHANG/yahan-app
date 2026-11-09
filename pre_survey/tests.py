@@ -698,7 +698,7 @@ class ImportTests(TestCase):
         count = Question.objects.count()
         self.assertEqual(count, 174)
         self.assertEqual(set(Question.objects.values_list("theme", flat=True)),
-                         {"life", "shopping", "childcare", "work", "language", "outing", "health", "money", "culture"})
+                         {"life", "shopping", "childcare", "work", "language", "outing", "health", "money", "culture", "food"})
         Question.objects.filter(seed_key="q01").update(body="直した")
         call_command("import_pre_survey_questions", verbosity=0)
         self.assertEqual(Question.objects.count(), count)
