@@ -63,3 +63,52 @@
     if (mobile && !standalone) document.documentElement.classList.add("yapp-installable");
 })();
 </script>
+
+{% comment %}
+アプリ間リンクの開き方 (ホーム画面のアプリから別のアプリへはブラウザで開く) と、
+LINE・Instagram などのアプリの中で開いたときの「ブラウザで開く」案内。static/pwa/app_links.js
+{% endcomment %}
+<style>
+.yapp-inapp-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 8px 10px 14px;
+    background: #FFF4D6;
+    border-bottom: 1px solid #EAD9A8;
+    color: #3D3420;
+    font-size: 13px;
+    line-height: 1.5;
+    font-family: inherit;
+}
+.yapp-inapp-bar p { margin: 0; }
+.yapp-inapp-bar-body { flex: 1; min-width: 0; }
+.yapp-inapp-bar-title { font-weight: 700; font-size: 14px; }
+.yapp-inapp-bar-hint { margin-top: 4px !important; font-weight: 700; }
+.yapp-inapp-bar-hint[hidden], .yapp-inapp-bar-open[hidden] { display: none; }
+.yapp-inapp-bar-open {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #3D3420;
+    color: #FFFFFF !important;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+.yapp-inapp-bar-close {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #3D3420;
+    flex-shrink: 0;
+    font-size: 20px;
+    opacity: 0.7;
+    cursor: pointer;
+}
+</style>
+<script src="{% static 'pwa/app_links.js' %}" data-apps="{{ pwa_app_paths }}" defer></script>
