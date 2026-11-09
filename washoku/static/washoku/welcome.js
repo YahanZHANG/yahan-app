@@ -122,7 +122,12 @@
 
     if (step) {
         window.setTimeout(function () {
-            open(step);
+            // 管理画面のポップアップ (templates/includes/app_popup.html) が出ていたら、閉じてから出す
+            if (document.documentElement.classList.contains("yapp-popup-open")) {
+                document.addEventListener("yapp:popup-closed", function () { open(step); }, { once: true });
+            } else {
+                open(step);
+            }
         }, 1200);
     }
 })();

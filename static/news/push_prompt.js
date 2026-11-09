@@ -157,7 +157,14 @@
             return;
         }
 
-        setTimeout(show, SHOW_DELAY_MS);
+        setTimeout(() => {
+            // 管理画面のポップアップ (templates/includes/app_popup.html) が出ていたら、閉じてから出す
+            if (document.documentElement.classList.contains("yapp-popup-open")) {
+                document.addEventListener("yapp:popup-closed", show, { once: true });
+            } else {
+                show();
+            }
+        }, SHOW_DELAY_MS);
     }
 
     initialize();

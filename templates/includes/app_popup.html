@@ -1,0 +1,111 @@
+{% comment %}
+アプリを開いたときのポップアップ。中身・出すかどうか・頻度は管理画面「ポップアップ（各アプリ）」で決める (portal.AppPopup)。
+1回に1つだけ。ほかの案内 (掲示板の「今日のひとこと」、和食の案内など) が出ているときは出さない。
+閉じた記録はこの端末の localStorage にだけ残す。
+{% endcomment %}
+{% if popups %}
+<div class="yapp-popups" data-yapp-popups {% if preview %}data-preview{% endif %} hidden>
+    {% for popup in popups %}
+        <dialog class="yapp-popup" data-popup-key="{{ popup.version }}" data-frequency="{{ popup.frequency }}" aria-labelledby="yapp-popup-title-{{ popup.pk }}">
+            <div class="yapp-popup-box">
+                <button type="button" class="yapp-popup-x" data-popup-close aria-label="閉じる">×</button>
+                {% if popup.image_url %}<img class="yapp-popup-img" src="{{ popup.image_url }}" alt="" loading="lazy">{% endif %}
+                {% if popup.emoji %}<p class="yapp-popup-emoji" aria-hidden="true">{{ popup.emoji }}</p>{% endif %}
+                <h2 class="yapp-popup-title" id="yapp-popup-title-{{ popup.pk }}">{{ popup.title }}</h2>
+                {% if popup.body %}<p class="yapp-popup-body">{{ popup.body|linebreaksbr }}</p>{% endif %}
+                <div class="yapp-popup-actions">
+                    {% if popup.has_button %}<a class="yapp-popup-button" href="{{ popup.link }}"{% if popup.open_in_browser %} target="_blank" rel="noopener"{% endif %} data-popup-close>{{ popup.button_label }}</a>{% endif %}
+                    <button type="button" class="yapp-popup-later" data-popup-close>閉じる</button>
+                </div>
+            </div>
+        </dialog>
+    {% endfor %}
+</div>
+<style>
+.yapp-popup {
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100vh - 48px);
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: #FFFFFF;
+    color: #2B2B2B;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+    overflow: auto;
+}
+.yapp-popup::backdrop { background: rgba(20, 20, 30, 0.45); }
+.yapp-popup-box { position: relative; padding: 26px 22px 18px; text-align: center; font-size: 15px; line-height: 1.7; }
+.yapp-popup-x {
+    position: absolute; top: 6px; right: 6px;
+    min-width: 40px; min-height: 40px; padding: 0;
+    border: 0; background: transparent; color: #666; font-size: 22px; cursor: pointer;
+}
+.yapp-popup-x:focus:not(:focus-visible) { outline: none; }
+.yapp-popup-img { display: block; width: calc(100% + 44px); max-height: 220px; margin: -26px -22px 16px; object-fit: cover; border-radius: 20px 20px 0 0; }
+.yapp-popup-emoji { margin: 0 0 6px; font-size: 40px; line-height: 1.2; }
+.yapp-popup-title { margin: 0 0 8px; font-size: 18px; font-weight: 700; line-height: 1.5; }
+.yapp-popup-body { margin: 0 0 16px; text-align: left; }
+.yapp-popup-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.yapp-popup-button {
+    display: block; width: 100%; padding: 12px 16px; border-radius: 999px;
+    background: {{ color|default:"#6577B6" }}; color: #FFFFFF !important;
+    font-weight: 700; text-decoration: none !important;
+}
+.yapp-popup-later { padding: 8px 16px; border: 0; background: transparent; color: #666; font-size: 14px; cursor: pointer; }
+@media (prefers-color-scheme: dark) {
+    .yapp-popup { background: #24262B; color: #EEEEEE; }
+    .yapp-popup-x, .yapp-popup-later { color: #BBBBBB; }
+}
+</style>
+<script>
+(function () {
+    var box = document.querySelector("[data-yapp-popups]");
+    if (!box || !window.HTMLDialogElement) return;
+    var preview = box.hasAttribute("data-preview");
+    var today = new Date().toDateString();
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+    // まだ出していないものを1つ選ぶ
+    var popup = null;
+    box.querySelectorAll("dialog[data-popup-key]").forEach(function (dialog) {
+        if (popup) return;
+        var seen = read("yapp_popup_" + dialog.dataset.popupKey);
+        var due = preview
+            || dialog.dataset.frequency === "every"
+            || (dialog.dataset.frequency === "daily" ? seen !== today : !seen);
+        if (due) popup = dialog;
+    });
+    if (!popup) return;
+
+    function otherShown() {
+        // 掲示板の「今日のひとこと」など、先に出ているポップアップがあるか
+        // (和食の案内・ニュースの通知の確認は、これが閉じてから出る)
+        return Array.prototype.some.call(
+            document.querySelectorAll("dialog[open], .washoku-sheet:not([hidden]), .news-push-prompt:not([hidden])"),
+            function (element) { return !box.contains(element); }
+        );
+    }
+
+    function close() {
+        if (!preview) write("yapp_popup_" + popup.dataset.popupKey, today);
+        if (popup.open) popup.close();
+        document.documentElement.classList.remove("yapp-popup-open");
+        document.dispatchEvent(new Event("yapp:popup-closed"));
+    }
+
+    setTimeout(function () {
+        if (!preview && otherShown()) return;  // 今回は出さず、次に開いたときに
+        box.hidden = false;
+        popup.showModal();
+        document.documentElement.classList.add("yapp-popup-open");
+    }, 600);
+
+    popup.querySelectorAll("[data-popup-close]").forEach(function (element) {
+        element.addEventListener("click", close);
+    });
+    popup.addEventListener("cancel", close);
+    popup.addEventListener("click", function (event) { if (event.target === popup) close(); });
+})();
+</script>
+{% endif %}

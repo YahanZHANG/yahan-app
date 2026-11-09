@@ -380,3 +380,122 @@ class PortalThemeText(models.Model):
             for key, theme in THEMES.items()
             if key not in existing
         ])
+
+
+class AppPopup(models.Model):
+    """
+    各アプリを開いたときに出すポップアップ。管理画面で中身・出すかどうか・頻度を決める。
+    templates/includes/app_popup.html (portal/templatetags/app_popup.py) が表示する。
+    同じアプリで出すものが複数あるときは、並び順の小さいものから1回に1つだけ。
+    内容を保存し直すと「1回だけ」のものも、もう一度出る。
+    """
+
+    APP_CHOICES = [
+        ("news", "スイスニュース"),
+        ("washoku", "スイスで和食"),
+        ("swiss-board", "スイス知恵袋（掲示板）"),
+        ("outings", "おでかけ"),
+        ("top", "Yappトップ"),
+    ]
+
+    FREQUENCY_ONCE = "once"
+    FREQUENCY_DAILY = "daily"
+    FREQUENCY_EVERY = "every"
+
+    FREQUENCY_CHOICES = [
+        (FREQUENCY_ONCE, "1回だけ（内容を更新したら、また出る）"),
+        (FREQUENCY_DAILY, "1日1回"),
+        (FREQUENCY_EVERY, "開くたび"),
+    ]
+
+    AUDIENCE_CHOICES = [
+        ("all", "全員"),
+        ("guests", "ログインしていない人だけ"),
+        ("members", "会員だけ"),
+    ]
+
+    app = models.CharField("アプリ", max_length=20, choices=APP_CHOICES)
+
+    is_active = models.BooleanField("ポップアップとして出す", default=False)
+
+    emoji = models.CharField("絵文字（なくてもOK）", max_length=8, blank=True, help_text="例: 🎄")
+
+    title = models.CharField("タイトル", max_length=80)
+
+    body = models.TextField("本文", max_length=1000, blank=True, help_text="改行はそのまま表示されます。")
+
+    image_url = models.URLField("画像のURL（なくてもOK）", max_length=500, blank=True)
+
+    button_label = models.CharField(
+        "ボタンの文字（なくてもOK）", max_length=30, blank=True, help_text="例: 詳しく見る",
+    )
+
+    link = models.CharField(
+        "ボタンのリンク先（なくてもOK）", max_length=300, blank=True,
+        help_text="例: /washoku/polls/ 。ボタンの文字とリンク先の両方を入れると、ボタンが出ます。",
+    )
+
+    open_in_browser = models.BooleanField(
+        "ボタンをブラウザで開く", default=True,
+        help_text="オン: ホーム画面のアプリで見ていても、Safari や Chrome などのブラウザで開きます。オフ: 今の画面のまま開きます。",
+    )
+
+    frequency = models.CharField("出す頻度", max_length=10, choices=FREQUENCY_CHOICES, default=FREQUENCY_ONCE)
+
+    audience = models.CharField("出す相手", max_length=10, choices=AUDIENCE_CHOICES, default="all")
+
+    home_only = models.BooleanField("HOMEを開いたときだけ出す", default=True, help_text="オフにすると、アプリのどのページでも出ます。")
+
+    starts_at = models.DateTimeField("表示開始（なくてもOK）", null=True, blank=True)
+
+    ends_at = models.DateTimeField("表示終了（なくてもOK）", null=True, blank=True)
+
+    order = models.PositiveIntegerField("並び順", default=0, help_text="小さいものから先に出ます。")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField("更新", auto_now=True)
+
+    class Meta:
+        verbose_name = "ポップアップ"
+        verbose_name_plural = "ポップアップ（各アプリ）"
+        ordering = ["app", "order", "-updated_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def version(self):
+        """閉じたことを覚えておく鍵。内容を保存し直すと変わる。"""
+
+        return f"{self.pk}-{int(self.updated_at.timestamp())}"
+
+    @property
+    def has_button(self):
+        return bool(self.button_label and self.link)
+
+    @classmethod
+    def for_request(cls, request):
+        """このページで出す候補 (並び順)。どれを出すかは、端末に残した記録を見てブラウザが決める。"""
+
+        from django.db.models import Q
+        from django.utils import timezone
+
+        first = request.path.lstrip("/").split("/", 1)[0]
+        app = first or "top"
+        if app not in dict(cls.APP_CHOICES):
+            return []
+        home = request.path == ("/" if app == "top" else f"/{app}/")
+
+        now = timezone.now()
+        popups = cls.objects.filter(app=app, is_active=True).filter(
+            Q(starts_at__isnull=True) | Q(starts_at__lte=now),
+            Q(ends_at__isnull=True) | Q(ends_at__gt=now),
+        )
+        if not home:
+            popups = popups.filter(home_only=False)
+        if request.user.is_authenticated:
+            popups = popups.exclude(audience="guests")
+        else:
+            popups = popups.exclude(audience="members")
+        return list(popups[:5])
