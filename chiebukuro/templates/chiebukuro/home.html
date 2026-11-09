@@ -4,6 +4,7 @@
 
 {% include "chiebukuro/_hero.html" %}
 {% include "chiebukuro/_daily.html" %}
+{% include "chiebukuro/_ask.html" %}
 
 {% if not user.is_authenticated %}
 <section class="cb-welcome">
@@ -37,6 +38,18 @@
 </section>
 {% endif %}
 
+{% if new_questions %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>新着の質問</h2><a href="{% url 'chiebukuro:questions' %}" class="cb-more">もっと見る</a></header>
+    <div class="cb-hsec-body">
+    {% for question in new_questions %}
+        {% include "chiebukuro/_question_row.html" with hide_best=True %}
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if waiting or not new_questions %}
 <section class="cb-hsec">
     <header class="cb-hsec-head"><h2>あなたの知恵を貸してください</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
     <div class="cb-hsec-body">
@@ -47,6 +60,7 @@
     {% endfor %}
     </div>
 </section>
+{% endif %}
 
 {% if poll %}
 <button type="button" class="cb-pollbar cb-pollbar-home" data-daily-open="poll">

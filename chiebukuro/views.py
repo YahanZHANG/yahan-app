@@ -59,6 +59,8 @@ from .models import (
 )
 from .services import (
     attach_stamps,
+    new_questions,
+    questions_to_ask,
     release_survey_questions,
     best_answers,
     current_sponsor,
@@ -344,6 +346,8 @@ def home(request):
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
     poll = poll_for_home(request, voter_key)
+    fresh = new_questions(region)
+    fresh_ids = {question.pk for question in fresh}
     # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
     daily_auto = set(DAILY_CARDS)
     if request.user.is_authenticated:
@@ -368,9 +372,12 @@ def home(request):
             "featured": featured_this_week(),
             "gives": give_items_with_photo(region),
             "headlines": news_headlines(),
-            "waiting": waiting_questions(region=region, limit=3),
+            "new_questions": fresh,
+            "waiting": [question for question in waiting_questions(region=region, limit=6) if question.pk not in fresh_ids][:3],
+            "ask_questions": questions_to_ask(request.user, region),
             "today": timezone.localdate(),
             "hero_time": hero_time(),
+            "login_url": login_url(request),
             "hero_season": season,
             "cal": cal,
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),

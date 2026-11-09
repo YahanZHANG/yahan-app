@@ -3,9 +3,10 @@
 """
 
 import logging
+from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count, F, Max, Q, Value
+from django.db.models import Case, Count, F, IntegerField, Max, Q, Value, When
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
@@ -240,6 +241,33 @@ def popular_questions(theme="", region="", query="", limit=20):
         .order_by("-interest_total", "-answer_total", "-thanks_total", "-last_answered_at")
     )
     return best_answers(list(questions[:limit]))
+
+
+def new_questions(region="", limit=5, days=14):
+    """新着の質問: この2週間の質問を、答えの少ない順 (同じなら新しい順) に"""
+
+    since = timezone.now() - timedelta(days=days)
+    return list(
+        question_list(region=region).filter(created_at__gte=since)
+        .order_by("answer_total", "-created_at", "-pk")[:limit]
+    )
+
+
+def questions_to_ask(user, region="", limit=8):
+    """
+    2回目に開いたときのポップアップで聞く質問: その人がまだ答えていない・知りたいにしていない・
+    自分の質問でないもの。答えが2件以下のものを先に、その中で新しい順。
+    """
+
+    questions = question_list(region=region)
+    if user.is_authenticated:
+        questions = (
+            questions.exclude(author=user)
+            .exclude(answers__author=user)
+            .exclude(interests__user=user)
+        )
+    few = Case(When(answer_total__lte=2, then=Value(0)), default=Value(1), output_field=IntegerField())
+    return list(questions.annotate(few=few).order_by("few", "-created_at", "-pk")[:limit])
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

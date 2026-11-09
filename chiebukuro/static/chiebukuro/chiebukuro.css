@@ -1537,3 +1537,13 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-post-single .cb-post-actions .cb-share-compact { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; padding: 0; }
 .cb-share-ig { display: inline-flex; align-items: center; gap: 4px; }
 .cb-side-emoji { display: inline-block; width: 22px; text-align: center; font-size: 16px; }
+
+/* 2回目に開いたとき: 答えを待っている質問 */
+.cb-ask-card { display: grid; gap: 12px; margin: 0 16px; }
+.cb-ask-card[hidden] { display: none; }
+.cb-ask-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; color: var(--sub); font-size: 12.5px; }
+.cb-ask-q { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.55; }
+.cb-ask-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cb-ask-actions .cb-btn-primary { grid-column: 1 / -1; text-align: center; }
+.cb-ask-actions .cb-btn { justify-content: center; }
+.cb-ask-skip { color: var(--sub); }

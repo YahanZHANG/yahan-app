@@ -110,6 +110,15 @@ class SurveyImportTests(BoardTestCase):
         self.assertEqual(release_survey_questions(), 6)
         self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)
 
+    def test_home_new_questions_and_ask_popup(self):
+        fresh = Question.objects.create(body="新しい質問です", theme="life", author=self.alice)
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "新着の質問")
+        self.assertContains(page, f'data-ask="{fresh.pk}"')
+        self.client.force_login(self.alice)
+        # 自分の質問は聞かない
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+
     def test_deleted_items_do_not_come_back(self):
         self.make_survey()
         import_from_survey()
@@ -141,7 +150,7 @@ class HomeTests(BoardTestCase):
         Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
         Item.objects.create(kind="give", genre="kids", title="写真なしの椅子", owner=self.bob)
         response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "あなたの知恵を貸してください"]:
+        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "新着の質問"]:
             self.assertContains(response, text)
         # つぶやきの新着・写真のないゆずりあいは HOME に出さない
         self.assertNotContains(response, "Coop に枝豆がありました")

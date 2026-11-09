@@ -1,0 +1,90 @@
+{% comment %}その日2回目に HOME を開いたとき: 答えの少ない新しい質問を、1問ずつ (最大3問) 聞く。
+スキップ・私も知りたいで次へ。3問とも見終わったら自動で閉じる。右上の×でいつでも閉じられる。{% endcomment %}
+{% if ask_questions %}
+<dialog class="cb-daily cb-ask" id="cb-ask" aria-labelledby="cb-ask-title" data-day="{% now 'Y-m-d' %}">
+    <div class="cb-daily-box">
+        <header class="cb-daily-head">
+            <p class="cb-daily-date">答えを待っています</p>
+            <h2 id="cb-ask-title">この質問、わかりますか？</h2>
+            <button type="button" class="cb-daily-x" data-ask-close aria-label="閉じる">×</button>
+        </header>
+        {% for question in ask_questions %}
+            <section class="cb-ask-card" data-ask="{{ question.pk }}" hidden>
+                <p class="cb-ask-meta"><span class="cb-cat">{{ question.get_theme_display }}</span>{% if question.get_region_display %}<span>{{ question.get_region_display }}</span>{% endif %}<span>{% if question.answer_total %}回答 {{ question.answer_total }}件{% else %}まだ回答なし{% endif %}</span></p>
+                <p class="cb-ask-q">{{ question.body }}</p>
+                <div class="cb-ask-actions">
+                    <a class="cb-btn cb-btn-primary" href="{% url 'chiebukuro:question' question.pk %}#answer-form">答える</a>
+                    {% if user.is_authenticated %}
+                        <button type="button" class="cb-btn" data-ask-want="{% url 'chiebukuro:interest' question.pk %}">私も知りたい</button>
+                    {% else %}
+                        <a class="cb-btn" href="{{ login_url }}">私も知りたい</a>
+                    {% endif %}
+                    <button type="button" class="cb-btn cb-ask-skip" data-ask-skip>スキップ</button>
+                </div>
+            </section>
+        {% endfor %}
+        <footer class="cb-daily-foot"><span class="cb-daily-dots" aria-hidden="true"></span><p class="cb-ask-done" role="status" hidden></p></footer>
+        {% csrf_token %}
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-ask");
+    if (!dialog || !dialog.showModal) return;
+    var day = dialog.dataset.day;
+    var SHOW = 3;
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+    // その日に HOME を開いた回数 (2回目から出す。1日1回だけ)
+    var opens = {};
+    try { opens = JSON.parse(read("cb_home_opens") || "{}"); } catch (e) {}
+    var count = opens.day === day ? opens.count + 1 : 1;
+    write("cb_home_opens", JSON.stringify({ day: day, count: count }));
+    if (count < 2 || read("cb_ask_day") === day) return;
+
+    var skipped = [];
+    try { skipped = JSON.parse(read("cb_ask_skipped") || "[]"); } catch (e) {}
+    var cards = Array.prototype.slice.call(dialog.querySelectorAll("[data-ask]"))
+        .filter(function (card) { return skipped.indexOf(card.dataset.ask) < 0; })
+        .slice(0, SHOW);
+    if (!cards.length) return;
+    var dots = dialog.querySelector(".cb-daily-dots");
+    var index = 0;
+
+    function show() {
+        cards.forEach(function (card, i) { card.hidden = i !== index; });
+        dots.innerHTML = cards.length > 1 ? cards.map(function (c, i) { return '<i class="' + (i === index ? "on" : "") + '"></i>'; }).join("") : "";
+    }
+    function close() { write("cb_ask_day", day); dialog.close(); }
+    function next() {
+        index += 1;
+        if (index >= cards.length) close(); else show();
+    }
+    dialog.addEventListener("click", function (event) {
+        var target = event.target;
+        if (target === dialog || target.closest("[data-ask-close]")) return close();
+        if (target.closest("[data-ask-skip]")) {
+            skipped.push(cards[index].dataset.ask);
+            write("cb_ask_skipped", JSON.stringify(skipped.slice(-200)));
+            return next();
+        }
+        var want = target.closest("[data-ask-want]");
+        if (want) {
+            var token = dialog.querySelector('input[name="csrfmiddlewaretoken"]');
+            fetch(want.dataset.askWant, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": token ? token.value : "" } }).catch(function () {});
+            want.disabled = true; want.textContent = "✓ 知りたいに追加";
+            setTimeout(next, 600);
+        }
+        if (target.closest("a[href]")) write("cb_ask_day", day);
+    });
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+    // 今日のひとことが開いているときは、閉じてから
+    var daily = document.getElementById("cb-daily");
+    setTimeout(function () {
+        if (daily && daily.open) return;
+        show(); dialog.showModal();
+    }, 700);
+})();
+</script>
+{% endif %}
