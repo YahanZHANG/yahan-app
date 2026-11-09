@@ -17,6 +17,7 @@ APPS = {
     "news": ("Swiss News", "news:home"),
     "outings": ("おでかけ", "outings:home"),
     "washoku": ("スイスで和食", "washoku:home"),
+    "board": ("スイス生活の知恵袋", "chiebukuro:home"),
 }
 
 METHODS = {
@@ -96,6 +97,7 @@ def support_contact(request, method):
 FEEDBACK_URLS = {
     "news": "news:about",
     "washoku": "washoku:about",
+    "board": "chiebukuro:contact",
 }
 
 

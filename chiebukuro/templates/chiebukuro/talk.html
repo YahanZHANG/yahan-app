@@ -39,5 +39,5 @@
     <textarea name="body" id="talk-body" rows="1" maxlength="{{ message_max }}" required placeholder="メッセージ" data-grow></textarea>
     <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">送る</button>
 </form>
-<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったときは<a href="{% url 'portal:support' %}?from=board">運営にお問い合わせ</a>ください。</p>
+<p class="cb-note">受け渡しの日時や場所は、ここで決めましょう。困ったときは<a href="{% url 'chiebukuro:contact' %}">運営にお問い合わせ</a>ください。</p>
 {% endblock %}

@@ -1,40 +1,6 @@
 {% extends "chiebukuro/base.html" %}
-{% load board %}
-{% block title %}プロフィールを編集 | スイス生活の知恵袋<script>
-(function () {
-    var box = document.querySelector(".cb-face-edit");
-    if (!box) return;
-    var now = document.getElementById("cb-face-now");
-    function showLetter() { now.textContent = box.dataset.letter; }
-    function kind() { var c = box.querySelector('input[name="avatar_kind"]:checked'); return c ? c.value : "letter"; }
-    function params() {
-        var q = [];
-        box.querySelectorAll('.cb-face-panel[data-kind="illust"] input:checked').forEach(function (i) { q.push(i.name + "=" + encodeURIComponent(i.value)); });
-        return q.join("&");
-    }
-    function refresh() {
-        var k = kind();
-        box.querySelectorAll(".cb-face-panel").forEach(function (p) { p.hidden = p.dataset.kind !== k; });
-        if (k === "illust") now.innerHTML = '<img src="' + box.dataset.preview + "?" + params() + '" alt="">';
-        else if (k === "photo") {
-            var file = box.querySelector('input[type="file"]');
-            if (file && file.files && file.files[0]) now.innerHTML = '<img src="' + URL.createObjectURL(file.files[0]) + '" alt="">';
-            else if (box.dataset.photo) now.innerHTML = '<img src="' + box.dataset.photo + '" alt="">';
-            else showLetter();
-        } else showLetter();
-    }
-    box.addEventListener("change", refresh);
-    document.getElementById("cb-face-random").addEventListener("click", function () {
-        box.querySelectorAll(".cb-face-options").forEach(function (g) {
-            var inputs = g.querySelectorAll("input");
-            inputs[Math.floor(Math.random() * inputs.length)].checked = true;
-        });
-        refresh();
-    });
-    refresh();
-})();
-</script>
-{% endblock %}
+{% load board static %}
+{% block title %}プロフィールを編集 | スイス生活の知恵袋{% endblock %}
 {% block content %}
 <p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
 <section class="cb-block cb-form-block">
@@ -52,8 +18,8 @@
             </div>
             <div class="cb-face-panel" data-kind="photo">
                 {% if board_profile.photo_url %}<p class="cb-sub">いまの写真が使われます。変えるときだけ選んでください。</p>{% endif %}
-                {% include "chiebukuro/_photo_field.html" with required=True %}
-                <small class="cb-sub">顔でなくても大丈夫です（ペット・風景・好きなものなど）。</small>
+                {% include "chiebukuro/_photo_field.html" with required=True crop=True %}
+                <small class="cb-sub">選んだあと、ズームや位置を調整できます。顔でなくても大丈夫です（ペット・風景・好きなものなど）。</small>
             </div>
             <div class="cb-face-panel" data-kind="illust">
                 <p class="cb-face-random"><button type="button" class="cb-btn cb-btn-s" id="cb-face-random">🎲 おまかせで作る</button></p>
@@ -84,6 +50,19 @@
         <p class="cb-note">本名・住所・勤め先など、個人が特定できることは書かないでください。</p>
     </form>
 </section>
+<dialog class="cb-crop" id="cb-crop" aria-labelledby="cb-crop-title">
+    <div class="cb-crop-box">
+        <h2 id="cb-crop-title">写真の範囲を決める</h2>
+        <p class="cb-sub">指やマウスで動かして、丸の中に入れたいところに合わせてください。</p>
+        <div class="cb-crop-stage" id="cb-crop-stage"><canvas id="cb-crop-canvas" width="560" height="560"></canvas><span class="cb-crop-ring" aria-hidden="true"></span></div>
+        <label class="cb-crop-zoom"><span aria-hidden="true">－</span><input type="range" id="cb-crop-zoom" min="1" max="4" step="0.01" value="1" aria-label="ズーム"><span aria-hidden="true">＋</span></label>
+        <div class="cb-crop-actions">
+            <button type="button" class="cb-btn cb-btn-s" id="cb-crop-cancel">やめる</button>
+            <button type="button" class="cb-btn cb-btn-primary cb-btn-s" id="cb-crop-ok">この範囲にする</button>
+        </div>
+    </div>
+</dialog>
+<script src="{% static 'chiebukuro/crop.js' %}"></script>
 <script>
 (function () {
     var box = document.querySelector(".cb-face-edit");

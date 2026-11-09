@@ -5,7 +5,7 @@
 <p class="cb-back"><a href="{% url 'chiebukuro:questions' %}?theme={{ question.theme }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ theme_label }}の質問</a></p>
 
 <section class="cb-block cb-qhead">
-    <p class="cb-meta"><span class="cb-cat">{{ theme_label }}</span>{% if question_region %}<span>{{ question_region }}</span>{% endif %}<span>{{ question.display_name }}</span><span>{{ question.created_at|date:"Y年n月j日" }}</span></p>
+    <p class="cb-meta"><span class="cb-cat">{{ theme_label }}</span>{% if question_region %}<span>{{ question_region }}</span>{% endif %}<span>{{ question.display_name }}</span><span>{{ question.created_at|date:"Y年n月j日" }}</span>{% if question.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}</p>
     <h1><span class="cb-qmark" aria-hidden="true">Q</span>{{ question.body }}</h1>
     {% include "chiebukuro/_photo.html" with url=question.photo_url %}
     <div class="cb-qactions">
@@ -18,8 +18,13 @@
             <a href="{{ login_url }}" class="cb-btn cb-btn-s">私も知りたい {{ interest_total }}</a>
         {% endif %}
         <a href="#answer-form" class="cb-btn cb-btn-primary cb-btn-s">答える</a>
-        {% with report_target="question" report_id=question.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+        {% if user.is_authenticated and question.author_id == user.pk %}
+            <span class="cb-mine-tools"><a href="{% url 'chiebukuro:edit' 'question' question.pk %}" class="cb-textbtn">編集</a><form method="post" action="{% url 'chiebukuro:delete' 'question' question.pk %}" onsubmit="return confirm('この質問を消しますか？');">{% csrf_token %}<button type="submit" class="cb-textbtn">消す</button></form></span>
+        {% else %}
+            {% with report_target="question" report_id=question.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
+        {% endif %}
     </div>
+    {% if best_answer %}{% with share_sub="A. "|add:best_answer.body %}{% include "chiebukuro/_share.html" with share_label="Q. みんなに聞いてみた" share_text=question.body share_url=request.build_absolute_uri %}{% endwith %}{% else %}{% include "chiebukuro/_share.html" with share_label="Q. 知っている人、教えてください" share_text=question.body share_sub="" share_url=request.build_absolute_uri %}{% endif %}
 </section>
 
 <section class="cb-block" id="answers">
@@ -29,7 +34,7 @@
             {% if best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
             <p class="cb-post-head">
                 {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-av cb-av-s {{ answer.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face answer.author answer.display_name %}</a><a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-name">{{ answer.display_name }}</a>{% else %}<span class="cb-av cb-av-s cb-av0" aria-hidden="true">{{ answer.display_name|initial }}</span><span class="cb-name">{{ answer.display_name }}</span>{% endif %}
-                <span class="cb-sub">{{ answer.created_at|ago }}</span>
+                <span class="cb-sub">{{ answer.created_at|ago }}</span>{% if answer.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}
             </p>
             <div class="cb-answer-body">{{ answer.body|urlize|linebreaksbr }}</div>
             {% include "chiebukuro/_photo.html" with url=answer.photo_url %}
@@ -44,6 +49,7 @@
                 {% endif %}
                 {% include "chiebukuro/_stamps.html" with obj=answer target="answer" prefix="a" %}
                 {% if user.is_authenticated and answer.author_id == user.pk %}
+                    <a href="{% url 'chiebukuro:edit' 'answer' answer.pk %}" class="cb-textbtn">編集</a>
                     <form method="post" action="{% url 'chiebukuro:delete_answer' answer.pk %}" onsubmit="return confirm('この回答を消しますか？');">
                         {% csrf_token %}<button type="submit" class="cb-textbtn">消す</button>
                     </form>

@@ -34,7 +34,8 @@
         {% endfor %}
         <form method="post" action="{% url 'chiebukuro:notice_withdraw' notice.pk %}" class="cb-owner-tools">
             {% csrf_token %}
-            <button type="submit" class="cb-textbtn" onclick="return confirm('この告知を取り下げますか？');">取り下げる（すぐに新しい告知を出せます）</button>
+            <a href="{% url 'chiebukuro:edit' 'notice' notice.pk %}" class="cb-textbtn">編集</a>
+            <button type="submit" class="cb-textbtn" onclick="return confirm('この告知を取り下げますか？');">取り下げる（消す。すぐに新しい告知を出せます）</button>
         </form>
     </section>
 {% elif my_request %}

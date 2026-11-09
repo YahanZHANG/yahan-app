@@ -26,6 +26,8 @@ from django.views.decorators.http import require_POST
 
 from . import avatar as avatar_art
 from .japan_calendar import JST as JAPAN_TZ
+from .daily import past_cards, today_card
+from .events import day_events
 from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
@@ -46,6 +48,7 @@ from .models import (
     PollVote,
     Post,
     PostReply,
+    Contact,
     PushDevice,
     Question,
     Reaction,
@@ -186,9 +189,25 @@ FAB = {
 }
 
 
+def board_color(user):
+    """着せかえの色。12時間ごとに変える設定なら、半日ごとに順番に"""
+
+    if not user.is_authenticated:
+        return "classic"
+    row = BoardProfile.objects.filter(user=user).values("color", "color_auto").first()
+    if not row:
+        return "classic"
+    if row["color_auto"]:
+        now = timezone.localtime()
+        colors = BoardProfile.Color.values
+        return colors[(now.toordinal() * 2 + (1 if now.hour >= 12 else 0)) % len(colors)]
+    return row["color"]
+
+
 def board_context(request, tab, region=None):
     fab = FAB.get(tab)
     return {
+        "board_color": board_color(request.user),
         "tab": tab,
         "board_is_open": BoardSettings.current().is_open,
         "board_preview": getattr(request, "board_preview", False),
@@ -265,6 +284,21 @@ def mark_liked(posts, user):
     return attach_stamps(posts, "post", user)
 
 
+def attach_first_replies(posts, limit=2):
+    """つぶやき一覧で、最初の返信を少しだけ見せるため"""
+
+    posts = list(posts)
+    by_post = {post.pk: [] for post in posts}
+    if by_post:
+        replies = PostReply.objects.filter(post_id__in=by_post, status=Status.PUBLISHED).select_related("author").order_by("created_at", "pk")
+        for reply in replies:
+            if len(by_post[reply.post_id]) < limit:
+                by_post[reply.post_id].append(reply)
+    for post in posts:
+        post.first_replies = by_post[post.pk]
+    return posts
+
+
 def active_notices():
     return Notice.objects.filter(status=Status.PUBLISHED, expires_at__gt=timezone.now())
 
@@ -278,6 +312,8 @@ def open_items():
 # =========================================================
 
 VOTER_COOKIE = "cb_voter"
+# 「今日のひとこと」のカード (BoardProfile の欄の名前)。この順に1枚ずつ出す
+DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia", "daily_poll"]
 
 
 @board_open
@@ -293,13 +329,26 @@ def home(request):
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
+    poll = poll_for_home(request, voter_key)
+    # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
+    daily_auto = set(DAILY_CARDS)
+    if request.user.is_authenticated:
+        profile = BoardProfile.objects.filter(user=request.user).first()
+        if profile:
+            daily_auto = {field for field in DAILY_CARDS if profile.daily_popup and getattr(profile, field)}
+    if not poll or poll.my_choice_id:
+        daily_auto.discard("daily_poll")
+    daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
         request,
         "chiebukuro/home.html",
         {
             **board_context(request, "home", region),
-            "poll": poll_for_home(request, voter_key),
+            "poll": poll,
+            "daily": daily,
+            "show_daily": bool(daily_auto),
+            "daily_auto": daily_auto,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
@@ -313,22 +362,13 @@ def home(request):
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
             "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
             "japan_now": timezone.now().astimezone(JAPAN_TZ),
-            "season_label": SEASON_LABELS.get(season, ""),
+            "day_events": day_events(timezone.localdate()),
         },
     )
     if not voter_key and not request.user.is_authenticated:
         response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
     return response
 
-
-SEASON_LABELS = {
-    "spring": "🌸 お花見の季節",
-    "nationalday": "🇨🇭 8月1日は建国記念日",
-    "halloween": "🎃 ハロウィン",
-    "autumn": "🍁 紅葉の季節",
-    "christmas": "🎄 アドベント",
-    "newyear": "🎍 お正月",
-}
 
 SKY_BY_EMOJI = {"☀️": "clear", "🌤️": "partly", "⛅": "partly", "☁️": "cloudy", "🌫️": "cloudy",
                 "🌦️": "rain", "🌧️": "rain", "⛈️": "rain", "🌨️": "snow", "❄️": "snow"}
@@ -387,6 +427,47 @@ def today_strip(request):
         "chiebukuro/_today.html",
         {**info, "sky": sky_for(info.get("weather")), "place": place, "is_here": bool(here)},
     )
+
+
+@board_open
+def daily_list(request):
+    """これまでの「今日のひとこと」(今日まで。明日からの分は見せない)"""
+
+    person_key = str(request.user.pk) if request.user.is_authenticated else request.COOKIES.get(VOTER_COOKIE, "")
+    return render(request, "chiebukuro/daily_list.html", {**board_context(request, "daily"), "cards": past_cards(timezone.localdate(), person_key)})
+
+
+@login_required
+@require_POST
+def daily_off(request):
+    """「今日のひとこと」をもう出さない (マイページの設定で戻せる)"""
+
+    from django.http import JsonResponse
+
+    BoardProfile.objects.update_or_create(user=request.user, defaults={"daily_popup": False})
+    return JsonResponse({"ok": True})
+
+
+@board_open
+def fx_detail(request):
+    """HOME の為替をタップしたとき: この30日の推移"""
+
+    from .services import fx_history, sparkline
+
+    history = fx_history()
+    rows = []
+    for code, label, unit, digits in (("JPY", "円", "円", 1), ("EUR", "ユーロ", "€", 3)):
+        points = (history or {}).get(code) or []
+        if len(points) < 2:
+            continue
+        first, last = points[0][1], points[-1][1]
+        rows.append({
+            "label": label, "unit": unit, "digits": digits,
+            "line": sparkline(points),
+            "first": first, "last": last, "since": "{}月{}日".format(*[int(part) for part in points[0][0].split("-")[1:]]),
+            "change": round((last / first - 1) * 100, 1),
+        })
+    return render(request, "chiebukuro/_fx_detail.html", {"rows": rows})
 
 
 @board_open
@@ -451,6 +532,7 @@ def post_list(request):
         posts = posts.filter(theme=theme)
     page = Paginator(annotate_posts(posts).order_by("-created_at", "-pk"), POSTS_PER_PAGE).get_page(request.GET.get("page"))
     mark_liked(page.object_list, request.user)
+    attach_first_replies(page.object_list)
 
     return render(
         request,
@@ -1476,8 +1558,12 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles:
+        for field in toggles + DAILY_CARDS + ["color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
+        # 1枚もえらばなければ、自動では出さない
+        board_profile.daily_popup = any(getattr(board_profile, field) for field in DAILY_CARDS)
+        if request.POST.get("color") in BoardProfile.Color.values:
+            board_profile.color = request.POST["color"]
         board_profile.save()
         messages.success(request, "設定を保存しました。")
         return redirect("chiebukuro:settings")
@@ -1491,7 +1577,12 @@ def settings_view(request):
             "theme": yapp_profile.theme_preference,
             "themes": UserProfile.THEME_CHOICES,
             "frequencies": BoardProfile.PushFrequency.choices,
+            "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
+            "daily_cards": [
+                (field, label, board_profile.daily_popup and getattr(board_profile, field))
+                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識", "アンケート（まだ答えていないときだけ）"])
+            ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
         },
     )
@@ -1722,7 +1813,7 @@ def report(request):
 
     target = request.POST.get("target", "")
     target_id = request.POST.get("target_id", "")
-    if target in ("question", "answer", "item", "post", "notice") and target_id.isdigit():
+    if target in ("question", "answer", "item", "post", "reply", "notice") and target_id.isdigit():
         Report.objects.create(
             target=target,
             target_id=int(target_id),
@@ -1748,3 +1839,196 @@ def notify_staff(request, subject, text, admin_path):
         return
     body = f"{text}\n\n{request.build_absolute_uri(admin_path)}\n"
     threading.Thread(target=_send, args=(f"[知恵袋] {subject}", body, recipient), daemon=True).start()
+
+
+@board_open
+def contact(request):
+    """運営へのお問い合わせ (広告・掲示板について・そのほか)"""
+
+    kind = request.POST.get("kind") or request.GET.get("about") or Contact.Kind.BOARD
+    if kind not in Contact.Kind.values:
+        kind = Contact.Kind.BOARD
+    message = (request.POST.get("message") or "").strip()
+    email = (request.POST.get("email") or "").strip() or (request.user.email if request.user.is_authenticated else "")
+    error = ""
+    if request.method == "POST":
+        if request.POST.get("website"):  # ロボットよけ
+            return redirect("chiebukuro:home")
+        if not message:
+            error = "内容を書いてください。"
+        else:
+            Contact.objects.create(
+                kind=kind, message=message[:3000], email=email[:254],
+                user=request.user if request.user.is_authenticated else None,
+            )
+            notify_staff(request, "お問い合わせ", f"{Contact.Kind(kind).label}\n{email or '返信先なし'}\n\n{message[:3000]}", reverse("admin:chiebukuro_contact_changelist"))
+            messages.success(request, "お問い合わせを送りました。ありがとうございます。")
+            return redirect("chiebukuro:home")
+    return render(request, "chiebukuro/contact.html", {
+        **board_context(request, "contact"),
+        "kinds": Contact.Kind.choices, "kind": kind, "message": message, "email": email, "error": error,
+    })
+
+
+@board_open
+def install_guide(request):
+    """ホーム画面に追加する方法 (SwissNews・和食と同じ案内)"""
+
+    from config.pwa import install_guide_context
+
+    return render(
+        request,
+        "chiebukuro/install.html",
+        {**board_context(request, "install", current_region(request)), **install_guide_context(request, reverse("chiebukuro:home"))},
+    )
+
+
+# =========================================================
+# 自分の書きこみの編集・削除
+# =========================================================
+
+def _edit_spec(kind):
+    """編集できる書きこみと、その欄 (名前, 表示, 種類, 最大文字数, 必須, 選択肢)"""
+
+    body = lambda limit, label="内容": ("body", label, "textarea", limit, True, None)
+    region = (lambda name: ("region", "地域", "select", None, False, [("", "指定しない")] + list(BOARD_REGION_CHOICES)))
+    specs = {
+        "post": {
+            "model": Post, "owner": "author", "label": "つぶやき", "photo": "posts", "edited": True,
+            "fields": [body(POST_MAX_LENGTH), ("theme", "テーマ", "select", None, False, [("", "なし")] + list(THEMES)), region("region")],
+            "back": lambda obj: reverse("chiebukuro:post", args=[obj.pk]),
+        },
+        "reply": {
+            "model": PostReply, "owner": "author", "label": "返信", "photo": "replies", "edited": True,
+            "fields": [body(ANSWER_MAX_LENGTH)],
+            "back": lambda obj: reverse("chiebukuro:post", args=[obj.post_id]) + f"#r{obj.pk}",
+        },
+        "question": {
+            "model": Question, "owner": "author", "label": "質問", "photo": "questions", "edited": True,
+            "fields": [body(QUESTION_MAX_LENGTH, "質問"), ("theme", "テーマ", "select", None, True, list(THEMES)), region("region")],
+            "back": lambda obj: reverse("chiebukuro:question", args=[obj.pk]),
+        },
+        "answer": {
+            "model": Answer, "owner": "author", "label": "回答", "photo": "answers", "edited": True,
+            "fields": [body(ANSWER_MAX_LENGTH, "回答")],
+            "back": lambda obj: reverse("chiebukuro:question", args=[obj.question_id]) + f"#a{obj.pk}",
+        },
+        "item": {
+            "model": Item, "owner": "owner", "label": "ゆずりあい", "photo": "items", "edited": False,
+            "fields": [
+                ("title", "品物の名前", "text", ITEM_TITLE_MAX_LENGTH, True, None),
+                ("body", "説明", "textarea", ITEM_BODY_MAX_LENGTH, False, None),
+                ("genre", "ジャンル", "select", None, True, list(Genre.choices)),
+                region("region"),
+                ("place", "受け渡しの場所", "text", 80, False, None),
+            ],
+            "back": lambda obj: reverse("chiebukuro:item", args=[obj.pk]),
+        },
+        "notice": {
+            "model": Notice, "owner": "owner", "label": "募集・告知", "photo": "notices", "edited": False,
+            "fields": [
+                ("title", "タイトル", "text", ITEM_TITLE_MAX_LENGTH, True, None),
+                body(NOTICE_BODY_MAX_LENGTH),
+                region("region"),
+                ("place", "場所", "text", 80, False, None),
+                ("event_date", "日にち", "date", None, False, None),
+                ("link", "リンク", "url", 500, False, None),
+            ],
+            "back": lambda obj: reverse("chiebukuro:notice", args=[obj.pk]),
+        },
+    }
+    if kind not in specs:
+        raise Http404
+    return specs[kind]
+
+
+@board_open
+@login_required
+def edit_mine(request, kind, pk):
+    """自分の書きこみを直す (写真の差し替え・削除も)"""
+
+    spec = _edit_spec(kind)
+    obj = get_object_or_404(spec["model"], pk=pk, status=Status.PUBLISHED, **{spec["owner"]: request.user})
+    error = ""
+    values = {}
+    for name, label, field_type, limit, required, choices in spec["fields"]:
+        current = getattr(obj, name)
+        values[name] = current.isoformat() if field_type == "date" and current else (current or "")
+
+    if request.method == "POST":
+        cleaned = {}
+        for name, label, field_type, limit, required, choices in spec["fields"]:
+            value = (request.POST.get(name) or "").strip()
+            values[name] = value
+            if error:
+                continue
+            if choices is not None and value not in {key for key, _ in choices}:
+                error = f"{label}を選んでください。"
+            elif required and not value:
+                error = f"{label}を入力してください。"
+            elif limit and len(value) > limit:
+                error = f"{label}は{limit}文字までです。"
+            elif field_type == "url" and value and not value.startswith(("https://", "http://")):
+                error = "リンクは https:// から始まるURLを入れてください。"
+            elif field_type == "date":
+                try:
+                    value = date.fromisoformat(value) if value else None
+                except ValueError:
+                    error = "日にちの形が正しくありません。"
+            cleaned[name] = value
+        photo_url = obj.photo_url
+        if not error and request.FILES.get("photo"):
+            photo_url, error = take_photo(request, spec["photo"])
+        elif request.POST.get("remove_photo") == "yes":
+            photo_url = ""
+        if not error:
+            for name, value in cleaned.items():
+                setattr(obj, name, value)
+            obj.photo_url = photo_url
+            if spec["edited"]:
+                obj.edited_at = timezone.now()
+            obj.save()
+            messages.success(request, f"{spec['label']}を直しました。")
+            return redirect(spec["back"](obj))
+
+    fields = [
+        {"name": name, "label": label, "type": field_type, "limit": limit, "required": required, "choices": choices, "value": values[name]}
+        for name, label, field_type, limit, required, choices in spec["fields"]
+    ]
+    return render(
+        request,
+        "chiebukuro/edit.html",
+        {
+            **board_context(request, {"post": "posts", "reply": "posts", "question": "questions", "answer": "questions", "item": "items", "notice": "notices"}[kind], current_region(request)),
+            "obj": obj,
+            "kind": kind,
+            "kind_label": spec["label"],
+            "fields": fields,
+            "back_url": spec["back"](obj),
+            "error": error,
+        },
+    )
+
+
+@board_open
+@require_POST
+@login_required
+def delete_mine(request, kind, pk):
+    """質問・返信を消す (つぶやき・回答・ゆずりあい・告知は、それぞれの消すボタンがある)"""
+
+    if kind == "question":
+        question = get_object_or_404(Question, pk=pk, author=request.user, status=Status.PUBLISHED)
+        if question.answers.filter(status=Status.PUBLISHED).exclude(author=request.user).exists():
+            messages.error(request, "ほかの人の回答がついた質問は消せません。内容を直すか、どうしても消したいときは運営に連絡してください。")
+            return redirect("chiebukuro:question", pk=pk)
+        question.status = Status.HIDDEN
+        question.save(update_fields=["status", "updated_at"])
+        messages.success(request, "質問を消しました。")
+        return redirect("chiebukuro:questions")
+    if kind == "reply":
+        reply = get_object_or_404(PostReply, pk=pk, author=request.user, status=Status.PUBLISHED)
+        reply.status = Status.HIDDEN
+        reply.save(update_fields=["status"])
+        messages.success(request, "返信を消しました。")
+        return redirect(reverse("chiebukuro:post", args=[reply.post_id]) + "#replies")
+    raise Http404

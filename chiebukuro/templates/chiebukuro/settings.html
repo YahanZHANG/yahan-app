@@ -35,6 +35,21 @@
         {% endfor %}
         <p class="cb-sub">Yappのほかのアプリ（Swiss News など）にも同じ設定が使われます。</p>
     </section>
+    <section class="cb-block cb-block-pad">
+        <h2 class="cb-form-title">着せかえ</h2>
+        <div class="cb-colors">
+            {% for value, label in colors %}
+                <label class="cb-color-pick" data-cb-color="{{ value }}"><input type="radio" name="color" value="{{ value }}" {% if board_profile.color == value %}checked{% endif %}><span class="cb-color-swatch" aria-hidden="true"></span><small>{{ label }}</small></label>
+            {% endfor %}
+        </div>
+        <label class="cb-radio"><input type="checkbox" name="color_auto" value="1" {% if board_profile.color_auto %}checked{% endif %}> 12時間ごとに色を変える（朝と夜で、順番に切りかわります）</label>
+        <h2 class="cb-form-title cb-mt">今日のひとこと</h2>
+        <p class="cb-sub">1日の最初に開いたとき、1枚ずつ出すもの</p>
+        {% for field, label, on in daily_cards %}
+            <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
+        {% endfor %}
+        <p class="cb-sub">全部オフにしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
+    </section>
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>
 

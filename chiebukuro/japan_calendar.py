@@ -166,3 +166,63 @@ def today_info(day=None, moment=None):
     except Exception:
         info["rokuyo"] = ""
     return info
+
+
+# ---------------------------------------------------------
+# 日本の祝日 (「国民の祝日に関する法律」の今の決まり。2020年以降)
+# ---------------------------------------------------------
+
+FIXED_HOLIDAYS = {
+    (1, 1): "元日", (2, 11): "建国記念の日", (2, 23): "天皇誕生日", (4, 29): "昭和の日",
+    (5, 3): "憲法記念日", (5, 4): "みどりの日", (5, 5): "こどもの日", (8, 11): "山の日",
+    (11, 3): "文化の日", (11, 23): "勤労感謝の日",
+}
+# (月, 第何月曜, 名前)
+MONDAY_HOLIDAYS = [(1, 2, "成人の日"), (7, 3, "海の日"), (9, 3, "敬老の日"), (10, 2, "スポーツの日")]
+
+
+def _nth_monday(year, month, nth):
+    first = date(year, month, 1)
+    return first + timedelta(days=(7 - first.weekday()) % 7 + 7 * (nth - 1))
+
+
+def _equinox_days(year):
+    """春分の日・秋分の日 (1980〜2099年の近似式。国立天文台の発表と同じ日になる)"""
+
+    shift = 0.242194 * (year - 1980) - int((year - 1980) / 4)
+    return date(year, 3, int(20.8431 + shift)), date(year, 9, int(23.2488 + shift))
+
+
+def japan_holidays(year):
+    """その年の日本の祝日 {date: 名前} (振替休日・国民の休日も含む)"""
+
+    days = {date(year, month, day): name for (month, day), name in FIXED_HOLIDAYS.items()}
+    for month, nth, name in MONDAY_HOLIDAYS:
+        days[_nth_monday(year, month, nth)] = name
+    spring, autumn = _equinox_days(year)
+    days[spring] = "春分の日"
+    days[autumn] = "秋分の日"
+
+    # 国民の休日: 祝日と祝日にはさまれた平日
+    for day in sorted(days):
+        between = day + timedelta(days=1)
+        if between not in days and between + timedelta(days=1) in days and between.weekday() != 6:
+            days[between] = "国民の休日"
+
+    # 振替休日: 祝日が日曜日なら、そのあとの祝日でない日
+    for day in sorted(days):
+        if day.weekday() == 6 and days[day] != "振替休日":
+            substitute = day + timedelta(days=1)
+            while substitute in days:
+                substitute += timedelta(days=1)
+            days[substitute] = "振替休日"
+    return days
+
+
+def japan_holiday(day):
+    """その日 (日本の日付) が祝日なら名前、ちがえば空の文字"""
+
+    try:
+        return japan_holidays(day.year).get(day, "")
+    except Exception:
+        return ""

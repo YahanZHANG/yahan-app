@@ -140,6 +140,7 @@ class Question(models.Model):
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     # 新しい答えがついた日時 (HOME の「新しい答え順」)
     last_answered_at = models.DateTimeField("最後の答え", null=True, blank=True, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
@@ -175,6 +176,7 @@ class Answer(models.Model):
     from_survey = models.BooleanField("事前アンケートから", default=False)
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
@@ -412,6 +414,22 @@ class BoardProfile(models.Model):
     push_reply = models.BooleanField("つぶやきに返信があったとき", default=True)
     push_stamp = models.BooleanField("スタンプが押されたとき", default=False)
     push_talk = models.BooleanField("2人だけのやりとりにメッセージが来たとき", default=True)
+    daily_popup = models.BooleanField("開いたときの「今日のひとこと」を出す", default=True)
+    daily_charm = models.BooleanField("今日のひとこと: お守り占い", default=True)
+    daily_word = models.BooleanField("今日のひとこと: スイスドイツ語", default=True)
+    daily_trivia = models.BooleanField("今日のひとこと: 豆知識", default=True)
+    daily_poll = models.BooleanField("今日のひとこと: アンケート", default=True)
+
+    class Color(models.TextChoices):
+        CLASSIC = "classic", "スイスレッド"
+        SAKURA = "sakura", "さくら"
+        MINT = "mint", "ミント"
+        LAKE = "lake", "レマン湖"
+        LAVENDER = "lavender", "ラベンダー"
+        LEMON = "lemon", "レモン"
+
+    color = models.CharField("着せかえの色", max_length=20, choices=Color.choices, default=Color.CLASSIC)
+    color_auto = models.BooleanField("12時間ごとに色を変える", default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -510,10 +528,34 @@ class Message(models.Model):
         ordering = ["created_at"]
 
 
+class Contact(models.Model):
+    """運営へのお問い合わせ (広告・掲示板について・そのほか)。管理画面で見る。"""
+
+    class Kind(models.TextChoices):
+        AD = "ad", "広告を出したい"
+        BOARD = "board", "掲示板について（不具合・ご要望）"
+        OTHER = "other", "そのほか"
+
+    kind = models.CharField("種類", max_length=20, choices=Kind.choices, default=Kind.BOARD)
+    message = models.TextField("内容")
+    email = models.EmailField("返信先メール", blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="送った人", on_delete=models.SET_NULL, null=True, blank=True)
+    handled = models.BooleanField("対応済み", default=False)
+    created_at = models.DateTimeField("送った日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "お問い合わせ"
+        verbose_name_plural = "お問い合わせ"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message[:40]
+
+
 class Report(models.Model):
     """通報 (質問・答え・品物)。運営が管理画面で見る。"""
 
-    target = models.CharField("対象", max_length=20)  # question / answer / item / post / notice
+    target = models.CharField("対象", max_length=20)  # question / answer / item / post / reply / notice
     target_id = models.PositiveIntegerField("対象ID")
     reason = models.TextField("理由", blank=True)
     reporter = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="通報した人", on_delete=models.SET_NULL, null=True, blank=True)
@@ -540,6 +582,7 @@ class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_posts")
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
 
     class Meta:
@@ -563,6 +606,7 @@ class PostReply(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="投稿者", on_delete=models.CASCADE, related_name="chie_post_replies")
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now)
 
     class Meta:

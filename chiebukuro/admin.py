@@ -24,6 +24,7 @@ from .models import (
     Post,
     PostReply,
     Question,
+    Contact,
     Report,
     Sponsor,
     Status,
@@ -228,6 +229,14 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description="つぶやき")
     def short_body(self, obj):
         return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+
+    list_display = ["created_at", "kind", "message", "email", "user", "handled"]
+    list_editable = ["handled"]
+    list_filter = ["handled", "kind"]
 
 
 @admin.register(Report)

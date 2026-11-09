@@ -1,5 +1,5 @@
 {% load static board %}<!DOCTYPE html>
-<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}">
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}" data-cb-color="{{ board_color|default:'classic' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -27,6 +27,8 @@
             <span class="cb-brand-name">スイス生活の知恵袋</span>
         </a>
         <div class="cb-header-tools">
+            {% if tab != 'install' %}<a href="{% url 'chiebukuro:install' %}" class="cb-install-pill yapp-install-only">📲 アプリにする</a>{% endif %}
+            <a href="{% url 'chiebukuro:install' %}" class="cb-install-pc{% if tab == 'install' %} on{% endif %}">ホーム画面に追加</a>
             <a href="{% url 'chiebukuro:search' %}" class="cb-tool {% if tab == 'search' %}on{% endif %}" aria-label="検索" aria-controls="cb-searchbar" aria-expanded="false" id="cb-search-toggle">{% include "chiebukuro/_icon.html" with name="search" %}</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'chiebukuro:notifications' %}" class="cb-tool {% if tab == 'bell' %}on{% endif %}" aria-label="お知らせ{% if unread %}（{{ unread }}件）{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}{% if unread %}<b class="cb-badge">{{ unread }}</b>{% endif %}</a>
@@ -56,6 +58,7 @@
         <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
         <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
         <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>
+        <a href="{% url 'chiebukuro:daily_list' %}" class="{% if tab == 'daily' %}on{% endif %}"><span class="cb-side-emoji" aria-hidden="true">🍀</span>今日のひとこと</a>
         {% if user.is_authenticated %}
             <a href="{% url 'chiebukuro:notifications' %}" class="{% if tab == 'bell' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}お知らせ{% if unread %}<b class="cb-badge cb-badge-inline">{{ unread }}</b>{% endif %}</a>
             <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="user" %}マイページ</a>
@@ -70,8 +73,9 @@
         {% block content %}{% endblock %}
         <footer class="cb-footer">
             <a href="{% url 'portal:home' %}">Yapp</a>
-            <a href="{% url 'portal:help' %}">ヘルプ</a>
-            <a href="{% url 'portal:support' %}?from=board">お問い合わせ</a>
+            <a href="{% url 'portal:help' %}?from=board">ヘルプ</a>
+            <a href="{% url 'chiebukuro:contact' %}">お問い合わせ</a>
+            <a href="{% url 'portal:support' %}?from=board">Yappを応援</a>
         </footer>
     </main>
 
@@ -101,6 +105,7 @@
 </nav>
 
 <script src="{% static 'washoku/photo_upload.js' %}" defer></script>
+<script src="{% static 'chiebukuro/share.js' %}" defer></script>
 <script>
 (function () {
     // 🔍: ページを移らず、ヘッダーの下に検索バーを出す

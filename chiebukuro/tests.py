@@ -676,7 +676,7 @@ class SeasonTests(BoardTestCase):
         board.save()
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, 'data-season="christmas"')
-        self.assertContains(response, "🎄 アドベント")
+        self.assertNotContains(response, "🎄 アドベント")  # 季節のことばは出さない (祝日・行事の日だけ)
         self.assertContains(response, "cb-hero-md")
         self.assertNotContains(response, "cb-scene")
         self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")
@@ -784,3 +784,184 @@ class SampleNoticeTests(BoardTestCase):
         # 架空の告知があっても、本物の告知は出せる (1人1件に数えない)
         self.client.force_login(self.alice)
         self.assertEqual(self.client.get(reverse("chiebukuro:notice_new")).status_code, 200)
+
+
+class InstallGuideTests(BoardTestCase):
+
+    def test_install_page_and_header_link(self):
+        page = self.client.get(reverse("chiebukuro:install"))
+        self.assertContains(page, "ホーム画面に追加しよう")
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), reverse("chiebukuro:install"))
+
+
+class EditMineTests(BoardTestCase):
+
+    def test_edit_and_delete_own_question(self):
+        from chiebukuro.models import Question
+
+        question = Question.objects.create(body="元の質問", theme="life", source="member", author=self.alice, nickname="アリス")
+        self.client.force_login(self.alice)
+        url = reverse("chiebukuro:edit", args=["question", question.pk])
+        self.assertContains(self.client.get(url), "元の質問")
+        response = self.client.post(url, {"body": "直した質問", "theme": "life", "region": ""})
+        self.assertRedirects(response, reverse("chiebukuro:question", args=[question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.body, "直した質問")
+        self.assertIsNotNone(question.edited_at)
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "編集済み")
+        self.client.post(reverse("chiebukuro:delete", args=["question", question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.status, "hidden")
+
+    def test_cannot_edit_others_or_delete_answered_question(self):
+        from chiebukuro.models import Answer, Question
+
+        question = Question.objects.create(body="質問", theme="life", source="member", author=self.alice, nickname="アリス")
+        self.client.force_login(self.bob)
+        self.assertEqual(self.client.get(reverse("chiebukuro:edit", args=["question", question.pk])).status_code, 404)
+        Answer.objects.create(question=question, body="答え", author=self.bob, nickname="ボブ")
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:delete", args=["question", question.pk]))
+        question.refresh_from_db()
+        self.assertEqual(question.status, "published")
+
+    def test_every_kind_edit_page_opens(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from chiebukuro.models import Answer, Item, Notice, Post, PostReply, Question
+
+        q = Question.objects.create(body="質問", theme="life", source="member", author=self.alice)
+        post = Post.objects.create(body="つぶやき", author=self.alice)
+        objs = {
+            "post": post,
+            "reply": PostReply.objects.create(post=post, body="返信", author=self.alice),
+            "question": q,
+            "answer": Answer.objects.create(question=q, body="答え", author=self.alice),
+            "item": Item.objects.create(kind="give", genre="books", title="本", owner=self.alice),
+            "notice": Notice.objects.create(kind="event", title="会", body="内容", owner=self.alice, expires_at=timezone.now() + timedelta(days=30)),
+        }
+        self.client.force_login(self.alice)
+        for kind, obj in objs.items():
+            self.assertEqual(self.client.get(reverse("chiebukuro:edit", args=[kind, obj.pk])).status_code, 200, kind)
+        self.client.post(reverse("chiebukuro:edit", args=["notice", objs["notice"].pk]),
+                         {"title": "新しい会", "body": "内容", "region": "", "place": "", "event_date": "2026-12-01", "link": ""})
+        objs["notice"].refresh_from_db()
+        self.assertEqual(objs["notice"].title, "新しい会")
+
+
+class SmallHomeImprovementTests(BoardTestCase):
+
+    def test_japan_holidays(self):
+        import datetime
+        from chiebukuro.japan_calendar import japan_holiday, japan_holidays
+
+        self.assertEqual(japan_holiday(datetime.date(2026, 11, 23)), "勤労感謝の日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 5, 6)), "振替休日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 9, 22)), "国民の休日")
+        self.assertEqual(japan_holiday(datetime.date(2027, 3, 22)), "振替休日")
+        self.assertEqual(japan_holiday(datetime.date(2026, 11, 24)), "")
+        self.assertEqual(len(japan_holidays(2026)), 18)
+
+    def test_fx_detail(self):
+        history = {"JPY": [("2026-10-09", 180.0), ("2026-10-20", 185.0), ("2026-11-06", 189.0)], "EUR": [("2026-10-09", 1.07), ("2026-11-06", 1.08)]}
+        with mock.patch("chiebukuro.services.fx_history", return_value=history):
+            page = self.client.get(reverse("chiebukuro:fx"))
+        self.assertContains(page, "30日で ▲5.0%")
+        self.assertContains(page, "<polyline")
+        with mock.patch("chiebukuro.services.fx_history", return_value=None):
+            self.assertContains(self.client.get(reverse("chiebukuro:fx")), "取得できません")
+
+
+class DailyAndColorTests(BoardTestCase):
+
+    def test_daily_card_and_off(self):
+        import datetime
+        from chiebukuro.daily import today_card
+        from chiebukuro.models import BoardProfile
+
+        card = today_card(datetime.date(2026, 11, 8), "1")
+        self.assertEqual(card, today_card(datetime.date(2026, 11, 8), "1"))
+        self.assertTrue(card["charm"]["message"])
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "スイスのお守り占い")
+        self.assertContains(page, 'data-auto="1"')
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:daily_off"))
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
+
+    def test_daily_list_hides_future_days(self):
+        import datetime
+
+        from chiebukuro.daily import START_DAY, past_cards
+
+        cards = past_cards(START_DAY + datetime.timedelta(days=2), "1")
+        self.assertEqual([card["day"] for card in cards], [START_DAY + datetime.timedelta(days=n) for n in (2, 1, 0)])
+        self.assertEqual(past_cards(START_DAY - datetime.timedelta(days=1)), [])
+        self.assertEqual(self.client.get(reverse("chiebukuro:daily_list")).status_code, 200)
+
+    def test_daily_cards_setting(self):
+        from chiebukuro.models import BoardProfile
+
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:settings"), {"daily_word": "1", "push_frequency": "instant"})
+        profile = BoardProfile.objects.get(user=self.alice)
+        self.assertTrue(profile.daily_popup)
+        self.assertFalse(profile.daily_charm)
+        page = self.client.get(reverse("chiebukuro:home")).content.decode()
+        self.assertIn('data-card="word" data-auto', page)
+        self.assertNotIn('data-card="charm" data-auto', page)
+        self.client.post(reverse("chiebukuro:settings"), {"push_frequency": "instant"})
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+
+    def test_day_events(self):
+        import datetime
+
+        from chiebukuro.events import day_events, easter, setsubun
+
+        self.assertEqual(easter(2026), datetime.date(2026, 4, 5))
+        self.assertEqual(setsubun(2026), datetime.date(2026, 2, 3))
+        self.assertEqual(setsubun(2025), datetime.date(2025, 2, 2))
+        self.assertEqual(day_events(datetime.date(2026, 11, 9)), [])
+        self.assertEqual(day_events(datetime.date(2026, 1, 1)), ["🇯🇵 元日", "🇨🇭 新年"])
+        self.assertEqual(day_events(datetime.date(2026, 3, 3)), ["🇯🇵 ひなまつり"])
+        self.assertEqual(day_events(datetime.date(2026, 5, 14)), ["🇨🇭 キリスト昇天祭"])
+        self.assertEqual(day_events(datetime.date(2026, 10, 31)), ["🎃 ハロウィン"])
+
+    def test_post_list_shows_first_replies(self):
+        from chiebukuro.models import Post, PostReply
+
+        post = Post.objects.create(body="ねえ聞いて", author=self.alice, nickname="アリス")
+        for number in range(3):
+            PostReply.objects.create(post=post, body=f"返事その{number}", author=self.alice, nickname="アリス")
+        page = self.client.get(reverse("chiebukuro:posts")).content.decode()
+        self.assertIn("返事その0", page)
+        self.assertIn("返事その1", page)
+        self.assertNotIn("返事その2", page)
+        self.assertIn("ほかの返信 1件を見る", page)
+
+    def test_color_setting(self):
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:settings"), {"color": "sakura", "daily_popup": "1", "push_frequency": "instant"})
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-cb-color="sakura"')
+        self.client.post(reverse("chiebukuro:settings"), {"color": "mint", "color_auto": "1", "push_frequency": "instant"})
+        page = self.client.get(reverse("chiebukuro:home")).content.decode()
+        self.assertIn('data-cb-color="', page)
+
+    def test_contact_form(self):
+        from chiebukuro.models import Contact
+
+        page = self.client.get(reverse("chiebukuro:contact") + "?about=ad")
+        self.assertContains(page, 'value="ad" checked')
+        self.client.post(reverse("chiebukuro:contact"), {"kind": "ad", "message": "広告を出したいです", "email": "shop@example.com"})
+        contact = Contact.objects.get()
+        self.assertEqual((contact.kind, contact.email), ("ad", "shop@example.com"))
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "portal/support")
+
+    def test_share_buttons(self):
+        from chiebukuro.models import Question
+
+        question = Question.objects.create(body="おすすめの歯医者は？", theme="health", source="member", author=self.alice)
+        page = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
+        self.assertContains(page, "Instagram でシェア")
+        self.assertContains(page, "twitter.com/intent/tweet")

@@ -1,4 +1,4 @@
 <label class="cb-photo-field">
     <span class="cb-photo-btn">📷 写真を付ける{% if not required %}（任意）{% endif %}</span>
-    <input type="file" name="photo" accept="image/*">
+    <input type="file" name="photo" accept="image/*"{% if crop %} data-crop{% endif %}>
 </label>

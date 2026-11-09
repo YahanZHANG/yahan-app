@@ -1,0 +1,14 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}これまでの今日のひとこと | スイス生活の知恵袋{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:home' %}">{% include "chiebukuro/_icon.html" with name="back" %}HOME</a></p>
+<h1 class="cb-page-title">これまでの今日のひとこと</h1>
+{% for card in cards %}
+    <section class="cb-block cb-block-pad cb-dlist">
+        <p class="cb-dlist-date">{{ card.day|date:"n月j日" }}（{{ card.day|date:"D" }}）{% if forloop.first %}<span>今日</span>{% endif %}</p>
+        <p class="cb-dlist-row"><small>🗣️ スイスドイツ語</small><b lang="gsw">{{ card.word.text }}</b>（{{ card.word.reading }}）＝ {{ card.word.meaning }}<br><span class="cb-sub">{{ card.word.note }}</span></p>
+        <p class="cb-dlist-row"><small>💡 豆知識</small>{{ card.trivia }}</p>
+        <p class="cb-dlist-row"><small>🍀 お守り占い</small>{{ card.charm.emoji }} {{ card.charm.name }}：{{ card.charm.message }}</p>
+    </section>
+{% endfor %}
+{% endblock %}
