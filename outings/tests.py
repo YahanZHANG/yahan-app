@@ -418,6 +418,7 @@ class PageTests(PageTestCase):
         from outings.services import weather as wx
         saturday = wx.weekend_days(self.now)[-1]
         start = timezone.make_aware(datetime.combine(saturday, datetime.min.time())) + timedelta(hours=14)
+        start = max(start, timezone.now() + timedelta(minutes=10))  # Sunday afternoon: still ahead
         make_event("週末の親子会", start=start)
         make_event("週末の大人会", start=start, tags=())
         FamilySpot.objects.all().delete()
@@ -576,6 +577,20 @@ class FakeResponse:
         return self.data
 
 
+def hourly_forecast(days, suffix=""):
+    """Open-Meteo hourly answer: each day {day: (code, high, low, rain)} for the daytime hours."""
+    times, codes, temps, rains = [], [], [], []
+    for day, (code, high, low, rain) in days.items():
+        for hour in range(24):
+            times.append(f"{day}T{hour:02d}:00")
+            daytime = 8 <= hour <= 18
+            codes.append(code if daytime else 0)
+            temps.append(high if hour == 14 else low if hour == 8 else (high + low) / 2 if daytime else low - 5)
+            rains.append(rain if daytime else 0)
+    return {"hourly": {"time": times, f"weather_code{suffix}": codes,
+                       f"temperature_2m{suffix}": temps, f"precipitation_probability{suffix}": rains}}
+
+
 class WeatherTests(TestCase):
 
     def setUp(self):
@@ -590,10 +605,7 @@ class WeatherTests(TestCase):
             weather.GEOCODE_URL: {"results": [
                 {"country_code": "CH", "admin1": "Bern", "latitude": 46.948, "longitude": 7.447},
             ]},
-            weather.FORECAST_URL: {"daily": {
-                "time": [day], "weather_code": [61], "temperature_2m_max": [14.4],
-                "temperature_2m_min": [6.2], "precipitation_probability_max": [70],
-            }},
+            weather.FORECAST_URL: hourly_forecast({day: (61, 14.4, 6.2, 70)}, "_meteoswiss_icon_seamless"),
         }
         with mock.patch("outings.services.weather.requests.get", side_effect=lambda url, **kw: FakeResponse(responses[url])) as get:
             weather.attach([event], now)
@@ -624,16 +636,85 @@ class WeatherTests(TestCase):
         self.assertEqual([d.isoformat() for d in weather.weekend_days(sunday)], ["2026-10-25"])
         spot = SimpleNamespace(latitude=46.8, longitude=9.7)
         no_coords = SimpleNamespace(latitude=None, longitude=None)
-        forecast = {"daily": {
-            "time": ["2026-10-24", "2026-10-25"], "weather_code": [0, 71],
-            "temperature_2m_max": [12, 3], "temperature_2m_min": [2, -4],
-            "precipitation_probability_max": [0, 80],
-        }}
+        forecast = hourly_forecast({"2026-10-24": (0, 12, 2, 0), "2026-10-25": (71, 3, -4, 80)})
         with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)):
             weather.attach_weekend([spot, no_coords], wednesday)
         self.assertEqual([(d["day"], d["emoji"], d["temp"]) for d in spot.weekend_weather],
                          [("土", "☀️", "12° / 2°"), ("日", "🌨️", "3° / -4°")])
         self.assertIsNone(no_coords.weekend_weather)
+
+
+    def test_half_days_show_the_main_weather_of_each_half(self):
+        from datetime import date
+        hours = [f"2026-11-14T{h:02d}:00" for h in range(24)]
+        codes = [0] * 24
+        codes[10] = 61  # one rainy hour does not make the morning rainy
+        for h in (13, 14, 15, 16):
+            codes[h] = 63  # most of the afternoon does
+        forecast = {"hourly": {
+            "time": hours, "weather_code": codes,
+            "temperature_2m": [5 + h / 2 for h in range(24)],
+            "precipitation_probability": [60 if h == 10 else 5 for h in range(24)],
+        }}
+        with mock.patch("outings.services.weather.requests.get", return_value=FakeResponse(forecast)) as get:
+            rows = weather.half_days((47.37, 8.54), [date(2026, 11, 14), date(2026, 11, 15)])
+        self.assertIn("meteoswiss_icon_seamless", get.call_args.kwargs["params"]["models"])
+        self.assertEqual(len(rows), 1)  # no data for Sunday: left out
+        self.assertEqual((rows[0]["day"], rows[0]["date"]), ("土", "11/14"))
+        morning, afternoon = rows[0]["halves"]
+        self.assertEqual((morning["name"], morning["emoji"], morning["rain"]), ("午前", "☀️", 60))
+        self.assertEqual((afternoon["name"], afternoon["emoji"], afternoon["temp"]), ("午後", "🌧️", 14))
+        self.assertEqual(weather.WEATHER_CODES[45][0], "☁️")
+
+    def test_rainy_morning_then_sun_reads_as_sun_and_meteoswiss_first(self):
+        now = timezone.make_aware(datetime(2026, 11, 8, 13, 0))  # 13:00 in Zurich
+        hours = [f"2026-11-08T{h:02d}:00" for h in range(24)] + [f"2026-11-14T{h:02d}:00" for h in range(24)]
+        swiss = [63 if h < 12 else 0 for h in range(24)] + [None] * 24  # MeteoSwiss: no data that far ahead
+        fallback = [3] * 48
+        forecast = {"hourly": {
+            "time": hours,
+            "weather_code_meteoswiss_icon_seamless": swiss, "weather_code_best_match": fallback,
+            "temperature_2m_meteoswiss_icon_seamless": [10] * 24 + [None] * 24, "temperature_2m_best_match": [8] * 48,
+            "precipitation_probability_meteoswiss_icon_seamless": [90 if h < 12 else 5 for h in range(24)] + [None] * 24,
+            "precipitation_probability_best_match": [20] * 48,
+        }}
+        hours_by_day = weather._parse_hourly(forecast)
+        days = weather.daily_from_hours(hours_by_day, now)
+        # The rainy morning is over: the rest of today is sunny.
+        self.assertEqual((days["2026-11-08"]["code"], days["2026-11-08"]["rain"]), (0, 5))
+        # Later days come from the fallback model.
+        self.assertEqual((days["2026-11-14"]["code"], days["2026-11-14"]["max"]), (3, 8))
+
+    def test_forecasts_refresh_hourly_by_day_and_every_three_hours_at_night(self):
+        def at(hour, minute=0):
+            return timezone.make_aware(datetime(2026, 11, 8, hour, minute))
+        self.assertEqual(weather.cache_seconds(at(13, 20)), 40 * 60)
+        self.assertEqual(weather.cache_seconds(at(21, 30)), 150 * 60)  # next: midnight
+        self.assertEqual(weather.cache_seconds(at(1, 0)), 2 * 60 * 60)  # next: 3:00
+        self.assertEqual(weather.cache_seconds(at(4, 0)), 2 * 60 * 60)  # next: 6:00
+        self.assertEqual(weather.cache_seconds(at(5, 59, )), 60)
+
+    def test_trip_page_shows_a_map_link_but_no_coordinates(self):
+        spot = TouristSpot.objects.create(
+            external_id="m", spot_type="attractions", title_original="Rheinfall", title_ja="ライン滝",
+            official_url="https://www.myswitzerland.com/de/m/", status=TouristSpot.Status.PUBLISHED,
+            latitude=47.677, longitude=8.615,
+        )
+        with mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            page = self.client.get(reverse("outings:tourist_spot_detail", args=[spot.pk]))
+        self.assertContains(page, "Googleマップで開く")
+        self.assertNotContains(page, "緯度")
+
+    def test_home_hero_can_switch_to_other_picks(self):
+        picks = [{"image": f"https://example.com/{n}.jpg" if n != 1 else "", "url": f"/outings/kids/{n}/",
+                  "title": f"場所{n}", "kind": "kids", "pk": n} for n in range(4)]
+        with mock.patch("outings.find_views.home_picks", return_value=(picks, [], [picks[0]], "")), \
+                mock.patch("outings.services.weather.requests.get", side_effect=weather.requests.RequestException("down")):
+            page = self.client.get(reverse("outings:home"))
+        # Photos only, no duplicates, in pick order.
+        self.assertEqual([h["title"] for h in page.context["heroes"]], ["場所0", "場所2", "場所3"])
+        self.assertContains(page, "ほかのおすすめ")
+        self.assertContains(page, 'id="og-heroes"')
 
 
 def commons_page(title, lat=None, lon=None, width=1200, author="Jane", license_name="CC BY-SA 4.0"):
@@ -877,6 +958,32 @@ class FamilySpotTests(PageTestCase):
         self.assertFalse(self.client.get(reverse("outings:find")).context["f"]["family"])
         page = self.client.get(reverse("outings:my_preferences"))
         self.assertContains(page, 'value="weekday" checked')
+
+    def test_interests_tag_filter_and_rank(self):
+        from outings import interests
+        from outings.models import OutingsPreference
+        self.assertEqual(interests.tag("ユネスコ世界遺産の旧市街を歩く"), {"heritage"})
+        self.assertIn("hiking", interests.tag("", spot_type="tours"))
+        self.assertIn("food", interests.tag("Käse und Wein", category=""))
+        self.assertEqual(interests.tag("Super spass"), set())  # no accidental 'sup' / 'spa'
+        self.make("Cow Farm", kind="farm", name_ja="牛の農場")
+        # Filter: only items matching one of the chosen interests.
+        self.assertEqual(self.names("interest=animals"), ["Cow Farm"])
+        self.assertEqual(self.names("interest=art"), ["Rain Museum"])
+        self.assertEqual(self.names("interest=art&interest=animals"), ["Cow Farm", "Rain Museum"])
+        self.assertEqual(self.names("interest=bogus"), self.names())
+        page = self.client.get(reverse("outings:find") + "?type=kids&family=1&when=any&interest=art")
+        self.assertContains(page, "🎨 アート・博物館")
+        self.assertContains(page, "og-interests__chip is-active")
+        # Profile: saved and used for ranking.
+        self.client.post(reverse("outings:profile_save"), {"kids": "yes", "interests": ["animals", "bogus"]})
+        self.assertEqual(OutingsPreference.objects.get().interests, ["animals"])
+        response = self.client.get(reverse("outings:find") + "?type=kids&family=1&when=any&sort=recommended")
+        items = response.context["page_obj"].paginator.object_list
+        farm = next(i for i in items if i["title"].startswith("牛") or "Cow" in i["title"])
+        park = next(i for i in items if i["pk"] == self.park.pk)
+        self.assertGreater(farm["order"] - farm["score"], park["order"] - park["score"])
+        self.assertContains(self.client.get(reverse("outings:my_preferences")), 'value="animals" checked')
 
     def find_kids(self, day, forecasts):
         from outings import sunny
@@ -1347,3 +1454,90 @@ class StaffPhotoTests(FamilySpotTests):
         event.refresh_from_db()
         self.assertTrue(event.image_removed)
         self.assertEqual(event.image_url, "")
+
+
+class CommonsLinkTests(StaffPhotoTests):
+    """A Wikimedia file page link becomes the picture itself, with its credit."""
+
+    def test_file_page_links_are_recognised(self):
+        from outings.photo_admin import commons_file
+        self.assertEqual(commons_file("https://commons.wikimedia.org/wiki/File:Alpamare.jpg"), "Alpamare.jpg")
+        self.assertEqual(commons_file("https://de.wikipedia.org/wiki/Alpamare#/media/Datei:Alpamare_Pf%C3%A4ffikon.jpg"), "Alpamare Pfäffikon.jpg")
+        self.assertEqual(commons_file("https://upload.wikimedia.org/wikipedia/commons/a/ab/Alpamare.jpg"), "")
+        self.assertEqual(commons_file("https://example.com/File:x.jpg"), "")
+
+    def test_file_page_link_sets_the_picture(self):
+        self.login_staff()
+        api = mock.Mock()
+        api.json.return_value = {"query": {"pages": [{"imageinfo": [{
+            "thumburl": "https://upload.wikimedia.org/thumb/Alpamare.jpg/1600px-Alpamare.jpg",
+            "extmetadata": {"Artist": {"value": "<a>Jane</a>"}, "LicenseShortName": {"value": "CC BY-SA 4.0"}},
+        }]}]}}
+        with mock.patch("outings.photo_admin.requests.get", return_value=api):
+            self.post("kids", self.park.pk, url="https://commons.wikimedia.org/wiki/File:Alpamare.jpg")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://upload.wikimedia.org/thumb/Alpamare.jpg/1600px-Alpamare.jpg")
+        self.assertEqual(self.park.image_credit, "Jane / CC BY-SA 4.0")
+
+    def test_without_the_api_it_still_shows_the_picture(self):
+        self.login_staff()
+        with mock.patch("outings.photo_admin.requests.get", side_effect=requests_error()):
+            self.post("kids", self.park.pk, url="https://commons.wikimedia.org/wiki/File:Alpamare.jpg")
+        self.park.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://commons.wikimedia.org/wiki/Special:FilePath/Alpamare.jpg?width=1600")
+        self.assertEqual(self.park.image_credit, "Wikimedia Commons")
+
+
+def requests_error():
+    import requests
+    return requests.ConnectionError("offline")
+
+
+class ReportTests(StaffPhotoTests):
+    """Visitors report mistakes, add information or send a photo; admins pick photos."""
+
+    def report(self, **data):
+        return self.client.post(reverse("outings:send_report", args=["kids", self.park.pk]), data)
+
+    def test_report_is_saved_and_mailed(self):
+        from outings.models import OutingsReport
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "間違いの報告・情報の追加・写真を送る")
+        with mock.patch("outings.reports.send_admin_alert") as alert:
+            response = self.report(kind="fix", message="月曜は休みです", next=detail)
+        self.assertRedirects(response, detail + "#report", fetch_redirect_response=False)
+        report = OutingsReport.objects.get()
+        self.assertEqual((report.kind, report.message, report.target, report.object_id), ("fix", "月曜は休みです", "kids", self.park.pk))
+        alert.assert_called_once()
+        # Too soon after the last one, and empty ones, are not saved.
+        self.report(kind="add", message="もう一つ")
+        self.assertEqual(OutingsReport.objects.count(), 1)
+
+    def test_bots_and_empty_reports_are_dropped(self):
+        from outings.models import OutingsReport
+        self.report(kind="fix", message="spam", website="x")
+        self.report(kind="fix", message="")
+        self.assertFalse(OutingsReport.objects.exists())
+
+    def test_admin_uses_a_sent_photo(self):
+        from outings.models import OutingsReport
+        report = OutingsReport.objects.create(target="kids", object_id=self.park.pk, kind="photo", photo_url="https://example.com/sent.jpg")
+        self.login_staff()
+        detail = reverse("outings:spot_detail", args=[self.park.pk])
+        self.assertContains(self.client.get(detail), "この写真にする")
+        self.post("kids", self.park.pk, action="use_report", report=report.pk)
+        self.park.refresh_from_db()
+        report.refresh_from_db()
+        self.assertEqual(self.park.image_url, "https://example.com/sent.jpg")
+        self.assertEqual(self.park.image_credit, "投稿：利用者")
+        self.assertTrue(report.is_done)
+
+
+class BrowseMapTests(PageTestCase):
+
+    def test_list_page_has_the_map(self):
+        html = self.client.get(reverse("outings:browse")).content.decode()
+        self.assertIn("data-og-map-slot", html)
+        self.assertIn("地図で見る", html)
+        data = self.client.get(reverse("outings:browse") + "?map=1", HTTP_ACCEPT="application/json").json()
+        self.assertIn("points", data)

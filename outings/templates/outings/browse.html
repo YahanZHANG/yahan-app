@@ -24,13 +24,19 @@
     </div>
     {% if hiding_went %}<p class="og-find__hint">行った場所は出していません（マイページで変えられます）。</p>{% endif %}
 
-    {% if items %}
-        <div class="og-items" data-og-items="browse">
-            {% for item in items %}{% include "outings/includes/find_item.html" %}{% endfor %}
+    <div class="og-find__body">
+        <div class="og-find__list">
+            {% if items %}
+                <div class="og-items" data-og-items="browse">
+                    {% for item in items %}{% include "outings/includes/find_item.html" %}{% endfor %}
+                </div>
+                {% include "outings/includes/more_button.html" with name="browse" %}
+            {% else %}
+                <div class="ev-empty"><p>まだ何もありません。</p></div>
+            {% endif %}
         </div>
-        {% include "outings/includes/more_button.html" with name="browse" %}
-    {% else %}
-        <div class="ev-empty"><p>まだ何もありません。</p></div>
-    {% endif %}
+        <aside class="og-find__map" data-og-map-slot aria-label="地図"></aside>
+    </div>
+    {% if items %}{% include "outings/includes/map_fab.html" %}{% endif %}
 </div>
 {% endblock %}

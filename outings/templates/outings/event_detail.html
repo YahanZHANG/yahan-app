@@ -5,6 +5,8 @@
 
 {% block content %}
 <div class="detail-page ev-detail">
+<div class="og-detail__grid">
+<div class="og-detail__main">
 
     {% if event.image_url %}
         <img src="{{ event.image_url }}" alt="" class="detail-image" onerror="this.remove();">
@@ -48,6 +50,41 @@
         {% endif %}
     </div>
 
+    <div class="ev-main-rest">
+    {% if event.summary_ja %}
+        <div class="detail-panel">
+            <h2>イベントについて</h2>
+            <div class="description">{{ event.summary_ja|linebreaks }}</div>
+        </div>
+    {% endif %}
+
+    <!-- All dates -->
+    {% if date_rows %}
+        <div class="detail-panel">
+            <h2>開催日程{% if date_rows|length > 1 %}（{{ date_rows|length }}回）{% endif %}</h2>
+            {% if date_rows|length > 6 %}
+                <details class="outings-date-details">
+                    <summary>すべての日程を見る</summary>
+            {% endif %}
+            <ul class="ev-dates">
+                {% for row in date_rows %}
+                    <li class="{% if row.cancelled %}is-cancelled{% endif %}">
+                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                        {{ row.label }}
+                        {% if row.cancelled %}<span class="ev-badge ev-badge--warn">中止</span>{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if date_rows|length > 6 %}
+                </details>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    </div>
+</div>
+
+<aside class="og-detail__side ev-side">
     <!-- Next date and actions -->
     <div class="ev-detail__next">
         {% if is_over %}
@@ -89,13 +126,6 @@
         </div>
     </div>
 
-    {% if event.summary_ja %}
-        <div class="detail-panel">
-            <h2>イベントについて</h2>
-            <div class="description">{{ event.summary_ja|linebreaks }}</div>
-        </div>
-    {% endif %}
-
     <!-- Practical information -->
     <div class="detail-panel">
         <h2>参加の目安</h2>
@@ -130,29 +160,6 @@
         {% endif %}
     </div>
 
-    <!-- All dates -->
-    {% if date_rows %}
-        <div class="detail-panel">
-            <h2>開催日程{% if date_rows|length > 1 %}（{{ date_rows|length }}回）{% endif %}</h2>
-            {% if date_rows|length > 6 %}
-                <details class="outings-date-details">
-                    <summary>すべての日程を見る</summary>
-            {% endif %}
-            <ul class="ev-dates">
-                {% for row in date_rows %}
-                    <li class="{% if row.cancelled %}is-cancelled{% endif %}">
-                        <i class="bi bi-calendar3" aria-hidden="true"></i>
-                        {{ row.label }}
-                        {% if row.cancelled %}<span class="ev-badge ev-badge--warn">中止</span>{% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-            {% if date_rows|length > 6 %}
-                </details>
-            {% endif %}
-        </div>
-    {% endif %}
-
     {% if event.location %}
         <div class="detail-panel">
             <h2>場所</h2>
@@ -171,12 +178,9 @@
             <i class="bi bi-box-arrow-up-right"></i>
         </a>
     {% endif %}
+</aside>
 
-
-
-
-
-
+<div class="og-detail__more">
     <!-- =====================================================
 
         Comments
@@ -186,6 +190,7 @@
 
 
     {% include "outings/includes/visits.html" %}
+    {% include "outings/includes/report.html" with report_target="event" report_pk=event.pk %}
 
     <section id="comments" class="outings-comments">
 
@@ -674,7 +679,7 @@
 
 
 </div>
-
-
+</div>
+</div>
 
 {% endblock %}

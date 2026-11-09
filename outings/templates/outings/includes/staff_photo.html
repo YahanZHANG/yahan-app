@@ -3,13 +3,31 @@ Staff only: replace or remove this page's photo. Needs `photo_target`
 (trip / kids / event), `photo_pk` and `photo_url`.
 {% endcomment %}
 {% if user.is_staff %}
-<details class="og-staffphoto">
+{% load outings_reports %}
+{% pending_photos photo_target photo_pk as sent %}
+<details class="og-staffphoto"{% if sent %} open{% endif %}>
     <summary><i class="bi bi-camera" aria-hidden="true"></i>写真を変える<small>管理者だけに表示</small></summary>
+    {% if sent %}
+        <div class="og-staffphoto__sent">
+            <p>利用者から届いた写真（{{ sent|length }}枚）</p>
+            {% for report in sent %}
+                <form method="post" action="{% url 'outings:staff_photo' photo_target photo_pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="report" value="{{ report.pk }}">
+                    <a href="{{ report.photo_url }}" target="_blank" rel="noopener"><img src="{{ report.photo_url }}" alt="" loading="lazy"></a>
+                    {% if report.message %}<small>{{ report.message|truncatechars:60 }}</small>{% endif %}
+                    <button type="submit" name="action" value="use_report">この写真にする</button>
+                </form>
+            {% endfor %}
+            <small>使わない写真は、管理画面の「訂正・追加・写真」で対応済みにしてください。</small>
+        </div>
+    {% endif %}
     <form method="post" action="{% url 'outings:staff_photo' photo_target photo_pk %}" enctype="multipart/form-data" class="og-staffphoto__form">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
         <label>写真をアップロード<input type="file" name="photo" accept="image/*"></label>
-        <label>または写真のURL<input type="url" name="url" placeholder="https://…"></label>
+        <label>または写真のURL（Wikimedia のページURLでもOK）<input type="url" name="url" placeholder="https://commons.wikimedia.org/wiki/File:…"></label>
         <label>クレジット（任意）<input type="text" name="credit" maxlength="200" placeholder="例：Wikimedia Commons / 撮影者名"></label>
         <div class="og-staffphoto__actions">
             <button type="submit" name="action" value="upload" class="og-staffphoto__save">差し替える</button>

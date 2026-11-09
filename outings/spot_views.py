@@ -241,7 +241,11 @@ def weekend_forecast(now, days=None, point=HOME_POINT):
         raw = forecasts.get(point, {}).get(day.isoformat())
         text = weather.describe(raw)
         if text:
-            rows.append({"day": weather.WEEKDAYS_JA[day.weekday()], **text})
+            rows.append({
+                "day": weather.WEEKDAYS_JA[day.weekday()], "date": f"{day.month}/{day.day}", **text,
+                "high": round(raw["max"]) if raw.get("max") is not None else None,
+                "low": round(raw["min"]) if raw.get("min") is not None else None,
+            })
             if (raw.get("rain") or 0) >= 60:
                 rainy = True
     return rows, rainy
@@ -302,17 +306,25 @@ def home(request):
     area = (preference.areas or [None])[0] if preference else None
     point = find_views.AREA_CENTRES.get(area, HOME_POINT)
     forecast, _ = weekend_forecast(now, days, point)
+    halves = weather.half_days(point, days[:2]) if days else []
     from .visits import hidden_keys
     picks, events, overnight, mode = find_views.home_picks(
         preference, now, days, hide=hidden_keys(request, visitor_id, preference),
     )
-    hero = next((i for i in picks if i["image"]), None)
+    # The hero photo can be switched to the next picks with photos.
+    heroes, seen = [], set()
+    for i in picks + events + overnight:
+        if i["image"] and i["url"] not in seen:
+            seen.add(i["url"])
+            heroes.append({"image": i["image"], "url": i["url"], "title": i["title"]})
+    heroes = heroes[:8]
+    hero = heroes[0] if heroes else None
     sunny_names = find_views.sunny_area_names(days) if mode == "sunny" else []
     kids = visitor_profile.wants_kids(preference)
     area_label = dict((k, l) for k, l, _ in AREAS).get(area, "チューリッヒ周辺")
 
     response = render(request, "outings/home.html", {
-        "forecast": forecast,
+        "halves": halves, "forecast": forecast,
         "forecast_area": area_label,
         "mode": mode,
         "sunny_names": sunny_names[:4],
@@ -322,7 +334,7 @@ def home(request):
         "personal": bool(preference and preference.setup == "done"),
         "profile": profile_form_context(preference),
         "picks": picks,
-        "hero": hero,
+        "hero": hero, "heroes": heroes,
         "events": events,
         "overnight": overnight,
     })
@@ -333,11 +345,15 @@ def home(request):
 # 「あなたに合わせる」
 # =========================================================
 
+from .interests import INTERESTS as INTEREST_CHOICES  # noqa: E402
+
+
 def profile_form_context(preference):
     """Choices and current answers for the four questions."""
     return {
         "preference": preference,
         "areas": [(key, label, key in (preference.areas if preference else [])) for key, label, _ in AREAS],
+        "interests": [(key, f"{emoji} {label}", key in (preference.interests if preference else [])) for key, label, emoji in INTEREST_CHOICES],
         "german": [(v, l, preference is not None and preference.german == v) for v, l in OutingsPreference.German.choices],
         "kids": preference.with_kids if preference else None,
         "ages": [(k, l, k in (preference.kid_ages if preference else [])) for k, l, *_ in AGE_GROUPS],

@@ -8,11 +8,7 @@
 {% block content %}
 
 <style>
-.trip-detail {
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 24px 16px 70px;
-}
+
 
 .trip-back {
     display: inline-block;
@@ -32,15 +28,9 @@
     margin-bottom: 14px;
 }
 
-.trip-detail h1 {
-    font-size: clamp(1.65rem, 4vw, 2.4rem);
-    line-height: 1.4;
-    font-weight: 750;
-    margin-bottom: 22px;
-}
 
 .trip-detail-section {
-    margin: 28px 0;
+    margin: 20px 0;
 }
 
 .trip-detail-section h2 {
@@ -210,249 +200,97 @@ html[data-outings-theme="dark"] .trip-source a {
 .trip-detail-photo figcaption a { color: inherit; }
 </style>
 
-<div class="trip-detail">
+<div class="og-page og-detail trip-detail">
 
-    <a
-        href="{% url 'outings:find' %}?type=trip"
-        class="trip-back"
-    >
-        ← 旅行の一覧へ
-    </a>
+    <a class="og-back" href="{% url 'outings:find' %}?type=trip"><i class="bi bi-chevron-left" aria-hidden="true"></i>旅行をさがす</a>
 
-    {% with photo=details.approved_image %}
-        {% if photo.url %}
-            <figure class="trip-detail-photo">
-                <img src="{{ photo.url }}" alt="{{ spot.title_ja|default:spot.title_original }}" onerror="this.closest('figure').remove();">
-                <figcaption>
-                    写真：{% if photo.source_url %}<a href="{{ photo.source_url }}" target="_blank" rel="noopener noreferrer">{{ photo.credit|default:"Wikimedia Commons" }}</a>{% else %}{{ photo.credit|default:"Wikimedia Commons" }}{% endif %}
-                    {% if photo.license_url %}・<a href="{{ photo.license_url }}" target="_blank" rel="noopener noreferrer">ライセンス</a>{% endif %}
-                </figcaption>
-            </figure>
-        {% endif %}
-        {% include "outings/includes/staff_photo.html" with photo_target="trip" photo_pk=spot.pk photo_url=photo.url %}
-    {% endwith %}
-
-    <div>
-        <span class="trip-detail-type">
-            {{ category_label }}
-        </span>
-    </div>
-
-    <h1>
-        {{ spot.title_ja|default:spot.title_original }}
-    </h1>
-
-    {% if warnings %}
-        <div class="trip-warning">
-
-            <strong>
-                ルートの注意情報
-            </strong>
-
-            {% if warnings.title %}
-                <p>{{ warnings.title }}</p>
+    <div class="og-detail__grid">
+    <div class="og-detail__main">
+        {% with photo=details.approved_image %}
+            {% if photo.url %}
+                <figure class="trip-detail-photo">
+                    <img src="{{ photo.url }}" alt="{{ spot.title_ja|default:spot.title_original }}" onerror="this.closest('figure').remove();">
+                    <figcaption>
+                        写真：{% if photo.source_url %}<a href="{{ photo.source_url }}" target="_blank" rel="noopener noreferrer">{{ photo.credit|default:"Wikimedia Commons" }}</a>{% else %}{{ photo.credit|default:"Wikimedia Commons" }}{% endif %}
+                        {% if photo.license_url %}・<a href="{{ photo.license_url }}" target="_blank" rel="noopener noreferrer">ライセンス</a>{% endif %}
+                    </figcaption>
+                </figure>
             {% endif %}
+            {% include "outings/includes/staff_photo.html" with photo_target="trip" photo_pk=spot.pk photo_url=photo.url %}
+        {% endwith %}
 
-            {% if warnings.text %}
-                <p>{{ warnings.text }}</p>
-            {% endif %}
+        <p class="og-detail__kind">{{ category_label }}</p>
+        <h1 class="og-detail__title">{{ spot.title_ja|default:spot.title_original }}</h1>
+        {% if spot.title_ja and spot.title_ja != spot.title_original %}<p class="og-detail__original">{{ spot.title_original }}</p>{% endif %}
 
-            {% if warnings.url %}
-                <a
-                    href="{{ warnings.url }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    最新のルート情報を確認
-                </a>
-            {% endif %}
-
-        </div>
-    {% endif %}
-
-    <section class="trip-detail-section">
-
-        <h2>スポット紹介</h2>
-
-        <div class="trip-description">
-
-            {% if spot.intro_ja %}
-                {{ spot.intro_ja|linebreaks }}
-            {% elif spot.summary_ja %}
-                {{ spot.summary_ja }}
-            {% elif spot.summary_original %}
-                {{ spot.summary_original }}
-            {% elif spot.description_original %}
-                {{ spot.description_original }}
-            {% else %}
-                公式サイトで詳細をご確認ください。
-            {% endif %}
-
-        </div>
-
-    </section>
-
-    {% if details.highlights_ja %}
-        <section class="trip-detail-section">
-            <h2>見どころ</h2>
-            <ul class="trip-highlights">
-                {% for line in details.highlights_ja %}<li>{{ line }}</li>{% endfor %}
-            </ul>
-        </section>
-    {% endif %}
-
-    {% if details.guide_ja and not spot.intro_ja %}
-        <section class="trip-detail-section">
-            <h2>くわしく</h2>
-            <div class="trip-guide">{{ details.guide_ja|linebreaks }}</div>
-        </section>
-    {% endif %}
-
-    {% if details.specs %}
-
-        <div class="trip-info">
-
-            <strong>コース情報</strong>
-
-            {% if details.specs.distance != None %}
-                <div>
-                    距離：
-                    {{ details.specs.distance }} km
-                </div>
-            {% endif %}
-
-            {% if details.specs.duration != None %}
-                <div>
-                    所要時間：
-                    {{ details.specs.duration }} 分
-                </div>
-            {% endif %}
-
-            {% if details.specs.ascent != None %}
-                <div>
-                    登り：
-                    {{ details.specs.ascent }} m
-                </div>
-            {% endif %}
-
-            {% if details.specs.descent != None %}
-                <div>
-                    下り：
-                    {{ details.specs.descent }} m
-                </div>
-            {% endif %}
-
-            {% if details.specs.season %}
-                <div>
-                    推奨シーズン：
-                    {{ details.specs.season }}
-                </div>
-            {% endif %}
-
-        </div>
-
-    {% endif %}
-
-    {% if price %}
-
-        <div class="trip-info">
-
-            <strong>体験・ツアー</strong>
-
-            {% if price.minPrice != None %}
-                <div>
-                    参考価格：
-                    {{ price.minPrice }}
-                    {{ price.priceCurrency }}
-                    〜
-                </div>
-            {% endif %}
-
-            {% if details.validThrough %}
-                <div>
-                    掲載されている有効期限：
-                    {{ details.validThrough }}
-                </div>
-            {% endif %}
-
-            <small>
-                実際の予約可否や価格は
-                公式サイトで確認してください。
-            </small>
-
-        </div>
-
-    {% endif %}
-
-    {% if spot.latitude != None and spot.longitude != None %}
-
-        <section class="trip-detail-section">
-
-            <h2>場所</h2>
-
-            <p>
-                緯度：{{ spot.latitude }}
-                / 経度：{{ spot.longitude }}
-            </p>
-
-            <a
-                href="https://www.google.com/maps/search/?api=1&query={{ spot.latitude }},{{ spot.longitude }}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Google Mapsで場所を確認 →
-            </a>
-
-        </section>
-
-    {% endif %}
-
-    <section class="trip-detail-section">
-
-        <a
-            href="{{ spot.official_url }}"
-            class="trip-official"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            公式サイトで詳細を見る ↗
-        </a>
-
-    </section>
-
-    {% include "outings/includes/visits.html" %}
-
-    <div class="trip-source">
-
-        情報提供：
-        <a
-            href="{{ spot.official_url }}"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            Switzerland Tourism
-        </a>
-
-        {% if spot.source_license %}
-            <div>
-                原文データのライセンス：
-                <a
-                    href="{{ spot.source_license }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    CC BY-SA
-                </a>
+        {% if warnings %}
+            <div class="trip-warning">
+                <strong>ルートの注意情報</strong>
+                {% if warnings.title %}<p>{{ warnings.title }}</p>{% endif %}
+                {% if warnings.text %}<p>{{ warnings.text }}</p>{% endif %}
+                {% if warnings.url %}<a href="{{ warnings.url }}" target="_blank" rel="noopener noreferrer">最新のルート情報を確認</a>{% endif %}
             </div>
         {% endif %}
 
-        <div>
-            現地の営業日、運行・通行状況、
-            料金などは変更される場合があります。
+        <div class="og-detail__summary">
+            {% if spot.intro_ja %}{{ spot.intro_ja|linebreaks }}
+            {% elif spot.summary_ja %}<p>{{ spot.summary_ja }}</p>
+            {% elif spot.summary_original %}<p>{{ spot.summary_original }}</p>
+            {% elif spot.description_original %}<p>{{ spot.description_original }}</p>
+            {% else %}<p>公式サイトで詳細をご確認ください。</p>{% endif %}
         </div>
 
+        {% if details.highlights_ja %}
+            <section class="trip-detail-section">
+                <h2>見どころ</h2>
+                <ul class="trip-highlights">{% for line in details.highlights_ja %}<li>{{ line }}</li>{% endfor %}</ul>
+            </section>
+        {% endif %}
+
+        {% if details.guide_ja and not spot.intro_ja %}
+            <section class="trip-detail-section">
+                <h2>くわしく</h2>
+                <div class="trip-guide">{{ details.guide_ja|linebreaks }}</div>
+            </section>
+        {% endif %}
     </div>
 
+    <aside class="og-detail__side">
+        {% if wx %}
+            <div class="og-detail__wx">
+                <h2>お休みの日の天気</h2>
+                <ul>{% for w in wx %}<li><b>{{ w.day }}</b><span>{{ w.emoji }}</span>{{ w.temp }}</li>{% endfor %}</ul>
+            </div>
+        {% endif %}
+        {% if details.specs or price %}
+            <dl class="og-facts">
+                {% if details.specs.distance != None %}<div><dt>距離</dt><dd>{{ details.specs.distance }} km</dd></div>{% endif %}
+                {% if details.specs.duration != None %}<div><dt>所要時間</dt><dd>{{ details.specs.duration }} 分</dd></div>{% endif %}
+                {% if details.specs.ascent != None %}<div><dt>登り</dt><dd>{{ details.specs.ascent }} m</dd></div>{% endif %}
+                {% if details.specs.descent != None %}<div><dt>下り</dt><dd>{{ details.specs.descent }} m</dd></div>{% endif %}
+                {% if details.specs.season %}<div><dt>おすすめの季節</dt><dd>{{ details.specs.season }}</dd></div>{% endif %}
+                {% if price.minPrice != None %}<div><dt>参考価格</dt><dd>{{ price.minPrice }} {{ price.priceCurrency }}〜</dd></div>{% endif %}
+                {% if details.validThrough %}<div><dt>有効期限</dt><dd>{{ details.validThrough }}</dd></div>{% endif %}
+            </dl>
+        {% endif %}
+        <div class="og-actions">
+            {% if spot.latitude != None and spot.longitude != None %}
+                <a class="og-btn og-btn--main" href="https://www.google.com/maps/search/?api=1&amp;query={{ spot.latitude }},{{ spot.longitude }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-map" aria-hidden="true"></i>Googleマップで開く</a>
+            {% endif %}
+            {% if spot.official_url %}<a class="og-btn" href="{{ spot.official_url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>公式サイト</a>{% endif %}
+        </div>
+        <p class="og-detail__checked">営業日・運行状況・料金は変わることがあるので、行く前に公式サイトで確認してください。</p>
+    </aside>
+
+    <div class="og-detail__more">
+        {% include "outings/includes/visits.html" %}
+        {% include "outings/includes/report.html" with report_target="trip" report_pk=spot.pk %}
+        <p class="trip-source">
+            情報提供：<a href="{{ spot.official_url }}" target="_blank" rel="noopener noreferrer">Switzerland Tourism</a>
+            {% if spot.source_license %}・原文データのライセンス：<a href="{{ spot.source_license }}" target="_blank" rel="noopener noreferrer">CC BY-SA</a>{% endif %}
+        </p>
+    </div>
+    </div>
 </div>
 
 {% endblock %}

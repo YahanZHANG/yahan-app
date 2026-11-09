@@ -1,6 +1,6 @@
 {% extends "outings/base.html" %}
 
-{% block title %}おでかけ | スイスの週末を、もっと楽しく{% endblock %}
+{% block title %}おでかけ{% endblock %}
 
 {% block content %}
 <div class="og-page og-home">
@@ -11,12 +11,36 @@
     <section class="og-hero{% if hero %} og-hero--photo{% endif %}"{% if hero %} style="--og-hero-photo: url('{{ hero.image }}')"{% endif %}>
         <div class="og-hero__inner">
             <p class="og-hero__kicker">{% if weekday %}次の平日、どこ行く？{% else %}今週末、どこ行く？{% endif %}</p>
-            {% if forecast %}
-                <ul class="og-hero__weather" aria-label="{{ forecast_area }}の天気">
-                    {% for day in forecast %}
-                        <li><b>{{ day.day }}</b><span class="og-hero__wx">{{ day.emoji }}</span>{{ day.temp|default:"" }}{% if day.rain %}<small>☔{{ day.rain }}</small>{% endif %}</li>
+            {% if halves %}
+                <p class="og-hero__where"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ forecast_area }}の天気</p>
+                <div class="og-hero__halfdays" aria-label="{{ forecast_area }}の天気">
+                    {% for day in halves %}
+                        <div class="og-hero__hrow">
+                            <span class="og-hero__dname">{{ day.day }}<small>{{ day.date }}</small></span>
+                            {% for h in day.halves %}
+                                <span class="og-hero__half">
+                                    <small class="og-hero__hname">{{ h.name }}</small>
+                                    <span class="og-hero__icon" aria-hidden="true">{{ h.emoji }}</span>
+                                    <span class="og-hero__hinfo"><b>{% if h.temp is not None %}{{ h.temp }}°{% endif %}</b><small>{{ h.label }}</small></span>
+                                </span>
+                            {% endfor %}
+                        </div>
                     {% endfor %}
-                    <li class="og-hero__where">{{ forecast_area }}</li>
+                </div>
+            {% elif forecast %}
+                <p class="og-hero__where"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ forecast_area }}の天気</p>
+                <ul class="og-hero__days" aria-label="{{ forecast_area }}の天気">
+                    {% for day in forecast %}
+                        <li class="og-hero__day">
+                            <span class="og-hero__dname">{{ day.day }}<small>{{ day.date }}</small></span>
+                            <span class="og-hero__icon" aria-hidden="true">{{ day.emoji }}</span>
+                            <span class="og-hero__info">
+                                <span class="og-hero__label">{{ day.label }}</span>
+                                {% if day.high is not None %}<span class="og-hero__temp"><b>{{ day.high }}°</b><small>{{ day.low }}°</small></span>{% endif %}
+                                {% if day.rain %}<span class="og-hero__rain">☔ 雨 {{ day.rain }}</span>{% endif %}
+                            </span>
+                        </li>
+                    {% endfor %}
                 </ul>
             {% endif %}
             <p class="og-hero__lead">
@@ -30,13 +54,41 @@
                 <a class="og-hero__go" href="{% url 'outings:find' %}?when=weekend&amp;sort=sunny#results">☀️ 晴れの場所から探す<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
             {% endif %}
         </div>
-        {% if hero %}<a class="og-hero__credit" href="{{ hero.url }}">写真：{{ hero.title }}</a>{% endif %}
+        {% if hero %}<a class="og-hero__credit" href="{{ hero.url }}" data-hero-credit>写真：{{ hero.title }}</a>{% endif %}
+        {% if heroes|length > 1 %}
+            <div class="og-hero__swap">
+                <button type="button" class="og-hero__swapbtn" data-hero-step="-1" hidden>‹ 戻す</button>
+                <button type="button" class="og-hero__swapbtn" data-hero-step="1">ほかのおすすめ ›</button>
+            </div>
+            {{ heroes|json_script:"og-heroes" }}
+            <script>
+            (function () {
+                var list = JSON.parse(document.getElementById("og-heroes").textContent);
+                var hero = document.querySelector(".og-hero--photo");
+                var credit = hero && hero.querySelector("[data-hero-credit]");
+                var back = hero && hero.querySelector('[data-hero-step="-1"]');
+                var index = 0;
+                if (!hero || !credit) return;
+                list.slice(1).forEach(function (item) { new Image().src = item.image; });
+                hero.querySelectorAll("[data-hero-step]").forEach(function (button) {
+                    button.addEventListener("click", function () {
+                        index = (index + Number(button.dataset.heroStep) + list.length) % list.length;
+                        var item = list[index];
+                        hero.style.setProperty("--og-hero-photo", "url('" + item.image.replace(/'/g, "%27") + "')");
+                        credit.href = item.url;
+                        credit.textContent = "写真：" + item.title;
+                        back.hidden = index === 0;
+                    });
+                });
+            })();
+            </script>
+        {% endif %}
     </section>
 
     {% if ask %}
         <a class="og-askbar" href="{% url 'outings:my_preferences' %}">
             <span aria-hidden="true">✨</span>
-            <span><strong>あなたに合わせる</strong><small>4つの質問に答えると、おすすめがあなた向けになります</small></span>
+            <span><strong>あなたに合わせる</strong><small>いくつかの質問に答えると、おすすめがあなた向けになります</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </a>
     {% elif request.GET.saved %}

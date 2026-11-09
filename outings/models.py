@@ -592,6 +592,7 @@ class OutingsPreference(models.Model):
     with_kids = models.BooleanField("子どもと出かける", null=True, blank=True)
     kid_ages = models.JSONField("子どもの年齢", default=list, blank=True)
     days_off = models.CharField("お休み", max_length=10, choices=DaysOff.choices, blank=True)
+    interests = models.JSONField("興味のある分野", default=list, blank=True)
     setup = models.CharField("質問", max_length=10, choices=Setup.choices, blank=True, default="")
     hide_went = models.BooleanField("行った場所を一覧に出さない", default=False)
 
@@ -1424,3 +1425,35 @@ class OutingsVisit(models.Model):
 
     def __str__(self):
         return f"{self.get_target_display()} {self.object_id}: {self.get_status_display()}"
+
+
+
+class OutingsReport(models.Model):
+    """From a detail page: a mistake, extra information or a photo for a
+    trip, 子連れスポット or event. Photos go up only after an admin checks them."""
+
+    class Kind(models.TextChoices):
+        FIX = "fix", "間違いの報告"
+        ADD = "add", "情報の追加"
+        PHOTO = "photo", "写真の投稿"
+
+    target = models.CharField("対象", max_length=10, choices=OutingsVisit.Target.choices)
+    object_id = models.PositiveIntegerField("対象のID")
+    kind = models.CharField("種類", max_length=10, choices=Kind.choices, default=Kind.FIX)
+    message = models.TextField("内容", max_length=1000, blank=True)
+    photo_url = models.URLField("写真", max_length=1000, blank=True)
+    visitor_id = models.UUIDField(null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="outings_reports", verbose_name="ユーザー",
+    )
+    is_done = models.BooleanField("対応済み", default=False)
+    created_at = models.DateTimeField("送信日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "訂正・追加・写真"
+        verbose_name_plural = "訂正・追加・写真（利用者から）"
+        ordering = ["is_done", "-created_at"]
+
+    def __str__(self):
+        return f"{self.get_target_display()} {self.object_id}: {self.get_kind_display()}"

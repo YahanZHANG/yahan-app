@@ -285,6 +285,19 @@ def tourist_spot_list(request):
 # Tourist spot detail
 # =========================================================
 
+def _trip_weather(spot, visitor_id):
+    """Forecast at the nearest weather point for the visitor's days off."""
+    if spot.latitude is None or spot.longitude is None:
+        return []
+    from django.utils import timezone
+    from . import profile as visitor_profile
+    from . import sunny
+    from .services import weather
+    from .spot_views import place_weather
+    days = visitor_profile.days_off(timezone.now(), visitor_profile.get_profile(visitor_id))
+    return place_weather(spot.latitude, spot.longitude, days, weather._forecasts(sunny.POINTS))
+
+
 def tourist_spot_detail(request, pk):
 
     spot = get_object_or_404(
@@ -356,6 +369,7 @@ def tourist_spot_detail(request, pk):
             ),
             "is_hearted": is_hearted,
             "visits": visit_context(request, Target.TRIP, spot, visitor_id),
+            "wx": _trip_weather(spot, visitor_id),
         },
     )
 

@@ -12,6 +12,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 
+from . import interests
 from . import profile as visitor_profile
 from . import sunny
 from .services import schedule
@@ -132,6 +133,12 @@ def event_items(now, days, f):
         low, high = event_ages(event)
         if f["age"] and not ages_fit(low, high, f["age"]):
             continue
+        tags = interests.tag(
+            f"{event.title} {event.title_original} {event.highlight_ja} {event.summary_ja}",
+            category=event.category.slug if event.category_id else "",
+        )
+        if f["interests"] and not tags & set(f["interests"]):
+            continue
         relevance = 0
         if f["words"]:
             matched, relevance = text_search.score(text_search.event_document(event), f["words"])
@@ -152,7 +159,7 @@ def event_items(now, days, f):
             # Events only happen on those days: one step up against places that are always there.
             "base": sunny.score_from_100(event.ai_score) + 1 + (0.5 if event.listing_tier == "featured" else 0),
             "rain_ok": event.is_indoor, "canton": loc.canton if loc else "",
-            "new": event.created_at, "relevance": relevance,
+            "new": event.created_at, "relevance": relevance, "interests": tags,
         })
     return items
 
@@ -178,6 +185,13 @@ def trip_items(f):
         area = area_of_point(spot.latitude, spot.longitude)
         if f["areas"] and area not in f["areas"]:
             continue
+        details = spot.details or {}
+        tags = interests.tag(
+            f"{spot.title_ja} {spot.title_original} {spot.intro_ja} {spot.summary_ja} {' '.join(details.get('highlights_ja') or [])}",
+            spot_type=spot.spot_type,
+        )
+        if f["interests"] and not tags & set(f["interests"]):
+            continue
         photo = (spot.details or {}).get("approved_image") or {}
         items.append({
             "kind": "trip", "kind_label": spot.get_spot_type_display(), "pk": spot.pk,
@@ -188,7 +202,7 @@ def trip_items(f):
             "desc": sunny.short_text(spot.intro_ja or spot.summary_ja, 80), "badges": [],
             "lat": spot.latitude, "lon": spot.longitude, "area": area,
             "base": sunny.score_from_100(spot.ai_quality_score), "rain_ok": False, "canton": "",
-            "new": spot.published_at or spot.imported_at, "relevance": relevance,
+            "new": spot.published_at or spot.imported_at, "relevance": relevance, "interests": tags,
         })
     return items
 
@@ -216,6 +230,9 @@ def kids_items(f, month):
             continue
         if f["age"] and not ages_fit(spot.age_min, spot.age_max, f["age"]):
             continue
+        tags = interests.tag(f"{spot.name} {spot.name_ja} {spot.summary_ja} {spot.intro_ja}", kind=spot.kind)
+        if f["interests"] and not tags & set(f["interests"]):
+            continue
         relevance = 0
         if f["words"]:
             document = [
@@ -238,7 +255,7 @@ def kids_items(f, month):
             "desc": sunny.short_text(spot.summary_ja or spot.intro_ja, 80), "badges": spot.badges[:3],
             "lat": spot.latitude, "lon": spot.longitude, "area": area,
             "base": spot.recommend, "rain_ok": spot.rainy_ok, "canton": spot.canton, "ages": (spot.age_min, spot.age_max),
-            "new": spot.created_at, "relevance": relevance,
+            "new": spot.created_at, "relevance": relevance, "interests": tags,
         })
     return items
 
@@ -253,6 +270,7 @@ def score_items(items, days, forecasts, preference):
         if ids:
             member.update({(kind, pk): v for pk, v in ratings(target, ids).items()})
     cantons = visitor_profile.area_cantons(preference)
+    liked = set(preference.interests or []) if preference else set()
     for item in items:
         item["wx"] = forecast_rows(item["lat"], item["lon"], days, forecasts)
         best = min((r["rank"] for r in item["wx"]), default=(9, 100))
@@ -265,6 +283,9 @@ def score_items(items, days, forecasts, preference):
         item["member_count"] = count
         # The visitor's own areas a little higher (only for ordering).
         item["order"] = item["score"] + (0.5 if (item["canton"] in cantons or item["area"] in (preference.areas if preference else [])) else 0)
+        # Things the visitor is interested in come first among similar ones.
+        if liked and item.get("interests", set()) & liked:
+            item["order"] += 0.7
 
 
 def sort_items(items, sort):
@@ -283,7 +304,7 @@ def sort_items(items, sort):
 # ---------------------------------------------------------------------------
 
 # Conditions remembered between visits (子連れ has its own cookie; type and keyword are not kept).
-REMEMBER = ("when", "day", "area", "age", "free", "rainy", "easy", "sort")
+REMEMBER = ("when", "day", "area", "age", "free", "rainy", "easy", "sort", "interest")
 REMEMBER_COOKIE = "outings_find"
 
 
@@ -332,6 +353,7 @@ def read_filters(request, now, preference, get=None):
         "family_explicit": family_explicit, "areas": areas, "age": age,
         "free": get.get("free") == "1", "rainy": get.get("rainy") == "1", "easy": get.get("easy") == "1",
         "q": get.get("q", "").strip()[:100], "sort": sort,
+        "interests": interests.clean(get.getlist("interest")),
         # Only from HOME links: kind of 子連れスポット, day trip or overnight.
         "kind": get.get("kind") if get.get("kind") in FamilySpot.Kind.values else "",
         "trip": get.get("trip") if get.get("trip") in ("day", "overnight") else "",
@@ -347,6 +369,17 @@ def collect(f, now, days, month):
     if f["type"] in ("all", "kids") or (f["type"] == "trip" and f["family"]):
         found["kids"] = kids_items(f, month)
     return found
+
+
+def map_json(items):
+    from django.http import JsonResponse
+    points = [
+        {"title": i["title"], "url": i["url"], "lat": round(float(i["lat"]), 5), "lon": round(float(i["lon"]), 5),
+         "emoji": i["emoji"], "sub": i["sub"], "wx": i["wx"][0]["emoji"] if i["wx"] else "",
+         "cls": i["wx"][0]["cls"] if i["wx"] else ""}
+        for i in items if i["lat"] is not None and i["lon"] is not None
+    ]
+    return JsonResponse({"points": points[:MAX_POINTS], "total": len(items), "shown": min(len(points), MAX_POINTS)})
 
 
 def find(request):
@@ -382,14 +415,7 @@ def find(request):
     sort_items(items, f["sort"])
 
     if wants_map(request):
-        from django.http import JsonResponse
-        points = [
-            {"title": i["title"], "url": i["url"], "lat": round(float(i["lat"]), 5), "lon": round(float(i["lon"]), 5),
-             "emoji": i["emoji"], "sub": i["sub"], "wx": i["wx"][0]["emoji"] if i["wx"] else "",
-             "cls": i["wx"][0]["cls"] if i["wx"] else ""}
-            for i in items if i["lat"] is not None and i["lon"] is not None
-        ]
-        return JsonResponse({"points": points[:MAX_POINTS], "total": len(items), "shown": min(len(points), MAX_POINTS)})
+        return map_json(items)
 
     page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
 
@@ -404,6 +430,12 @@ def find(request):
                 p.pop(key, None)
             else:
                 p[key] = value
+        return p.urlencode()
+
+    def interest_qs(key):
+        p = params.copy()
+        chosen = [k for k in f["interests"] if k != key] + ([] if key in f["interests"] else [key])
+        p.setlist("interest", chosen)
         return p.urlencode()
 
     more = params.copy()
@@ -423,10 +455,11 @@ def find(request):
     if f["family"]:
         bits.append("子連れ" + (f"（{f['age'][1]}）" if f["age"] else ""))
     bits += [label for key, label, _ in AREAS if key in f["areas"]]
+    bits += [interests.LABELS[key] for key in f["interests"]]
     bits += [label for key, label in CONDITIONS if f[key]]
     if f["q"]:
         bits.append(f"「{f['q']}」")
-    is_filtered = bool(f["areas"] or f["age"] or f["free"] or f["rainy"] or f["easy"] or f["q"] or f["day"] or f["when"] != "weekend")
+    is_filtered = bool(f["interests"] or f["areas"] or f["age"] or f["free"] or f["rainy"] or f["easy"] or f["q"] or f["day"] or f["when"] != "weekend")
     response = render(request, "outings/find.html", {
         "f": f,
         "items": page_obj.object_list,
@@ -438,6 +471,11 @@ def find(request):
         "whens": [{"key": k, "label": l, "active": not f["day"] and k == f["when"]} for k, l in WHEN],
         "day_options": [{"value": d.isoformat(), "label": label, "active": d == f["day"]} for d, label in f["days"]],
         "areas": [{"key": k, "label": l, "active": k in f["areas"]} for k, l, _ in AREAS],
+        # Chosen interests first, so they show without scrolling the chip row.
+        "interest_choices": sorted(
+            ({"key": k, "label": f"{e} {l}", "active": k in f["interests"], "qs": interest_qs(k)} for k, l, e in interests.INTERESTS),
+            key=lambda i: not i["active"],
+        ),
         "ages": [{"key": g[0], "label": g[1], "active": f["age"] == g} for g in AGE_GROUPS],
         "conditions": [{"key": k, "label": l, "active": f[k]} for k, l in CONDITIONS],
         "sorts": [{"key": k, "label": l, "active": k == f["sort"], "qs": qs(sort=k)} for k, l in SORTS],
@@ -536,7 +574,7 @@ def base_filters(family, **changes):
     f = {
         "type": "all", "when": "weekend", "day": None, "days": [], "family": family, "family_explicit": False,
         "areas": [], "age": None, "free": False, "rainy": False, "easy": False, "q": "", "words": [], "need": 0,
-        "sort": "sunny", "kind": "", "trip": "", "partial": False,
+        "sort": "sunny", "kind": "", "trip": "", "partial": False, "interests": [],
     }
     f.update(changes)
     return f
@@ -638,6 +676,9 @@ def browse(request):
         items.sort(key=lambda i: (i["new"] or oldest, i["order"]), reverse=True)
     else:
         sort_items(items, sort)
+    from .map_points import wants_map
+    if wants_map(request):
+        return map_json(items)
     page_obj = Paginator(items, PAGE_SIZE).get_page(request.GET.get("page"))
 
     def qs(**changes):

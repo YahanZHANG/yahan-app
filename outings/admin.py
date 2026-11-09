@@ -15,6 +15,7 @@ from .models import (
     EventTag,
     OutingsComment,
     OutingsFeedback,
+    OutingsReport,
     OutingsNotification,
 )
 
@@ -430,3 +431,47 @@ class OutingsVisitAdmin(admin.ModelAdmin):
     @admin.display(description="コメント")
     def short_comment(self, obj):
         return obj.comment[:40]
+
+
+
+@admin.register(OutingsReport)
+class OutingsReportAdmin(admin.ModelAdmin):
+    """利用者からの訂正・追加・写真。写真はページの「写真を変える」から「この写真にする」で載せる。"""
+    list_display = ("created_at", "kind", "target_link", "short_message", "photo_preview", "is_done")
+    list_editable = ("is_done",)
+    list_filter = ("is_done", "kind", "target")
+    search_fields = ("message",)
+    readonly_fields = ("target", "object_id", "kind", "message", "photo_preview", "photo_url", "user", "visitor_id", "created_at", "target_link")
+    actions = ["mark_done"]
+
+    @admin.display(description="ページ")
+    def target_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        from .photo_admin import DETAIL_URL
+        return format_html('<a href="{}" target="_blank">{} #{}</a>', reverse(DETAIL_URL[obj.target], args=[obj.object_id]), obj.get_target_display(), obj.object_id)
+
+    @admin.display(description="内容")
+    def short_message(self, obj):
+        return obj.message[:60]
+
+    @admin.display(description="写真")
+    def photo_preview(self, obj):
+        from django.utils.html import format_html
+        return format_html('<a href="{0}" target="_blank"><img src="{0}" style="height:60px;border-radius:6px"></a>', obj.photo_url) if obj.photo_url else ""
+
+    @admin.action(description="対応済みにする（使わない写真は保存先からも削除）")
+    def mark_done(self, request, queryset):
+        from .management.commands.cleanup_outings import delete_photos
+        from .photo_admin import current_url, get_target
+        unused = []
+        for report in queryset.exclude(photo_url=""):
+            try:
+                in_use = current_url(report.target, get_target(report.target, report.object_id)) == report.photo_url
+            except Exception:
+                in_use = False
+            if not in_use:
+                unused.append(report.photo_url)
+        if unused:
+            delete_photos(unused, lambda message: None)
+        queryset.update(is_done=True)

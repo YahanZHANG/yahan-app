@@ -1,0 +1,23 @@
+{% comment %}
+Note on where the text and photo come from, and a form to report a mistake,
+add information or send a photo. Needs `report_target` and `report_pk`.
+{% endcomment %}
+<section class="og-report" id="report">
+    <p class="og-report__note"><i class="bi bi-info-circle" aria-hidden="true"></i>写真と紹介文は、AI や公開されている情報をもとに集めてまとめたものです。間違いがあるかもしれないので、気づいたことがあればぜひ教えてください。</p>
+    <details class="og-report__box">
+        <summary><i class="bi bi-pencil-square" aria-hidden="true"></i>間違いの報告・情報の追加・写真を送る</summary>
+        <form method="post" action="{% url 'outings:send_report' report_target report_pk %}" enctype="multipart/form-data" class="og-report__form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <div class="og-report__kinds" role="radiogroup" aria-label="種類">
+                <label><input type="radio" name="kind" value="fix" checked><span>間違いを報告</span></label>
+                <label><input type="radio" name="kind" value="add"><span>情報を追加</span></label>
+                <label><input type="radio" name="kind" value="photo"><span>写真を送る</span></label>
+            </div>
+            <textarea name="message" rows="3" maxlength="1000" placeholder="例：営業時間が変わっていました／駐車場は有料です"></textarea>
+            <label class="og-report__photo">写真（任意・管理者が確認してから載せます）<input type="file" name="photo" accept="image/*"></label>
+            <input type="text" name="website" tabindex="-1" autocomplete="off" class="og-report__hp" aria-hidden="true">
+            <button type="submit" class="og-report__send">送る</button>
+        </form>
+    </details>
+</section>
