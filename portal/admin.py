@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 
 from .models import (
+    AppPopup,
     AppAccessRequest,
     AppIdea,
     PortalAnnouncement,
@@ -187,3 +188,24 @@ class PortalThemeTextAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(AppPopup)
+class AppPopupAdmin(admin.ModelAdmin):
+
+    list_display = ["title", "app", "is_active", "frequency", "audience", "order", "preview_link", "updated_at"]
+    list_editable = ["is_active", "order"]
+    list_filter = ["app", "is_active"]
+
+    fieldsets = [
+        (None, {"fields": ["app", "is_active"]}),
+        ("中身", {"fields": ["emoji", "title", "body", "image_url", "button_label", "link"]}),
+        ("出し方", {"fields": ["frequency", "audience", "home_only", "starts_at", "ends_at", "order"]}),
+    ]
+
+    @admin.display(description="プレビュー")
+    def preview_link(self, obj):
+        from django.utils.html import format_html
+
+        path = "/" if obj.app == "top" else f"/{obj.app}/"
+        return format_html('<a href="{}?popup_preview={}" target="_blank">見てみる</a>', path, obj.pk)

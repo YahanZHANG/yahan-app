@@ -2,6 +2,8 @@ from importlib import import_module
 
 from django.apps import apps as django_apps
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import AnonymousUser
+from django.test import RequestFactory
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -390,3 +392,28 @@ class ManageAppsReturnTests(TestCase):
         page = self.client.get(reverse("portal:manage_apps") + "?next=https://example.com/")
         self.assertContains(page, "Yapp Portalへ戻る")
         self.assertNotContains(page, "example.com")
+
+
+class AppPopupTests(TestCase):
+
+    def test_popup_shows_on_its_app_home_only(self):
+        from portal.models import AppPopup
+
+        AppPopup.objects.create(app="news", is_active=True, title="ニュースのお知らせ")
+        AppPopup.objects.create(app="news", is_active=False, title="出さないお知らせ")
+        AppPopup.objects.create(app="news", is_active=True, title="会員だけ", audience="members")
+        AppPopup.objects.create(app="washoku", is_active=True, title="和食のお知らせ")
+
+        factory = RequestFactory()
+        request = factory.get("/news/")
+        request.user = AnonymousUser()
+        titles = [popup.title for popup in AppPopup.for_request(request)]
+        self.assertEqual(titles, ["ニュースのお知らせ"])
+
+        request = factory.get("/news/a/1/")
+        request.user = AnonymousUser()
+        self.assertEqual(AppPopup.for_request(request), [])
+
+        request = factory.get("/help/")
+        request.user = AnonymousUser()
+        self.assertEqual(AppPopup.for_request(request), [])
