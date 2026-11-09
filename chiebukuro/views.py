@@ -31,6 +31,7 @@ from .events import day_events
 from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
+    MEMBER_ANSWERS,
     THEME_CHOICES,
     Answer,
     BoardProfile,
@@ -789,6 +790,7 @@ def question_detail(request, pk):
                     body=draft,
                     author=request.user,
                     nickname=user_nickname(request.user),
+                    is_staff=request.user.is_staff,
                 )
                 Question.objects.filter(pk=question.pk).update(last_answered_at=answer.created_at)
                 notify_answer(request, question, answer)
@@ -812,7 +814,7 @@ def question_detail(request, pk):
     related = list(
         Question.objects.filter(status=Status.PUBLISHED, theme=question.theme)
         .exclude(pk=question.pk)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
+        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
         .order_by("-last_answered_at", "-created_at")[:5]
     )
 
@@ -1545,7 +1547,7 @@ def my_list(request, section):
         questions = questions.filter(author=user) if section == "questions" else questions.filter(interests__user=user)
         context["questions"] = list(
             questions.annotate(
-                answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+                answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
                 interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
             ).order_by("-created_at")[:50]
         )
@@ -1778,7 +1780,7 @@ def profile(request, username):
     )
     questions = list(
         Question.objects.filter(author=person, status=Status.PUBLISHED)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
+        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
         .order_by("-created_at")[:30]
     )
     items = list(Item.objects.filter(owner=person, status=Status.PUBLISHED).exclude(state=Item.State.DONE)[:30])

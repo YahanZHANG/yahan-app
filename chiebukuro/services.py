@@ -11,7 +11,7 @@ from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import QUEUED, Answer, Question, Status, SurveyImport
+from .models import MEMBER_ANSWERS, QUEUED, Answer, Question, Status, SurveyImport
 
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ def import_from_survey():
 
     # 新しい質問は「公開待ち」にして、少しずつ出す (答えが0〜1件のものは「答え待ち」の枠で別に数える)
     for question in created:
-        few = question.answers.filter(status=Status.PUBLISHED).count() < QUEUE_MIN_ANSWERS
+        few = question.answers.filter(status=Status.PUBLISHED, is_staff=False).count() < QUEUE_MIN_ANSWERS
         Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank, release_open=few)
         next_rank += 1
 
@@ -193,7 +193,7 @@ def question_list(theme="", region="", sort="new", query=""):
         Question.objects
         .filter(status=Status.PUBLISHED)
         .annotate(
-            answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+            answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
             interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
         )
     )
@@ -541,7 +541,7 @@ def featured_this_week(limit=3):
         Question.objects.filter(status=Status.PUBLISHED)
         .annotate(
             week_interest=Count("interests", filter=Q(interests__created_at__gte=since), distinct=True),
-            week_answers=Count("answers", filter=Q(answers__created_at__gte=since, answers__status=Status.PUBLISHED), distinct=True),
+            week_answers=Count("answers", filter=MEMBER_ANSWERS & Q(answers__created_at__gte=since), distinct=True),
         )
     )
 

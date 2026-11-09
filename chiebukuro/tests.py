@@ -559,6 +559,19 @@ class PostTests(BoardTestCase):
         self.client.post(edit, {"nickname": "ありす"})
         self.assertEqual(BoardProfile.objects.get(user=self.alice).nickname_changes, 3)
 
+    def test_staff_answers_are_not_counted(self):
+        from chiebukuro.services import question_list
+
+        question = Question.objects.create(body="運営だけが答えた質問", theme="life")
+        Answer.objects.create(question=question, body="運営の答え", nickname="運営", is_staff=True)
+        self.assertEqual(question_list().get(pk=question.pk).answer_total, 0)
+        Answer.objects.create(question=question, body="友だちの答え", author=self.bob, nickname="ボブ")
+        self.assertEqual(question_list().get(pk=question.pk).answer_total, 1)
+        staff = User.objects.create_user("staffer2", password=PASSWORD, is_staff=True)
+        self.client.force_login(staff)
+        self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "運営からもう一言"})
+        self.assertTrue(Answer.objects.get(body="運営からもう一言").is_staff)
+
     def test_home_region_next_to_name(self):
         BoardProfile.objects.update_or_create(user=self.alice, defaults={"region": "basel"})
         post = Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")

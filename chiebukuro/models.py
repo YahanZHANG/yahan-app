@@ -225,6 +225,7 @@ class Answer(models.Model):
     )
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     from_survey = models.BooleanField("事前アンケートから", default=False)
+    is_staff = models.BooleanField("運営の回答", default=False, help_text="運営の回答は、回答の数に入れません。")
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
@@ -242,6 +243,10 @@ class Answer(models.Model):
     @property
     def display_name(self):
         return self.nickname or "名無しさん"
+
+
+# 回答の数は運営以外の公開中の回答だけ (運営が何回答えても、ほかに誰も答えていなければ 0)
+MEMBER_ANSWERS = models.Q(answers__status=Status.PUBLISHED, answers__is_staff=False)
 
 
 class Interest(models.Model):
