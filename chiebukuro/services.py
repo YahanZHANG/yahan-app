@@ -5,12 +5,12 @@
 import logging
 
 from django.db import transaction
-from django.db.models import Count, F, Q, Value
+from django.db.models import Count, F, Max, Q, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Answer, Question, Status, SurveyImport
+from .models import QUEUED, Answer, Question, Status, SurveyImport
 
 
 logger = logging.getLogger(__name__)
@@ -55,6 +55,7 @@ def import_from_survey():
         question_map[question.survey_question_id] = question
 
     new_questions = 0
+    next_rank = (Question.objects.aggregate(top=Max("release_rank"))["top"] or 0) + 1
     survey_questions = SurveyQuestion.objects.filter(status=SurveyQuestion.Status.PUBLISHED).select_related("user")
 
     for source in survey_questions:
@@ -62,6 +63,8 @@ def import_from_survey():
             continue
         is_staff_question = source.source == SurveyQuestion.Source.STAFF
         question = Question.objects.create(
+            status=QUEUED,
+            release_rank=next_rank,
             body=source.body,
             theme=source.theme,
             region="" if source.region == "other" else source.region,
@@ -74,6 +77,7 @@ def import_from_survey():
         SurveyImport.objects.create(kind="question", source_id=source.pk)
         question_map[source.pk] = question
         new_questions += 1
+        next_rank += 1
 
     new_answers = 0
     survey_answers = (
@@ -110,7 +114,39 @@ def import_from_survey():
         if question.survey_interest_count != count or question.last_answered_at != latest:
             Question.objects.filter(pk=question.pk).update(survey_interest_count=count, last_answered_at=latest)
 
+    release_survey_questions()
     return new_questions, new_answers
+
+
+def release_survey_questions(today=None):
+    """
+    アンケートから取り込んだ質問を、少しずつ公開する。
+    公開の日 (と先行リンク) は最初の release_first 問、そのあと毎日 release_per_day 問ずつ。
+    公開した質問は「新しい質問」として出るように、日時を今にそろえる (答えもその後に)。
+    """
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models import BoardSettings
+
+    board = BoardSettings.current()
+    surveyed = Question.objects.filter(survey_question_id__isnull=False)
+    shown = surveyed.exclude(status=QUEUED).count()
+    need = board.released_target(today) - shown
+    if need <= 0:
+        return 0
+    now = timezone.now()
+    released = 0
+    for question in surveyed.filter(status=QUEUED).order_by("release_rank", "pk")[:need]:
+        Question.objects.filter(pk=question.pk).update(status=Status.PUBLISHED, created_at=now)
+        for number, answer in enumerate(question.answers.order_by("created_at", "pk")):
+            Answer.objects.filter(pk=answer.pk).update(created_at=now + timedelta(seconds=number + 1))
+        if question.answers.exists():
+            Question.objects.filter(pk=question.pk).update(last_answered_at=now + timedelta(seconds=question.answers.count()))
+        released += 1
+    return released
 
 
 # =========================================================

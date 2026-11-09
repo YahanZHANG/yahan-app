@@ -59,6 +59,7 @@ from .models import (
 )
 from .services import (
     attach_stamps,
+    release_survey_questions,
     best_answers,
     current_sponsor,
     my_votes,
@@ -109,9 +110,22 @@ def board_open(view):
     def wrapper(request, *args, **kwargs):
         if not can_preview(request):
             return render(request, "chiebukuro/closed.html", status=200)
+        release_due_questions()
         return view(request, *args, **kwargs)
 
     return wrapper
+
+
+def release_due_questions():
+    """アンケートの質問の小出し (毎日ふえる分)。見られたときに、1分に1回だけ確かめる"""
+
+    from django.core.cache import cache
+
+    if cache.add("chie-release-check", 1, 60):
+        try:
+            release_survey_questions()
+        except Exception:
+            pass
 
 
 PREVIEW_SESSION_KEY = "chiebukuro_preview"

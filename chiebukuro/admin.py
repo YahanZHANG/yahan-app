@@ -35,11 +35,17 @@ from .services import import_from_survey
 @admin.register(BoardSettings)
 class BoardSettingsAdmin(admin.ModelAdmin):
 
-    list_display = ["__str__", "is_open", "hero_season", "rules_updated_at", "updated_at"]
-    list_editable = ["is_open", "hero_season"]
+    list_display = ["__str__", "is_open", "hero_season", "release_start", "release_first", "release_per_day", "queued_count", "rules_updated_at", "updated_at"]
+    list_editable = ["is_open", "hero_season", "release_start", "release_first", "release_per_day"]
     readonly_fields = ["preview_key"]
     list_display_links = ["__str__"]
     change_list_template = "admin/chiebukuro/boardsettings/change_list.html"
+
+    @admin.display(description="公開待ちの質問")
+    def queued_count(self, obj):
+        from .models import QUEUED
+
+        return Question.objects.filter(status=QUEUED).count()
 
     def has_add_permission(self, request):
         return not BoardSettings.objects.exists()
@@ -91,9 +97,9 @@ def set_status(modeladmin, request, queryset, status, label):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "theme", "region", "status", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
+    list_display = ["short_body", "theme", "region", "status", "release_rank", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
     list_display_links = ["short_body"]
-    list_editable = ["theme", "region", "status", "home_pick"]
+    list_editable = ["theme", "region", "status", "release_rank", "home_pick"]
     list_filter = ["status", "theme", "source", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["source", "author", "survey_question_id", "last_answered_at", "updated_at"]

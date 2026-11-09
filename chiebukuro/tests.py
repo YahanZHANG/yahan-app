@@ -84,6 +84,32 @@ class SurveyImportTests(BoardTestCase):
         SurveyAnswer.objects.create(question=member_q, body="塩", nickname="空", publish_consent=True)
         self.assertEqual(import_from_survey(), (0, 1))
 
+    def test_survey_questions_are_released_little_by_little(self):
+        import datetime
+
+        from chiebukuro.models import QUEUED, BoardSettings
+        from chiebukuro.services import release_survey_questions
+
+        for number in range(40):
+            SurveyQuestion.objects.create(body=f"質問{number}", theme="life")
+        import_from_survey()
+        surveyed = Question.objects.filter(survey_question_id__isnull=False)
+        self.assertEqual(surveyed.filter(status="published").count(), 30)
+        self.assertEqual(surveyed.filter(status=QUEUED).count(), 10)
+        # 公開待ちは一覧にも詳細にも出ない
+        hidden = surveyed.filter(status=QUEUED).first()
+        self.assertEqual(self.client.get(reverse("chiebukuro:question", args=[hidden.pk])).status_code, 404)
+
+        board = BoardSettings.current()
+        board.is_open = True
+        board.save()
+        self.assertEqual(board.release_start, timezone.localdate())
+        self.assertEqual(release_survey_questions(), 0)
+        board.release_start = timezone.localdate() - datetime.timedelta(days=2)
+        board.save()
+        self.assertEqual(release_survey_questions(), 6)
+        self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)
+
     def test_deleted_items_do_not_come_back(self):
         self.make_survey()
         import_from_survey()

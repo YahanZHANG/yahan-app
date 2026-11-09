@@ -62,6 +62,22 @@ class BoardSettings(models.Model):
         blank=True,
         help_text="ルールを変えたら、ここを「今日」「現在」にして保存してください。これより前に同意した人には、次に書きこむときにもう一度同意の画面が出ます。",
     )
+    release_start = models.DateField(
+        "小出しを始めた日",
+        null=True,
+        blank=True,
+        help_text="アンケートから取り込んだ質問を、この日から毎日少しずつ公開します。「公開する」をオンにした日が自動で入ります。",
+    )
+    release_first = models.PositiveIntegerField(
+        "最初に出すアンケートの質問の数",
+        default=30,
+        help_text="公開の日 (と、公開前の先行リンク) に見せる、アンケートから取り込んだ質問の数",
+    )
+    release_per_day = models.PositiveIntegerField(
+        "毎日ふやす質問の数",
+        default=3,
+        help_text="小出しを始めた日の翌日から、毎朝この数だけ、公開待ちの質問を公開します (答えもいっしょに)。0 なら止まります。",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -75,6 +91,21 @@ class BoardSettings(models.Model):
     def current(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def save(self, *args, **kwargs):
+        # 公開した日から、アンケートの質問の小出しを始める
+        if self.is_open and not self.release_start:
+            self.release_start = timezone.localdate()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = list(kwargs["update_fields"]) + ["release_start"]
+        super().save(*args, **kwargs)
+
+    def released_target(self, today=None):
+        """今日までに見せてよい、アンケートから取り込んだ質問の数"""
+
+        today = today or timezone.localdate()
+        days = (today - self.release_start).days if self.release_start else 0
+        return self.release_first + self.release_per_day * max(0, days)
 
     def new_preview_key(self):
         import secrets
@@ -111,6 +142,11 @@ class Status(models.TextChoices):
     HIDDEN = "hidden", "非公開"
 
 
+# アンケートから取り込んだ質問は「公開待ち」から少しずつ公開する (質問だけの状態)
+QUEUED = "queued"
+QUESTION_STATUS_CHOICES = Status.choices + [(QUEUED, "公開待ち（アンケートから小出し）")]
+
+
 class Question(models.Model):
 
     class Source(models.TextChoices):
@@ -132,7 +168,9 @@ class Question(models.Model):
         related_name="chie_questions",
     )
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
-    status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    status = models.CharField("ステータス", max_length=20, choices=QUESTION_STATUS_CHOICES, default=Status.PUBLISHED, db_index=True)
+    # 公開待ちの順番 (小さいものから公開する)
+    release_rank = models.PositiveIntegerField("公開の順番", null=True, blank=True, help_text="公開待ちの質問は、小さい数から順に公開されます。")
     # アンケートで押された「私も知りたい」(取り込み時の数。掲示板で押された分は Interest)
     survey_interest_count = models.PositiveIntegerField("アンケートでの「知りたい」", default=0)
     # 事前アンケートの質問 (取り込み元)
