@@ -56,6 +56,7 @@ def import_from_survey():
         question_map[question.survey_question_id] = question
 
     new_questions = 0
+    created = []
     next_rank = (Question.objects.aggregate(top=Max("release_rank"))["top"] or 0) + 1
     survey_questions = SurveyQuestion.objects.filter(status=SurveyQuestion.Status.PUBLISHED).select_related("user")
 
@@ -64,8 +65,6 @@ def import_from_survey():
             continue
         is_staff_question = source.source == SurveyQuestion.Source.STAFF
         question = Question.objects.create(
-            status=QUEUED,
-            release_rank=next_rank,
             body=source.body,
             theme=source.theme,
             region="" if source.region == "other" else source.region,
@@ -77,8 +76,8 @@ def import_from_survey():
         )
         SurveyImport.objects.create(kind="question", source_id=source.pk)
         question_map[source.pk] = question
+        created.append(question)
         new_questions += 1
-        next_rank += 1
 
     new_answers = 0
     survey_answers = (
@@ -105,6 +104,12 @@ def import_from_survey():
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
 
+    # 答えが2件以上ついた新しい質問は「公開待ち」にして、少しずつ出す (答えが少ないものは、答えを集めたいのですぐ公開)
+    for question in created:
+        if question.answers.filter(status=Status.PUBLISHED).count() >= QUEUE_MIN_ANSWERS:
+            Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank)
+            next_rank += 1
+
     # 「私も知りたい」の数と、最後の答えの日時をそろえる
     interest_counts = dict(
         SurveyInterest.objects.values("question_id").annotate(n=Count("pk")).values_list("question_id", "n")
@@ -119,10 +124,15 @@ def import_from_survey():
     return new_questions, new_answers
 
 
+# アンケートの質問で、答えがこの数以上あるものは少しずつ公開する (それより少ないものはすぐ公開)
+QUEUE_MIN_ANSWERS = 2
+
+
 def release_survey_questions(today=None):
     """
     アンケートから取り込んだ質問を、少しずつ公開する。
     公開の日 (と先行リンク) は最初の release_first 問、そのあと毎日 release_per_day 問ずつ。
+    数えるのは、順番 (release_rank) のついた質問だけ (答えの少ない質問は、はじめから公開している)。
     公開した質問は「新しい質問」として出るように、日時を今にそろえる (答えもその後に)。
     """
 
@@ -133,7 +143,7 @@ def release_survey_questions(today=None):
     from .models import BoardSettings
 
     board = BoardSettings.current()
-    surveyed = Question.objects.filter(survey_question_id__isnull=False)
+    surveyed = Question.objects.filter(survey_question_id__isnull=False, release_rank__isnull=False)
     shown = surveyed.exclude(status=QUEUED).count()
     need = board.released_target(today) - shown
     if need <= 0:

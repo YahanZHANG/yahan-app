@@ -1,6 +1,7 @@
 """
 アンケートから取り込んだ質問を、いったん全部「公開待ち」にして、公開の順番をつける。
 - 掲示板で (アンケート以外の) 答えがもうついた質問は、そのまま公開
+- 答えが1件以下の質問も、そのまま公開 (答えを集めたいので。順番なし = 30問には数えない)
 - ほかは、テーマを順番にまわして、答えの多いもの・「知りたい」の多いものから
 最初の30問は、次に掲示板が開かれたときに公開される (release_survey_questions)。
 """
@@ -21,7 +22,7 @@ def queue(apps, schema_editor):
     )
     by_theme = {}
     for question in candidates:
-        if question.board_answers:
+        if question.board_answers or question.all_answers <= 1:
             continue
         by_theme.setdefault(question.theme, []).append(question)
     for questions in by_theme.values():

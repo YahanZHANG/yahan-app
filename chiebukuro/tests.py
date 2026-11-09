@@ -91,11 +91,18 @@ class SurveyImportTests(BoardTestCase):
         from chiebukuro.services import release_survey_questions
 
         for number in range(40):
-            SurveyQuestion.objects.create(body=f"質問{number}", theme="life")
+            source = SurveyQuestion.objects.create(body=f"質問{number}", theme="life")
+            for answer in range(2):
+                SurveyAnswer.objects.create(question=source, body=f"答え{answer}", nickname="x", publish_consent=True)
+        lonely = SurveyQuestion.objects.create(body="答えが1件だけ", theme="life")
+        SurveyAnswer.objects.create(question=lonely, body="ひとつ", nickname="x", publish_consent=True)
+        SurveyQuestion.objects.create(body="答えなし", theme="life")
         import_from_survey()
         surveyed = Question.objects.filter(survey_question_id__isnull=False)
-        self.assertEqual(surveyed.filter(status="published").count(), 30)
+        # 答えが2件以上の40問のうち30問 + 答えの少ない2問はすぐ公開
+        self.assertEqual(surveyed.filter(status="published").count(), 32)
         self.assertEqual(surveyed.filter(status=QUEUED).count(), 10)
+        self.assertTrue(surveyed.get(body="答えなし").status == "published")
         # 公開待ちは一覧にも詳細にも出ない
         hidden = surveyed.filter(status=QUEUED).first()
         self.assertEqual(self.client.get(reverse("chiebukuro:question", args=[hidden.pk])).status_code, 404)
