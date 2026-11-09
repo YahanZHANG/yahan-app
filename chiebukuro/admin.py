@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from django.urls import path, reverse
 
 from .models import (
+    MEMBER_ANSWERS,
     Answer,
     BoardSettings,
     Item,
@@ -35,11 +36,17 @@ from .services import import_from_survey
 @admin.register(BoardSettings)
 class BoardSettingsAdmin(admin.ModelAdmin):
 
-    list_display = ["__str__", "is_open", "hero_season", "rules_updated_at", "updated_at"]
-    list_editable = ["is_open", "hero_season"]
+    list_display = ["__str__", "is_open", "hero_season", "release_start", "release_first", "release_per_day", "release_open_first", "release_open_per_day", "queued_count", "rules_updated_at", "updated_at"]
+    list_editable = ["is_open", "hero_season", "release_start", "release_first", "release_per_day", "release_open_first", "release_open_per_day"]
     readonly_fields = ["preview_key"]
     list_display_links = ["__str__"]
     change_list_template = "admin/chiebukuro/boardsettings/change_list.html"
+
+    @admin.display(description="公開待ちの質問")
+    def queued_count(self, obj):
+        from .models import QUEUED
+
+        return Question.objects.filter(status=QUEUED).count()
 
     def has_add_permission(self, request):
         return not BoardSettings.objects.exists()
@@ -91,9 +98,9 @@ def set_status(modeladmin, request, queryset, status, label):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "theme", "region", "status", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
+    list_display = ["short_body", "theme", "region", "status", "release_rank", "release_open", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
     list_display_links = ["short_body"]
-    list_editable = ["theme", "region", "status", "home_pick"]
+    list_editable = ["theme", "region", "status", "release_rank", "home_pick"]
     list_filter = ["status", "theme", "source", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["source", "author", "survey_question_id", "last_answered_at", "updated_at"]
@@ -103,7 +110,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            answers_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+            answers_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
             interests_total=Count("interests", distinct=True),
         )
 
@@ -111,7 +118,7 @@ class QuestionAdmin(admin.ModelAdmin):
     def short_body(self, obj):
         return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
 
-    @admin.display(description="答え", ordering="answers_total")
+    @admin.display(description="答え（運営以外）", ordering="answers_total")
     def answer_count(self, obj):
         return obj.answers_total
 
@@ -131,9 +138,9 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "question", "nickname", "status", "from_survey", "home_pick", "created_at"]
-    list_editable = ["status", "home_pick"]
-    list_filter = ["status", "from_survey"]
+    list_display = ["short_body", "question", "nickname", "status", "from_survey", "is_staff", "home_pick", "created_at"]
+    list_editable = ["status", "is_staff", "home_pick"]
+    list_filter = ["status", "from_survey", "is_staff"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["question", "author", "from_survey"]
     actions = ["publish", "hide"]

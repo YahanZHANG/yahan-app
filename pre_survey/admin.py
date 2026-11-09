@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from .features import FEATURE_CHOICES
 from .models import Answer, FeatureWish, Participant, Question, ShareOffer
-from .services import POPULAR_MIN_INTERESTS
+from .services import POPULAR_MIN_INTERESTS, with_answer_count
 
 
 def csv_response(filename, header, rows):
@@ -102,11 +102,11 @@ class QuestionAdmin(admin.ModelAdmin):
     actions = ["publish", "hide", "reject", "export_csv"]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("user").annotate(
-            answers_total=Count("answers", filter=Q(answers__is_hidden=False), distinct=True),
+        questions = super().get_queryset(request).select_related("user").annotate(
             interests_total=Count("interests", distinct=True),
             skips_total=Count("skips", distinct=True),
         )
+        return with_answer_count(questions, "answers_total")
 
     @admin.display(description="質問")
     def short_body(self, obj):
@@ -121,6 +121,8 @@ class QuestionAdmin(admin.ModelAdmin):
 
     @admin.display(description="回答", ordering="answers_total")
     def answer_count(self, obj):
+        if obj.board_answers:
+            return f"{obj.answers_total}（掲示板 {obj.board_answers}）"
         return obj.answers_total
 
     @admin.display(description="知りたい", ordering="interests_total")

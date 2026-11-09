@@ -31,6 +31,7 @@ from .events import day_events
 from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
+    MEMBER_ANSWERS,
     THEME_CHOICES,
     Answer,
     BoardProfile,
@@ -59,6 +60,10 @@ from .models import (
 )
 from .services import (
     attach_stamps,
+    rename_member_content,
+    new_questions,
+    questions_to_ask,
+    release_survey_questions,
     best_answers,
     current_sponsor,
     my_votes,
@@ -109,9 +114,22 @@ def board_open(view):
     def wrapper(request, *args, **kwargs):
         if not can_preview(request):
             return render(request, "chiebukuro/closed.html", status=200)
+        release_due_questions()
         return view(request, *args, **kwargs)
 
     return wrapper
+
+
+def release_due_questions():
+    """アンケートの質問の小出し (毎日ふえる分)。見られたときに、1分に1回だけ確かめる"""
+
+    from django.core.cache import cache
+
+    if cache.add("chie-release-check", 1, 60):
+        try:
+            release_survey_questions()
+        except Exception:
+            pass
 
 
 PREVIEW_SESSION_KEY = "chiebukuro_preview"
@@ -313,7 +331,7 @@ def open_items():
 
 VOTER_COOKIE = "cb_voter"
 # 「今日のひとこと」のカード (BoardProfile の欄の名前)。この順に1枚ずつ出す
-DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia", "daily_poll"]
+DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia"]
 
 
 @board_open
@@ -330,14 +348,18 @@ def home(request):
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
     poll = poll_for_home(request, voter_key)
+    fresh = new_questions(region)
+    fresh_ids = {question.pk for question in fresh}
     # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
+    # アンケートは別のポップアップ (2回目に開いたとき、質問の回答協力のあと。まだ答えていないときだけ)
     daily_auto = set(DAILY_CARDS)
+    poll_auto = True
     if request.user.is_authenticated:
         profile = BoardProfile.objects.filter(user=request.user).first()
         if profile:
             daily_auto = {field for field in DAILY_CARDS if profile.daily_popup and getattr(profile, field)}
-    if not poll or poll.my_choice_id:
-        daily_auto.discard("daily_poll")
+            poll_auto = profile.daily_poll
+    poll_auto = bool(poll_auto and poll and not poll.my_choice_id)
     daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
@@ -349,14 +371,18 @@ def home(request):
             "daily": daily,
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
+            "poll_auto": poll_auto,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
             "gives": give_items_with_photo(region),
             "headlines": news_headlines(),
-            "waiting": waiting_questions(region=region, limit=3),
+            "new_questions": fresh,
+            "waiting": [question for question in waiting_questions(region=region, limit=6) if question.pk not in fresh_ids][:3],
+            "ask_questions": questions_to_ask(request.user, region),
             "today": timezone.localdate(),
             "hero_time": hero_time(),
+            "login_url": login_url(request),
             "hero_season": season,
             "cal": cal,
             "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
@@ -767,6 +793,7 @@ def question_detail(request, pk):
                     body=draft,
                     author=request.user,
                     nickname=user_nickname(request.user),
+                    is_staff=request.user.is_staff,
                 )
                 Question.objects.filter(pk=question.pk).update(last_answered_at=answer.created_at)
                 notify_answer(request, question, answer)
@@ -790,7 +817,7 @@ def question_detail(request, pk):
     related = list(
         Question.objects.filter(status=Status.PUBLISHED, theme=question.theme)
         .exclude(pk=question.pk)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
+        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
         .order_by("-last_answered_at", "-created_at")[:5]
     )
 
@@ -1523,7 +1550,7 @@ def my_list(request, section):
         questions = questions.filter(author=user) if section == "questions" else questions.filter(interests__user=user)
         context["questions"] = list(
             questions.annotate(
-                answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+                answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
                 interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
             ).order_by("-created_at")[:50]
         )
@@ -1558,10 +1585,12 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles + DAILY_CARDS + ["color_auto"]:
+        for field in toggles + DAILY_CARDS + ["daily_poll", "color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
-        # 1枚もえらばなければ、自動では出さない
-        board_profile.daily_popup = any(getattr(board_profile, field) for field in DAILY_CARDS)
+        # 「ずっと表示しない」か、1つもえらばなければ、自動では出さない
+        board_profile.daily_popup = request.POST.get("daily_popup", "1") != "0" and any(
+            getattr(board_profile, field) for field in DAILY_CARDS
+        )
         if request.POST.get("color") in BoardProfile.Color.values:
             board_profile.color = request.POST["color"]
         board_profile.save()
@@ -1580,8 +1609,8 @@ def settings_view(request):
             "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
             "daily_cards": [
-                (field, label, board_profile.daily_popup and getattr(board_profile, field))
-                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識", "アンケート（まだ答えていないときだけ）"])
+                (field, label, getattr(board_profile, field))
+                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識"])
             ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
         },
@@ -1679,7 +1708,17 @@ def profile_edit(request):
             error = "ニックネームは30文字までです。"
         elif len(intro) > 160:
             error = "ひとことは160文字までです。"
+        elif nickname != user_nickname(request.user) and board_profile.next_nickname_change():
+            when = timezone.localtime(board_profile.next_nickname_change())
+            error = f"ニックネームは、続けて変えられません。次に変えられるのは {when.month}月{when.day}日 {when:%H:%M} からです。"
         else:
+            renamed = nickname != user_nickname(request.user)
+            if renamed:
+                # はじめて名前をつけるとき (ユーザーIDのまま) は回数に入れない
+                if yapp_profile.nickname:
+                    board_profile.nickname_changes += 1
+                    board_profile.nickname_changed_at = timezone.now()
+                rename_member_content(request.user, nickname)
             yapp_profile.nickname = nickname
             yapp_profile.save(update_fields=["nickname"])
             board_profile.save()
@@ -1695,6 +1734,7 @@ def profile_edit(request):
             "board_profile": board_profile,
             "avatar_groups": avatar_art.choices_for_editor(board_profile.avatar_parts),
             "avatar_kinds": BoardProfile.AvatarKind.choices,
+            "next_nickname_change": board_profile.next_nickname_change(),
             "error": error,
         },
     )
@@ -1743,7 +1783,7 @@ def profile(request, username):
     )
     questions = list(
         Question.objects.filter(author=person, status=Status.PUBLISHED)
-        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
+        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
         .order_by("-created_at")[:30]
     )
     items = list(Item.objects.filter(owner=person, status=Status.PUBLISHED).exclude(state=Item.State.DONE)[:30])

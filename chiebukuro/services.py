@@ -3,14 +3,15 @@
 """
 
 import logging
+from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count, F, Q, Value
+from django.db.models import Case, Count, F, IntegerField, Max, Q, Value, When
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Answer, Question, Status, SurveyImport
+from .models import MEMBER_ANSWERS, QUEUED, Answer, Question, Status, SurveyImport
 
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,21 @@ def user_nickname(user):
 
     profile = UserProfile.objects.filter(user=user).first()
     return (profile.display_name if profile else user.username)[:30]
+
+
+def rename_member_content(user, nickname):
+    """ニックネームを変えたら、これまでの質問・回答・つぶやきなども新しい名前にする"""
+
+    from .models import Item, ItemRequest, Notice, Post, PostReply
+
+    nickname = nickname[:30]
+    Question.objects.filter(author=user).exclude(source=Question.Source.STAFF).update(nickname=nickname)
+    Answer.objects.filter(author=user).update(nickname=nickname)
+    Post.objects.filter(author=user).update(nickname=nickname)
+    PostReply.objects.filter(author=user).update(nickname=nickname)
+    Item.objects.filter(owner=user).update(nickname=nickname)
+    Notice.objects.filter(owner=user).update(nickname=nickname)
+    ItemRequest.objects.filter(requester=user).update(nickname=nickname)
 
 
 # =========================================================
@@ -55,6 +71,8 @@ def import_from_survey():
         question_map[question.survey_question_id] = question
 
     new_questions = 0
+    created = []
+    next_rank = (Question.objects.aggregate(top=Max("release_rank"))["top"] or 0) + 1
     survey_questions = SurveyQuestion.objects.filter(status=SurveyQuestion.Status.PUBLISHED).select_related("user")
 
     for source in survey_questions:
@@ -73,6 +91,7 @@ def import_from_survey():
         )
         SurveyImport.objects.create(kind="question", source_id=source.pk)
         question_map[source.pk] = question
+        created.append(question)
         new_questions += 1
 
     new_answers = 0
@@ -100,6 +119,12 @@ def import_from_survey():
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
 
+    # 新しい質問は「公開待ち」にして、少しずつ出す (答えが0〜1件のものは「答え待ち」の枠で別に数える)
+    for question in created:
+        few = question.answers.filter(status=Status.PUBLISHED, is_staff=False).count() < QUEUE_MIN_ANSWERS
+        Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank, release_open=few)
+        next_rank += 1
+
     # 「私も知りたい」の数と、最後の答えの日時をそろえる
     interest_counts = dict(
         SurveyInterest.objects.values("question_id").annotate(n=Count("pk")).values_list("question_id", "n")
@@ -110,7 +135,45 @@ def import_from_survey():
         if question.survey_interest_count != count or question.last_answered_at != latest:
             Question.objects.filter(pk=question.pk).update(survey_interest_count=count, last_answered_at=latest)
 
+    release_survey_questions()
     return new_questions, new_answers
+
+
+# アンケートの質問で、答えがこの数より少ないものは「答え待ち」の枠
+QUEUE_MIN_ANSWERS = 2
+
+
+def release_survey_questions(today=None):
+    """
+    アンケートから取り込んだ質問を、少しずつ公開する。
+    公開の日 (と先行リンク) は最初の release_first 問、そのあと毎日 release_per_day 問ずつ。
+    答えが2件以上の枠と、答えが0〜1件の「答え待ち」の枠を、別々に数える。
+    公開した質問は「新しい質問」として出るように、日時を今にそろえる (答えもその後に)。
+    """
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models import BoardSettings
+
+    board = BoardSettings.current()
+    now = timezone.now()
+    released = 0
+    for open_pool in (False, True):
+        pool = Question.objects.filter(survey_question_id__isnull=False, release_rank__isnull=False, release_open=open_pool)
+        need = board.released_target(today, open_pool) - pool.exclude(status=QUEUED).count()
+        if need <= 0:
+            continue
+        for question in pool.filter(status=QUEUED).order_by("release_rank", "pk")[:need]:
+            Question.objects.filter(pk=question.pk).update(status=Status.PUBLISHED, created_at=now)
+            answers = list(question.answers.order_by("created_at", "pk"))
+            for number, answer in enumerate(answers):
+                Answer.objects.filter(pk=answer.pk).update(created_at=now + timedelta(seconds=number + 1))
+            if answers:
+                Question.objects.filter(pk=question.pk).update(last_answered_at=now + timedelta(seconds=len(answers)))
+            released += 1
+    return released
 
 
 # =========================================================
@@ -130,7 +193,7 @@ def question_list(theme="", region="", sort="new", query=""):
         Question.objects
         .filter(status=Status.PUBLISHED)
         .annotate(
-            answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+            answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
             interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
         )
     )
@@ -204,6 +267,32 @@ def popular_questions(theme="", region="", query="", limit=20):
         .order_by("-interest_total", "-answer_total", "-thanks_total", "-last_answered_at")
     )
     return best_answers(list(questions[:limit]))
+
+
+def new_questions(region="", limit=5, days=14):
+    """新着の質問: この2週間の質問を、答えの少ない順 (同じなら新しい順) に"""
+
+    since = timezone.now() - timedelta(days=days)
+    return list(
+        question_list(region=region).filter(created_at__gte=since)
+        .order_by("answer_total", "-created_at", "-pk")[:limit]
+    )
+
+
+def questions_to_ask(user, region="", limit=8):
+    """
+    2回目に開いたときのポップアップで聞く質問: 回答が0件か1件 (運営の回答は数えない) で、その人がまだ答えていない・
+    知りたいにしていない・自分の質問でないもの。回答の少ない順、その中で新しい順。
+    """
+
+    questions = question_list(region=region)
+    if user.is_authenticated:
+        questions = (
+            questions.exclude(author=user)
+            .exclude(answers__author=user)
+            .exclude(interests__user=user)
+        )
+    return list(questions.filter(answer_total__lte=1).order_by("answer_total", "-created_at", "-pk")[:limit])
 
 
 def waiting_questions(theme="", region="", query="", limit=30):
@@ -451,7 +540,7 @@ def featured_this_week(limit=3):
         Question.objects.filter(status=Status.PUBLISHED)
         .annotate(
             week_interest=Count("interests", filter=Q(interests__created_at__gte=since), distinct=True),
-            week_answers=Count("answers", filter=Q(answers__created_at__gte=since, answers__status=Status.PUBLISHED), distinct=True),
+            week_answers=Count("answers", filter=MEMBER_ANSWERS & Q(answers__created_at__gte=since), distinct=True),
         )
     )
 

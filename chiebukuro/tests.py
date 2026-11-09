@@ -84,6 +84,69 @@ class SurveyImportTests(BoardTestCase):
         SurveyAnswer.objects.create(question=member_q, body="塩", nickname="空", publish_consent=True)
         self.assertEqual(import_from_survey(), (0, 1))
 
+    def test_survey_questions_are_released_little_by_little(self):
+        import datetime
+
+        from chiebukuro.models import QUEUED, BoardSettings
+        from chiebukuro.services import release_survey_questions
+
+        for number in range(40):
+            source = SurveyQuestion.objects.create(body=f"質問{number}", theme="life")
+            for answer in range(2):
+                SurveyAnswer.objects.create(question=source, body=f"答え{answer}", nickname="x", publish_consent=True)
+        lonely = SurveyQuestion.objects.create(body="答えが1件だけ", theme="life")
+        SurveyAnswer.objects.create(question=lonely, body="ひとつ", nickname="x", publish_consent=True)
+        SurveyQuestion.objects.create(body="答えなし", theme="life")
+        import_from_survey()
+        surveyed = Question.objects.filter(survey_question_id__isnull=False)
+        # 答えが2件以上の40問のうち30問 + 答え待ちの枠 (0〜1件) は10問まで (ここでは2問)
+        self.assertEqual(surveyed.filter(status="published").count(), 32)
+        self.assertEqual(surveyed.filter(status=QUEUED).count(), 10)
+        self.assertTrue(surveyed.get(body="答えなし").status == "published")
+        for number in range(12):
+            SurveyQuestion.objects.create(body=f"新しい質問{number}", theme="food")
+        import_from_survey()
+        self.assertEqual(surveyed.filter(status="published", release_open=True).count(), 10)
+        # 公開待ちは一覧にも詳細にも出ない
+        hidden = surveyed.filter(status=QUEUED).first()
+        self.assertEqual(self.client.get(reverse("chiebukuro:question", args=[hidden.pk])).status_code, 404)
+
+        board = BoardSettings.current()
+        board.is_open = True
+        board.save()
+        self.assertEqual(board.release_start, timezone.localdate())
+        self.assertEqual(release_survey_questions(), 0)
+        board.release_start = timezone.localdate() - datetime.timedelta(days=2)
+        board.save()
+        self.assertEqual(release_survey_questions(), 10)  # 6 + 答え待ち 4
+        self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)  # 答えのある4問 (答え待ちは全部出た)
+
+    def test_home_new_questions_and_ask_popup(self):
+        fresh = Question.objects.create(body="新しい質問です", theme="life", author=self.alice)
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "新着の質問")
+        self.assertContains(page, f'data-ask="{fresh.pk}"')
+        self.client.force_login(self.alice)
+        # 自分の質問は聞かない
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+        # 回答が2件ついたら聞かない (運営の回答は数えない)
+        Answer.objects.create(question=fresh, body="運営", nickname="運営", is_staff=True)
+        Answer.objects.create(question=fresh, body="a", author=self.bob, nickname="ボブ")
+        self.client.logout()
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+        Answer.objects.create(question=fresh, body="b", author=self.bob, nickname="ボブ")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+
+    def test_board_answers_count_in_survey(self):
+        from pre_survey.services import with_answer_count
+
+        source = SurveyQuestion.objects.create(body="出産はどこで？", theme="health")
+        question = Question.objects.create(body="出産はどこで？", theme="health", survey_question_id=source.pk)
+        Answer.objects.create(question=question, body="運営", nickname="運営", is_staff=True)
+        Answer.objects.create(question=question, body="りらっくまの答え", author=self.bob, nickname="りらっくま")
+        row = with_answer_count(SurveyQuestion.objects.filter(pk=source.pk)).get()
+        self.assertEqual((row.answer_count, row.board_answers), (1, 1))
+
     def test_deleted_items_do_not_come_back(self):
         self.make_survey()
         import_from_survey()
@@ -115,7 +178,7 @@ class HomeTests(BoardTestCase):
         Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
         Item.objects.create(kind="give", genre="kids", title="写真なしの椅子", owner=self.bob)
         response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "あなたの知恵を貸してください"]:
+        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "新着の質問"]:
             self.assertContains(response, text)
         # つぶやきの新着・写真のないゆずりあいは HOME に出さない
         self.assertNotContains(response, "Coop に枝豆がありました")
@@ -475,6 +538,66 @@ class PostTests(BoardTestCase):
         self.assertContains(response, "ありす")
         self.assertContains(response, "バーゼル在住です")
 
+    def test_nickname_change_renames_old_posts_and_is_limited(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from travel.models import UserProfile
+
+        UserProfile.objects.update_or_create(user=self.alice, defaults={"nickname": "ありす"})
+        post = Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")
+        question = Question.objects.create(body="質問です", theme="life", author=self.alice, nickname="ありす")
+        answer = Answer.objects.create(question=question, body="答え", author=self.alice, nickname="ありす")
+        self.client.force_login(self.alice)
+        edit = reverse("chiebukuro:profile_edit")
+        self.client.post(edit, {"nickname": "アリス"})
+        for row in (post, question, answer):
+            row.refresh_from_db()
+            self.assertEqual(row.nickname, "アリス")
+        # 2回目は24時間たってから
+        response = self.client.post(edit, {"nickname": "ALICE"})
+        self.assertContains(response, "続けて変えられません")
+        self.assertEqual(UserProfile.objects.get(user=self.alice).nickname, "アリス")
+        # 名前を変えないなら、ほかの項目は保存できる
+        self.assertEqual(self.client.post(edit, {"nickname": "アリス", "intro": "よろしく"}).status_code, 302)
+        profile = BoardProfile.objects.get(user=self.alice)
+        profile.nickname_changed_at = timezone.now() - timedelta(hours=25)
+        profile.save()
+        self.client.post(edit, {"nickname": "ALICE"})
+        self.assertEqual(UserProfile.objects.get(user=self.alice).nickname, "ALICE")
+        # 3回目からは1週間
+        profile = BoardProfile.objects.get(user=self.alice)
+        profile.nickname_changed_at = timezone.now() - timedelta(days=3)
+        profile.save()
+        self.assertContains(self.client.post(edit, {"nickname": "ありす"}), "続けて変えられません")
+        profile.nickname_changed_at = timezone.now() - timedelta(days=8)
+        profile.save()
+        self.client.post(edit, {"nickname": "ありす"})
+        self.assertEqual(BoardProfile.objects.get(user=self.alice).nickname_changes, 3)
+
+    def test_staff_answers_are_not_counted(self):
+        from chiebukuro.services import question_list
+
+        question = Question.objects.create(body="運営だけが答えた質問", theme="life")
+        Answer.objects.create(question=question, body="運営の答え", nickname="運営", is_staff=True)
+        self.assertEqual(question_list().get(pk=question.pk).answer_total, 0)
+        Answer.objects.create(question=question, body="友だちの答え", author=self.bob, nickname="ボブ")
+        self.assertEqual(question_list().get(pk=question.pk).answer_total, 1)
+        staff = User.objects.create_user("staffer2", password=PASSWORD, is_staff=True)
+        self.client.force_login(staff)
+        self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "運営からもう一言"})
+        self.assertTrue(Answer.objects.get(body="運営からもう一言").is_staff)
+
+    def test_home_region_next_to_name(self):
+        BoardProfile.objects.update_or_create(user=self.alice, defaults={"region": "basel"})
+        post = Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "📍バーゼル")
+        staff = User.objects.create_user("staffer", password=PASSWORD, is_staff=True)
+        BoardProfile.objects.create(user=staff, region="bern")
+        Post.objects.create(body="運営です", author=staff, nickname="運営")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "📍ベルン")
+
     def test_write_menu_and_guest_redirect(self):
         response = self.client.get(reverse("chiebukuro:new"))
         for text in ["つぶやく", "質問する", "ゆずりあいに出す", "募集・告知する"]:
@@ -510,6 +633,10 @@ class HomeExtrasTests(BoardTestCase):
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "スイスで一番好きな季節は？")
         self.assertContains(response, "答えると結果が見られます")
+        # アンケートは「今日のひとこと」とは別のポップアップ
+        self.assertContains(response, 'id="cb-pollpop"')
+        self.assertContains(response, 'data-poll="%d" data-auto="1"' % poll.pk)
+        self.assertNotIn("cb-poll-q", response.content.decode().split('id="cb-daily"')[1].split("</dialog>")[0])
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})
@@ -913,6 +1040,11 @@ class DailyAndColorTests(BoardTestCase):
         self.assertNotIn('data-card="charm" data-auto', page)
         self.client.post(reverse("chiebukuro:settings"), {"push_frequency": "instant"})
         self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        # 「ずっと表示しない」
+        self.client.post(reverse("chiebukuro:settings"), {"daily_popup": "0", "daily_word": "1", "push_frequency": "instant"})
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "1週間表示しない")
 
     def test_day_events(self):
         import datetime

@@ -55,7 +55,7 @@ def _board_profile(context, user):
             request._cb_faces = cache
     if user.pk not in cache:
         cache[user.pk] = BoardProfile.objects.filter(user_id=user.pk).only(
-            "avatar_kind", "avatar_parts", "photo_url"
+            "avatar_kind", "avatar_parts", "photo_url", "region"
         ).first()
     return cache[user.pk]
 
@@ -75,3 +75,21 @@ def face(context, user, name=""):
     if profile and profile.avatar_kind == "illust":
         return mark_safe(avatar_art.svg(profile.avatar_parts))
     return initial(name)
+
+
+@register.simple_tag(takes_context=True)
+def home_region(context, user):
+    """名前の横に小さく出す、その人の住んでいる地域 (運営と、地域をえらんでいない人は出さない)"""
+
+    from django.utils.html import escape
+    from django.utils.safestring import mark_safe
+
+    from chiebukuro.models import BOARD_REGION_CHOICES
+
+    if not getattr(user, "pk", None) or user.is_staff:
+        return ""
+    profile = _board_profile(context, user)
+    label = dict(BOARD_REGION_CHOICES).get(profile.region, "") if profile else ""
+    if not label:
+        return ""
+    return mark_safe(f'<span class="cb-home-region" title="住んでいる地域">📍{escape(label)}</span>')

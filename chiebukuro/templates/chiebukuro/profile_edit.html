@@ -37,10 +37,11 @@
         </fieldset>
         <label class="cb-field"><span>ニックネーム（Yappのほかのアプリでも同じ名前になります）</span>
             <input type="text" name="nickname" value="{{ nickname }}" maxlength="30" required>
+            <small class="cb-sub">{% if next_nickname_change %}次に変えられるのは {{ next_nickname_change|date:"n月j日 H:i" }} からです。{% else %}これまでの投稿も新しい名前になります。何度も変えると、しばらく変えられなくなります。{% endif %}</small>
         </label>
         <label class="cb-field"><span>住んでいる地域</span>
             <select name="home_region"><option value="">ひみつ</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == board_profile.region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-            <small class="cb-sub">選ぶと、掲示板を開いたときに、その地域の書きこみが最初に出ます。</small>
+            <small class="cb-sub">選ぶと、掲示板を開いたときに、その地域の書きこみが最初に出ます。あなたの質問・答え・つぶやきにも小さく表示されます。</small>
         </label>
         <label class="cb-field"><span>ひとこと自己紹介（任意）</span>
             <textarea name="intro" rows="3" maxlength="160" placeholder="例: チューリッヒ在住3年目。2歳の娘がいます。山歩きが好きです。" data-count="intro-left">{{ board_profile.intro }}</textarea>

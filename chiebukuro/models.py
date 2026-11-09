@@ -62,6 +62,32 @@ class BoardSettings(models.Model):
         blank=True,
         help_text="ルールを変えたら、ここを「今日」「現在」にして保存してください。これより前に同意した人には、次に書きこむときにもう一度同意の画面が出ます。",
     )
+    release_start = models.DateField(
+        "小出しを始めた日",
+        null=True,
+        blank=True,
+        help_text="アンケートから取り込んだ質問を、この日から毎日少しずつ公開します。「公開する」をオンにした日が自動で入ります。",
+    )
+    release_first = models.PositiveIntegerField(
+        "最初に出すアンケートの質問の数",
+        default=30,
+        help_text="公開の日 (と、公開前の先行リンク) に見せる、アンケートから取り込んだ質問の数",
+    )
+    release_per_day = models.PositiveIntegerField(
+        "毎日ふやす質問の数",
+        default=3,
+        help_text="小出しを始めた日の翌日から、毎朝この数だけ、公開待ちの質問を公開します (答えもいっしょに)。0 なら止まります。",
+    )
+    release_open_first = models.PositiveIntegerField(
+        "最初に出す「答え待ち」の質問の数",
+        default=10,
+        help_text="アンケートから取り込んだ質問のうち、答えが0〜1件のもの (答えを集めたい質問) を最初に見せる数",
+    )
+    release_open_per_day = models.PositiveIntegerField(
+        "毎日ふやす「答え待ち」の質問の数",
+        default=2,
+        help_text="小出しを始めた日の翌日から、毎朝この数だけ、答えが0〜1件の質問を公開します。0 なら止まります。",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -75,6 +101,23 @@ class BoardSettings(models.Model):
     def current(cls):
         settings_row, _ = cls.objects.get_or_create(pk=1)
         return settings_row
+
+    def save(self, *args, **kwargs):
+        # 公開した日から、アンケートの質問の小出しを始める
+        if self.is_open and not self.release_start:
+            self.release_start = timezone.localdate()
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = list(kwargs["update_fields"]) + ["release_start"]
+        super().save(*args, **kwargs)
+
+    def released_target(self, today=None, open_pool=False):
+        """今日までに見せてよい、アンケートから取り込んだ質問の数 (open_pool: 答えが0〜1件の枠)"""
+
+        today = today or timezone.localdate()
+        days = max(0, (today - self.release_start).days) if self.release_start else 0
+        if open_pool:
+            return self.release_open_first + self.release_open_per_day * days
+        return self.release_first + self.release_per_day * days
 
     def new_preview_key(self):
         import secrets
@@ -111,6 +154,11 @@ class Status(models.TextChoices):
     HIDDEN = "hidden", "非公開"
 
 
+# アンケートから取り込んだ質問は「公開待ち」から少しずつ公開する (質問だけの状態)
+QUEUED = "queued"
+QUESTION_STATUS_CHOICES = Status.choices + [(QUEUED, "公開待ち（アンケートから小出し）")]
+
+
 class Question(models.Model):
 
     class Source(models.TextChoices):
@@ -132,7 +180,10 @@ class Question(models.Model):
         related_name="chie_questions",
     )
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
-    status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
+    status = models.CharField("ステータス", max_length=20, choices=QUESTION_STATUS_CHOICES, default=Status.PUBLISHED, db_index=True)
+    # 公開待ちの順番 (小さいものから公開する)
+    release_rank = models.PositiveIntegerField("公開の順番", null=True, blank=True, help_text="公開待ちの質問は、小さい数から順に公開されます。")
+    release_open = models.BooleanField("答え待ちの枠", default=False, help_text="アンケートで答えが0〜1件だった質問 (答えを集めたい枠で、別に数えて公開)")
     # アンケートで押された「私も知りたい」(取り込み時の数。掲示板で押された分は Interest)
     survey_interest_count = models.PositiveIntegerField("アンケートでの「知りたい」", default=0)
     # 事前アンケートの質問 (取り込み元)
@@ -174,6 +225,7 @@ class Answer(models.Model):
     )
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     from_survey = models.BooleanField("事前アンケートから", default=False)
+    is_staff = models.BooleanField("運営の回答", default=False, help_text="運営の回答は、回答の数に入れません。")
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
@@ -191,6 +243,10 @@ class Answer(models.Model):
     @property
     def display_name(self):
         return self.nickname or "名無しさん"
+
+
+# 回答の数は運営以外の公開中の回答だけ (運営が何回答えても、ほかに誰も答えていなければ 0)
+MEMBER_ANSWERS = models.Q(answers__status=Status.PUBLISHED, answers__is_staff=False)
 
 
 class Interest(models.Model):
@@ -419,6 +475,20 @@ class BoardProfile(models.Model):
     daily_word = models.BooleanField("今日のひとこと: スイスドイツ語", default=True)
     daily_trivia = models.BooleanField("今日のひとこと: 豆知識", default=True)
     daily_poll = models.BooleanField("今日のひとこと: アンケート", default=True)
+    nickname_changes = models.PositiveSmallIntegerField("ニックネームを変えた回数", default=0)
+    nickname_changed_at = models.DateTimeField("ニックネームを最後に変えた日時", null=True, blank=True)
+
+    # ニックネームを変えられる間隔: 1回目はいつでも、2回目は24時間後、3回目からは1週間後
+    NICKNAME_WAITS = [timedelta(0), timedelta(hours=24), timedelta(days=7)]
+
+    def next_nickname_change(self):
+        """次にニックネームを変えられる日時 (いつでも変えられるなら None)"""
+
+        if not self.nickname_changed_at:
+            return None
+        wait = self.NICKNAME_WAITS[min(self.nickname_changes, len(self.NICKNAME_WAITS) - 1)]
+        when = self.nickname_changed_at + wait
+        return when if when > timezone.now() else None
 
     class Color(models.TextChoices):
         CLASSIC = "classic", "スイスレッド"

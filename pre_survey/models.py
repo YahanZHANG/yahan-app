@@ -30,6 +30,7 @@ class Theme(models.TextChoices):
     HEALTH = "health", "健康・美容"
     MONEY = "money", "お金"
     CULTURE = "culture", "人付き合い・文化"
+    FOOD = "food", "食・料理"
     # 質問を追加するとき、どのテーマにも当てはまらないもの (回答するテーマとしては選ばない)
     OTHER = "other", "その他"
 
