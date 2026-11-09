@@ -10309,5 +10309,818 @@
    "carbs_g": 72,
    "salt_g": 4.0
   }
+ },
+ {
+  "name": "きゅうりとわかめの酢の物",
+  "category": "side",
+  "cooking_time_minutes": 15,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "さっぱり甘酢で、箸休めにぴったり。",
+  "mood_tags": [
+   "さっぱり",
+   "和の定番が恋しい",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "きゅうり",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "わかめ（乾燥）",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "酢",
+    "amount": "大さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "わかめは水で5分戻し、水気を絞る。",
+   "きゅうりは薄い輪切りにして塩をふり、5分置いてから水気をしっかり絞る。",
+   "酢・砂糖・醤油を混ぜて甘酢を作る。",
+   "きゅうりとわかめを甘酢で和え、せん切りの生姜とごまをのせる。"
+  ],
+  "swiss_tips": "スイスのきゅうり（Gurke）は太くて種が多いので、縦半分に切ってスプーンで種を取ってから薄切りにすると水っぽくならない。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 35,
+   "protein_g": 1,
+   "fat_g": 0.3,
+   "carbs_g": 7,
+   "salt_g": 0.9
+  }
+ },
+ {
+  "name": "きのこのバター醤油炒め",
+  "category": "side",
+  "cooking_time_minutes": 10,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "バターと醤油の香りで、ご飯がすすむ。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "マッシュルーム",
+    "amount": "150g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "エリンギ",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "しいたけ",
+    "amount": "4枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "えのき",
+    "amount": "1/2袋",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "バター",
+    "amount": "15g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "きのこは食べやすい大きさに切る（洗わずに、汚れはペーパーで拭く）。にんにくは薄切りにする。",
+   "フライパンにバターとにんにくを入れて弱火にかけ、香りが出たら中火にする。",
+   "きのこを入れ、しんなりして焼き色がつくまで、あまり混ぜずに炒める。",
+   "醤油を鍋肌から回し入れ、こしょうをふって全体を混ぜる。小口切りのねぎを散らす。"
+  ],
+  "swiss_tips": "Champignons のほか、ひらたけ（Austernpilze）や秋の Eierschwämmli（アンズタケ）でもおいしい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 90,
+   "protein_g": 3,
+   "fat_g": 7,
+   "carbs_g": 5,
+   "salt_g": 0.9
+  }
+ },
+ {
+  "name": "小松菜風の青菜炒め",
+  "category": "side",
+  "cooking_time_minutes": 10,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "スイスの青菜で、小松菜のようなシャキシャキ炒め。",
+  "mood_tags": [
+   "野菜たっぷり",
+   "さっぱり",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "チンゲン菜",
+    "amount": "2株",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ほうれん草",
+    "amount": "1/2束",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "にんにく",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "鶏がらスープの素",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "チンゲン菜は根元を切り、茎と葉に分けて4cmに切る。にんにくはみじん切りにする。",
+   "フライパンにごま油とにんにくを入れて熱し、香りが出たら茎を強火で1分炒める。",
+   "葉を加えてさっと炒め、スープの素と醤油で味をつける。塩で味をととのえる。",
+   "器に盛り、好みでかつお節をのせる。"
+  ],
+  "swiss_tips": "小松菜はスイスではほとんど見かけないので、Pak Choi（チンゲン菜）やスイスチャード（Krautstiel）、ほうれん草で。炒めすぎず、シャキッと仕上げる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 80,
+   "protein_g": 2,
+   "fat_g": 7,
+   "carbs_g": 3,
+   "salt_g": 1.0
+  }
+ },
+ {
+  "name": "にんじんしりしり",
+  "category": "side",
+  "cooking_time_minutes": 15,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "にんじんと卵の、沖縄生まれのやさしい炒めもの。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "にんじん",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "卵",
+    "amount": "1個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ツナ缶",
+    "amount": "1/2缶",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ごま油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1/4",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "にんじんはスライサーなどで細いせん切りにする。",
+   "フライパンにごま油を熱し、にんじんを中火で2〜3分、しんなりするまで炒める。",
+   "油を切ったツナ、醤油・顆粒だし・砂糖を加えて炒め合わせる。",
+   "溶き卵を回し入れ、ゆっくり混ぜて火を通す。塩で味をととのえ、かつお節を混ぜる。"
+  ],
+  "swiss_tips": "スイスのにんじん（Rüebli）は甘みが強く、しりしりに向いている。冷蔵庫で3日ほど持つ。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 150,
+   "protein_g": 7,
+   "fat_g": 10,
+   "carbs_g": 9,
+   "salt_g": 0.9
+  }
+ },
+ {
+  "name": "白菜のうま煮",
+  "category": "side",
+  "cooking_time_minutes": 20,
+  "servings": 3,
+  "serving_unit": "",
+  "description": "とろりとした中華風のあんで、白菜をたっぷり。",
+  "mood_tags": [
+   "あったまりたい",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "白菜",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "豚薄切り肉",
+    "amount": "100g",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "にんじん",
+    "amount": "1/3本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "しいたけ",
+    "amount": "3枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "生姜",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "鶏がらスープの素",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "オイスターソース",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   }
+  ],
+  "steps": [
+   "白菜は芯と葉に分け、芯はそぎ切り、葉はざく切りにする。豚肉は食べやすく切り、にんじんは短冊切り、しいたけは薄切りにする。",
+   "フライパンにごま油とせん切りの生姜を熱し、豚肉を炒める。色が変わったら白菜の芯・にんじん・しいたけを加えて炒める。",
+   "白菜の葉と水200ml・スープの素・オイスターソース・醤油を入れ、ふたをして5分煮る。",
+   "水大さじ2で溶いた片栗粉を回し入れてとろみをつけ、塩で味をととのえる。"
+  ],
+  "swiss_tips": "白菜は Chinakohl の名で Coop・Migros にある。ご飯にかけて中華丼にしてもおいしい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 180,
+   "protein_g": 9,
+   "fat_g": 11,
+   "carbs_g": 11,
+   "salt_g": 1.6
+  }
+ },
+ {
+  "name": "揚げ出し豆腐",
+  "category": "side",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "カリッと揚げた豆腐に、温かいだしをかけて。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "あったまりたい",
+   "おもてなし"
+  ],
+  "ingredients": [
+   {
+    "name": "木綿豆腐",
+    "amount": "1丁",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "片栗粉",
+    "amount": "大さじ3",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "サラダ油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "顆粒だし",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "大根（Rettich）",
+    "amount": "5cm",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "生姜",
+    "amount": "1/2かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "豆腐はキッチンペーパーで包み、重しをのせて15分水切りし、6等分に切る。",
+   "小鍋に水150ml・顆粒だし・醤油・みりんを入れてひと煮立ちさせ、つゆを作る。",
+   "豆腐の水気を拭き、片栗粉をしっかりまぶす。",
+   "170℃の油で表面がカリッとするまで3〜4分揚げる（多めの油で揚げ焼きでもよい）。",
+   "器に盛って温かいつゆをかけ、大根おろし・おろし生姜・ねぎ・かつお節をのせる。"
+  ],
+  "swiss_tips": "スイスの Tofu nature は硬めなので崩れにくく、揚げ出しに向いている。片栗粉は揚げる直前にまぶすとカリッと仕上がる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 330,
+   "protein_g": 15,
+   "fat_g": 20,
+   "carbs_g": 22,
+   "salt_g": 2.1
+  }
+ },
+ {
+  "name": "かぼちゃサラダ",
+  "category": "side",
+  "cooking_time_minutes": 20,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "ほっくり甘いかぼちゃを、マヨネーズでまろやかに。",
+  "mood_tags": [
+   "子どもが喜ぶ",
+   "お弁当向き",
+   "作りおき"
+  ],
+  "ingredients": [
+   {
+    "name": "かぼちゃ",
+    "amount": "1/4個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "玉ねぎ",
+    "amount": "1/8個",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "マヨネーズ",
+    "amount": "大さじ3",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "こしょう",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "ハム",
+    "amount": "2枚",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "ヨーグルト",
+    "amount": "大さじ1",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "きゅうり",
+    "amount": "1/2本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "かぼちゃは種とわたを取り、皮をところどころむいて3cm角に切る。",
+   "耐熱容器に入れて水大さじ1をふり、ラップをして電子レンジで5〜6分、やわらかくなるまで加熱する（蒸しても茹でてもよい）。",
+   "玉ねぎは薄切りにして水にさらし、水気を絞る。ハムは細切りにする。",
+   "熱いうちにかぼちゃをフォークで粗くつぶし、冷めたら玉ねぎ・ハム・マヨネーズ・ヨーグルトを混ぜ、塩こしょうで味をととのえる。"
+  ],
+  "swiss_tips": "Kürbis Hokkaido は皮ごと食べられるので、皮を残すと色がきれい。ヨーグルトを少し入れると、さっぱり軽くなる。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 170,
+   "protein_g": 3,
+   "fat_g": 10,
+   "carbs_g": 18,
+   "salt_g": 0.6
+  }
+ },
+ {
+  "name": "こんにゃくの甘辛煮",
+  "category": "side",
+  "cooking_time_minutes": 20,
+  "servings": 4,
+  "serving_unit": "",
+  "description": "ぷりぷりのこんにゃくを、甘辛く炒り煮に。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "作りおき",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "こんにゃく",
+    "amount": "1枚",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "小さじ2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "大さじ1.5",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "砂糖",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "みりん",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "日本酒",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "唐辛子",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": true
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "こんにゃくは両面に浅く格子の切り込みを入れ、一口大にちぎる（スプーンで切り分けてもよい）。",
+   "水から3分茹でて臭みを抜き、ざるに上げる。",
+   "フライパンでこんにゃくを乾煎りして水気をとばし、ごま油を加えて炒める。",
+   "醤油・砂糖・みりん・酒・唐辛子を入れ、汁気がなくなるまで炒り煮にする。ごまとかつお節をまぶす。"
+  ],
+  "swiss_tips": "こんにゃくはアジアスーパーで手に入る。ちぎると味がしみやすい。冷蔵庫で4〜5日持つ。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 50,
+   "protein_g": 0.5,
+   "fat_g": 2,
+   "carbs_g": 8,
+   "salt_g": 1.1
+  }
+ },
+ {
+  "name": "焼きなす",
+  "category": "side",
+  "cooking_time_minutes": 25,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "皮ごと焼いてとろとろに。生姜醤油でシンプルに。",
+  "mood_tags": [
+   "和の定番が恋しい",
+   "さっぱり",
+   "野菜たっぷり"
+  ],
+  "ingredients": [
+   {
+    "name": "なす",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "生姜",
+    "amount": "1かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "適量",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "かつお節",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": true
+   },
+   {
+    "name": "スプリングオニオン",
+    "amount": "1本",
+    "is_seasoning": false,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "なすはへたのまわりに切り込みを1周入れ、皮に縦に数本浅い切り込みを入れる。",
+   "魚焼きグリルか、200℃のオーブン（またはフライパンにふたをして中火）で、ときどき返しながら15〜20分、皮が黒くなり全体がやわらかくなるまで焼く。",
+   "熱いうちに冷水に一瞬つけ、へたのほうから皮をむく。",
+   "縦に食べやすく裂いて器に盛り、おろし生姜・かつお節・ねぎをのせ、醤油をかける。"
+  ],
+  "swiss_tips": "スイスの Aubergine は大きいので、焼き時間は長めに。オーブンなら一度にたくさん焼けて、冷やしてもおいしい。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 40,
+   "protein_g": 2,
+   "fat_g": 0.2,
+   "carbs_g": 7,
+   "salt_g": 0.6
+  }
+ },
+ {
+  "name": "もやしナムル",
+  "category": "side",
+  "cooking_time_minutes": 10,
+  "servings": 2,
+  "serving_unit": "",
+  "description": "ごま油とにんにくで、あと一品にすぐ作れる。",
+  "mood_tags": [
+   "さっぱり",
+   "作りおき",
+   "お弁当向き"
+  ],
+  "ingredients": [
+   {
+    "name": "もやし",
+    "amount": "1袋",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "ごま油",
+    "amount": "大さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "鶏がらスープの素",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "にんにく",
+    "amount": "1/4かけ",
+    "is_seasoning": false,
+    "is_optional": false
+   },
+   {
+    "name": "塩",
+    "amount": "少々",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "白ごま",
+    "amount": "小さじ1",
+    "is_seasoning": true,
+    "is_optional": false
+   },
+   {
+    "name": "醤油",
+    "amount": "小さじ1/2",
+    "is_seasoning": true,
+    "is_optional": true
+   }
+  ],
+  "steps": [
+   "もやしはさっと洗い、熱湯で1分茹でてざるに上げ、そのまま冷ます。",
+   "水気をしっかり絞る。",
+   "ごま油・スープの素・すりおろしたにんにく・塩・ごま（好みで醤油）を混ぜ、もやしを和える。"
+  ],
+  "swiss_tips": "もやし（Sojasprossen）は Coop・Migros の野菜売り場にある。傷みやすいので、買った日に作るのがおすすめ。冷蔵で2日ほど持つ。",
+  "origin": "ai",
+  "status": "published",
+  "nutrition": {
+   "energy_kcal": 80,
+   "protein_g": 2,
+   "fat_g": 7,
+   "carbs_g": 3,
+   "salt_g": 0.8
+  }
  }
 ]
