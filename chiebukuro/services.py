@@ -104,11 +104,11 @@ def import_from_survey():
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
 
-    # 答えが2件以上ついた新しい質問は「公開待ち」にして、少しずつ出す (答えが少ないものは、答えを集めたいのですぐ公開)
+    # 新しい質問は「公開待ち」にして、少しずつ出す (答えが0〜1件のものは「答え待ち」の枠で別に数える)
     for question in created:
-        if question.answers.filter(status=Status.PUBLISHED).count() >= QUEUE_MIN_ANSWERS:
-            Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank)
-            next_rank += 1
+        few = question.answers.filter(status=Status.PUBLISHED).count() < QUEUE_MIN_ANSWERS
+        Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank, release_open=few)
+        next_rank += 1
 
     # 「私も知りたい」の数と、最後の答えの日時をそろえる
     interest_counts = dict(
@@ -124,7 +124,7 @@ def import_from_survey():
     return new_questions, new_answers
 
 
-# アンケートの質問で、答えがこの数以上あるものは少しずつ公開する (それより少ないものはすぐ公開)
+# アンケートの質問で、答えがこの数より少ないものは「答え待ち」の枠
 QUEUE_MIN_ANSWERS = 2
 
 
@@ -132,7 +132,7 @@ def release_survey_questions(today=None):
     """
     アンケートから取り込んだ質問を、少しずつ公開する。
     公開の日 (と先行リンク) は最初の release_first 問、そのあと毎日 release_per_day 問ずつ。
-    数えるのは、順番 (release_rank) のついた質問だけ (答えの少ない質問は、はじめから公開している)。
+    答えが2件以上の枠と、答えが0〜1件の「答え待ち」の枠を、別々に数える。
     公開した質問は「新しい質問」として出るように、日時を今にそろえる (答えもその後に)。
     """
 
@@ -143,20 +143,21 @@ def release_survey_questions(today=None):
     from .models import BoardSettings
 
     board = BoardSettings.current()
-    surveyed = Question.objects.filter(survey_question_id__isnull=False, release_rank__isnull=False)
-    shown = surveyed.exclude(status=QUEUED).count()
-    need = board.released_target(today) - shown
-    if need <= 0:
-        return 0
     now = timezone.now()
     released = 0
-    for question in surveyed.filter(status=QUEUED).order_by("release_rank", "pk")[:need]:
-        Question.objects.filter(pk=question.pk).update(status=Status.PUBLISHED, created_at=now)
-        for number, answer in enumerate(question.answers.order_by("created_at", "pk")):
-            Answer.objects.filter(pk=answer.pk).update(created_at=now + timedelta(seconds=number + 1))
-        if question.answers.exists():
-            Question.objects.filter(pk=question.pk).update(last_answered_at=now + timedelta(seconds=question.answers.count()))
-        released += 1
+    for open_pool in (False, True):
+        pool = Question.objects.filter(survey_question_id__isnull=False, release_rank__isnull=False, release_open=open_pool)
+        need = board.released_target(today, open_pool) - pool.exclude(status=QUEUED).count()
+        if need <= 0:
+            continue
+        for question in pool.filter(status=QUEUED).order_by("release_rank", "pk")[:need]:
+            Question.objects.filter(pk=question.pk).update(status=Status.PUBLISHED, created_at=now)
+            answers = list(question.answers.order_by("created_at", "pk"))
+            for number, answer in enumerate(answers):
+                Answer.objects.filter(pk=answer.pk).update(created_at=now + timedelta(seconds=number + 1))
+            if answers:
+                Question.objects.filter(pk=question.pk).update(last_answered_at=now + timedelta(seconds=len(answers)))
+            released += 1
     return released
 
 

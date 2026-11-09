@@ -78,6 +78,16 @@ class BoardSettings(models.Model):
         default=3,
         help_text="小出しを始めた日の翌日から、毎朝この数だけ、公開待ちの質問を公開します (答えもいっしょに)。0 なら止まります。",
     )
+    release_open_first = models.PositiveIntegerField(
+        "最初に出す「答え待ち」の質問の数",
+        default=10,
+        help_text="アンケートから取り込んだ質問のうち、答えが0〜1件のもの (答えを集めたい質問) を最初に見せる数",
+    )
+    release_open_per_day = models.PositiveIntegerField(
+        "毎日ふやす「答え待ち」の質問の数",
+        default=2,
+        help_text="小出しを始めた日の翌日から、毎朝この数だけ、答えが0〜1件の質問を公開します。0 なら止まります。",
+    )
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
     class Meta:
@@ -100,12 +110,14 @@ class BoardSettings(models.Model):
                 kwargs["update_fields"] = list(kwargs["update_fields"]) + ["release_start"]
         super().save(*args, **kwargs)
 
-    def released_target(self, today=None):
-        """今日までに見せてよい、アンケートから取り込んだ質問の数"""
+    def released_target(self, today=None, open_pool=False):
+        """今日までに見せてよい、アンケートから取り込んだ質問の数 (open_pool: 答えが0〜1件の枠)"""
 
         today = today or timezone.localdate()
-        days = (today - self.release_start).days if self.release_start else 0
-        return self.release_first + self.release_per_day * max(0, days)
+        days = max(0, (today - self.release_start).days) if self.release_start else 0
+        if open_pool:
+            return self.release_open_first + self.release_open_per_day * days
+        return self.release_first + self.release_per_day * days
 
     def new_preview_key(self):
         import secrets
@@ -171,6 +183,7 @@ class Question(models.Model):
     status = models.CharField("ステータス", max_length=20, choices=QUESTION_STATUS_CHOICES, default=Status.PUBLISHED, db_index=True)
     # 公開待ちの順番 (小さいものから公開する)
     release_rank = models.PositiveIntegerField("公開の順番", null=True, blank=True, help_text="公開待ちの質問は、小さい数から順に公開されます。")
+    release_open = models.BooleanField("答え待ちの枠", default=False, help_text="アンケートで答えが0〜1件だった質問 (答えを集めたい枠で、別に数えて公開)")
     # アンケートで押された「私も知りたい」(取り込み時の数。掲示板で押された分は Interest)
     survey_interest_count = models.PositiveIntegerField("アンケートでの「知りたい」", default=0)
     # 事前アンケートの質問 (取り込み元)

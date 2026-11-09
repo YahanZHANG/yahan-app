@@ -99,10 +99,14 @@ class SurveyImportTests(BoardTestCase):
         SurveyQuestion.objects.create(body="答えなし", theme="life")
         import_from_survey()
         surveyed = Question.objects.filter(survey_question_id__isnull=False)
-        # 答えが2件以上の40問のうち30問 + 答えの少ない2問はすぐ公開
+        # 答えが2件以上の40問のうち30問 + 答え待ちの枠 (0〜1件) は10問まで (ここでは2問)
         self.assertEqual(surveyed.filter(status="published").count(), 32)
         self.assertEqual(surveyed.filter(status=QUEUED).count(), 10)
         self.assertTrue(surveyed.get(body="答えなし").status == "published")
+        for number in range(12):
+            SurveyQuestion.objects.create(body=f"新しい質問{number}", theme="food")
+        import_from_survey()
+        self.assertEqual(surveyed.filter(status="published", release_open=True).count(), 10)
         # 公開待ちは一覧にも詳細にも出ない
         hidden = surveyed.filter(status=QUEUED).first()
         self.assertEqual(self.client.get(reverse("chiebukuro:question", args=[hidden.pk])).status_code, 404)
@@ -114,8 +118,8 @@ class SurveyImportTests(BoardTestCase):
         self.assertEqual(release_survey_questions(), 0)
         board.release_start = timezone.localdate() - datetime.timedelta(days=2)
         board.save()
-        self.assertEqual(release_survey_questions(), 6)
-        self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)
+        self.assertEqual(release_survey_questions(), 10)  # 6 + 答え待ち 4
+        self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)  # 答えのある4問 (答え待ちは全部出た)
 
     def test_home_new_questions_and_ask_popup(self):
         fresh = Question.objects.create(body="新しい質問です", theme="life", author=self.alice)
