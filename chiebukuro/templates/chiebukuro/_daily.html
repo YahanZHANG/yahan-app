@@ -84,8 +84,10 @@
         var auto = allCards.filter(function (card) { return card.hasAttribute("data-auto"); });
         if (auto.length) setTimeout(function () { open(auto); }, 400);
     }
-    document.querySelectorAll("[data-daily-open]").forEach(function (button) {
-        button.addEventListener("click", function () { open(allCards, cardFor(button.dataset.dailyOpen)); });
+    // ボタンがこのスクリプトより後ろにあっても効くように、ページ全体で受ける
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest && event.target.closest("[data-daily-open]");
+        if (button) open(allCards, cardFor(button.dataset.dailyOpen));
     });
 
     function done() {
