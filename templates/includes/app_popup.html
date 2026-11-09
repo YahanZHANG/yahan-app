@@ -14,7 +14,7 @@
                 <h2 class="yapp-popup-title" id="yapp-popup-title-{{ popup.pk }}">{{ popup.title }}</h2>
                 {% if popup.body %}<p class="yapp-popup-body">{{ popup.body|linebreaksbr }}</p>{% endif %}
                 <div class="yapp-popup-actions">
-                    {% if popup.has_button %}<a class="yapp-popup-button" href="{{ popup.link }}" data-popup-close>{{ popup.button_label }}</a>{% endif %}
+                    {% if popup.has_button %}<a class="yapp-popup-button" href="{{ popup.link }}"{% if popup.open_in_browser %} target="_blank" rel="noopener"{% endif %} data-popup-close>{{ popup.button_label }}</a>{% endif %}
                     <button type="button" class="yapp-popup-later" data-popup-close>閉じる</button>
                 </div>
             </div>

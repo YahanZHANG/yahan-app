@@ -435,6 +435,11 @@ class AppPopup(models.Model):
         help_text="例: /washoku/polls/ 。ボタンの文字とリンク先の両方を入れると、ボタンが出ます。",
     )
 
+    open_in_browser = models.BooleanField(
+        "ボタンをブラウザで開く", default=True,
+        help_text="オン: ホーム画面のアプリで見ていても、Safari や Chrome などのブラウザで開きます。オフ: 今の画面のまま開きます。",
+    )
+
     frequency = models.CharField("出す頻度", max_length=10, choices=FREQUENCY_CHOICES, default=FREQUENCY_ONCE)
 
     audience = models.CharField("出す相手", max_length=10, choices=AUDIENCE_CHOICES, default="all")

@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.shortcuts import redirect
 
@@ -190,8 +191,41 @@ class PortalThemeTextAdmin(admin.ModelAdmin):
         return False
 
 
+class AppPopupAdminForm(forms.ModelForm):
+    """ポップアップの画像は、URL を入れるほか、ここからアップロードもできる (Cloudinary)。"""
+
+    image_upload = forms.FileField(
+        label="画像をアップロード",
+        required=False,
+        help_text="小さく変換して保存し、上の「画像のURL」を置きかえます。消すときは「画像のURL」を空にします。",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"}),
+    )
+
+    class Meta:
+        model = AppPopup
+        fields = "__all__"
+
+    def clean_image_upload(self):
+        from django.core.exceptions import ValidationError
+
+        from outings.services.user_event_cloudinary import upload_user_event_photo
+        from outings.services.user_event_images import process_user_event_image
+
+        photo = self.cleaned_data.get("image_upload")
+        if not photo:
+            return ""
+        try:
+            processed = process_user_event_image(photo, max_size=1200, quality=78)
+            return upload_user_event_photo(processed, folder="yapp/popup", filename="popup.webp")
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages)
+
+
 @admin.register(AppPopup)
 class AppPopupAdmin(admin.ModelAdmin):
+
+    form = AppPopupAdminForm
+    readonly_fields = ["image_preview"]
 
     list_display = ["title", "app", "is_active", "frequency", "audience", "order", "preview_link", "updated_at"]
     list_editable = ["is_active", "order"]
@@ -199,9 +233,23 @@ class AppPopupAdmin(admin.ModelAdmin):
 
     fieldsets = [
         (None, {"fields": ["app", "is_active"]}),
-        ("中身", {"fields": ["emoji", "title", "body", "image_url", "button_label", "link"]}),
+        ("中身", {"fields": ["emoji", "title", "body", "image_url", "image_upload", "image_preview", "button_label", "link", "open_in_browser"]}),
         ("出し方", {"fields": ["frequency", "audience", "home_only", "starts_at", "ends_at", "order"]}),
     ]
+
+    @admin.display(description="画像（いま）")
+    def image_preview(self, obj):
+        from django.utils.html import format_html
+
+        if not obj.image_url:
+            return "なし"
+        return format_html('<img src="{}" alt="" style="width:200px;max-height:140px;object-fit:cover;border-radius:8px">', obj.image_url)
+
+    def save_model(self, request, obj, form, change):
+        uploaded = form.cleaned_data.get("image_upload")
+        if uploaded:
+            obj.image_url = uploaded
+        super().save_model(request, obj, form, change)
 
     @admin.display(description="プレビュー")
     def preview_link(self, obj):
