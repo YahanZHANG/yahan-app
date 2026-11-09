@@ -2,18 +2,20 @@
  * Yapp のアプリ間リンクと、LINE・Instagram などのアプリ内ブラウザの案内。
  * templates/includes/app_icons.html から全アプリで読み込む。
  *
- * 1) ホーム画面のアプリ (standalone) で開いているとき、ほかの Yapp アプリへの
- *    リンク (例: Swiss News → スイスで和食) は今のアプリの中で開かず、
- *    新しいウィンドウ (target=_blank) で開く。
- *    iPhone: Safari で開く。Android: Chrome で開く (端末の設定で、追加済みの
- *    アプリが開くこともある)。PC の Chrome / Edge: 「対応リンクを開く」を
- *    オンにしていれば追加済みのアプリ、オフならブラウザのタブで開く。
+ * 1) ほかの Yapp アプリ (ヘルプ・サポートのページも含む) へのリンクは、
+ *    今の画面ではなく新しいタブ (target=_blank) で開く。ブラウザでも、
+ *    ホーム画面のアプリでも同じ (2026-11-09 Taro)。
+ *    ホーム画面のアプリから: iPhone は Safari、Android は Chrome で開く
+ *    (端末の設定で追加済みのアプリが開くこともある)。PC の Chrome / Edge は
+ *    「対応リンクを開く」がオンなら追加済みのアプリ、オフならブラウザのタブ。
  *    ※ ホーム画面の別のアプリを、リンクから必ず開く方法はどの端末にもない。
+ *    同じアプリの中のリンク、ログインなどのページへのリンクは今の画面のまま。
+ *    ヘルプ・サポートのページの中のリンクも今の画面のまま (すでに新しいタブなので)。
  * 2) LINE・Instagram などのアプリの中で開いたとき、下に細い案内を出し、
  *    ボタンで Safari / Chrome に移れるようにする。
  *
  * アプリとして扱う URL の先頭は config/pwa.py の APP_PATHS
- * (この script タグの data-apps)。ログインやヘルプなどの共通ページは今のアプリの中で開く。
+ * (この script タグの data-apps)。リンクごとに止めたいときは data-same-app を付ける。
  */
 (function () {
     "use strict";
@@ -26,10 +28,12 @@
     var standalone = window.matchMedia("(display-mode: standalone)").matches
         || navigator.standalone === true;
 
-    // 「/news/123/」→「news」、「/」→「」、共通ページ (/help/ など) → null
-    function appOf(path) {
-        var first = (path || "/").replace(/^\/+/, "").split("/")[0];
-        return apps.indexOf(first) === -1 ? null : first;
+    // 新しいタブで開く行き先: 各アプリと、ヘルプ・サポートのページ
+    var newTabKeys = apps.concat(["help", "support"]);
+
+    // 「/news/123/」→「news」、「/」→「」
+    function keyOf(path) {
+        return (path || "/").replace(/^\/+/, "").split("/")[0];
     }
 
     function storageGet(store, key) {
@@ -41,17 +45,12 @@
     }
 
     // ---------------------------------------------------------
-    // 1) ホーム画面のアプリから、ほかのアプリへのリンク
+    // 1) ほかのアプリへのリンクは新しいタブで
     // ---------------------------------------------------------
 
-    if (standalone) {
-        // このウィンドウがどのアプリか (共通ページにいるときのために覚えておく)
-        var HOME_KEY = "yapp_home_app";
-        var current = appOf(location.pathname);
-        if (current !== null && storageGet("sessionStorage", HOME_KEY) === null) {
-            storageSet("sessionStorage", HOME_KEY, current);
-        }
+    var current = keyOf(location.pathname);
 
+    if (apps.indexOf(current) !== -1) {
         document.addEventListener("click", function (event) {
             if (event.defaultPrevented || event.button !== 0) return;
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -64,20 +63,16 @@
             try { url = new URL(link.href, location.href); } catch (error) { return; }
             if (url.origin !== location.origin) return;
 
-            var target = appOf(url.pathname);
-            if (target === null) return;
+            var target = keyOf(url.pathname);
+            if (target === current || newTabKeys.indexOf(target) === -1) return;
 
-            var home = storageGet("sessionStorage", HOME_KEY);
-            if (home === null) home = appOf(location.pathname);
-            if (home === null || home === target) return;
-
-            // 既定の動き (リンクを開く) はそのままに、開く先だけ新しいウィンドウにする
+            // 既定の動き (リンクを開く) はそのままに、開く先だけ新しいタブにする
             link.target = "_blank";
             link.rel = ((link.rel || "") + " noopener").trim();
         }, true);
-
-        return;
     }
+
+    if (standalone) return;
 
     // ---------------------------------------------------------
     // 2) LINE・Instagram などのアプリ内ブラウザ
