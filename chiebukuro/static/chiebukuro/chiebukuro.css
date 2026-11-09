@@ -1483,24 +1483,15 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-share-compact .cb-share-msg { flex-basis: auto; }
 .cb-post-single .cb-reply-form { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 16px; }
 
-/* 今日のひとこと: 1枚ずつのカード */
-.cb-daily-card { margin: 0 14px; padding: 16px 14px; min-height: 210px; border-radius: 14px; background: color-mix(in srgb, var(--brand) 8%, var(--surface)); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-.cb-daily-card[hidden] { display: none; }
-.cb-daily-card .cb-daily-label { margin-bottom: 8px; }
-.cb-daily-card .cb-daily-emoji { font-size: 52px; margin-bottom: 4px; }
-.cb-daily-card .cb-daily-msg { font-size: 15px; line-height: 1.6; }
-.cb-daily-card .cb-daily-origin { margin-top: 10px; }
-.cb-daily-big { margin: 4px 0 0; font-size: 28px; font-weight: 800; letter-spacing: .01em; }
-.cb-daily-reading { margin: 0; color: var(--sub); font-size: 13px; }
-.cb-daily-pollcard { text-align: left; align-items: stretch; background: var(--surface); padding: 0; min-height: 0; }
+/* 今日のひとこと: 占い・スイスドイツ語・豆知識を1枚に */
+.cb-daily-box { max-height: calc(100vh - 40px); grid-template-rows: auto minmax(0, 1fr) auto; }
+.cb-daily-body { display: grid; gap: 12px; overflow-y: auto; padding-bottom: 2px; }
+.cb-daily-part[hidden] { display: none; }
+.cb-daily-sec.cb-daily-first { border-top: 0; padding-top: 0; }
 .cb-daily-pollcard .cb-poll { margin: 0; }
 .cb-daily-pollcard .cb-daily-origin { text-align: center; }
-.cb-daily-foot { justify-content: center; }
 .cb-daily-foot .cb-btn { margin-left: auto; }
-.cb-daily-foot .cb-check-s { flex-basis: 100%; text-align: center; }
-.cb-daily-dots { display: inline-flex; gap: 6px; }
-.cb-daily-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
-.cb-daily-dots i.on { background: var(--brand); }
+.cb-daily-foot .cb-check-s { font-size: 13px; }
 
 /* HOME: アンケートは1行だけ (押すと「今日のひとこと」のアンケートのカードが開く) */
 .cb-pollbar { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
@@ -1547,3 +1538,9 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-ask-actions .cb-btn-primary { grid-column: 1 / -1; text-align: center; }
 .cb-ask-actions .cb-btn { justify-content: center; }
 .cb-ask-skip { color: var(--sub); }
+
+/* 名前の横の、住んでいる地域 (運営以外) */
+.cb-home-region { color: var(--sub); font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.cb-post-head .cb-home-region { margin-left: 2px; }
+.cb-hashtags { display: flex; flex-wrap: wrap; gap: 8px; }
+.cb-hashtags span { color: var(--sub); }

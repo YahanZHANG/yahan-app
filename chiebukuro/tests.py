@@ -521,6 +521,53 @@ class PostTests(BoardTestCase):
         self.assertContains(response, "ありす")
         self.assertContains(response, "バーゼル在住です")
 
+    def test_nickname_change_renames_old_posts_and_is_limited(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from travel.models import UserProfile
+
+        UserProfile.objects.update_or_create(user=self.alice, defaults={"nickname": "ありす"})
+        post = Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")
+        question = Question.objects.create(body="質問です", theme="life", author=self.alice, nickname="ありす")
+        answer = Answer.objects.create(question=question, body="答え", author=self.alice, nickname="ありす")
+        self.client.force_login(self.alice)
+        edit = reverse("chiebukuro:profile_edit")
+        self.client.post(edit, {"nickname": "アリス"})
+        for row in (post, question, answer):
+            row.refresh_from_db()
+            self.assertEqual(row.nickname, "アリス")
+        # 2回目は24時間たってから
+        response = self.client.post(edit, {"nickname": "ALICE"})
+        self.assertContains(response, "続けて変えられません")
+        self.assertEqual(UserProfile.objects.get(user=self.alice).nickname, "アリス")
+        # 名前を変えないなら、ほかの項目は保存できる
+        self.assertEqual(self.client.post(edit, {"nickname": "アリス", "intro": "よろしく"}).status_code, 302)
+        profile = BoardProfile.objects.get(user=self.alice)
+        profile.nickname_changed_at = timezone.now() - timedelta(hours=25)
+        profile.save()
+        self.client.post(edit, {"nickname": "ALICE"})
+        self.assertEqual(UserProfile.objects.get(user=self.alice).nickname, "ALICE")
+        # 3回目からは1週間
+        profile = BoardProfile.objects.get(user=self.alice)
+        profile.nickname_changed_at = timezone.now() - timedelta(days=3)
+        profile.save()
+        self.assertContains(self.client.post(edit, {"nickname": "ありす"}), "続けて変えられません")
+        profile.nickname_changed_at = timezone.now() - timedelta(days=8)
+        profile.save()
+        self.client.post(edit, {"nickname": "ありす"})
+        self.assertEqual(BoardProfile.objects.get(user=self.alice).nickname_changes, 3)
+
+    def test_home_region_next_to_name(self):
+        BoardProfile.objects.update_or_create(user=self.alice, defaults={"region": "basel"})
+        post = Post.objects.create(body="こんにちは", author=self.alice, nickname="ありす")
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "📍バーゼル")
+        staff = User.objects.create_user("staffer", password=PASSWORD, is_staff=True)
+        BoardProfile.objects.create(user=staff, region="bern")
+        Post.objects.create(body="運営です", author=staff, nickname="運営")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:posts")), "📍ベルン")
+
     def test_write_menu_and_guest_redirect(self):
         response = self.client.get(reverse("chiebukuro:new"))
         for text in ["つぶやく", "質問する", "ゆずりあいに出す", "募集・告知する"]:
@@ -959,6 +1006,11 @@ class DailyAndColorTests(BoardTestCase):
         self.assertNotIn('data-card="charm" data-auto', page)
         self.client.post(reverse("chiebukuro:settings"), {"push_frequency": "instant"})
         self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        # 「ずっと表示しない」
+        self.client.post(reverse("chiebukuro:settings"), {"daily_popup": "0", "daily_word": "1", "push_frequency": "instant"})
+        self.assertFalse(BoardProfile.objects.get(user=self.alice).daily_popup)
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-auto=""')
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "1週間表示しない")
 
     def test_day_events(self):
         import datetime

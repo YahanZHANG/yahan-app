@@ -470,6 +470,20 @@ class BoardProfile(models.Model):
     daily_word = models.BooleanField("今日のひとこと: スイスドイツ語", default=True)
     daily_trivia = models.BooleanField("今日のひとこと: 豆知識", default=True)
     daily_poll = models.BooleanField("今日のひとこと: アンケート", default=True)
+    nickname_changes = models.PositiveSmallIntegerField("ニックネームを変えた回数", default=0)
+    nickname_changed_at = models.DateTimeField("ニックネームを最後に変えた日時", null=True, blank=True)
+
+    # ニックネームを変えられる間隔: 1回目はいつでも、2回目は24時間後、3回目からは1週間後
+    NICKNAME_WAITS = [timedelta(0), timedelta(hours=24), timedelta(days=7)]
+
+    def next_nickname_change(self):
+        """次にニックネームを変えられる日時 (いつでも変えられるなら None)"""
+
+        if not self.nickname_changed_at:
+            return None
+        wait = self.NICKNAME_WAITS[min(self.nickname_changes, len(self.NICKNAME_WAITS) - 1)]
+        when = self.nickname_changed_at + wait
+        return when if when > timezone.now() else None
 
     class Color(models.TextChoices):
         CLASSIC = "classic", "スイスレッド"

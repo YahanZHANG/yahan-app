@@ -59,6 +59,7 @@ from .models import (
 )
 from .services import (
     attach_stamps,
+    rename_member_content,
     new_questions,
     questions_to_ask,
     release_survey_questions,
@@ -1581,8 +1582,10 @@ def settings_view(request):
             board_profile.push_frequency = frequency
         for field in toggles + DAILY_CARDS + ["color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
-        # 1枚もえらばなければ、自動では出さない
-        board_profile.daily_popup = any(getattr(board_profile, field) for field in DAILY_CARDS)
+        # 「ずっと表示しない」か、1つもえらばなければ、自動では出さない
+        board_profile.daily_popup = request.POST.get("daily_popup", "1") != "0" and any(
+            getattr(board_profile, field) for field in DAILY_CARDS
+        )
         if request.POST.get("color") in BoardProfile.Color.values:
             board_profile.color = request.POST["color"]
         board_profile.save()
@@ -1601,7 +1604,7 @@ def settings_view(request):
             "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
             "daily_cards": [
-                (field, label, board_profile.daily_popup and getattr(board_profile, field))
+                (field, label, getattr(board_profile, field))
                 for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識", "アンケート（まだ答えていないときだけ）"])
             ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
@@ -1700,7 +1703,17 @@ def profile_edit(request):
             error = "ニックネームは30文字までです。"
         elif len(intro) > 160:
             error = "ひとことは160文字までです。"
+        elif nickname != user_nickname(request.user) and board_profile.next_nickname_change():
+            when = timezone.localtime(board_profile.next_nickname_change())
+            error = f"ニックネームは、続けて変えられません。次に変えられるのは {when.month}月{when.day}日 {when:%H:%M} からです。"
         else:
+            renamed = nickname != user_nickname(request.user)
+            if renamed:
+                # はじめて名前をつけるとき (ユーザーIDのまま) は回数に入れない
+                if yapp_profile.nickname:
+                    board_profile.nickname_changes += 1
+                    board_profile.nickname_changed_at = timezone.now()
+                rename_member_content(request.user, nickname)
             yapp_profile.nickname = nickname
             yapp_profile.save(update_fields=["nickname"])
             board_profile.save()
@@ -1716,6 +1729,7 @@ def profile_edit(request):
             "board_profile": board_profile,
             "avatar_groups": avatar_art.choices_for_editor(board_profile.avatar_parts),
             "avatar_kinds": BoardProfile.AvatarKind.choices,
+            "next_nickname_change": board_profile.next_nickname_change(),
             "error": error,
         },
     )

@@ -43,12 +43,15 @@
             {% endfor %}
         </div>
         <label class="cb-radio"><input type="checkbox" name="color_auto" value="1" {% if board_profile.color_auto %}checked{% endif %}> 12時間ごとに色を変える（朝と夜で、順番に切りかわります）</label>
-        <h2 class="cb-form-title cb-mt">今日のひとこと</h2>
-        <p class="cb-sub">1日の最初に開いたとき、1枚ずつ出すもの</p>
+        <h2 class="cb-form-title cb-mt" id="daily">今日のひとこと</h2>
+        <p class="cb-sub">1日の最初に掲示板を開いたときのポップアップ</p>
+        <label class="cb-radio"><input type="radio" name="daily_popup" value="1" {% if board_profile.daily_popup %}checked{% endif %}> 表示する</label>
+        <label class="cb-radio"><input type="radio" name="daily_popup" value="0" {% if not board_profile.daily_popup %}checked{% endif %}> ずっと表示しない</label>
+        <p class="cb-sub">表示するもの</p>
         {% for field, label, on in daily_cards %}
             <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
         {% endfor %}
-        <p class="cb-sub">全部オフにしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
+        <p class="cb-sub">表示しない設定にしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
     </section>
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>

@@ -28,6 +28,21 @@ def user_nickname(user):
     return (profile.display_name if profile else user.username)[:30]
 
 
+def rename_member_content(user, nickname):
+    """ニックネームを変えたら、これまでの質問・回答・つぶやきなども新しい名前にする"""
+
+    from .models import Item, ItemRequest, Notice, Post, PostReply
+
+    nickname = nickname[:30]
+    Question.objects.filter(author=user).exclude(source=Question.Source.STAFF).update(nickname=nickname)
+    Answer.objects.filter(author=user).update(nickname=nickname)
+    Post.objects.filter(author=user).update(nickname=nickname)
+    PostReply.objects.filter(author=user).update(nickname=nickname)
+    Item.objects.filter(owner=user).update(nickname=nickname)
+    Notice.objects.filter(owner=user).update(nickname=nickname)
+    ItemRequest.objects.filter(requester=user).update(nickname=nickname)
+
+
 # =========================================================
 # 事前アンケートからの取り込み
 # =========================================================
