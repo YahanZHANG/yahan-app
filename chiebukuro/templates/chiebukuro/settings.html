@@ -52,6 +52,8 @@
             <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
         {% endfor %}
         <p class="cb-sub">表示しない設定にしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
+        <h2 class="cb-form-title cb-mt" id="poll-popup">アンケートのポップアップ</h2>
+        <label class="cb-radio"><input type="checkbox" name="daily_poll" value="1" {% if board_profile.daily_poll %}checked{% endif %}> まだ答えていないアンケートを、その日2回目に開いたときに表示する</label>
     </section>
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>

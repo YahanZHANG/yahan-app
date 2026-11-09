@@ -281,8 +281,8 @@ def new_questions(region="", limit=5, days=14):
 
 def questions_to_ask(user, region="", limit=8):
     """
-    2回目に開いたときのポップアップで聞く質問: その人がまだ答えていない・知りたいにしていない・
-    自分の質問でないもの。答えが2件以下のものを先に、その中で新しい順。
+    2回目に開いたときのポップアップで聞く質問: 回答が0件か1件 (運営の回答は数えない) で、その人がまだ答えていない・
+    知りたいにしていない・自分の質問でないもの。回答の少ない順、その中で新しい順。
     """
 
     questions = question_list(region=region)
@@ -292,8 +292,7 @@ def questions_to_ask(user, region="", limit=8):
             .exclude(answers__author=user)
             .exclude(interests__user=user)
         )
-    few = Case(When(answer_total__lte=2, then=Value(0)), default=Value(1), output_field=IntegerField())
-    return list(questions.annotate(few=few).order_by("few", "-created_at", "-pk")[:limit])
+    return list(questions.filter(answer_total__lte=1).order_by("answer_total", "-created_at", "-pk")[:limit])
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

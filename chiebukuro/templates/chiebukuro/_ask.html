@@ -1,5 +1,6 @@
-{% comment %}その日2回目に HOME を開いたとき: 答えの少ない新しい質問を、1問ずつ (最大3問) 聞く。
-スキップ・私も知りたいで次へ。3問とも見終わったら自動で閉じる。右上の×でいつでも閉じられる。{% endcomment %}
+{% comment %}その日2回目に HOME を開いたとき: 回答が0件か1件の質問を、1問ずつ (最大3問) 聞く。
+スキップ・私も知りたいで次へ。3問とも見終わったら自動で閉じる。右上の×でいつでも閉じられる。
+終わったら (聞く質問がないときも) cb:ask-done を出す → まだ答えていないアンケートのポップアップ (_pollpop.html)。{% endcomment %}
 {% if ask_questions %}
 <dialog class="cb-daily cb-ask" id="cb-ask" aria-labelledby="cb-ask-title" data-day="{% now 'Y-m-d' %}">
     <div class="cb-daily-box">
@@ -27,28 +28,32 @@
         {% csrf_token %}
     </div>
 </dialog>
+{% endif %}
 <script>
 (function () {
     var dialog = document.getElementById("cb-ask");
-    if (!dialog || !dialog.showModal) return;
-    var day = dialog.dataset.day;
+    var day = "{% now 'Y-m-d' %}";
     var SHOW = 3;
     function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
     function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    function finished() { document.dispatchEvent(new Event("cb:ask-done")); }
 
     // その日に HOME を開いた回数 (2回目から出す。1日1回だけ)
     var opens = {};
     try { opens = JSON.parse(read("cb_home_opens") || "{}"); } catch (e) {}
     var count = opens.day === day ? opens.count + 1 : 1;
     write("cb_home_opens", JSON.stringify({ day: day, count: count }));
-    if (count < 2 || read("cb_ask_day") === day) return;
+    if (count < 2) return;
 
     var skipped = [];
     try { skipped = JSON.parse(read("cb_ask_skipped") || "[]"); } catch (e) {}
-    var cards = Array.prototype.slice.call(dialog.querySelectorAll("[data-ask]"))
+    var cards = dialog ? Array.prototype.slice.call(dialog.querySelectorAll("[data-ask]"))
         .filter(function (card) { return skipped.indexOf(card.dataset.ask) < 0; })
-        .slice(0, SHOW);
-    if (!cards.length) return;
+        .slice(0, SHOW) : [];
+    if (!dialog || !dialog.showModal || !cards.length || read("cb_ask_day") === day) {
+        setTimeout(finished, 700);
+        return;
+    }
     var dots = dialog.querySelector(".cb-daily-dots");
     var index = 0;
 
@@ -56,7 +61,7 @@
         cards.forEach(function (card, i) { card.hidden = i !== index; });
         dots.innerHTML = cards.length > 1 ? cards.map(function (c, i) { return '<i class="' + (i === index ? "on" : "") + '"></i>'; }).join("") : "";
     }
-    function close() { write("cb_ask_day", day); dialog.close(); }
+    function close() { write("cb_ask_day", day); dialog.close(); finished(); }
     function next() {
         index += 1;
         if (index >= cards.length) close(); else show();
@@ -87,4 +92,3 @@
     }, 700);
 })();
 </script>
-{% endif %}

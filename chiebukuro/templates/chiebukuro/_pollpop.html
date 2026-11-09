@@ -1,0 +1,51 @@
+{% comment %}アンケートのポップアップ。HOME のアンケートの1行で開く。
+自動では、その日2回目以降に開いたとき、質問の回答協力 (_ask.html) が終わったあとに1日1回だけ (まだ答えていないときだけ)。{% endcomment %}
+{% if poll %}
+<dialog class="cb-daily cb-pollpop" id="cb-pollpop" aria-labelledby="cb-pollpop-title" data-day="{% now 'Y-m-d' %}" data-poll="{{ poll.pk }}" data-auto="{% if poll_auto %}1{% endif %}">
+    <div class="cb-daily-box">
+        <header class="cb-daily-head">
+            <p class="cb-daily-date">みんなに聞いています</p>
+            <h2 id="cb-pollpop-title">アンケート</h2>
+            <button type="button" class="cb-daily-x" data-pollpop-close aria-label="閉じる">×</button>
+        </header>
+        <div class="cb-daily-body cb-daily-pollcard">
+            {% include "chiebukuro/_poll.html" %}
+        </div>
+        <footer class="cb-daily-foot">
+            <p class="cb-daily-past">{% if user.is_authenticated %}<a href="{% url 'chiebukuro:settings' %}#poll-popup">表示の設定 ›</a>　{% endif %}<a href="{% url 'chiebukuro:polls' %}">これまでのアンケート ›</a></p>
+        </footer>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-pollpop");
+    if (!dialog || !dialog.showModal) return;
+    var day = dialog.dataset.day;
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    function open() { if (!dialog.open) dialog.showModal(); }
+    function close() { write("cb_poll_day", day); dialog.close(); }
+
+    if (location.hash === "#poll" + dialog.dataset.poll) {
+        // アンケートに答えたあと: 結果を出す
+        history.replaceState(null, "", location.pathname + location.search);
+        write("cb_poll_day", day);
+        open();
+    }
+    // 質問の回答協力のポップアップが終わったら (または今日はもう出ないとき)
+    document.addEventListener("cb:ask-done", function () {
+        if (!dialog.dataset.auto || read("cb_poll_day") === day) return;
+        var daily = document.getElementById("cb-daily");
+        if (daily && daily.open) return;
+        setTimeout(open, 300);
+    });
+    document.addEventListener("click", function (event) {
+        if (event.target.closest && event.target.closest("[data-poll-open]")) open();
+    });
+    dialog.addEventListener("click", function (event) {
+        if (event.target === dialog || event.target.closest("[data-pollpop-close]")) close();
+    });
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+})();
+</script>
+{% endif %}

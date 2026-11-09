@@ -5,6 +5,7 @@
 {% include "chiebukuro/_hero.html" %}
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_ask.html" %}
+{% include "chiebukuro/_pollpop.html" %}
 
 {% if not user.is_authenticated %}
 <section class="cb-welcome">
@@ -63,7 +64,7 @@
 {% endif %}
 
 {% if poll %}
-<button type="button" class="cb-pollbar cb-pollbar-home" data-daily-open="poll">
+<button type="button" class="cb-pollbar cb-pollbar-home" data-poll-open>
     <span class="cb-pollbar-tag">📊 {% if poll.my_choice_id %}アンケートの結果{% else %}アンケート受付中{% endif %}</span>
     <span class="cb-pollbar-q">{{ poll.question }}</span>
     <span class="cb-pollbar-go" aria-hidden="true">›</span>

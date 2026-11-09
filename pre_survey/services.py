@@ -9,7 +9,8 @@ from functools import lru_cache
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
-from django.db.models import BooleanField, Case, Count, Exists, OuterRef, Q, Value, When
+from django.db.models import BooleanField, Case, Count, Exists, F, IntegerField, OuterRef, Q, Subquery, Value, When
+from django.db.models.functions import Coalesce
 
 from .models import Answer, Interest, Participant, Question, Skip
 
@@ -170,6 +171,32 @@ POPULAR_MIN_INTERESTS = 2
 ENOUGH_ANSWERS = 3
 
 
+def board_answer_count():
+    """掲示板 (知恵袋) でついた回答の数。運営の回答と、アンケートから取り込んだ回答 (二重になる) は数えない"""
+
+    from django.apps import apps
+
+    BoardAnswer = apps.get_model("chiebukuro", "Answer")
+    counts = (
+        BoardAnswer.objects
+        .filter(question__survey_question_id=OuterRef("pk"), status="published", is_staff=False, from_survey=False)
+        .order_by()
+        .values("question__survey_question_id")
+        .annotate(n=Count("pk"))
+        .values("n")
+    )
+    return Coalesce(Subquery(counts, output_field=IntegerField()), Value(0))
+
+
+def with_answer_count(questions, name="answer_count"):
+    """回答の数 = アンケートの回答 (非表示をのぞく) ＋ 掲示板の回答"""
+
+    return questions.annotate(
+        survey_answers=Count("answers", filter=Q(answers__is_hidden=False), distinct=True),
+        board_answers=board_answer_count(),
+    ).annotate(**{name: F("survey_answers") + F("board_answers")})
+
+
 def next_question(request, participant):
     """
     次に出す質問。なければ None (すべての公開中の質問を、この参加で見終わったときだけ)。
@@ -222,12 +249,11 @@ def next_question(request, participant):
 
     if shown_count % POPULAR_EVERY == POPULAR_EVERY - 1:
         popular = (
-            questions
-            .exclude(pk__in=Interest.objects.filter(mine).values("question_id"))
-            .exclude(pk__in=Skip.objects.filter(mine).values("question_id"))
-            .annotate(
-                interest_total=Count("interests", distinct=True),
-                answer_count=Count("answers", filter=Q(answers__is_hidden=False), distinct=True),
+            with_answer_count(
+                questions
+                .exclude(pk__in=Interest.objects.filter(mine).values("question_id"))
+                .exclude(pk__in=Skip.objects.filter(mine).values("question_id"))
+                .annotate(interest_total=Count("interests", distinct=True))
             )
             .filter(interest_total__gte=POPULAR_MIN_INTERESTS, answer_count__lt=ENOUGH_ANSWERS)
             .order_by("-interest_total", "answer_count", "-created_at", "-pk")
@@ -237,14 +263,13 @@ def next_question(request, participant):
             return popular
 
     return (
-        questions
+        with_answer_count(questions)
         .annotate(
             other_theme=Case(
                 When(theme__in=participant.themes, then=Value(False)),
                 default=Value(True),
                 output_field=BooleanField(),
             ),
-            answer_count=Count("answers", filter=Q(answers__is_hidden=False)),
             skipped_before=Exists(seen_before),
             interested_before=Exists(interested_before),
         )

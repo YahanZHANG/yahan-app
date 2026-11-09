@@ -331,7 +331,7 @@ def open_items():
 
 VOTER_COOKIE = "cb_voter"
 # 「今日のひとこと」のカード (BoardProfile の欄の名前)。この順に1枚ずつ出す
-DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia", "daily_poll"]
+DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia"]
 
 
 @board_open
@@ -351,13 +351,15 @@ def home(request):
     fresh = new_questions(region)
     fresh_ids = {question.pk for question in fresh}
     # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
+    # アンケートは別のポップアップ (2回目に開いたとき、質問の回答協力のあと。まだ答えていないときだけ)
     daily_auto = set(DAILY_CARDS)
+    poll_auto = True
     if request.user.is_authenticated:
         profile = BoardProfile.objects.filter(user=request.user).first()
         if profile:
             daily_auto = {field for field in DAILY_CARDS if profile.daily_popup and getattr(profile, field)}
-    if not poll or poll.my_choice_id:
-        daily_auto.discard("daily_poll")
+            poll_auto = profile.daily_poll
+    poll_auto = bool(poll_auto and poll and not poll.my_choice_id)
     daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
@@ -369,6 +371,7 @@ def home(request):
             "daily": daily,
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
+            "poll_auto": poll_auto,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
@@ -1582,7 +1585,7 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles + DAILY_CARDS + ["color_auto"]:
+        for field in toggles + DAILY_CARDS + ["daily_poll", "color_auto"]:
             setattr(board_profile, field, request.POST.get(field) == "1")
         # 「ずっと表示しない」か、1つもえらばなければ、自動では出さない
         board_profile.daily_popup = request.POST.get("daily_popup", "1") != "0" and any(
@@ -1607,7 +1610,7 @@ def settings_view(request):
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
             "daily_cards": [
                 (field, label, getattr(board_profile, field))
-                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識", "アンケート（まだ答えていないときだけ）"])
+                for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識"])
             ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
         },

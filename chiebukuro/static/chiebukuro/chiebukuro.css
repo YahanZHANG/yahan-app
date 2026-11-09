@@ -1544,3 +1544,4 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-post-head .cb-home-region { margin-left: 2px; }
 .cb-hashtags { display: flex; flex-wrap: wrap; gap: 8px; }
 .cb-hashtags span { color: var(--sub); }
+.cb-pollpop .cb-daily-body { padding: 0 18px; }

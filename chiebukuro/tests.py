@@ -129,6 +129,23 @@ class SurveyImportTests(BoardTestCase):
         self.client.force_login(self.alice)
         # 自分の質問は聞かない
         self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+        # 回答が2件ついたら聞かない (運営の回答は数えない)
+        Answer.objects.create(question=fresh, body="運営", nickname="運営", is_staff=True)
+        Answer.objects.create(question=fresh, body="a", author=self.bob, nickname="ボブ")
+        self.client.logout()
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+        Answer.objects.create(question=fresh, body="b", author=self.bob, nickname="ボブ")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+
+    def test_board_answers_count_in_survey(self):
+        from pre_survey.services import with_answer_count
+
+        source = SurveyQuestion.objects.create(body="出産はどこで？", theme="health")
+        question = Question.objects.create(body="出産はどこで？", theme="health", survey_question_id=source.pk)
+        Answer.objects.create(question=question, body="運営", nickname="運営", is_staff=True)
+        Answer.objects.create(question=question, body="りらっくまの答え", author=self.bob, nickname="りらっくま")
+        row = with_answer_count(SurveyQuestion.objects.filter(pk=source.pk)).get()
+        self.assertEqual((row.answer_count, row.board_answers), (1, 1))
 
     def test_deleted_items_do_not_come_back(self):
         self.make_survey()
@@ -616,6 +633,10 @@ class HomeExtrasTests(BoardTestCase):
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "スイスで一番好きな季節は？")
         self.assertContains(response, "答えると結果が見られます")
+        # アンケートは「今日のひとこと」とは別のポップアップ
+        self.assertContains(response, 'id="cb-pollpop"')
+        self.assertContains(response, 'data-poll="%d" data-auto="1"' % poll.pk)
+        self.assertNotIn("cb-poll-q", response.content.decode().split('id="cb-daily"')[1].split("</dialog>")[0])
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})

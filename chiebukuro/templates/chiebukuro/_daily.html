@@ -1,4 +1,4 @@
-{% comment %}開いたときの「今日のひとこと」: お守り占い・スイスドイツ語・豆知識 (＋まだ答えていないアンケート) を1枚にまとめて出す。
+{% comment %}開いたときの「今日のひとこと」: お守り占い・スイスドイツ語・豆知識を1枚にまとめて出す (アンケートは _pollpop.html)。
 1日1回だけ自動で出す (マイページで選んだものだけ)。HOME の「今日のひとこと」ボタンでは全部見られる。
 「1週間表示しない」はこの端末だけ (localStorage)。ずっと出さないのはマイページの設定で。{% endcomment %}
 <dialog class="cb-daily" id="cb-daily" aria-labelledby="cb-daily-title" data-day="{{ daily.day|date:'Y-m-d' }}" data-auto="{% if show_daily %}1{% endif %}">
@@ -33,12 +33,6 @@
                 <p class="cb-daily-note">{{ daily.trivia }}</p>
             </section>
 
-            {% if poll %}
-                <section class="cb-daily-part cb-daily-sec cb-daily-pollcard" data-card="poll" data-poll="{{ poll.pk }}" {% if "daily_poll" in daily_auto %}data-auto{% endif %}>
-                    {% include "chiebukuro/_poll.html" %}
-                    <p class="cb-daily-origin"><a href="{% url 'chiebukuro:polls' %}">これまでのアンケート ›</a></p>
-                </section>
-            {% endif %}
         </div>
 
         <footer class="cb-daily-foot">
@@ -72,11 +66,8 @@
     }
 
     var snoozed = Number(read("cb_daily_snooze_until") || 0) > Date.now();
-    var poll = partFor("poll");
-    if (poll && location.hash === "#poll" + poll.dataset.poll) {
-        // アンケートに答えたあと: 結果を開く
-        history.replaceState(null, "", location.pathname + location.search);
-        open([poll], poll);
+    if (/^#poll\d+$/.test(location.hash)) {
+        // アンケートに答えたあと (結果は _pollpop.html が出す)
     } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day) {
         // 1日の最初に開いたときだけ、選ばれたものを自動で出す
         var auto = parts.filter(function (part) { return part.hasAttribute("data-auto"); });
