@@ -23,7 +23,7 @@ APP_CATALOG = {
     "board": {"name": "お知らせ", "emoji": "📌", "color": 0},
     "chat": {"name": "チャット", "emoji": "💬", "color": 0},
     "events": {"name": "日程調整", "emoji": "📅", "color": 0},
-    "swiss-board": {"name": "スイス生活の知恵袋", "emoji": "💡", "color": 0},
+    "swiss-board": {"name": "スイス掲示板", "emoji": "💡", "color": 0},
 }
 
 # ポータル (ログイン・アカウント系) にまとめるパス

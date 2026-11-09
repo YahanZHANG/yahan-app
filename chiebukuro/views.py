@@ -31,7 +31,6 @@ from .events import day_events
 from .japan_calendar import moon_path, today_info
 from .models import (
     BOARD_REGION_CHOICES,
-    MEMBER_ANSWERS,
     THEME_CHOICES,
     Answer,
     BoardProfile,
@@ -817,7 +816,7 @@ def question_detail(request, pk):
     related = list(
         Question.objects.filter(status=Status.PUBLISHED, theme=question.theme)
         .exclude(pk=question.pk)
-        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
+        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
         .order_by("-last_answered_at", "-created_at")[:5]
     )
 
@@ -1550,7 +1549,7 @@ def my_list(request, section):
         questions = questions.filter(author=user) if section == "questions" else questions.filter(interests__user=user)
         context["questions"] = list(
             questions.annotate(
-                answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
+                answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
                 interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
             ).order_by("-created_at")[:50]
         )
@@ -1670,7 +1669,7 @@ def push_test(request):
     devices = list(PushDevice.objects.filter(user=request.user, endpoint=endpoint or ""))
     if not devices:
         return JsonResponse({"error": "Not subscribed."}, status=404)
-    if not send(devices, "テスト通知です", "この通知が見えていれば、知恵袋の通知は届きます。", reverse("chiebukuro:settings"), "chiebukuro-test"):
+    if not send(devices, "テスト通知です", "この通知が見えていれば、スイス掲示板の通知は届きます。", reverse("chiebukuro:settings"), "chiebukuro-test"):
         return JsonResponse({"error": "Send failed."}, status=502)
     return JsonResponse({"success": True})
 
@@ -1783,7 +1782,7 @@ def profile(request, username):
     )
     questions = list(
         Question.objects.filter(author=person, status=Status.PUBLISHED)
-        .annotate(answer_total=Count("answers", filter=MEMBER_ANSWERS))
+        .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
         .order_by("-created_at")[:30]
     )
     items = list(Item.objects.filter(owner=person, status=Status.PUBLISHED).exclude(state=Item.State.DONE)[:30])
@@ -1878,7 +1877,7 @@ def notify_staff(request, subject, text, admin_path):
     if not recipient:
         return
     body = f"{text}\n\n{request.build_absolute_uri(admin_path)}\n"
-    threading.Thread(target=_send, args=(f"[知恵袋] {subject}", body, recipient), daemon=True).start()
+    threading.Thread(target=_send, args=(f"[スイス掲示板] {subject}", body, recipient), daemon=True).start()
 
 
 @board_open

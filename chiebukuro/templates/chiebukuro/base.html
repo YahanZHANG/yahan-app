@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{% block title %}スイス生活の知恵袋{% endblock %} | Yapp</title>
+    <title>{% block title %}スイス掲示板{% endblock %} | Yapp</title>
     <script>
     (function () {
         var root = document.documentElement;
@@ -24,10 +24,10 @@
     <div class="cb-header-in">
         <a href="{% url 'chiebukuro:home' %}" class="cb-brand">
             <img src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" class="cb-brand-mark" width="28" height="28">
-            <span class="cb-brand-name">スイス生活の知恵袋</span>
+            <span class="cb-brand-name">スイス掲示板</span>
         </a>
         <div class="cb-header-tools">
-            {% if tab != 'install' %}<a href="{% url 'chiebukuro:install' %}" class="cb-install-pill yapp-install-only">📲 アプリにする</a>{% endif %}
+            {% if tab != 'install' %}<a href="{% url 'chiebukuro:install' %}" class="cb-install-pill yapp-install-only">📲 アプリ<span class="cb-pill-long">にする</span></a>{% endif %}
             <a href="{% url 'chiebukuro:install' %}" class="cb-install-pc{% if tab == 'install' %} on{% endif %}">ホーム画面に追加</a>
             <a href="{% url 'chiebukuro:search' %}" class="cb-tool {% if tab == 'search' %}on{% endif %}" aria-label="検索" aria-controls="cb-searchbar" aria-expanded="false" id="cb-search-toggle">{% include "chiebukuro/_icon.html" with name="search" %}</a>
             {% if user.is_authenticated %}

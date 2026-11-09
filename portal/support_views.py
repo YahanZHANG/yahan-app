@@ -17,7 +17,7 @@ APPS = {
     "news": ("Swiss News", "news:home"),
     "outings": ("おでかけ", "outings:home"),
     "washoku": ("スイスで和食", "washoku:home"),
-    "board": ("スイス生活の知恵袋", "chiebukuro:home"),
+    "board": ("スイス掲示板", "chiebukuro:home"),
 }
 
 METHODS = {

@@ -1,6 +1,6 @@
 {% extends "chiebukuro/base.html" %}
 {% load board %}
-{% block title %}{{ question.body|truncatechars:40 }} | スイス生活の知恵袋{% endblock %}
+{% block title %}{{ question.body|truncatechars:40 }} | スイス掲示板{% endblock %}
 {% block content %}
 <p class="cb-back"><a href="{% url 'chiebukuro:questions' %}?theme={{ question.theme }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ theme_label }}の質問</a></p>
 
