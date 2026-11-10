@@ -63,7 +63,7 @@ def push_notification(notification):
 
     def run():
         try:
-            send(devices, "スイス生活の知恵袋", body, notification.url, f"chiebukuro-{notification.kind}")
+            send(devices, "スイス掲示板", body, notification.url, f"chiebukuro-{notification.kind}")
         except Exception:
             logger.exception("掲示板の Push 送信に失敗")
 
@@ -86,7 +86,7 @@ def send_daily_digest(now=None):
         devices = list(PushDevice.objects.filter(user_id=profile.user_id))
         if not count or not devices:
             continue
-        if send(devices, "スイス生活の知恵袋", f"未読のお知らせが{count}件あります", "/swiss-board/notifications/", "chiebukuro-digest"):
+        if send(devices, "スイス掲示板", f"未読のお知らせが{count}件あります", "/swiss-board/notifications/", "chiebukuro-digest"):
             people += 1
     return people
 

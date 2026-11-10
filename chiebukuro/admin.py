@@ -13,7 +13,6 @@ from django.shortcuts import redirect
 from django.urls import path, reverse
 
 from .models import (
-    MEMBER_ANSWERS,
     Answer,
     BoardSettings,
     Item,
@@ -110,7 +109,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            answers_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
+            answers_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
             interests_total=Count("interests", distinct=True),
         )
 
@@ -118,7 +117,7 @@ class QuestionAdmin(admin.ModelAdmin):
     def short_body(self, obj):
         return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
 
-    @admin.display(description="答え（運営以外）", ordering="answers_total")
+    @admin.display(description="答え", ordering="answers_total")
     def answer_count(self, obj):
         return obj.answers_total
 

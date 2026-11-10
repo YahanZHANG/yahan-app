@@ -34,13 +34,9 @@ def rename_member_content(user, nickname):
     from .models import Item, ItemRequest, Notice, Post, PostReply
 
     nickname = nickname[:30]
-    Question.objects.filter(author=user).exclude(source=Question.Source.STAFF).update(nickname=nickname)
-    Answer.objects.filter(author=user).update(nickname=nickname)
-    Post.objects.filter(author=user).update(nickname=nickname)
-    PostReply.objects.filter(author=user).update(nickname=nickname)
-    Item.objects.filter(owner=user).update(nickname=nickname)
-    Notice.objects.filter(owner=user).update(nickname=nickname)
-    ItemRequest.objects.filter(requester=user).update(nickname=nickname)
+    Question.objects.filter(author=user).exclude(source=Question.Source.STAFF).exclude(nickname=nickname).update(nickname=nickname)
+    for model, field in [(Answer, "author"), (Post, "author"), (PostReply, "author"), (Item, "owner"), (Notice, "owner"), (ItemRequest, "requester")]:
+        model.objects.filter(**{field: user}).exclude(nickname=nickname).update(nickname=nickname)
 
 
 # =========================================================
@@ -193,7 +189,9 @@ def question_list(theme="", region="", sort="new", query=""):
         Question.objects
         .filter(status=Status.PUBLISHED)
         .annotate(
-            answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
+            # 見える数は運営の回答も含める。ポップアップで聞くかどうかは運営以外の数で決める
+            answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
+            member_answer_total=Count("answers", filter=MEMBER_ANSWERS, distinct=True),
             interest_total=Count("interests", distinct=True) + F("survey_interest_count"),
         )
     )
@@ -292,7 +290,7 @@ def questions_to_ask(user, region="", limit=8):
             .exclude(answers__author=user)
             .exclude(interests__user=user)
         )
-    return list(questions.filter(answer_total__lte=1).order_by("answer_total", "-created_at", "-pk")[:limit])
+    return list(questions.filter(member_answer_total__lte=1).order_by("member_answer_total", "-created_at", "-pk")[:limit])
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

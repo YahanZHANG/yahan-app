@@ -53,7 +53,7 @@ APP_ICONS = {
 
     # スイス生活の知恵袋 (掲示板)
     "swiss-board": {
-        "name": "スイス知恵袋",
+        "name": "スイス掲示板",
         "folder": "pwa/swiss-board",
         "theme_color": "#F2A900",
     },

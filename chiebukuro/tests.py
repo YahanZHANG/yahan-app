@@ -581,13 +581,25 @@ class PostTests(BoardTestCase):
 
         question = Question.objects.create(body="運営だけが答えた質問", theme="life")
         Answer.objects.create(question=question, body="運営の答え", nickname="運営", is_staff=True)
-        self.assertEqual(question_list().get(pk=question.pk).answer_total, 0)
+        row = question_list().get(pk=question.pk)
+        self.assertEqual((row.answer_total, row.member_answer_total), (1, 0))
         Answer.objects.create(question=question, body="友だちの答え", author=self.bob, nickname="ボブ")
-        self.assertEqual(question_list().get(pk=question.pk).answer_total, 1)
+        row = question_list().get(pk=question.pk)
+        self.assertEqual((row.answer_total, row.member_answer_total), (2, 1))
         staff = User.objects.create_user("staffer2", password=PASSWORD, is_staff=True)
         self.client.force_login(staff)
         self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "運営からもう一言"})
         self.assertTrue(Answer.objects.get(body="運営からもう一言").is_staff)
+
+    def test_nickname_change_anywhere_renames_old_posts(self):
+        from travel.models import UserProfile
+
+        post = Post.objects.create(body="こんにちは", author=self.alice, nickname="りらっくま")
+        profile, _ = UserProfile.objects.get_or_create(user=self.alice)
+        profile.nickname = "旅行中のリラックマ"
+        profile.save()
+        post.refresh_from_db()
+        self.assertEqual(post.nickname, "旅行中のリラックマ")
 
     def test_home_region_next_to_name(self):
         BoardProfile.objects.update_or_create(user=self.alice, defaults={"region": "basel"})

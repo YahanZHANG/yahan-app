@@ -65,7 +65,7 @@
         if (icon) ctx.drawImage(icon, 80, 1640, 120, 120);
         ctx.fillStyle = "#ffffff";
         ctx.font = "800 56px " + font;
-        ctx.fillText("スイス生活の知恵袋", icon ? 230 : 80, 1700);
+        ctx.fillText("スイス掲示板", icon ? 230 : 80, 1700);
         ctx.font = "500 38px " + font;
         ctx.globalAlpha = .85;
         ctx.fillText(box.dataset.url.replace(/^https?:\/\//, "").replace(/\?.*$/, ""), icon ? 230 : 80, 1760);

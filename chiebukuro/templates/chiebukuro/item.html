@@ -1,6 +1,6 @@
 {% extends "chiebukuro/base.html" %}
 {% load board %}
-{% block title %}{{ item.title }} | スイス生活の知恵袋{% endblock %}
+{% block title %}{{ item.title }} | スイス掲示板{% endblock %}
 {% block content %}
 <p class="cb-back"><a href="{% url 'chiebukuro:items' %}?kind={{ item.kind }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ item.get_kind_display }}</a></p>
 

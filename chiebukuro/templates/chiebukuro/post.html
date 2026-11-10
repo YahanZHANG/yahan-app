@@ -1,6 +1,6 @@
 {% extends "chiebukuro/base.html" %}
 {% load board %}
-{% block title %}{{ post.body|truncatechars:30 }} | スイス生活の知恵袋{% endblock %}
+{% block title %}{{ post.body|truncatechars:30 }} | スイス掲示板{% endblock %}
 {% block content %}
 <p class="cb-back"><a href="{% url 'chiebukuro:posts' %}">{% include "chiebukuro/_icon.html" with name="back" %}つぶやき</a></p>
 
