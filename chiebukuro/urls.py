@@ -48,6 +48,7 @@ urlpatterns = [
     path("delete/<str:kind>/<int:pk>/", views.delete_mine, name="delete"),
     path("search/", views.search, name="search"),
     path("report/", views.report, name="report"),
+    path("staff/hide/<str:kind>/<int:pk>/", views.staff_hide, name="staff_hide"),
     path("rules/", views.rules, name="rules"),
     path("install/", views.install_guide, name="install"),
     path("rules/agree/", views.rules_agree, name="rules_agree"),
@@ -63,6 +64,7 @@ urlpatterns = [
     path("ad/<int:pk>/", views.sponsor_click, name="sponsor"),
     # 設定・プッシュ通知
     path("me/settings/", views.settings_view, name="settings"),
+    path("me/thanks/", views.my_thanks, name="my_thanks"),
     path("me/<str:section>/", views.my_list, name="my_list"),
     path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
     path("push/unsubscribe/", views.push_unsubscribe, name="push_unsubscribe"),

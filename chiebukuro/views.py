@@ -6,7 +6,7 @@
 """
 
 import logging
-from datetime import date
+from datetime import date, timedelta
 from functools import wraps
 
 from django.conf import settings as django_settings
@@ -59,6 +59,7 @@ from .models import (
 )
 from .services import (
     attach_stamps,
+    received_thanks,
     rename_member_content,
     new_questions,
     questions_to_ask,
@@ -347,7 +348,7 @@ def home(request):
     season = BoardSettings.current().season(timezone.localdate())
     cal = today_info()
     poll = poll_for_home(request, voter_key)
-    fresh = new_questions(region)
+    fresh = new_questions(region, user=request.user)
     fresh_ids = {question.pk for question in fresh}
     # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
     # アンケートは別のポップアップ (2回目に開いたとき、質問の回答協力のあと。まだ答えていないときだけ)
@@ -371,6 +372,9 @@ def home(request):
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
             "poll_auto": poll_auto,
+            # この2週間つぶやいていない人にだけ「つぶやいてみよう」
+            "nudge_post": request.user.is_authenticated
+            and not Post.objects.filter(author=request.user, created_at__gte=timezone.now() - timedelta(days=14)).exists(),
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": featured_this_week(),
@@ -863,11 +867,13 @@ def ask(request):
     body = ""
     theme = clean_choice(request.GET.get("theme", ""), THEME_CHOICES)
     region = ""
+    anonymous = False
 
     if request.method == "POST":
         body = (request.POST.get("body") or "").strip()
         theme = clean_choice(request.POST.get("theme", ""), THEME_CHOICES)
         region = clean_choice(request.POST.get("question_region", ""), BOARD_REGION_CHOICES)
+        anonymous = request.POST.get("anonymous") == "1"
 
         if not body:
             error = "質問を入力してください。"
@@ -890,6 +896,7 @@ def ask(request):
                     source=Question.Source.MEMBER,
                     author=request.user,
                     nickname=user_nickname(request.user),
+                    is_anonymous=anonymous,
                 )
                 notify_staff(request, "新しい質問", question.body, reverse("admin:chiebukuro_question_change", args=[question.pk]))
             messages.success(request, "質問を書き込みました。答えがついたら🔔でお知らせします。")
@@ -903,6 +910,7 @@ def ask(request):
             "body": body,
             "theme": theme,
             "question_region": region,
+            "anonymous": anonymous,
             "themes": THEMES,
             "error": error,
             "max_length": QUESTION_MAX_LENGTH,
@@ -1485,6 +1493,24 @@ def notifications(request):
 
 @board_open
 @login_required
+def my_thanks(request):
+    """もらったありがとう: 自分の回答・つぶやきに押されたスタンプと「参考になった」(本人だけが見られる)"""
+
+    rows = received_thanks(request.user)
+    week = timezone.now() - timedelta(days=7)
+    return render(
+        request,
+        "chiebukuro/thanks.html",
+        {
+            **board_context(request, "me"),
+            "rows": rows,
+            "week_people": len({row["actor"] for row in rows if row["created_at"] >= week}),
+        },
+    )
+
+
+@board_open
+@login_required
 def my_page(request):
     """マイページ: 和食と同じ「メニューの一覧」の形。中身は各ページで"""
 
@@ -1780,8 +1806,12 @@ def profile(request, username):
         Answer.objects.filter(author=person, status=Status.PUBLISHED, question__status=Status.PUBLISHED)
         .select_related("question").order_by("-created_at")[:30]
     )
+    # 匿名の質問は、本人が見るときだけ
+    person_questions = Question.objects.filter(author=person, status=Status.PUBLISHED)
+    if request.user != person:
+        person_questions = person_questions.exclude(is_anonymous=True)
     questions = list(
-        Question.objects.filter(author=person, status=Status.PUBLISHED)
+        person_questions
         .annotate(answer_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED)))
         .order_by("-created_at")[:30]
     )
@@ -1843,6 +1873,28 @@ def search(request):
             "found": any(results.values()) if results else False,
         },
     )
+
+
+@require_POST
+@login_required
+def staff_hide(request, kind, pk):
+    """運営だけ: 役に立たない書きこみを非表示にする (アーカイブ。管理画面で「公開」に戻せる)"""
+
+    if not request.user.is_staff:
+        raise Http404
+    models_by_kind = {"question": Question, "answer": Answer, "post": Post, "reply": PostReply}
+    model = models_by_kind.get(kind)
+    if model is None:
+        raise Http404
+    row = get_object_or_404(model, pk=pk)
+    row.status = Status.HIDDEN
+    row.save(update_fields=["status"])
+    messages.success(request, "非表示にしました（管理画面で「公開」に戻せます）。")
+    if kind == "question":
+        return redirect("chiebukuro:questions")
+    if kind == "post":
+        return redirect("chiebukuro:posts")
+    return redirect(safe_next(request, reverse("chiebukuro:home")))
 
 
 @board_open

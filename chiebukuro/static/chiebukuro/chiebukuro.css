@@ -485,6 +485,9 @@ html[data-yapp-resolved-theme="dark"] .cb-staff-note { background: #3a2f12; colo
 }
 .cb-qcount b { display: block; font-size: 17px; }
 .cb-qcount.has { border-color: var(--answer); background: var(--answer); color: #fff; }
+/* 回答数の色: 0 白、1 薄い赤、2〜3 黄、4〜 緑 */
+.cb-qcount.one { border-color: #e7a3a3; background: #fbe3e3; color: #a33a3a; }
+.cb-qcount.few { border-color: #e6c25a; background: #fdf1c7; color: #7a5a00; }
 
 .cb-qmain { flex: 1; min-width: 0; display: grid; gap: 3px; }
 .cb-qtext {
@@ -1553,3 +1556,19 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-hashtags { display: flex; flex-wrap: wrap; gap: 8px; }
 .cb-hashtags span { color: var(--sub); }
 .cb-pollpop .cb-daily-body { padding: 0 18px; }
+
+/* 運営だけの「非表示」ボタン */
+.cb-staff-hide { display: inline; margin: 0 0 0 6px; }
+.cb-staff-hide button { padding: 1px 7px; border: 1px dashed var(--line-strong); border-radius: 999px; background: none; color: var(--sub); font-size: 11px; cursor: pointer; }
+.cb-staff-hide button:hover { color: #a33a3a; border-color: #a33a3a; }
+
+/* もらったありがとう */
+.cb-thanks-week { margin: 0 0 8px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--answer) 10%, var(--surface)); font-size: 14px; }
+.cb-thanks-text { color: var(--sub); font-size: 13px; }
+
+/* ひと押しのポップアップ (登録・つぶやき) */
+.cb-nudge-body { padding: 0 18px; font-size: 14px; }
+.cb-nudge-body p { margin: 0; }
+.cb-nudge-actions { display: flex; gap: 8px; margin-top: 12px !important; }
+.cb-nudge-form { display: grid; gap: 10px; margin-top: 12px; }
+.cb-nudge-login { margin-top: 8px !important; font-size: 13px; color: var(--sub); text-align: center; }

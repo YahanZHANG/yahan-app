@@ -1,6 +1,6 @@
 {% load board %}
 <a href="{% url 'chiebukuro:question' question.pk %}" class="cb-qrow">
-    <span class="cb-qcount {% if question.answer_total %}has{% endif %}"><b>{{ question.answer_total }}</b>回答</span>
+    <span class="cb-qcount{% if question.answer_total >= 4 %} has{% elif question.answer_total >= 2 %} few{% elif question.answer_total == 1 %} one{% endif %}"><b>{{ question.answer_total }}</b>回答</span>
     <span class="cb-qmain">
         <span class="cb-qtext">{{ question.body }}</span>
         {% if question.best and not hide_best %}<span class="cb-qbest"><i>A</i>{{ question.best.body|truncatechars:90 }}</span>{% endif %}

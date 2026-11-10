@@ -1,0 +1,2 @@
+{% comment %}運営だけに見える「非表示」ボタン。渡すもの: hide_kind (question / answer / post / reply), hide_id{% endcomment %}
+{% if user.is_staff %}<form method="post" action="{% url 'chiebukuro:staff_hide' hide_kind hide_id %}" class="cb-staff-hide" onsubmit="return confirm('非表示にしますか？（管理画面で戻せます）');">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" title="運営だけに見えるボタン">🗄 非表示</button></form>{% endif %}

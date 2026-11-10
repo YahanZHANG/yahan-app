@@ -92,12 +92,25 @@ def send_daily_digest(now=None):
 
 
 def run_if_due(state_dir, now=None, write=print):
-    """毎日19時を過ぎていて、今日まだ送っていなければ送る (1分ごとに呼ばれる前提)"""
+    """
+    毎日19時を過ぎていて、今日まだ送っていなければ送る (1分ごとに呼ばれる前提)。
+    日曜はあわせて「今週のありがとう」のまとめも (services.send_weekly_thanks)。
+    """
 
     now = now or timezone.now()
     local = timezone.localtime(now)
     if local.hour < DIGEST_HOUR:
         return False
+    week_marker = state_dir / f"{local.strftime('%Y-%m-%d')}.chiebukuro-week"
+    if local.weekday() == 6 and not week_marker.exists():
+        from .services import send_weekly_thanks
+
+        state_dir.mkdir(parents=True, exist_ok=True)
+        week_marker.write_text(now.isoformat(), encoding="utf-8")
+        try:
+            write(f"Board weekly thanks: {send_weekly_thanks(now)} people")
+        except Exception:
+            logger.exception("週のまとめに失敗")
     marker = state_dir / f"{local.strftime('%Y-%m-%d')}.chiebukuro-digest"
     if marker.exists():
         return False

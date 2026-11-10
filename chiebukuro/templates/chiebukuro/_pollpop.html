@@ -24,7 +24,7 @@
     function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
     function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
     function open() { if (!dialog.open) dialog.showModal(); }
-    function close() { write("cb_poll_day", day); dialog.close(); }
+    function close() { write("cb_poll_day", day); dialog.close(); document.dispatchEvent(new Event("cb:poll-done")); }
 
     if (location.hash === "#poll" + dialog.dataset.poll) {
         // アンケートに答えたあと: 結果を出す

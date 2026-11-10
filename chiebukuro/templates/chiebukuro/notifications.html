@@ -7,7 +7,7 @@
     {% for row in rows %}
         {% ifchanged row.group %}<h2 class="cb-group">{{ row.group }}</h2>{% endifchanged %}
         <a href="{{ row.url }}" class="cb-notif {% if not row.read_at %}is-unread{% endif %}">
-            <span class="cb-notif-icon cb-notif-{{ row.kind }}" aria-hidden="true">{% if row.kind == "answer" %}{% include "chiebukuro/_icon.html" with name="questions" %}{% elif row.kind == "stamp" %}☺{% elif row.kind == "reply" %}{% include "chiebukuro/_icon.html" with name="posts" %}{% else %}{% include "chiebukuro/_icon.html" with name="items" %}{% endif %}</span>
+            <span class="cb-notif-icon cb-notif-{{ row.kind }}" aria-hidden="true">{% if row.kind == "answer" %}{% include "chiebukuro/_icon.html" with name="questions" %}{% elif row.kind == "stamp" %}☺{% elif row.kind == "week" %}🙏{% elif row.kind == "reply" %}{% include "chiebukuro/_icon.html" with name="posts" %}{% else %}{% include "chiebukuro/_icon.html" with name="items" %}{% endif %}</span>
             <span class="cb-notif-main">
                 <span>{% if row.actor %}<b>{{ row.actor }}</b>さん：{% endif %}{{ row.text }}</span>
                 <span class="cb-sub">{{ row.created_at|ago }}</span>

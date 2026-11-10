@@ -1,0 +1,65 @@
+{% comment %}ときどき出す、ひと押しのポップアップ (出すのは1週間に1回まで、×で閉じたら1週間出さない)。
+ログインしていない人: アンケートに答えたあと、またはその日3回目に開いたときに、ID とパスワードだけで登録できる枠。
+ログインしている人: この2週間つぶやいていなければ、その日3回目に開いたときに「つぶやいてみよう」。{% endcomment %}
+{% if not user.is_authenticated or nudge_post %}
+<dialog class="cb-daily cb-nudge" id="cb-nudge" aria-labelledby="cb-nudge-title" data-day="{% now 'Y-m-d' %}" data-guest="{% if not user.is_authenticated %}1{% endif %}">
+    <div class="cb-daily-box">
+        <header class="cb-daily-head">
+            {% if user.is_authenticated %}
+                <p class="cb-daily-date">ひとことでOK</p>
+                <h2 id="cb-nudge-title">つぶやいてみませんか？</h2>
+            {% else %}
+                <p class="cb-daily-date">無料・30秒</p>
+                <h2 id="cb-nudge-title">アカウントを作りませんか？</h2>
+            {% endif %}
+            <button type="button" class="cb-daily-x" data-nudge-close aria-label="閉じる">×</button>
+        </header>
+        <div class="cb-daily-body cb-nudge-body">
+            {% if user.is_authenticated %}
+                <p>スイス生活のちょっとした発見や、今日あったことを書いてみませんか？だれかの役に立つかもしれません。</p>
+                <p class="cb-nudge-actions"><a href="{% url 'chiebukuro:post_new' %}" class="cb-btn cb-btn-primary">つぶやく</a><a href="{% url 'chiebukuro:ask' %}" class="cb-btn">質問する</a></p>
+            {% else %}
+                <p>スタンプを1つ押すだけでも、書いた人にはとても励みになります。ユーザーIDとパスワードを決めるだけで登録できます。</p>
+                <form method="post" action="{% url 'portal:signup' %}" class="cb-nudge-form" data-nudge-form>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <label class="cb-field"><span>ユーザーID（半角英数字）</span><input type="text" name="username" required maxlength="150" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+                    <label class="cb-field"><span>パスワード（8文字以上）</span><input type="password" name="password1" required minlength="8" autocomplete="new-password"></label>
+                    <input type="hidden" name="password2">
+                    <button type="submit" class="cb-btn cb-btn-primary">無料で登録する</button>
+                </form>
+                <p class="cb-nudge-login">アカウントをお持ちの方は <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a></p>
+            {% endif %}
+        </div>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-nudge");
+    if (!dialog || !dialog.showModal) return;
+    var day = dialog.dataset.day;
+    var WEEK = 7 * 24 * 60 * 60 * 1000;
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    function anotherOpen() { return !!document.querySelector("dialog[open]"); }
+    function due() { return Number(read("cb_nudge_until") || 0) <= Date.now(); }
+    function open() {
+        if (!due() || anotherOpen()) return;
+        write("cb_nudge_until", String(Date.now() + WEEK));
+        dialog.showModal();
+    }
+    // ログインしていない人: アンケートに答えて結果を見たあと
+    if (dialog.dataset.guest) document.addEventListener("cb:poll-done", function () { setTimeout(open, 300); });
+    // その日3回目に開いたとき (回数は _ask.html が数えている)
+    var opens = {};
+    try { opens = JSON.parse(read("cb_home_opens") || "{}"); } catch (e) {}
+    if (opens.day === day && opens.count >= 3) setTimeout(open, 1500);
+
+    var form = dialog.querySelector("[data-nudge-form]");
+    if (form) form.addEventListener("submit", function () { form.password2.value = form.password1.value; });
+    dialog.addEventListener("click", function (event) {
+        if (event.target === dialog || event.target.closest("[data-nudge-close]")) dialog.close();
+    });
+})();
+</script>
+{% endif %}

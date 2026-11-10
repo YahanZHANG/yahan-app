@@ -185,6 +185,7 @@ class Question(models.Model):
     release_rank = models.PositiveIntegerField("公開の順番", null=True, blank=True, help_text="公開待ちの質問は、小さい数から順に公開されます。")
     release_open = models.BooleanField("答え待ちの枠", default=False, help_text="アンケートで答えが0〜1件だった質問 (答えを集めたい枠で、別に数えて公開)")
     # アンケートで押された「私も知りたい」(取り込み時の数。掲示板で押された分は Interest)
+    is_anonymous = models.BooleanField("匿名で質問", default=False, help_text="「匿名さん」と表示し、プロフィールにも出さない。")
     survey_interest_count = models.PositiveIntegerField("アンケートでの「知りたい」", default=0)
     # 事前アンケートの質問 (取り込み元)
     survey_question_id = models.PositiveIntegerField("アンケートの質問ID", null=True, blank=True, unique=True)
@@ -207,6 +208,8 @@ class Question(models.Model):
     def display_name(self):
         if self.source == self.Source.STAFF:
             return "運営"
+        if self.is_anonymous:
+            return "匿名さん"
         return self.nickname or "名無しさん"
 
 
@@ -519,6 +522,7 @@ class Notification(models.Model):
         TALK = "talk", "やりとり"
         CHOSEN = "chosen", "相手に決まった"
         STAMP = "stamp", "スタンプ"
+        WEEK = "week", "今週のありがとう"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_notifications")
     kind = models.CharField(max_length=10, choices=Kind.choices)

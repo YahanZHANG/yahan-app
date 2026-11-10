@@ -1109,3 +1109,70 @@ class DailyAndColorTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
         self.assertContains(page, "Instagram でシェア")
         self.assertContains(page, "twitter.com/intent/tweet")
+
+
+class BoardImprovementTests(BoardTestCase):
+    """2026-11-10: 新着の順番・匿名の質問・運営の非表示・ありがとうのまとめ・回答数の色"""
+
+    def test_new_questions_newest_first_and_mine_on_top(self):
+        from chiebukuro.services import new_questions
+
+        older = Question.objects.create(body="古い質問", theme="life", region="geneva")
+        Answer.objects.create(question=older, body="a", author=self.bob, nickname="ボブ")
+        newer = Question.objects.create(body="新しい質問", theme="life")
+        self.assertEqual([q.pk for q in new_questions()][:2], [newer.pk, older.pk])
+        mine = Question.objects.create(body="ジュネーブの質問", theme="life", region="geneva", author=self.alice)
+        Question.objects.filter(pk=mine.pk).update(created_at=timezone.now() - timezone.timedelta(hours=2))
+        self.assertNotIn(mine.pk, [q.pk for q in new_questions(region="zurich")])
+        self.assertEqual(new_questions(region="zurich", user=self.alice)[0].pk, mine.pk)
+
+    def test_anonymous_question(self):
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:ask"), {"body": "匿名で聞きたいこと", "theme": "life", "anonymous": "1"})
+        question = Question.objects.get(body="匿名で聞きたいこと")
+        self.assertTrue(question.is_anonymous)
+        self.assertEqual(question.display_name, "匿名さん")
+        self.assertContains(self.client.get(reverse("chiebukuro:profile", args=["alice"]) + "?show=questions"), "匿名で聞きたいこと")
+        self.client.force_login(self.bob)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:profile", args=["alice"]) + "?show=questions"), "匿名で聞きたいこと")
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "匿名さん")
+
+    def test_staff_hide_button(self):
+        question = Question.objects.create(body="質問", theme="life")
+        answer = Answer.objects.create(question=question, body="わかりません", author=self.bob, nickname="ボブ")
+        url = reverse("chiebukuro:staff_hide", args=["answer", answer.pk])
+        self.client.force_login(self.alice)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "🗄 非表示")
+        self.assertEqual(self.client.post(url).status_code, 404)
+        staff = User.objects.create_user("staffer3", password=PASSWORD, is_staff=True)
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "🗄 非表示")
+        self.client.post(url)
+        answer.refresh_from_db()
+        self.assertEqual(answer.status, "hidden")
+
+    def test_received_thanks_and_weekly_summary(self):
+        from chiebukuro.models import Notification
+        from chiebukuro.services import received_thanks, send_weekly_thanks
+
+        post = Post.objects.create(body="役に立つつぶやき", author=self.alice, nickname="ありす")
+        Reaction.objects.create(target="post", target_id=post.pk, stamp="helpful", user=self.bob, target_author=self.alice)
+        Reaction.objects.create(target="post", target_id=post.pk, stamp="like", user=self.alice, target_author=self.alice)
+        rows = received_thanks(self.alice)
+        self.assertEqual(len(rows), 1)
+        self.assertIn("役に立つつぶやき", rows[0]["text"])
+        self.assertEqual(send_weekly_thanks(), 1)
+        self.assertTrue(Notification.objects.filter(user=self.alice, kind="week").exists())
+        self.client.force_login(self.alice)
+        self.assertContains(self.client.get(reverse("chiebukuro:my_thanks")), "1人")
+
+    def test_answer_count_colours(self):
+        question = Question.objects.create(body="色の質問", theme="life")
+        Answer.objects.create(question=question, body="a", author=self.bob, nickname="ボブ")
+        page = self.client.get(reverse("chiebukuro:questions")).content.decode()
+        self.assertIn('cb-qcount one', page)
+
+    def test_guest_signup_nudge(self):
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, 'id="cb-nudge"')
+        self.assertContains(page, 'name="password1"')

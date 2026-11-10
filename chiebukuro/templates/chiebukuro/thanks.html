@@ -1,0 +1,23 @@
+{% extends "chiebukuro/base.html" %}
+{% load board %}
+{% block title %}もらったありがとう | スイス掲示板{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+<h1 class="cb-page-title">もらったありがとう</h1>
+<section class="cb-block cb-block-flat">
+    {% if week_people %}<p class="cb-thanks-week">この1週間で、<b>{{ week_people }}人</b>があなたの回答やつぶやきにスタンプを押してくれました。だれかの役に立っています！</p>{% endif %}
+    {% for row in rows %}
+        <a href="{{ row.url }}" class="cb-notif">
+            <span class="cb-notif-icon" aria-hidden="true">{{ row.emoji }}</span>
+            <span class="cb-notif-main">
+                <span><b>{{ row.actor }}</b>さんが「{{ row.word }}」</span>
+                <span class="cb-thanks-text">{{ row.text }}</span>
+                <span class="cb-sub">{{ row.created_at|ago }}</span>
+            </span>
+        </a>
+    {% empty %}
+        <p class="cb-empty">まだありません。質問に答えたり、つぶやいたりすると、読んだ人がスタンプで「ありがとう」を伝えてくれます。</p>
+    {% endfor %}
+    <p class="cb-note">ここは、あなただけが見られます。毎週日曜の夜に、その週のぶんを🔔でまとめてお知らせします。</p>
+</section>
+{% endblock %}
