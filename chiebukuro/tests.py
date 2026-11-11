@@ -12,7 +12,7 @@ from pre_survey.models import Interest as SurveyInterest
 from pre_survey.models import Question as SurveyQuestion
 
 from .models import (
-    Answer, BoardProfile, BoardSettings, Interest, Item, ItemRequest, Message, Notice, Notification, Poll, PollChoice, PollVote,
+    Answer, BoardProfile, BoardSettings, BotPost, Interest, Item, ItemRequest, Message, Notice, Notification, Poll, PollChoice, PollVote,
     Post, PostReply, Question, Reaction, Report, Sponsor, Thanks,
 )
 from .services import import_from_survey
@@ -32,6 +32,8 @@ def public_user(username):
 class BoardTestCase(TestCase):
 
     def setUp(self):
+        # マイグレーションで入るBotの試運転の予約は、テストの邪魔にならないよう消す
+        BotPost.objects.all().delete()
         settings_row = BoardSettings.current()
         settings_row.is_open = True
         settings_row.save()
@@ -1176,3 +1178,74 @@ class BoardImprovementTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(page, 'id="cb-nudge"')
         self.assertContains(page, 'name="password1"')
+
+
+class BoardBotTests(BoardTestCase):
+
+    def test_trial_schedule(self):
+        from chiebukuro import bots
+
+        bots.schedule(BotPost)
+        self.assertEqual(BotPost.objects.filter(bot="swiss").count(), 31)
+        # 30日のうち日曜が4回: お昼は26回 (和食13・おでかけ13)、ニュースは毎日
+        self.assertEqual(BotPost.objects.filter(bot__in=["washoku", "outings"]).count(), 26)
+        self.assertEqual(BotPost.objects.filter(bot="washoku").count(), 13)
+        self.assertEqual(BotPost.objects.filter(bot="news").count(), 30)
+        first = timezone.localtime(BotPost.objects.get(bot="swiss", day=1).publish_at)
+        self.assertEqual((first.date().isoformat(), first.hour), ("2026-11-12", 8))
+        intro = timezone.localtime(BotPost.objects.get(bot="swiss", day=0).publish_at)
+        self.assertLess(intro, first)
+        self.assertEqual(bots.schedule(BotPost), 0)
+
+    def test_swiss_post_released_with_source(self):
+        from chiebukuro.bots import release_due
+
+        now = timezone.now()
+        BotPost.objects.create(bot="swiss", publish_at=now - timezone.timedelta(minutes=5), day=1, theme="🏰 歴史",
+                               title="スイスの建国は1291年", body="本文です", source_url="https://www.admin.ch/en")
+        BotPost.objects.create(bot="swiss", publish_at=now + timezone.timedelta(hours=1), day=2, title="まだ", body="まだ")
+        BotPost.objects.create(bot="swiss", publish_at=now - timezone.timedelta(minutes=1), day=3, title="止めた", body="x", is_active=False)
+        self.assertEqual(release_due(now), 1)
+        post = Post.objects.get()
+        self.assertEqual((post.bot, post.title, post.nickname), ("swiss", "スイスの建国は1291年", "スイスを知ろうBot"))
+        self.assertIn("出典：https://www.admin.ch/en", post.body)
+        self.assertFalse(post.author.is_active)
+        self.assertEqual(BotPost.objects.get(day=3).state, "skipped")
+        self.assertEqual(release_due(now), 0)
+        page = self.client.get(reverse("chiebukuro:posts")).content.decode()
+        self.assertIn("cb-post-bot", page)
+        self.assertIn("スイスの建国は1291年", page)
+        # HOME の新着には出さない
+        self.assertNotIn("スイスの建国は1291年", self.client.get(reverse("chiebukuro:home")).content.decode())
+
+    def test_hide_bots_toggle(self):
+        from chiebukuro.bots import bot_user
+
+        Post.objects.create(body="Botです", bot="news", author=bot_user("news"), nickname="SwissNews Bot")
+        Post.objects.create(body="ふつうのつぶやき", author=self.alice, nickname="ありす")
+        url = reverse("chiebukuro:posts")
+        self.assertContains(self.client.get(url + "?bots=hide"), "ふつうのつぶやき")
+        self.assertNotContains(self.client.get(url), "Botです")
+        self.assertContains(self.client.get(url + "?bots=show"), "Botです")
+        page = self.client.get(url + "?bot=news")
+        self.assertContains(page, "Botです")
+        self.assertNotContains(page, "ふつうのつぶやき")
+
+    def test_washoku_bot_uses_a_recipe(self):
+        from washoku.models import Recipe
+
+        from chiebukuro.bots import release_due
+
+        recipe = Recipe.objects.create(name="肉じゃが", description="スイスのじゃがいもで。", steps="煮る", status="published", cooking_time_minutes=30)
+        now = timezone.now()
+        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(minutes=1))
+        BotPost.objects.create(bot="news", publish_at=now - timezone.timedelta(minutes=1))
+        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(hours=8))
+        self.assertEqual(release_due(now), 1)
+        post = Post.objects.get()
+        self.assertEqual(post.title, "肉じゃが")
+        self.assertEqual(post.links[0]["url"], reverse("washoku:recipe_detail", args=[recipe.pk]))
+        notes = set(BotPost.objects.values_list("note", flat=True))
+        self.assertIn("出せるデータがありませんでした", notes)  # ニュースがない
+        self.assertIn("時間をすぎていたので出していません", notes)
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "レシピを見る")

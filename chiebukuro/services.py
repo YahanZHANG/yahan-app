@@ -470,7 +470,7 @@ def recent_activity(region="", limit=8):
         return queryset
 
     rows = []
-    rows += [("post", obj) for obj in narrow(Post.objects.filter(status=Status.PUBLISHED)).order_by("-created_at")[:limit]]
+    rows += [("post", obj) for obj in narrow(Post.objects.filter(status=Status.PUBLISHED, bot="")).order_by("-created_at")[:limit]]
     rows += [
         ("question", obj)
         for obj in narrow(Question.objects.filter(status=Status.PUBLISHED).exclude(source=Question.Source.STAFF)).order_by("-created_at")[:limit]
@@ -639,7 +639,7 @@ def featured_this_week(limit=3):
         .annotate(week_thanks=Count("thanks", filter=Q(thanks__created_at__gte=since), distinct=True))
     )
     posts = (
-        Post.objects.filter(status=Status.PUBLISHED)
+        Post.objects.filter(status=Status.PUBLISHED, bot="")
         .select_related("author")
         .annotate(week_replies=Count("replies", filter=Q(replies__created_at__gte=since, replies__status=Status.PUBLISHED), distinct=True))
     )

@@ -39,6 +39,7 @@
         </select>
     </form>
     {% include "chiebukuro/_region.html" %}
+    {% if bot %}<a href="{% url 'chiebukuro:posts' %}" class="cb-bot-toggle">{{ bot_name }}だけ表示中 ✕</a>{% elif hide_bots %}<a href="?bots=show" class="cb-bot-toggle">🤖 Botも表示する</a>{% else %}<a href="?bots=hide" class="cb-bot-toggle">🤖 Botをかくす</a>{% endif %}
 </div>
 
 <section class="cb-block cb-block-flat">

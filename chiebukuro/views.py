@@ -46,6 +46,7 @@ from .models import (
     Poll,
     PollChoice,
     PollVote,
+    BOT_CHOICES,
     Post,
     PostReply,
     Contact,
@@ -128,6 +129,12 @@ def release_due_questions():
     if cache.add("chie-release-check", 1, 60):
         try:
             release_survey_questions()
+        except Exception:
+            pass
+        try:
+            from .bots import release_due
+
+            release_due()
         except Exception:
             pass
 
@@ -559,6 +566,15 @@ def post_list(request):
     posts = by_region(Post.objects.filter(status=Status.PUBLISHED), region)
     if theme:
         posts = posts.filter(theme=theme)
+    # Bot: ?bot=swiss でそのBotだけ。?bots=hide / show で、Botをかくすかどうかを覚える
+    bot = clean_choice(request.GET.get("bot", ""), BOT_CHOICES)
+    if request.GET.get("bots") in ("hide", "show"):
+        request.session["cb_hide_bots"] = request.GET["bots"] == "hide"
+    hide_bots = bool(request.session.get("cb_hide_bots")) and not bot
+    if bot:
+        posts = posts.filter(bot=bot)
+    elif hide_bots:
+        posts = posts.filter(bot="")
     page = Paginator(annotate_posts(posts).order_by("-created_at", "-pk"), POSTS_PER_PAGE).get_page(request.GET.get("page"))
     mark_liked(page.object_list, request.user)
     attach_first_replies(page.object_list)
@@ -572,6 +588,9 @@ def post_list(request):
             "theme": theme,
             "themes": THEMES,
             "max_length": POST_MAX_LENGTH,
+            "bot": bot,
+            "bot_name": dict(BOT_CHOICES).get(bot, ""),
+            "hide_bots": hide_bots,
         },
     )
 
