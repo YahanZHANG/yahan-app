@@ -21,6 +21,7 @@
                 <select name="question_region"><option value="">スイス全体</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == question_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
             </label>
         </div>
+        <label class="cb-radio"><input type="checkbox" name="anonymous" value="1" {% if anonymous %}checked{% endif %}> 匿名で質問する（名前は「匿名さん」になり、プロフィールにも出ません）</label>
         <button type="submit" class="cb-btn cb-btn-primary">質問する</button>
         <p class="cb-note">答えがついたら🔔でお知らせします。個人が特定できる情報は書かないでください。</p>
     </form>

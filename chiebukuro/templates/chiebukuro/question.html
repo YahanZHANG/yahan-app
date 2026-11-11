@@ -5,7 +5,7 @@
 <p class="cb-back"><a href="{% url 'chiebukuro:questions' %}?theme={{ question.theme }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ theme_label }}の質問</a></p>
 
 <section class="cb-block cb-qhead">
-    <p class="cb-meta"><span class="cb-cat">{{ theme_label }}</span>{% if question_region %}<span>{{ question_region }}</span>{% endif %}<span>{{ question.display_name }}</span>{% if question.author and question.source != "staff" %}{% home_region question.author %}{% endif %}<span>{{ question.created_at|date:"Y年n月j日" }}</span>{% if question.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}</p>
+    <div class="cb-meta"><span class="cb-cat">{{ theme_label }}</span>{% if question_region %}<span>{{ question_region }}</span>{% endif %}<span>{{ question.display_name }}</span>{% if question.author and question.source != "staff" and not question.is_anonymous %}{% home_region question.author %}{% endif %}<span>{{ question.created_at|date:"Y年n月j日" }}</span>{% if question.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% include "chiebukuro/_staff_hide.html" with hide_kind="question" hide_id=question.pk %}</div>
     <h1><span class="cb-qmark" aria-hidden="true">Q</span>{{ question.body }}</h1>
     {% include "chiebukuro/_photo.html" with url=question.photo_url %}
     <div class="cb-qactions">
@@ -32,10 +32,10 @@
     {% for answer in answers %}
         <article class="cb-answer {% if best_answer and answer.pk == best_answer.pk %}is-best{% endif %}" id="a{{ answer.pk }}">
             {% if best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
-            <p class="cb-post-head">
+            <div class="cb-post-head">
                 {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-av cb-av-s {{ answer.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face answer.author answer.display_name %}</a><a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-name">{{ answer.display_name }}</a>{% home_region answer.author %}{% else %}<span class="cb-av cb-av-s cb-av0" aria-hidden="true">{{ answer.display_name|initial }}</span><span class="cb-name">{{ answer.display_name }}</span>{% endif %}
-                <span class="cb-sub">{{ answer.created_at|ago }}</span>{% if answer.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}
-            </p>
+                <span class="cb-sub">{{ answer.created_at|ago }}</span>{% if answer.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% include "chiebukuro/_staff_hide.html" with hide_kind="answer" hide_id=answer.pk %}
+            </div>
             <div class="cb-answer-body">{{ answer.body|urlize|linebreaksbr }}</div>
             {% include "chiebukuro/_photo.html" with url=answer.photo_url %}
             <div class="cb-answer-foot">

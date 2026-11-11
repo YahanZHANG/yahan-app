@@ -162,10 +162,11 @@ def random_nickname(avoid=""):
 # =========================================================
 
 # 何問に1回、人気の質問を混ぜるか (3なら 3問目・6問目・9問目…)
-POPULAR_EVERY = 3
+POPULAR_EVERY = 2
 
 # 「私も知りたい」がこの票数以上なら人気の質問
 POPULAR_MIN_INTERESTS = 2
+POPULAR_MAX_ANSWERS = 6
 
 # 回答がこの数以上集まった質問は、ほかの質問を全部見たあとにだけ出す (足りない質問を優先)
 ENOUGH_ANSWERS = 3
@@ -209,8 +210,9 @@ def next_question(request, participant):
     - 地域つきの質問は、地域を選んでいない人か、同じ地域の人にだけ
     - 回答が ENOUGH_ANSWERS 件以上集まった質問は、テーマに関係なくいちばん後
     - その中で、回答の少ない順 (0件が先) → 新しい順
-    - ただし POPULAR_EVERY 問に1回は、「私も知りたい」が POPULAR_MIN_INTERESTS 票以上の
-      人気の質問を、テーマに関係なく出す (知りたい票の多い順 → 回答の少ない順)
+    - 選んだテーマの質問が尽きたら、ほかのテーマは1問ずつ順番に回す (1つのテーマに偏らないように)
+    - ただし POPULAR_EVERY 問に1回は、「私も知りたい」が POPULAR_MIN_INTERESTS 票以上で、
+      回答が知りたい人の数より少ない質問を、テーマに関係なく出す (知りたい票の多い順 → 回答の少ない順)
     """
 
     mine = identity(request)
@@ -255,14 +257,16 @@ def next_question(request, participant):
                 .exclude(pk__in=Skip.objects.filter(mine).values("question_id"))
                 .annotate(interest_total=Count("interests", distinct=True))
             )
-            .filter(interest_total__gte=POPULAR_MIN_INTERESTS, answer_count__lt=ENOUGH_ANSWERS)
+            # 知りたい人より回答が少ないあいだは出す (回答 POPULAR_MAX_ANSWERS 件まで)
+            .filter(interest_total__gte=POPULAR_MIN_INTERESTS)
+            .filter(Q(answer_count__lt=ENOUGH_ANSWERS) | (Q(answer_count__lt=F("interest_total")) & Q(answer_count__lt=POPULAR_MAX_ANSWERS)))
             .order_by("-interest_total", "answer_count", "-created_at", "-pk")
             .first()
         )
         if popular is not None:
             return popular
 
-    return (
+    ranked = (
         with_answer_count(questions)
         .annotate(
             other_theme=Case(
@@ -281,8 +285,23 @@ def next_question(request, participant):
             ),
         )
         .order_by("enough", "other_theme", "skipped_before", "interested_before", "answer_count", "-created_at", "-pk")
-        .first()
     )
+    first = ranked.first()
+    if first is None or not first.other_theme or first.enough:
+        return first
+    # 選んだテーマの質問が尽きたら、ほかのテーマを順番に回す (新しく足したテーマばかりにならないように)
+    themes = sorted(set(
+        ranked.filter(other_theme=True, enough=False, skipped_before=False, interested_before=False).values_list("theme", flat=True)
+    ))
+    if not themes:
+        return first
+    # この参加でいちばん見ていないテーマから (同じならテーマの順)
+    seen = {}
+    for model in (Answer, Skip, Interest):
+        for theme in model.objects.filter(participant=participant).values_list("question__theme", flat=True):
+            seen[theme] = seen.get(theme, 0) + 1
+    theme = min(themes, key=lambda value: (seen.get(value, 0), value))
+    return ranked.filter(theme=theme).first() or first
 
 
 # =========================================================

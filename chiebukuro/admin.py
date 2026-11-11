@@ -134,12 +134,33 @@ class QuestionAdmin(admin.ModelAdmin):
         set_status(self, request, queryset, Status.HIDDEN, "非公開")
 
 
+class UnhelpfulFilter(admin.SimpleListFilter):
+    """「わかりません」「ありません」など、質問した人の役に立たなさそうな短い回答をまとめて確認する"""
+
+    title = "役に立たないかも"
+    parameter_name = "unhelpful"
+    WORDS = ["わかりません", "分かりません", "わからない", "分からない", "ありません", "特にない", "とくにない", "特になし", "知らない", "知りません", "なし", "ない"]
+
+    def lookups(self, request, model_admin):
+        return [("yes", "短い回答・「わかりません」など")]
+
+    def queryset(self, request, queryset):
+        if self.value() != "yes":
+            return queryset
+        from django.db.models.functions import Length
+
+        words = Q()
+        for word in self.WORDS:
+            words |= Q(body__icontains=word)
+        return queryset.annotate(body_length=Length("body")).filter(Q(body_length__lte=12) | (words & Q(body_length__lte=40)))
+
+
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
 
     list_display = ["short_body", "question", "nickname", "status", "from_survey", "is_staff", "home_pick", "created_at"]
     list_editable = ["status", "is_staff", "home_pick"]
-    list_filter = ["status", "from_survey", "is_staff"]
+    list_filter = [UnhelpfulFilter, "status", "from_survey", "is_staff"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["question", "author", "from_survey"]
     actions = ["publish", "hide"]

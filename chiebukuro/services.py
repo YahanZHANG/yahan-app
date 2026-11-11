@@ -267,14 +267,16 @@ def popular_questions(theme="", region="", query="", limit=20):
     return best_answers(list(questions[:limit]))
 
 
-def new_questions(region="", limit=5, days=14):
-    """新着の質問: この2週間の質問を、答えの少ない順 (同じなら新しい順) に"""
+def new_questions(region="", limit=5, days=14, user=None):
+    """新着の質問: この2週間の質問を新しい順に。自分が1日以内にした質問は、地域にかかわらずいちばん上"""
 
     since = timezone.now() - timedelta(days=days)
-    return list(
-        question_list(region=region).filter(created_at__gte=since)
-        .order_by("answer_total", "-created_at", "-pk")[:limit]
-    )
+    questions = list(question_list(region=region).filter(created_at__gte=since).order_by("-created_at", "-pk")[:limit])
+    if user is not None and user.is_authenticated:
+        mine = question_list().filter(author=user, created_at__gte=timezone.now() - timedelta(days=1)).order_by("-created_at").first()
+        if mine is not None and mine.pk not in {question.pk for question in questions}:
+            questions = [mine] + questions[: limit - 1]
+    return questions
 
 
 def questions_to_ask(user, region="", limit=8):
@@ -320,6 +322,95 @@ def notify(user, kind, text, url, actor=None):
         actor=user_nickname(actor) if actor is not None else "",
     )
     push_notification(notification)
+
+
+def received_thanks(user, since=None, limit=100):
+    """
+    自分の回答・つぶやき・返信に、ほかの人が押したスタンプと「参考になった」を新しい順に。
+    1件 = {"actor", "emoji", "word", "text", "url", "created_at"}
+    """
+
+    from .models import STAMPS, Post, PostReply, Reaction, Thanks
+
+    labels = {key: (emoji, label) for key, emoji, label in STAMPS}
+    reactions = Reaction.objects.filter(target_author=user).exclude(user=user).select_related("user")
+    thanks = Thanks.objects.filter(answer__author=user).exclude(user=user).select_related("user", "answer")
+    if since is not None:
+        reactions = reactions.filter(created_at__gte=since)
+        thanks = thanks.filter(created_at__gte=since)
+    reactions = list(reactions.order_by("-created_at")[:limit])
+    thanks = list(thanks.order_by("-created_at")[:limit])
+
+    ids = {"post": set(), "reply": set(), "answer": set()}
+    for reaction in reactions:
+        ids.setdefault(reaction.target, set()).add(reaction.target_id)
+    targets = {
+        "post": {row.pk: (row.body, reverse("chiebukuro:post", args=[row.pk])) for row in Post.objects.filter(pk__in=ids["post"])},
+        "reply": {
+            row.pk: (row.body, reverse("chiebukuro:post", args=[row.post_id]) + f"#r{row.pk}")
+            for row in PostReply.objects.filter(pk__in=ids["reply"])
+        },
+        "answer": {
+            row.pk: (row.body, reverse("chiebukuro:question", args=[row.question_id]) + f"#a{row.pk}")
+            for row in Answer.objects.filter(pk__in=ids["answer"])
+        },
+    }
+    rows = []
+    for reaction in reactions:
+        text, url = targets.get(reaction.target, {}).get(reaction.target_id, (None, None))
+        if url is None:
+            continue
+        rows.append({
+            "actor": user_nickname(reaction.user), "emoji": labels.get(reaction.stamp, ("☺", ""))[0],
+            "word": labels.get(reaction.stamp, ("", reaction.stamp))[1],
+            "text": short(text, 60), "url": url, "created_at": reaction.created_at,
+        })
+    for row in thanks:
+        rows.append({
+            "actor": user_nickname(row.user), "emoji": "💡", "word": "参考になった",
+            "text": short(row.answer.body, 60),
+            "url": reverse("chiebukuro:question", args=[row.answer.question_id]) + f"#a{row.answer_id}",
+            "created_at": row.created_at,
+        })
+    rows.sort(key=lambda row: row["created_at"], reverse=True)
+    return rows[:limit]
+
+
+def send_weekly_thanks(now=None):
+    """
+    週1回 (日曜の夜): この1週間に、自分の回答・つぶやきにスタンプや「参考になった」をもらった人へ、
+    「今週、◯人が…」と🔔とプッシュでまとめて知らせる。点数にはしない。知らせた人数を返す。
+    """
+
+    from django.contrib.auth import get_user_model
+
+    from .models import Notification, PushDevice, Reaction, Thanks
+    from .push import send
+
+    now = now or timezone.now()
+    since = now - timedelta(days=7)
+    people = {}
+    for author_id, user_id in Reaction.objects.filter(created_at__gte=since, target_author__isnull=False).values_list("target_author_id", "user_id"):
+        if author_id != user_id:
+            people.setdefault(author_id, set()).add(user_id)
+    for author_id, user_id in Thanks.objects.filter(created_at__gte=since, answer__author__isnull=False).values_list("answer__author_id", "user_id"):
+        if author_id != user_id:
+            people.setdefault(author_id, set()).add(user_id)
+
+    url = reverse("chiebukuro:my_thanks")
+    sent = 0
+    for user in get_user_model().objects.filter(pk__in=people.keys(), is_active=True):
+        count = len(people[user.pk])
+        text = f"今週、{count}人があなたの回答やつぶやきにスタンプを押してくれました。だれかの役に立っています！"
+        Notification.objects.create(user=user, kind=Notification.Kind.WEEK, text=text, url=url)
+        devices = list(PushDevice.objects.filter(user=user))
+        if devices:
+            try:
+                send(devices, "スイス掲示板", text, url, "chiebukuro-week")
+            except Exception:
+                logger.exception("週のまとめの Push 送信に失敗")
+        sent += 1
+    return sent
 
 
 def unread_notifications(user):
@@ -472,6 +563,8 @@ def weekend_outings(limit=4):
 
         now = timezone.now()
         start, end = period_range("weekend", now)
+        from django.db.models import Max, Min
+
         occurrences = (
             EventOccurrence.objects
             .filter(is_cancelled=False, event__status=Event.Status.PUBLISHED, start_at__lt=end)
@@ -479,10 +572,26 @@ def weekend_outings(limit=4):
             .select_related("event", "event__location")
             .order_by("-event__ai_score", "start_at")
         )
+        # 週末の1日か2日だけのイベント。何週間も続く展示などは出さない
+        # (1回の開催が2日をこえるもの、開催の最初から最後までが3日をこえるものは外す)
+        short = timedelta(days=2, hours=12)
+        candidates = list(occurrences[:120])
+        spans = {
+            row["event_id"]: (row["first"], row["last"], row["last_end"])
+            for row in EventOccurrence.objects
+            .filter(event_id__in={occurrence.event_id for occurrence in candidates}, is_cancelled=False)
+            .values("event_id")
+            .annotate(first=Min("start_at"), last=Max("start_at"), last_end=Max("end_at"))
+        }
         events = []
         seen = set()
-        for occurrence in occurrences[:60]:
+        for occurrence in candidates:
             if occurrence.event_id in seen:
+                continue
+            if occurrence.end_at and occurrence.end_at - occurrence.start_at > short:
+                continue
+            first, last, last_end = spans.get(occurrence.event_id, (occurrence.start_at, occurrence.start_at, None))
+            if max(last, last_end or last) - first > short:
                 continue
             seen.add(occurrence.event_id)
             occurrence.event.when = occurrence.start_at
@@ -559,7 +668,7 @@ def featured_this_week(limit=3):
     def question_card(question, score):
         return {
             "kind": "question", "label": "みんなが知りたい質問", "text": question.body, "context": question.get_theme_display(),
-            "name": question.display_name, "user": question.author, "photo": question.photo_url, "score": score,
+            "name": question.display_name, "user": None if question.is_anonymous else question.author, "photo": question.photo_url, "score": score,
             "url": reverse("chiebukuro:question", args=[question.pk]), "key": ("question", question.pk),
         }
 

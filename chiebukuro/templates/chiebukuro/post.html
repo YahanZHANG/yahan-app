@@ -25,7 +25,7 @@
         <article class="cb-reply" id="r{{ reply.pk }}">
             <a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-av cb-av-s {{ reply.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face reply.author reply.display_name %}</a>
             <div>
-                <div class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a>{% home_region reply.author %}<span class="cb-sub">{{ reply.created_at|ago }}</span>{% if reply.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}
+                <div class="cb-post-head"><a href="{% url 'chiebukuro:profile' reply.author.username %}" class="cb-name">{{ reply.display_name }}</a>{% home_region reply.author %}<span class="cb-sub">{{ reply.created_at|ago }}</span>{% if reply.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% include "chiebukuro/_staff_hide.html" with hide_kind="reply" hide_id=reply.pk %}
                     {% url 'chiebukuro:delete' 'reply' reply.pk as delete_url %}{% if user.is_authenticated and reply.author_id == user.pk %}{% include "chiebukuro/_more.html" with more_kind="reply" more_id=reply.pk more_mine=True more_delete_url=delete_url more_confirm="この返信を消しますか？" %}{% else %}{% include "chiebukuro/_more.html" with more_kind="reply" more_id=reply.pk %}{% endif %}
                 </div>
                 <div class="cb-post-body">{{ reply.body|urlize|linebreaksbr }}</div>

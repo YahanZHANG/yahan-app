@@ -380,7 +380,7 @@ class DeliveryTests(FlowMixin, TestCase):
         self.act(fresh, "answer")
         self.assertIn(self.current(), [skipped, other])
 
-    def test_popular_question_every_third_regardless_of_theme(self):
+    def test_popular_question_every_second_regardless_of_theme(self):
         popular = make_question("popular work", theme="work")
         lonely = make_question("one vote", theme="work")
         for _ in range(2):
@@ -394,9 +394,21 @@ class DeliveryTests(FlowMixin, TestCase):
         while (question := self.current()) is not None and len(order) < 4:
             order.append(question.body)
             self.act(question, "answer")
-        self.assertEqual(order[2], "popular work")
+        self.assertEqual(order[1], "popular work")
         self.assertNotIn("one vote", order[:4])
-        self.assertTrue(all(body.startswith("life") for body in order[:2] + order[3:]))
+        self.assertTrue(all(body.startswith("life") for body in order[:1] + order[2:]))
+
+    def test_other_themes_take_turns_after_own_theme_runs_out(self):
+        for i in range(4):
+            make_question(f"food {i}", theme="food")
+        make_question("money 0", theme="money")
+        make_question("work 0", theme="work")
+        self.join(themes=("life",))
+        order = []
+        while (question := self.current()) is not None and len(order) < 3:
+            order.append(question.body)
+            self.act(question, "answer")
+        self.assertEqual({body.split()[0] for body in order}, {"food", "money", "work"})
 
     def test_popular_question_not_given_to_someone_who_wants_to_know_too(self):
         popular = make_question("popular")
@@ -696,7 +708,7 @@ class ImportTests(TestCase):
     def test_import_is_idempotent(self):
         call_command("import_pre_survey_questions", verbosity=0)
         count = Question.objects.count()
-        self.assertEqual(count, 174)
+        self.assertEqual(count, 201)
         self.assertEqual(set(Question.objects.values_list("theme", flat=True)),
                          {"life", "shopping", "childcare", "work", "language", "outing", "health", "money", "culture", "food"})
         Question.objects.filter(seed_key="q01").update(body="直した")
