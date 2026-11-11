@@ -1585,3 +1585,6 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-bot-links a { display: inline-block; color: var(--link); }
 .cb-bot-links a::before { content: "→ "; color: var(--sub); }
 .cb-bot-toggle { font-size: 13px; color: var(--sub); white-space: nowrap; margin-left: auto; }
+.cb-staff-photo { margin: 8px 12px; padding: 8px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
+.cb-staff-photo summary { cursor: pointer; color: var(--sub); }
+.cb-staff-photo form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }

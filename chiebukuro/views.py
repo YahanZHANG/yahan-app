@@ -1916,6 +1916,29 @@ def staff_hide(request, kind, pk):
     return redirect(safe_next(request, reverse("chiebukuro:home")))
 
 
+@require_POST
+@login_required
+def staff_post_photo(request, pk):
+    """運営だけ: つぶやき (おもにBot) の写真を差し替える・消す。おでかけBotなら、おでかけアプリの写真も同じにする"""
+
+    from .bots import change_photo
+
+    if not request.user.is_staff:
+        raise Http404
+    post = get_object_or_404(Post, pk=pk)
+    if request.POST.get("action") == "remove":
+        synced = change_photo(post, "")
+        messages.success(request, "写真を消しました。" + ("おでかけアプリの写真も消しました。" if synced else ""))
+    else:
+        url, error = take_photo(request, "posts")
+        if error or not url:
+            messages.error(request, error or "写真を選んでください。")
+        else:
+            synced = change_photo(post, url)
+            messages.success(request, "写真を差し替えました。" + ("おでかけアプリの写真も同じにしました。" if synced else ""))
+    return redirect("chiebukuro:post", pk=post.pk)
+
+
 @board_open
 @require_POST
 @login_required

@@ -1264,3 +1264,34 @@ class BoardBotTests(BoardTestCase):
             content = build_spot(BotPost(bot="outings", publish_at=now), now)
             self.assertEqual((content["title"], content["photo"]), ("ライン滝", "https://x/r.jpg"))
         self.assertIn("📷 Foo / CC BY-SA 4.0", content["body"])
+
+    def test_staff_can_replace_and_remove_a_bot_photo(self):
+        from chiebukuro.bots import bot_user
+
+        from outings.models import TouristSpot
+
+        spot = TouristSpot.objects.create(external_id="c", spot_type="attractions", title_original="Rheinfall", title_ja="ライン滝",
+                                          status=TouristSpot.Status.PUBLISHED, details={"approved_image": {"url": "https://x/wrong.jpg", "credit": "Foo"}})
+        post = Post.objects.create(body="行き先\n\n📷 Foo", bot="outings", author=bot_user("outings"), nickname="おでかけBot", photo_url="https://x/wrong.jpg")
+        BotPost.objects.create(bot="outings", publish_at=timezone.now(), state="posted", post=post, ref=f"spot:{spot.pk}")
+        url = reverse("chiebukuro:staff_post_photo", args=[post.pk])
+        self.client.force_login(self.alice)
+        self.assertEqual(self.client.post(url, {"action": "remove"}).status_code, 404)
+        staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "運営：写真を差し替える")
+        with mock.patch("chiebukuro.views.upload_board_photo", return_value="https://res.example/new.webp"):
+            from django.core.files.uploadedfile import SimpleUploadedFile
+
+            self.client.post(url, {"photo": SimpleUploadedFile("p.jpg", b"x", content_type="image/jpeg")})
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual((post.photo_url, post.body), ("https://res.example/new.webp", "行き先"))
+        self.assertEqual(spot.details["approved_image"]["url"], "https://res.example/new.webp")
+        with mock.patch("outings.photo_admin._delete_old") as delete_old:
+            self.client.post(url, {"action": "remove"})
+        delete_old.assert_called_once_with("https://res.example/new.webp")
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual(post.photo_url, "")
+        self.assertTrue(spot.details["photo_removed"])

@@ -49,6 +49,7 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("report/", views.report, name="report"),
     path("staff/hide/<str:kind>/<int:pk>/", views.staff_hide, name="staff_hide"),
+    path("staff/post-photo/<int:pk>/", views.staff_post_photo, name="staff_post_photo"),
     path("rules/", views.rules, name="rules"),
     path("install/", views.install_guide, name="install"),
     path("rules/agree/", views.rules_agree, name="rules_agree"),

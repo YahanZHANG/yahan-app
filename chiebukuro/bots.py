@@ -157,6 +157,54 @@ def publish(slot, now):
     return post, ""
 
 
+def outings_photo_source(post):
+    """Botのつぶやきの写真の元 (おでかけの行き先・イベント)。(target, obj) か None"""
+
+    from .models import BotPost
+
+    slot = BotPost.objects.filter(post=post, bot="outings").first()
+    if not slot or ":" not in slot.ref:
+        return None
+    kind, _, pk = slot.ref.partition(":")
+    target = {"spot": "trip", "event": "event"}.get(kind)
+    if not target or not pk.isdigit():
+        return None
+    from outings.models import Event, TouristSpot
+
+    model = TouristSpot if target == "trip" else Event
+    obj = model.objects.filter(pk=int(pk)).first()
+    return (target, obj) if obj else None
+
+
+def change_photo(post, url):
+    """
+    運営がつぶやきの写真を差し替える (url) か消す ("")。
+    おでかけBotのときは、おでかけアプリの行き先・イベントの写真も同じにする。
+    写真のクレジットの行 (📷 …) は、元の写真のものなので消す。
+    """
+
+    lines = post.body.split("\n")
+    while lines and (lines[-1].startswith("📷 ") or not lines[-1].strip()) and len(lines) > 1:
+        lines.pop()
+    post.body = "\n".join(lines)
+    post.photo_url = url
+    post.save(update_fields=["photo_url", "body"])
+    source = outings_photo_source(post) if post.bot == "outings" else None
+    if not source:
+        return False
+    from outings import photo_admin
+
+    target, obj = source
+    old = photo_admin.current_url(target, obj)
+    if url:
+        photo_admin.set_photo(target, obj, url, "", "upload")
+    else:
+        photo_admin.remove_photo(target, obj)
+    if old and old != url:
+        photo_admin._delete_old(old)
+    return True
+
+
 def used_refs(bot, prefix, days=120):
     from .models import BotPost
 
@@ -228,7 +276,7 @@ def build_weekend(slot, now):
         + photo_credit(pictured.image_credit if pictured else "", pictured.title if pictured else ""),
         "links": links,
         "photo": pictured.image_url if pictured else "",
-        "ref": "weekend",
+        "ref": f"event:{pictured.pk}" if pictured else "weekend",
     }
 
 

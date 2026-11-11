@@ -6,6 +6,24 @@
 
 <section class="cb-block cb-block-flat cb-post-single">
     {% if user.is_authenticated and post.author_id == user.pk %}{% include "chiebukuro/_post_row.html" with single=True mine=True %}{% else %}{% include "chiebukuro/_post_row.html" with single=True %}{% endif %}
+    {% if user.is_staff %}
+    <details class="cb-staff-photo">
+        <summary>🛠 運営：写真を{% if post.photo_url %}差し替える・消す{% else %}付ける{% endif %}</summary>
+        <form method="post" action="{% url 'chiebukuro:staff_post_photo' post.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% include "chiebukuro/_photo_field.html" with required=True %}
+            <button type="submit" class="cb-btn cb-btn-s">この写真にする</button>
+        </form>
+        {% if post.photo_url %}
+        <form method="post" action="{% url 'chiebukuro:staff_post_photo' post.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="remove">
+            <button type="submit" class="cb-btn cb-btn-s">写真を消す</button>
+        </form>
+        {% endif %}
+        {% if post.bot == "outings" %}<p class="cb-sub">おでかけアプリの写真も、同じものに変わります。</p>{% elif post.bot == "washoku" and post.links %}<p class="cb-sub">和食アプリの写真は、<a href="{{ post.links.0.url }}">レシピのページ</a>から直せます。</p>{% endif %}
+    </details>
+    {% endif %}
     <div class="cb-reply-form" id="replies">
         {% if user.is_authenticated %}
             <form method="post" enctype="multipart/form-data" class="cb-reply-compose" data-rules>
