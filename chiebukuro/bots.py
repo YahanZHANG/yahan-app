@@ -176,6 +176,15 @@ def short(text, limit=150):
     return cut[: end + 1] if end > limit // 3 else cut.rstrip() + "…"
 
 
+def photo_credit(credit, about=""):
+    """写真の出典 (Wikimedia などはクレジットが必要)"""
+
+    credit = " ".join((credit or "").split())
+    if not credit:
+        return ""
+    return f"\n\n📷 {about + '：' if about else ''}{credit}"[:300]
+
+
 def build_washoku(slot, now):
     from washoku.models import Recipe
 
@@ -211,11 +220,14 @@ def build_weekend(slot, now):
         label = f"{when.month}/{when.day}（{WEEKDAYS[when.weekday()]}）{event.title}" + (f"（{city}）" if city else "")
         links.append({"label": label, "url": reverse("outings:event_detail", args=[event.pk])})
     links.append({"label": "ほかのイベントを見る（おでかけ）", "url": reverse("outings:home")})
+    pictured = next((event for event in events if event.image_url and not getattr(event, "image_removed", False)), None)
     return {
         "tag": "🏔️ 今週末のおでかけ",
         "title": "今週末、どこに行く？",
-        "body": "今週末にスイスで開かれるイベントから、いくつか選んでみたよ。ほかにもおすすめがあれば、返信で教えてね！",
+        "body": "今週末にスイスで開かれるイベントから、いくつか選んでみたよ。ほかにもおすすめがあれば、返信で教えてね！"
+        + photo_credit(pictured.image_credit if pictured else "", pictured.title if pictured else ""),
         "links": links,
+        "photo": pictured.image_url if pictured else "",
         "ref": "weekend",
     }
 
@@ -224,13 +236,25 @@ def build_spot(slot, now):
     from outings.models import TouristSpot
 
     spots = TouristSpot.objects.filter(status=TouristSpot.Status.PUBLISHED).exclude(intro_ja="")
-    spot = spots.exclude(pk__in=used_refs("outings", "spot:")).order_by("?").first() or spots.order_by("?").first()
+    fresh = spots.exclude(pk__in=used_refs("outings", "spot:"))
+    # 写真のある行き先を先に選ぶ
+    with_photo = [
+        pk for pk, details in fresh.values_list("pk", "details")
+        if isinstance(details, dict) and not details.get("photo_removed") and (details.get("approved_image") or {}).get("url")
+    ]
+    spot = (
+        (fresh.filter(pk__in=with_photo).order_by("?").first() if with_photo else None)
+        or fresh.order_by("?").first() or spots.order_by("?").first()
+    )
     if not spot:
         return None
+    details = spot.details or {}
+    image = {} if details.get("photo_removed") else (details.get("approved_image") or {})
     return {
         "tag": "🏔️ スイスの行き先",
         "title": spot.title_ja or spot.title_original,
-        "body": short(spot.intro_ja) + "\n\n行ったことがある人は、おすすめの過ごし方を返信で教えてね！",
+        "body": short(spot.intro_ja) + "\n\n行ったことがある人は、おすすめの過ごし方を返信で教えてね！" + photo_credit(image.get("credit", "") if image.get("url") else ""),
+        "photo": image.get("url", ""),
         "links": [{"label": "くわしく見る（おでかけ）", "url": reverse("outings:tourist_spot_detail", args=[spot.pk])}],
         "ref": f"spot:{spot.pk}",
     }

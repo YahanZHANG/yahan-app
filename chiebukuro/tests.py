@@ -1249,3 +1249,18 @@ class BoardBotTests(BoardTestCase):
         self.assertIn("出せるデータがありませんでした", notes)  # ニュースがない
         self.assertIn("時間をすぎていたので出していません", notes)
         self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "レシピを見る")
+
+    def test_outings_bot_prefers_a_spot_with_photo(self):
+        from outings.models import TouristSpot
+
+        from chiebukuro.bots import build_spot
+
+        common = {"spot_type": "attractions", "status": TouristSpot.Status.PUBLISHED, "intro_ja": "きれいな場所。"}
+        TouristSpot.objects.create(external_id="a", title_original="NoPhoto", title_ja="写真なし", **common)
+        TouristSpot.objects.create(external_id="b", title_original="Removed", title_ja="消した写真", details={"approved_image": {"url": "https://x/old.jpg"}, "photo_removed": True}, **common)
+        TouristSpot.objects.create(external_id="c", title_original="Rheinfall", title_ja="ライン滝", details={"approved_image": {"url": "https://x/r.jpg", "credit": "Foo / CC BY-SA 4.0"}}, **common)
+        now = timezone.now()
+        for _ in range(5):
+            content = build_spot(BotPost(bot="outings", publish_at=now), now)
+            self.assertEqual((content["title"], content["photo"]), ("ライン滝", "https://x/r.jpg"))
+        self.assertIn("📷 Foo / CC BY-SA 4.0", content["body"])
