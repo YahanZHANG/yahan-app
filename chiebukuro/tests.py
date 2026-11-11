@@ -1279,7 +1279,7 @@ class BoardBotTests(BoardTestCase):
         self.assertEqual(self.client.post(url, {"action": "remove"}).status_code, 404)
         staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)
         self.client.force_login(staff)
-        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "運営：写真を差し替える")
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "運営：写真を変える")
         with mock.patch("chiebukuro.views.upload_board_photo", return_value="https://res.example/new.webp"):
             from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -1291,6 +1291,14 @@ class BoardBotTests(BoardTestCase):
         with mock.patch("outings.photo_admin._delete_old") as delete_old:
             self.client.post(url, {"action": "remove"})
         delete_old.assert_called_once_with("https://res.example/new.webp")
+        self.client.post(url, {"url": "https://images.example/rhein.jpg", "credit": "Bar / CC BY 4.0"})
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual(post.photo_url, "https://images.example/rhein.jpg")
+        self.assertTrue(post.body.endswith("📷 Bar / CC BY 4.0"))
+        self.assertEqual(spot.details["approved_image"]["credit"], "Bar / CC BY 4.0")
+        with mock.patch("outings.photo_admin._delete_old"):
+            self.client.post(url, {"action": "remove"})
         post.refresh_from_db()
         spot.refresh_from_db()
         self.assertEqual(post.photo_url, "")

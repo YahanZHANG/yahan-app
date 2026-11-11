@@ -1587,4 +1587,10 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-bot-toggle { font-size: 13px; color: var(--sub); white-space: nowrap; margin-left: auto; }
 .cb-staff-photo { margin: 8px 12px; padding: 8px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
 .cb-staff-photo summary { cursor: pointer; color: var(--sub); }
-.cb-staff-photo form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.cb-staff-photo summary small { margin-left: 6px; font-size: 12px; }
+.cb-staff-photo-form { display: grid; gap: 10px; margin-top: 8px; }
+.cb-staff-photo-form label { display: grid; gap: 4px; font-weight: 600; }
+.cb-staff-photo-form input[type=url], .cb-staff-photo-form input[type=text] { font: inherit; font-weight: 400; padding: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); width: 100%; box-sizing: border-box; }
+.cb-staff-photo-form input[type=file] { font: inherit; font-weight: 400; }
+.cb-staff-photo-form .cb-sub { margin: 0; font-size: 13px; }
+.cb-staff-photo-actions { display: flex; gap: 8px; flex-wrap: wrap; }

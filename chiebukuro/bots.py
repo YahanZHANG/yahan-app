@@ -176,17 +176,17 @@ def outings_photo_source(post):
     return (target, obj) if obj else None
 
 
-def change_photo(post, url):
+def change_photo(post, url, credit="", kind="upload", source_url="", license_url=""):
     """
     運営がつぶやきの写真を差し替える (url) か消す ("")。
     おでかけBotのときは、おでかけアプリの行き先・イベントの写真も同じにする。
-    写真のクレジットの行 (📷 …) は、元の写真のものなので消す。
+    本文の最後のクレジットの行 (📷 …) は、新しい写真のものに入れかえる。
     """
 
     lines = post.body.split("\n")
-    while lines and (lines[-1].startswith("📷 ") or not lines[-1].strip()) and len(lines) > 1:
+    while len(lines) > 1 and (lines[-1].startswith("📷 ") or not lines[-1].strip()):
         lines.pop()
-    post.body = "\n".join(lines)
+    post.body = "\n".join(lines) + (photo_credit(credit) if url else "")
     post.photo_url = url
     post.save(update_fields=["photo_url", "body"])
     source = outings_photo_source(post) if post.bot == "outings" else None
@@ -197,7 +197,7 @@ def change_photo(post, url):
     target, obj = source
     old = photo_admin.current_url(target, obj)
     if url:
-        photo_admin.set_photo(target, obj, url, "", "upload")
+        photo_admin.set_photo(target, obj, url, credit, kind, source_url, license_url)
     else:
         photo_admin.remove_photo(target, obj)
     if old and old != url:

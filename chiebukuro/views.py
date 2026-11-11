@@ -1926,16 +1926,32 @@ def staff_post_photo(request, pk):
     if not request.user.is_staff:
         raise Http404
     post = get_object_or_404(Post, pk=pk)
+    also = "おでかけアプリの写真も同じにしました。"
+    credit = request.POST.get("credit", "").strip()[:200]
+    link = request.POST.get("url", "").strip()[:1000]
     if request.POST.get("action") == "remove":
         synced = change_photo(post, "")
         messages.success(request, "写真を消しました。" + ("おでかけアプリの写真も消しました。" if synced else ""))
-    else:
+    elif request.FILES.get("photo"):
         url, error = take_photo(request, "posts")
         if error or not url:
-            messages.error(request, error or "写真を選んでください。")
+            messages.error(request, error or PHOTO_ERROR)
         else:
-            synced = change_photo(post, url)
-            messages.success(request, "写真を差し替えました。" + ("おでかけアプリの写真も同じにしました。" if synced else ""))
+            synced = change_photo(post, url, credit, "upload")
+            messages.success(request, "写真を差し替えました。" + (also if synced else ""))
+    elif link.startswith("https://"):
+        from outings.photo_admin import commons_file, commons_photo
+
+        name = commons_file(link)
+        if name:
+            # Wikimedia のページのURL: 写真そのもののURLとクレジットを調べる
+            photo = commons_photo(name)
+            synced = change_photo(post, photo["url"], credit or photo["credit"], "wikimedia", photo["source_url"], photo["license_url"])
+        else:
+            synced = change_photo(post, link, credit, "link")
+        messages.success(request, "写真を差し替えました。" + (also if synced else ""))
+    else:
+        messages.error(request, "写真のファイルを選ぶか、https で始まる写真のURLを入れてください。")
     return redirect("chiebukuro:post", pk=post.pk)
 
 
