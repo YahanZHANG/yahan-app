@@ -645,9 +645,25 @@ class Report(models.Model):
         return f"{self.target} #{self.target_id}"
 
 
+# つぶやきBot (key は変えない: データに残るため)
+BOTS = [
+    ("swiss", "🇨🇭", "スイスを知ろうBot"),
+    ("washoku", "🍱", "スイスで和食Bot"),
+    ("outings", "🏔️", "おでかけBot"),
+    ("news", "📰", "SwissNews Bot"),
+]
+BOT_CHOICES = [(key, name) for key, _, name in BOTS]
+BOT_EMOJI = {key: emoji for key, emoji, _ in BOTS}
+BOT_NAMES = {key: name for key, _, name in BOTS}
+
+
 class Post(models.Model):
     """つぶやき。テーマと地域のタグを付けると、あとから検索で見つかる。"""
 
+    bot = models.CharField("Bot", max_length=10, choices=BOT_CHOICES, blank=True, db_index=True, help_text="Botのつぶやきのときだけ")
+    bot_tag = models.CharField("Botのラベル", max_length=40, blank=True, help_text="例: 🏰 歴史")
+    title = models.CharField("見出し", max_length=120, blank=True, help_text="Botのつぶやきの太字の1行目")
+    links = models.JSONField("リンク", default=list, blank=True, help_text="Botのつぶやきの下に出すリンク [{\"label\": …, \"url\": …}]")
     body = models.TextField("つぶやき")
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     photo_url = models.URLField("写真", max_length=500, blank=True)
@@ -665,11 +681,49 @@ class Post(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.body[:40]
+        return (self.title or self.body)[:40]
 
     @property
     def display_name(self):
         return self.nickname or "名無しさん"
+
+    @property
+    def bot_emoji(self):
+        return BOT_EMOJI.get(self.bot, "")
+
+
+class BotPost(models.Model):
+    """
+    Botのつぶやきの予約。時間になると、掲示板が開かれたときにつぶやきになる。
+    スイスを知ろうBotは文章を前もって入れておく。ほかのBotは文章を空にしておくと、
+    投稿の時間にアプリのデータ (レシピ・おでかけ・ニュース) から自動で作る。
+    """
+
+    class State(models.TextChoices):
+        WAITING = "waiting", "予約中"
+        POSTED = "posted", "投稿済み"
+        SKIPPED = "skipped", "見送り"
+
+    bot = models.CharField("Bot", max_length=10, choices=BOT_CHOICES, db_index=True)
+    publish_at = models.DateTimeField("投稿する日時", db_index=True)
+    day = models.PositiveSmallIntegerField("何日目", null=True, blank=True)
+    theme = models.CharField("テーマ", max_length=30, blank=True, help_text="例: 🏰 歴史")
+    title = models.CharField("見出し", max_length=120, blank=True)
+    body = models.TextField("本文", blank=True, help_text="空のときは、投稿の時間に自動で作ります (和食・おでかけ・ニュース)")
+    source_url = models.URLField("出典", max_length=500, blank=True)
+    is_active = models.BooleanField("投稿する", default=True, help_text="オフにすると、この予約は投稿しません")
+    state = models.CharField("状態", max_length=10, choices=State.choices, default=State.WAITING, db_index=True)
+    ref = models.CharField("使ったデータ", max_length=40, blank=True, help_text="自動で作ったときの元データ (例 recipe:12)")
+    note = models.CharField("メモ", max_length=200, blank=True)
+    post = models.ForeignKey(Post, verbose_name="つぶやき", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+
+    class Meta:
+        verbose_name = "Botの予約つぶやき"
+        verbose_name_plural = "Botの予約つぶやき"
+        ordering = ["publish_at", "pk"]
+
+    def __str__(self):
+        return f"{BOT_NAMES.get(self.bot, self.bot)} {self.publish_at:%m/%d %H:%M}"
 
 
 class PostReply(models.Model):

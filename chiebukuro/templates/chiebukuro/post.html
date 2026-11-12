@@ -6,6 +6,24 @@
 
 <section class="cb-block cb-block-flat cb-post-single">
     {% if user.is_authenticated and post.author_id == user.pk %}{% include "chiebukuro/_post_row.html" with single=True mine=True %}{% else %}{% include "chiebukuro/_post_row.html" with single=True %}{% endif %}
+    {% if user.is_staff %}
+    <details class="cb-staff-photo">
+        <summary>🛠 運営：写真を{% if post.photo_url %}変える{% else %}付ける{% endif %}<small>（運営だけに表示）</small></summary>
+        <form method="post" action="{% url 'chiebukuro:staff_post_photo' post.pk %}" enctype="multipart/form-data" class="cb-staff-photo-form">
+            {% csrf_token %}
+            <p class="cb-sub">A か B のどちらかを入れて「差し替える」を押してください。</p>
+            <label>A. 写真のファイルを選ぶ<input type="file" name="photo" accept="image/*"></label>
+            <label>B. 写真のURL（Wikimedia のページのURLでもOK）<input type="url" name="url" placeholder="https://commons.wikimedia.org/wiki/File:…"></label>
+            <label>出典・クレジット（任意）<input type="text" name="credit" maxlength="200" placeholder="例：Wikimedia Commons / 撮影者名 / CC BY-SA 4.0"></label>
+            <p class="cb-sub">Wikimedia のページのURLなら、出典は空でも自動で入ります。</p>
+            <div class="cb-staff-photo-actions">
+                <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">差し替える</button>
+                {% if post.photo_url %}<button type="submit" name="action" value="remove" class="cb-btn cb-btn-s" formnovalidate>写真を消す</button>{% endif %}
+            </div>
+            {% if post.bot == "outings" %}<p class="cb-sub">おでかけアプリの行き先・イベントの写真も、同じものに変わります。</p>{% elif post.bot == "washoku" and post.links %}<p class="cb-sub">和食アプリの写真は、<a href="{{ post.links.0.url }}">レシピのページ</a>から直せます。</p>{% endif %}
+        </form>
+    </details>
+    {% endif %}
     <div class="cb-reply-form" id="replies">
         {% if user.is_authenticated %}
             <form method="post" enctype="multipart/form-data" class="cb-reply-compose" data-rules>

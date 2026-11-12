@@ -1572,3 +1572,25 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-nudge-actions { display: flex; gap: 8px; margin-top: 12px !important; }
 .cb-nudge-form { display: grid; gap: 10px; margin-top: 12px; }
 .cb-nudge-login { margin-top: 8px !important; font-size: 13px; color: var(--sub); text-align: center; }
+
+/* つぶやきBot: 一般の人のつぶやきより少しひかえめに */
+.cb-post-bot { background: var(--surface-2); }
+.cb-av-bot { background: var(--surface); border: 1px solid var(--line); font-size: 20px; text-decoration: none; }
+.cb-bot-badge { font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 999px; background: var(--line); color: var(--sub); font-weight: 600; }
+.cb-bot-tag { margin: 4px 0 0; font-size: 12px; color: var(--sub); }
+.cb-post-title { margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.5; }
+.cb-post-title a { color: inherit; }
+.cb-post-single .cb-post-title { font-size: 17px; }
+.cb-bot-links { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.cb-bot-links a { display: inline-block; color: var(--link); }
+.cb-bot-links a::before { content: "→ "; color: var(--sub); }
+.cb-bot-toggle { font-size: 13px; color: var(--sub); white-space: nowrap; margin-left: auto; }
+.cb-staff-photo { margin: 8px 12px; padding: 8px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius); font-size: 14px; }
+.cb-staff-photo summary { cursor: pointer; color: var(--sub); }
+.cb-staff-photo summary small { margin-left: 6px; font-size: 12px; }
+.cb-staff-photo-form { display: grid; gap: 10px; margin-top: 8px; }
+.cb-staff-photo-form label { display: grid; gap: 4px; font-weight: 600; }
+.cb-staff-photo-form input[type=url], .cb-staff-photo-form input[type=text] { font: inherit; font-weight: 400; padding: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); width: 100%; box-sizing: border-box; }
+.cb-staff-photo-form input[type=file] { font: inherit; font-weight: 400; }
+.cb-staff-photo-form .cb-sub { margin: 0; font-size: 13px; }
+.cb-staff-photo-actions { display: flex; gap: 8px; flex-wrap: wrap; }

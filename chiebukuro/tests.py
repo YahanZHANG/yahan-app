@@ -12,7 +12,7 @@ from pre_survey.models import Interest as SurveyInterest
 from pre_survey.models import Question as SurveyQuestion
 
 from .models import (
-    Answer, BoardProfile, BoardSettings, Interest, Item, ItemRequest, Message, Notice, Notification, Poll, PollChoice, PollVote,
+    Answer, BoardProfile, BoardSettings, BotPost, Interest, Item, ItemRequest, Message, Notice, Notification, Poll, PollChoice, PollVote,
     Post, PostReply, Question, Reaction, Report, Sponsor, Thanks,
 )
 from .services import import_from_survey
@@ -32,6 +32,8 @@ def public_user(username):
 class BoardTestCase(TestCase):
 
     def setUp(self):
+        # マイグレーションで入るBotの試運転の予約は、テストの邪魔にならないよう消す
+        BotPost.objects.all().delete()
         settings_row = BoardSettings.current()
         settings_row.is_open = True
         settings_row.save()
@@ -1176,3 +1178,128 @@ class BoardImprovementTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(page, 'id="cb-nudge"')
         self.assertContains(page, 'name="password1"')
+
+
+class BoardBotTests(BoardTestCase):
+
+    def test_trial_schedule(self):
+        from chiebukuro import bots
+
+        bots.schedule(BotPost)
+        self.assertEqual(BotPost.objects.filter(bot="swiss").count(), 31)
+        # 30日のうち日曜が4回: お昼は26回 (和食13・おでかけ13)、ニュースは毎日
+        self.assertEqual(BotPost.objects.filter(bot__in=["washoku", "outings"]).count(), 26)
+        self.assertEqual(BotPost.objects.filter(bot="washoku").count(), 13)
+        self.assertEqual(BotPost.objects.filter(bot="news").count(), 30)
+        first = timezone.localtime(BotPost.objects.get(bot="swiss", day=1).publish_at)
+        self.assertEqual((first.date().isoformat(), first.hour), ("2026-11-12", 8))
+        intro = timezone.localtime(BotPost.objects.get(bot="swiss", day=0).publish_at)
+        self.assertLess(intro, first)
+        self.assertEqual(bots.schedule(BotPost), 0)
+
+    def test_swiss_post_released_with_source(self):
+        from chiebukuro.bots import release_due
+
+        now = timezone.now()
+        BotPost.objects.create(bot="swiss", publish_at=now - timezone.timedelta(minutes=5), day=1, theme="🏰 歴史",
+                               title="スイスの建国は1291年", body="本文です", source_url="https://www.admin.ch/en")
+        BotPost.objects.create(bot="swiss", publish_at=now + timezone.timedelta(hours=1), day=2, title="まだ", body="まだ")
+        BotPost.objects.create(bot="swiss", publish_at=now - timezone.timedelta(minutes=1), day=3, title="止めた", body="x", is_active=False)
+        self.assertEqual(release_due(now), 1)
+        post = Post.objects.get()
+        self.assertEqual((post.bot, post.title, post.nickname), ("swiss", "スイスの建国は1291年", "スイスを知ろうBot"))
+        self.assertIn("出典：https://www.admin.ch/en", post.body)
+        self.assertFalse(post.author.is_active)
+        self.assertEqual(BotPost.objects.get(day=3).state, "skipped")
+        self.assertEqual(release_due(now), 0)
+        page = self.client.get(reverse("chiebukuro:posts")).content.decode()
+        self.assertIn("cb-post-bot", page)
+        self.assertIn("スイスの建国は1291年", page)
+        # HOME の新着には出さない
+        self.assertNotIn("スイスの建国は1291年", self.client.get(reverse("chiebukuro:home")).content.decode())
+
+    def test_hide_bots_toggle(self):
+        from chiebukuro.bots import bot_user
+
+        Post.objects.create(body="Botです", bot="news", author=bot_user("news"), nickname="SwissNews Bot")
+        Post.objects.create(body="ふつうのつぶやき", author=self.alice, nickname="ありす")
+        url = reverse("chiebukuro:posts")
+        self.assertContains(self.client.get(url + "?bots=hide"), "ふつうのつぶやき")
+        self.assertNotContains(self.client.get(url), "Botです")
+        self.assertContains(self.client.get(url + "?bots=show"), "Botです")
+        page = self.client.get(url + "?bot=news")
+        self.assertContains(page, "Botです")
+        self.assertNotContains(page, "ふつうのつぶやき")
+
+    def test_washoku_bot_uses_a_recipe(self):
+        from washoku.models import Recipe
+
+        from chiebukuro.bots import release_due
+
+        recipe = Recipe.objects.create(name="肉じゃが", description="スイスのじゃがいもで。", steps="煮る", status="published", cooking_time_minutes=30)
+        now = timezone.now()
+        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(minutes=1))
+        BotPost.objects.create(bot="news", publish_at=now - timezone.timedelta(minutes=1))
+        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(hours=8))
+        self.assertEqual(release_due(now), 1)
+        post = Post.objects.get()
+        self.assertEqual(post.title, "肉じゃが")
+        self.assertEqual(post.links[0]["url"], reverse("washoku:recipe_detail", args=[recipe.pk]))
+        notes = set(BotPost.objects.values_list("note", flat=True))
+        self.assertIn("出せるデータがありませんでした", notes)  # ニュースがない
+        self.assertIn("時間をすぎていたので出していません", notes)
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "レシピを見る")
+
+    def test_outings_bot_prefers_a_spot_with_photo(self):
+        from outings.models import TouristSpot
+
+        from chiebukuro.bots import build_spot
+
+        common = {"spot_type": "attractions", "status": TouristSpot.Status.PUBLISHED, "intro_ja": "きれいな場所。"}
+        TouristSpot.objects.create(external_id="a", title_original="NoPhoto", title_ja="写真なし", **common)
+        TouristSpot.objects.create(external_id="b", title_original="Removed", title_ja="消した写真", details={"approved_image": {"url": "https://x/old.jpg"}, "photo_removed": True}, **common)
+        TouristSpot.objects.create(external_id="c", title_original="Rheinfall", title_ja="ライン滝", details={"approved_image": {"url": "https://x/r.jpg", "credit": "Foo / CC BY-SA 4.0"}}, **common)
+        now = timezone.now()
+        for _ in range(5):
+            content = build_spot(BotPost(bot="outings", publish_at=now), now)
+            self.assertEqual((content["title"], content["photo"]), ("ライン滝", "https://x/r.jpg"))
+        self.assertIn("📷 Foo / CC BY-SA 4.0", content["body"])
+
+    def test_staff_can_replace_and_remove_a_bot_photo(self):
+        from chiebukuro.bots import bot_user
+
+        from outings.models import TouristSpot
+
+        spot = TouristSpot.objects.create(external_id="c", spot_type="attractions", title_original="Rheinfall", title_ja="ライン滝",
+                                          status=TouristSpot.Status.PUBLISHED, details={"approved_image": {"url": "https://x/wrong.jpg", "credit": "Foo"}})
+        post = Post.objects.create(body="行き先\n\n📷 Foo", bot="outings", author=bot_user("outings"), nickname="おでかけBot", photo_url="https://x/wrong.jpg")
+        BotPost.objects.create(bot="outings", publish_at=timezone.now(), state="posted", post=post, ref=f"spot:{spot.pk}")
+        url = reverse("chiebukuro:staff_post_photo", args=[post.pk])
+        self.client.force_login(self.alice)
+        self.assertEqual(self.client.post(url, {"action": "remove"}).status_code, 404)
+        staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "運営：写真を変える")
+        with mock.patch("chiebukuro.views.upload_board_photo", return_value="https://res.example/new.webp"):
+            from django.core.files.uploadedfile import SimpleUploadedFile
+
+            self.client.post(url, {"photo": SimpleUploadedFile("p.jpg", b"x", content_type="image/jpeg")})
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual((post.photo_url, post.body), ("https://res.example/new.webp", "行き先"))
+        self.assertEqual(spot.details["approved_image"]["url"], "https://res.example/new.webp")
+        with mock.patch("outings.photo_admin._delete_old") as delete_old:
+            self.client.post(url, {"action": "remove"})
+        delete_old.assert_called_once_with("https://res.example/new.webp")
+        self.client.post(url, {"url": "https://images.example/rhein.jpg", "credit": "Bar / CC BY 4.0"})
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual(post.photo_url, "https://images.example/rhein.jpg")
+        self.assertTrue(post.body.endswith("📷 Bar / CC BY 4.0"))
+        self.assertEqual(spot.details["approved_image"]["credit"], "Bar / CC BY 4.0")
+        with mock.patch("outings.photo_admin._delete_old"):
+            self.client.post(url, {"action": "remove"})
+        post.refresh_from_db()
+        spot.refresh_from_db()
+        self.assertEqual(post.photo_url, "")
+        self.assertTrue(spot.details["photo_removed"])

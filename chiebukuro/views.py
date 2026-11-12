@@ -46,6 +46,7 @@ from .models import (
     Poll,
     PollChoice,
     PollVote,
+    BOT_CHOICES,
     Post,
     PostReply,
     Contact,
@@ -128,6 +129,12 @@ def release_due_questions():
     if cache.add("chie-release-check", 1, 60):
         try:
             release_survey_questions()
+        except Exception:
+            pass
+        try:
+            from .bots import release_due
+
+            release_due()
         except Exception:
             pass
 
@@ -559,6 +566,15 @@ def post_list(request):
     posts = by_region(Post.objects.filter(status=Status.PUBLISHED), region)
     if theme:
         posts = posts.filter(theme=theme)
+    # Bot: ?bot=swiss でそのBotだけ。?bots=hide / show で、Botをかくすかどうかを覚える
+    bot = clean_choice(request.GET.get("bot", ""), BOT_CHOICES)
+    if request.GET.get("bots") in ("hide", "show"):
+        request.session["cb_hide_bots"] = request.GET["bots"] == "hide"
+    hide_bots = bool(request.session.get("cb_hide_bots")) and not bot
+    if bot:
+        posts = posts.filter(bot=bot)
+    elif hide_bots:
+        posts = posts.filter(bot="")
     page = Paginator(annotate_posts(posts).order_by("-created_at", "-pk"), POSTS_PER_PAGE).get_page(request.GET.get("page"))
     mark_liked(page.object_list, request.user)
     attach_first_replies(page.object_list)
@@ -572,6 +588,9 @@ def post_list(request):
             "theme": theme,
             "themes": THEMES,
             "max_length": POST_MAX_LENGTH,
+            "bot": bot,
+            "bot_name": dict(BOT_CHOICES).get(bot, ""),
+            "hide_bots": hide_bots,
         },
     )
 
@@ -1895,6 +1914,45 @@ def staff_hide(request, kind, pk):
     if kind == "post":
         return redirect("chiebukuro:posts")
     return redirect(safe_next(request, reverse("chiebukuro:home")))
+
+
+@require_POST
+@login_required
+def staff_post_photo(request, pk):
+    """運営だけ: つぶやき (おもにBot) の写真を差し替える・消す。おでかけBotなら、おでかけアプリの写真も同じにする"""
+
+    from .bots import change_photo
+
+    if not request.user.is_staff:
+        raise Http404
+    post = get_object_or_404(Post, pk=pk)
+    also = "おでかけアプリの写真も同じにしました。"
+    credit = request.POST.get("credit", "").strip()[:200]
+    link = request.POST.get("url", "").strip()[:1000]
+    if request.POST.get("action") == "remove":
+        synced = change_photo(post, "")
+        messages.success(request, "写真を消しました。" + ("おでかけアプリの写真も消しました。" if synced else ""))
+    elif request.FILES.get("photo"):
+        url, error = take_photo(request, "posts")
+        if error or not url:
+            messages.error(request, error or PHOTO_ERROR)
+        else:
+            synced = change_photo(post, url, credit, "upload")
+            messages.success(request, "写真を差し替えました。" + (also if synced else ""))
+    elif link.startswith("https://"):
+        from outings.photo_admin import commons_file, commons_photo
+
+        name = commons_file(link)
+        if name:
+            # Wikimedia のページのURL: 写真そのもののURLとクレジットを調べる
+            photo = commons_photo(name)
+            synced = change_photo(post, photo["url"], credit or photo["credit"], "wikimedia", photo["source_url"], photo["license_url"])
+        else:
+            synced = change_photo(post, link, credit, "link")
+        messages.success(request, "写真を差し替えました。" + (also if synced else ""))
+    else:
+        messages.error(request, "写真のファイルを選ぶか、https で始まる写真のURLを入れてください。")
+    return redirect("chiebukuro:post", pk=post.pk)
 
 
 @board_open

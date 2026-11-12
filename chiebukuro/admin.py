@@ -7,10 +7,13 @@
 - やりとり (2人だけのメッセージ) は、トラブルのときに確認できるよう読むだけ
 """
 
+from datetime import timedelta
+
 from django.contrib import admin, messages
 from django.db.models import Count, Q
 from django.shortcuts import redirect
 from django.urls import path, reverse
+from django.utils.html import format_html
 
 from .models import (
     Answer,
@@ -21,6 +24,7 @@ from .models import (
     Notice,
     Poll,
     PollChoice,
+    BotPost,
     Post,
     PostReply,
     Question,
@@ -248,7 +252,7 @@ class PostAdmin(admin.ModelAdmin):
 
     list_display = ["short_body", "theme", "region", "nickname", "status", "home_pick", "created_at"]
     list_editable = ["status", "home_pick"]
-    list_filter = ["status", "theme", "region"]
+    list_filter = ["status", "bot", "theme", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["author"]
     inlines = [PostReplyInline]
@@ -256,6 +260,47 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description="つぶやき")
     def short_body(self, obj):
         return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
+
+
+@admin.register(BotPost)
+class BotPostAdmin(admin.ModelAdmin):
+    """Botの予約つぶやき。時間になると、掲示板が開かれたときに出ます。"""
+
+    list_display = ["publish_at", "bot", "day", "theme", "short_title", "is_active", "state", "post_link", "note"]
+    list_editable = ["is_active"]
+    list_filter = ["state", "bot", "is_active"]
+    search_fields = ["title", "body"]
+    date_hierarchy = "publish_at"
+    readonly_fields = ["state", "ref", "note", "post_link"]
+    fields = ["bot", "publish_at", "day", "theme", "title", "body", "source_url", "is_active", "state", "post_link", "ref", "note"]
+    actions = ["post_now", "back_to_waiting"]
+
+    @admin.display(description="見出し")
+    def short_title(self, obj):
+        text = obj.title or obj.body or "（投稿の時間に自動で作ります）"
+        return text if len(text) <= 40 else text[:40] + "…"
+
+    @admin.display(description="つぶやき")
+    def post_link(self, obj):
+        if not obj.post_id:
+            return "-"
+        return format_html('<a href="{}">見る</a>', reverse("chiebukuro:post", args=[obj.post_id]))
+
+    @admin.action(description="選んだ予約を今すぐ投稿する")
+    def post_now(self, request, queryset):
+        from django.utils import timezone
+
+        from .bots import release_due
+
+        now = timezone.now()
+        queryset.filter(state=BotPost.State.WAITING).update(publish_at=now)
+        count = release_due(now=now + timedelta(seconds=1), limit=50)
+        self.message_user(request, f"{count}件を投稿しました。（データがないものは「見送り」になります）")
+
+    @admin.action(description="選んだ予約を「予約中」にもどす（つぶやきは消えません）")
+    def back_to_waiting(self, request, queryset):
+        count = queryset.exclude(state=BotPost.State.WAITING).update(state=BotPost.State.WAITING, post=None, note="")
+        self.message_user(request, f"{count}件を予約中にもどしました。")
 
 
 @admin.register(Contact)
