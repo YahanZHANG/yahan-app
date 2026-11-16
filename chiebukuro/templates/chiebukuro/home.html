@@ -5,12 +5,16 @@
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_pollpop.html" %}
 
-<a href="{% url 'chiebukuro:ask' %}" class="cb-askline" data-ask-open>
-    <span class="cb-askline-q" aria-hidden="true">?</span>
-    <span class="cb-askline-text">気軽に質問してみよう</span>
-    {% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}
-    <span class="cb-askline-go" aria-hidden="true">›</span>
-</a>
+<form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-askline" data-rules>
+    {% csrf_token %}
+    <p class="cb-askline-head"><span class="cb-askline-q" aria-hidden="true">?</span><span class="cb-askline-text">気軽に質問してみよう</span>{% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}</p>
+    <div class="cb-askline-row">
+        <label class="cb-sr" for="cb-askline-body">質問</label>
+        <textarea name="body" id="cb-askline-body" rows="1" maxlength="500" required data-grow placeholder="知りたいことを、ひとことで"></textarea>
+        <button type="submit" class="cb-askline-send">質問する</button>
+    </div>
+    {% include "chiebukuro/_guest_fields.html" %}
+</form>
 
 {% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}

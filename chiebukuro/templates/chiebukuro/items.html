@@ -5,6 +5,16 @@
 <h1 class="cb-page-title">ゆずりあい</h1>
 <p class="cb-page-lead">いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。</p>
 
+{% if voices %}
+<section class="cb-voices" aria-label="事前アンケートで集まった声">
+    <p class="cb-voices-head">事前アンケートでは、ゆずりあいの声が <b>{{ voices.total }}件</b> 集まりました</p>
+    <p class="cb-voices-kinds">{% for label, number in voices.kinds %}<span>{{ label }} {{ number }}件</span>{% endfor %}</p>
+    {% if voices.examples %}<p class="cb-voices-ex">{% for name in voices.examples %}<span>{{ name }}</span>{% endfor %}など</p>{% endif %}
+    <p class="cb-voices-call">ゆずりたい物・さがしている物があれば、気軽に出してみてください。</p>
+    <a href="{% url 'chiebukuro:item_new' %}" class="cb-btn cb-btn-primary cb-btn-s">ゆずりあいに出す</a>
+</section>
+{% endif %}
+
 <nav class="cb-seg cb-seg-tight" aria-label="種類">
     <a href="?{% if genre %}genre={{ genre }}{% endif %}" class="{% if not kind %}on{% endif %}">すべて</a>
     {% for value, label in kinds %}

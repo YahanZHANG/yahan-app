@@ -58,10 +58,11 @@ from .models import (
     Status,
     Thanks,
 )
-from .guests import guest_fields, is_guest, sign_in_guest, silent_login
+from .guests import guest_fields, is_guest, name_idea, sign_in_guest, silent_login
 from .services import (
     home_questions,
     question_examples,
+    survey_share_voices,
     attach_stamps,
     received_thanks,
     rename_member_content,
@@ -244,7 +245,19 @@ def board_context(request, tab, region=None):
         "needs_rules": needs_rules(request.user),
         "is_guest": is_guest(request.user),
         "ask_examples": daily_ask_examples(),
+        "guest_name_ideas": "" if request.user.is_authenticated else "|".join(name_idea() for _ in range(12)),
+        "claim_nudge": claim_nudge(request.user),
     }
+
+
+def claim_nudge(user):
+    """登録なしで書いた人に、少し時間をおいてから「パスワードを決めると登録完了」(_claim_nudge.html)"""
+
+    if not getattr(user, "is_authenticated", False) or not is_guest(user):
+        return ""
+    if timezone.now() - user.date_joined < timedelta(minutes=10):
+        return ""
+    return user_nickname(user)
 
 
 def daily_ask_examples():
@@ -1087,6 +1100,7 @@ def item_list(request):
         "chiebukuro/items.html",
         {
             **board_context(request, "items", region),
+            "voices": survey_share_voices(),
             "page": page,
             "kind": kind,
             "kinds": Item.Kind.choices,
