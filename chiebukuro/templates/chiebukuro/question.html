@@ -58,8 +58,14 @@
                     <span class="cb-act cb-act-static">{% include "chiebukuro/_icon.html" with name="heart" %}<span>参考になった{% if answer.thanks_total %} {{ answer.thanks_total }}{% endif %}</span></span>
                 {% endif %}
                 {% include "chiebukuro/_stamps.html" with obj=answer target="answer" prefix="a" %}
-                {% if can_choose and answer.author_id != question.author_id %}
-                    <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="{{ answer.pk }}"><button type="submit" class="cb-best-btn{% if chosen and answer.pk == chosen.pk %} is-on{% endif %}">{% if chosen and answer.pk == chosen.pk %}選択を取り消す{% else %}👑 ベストアンサー{% endif %}</button></form>
+                {% if can_choose %}
+                    <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}" class="cb-best-form">{% csrf_token %}<input type="hidden" name="answer" value="{{ answer.pk }}">
+                    {% if chosen and answer.pk == chosen.pk %}
+                        <span class="cb-best-btn is-on" aria-current="true">👑 ベストアンサーに選択中</span><button type="submit" class="cb-textbtn">取り消す</button>
+                    {% else %}
+                        <button type="submit" class="cb-best-btn">👑 ベストアンサーにする</button>
+                    {% endif %}
+                    </form>
                 {% endif %}
                 {% if user.is_authenticated and answer.author_id == user.pk %}
                     <a href="{% url 'chiebukuro:edit' 'answer' answer.pk %}" class="cb-textbtn">編集</a>
