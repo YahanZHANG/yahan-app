@@ -182,10 +182,11 @@ class HomeTests(BoardTestCase):
         Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
         Item.objects.create(kind="lend", genre="books", title="写真なしの本", owner=self.bob)
         page = self.client.get(reverse("chiebukuro:home")).content.decode()
-        for text in ["知りたい人が多い質問", "みんな知りたい質問", "回答が多い質問", "答えの多い質問", "新着の質問",
+        for text in ["知りたい人が多い質問", "みんな知りたい質問", "人気の質問", "答えの多い質問", "新着の質問",
                      "回答を待っている質問", "運営だけが答えた質問", "ゆずりあい", "ベビーカー", "写真なしの本"]:
             self.assertIn(text, page)
-        self.assertLess(page.index("知りたい人が多い質問"), page.index("回答が多い質問"))
+        self.assertLess(page.index("人気の質問"), page.index("新着の質問"))
+        self.assertLess(page.index("新着の質問"), page.index("知りたい人が多い質問"))
         self.assertLess(page.index("回答を待っている質問"), page.index("ゆずりあい<small>"))
         # HOME のいちばん上に質問の入力欄は出さない。ヒーローもなし
         self.assertNotIn("cb-askbox", page)
@@ -1352,7 +1353,7 @@ class BoardBotTests(BoardTestCase):
         self.client.force_login(self.bob)
         self.assertEqual(self.client.post(url, {"answer": best.pk}).status_code, 404)
         self.client.force_login(self.alice)
-        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "解決しましたか？")
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "✓ 解決済みにする")
         self.client.post(url, {"answer": best.pk})
         question.refresh_from_db()
         self.assertEqual(question.best_answer, best)

@@ -13,31 +13,32 @@
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'chiebukuro:interest' question.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="cb-btn cb-btn-s {% if interested %}on{% endif %}" aria-pressed="{% if interested %}true{% else %}false{% endif %}">私も知りたい {{ interest_total }}</button>
+                <button type="submit" class="cb-btn cb-btn-s {% if interested %}on{% endif %}" aria-pressed="{% if interested %}true{% else %}false{% endif %}">私も知りたい{% if interest_total %} {{ interest_total }}{% endif %}</button>
             </form>
         {% else %}
-            <a href="{{ login_url }}" class="cb-btn cb-btn-s">私も知りたい {{ interest_total }}</a>
+            <a href="{{ login_url }}" class="cb-btn cb-btn-s">私も知りたい{% if interest_total %} {{ interest_total }}{% endif %}</a>
         {% endif %}
         <a href="#answer-form" class="cb-btn cb-btn-primary cb-btn-s">答える</a>
+        {% if best_answer %}{% with share_sub="A. "|add:best_answer.body %}{% include "chiebukuro/_share.html" with icons=True share_label="Q. みんなに聞いてみた" share_text=question.body share_url=request.build_absolute_uri %}{% endwith %}{% else %}{% include "chiebukuro/_share.html" with icons=True share_label="Q. 知っている人、教えてください" share_text=question.body share_sub="" share_url=request.build_absolute_uri %}{% endif %}
         {% if user.is_authenticated and question.author_id == user.pk %}
             <span class="cb-mine-tools"><a href="{% url 'chiebukuro:edit' 'question' question.pk %}" class="cb-textbtn">編集</a><form method="post" action="{% url 'chiebukuro:delete' 'question' question.pk %}" onsubmit="return confirm('この質問を消しますか？');">{% csrf_token %}<button type="submit" class="cb-textbtn">消す</button></form></span>
         {% else %}
             {% with report_target="question" report_id=question.pk %}{% include "chiebukuro/_report.html" %}{% endwith %}
         {% endif %}
     </div>
-    {% if best_answer %}{% with share_sub="A. "|add:best_answer.body %}{% include "chiebukuro/_share.html" with share_label="Q. みんなに聞いてみた" share_text=question.body share_url=request.build_absolute_uri %}{% endwith %}{% else %}{% include "chiebukuro/_share.html" with share_label="Q. 知っている人、教えてください" share_text=question.body share_sub="" share_url=request.build_absolute_uri %}{% endif %}
 </section>
 
 <section class="cb-block" id="answers">
-    <header class="cb-block-head"><h2>回答 {{ answers|length }}件</h2>{% if answers|length > 1 %}<span class="cb-sub">参考になった順</span>{% endif %}</header>
-    {% if can_choose and answers and not question.solved_at %}
-        <div class="cb-best-ask">
-            <p><b>{% if user.pk == question.author_id %}解決しましたか？{% else %}運営：ベストアンサーを選べます{% endif %}</b>役に立った回答の「👑 ベストアンサー」を押すと、答えた人にお礼が届きます。</p>
-            <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-btn cb-btn-s">✓ 解決済みにする</button></form>
-        </div>
-    {% elif can_choose and question.solved_at %}
-        <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}" class="cb-best-undo">{% csrf_token %}<input type="hidden" name="answer" value="0"><span class="cb-sub">✓ 解決済みの質問です</span><button type="submit" class="cb-textbtn">取り消す</button></form>
-    {% endif %}
+    <header class="cb-block-head"><h2>回答 {{ answers|length }}件</h2>
+        <span class="cb-head-tools">
+        {% if answers|length > 1 %}<span class="cb-sub">参考になった順</span>{% endif %}
+        {% if can_choose and answers %}
+            <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="0">
+            {% if question.solved_at %}<button type="submit" class="cb-solve is-on" title="押すと「回答募集中」にもどります">✓ 解決済み</button>{% else %}<button type="submit" class="cb-solve">✓ 解決済みにする</button>{% endif %}
+            </form>
+        {% endif %}
+        </span>
+    </header>
     {% for answer in answers %}
         <article class="cb-answer {% if best_answer and answer.pk == best_answer.pk %}is-best{% endif %}" id="a{{ answer.pk }}">
             {% if chosen and answer.pk == chosen.pk %}<p class="cb-best cb-best-chosen">👑 ベストアンサー</p>{% elif best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
@@ -80,7 +81,7 @@
     {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
         {% csrf_token %}
-        <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="知っていること、経験したことを教えてください。お店や場所の名前があると助かります。">{{ draft }}</textarea>
+        <textarea name="body" rows="5" maxlength="{{ max_length }}" required>{{ draft }}</textarea>
         {% include "chiebukuro/_photo_field.html" %}
         {% include "chiebukuro/_guest_fields.html" %}
         <button type="submit" class="cb-btn cb-btn-primary">回答する</button>

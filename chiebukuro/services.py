@@ -358,7 +358,7 @@ def home_questions(region="", day=None, per=3, wait_days=3):
     HOME の質問 (2026-11-16 Taro): 4つの枠に per 件ずつ。人気の枠と答え待ちは、上位の中から日替わりで選ぶ
     (同じ日はだれが見ても同じ)。同じ質問は2つの枠に出さない。
     - wanted: 知りたい人が多い質問 (上位20件から)
-    - answered: 回答が多い質問 (運営の回答は数えない。上位20件から)
+    - answered: 人気の質問 = 回答が多い質問 (運営の回答は数えない。popular_mix で上・中・下から1つずつ)
     - new: 新着の質問 (新しい順)
     - waiting: wait_days 日たっても回答がない (運営の回答だけのものも) 質問
     """
@@ -376,15 +376,40 @@ def home_questions(region="", day=None, per=3, wait_days=3):
         taken.update(question.pk for question in chosen)
         return chosen
 
+    answered = popular_mix(base.filter(member_answer_total__gte=2).order_by("-member_answer_total", "-interest_total", "-pk"), day, region, per)
+    taken.update(question.pk for question in answered)
     wanted = pick(base.filter(interest_total__gt=0).order_by("-interest_total", "-member_answer_total", "-pk"))
     wanted.sort(key=lambda question: -question.interest_total)
-    answered = pick(base.filter(member_answer_total__gte=2).order_by("-member_answer_total", "-interest_total", "-pk"))
-    answered.sort(key=lambda question: -question.member_answer_total)
     since = timezone.now() - timedelta(days=wait_days)
     waiting = pick(base.filter(member_answer_total=0, created_at__lte=since).order_by("-interest_total", "created_at", "pk"), pool=30)
     new = pick(base.order_by("-created_at", "-pk"), rotate=False)
     best_answers(wanted + answered)
     return {"wanted": wanted, "answered": answered, "new": new, "waiting": waiting}
+
+
+def popular_mix(queryset, day, region="", count=3, pool=60):
+    """
+    HOME の人気の質問 (2026-11-16 Taro): いちばん多い3つを毎日出すのではなく、回答の多い順の上位 pool 件を
+    count 段 (上・中・下) に分けて、各段から1つずつ日替わりで出す。各段は日ごとに順番に回るので、
+    段の件数ぶんの日数が過ぎるまで同じ質問はもどってこない。並びも日替わり (いちばん多いものが先とは限らない)。
+    """
+
+    import random
+
+    rows = list(queryset[:pool])
+    if len(rows) <= count:
+        return rows
+    size = len(rows) / count
+    tiers = [rows[round(size * index):round(size * (index + 1))] for index in range(count)]
+    seed = sum(map(ord, region))
+    chosen = []
+    for index, tier in enumerate(tiers):
+        lap, step = divmod(day.toordinal(), len(tier))
+        order = list(tier)
+        random.Random(seed * 31 + lap * 977 + index).shuffle(order)
+        chosen.append(order[step])
+    random.Random(day.toordinal() + seed).shuffle(chosen)
+    return chosen
 
 
 def question_examples(day=None, count=3):
