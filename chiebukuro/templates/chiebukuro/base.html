@@ -63,7 +63,7 @@
             <a href="{% url 'chiebukuro:notifications' %}" class="{% if tab == 'bell' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}お知らせ{% if unread %}<b class="cb-badge cb-badge-inline">{{ unread }}</b>{% endif %}</a>
             <a href="{% url 'chiebukuro:me' %}" class="{% if tab == 'me' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="user" %}マイページ</a>
         {% endif %}
-        <a href="{% if fab_url %}{{ fab_url }}{% else %}{% url 'chiebukuro:new' %}{% endif %}" class="cb-side-write">{% if fab_label and fab_label != "書く" %}{{ fab_label }}{% else %}書く{% endif %}</a>
+        <a href="{% if fab_url %}{{ fab_url }}{% else %}{% url 'chiebukuro:new' %}{% endif %}" class="cb-side-write"{% if fab_label == "質問する" %} data-ask-open{% endif %}>{% if fab_label and fab_label != "書く" %}{{ fab_label }}{% else %}書く{% endif %}</a>
     </nav>
 
     <main class="cb-main">
@@ -72,6 +72,7 @@
         {% endfor %}
         {% if is_guest %}<p class="cb-guestbar">登録なしで使っています（この端末だけ）。<a href="{% url 'chiebukuro:claim' %}">IDとパスワードを決めると、ほかのスマホからも使えます ›</a></p>{% endif %}
         {% include "chiebukuro/_thanks.html" %}
+        {% include "chiebukuro/_ask.html" %}
         {% block content %}{% endblock %}
         <footer class="cb-footer">
             <a href="{% url 'portal:home' %}">Yapp</a>
@@ -95,7 +96,7 @@
 </div>
 
 {% if fab_url %}
-    <a href="{{ fab_url }}" class="cb-fab" aria-label="{{ fab_label }}">{% include "chiebukuro/_icon.html" with name="plus" %}<span>{{ fab_label }}</span></a>
+    <a href="{{ fab_url }}" class="cb-fab" aria-label="{{ fab_label }}"{% if fab_label == "質問する" %} data-ask-open{% endif %}>{% include "chiebukuro/_icon.html" with name="plus" %}<span>{{ fab_label }}</span></a>
 {% endif %}
 
 <nav class="cb-tabbar" aria-label="メニュー">

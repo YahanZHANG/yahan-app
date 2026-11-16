@@ -1,25 +1,27 @@
-{% comment %}その日1回目に HOME を開いたとき、少し読んでもらってから (12秒後) 「質問してみませんか？」(その場で書いて送れる)。
+{% comment %}質問のポップアップ (base.html でどのページにも置く)。data-ask-open のボタン (HOMEの1行・質問するボタン) で開き、
+その場で書いて送れる (2026-11-16 Taro: 別ページに行かず、気軽に)。JS がないときは /ask/ のページへ。
+自動で出すのは HOME だけ: その日1回目に HOME を開いたとき、少し読んでもらってから (12秒後) 「質問してみませんか？」(その場で書いて送れる)。
 2回目は「今日のひとこと」(_daily.html)。質問の例は、実際の質問から日替わり。「1週間表示しない」はこの端末だけ (localStorage)。
 window.cbAskShown: このポップアップを出したか (出したら、今日のひとことは次に開いたときに)。{% endcomment %}
 <dialog class="cb-daily cb-askpop" id="cb-askpop" aria-labelledby="cb-askpop-title">
     <div class="cb-daily-box">
         <header class="cb-daily-head">
             <h2 id="cb-askpop-title">質問してみませんか？</h2>
-            <p class="cb-askpop-lead">スイスに住む日本語の仲間が答えてくれます</p>
+            <p class="cb-askpop-lead">スイスに住む日本語の仲間が答えてくれます{% if not user.is_authenticated %} <span class="cb-askline-tag">ログイン不要</span>{% endif %}</p>
             <button type="button" class="cb-daily-x" data-askpop-close aria-label="閉じる">×</button>
         </header>
         <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-daily-body cb-askpop-form" data-rules>
             {% csrf_token %}
             <label class="cb-sr" for="cb-askpop-body">質問</label>
-            <textarea name="body" id="cb-askpop-body" rows="3" maxlength="500" required placeholder="例：{{ examples.0 }}"></textarea>
+            <textarea name="body" id="cb-askpop-body" rows="3" maxlength="500" required placeholder="例：{{ ask_examples.0 }}"></textarea>
             <ul class="cb-askpop-examples" aria-label="質問の例">
-                {% for example in examples|slice:"1:3" %}<li>{{ example }}</li>{% endfor %}
+                {% for example in ask_examples|slice:"1:3" %}<li>{{ example }}</li>{% endfor %}
             </ul>
             {% include "chiebukuro/_guest_fields.html" %}
             <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">質問する</button>
         </form>
         <footer class="cb-daily-foot">
-            <label class="cb-check-s"><input type="checkbox" id="cb-askpop-snooze"> 1週間表示しない</label>
+            <label class="cb-check-s cb-askpop-snooze"><input type="checkbox" id="cb-askpop-snooze"> 1週間表示しない</label>
             <button type="button" class="cb-btn cb-btn-s" data-askpop-close>あとで</button>
         </footer>
     </div>
@@ -27,12 +29,34 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
 <script>
 (function () {
     var dialog = document.getElementById("cb-askpop");
+    if (!dialog || !dialog.showModal) return;
     var day = "{% now 'Y-m-d' %}";
     var WEEK = 7 * 24 * 60 * 60 * 1000;
     function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
     function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
 
-    // その日に HOME を開いた回数
+    function show(manual) {
+        dialog.classList.toggle("is-manual", !!manual);
+        if (!dialog.open) dialog.showModal();
+        if (manual) setTimeout(function () { document.getElementById("cb-askpop-body").focus(); }, 50);
+    }
+    function close() {
+        if (!dialog.classList.contains("is-manual") && document.getElementById("cb-askpop-snooze").checked) write("cb_askpop_until", String(Date.now() + WEEK));
+        dialog.close();
+    }
+    dialog.querySelectorAll("[data-askpop-close]").forEach(function (element) { element.addEventListener("click", close); });
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
+    // 「質問する」ボタン: ページを移らずに、ここで書く
+    document.addEventListener("click", function (event) {
+        var button = event.target.closest && event.target.closest("[data-ask-open]");
+        if (!button || event.metaKey || event.ctrlKey) return;
+        event.preventDefault();
+        show(true);
+    });
+
+    {% if request.resolver_match.url_name == "home" %}
+    // その日に HOME を開いた回数 (今日のひとこと・登録のおすすめも使う)
     var opens = {};
     try { opens = JSON.parse(read("cb_home_opens") || "{}"); } catch (e) {}
     var count = opens.day === day ? opens.count + 1 : 1;
@@ -42,21 +66,14 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
     if (window.cbThanksShown) { window.cbAskShown = true; return; }
 
     var snoozed = Number(read("cb_askpop_until") || 0) > Date.now();
-    if (!dialog || !dialog.showModal || count !== 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;
+    if (count !== 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;
     window.cbAskShown = true;
     write("cb_askpop_day", day);
     setTimeout(function () {
         // 12秒のあいだに、ほかのポップアップが開いていたり、入力中だったりしたら出さない
         if (document.querySelector("dialog[open]") || (document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) return;
-        dialog.showModal();
+        show(false);
     }, 12000);
-
-    function close() {
-        if (document.getElementById("cb-askpop-snooze").checked) write("cb_askpop_until", String(Date.now() + WEEK));
-        dialog.close();
-    }
-    dialog.querySelectorAll("[data-askpop-close]").forEach(function (element) { element.addEventListener("click", close); });
-    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
-    dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
+    {% endif %}
 })();
 </script>

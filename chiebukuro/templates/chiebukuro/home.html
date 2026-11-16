@@ -2,11 +2,10 @@
 {% load board %}
 {% block content %}
 
-{% include "chiebukuro/_ask.html" %}
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_pollpop.html" %}
 
-<a href="{% url 'chiebukuro:ask' %}" class="cb-askline">
+<a href="{% url 'chiebukuro:ask' %}" class="cb-askline" data-ask-open>
     <span class="cb-askline-q" aria-hidden="true">?</span>
     <span class="cb-askline-text">気軽に質問してみよう</span>
     {% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}

@@ -243,7 +243,21 @@ def board_context(request, tab, region=None):
         "stamp_list": STAMPS,
         "needs_rules": needs_rules(request.user),
         "is_guest": is_guest(request.user),
+        "ask_examples": daily_ask_examples(),
     }
+
+
+def daily_ask_examples():
+    """質問のポップアップ (どのページにもある) の例。1日1回だけ作ってキャッシュ"""
+
+    from django.core.cache import cache
+
+    key = f"chie-ask-examples-{timezone.localdate():%Y%m%d}"
+    examples = cache.get(key)
+    if examples is None:
+        examples = question_examples() or ASK_EXAMPLES
+        cache.set(key, examples, 60 * 60 * 6)
+    return examples
 
 
 def needs_rules(user):

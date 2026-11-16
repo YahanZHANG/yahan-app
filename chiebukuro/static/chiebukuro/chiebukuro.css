@@ -1661,3 +1661,4 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-askline-tag { flex: none; padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, .22); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .cb-askline-go { flex: none; font-size: 20px; line-height: 1; }
 @media (min-width: 900px) { .cb-askline { margin: 0 0 12px; } }
+.cb-askpop.is-manual .cb-askpop-snooze { visibility: hidden; }
