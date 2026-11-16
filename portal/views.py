@@ -1308,7 +1308,6 @@ def home(request):
             "icon_url": static("pwa/washoku/icon-192.png"),
             "badge": "公開中",
             "status_class": "live",
-            "is_new": True,
             "eyebrow": "WASHOKU",
             "headline": "スイスの台所に\nみんなの知恵を。",
             "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
