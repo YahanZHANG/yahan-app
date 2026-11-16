@@ -1,0 +1,10 @@
+{% if rows %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>{{ title }}</h2><a href="{% url 'chiebukuro:questions' %}{{ more }}" class="cb-more">もっと見る</a></header>
+    <div class="cb-hsec-body">
+    {% for question in rows %}
+        {% include "chiebukuro/_question_row.html" %}
+    {% endfor %}
+    </div>
+</section>
+{% endif %}

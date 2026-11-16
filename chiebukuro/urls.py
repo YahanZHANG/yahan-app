@@ -18,6 +18,7 @@ urlpatterns = [
     path("ask/", views.ask, name="ask"),
     path("q/<int:pk>/", views.question_detail, name="question"),
     path("q/<int:pk>/interest/", views.toggle_interest, name="interest"),
+    path("q/<int:pk>/best/", views.choose_best, name="choose_best"),
     path("a/<int:pk>/thanks/", views.toggle_thanks, name="thanks"),
     path("a/<int:pk>/delete/", views.delete_answer, name="delete_answer"),
     # ゆずりあい
@@ -40,6 +41,7 @@ urlpatterns = [
     # 自分・ほかの人
     path("notifications/", views.notifications, name="notifications"),
     path("me/", views.my_page, name="me"),
+    path("me/account/", views.claim, name="claim"),
     path("me/profile/", views.profile_edit, name="profile_edit"),
     path("avatar.svg", views.avatar_preview, name="avatar_preview"),
     path("u/<str:username>/", views.profile, name="profile"),

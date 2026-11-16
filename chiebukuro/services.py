@@ -83,7 +83,8 @@ def import_from_survey():
             author=source.user,
             nickname="" if is_staff_question else source.nickname,
             survey_question_id=source.pk,
-            created_at=source.created_at,
+            # 本当の日時ではなく、掲示板に出た日 (2026-11-16 Taro)
+            created_at=timezone.now(),
         )
         SurveyImport.objects.create(kind="question", source_id=source.pk)
         question_map[source.pk] = question
@@ -110,16 +111,12 @@ def import_from_survey():
             author=source.user,
             nickname=source.nickname,
             from_survey=True,
-            created_at=source.created_at,
+            created_at=timezone.now(),
         )
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
 
-    # 新しい質問は「公開待ち」にして、少しずつ出す (答えが0〜1件のものは「答え待ち」の枠で別に数える)
-    for question in created:
-        few = question.answers.filter(status=Status.PUBLISHED, is_staff=False).count() < QUEUE_MIN_ANSWERS
-        Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank, release_open=few)
-        next_rank += 1
+    # 2026-11-16 Taro: 小出しはやめて、取り込んだ質問はすぐに全部公開する (created は公開のまま)
 
     # 「私も知りたい」の数と、最後の答えの日時をそろえる
     interest_counts = dict(
@@ -132,7 +129,68 @@ def import_from_survey():
             Question.objects.filter(pk=question.pk).update(survey_interest_count=count, last_answered_at=latest)
 
     release_survey_questions()
+    import_share_offers()
     return new_questions, new_answers
+
+
+# 事前アンケートの「ゆずりたい・ほしい・貸したい・借りたい」→ ゆずりあい
+OFFER_KINDS = {"give": "give", "want": "want", "lend": "lend", "borrow": "borrow"}
+GENRE_WORDS = [
+    ("books", ["本", "絵本", "マンガ", "漫画", "雑誌", "図鑑", "小説", "参考書", "ドリル"]),
+    ("kids", ["子ども", "子供", "ベビー", "赤ちゃん", "おもちゃ", "ベビーカー", "チャイルドシート", "ランドセル", "抱っこ", "授乳"]),
+    ("furniture", ["家具", "机", "椅子", "いす", "棚", "ベッド", "ソファ", "テーブル", "ラグ", "カーテン"]),
+    ("appliance", ["家電", "炊飯器", "電子レンジ", "レンジ", "掃除機", "変圧器", "プリンター", "テレビ", "ドライヤー", "アイロン", "加湿器", "扇風機"]),
+    ("kitchen", ["食器", "鍋", "フライパン", "キッチン", "茶碗", "箸", "お弁当", "弁当箱", "包丁", "調理"]),
+    ("clothes", ["服", "靴", "浴衣", "着物", "コート", "ジャケット", "ブーツ", "制服", "帽子"]),
+    ("sports", ["スキー", "スノーボード", "自転車", "テント", "キャンプ", "ソリ", "そり", "登山", "スケート", "ヘルメット"]),
+]
+
+
+def guess_genre(title):
+    for genre, words in GENRE_WORDS:
+        if any(word in title for word in words):
+            return genre
+    return "other"
+
+
+def import_share_offers():
+    """
+    事前アンケートで書いてもらった、ゆずりあい・貸し借りの希望を、掲示板のゆずりあいに出す。
+    アカウントがある人はその人の名前で。ない人は、その人の端末だけで使えるゲストのアカウントを作って出す
+    (アンケートに答えた端末で掲示板を開くと、自動でそのアカウントになり、申し込みのやりとりができる)。
+    取り込み済みのもの (掲示板で消したものも) は二度と取り込まない。品物の名前がないものは出さない。
+    """
+
+    from pre_survey.models import ShareOffer
+
+    from .guests import make_guest
+    from .models import BoardProfile, Item
+
+    done = set(SurveyImport.objects.filter(kind="offer").values_list("source_id", flat=True))
+    made = 0
+    for offer in ShareOffer.objects.select_related("participant", "user").order_by("created_at"):
+        title = " ".join((offer.item or "").split())[:80]
+        if offer.pk in done or not title or offer.kind not in OFFER_KINDS:
+            continue
+        participant = offer.participant
+        owner = offer.user or (participant.user if participant and participant.user_id else None)
+        nickname = (participant.nickname if participant else "") or ""
+        if owner is None:
+            token = offer.browser_token or (participant.browser_token if participant else None)
+            profile = BoardProfile.objects.filter(guest_token=token, is_guest=True).select_related("user").first() if token else None
+            owner = profile.user if profile else make_guest(nickname, token=token)
+        Item.objects.create(
+            kind=OFFER_KINDS[offer.kind],
+            genre=guess_genre(title),
+            title=title,
+            body="事前アンケートで寄せられた希望です。",
+            region="" if not participant or participant.region in ("", "other") else participant.region,
+            owner=owner,
+            nickname=user_nickname(owner) or nickname,
+        )
+        SurveyImport.objects.create(kind="offer", source_id=offer.pk)
+        made += 1
+    return made
 
 
 # アンケートの質問で、答えがこの数より少ないものは「答え待ち」の枠
@@ -293,6 +351,85 @@ def questions_to_ask(user, region="", limit=8):
             .exclude(interests__user=user)
         )
     return list(questions.filter(member_answer_total__lte=1).order_by("member_answer_total", "-created_at", "-pk")[:limit])
+
+
+def home_questions(region="", day=None, per=3, wait_days=3):
+    """
+    HOME の質問 (2026-11-16 Taro): 4つの枠に per 件ずつ。人気の枠と答え待ちは、上位の中から日替わりで選ぶ
+    (同じ日はだれが見ても同じ)。同じ質問は2つの枠に出さない。
+    - wanted: 知りたい人が多い質問 (上位20件から)
+    - answered: 人気の質問 = 回答が多い質問 (運営の回答は数えない。popular_mix で上・中・下から1つずつ)
+    - new: 新着の質問 (新しい順)
+    - waiting: wait_days 日たっても回答がない (運営の回答だけのものも) 質問
+    """
+
+    import random
+
+    day = day or timezone.localdate()
+    chooser = random.Random(day.toordinal() * 7919 + len(region))
+    base = question_list(region=region)
+    taken = set()
+
+    def pick(queryset, count=per, rotate=True, pool=20):
+        rows = [question for question in queryset[: pool + per * 3] if question.pk not in taken][:pool]
+        chosen = chooser.sample(rows, min(count, len(rows))) if rotate else rows[:count]
+        taken.update(question.pk for question in chosen)
+        return chosen
+
+    popular = base.filter(member_answer_total__gte=2)
+    if popular.count() < per:
+        # 回答が2件以上の質問がまだ少ないうちは、1件以上から
+        popular = base.filter(member_answer_total__gte=1)
+    answered = popular_mix(popular.order_by("-member_answer_total", "-interest_total", "-pk"), day, region, per)
+    taken.update(question.pk for question in answered)
+    wanted = pick(base.filter(interest_total__gt=0).order_by("-interest_total", "-member_answer_total", "-pk"))
+    wanted.sort(key=lambda question: -question.interest_total)
+    since = timezone.now() - timedelta(days=wait_days)
+    waiting = pick(base.filter(member_answer_total=0, created_at__lte=since).order_by("-interest_total", "created_at", "pk"), pool=30)
+    new = pick(base.order_by("-created_at", "-pk"), rotate=False)
+    best_answers(wanted + answered)
+    return {"wanted": wanted, "answered": answered, "new": new, "waiting": waiting}
+
+
+def popular_mix(queryset, day, region="", count=3, pool=60):
+    """
+    HOME の人気の質問 (2026-11-16 Taro): いちばん多い3つを毎日出すのではなく、回答の多い順の上位 pool 件を
+    count 段 (上・中・下) に分けて、各段から1つずつ日替わりで出す。各段は日ごとに順番に回るので、
+    段の件数ぶんの日数が過ぎるまで同じ質問はもどってこない。並びも日替わり (いちばん多いものが先とは限らない)。
+    """
+
+    import random
+
+    rows = list(queryset[:pool])
+    if len(rows) <= count:
+        return rows
+    size = len(rows) / count
+    tiers = [rows[round(size * index):round(size * (index + 1))] for index in range(count)]
+    seed = sum(map(ord, region))
+    chosen = []
+    for index, tier in enumerate(tiers):
+        lap, step = divmod(day.toordinal(), len(tier))
+        order = list(tier)
+        random.Random(seed * 31 + lap * 977 + index).shuffle(order)
+        chosen.append(order[step])
+    random.Random(day.toordinal() + seed).shuffle(chosen)
+    return chosen
+
+
+def question_examples(day=None, count=3):
+    """質問の例: 実際の質問から日替わりで (短くて、答えのついたもの)"""
+
+    import random
+
+    from django.db.models.functions import Length
+
+    day = day or timezone.localdate()
+    rows = list(
+        question_list().filter(answer_total__gte=1, is_anonymous=False)
+        .annotate(size=Length("body")).filter(size__gte=12, size__lte=60)
+        .order_by("-pk").values_list("body", flat=True)[:300]
+    )
+    return random.Random(day.toordinal()).sample(rows, min(count, len(rows)))
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

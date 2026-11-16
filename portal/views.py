@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -1234,6 +1235,21 @@ def portal_latest_news(limit=3):
     )
 
 
+def portal_board_questions():
+    """Yapp トップの掲示板カードに出す質問 (掲示板の HOME の「人気の質問」と同じ、日替わり3件)"""
+
+    try:
+        from chiebukuro.models import BoardSettings
+        from chiebukuro.services import home_questions
+
+        if not BoardSettings.current().is_open:
+            return []
+        return home_questions()["answered"][:3]
+    except Exception:
+        logging.getLogger(__name__).exception("portal: board questions failed")
+        return []
+
+
 def portal_card_photo(key):
     """
     static/portal/images/cards/<key>.jpg (または .webp) を置くと、
@@ -1290,9 +1306,8 @@ def home(request):
             "key": "washoku",
             "name": "スイスで和食",
             "icon_url": static("pwa/washoku/icon-192.png"),
-            "badge": "先行公開中",
+            "badge": "公開中",
             "status_class": "live",
-            "is_new": True,
             "eyebrow": "WASHOKU",
             "headline": "スイスの台所に\nみんなの知恵を。",
             "description": "レシピも、食材の買い方も、みんなの工夫も。スイスで楽しむ和食をもっと豊かに。",
@@ -1340,14 +1355,6 @@ def home(request):
             "description": "みんなの予定を簡単に調整。",
             "url": reverse("event_scheduler:event_list"),
         },
-        {
-            "key": "board",
-            "name": "暮らしの掲示板",
-            "icon": "💬",
-            "description": "生活の知恵や口コミを、みんなで。",
-            "url": None,
-            "badge": "準備中",
-        },
     ]
 
     return render(
@@ -1360,6 +1367,7 @@ def home(request):
             "particles": seasons.particles(season),
             "latest_news": portal_latest_news(),
             "featured_apps": featured_apps,
+            "board_questions": portal_board_questions(),
             "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),
             "idea_sent": request.GET.get("idea") == "sent",

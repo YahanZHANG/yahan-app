@@ -192,6 +192,11 @@ class Question(models.Model):
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     # 新しい答えがついた日時 (HOME の「新しい答え順」)
     last_answered_at = models.DateTimeField("最後の答え", null=True, blank=True, db_index=True)
+    best_answer = models.ForeignKey(
+        "Answer", verbose_name="ベストアンサー", on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+        help_text="質問した人 (または運営) が選んだ回答",
+    )
+    solved_at = models.DateTimeField("解決した日時", null=True, blank=True, help_text="質問した人が「解決しました」にした日時 (ベストアンサーを選んだときも)")
     edited_at = models.DateTimeField("編集した日時", null=True, blank=True)
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
@@ -462,6 +467,9 @@ class BoardProfile(models.Model):
     avatar_parts = models.JSONField("イラストの組み合わせ", default=dict, blank=True)
     photo_url = models.URLField("プロフィール写真", max_length=500, blank=True)
     rules_agreed_at = models.DateTimeField("ルールに同意した日時", null=True, blank=True)
+    is_guest = models.BooleanField("登録なしで書きこんだ人", default=False, help_text="ID・パスワードを決めずに書きこんだ人 (この端末だけでログイン中)")
+    guest_token = models.UUIDField("事前アンケートの端末の目印", null=True, blank=True, db_index=True, help_text="事前アンケートに答えた端末で開くと、自動でこのアカウントになる")
+    email_answer = models.BooleanField("回答がついたらメールで知らせる", default=False)
 
     class PushFrequency(models.TextChoices):
         INSTANT = "instant", "すぐに知らせる"
@@ -523,6 +531,7 @@ class Notification(models.Model):
         CHOSEN = "chosen", "相手に決まった"
         STAMP = "stamp", "スタンプ"
         WEEK = "week", "今週のありがとう"
+        BEST = "best", "ベストアンサー"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chie_notifications")
     kind = models.CharField(max_length=10, choices=Kind.choices)

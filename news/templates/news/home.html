@@ -166,7 +166,7 @@ Swiss News
 
 
 {# 注目ニュースのすぐ後 (注目がないときは記事一覧の上) に、事前アンケートのお願い #}
-{% include "news/_pre_survey_promo.html" %}
+{% include "news/_board_promo.html" %}
 
 
 <div class="news-list">
@@ -269,7 +269,7 @@ Swiss News
 
 <script>
 // Yapp のアプリ紹介: ×で閉じたら30日は出さない。
-// アンケートのお願い: ×で閉じたら7日、回答し終えてから14日は出さない (終了画面が yapp_pre_survey_done を残す)
+// (アンケートのお願い "pre-survey" は、×で閉じたら7日、回答し終えてから14日は出さない。いまは掲示板の宣伝 "board" に差し替え)
 (function () {
     var DAY = 24 * 60 * 60 * 1000;
     function since(key) {

@@ -2,22 +2,46 @@
 {% load board %}
 {% block content %}
 
-{% include "chiebukuro/_hero.html" %}
 {% include "chiebukuro/_daily.html" %}
-{% include "chiebukuro/_ask.html" %}
 {% include "chiebukuro/_pollpop.html" %}
-{% include "chiebukuro/_nudge.html" %}
 
-{% if not user.is_authenticated %}
-<section class="cb-welcome">
-    <p>読むのは登録なしでどうぞ。書きこむにはYappのアカウント（無料）が必要です。</p>
-    <p class="cb-welcome-links"><a href="{% url 'portal:signup' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-primary cb-btn-s">無料で登録</a><a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="cb-btn cb-btn-s">ログイン</a></p>
+<a href="{% url 'chiebukuro:ask' %}" class="cb-askline" data-ask-open>
+    <span class="cb-askline-q" aria-hidden="true">?</span>
+    <span class="cb-askline-text">気軽に質問してみよう</span>
+    {% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}
+    <span class="cb-askline-go" aria-hidden="true">›</span>
+</a>
+
+{% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.waiting title="回答を待っている質問" more="?sort=open" hide_best=True %}
+
+{% if items %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>ゆずりあい<small>無料</small></h2><a href="{% url 'chiebukuro:items' %}" class="cb-more">すべて見る</a></header>
+    {% if gives %}
+    <div class="cb-strip">
+        {% for item in gives %}
+            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-tile">
+                <img src="{{ item.photo_url }}" alt="" loading="lazy">
+                <span class="cb-tile-title">{{ item.title }}</span>
+                <span class="cb-tile-sub">{% if item.get_region_display %}{{ item.get_region_display }}・{% endif %}{{ item.created_at|ago }}</span>
+            </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="cb-hsec-body">
+    {% for item in items %}
+        {% include "chiebukuro/_item_row.html" %}
+    {% endfor %}
+    </div>
 </section>
 {% endif %}
 
 {% if featured %}
 <section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>今週の注目</h2><a href="{% url 'chiebukuro:questions' %}?sort=popular" class="cb-more">人気の質問</a></header>
+    <header class="cb-hsec-head"><h2>話題の回答・つぶやき</h2></header>
     <ol class="cb-feat">
         {% for card in featured %}
             <li>
@@ -40,51 +64,6 @@
 </section>
 {% endif %}
 
-{% if new_questions %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>新着の質問</h2><a href="{% url 'chiebukuro:questions' %}" class="cb-more">もっと見る</a></header>
-    <div class="cb-hsec-body">
-    {% for question in new_questions %}
-        {% include "chiebukuro/_question_row.html" with hide_best=True %}
-    {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-{% if waiting or not new_questions %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>あなたの知恵を貸してください</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
-    <div class="cb-hsec-body">
-    {% for question in waiting %}
-        {% include "chiebukuro/_question_row.html" %}
-    {% empty %}
-        <p class="cb-empty">いまは、答えを待っている質問はありません。</p>
-    {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-{% if poll %}
-<button type="button" class="cb-pollbar cb-pollbar-home" data-poll-open>
-    <span class="cb-pollbar-tag">📊 {% if poll.my_choice_id %}アンケートの結果{% else %}アンケート受付中{% endif %}</span>
-    <span class="cb-pollbar-q">{{ poll.question }}</span>
-    <span class="cb-pollbar-go" aria-hidden="true">›</span>
-</button>
-{% endif %}
-
-{% if sponsor %}
-<a href="{% url 'chiebukuro:sponsor' sponsor.pk %}" class="cb-sponsor" rel="sponsored noopener" target="_blank">
-    {% if sponsor.image_url %}<img src="{{ sponsor.image_url }}" alt="" loading="lazy">{% endif %}
-    <span class="cb-sponsor-text">
-        <span class="cb-sponsor-name"><span class="cb-pr">PR</span>{{ sponsor.name }}</span>
-        <strong>{{ sponsor.title }}</strong>
-        {% if sponsor.text %}<small>{{ sponsor.text }}</small>{% endif %}
-    </span>
-</a>
-{% else %}
-<p class="cb-sponsor-empty"><span class="cb-pr">PR</span>この枠に、お店・サービスの広告を出せます。<a href="{% url 'chiebukuro:contact' %}?about=ad">広告について問い合わせる</a></p>
-{% endif %}
-
 {% if outings %}
 <section class="cb-hsec">
     <header class="cb-hsec-head"><h2>今週末のおでかけ</h2><a href="{% url 'outings:home' %}" class="cb-more">おでかけアプリ</a></header>
@@ -95,21 +74,6 @@
                 <span class="cb-tile-date">{{ event.when|date:"n/j" }}（{{ event.when|date:"D" }}）{% if event.is_free %}・無料{% endif %}</span>
                 <span class="cb-tile-title">{{ event.title }}</span>
                 {% if event.location %}<span class="cb-tile-sub">{{ event.location.city }}</span>{% endif %}
-            </a>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-{% if gives %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>ゆずります<small>無料</small></h2><a href="{% url 'chiebukuro:items' %}?kind=give" class="cb-more">すべて見る</a></header>
-    <div class="cb-strip">
-        {% for item in gives %}
-            <a href="{% url 'chiebukuro:item' item.pk %}" class="cb-tile">
-                <img src="{{ item.photo_url }}" alt="" loading="lazy">
-                <span class="cb-tile-title">{{ item.title }}</span>
-                <span class="cb-tile-sub">{% if item.get_region_display %}{{ item.get_region_display }}・{% endif %}{{ item.created_at|ago }}</span>
             </a>
         {% endfor %}
     </div>
@@ -131,80 +95,4 @@
     <summary>この掲示板のルール</summary>
     {% include "chiebukuro/_rules.html" %}
 </details>
-
-<script>
-(function () {
-    // 日本の時刻 (端末の時計から、30秒ごとに)
-    var clock = document.getElementById("cb-japan-time");
-    if (clock && window.Intl) {
-        var format = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", minute: "2-digit", hour12: false });
-        var tick = function () { clock.textContent = format.format(new Date()); };
-        tick(); setInterval(tick, 30000);
-    }
-})();
-(function () {
-    // 為替をタップしたら、30日の推移を開く (はじめて開いたときだけ読みこむ)
-    var box = document.getElementById("cb-today");
-    var panel = document.getElementById("cb-fx-panel");
-    if (!box || !panel || !window.fetch) return;
-    box.addEventListener("click", function (event) {
-        var button = event.target.closest && event.target.closest("[data-fx]");
-        if (!button) return;
-        var open = panel.hidden;
-        panel.hidden = !open;
-        button.setAttribute("aria-expanded", open ? "true" : "false");
-        if (open && !panel.dataset.loaded) {
-            panel.dataset.loaded = "1";
-            panel.innerHTML = '<p class="cb-fx-src">読みこみ中…</p>';
-            fetch(panel.dataset.url, { credentials: "same-origin" })
-                .then(function (r) { return r.ok ? r.text() : ""; })
-                .then(function (html) { panel.innerHTML = html || '<p class="cb-fx-src">いまは推移を取得できません。</p>'; })
-                .catch(function () { panel.dataset.loaded = ""; });
-        }
-    });
-})();
-(function () {
-    var box = document.getElementById("cb-today");
-    var hero = document.getElementById("cb-hero");
-    var hereButton = document.getElementById("cb-here");
-    if (!box || !window.fetch) return;
-    function load(coords) {
-        var url = box.dataset.url + (coords ? "?lat=" + coords.latitude.toFixed(3) + "&lon=" + coords.longitude.toFixed(3) : "");
-        return fetch(url, { credentials: "same-origin" })
-            .then(function (r) { return r.ok ? r.text() : ""; })
-            .then(function (html) {
-                if (!html) return;
-                box.innerHTML = html;
-                var sky = box.querySelector("[data-sky]");
-                if (sky && hero) hero.dataset.sky = sky.dataset.sky;
-            })
-            .catch(function () {});
-    }
-    function locate(ask) {
-        // 現在地: すでに許可されているとき (またはボタンを押したとき) だけ。勝手に許可を求めない
-        navigator.geolocation.getCurrentPosition(function (position) {
-            try { localStorage.setItem("cb_weather_here", "1"); } catch (e) {}
-            if (hereButton) hereButton.hidden = true;
-            load(position.coords);
-        }, function () {
-            if (ask && hereButton) hereButton.textContent = "📍 使えません";
-        }, { maximumAge: 30 * 60 * 1000, timeout: 8000 });
-    }
-    load(null);
-    if (!navigator.geolocation) return;
-    var wanted = false;
-    try { wanted = localStorage.getItem("cb_weather_here") === "1"; } catch (e) {}
-    var show = function () { if (hereButton) { hereButton.hidden = false; hereButton.onclick = function () { locate(true); }; } };
-    if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: "geolocation" }).then(function (status) {
-            if (status.state === "granted") locate(false);
-            else if (status.state === "prompt") show();
-        }).catch(function () { if (wanted) locate(false); else show(); });
-    } else if (wanted) {
-        locate(false);
-    } else {
-        show();
-    }
-})();
-</script>
 {% endblock %}

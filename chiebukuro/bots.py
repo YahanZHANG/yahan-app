@@ -2,6 +2,7 @@
 つぶやきBot。
 
 - スイスを知ろうBot: 毎朝8時。文章は data/bot_swiss.json (Taro さんが書いたもの)
+  (2026-11-16: 和食・おでかけ・ニュースのBotはやめた。しくみは残してあるが、予約は作らない)
 - スイスで和食Bot: 月・水・金の12時。公開中のレシピから1つ
 - おでかけBot: 火・木・土の12時。木曜は今週末のイベント、火・土はスイスの行き先
 - SwissNews Bot: 毎日17時。その日に話題になったニュース3〜5本
@@ -70,12 +71,7 @@ def schedule(BotPost, start=TRIAL_START, days=TRIAL_DAYS):
             "swiss", when, day=number, theme=row.get("theme", ""), title=row.get("title", ""),
             body=row["body"], source_url=row.get("source", ""),
         )
-    for offset in range(days):
-        day = start + timedelta(days=offset)
-        lunch = LUNCH_BOTS.get(day.weekday())
-        if lunch:
-            add(lunch, at(day, LUNCH_AT), day=offset + 1)
-        add("news", at(day, NEWS_AT), day=offset + 1)
+    # 和食・おでかけ・ニュースのBotは 2026-11-16 にやめた (Taro)。予約は作らない
     return created
 
 

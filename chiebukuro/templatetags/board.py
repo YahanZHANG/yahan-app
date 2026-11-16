@@ -19,8 +19,7 @@ def ago(value):
         return f"{int(seconds // 60)}分前"
     if seconds < 86400:
         return f"{int(seconds // 3600)}時間前"
-    if seconds < 86400 * 7:
-        return f"{int(seconds // 86400)}日前"
+    # 1日より前は「6日前」ではなく日付で (2026-11-16 Taro)
     local = timezone.localtime(value)
     if local.year == timezone.localtime(now).year:
         return f"{local.month}月{local.day}日"

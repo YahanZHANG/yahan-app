@@ -44,6 +44,7 @@ class BoardTestCase(TestCase):
 class GateTests(TestCase):
 
     def test_closed_board_shows_waiting_page_but_staff_see_it(self):
+        BoardSettings.objects.filter(pk=1).update(is_open=False)
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "いま準備しています")
         staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)
@@ -86,58 +87,53 @@ class SurveyImportTests(BoardTestCase):
         SurveyAnswer.objects.create(question=member_q, body="塩", nickname="空", publish_consent=True)
         self.assertEqual(import_from_survey(), (0, 1))
 
-    def test_survey_questions_are_released_little_by_little(self):
-        import datetime
-
-        from chiebukuro.models import QUEUED, BoardSettings
-        from chiebukuro.services import release_survey_questions
-
+    def test_survey_questions_are_all_published_at_once(self):
         for number in range(40):
             source = SurveyQuestion.objects.create(body=f"質問{number}", theme="life")
-            for answer in range(2):
-                SurveyAnswer.objects.create(question=source, body=f"答え{answer}", nickname="x", publish_consent=True)
-        lonely = SurveyQuestion.objects.create(body="答えが1件だけ", theme="life")
-        SurveyAnswer.objects.create(question=lonely, body="ひとつ", nickname="x", publish_consent=True)
+            SurveyAnswer.objects.create(question=source, body="答え", nickname="x", publish_consent=True)
         SurveyQuestion.objects.create(body="答えなし", theme="life")
         import_from_survey()
         surveyed = Question.objects.filter(survey_question_id__isnull=False)
-        # 答えが2件以上の40問のうち30問 + 答え待ちの枠 (0〜1件) は10問まで (ここでは2問)
-        self.assertEqual(surveyed.filter(status="published").count(), 32)
-        self.assertEqual(surveyed.filter(status=QUEUED).count(), 10)
-        self.assertTrue(surveyed.get(body="答えなし").status == "published")
-        for number in range(12):
-            SurveyQuestion.objects.create(body=f"新しい質問{number}", theme="food")
-        import_from_survey()
-        self.assertEqual(surveyed.filter(status="published", release_open=True).count(), 10)
-        # 公開待ちは一覧にも詳細にも出ない
-        hidden = surveyed.filter(status=QUEUED).first()
-        self.assertEqual(self.client.get(reverse("chiebukuro:question", args=[hidden.pk])).status_code, 404)
+        self.assertEqual(surveyed.filter(status="published").count(), 41)
 
-        board = BoardSettings.current()
-        board.is_open = True
-        board.save()
-        self.assertEqual(board.release_start, timezone.localdate())
-        self.assertEqual(release_survey_questions(), 0)
-        board.release_start = timezone.localdate() - datetime.timedelta(days=2)
-        board.save()
-        self.assertEqual(release_survey_questions(), 10)  # 6 + 答え待ち 4
-        self.assertEqual(surveyed.filter(status=QUEUED).count(), 4)  # 答えのある4問 (答え待ちは全部出た)
+    def test_survey_share_offers_become_items(self):
+        from pre_survey.models import Participant, ShareOffer
+
+        from chiebukuro.models import BoardProfile
+
+        token = uuid.uuid4()
+        participant = Participant.objects.create(browser_token=token, nickname="さくら", region="zurich", consent_version="v1", consented_at=timezone.now())
+        ShareOffer.objects.create(kind="give", item="ベビーカー", participant=participant, browser_token=token)
+        ShareOffer.objects.create(kind="lend", item="日本の絵本", participant=participant, browser_token=token)
+        ShareOffer.objects.create(kind="want", item="炊飯器", user=self.alice)
+        ShareOffer.objects.create(kind="give", item="", user=self.alice)
+        import_from_survey()
+        import_from_survey()
+        self.assertEqual(Item.objects.count(), 3)
+        stroller = Item.objects.get(title="ベビーカー")
+        self.assertEqual((stroller.kind, stroller.genre, stroller.region, stroller.nickname), ("give", "kids", "zurich", "さくら"))
+        self.assertEqual(Item.objects.get(title="日本の絵本").genre, "books")
+        self.assertEqual(Item.objects.get(title="日本の絵本").owner, stroller.owner)
+        self.assertEqual(Item.objects.get(title="炊飯器").owner, self.alice)
+        # アンケートに答えた端末で開くと、自動でその人になる
+        from pre_survey.services import TOKEN_COOKIE
+
+        settings_row = BoardSettings.current()
+        settings_row.is_open = True
+        settings_row.save()
+        self.client.cookies[TOKEN_COOKIE] = str(token)
+        self.client.get(reverse("chiebukuro:home"))
+        self.assertEqual(int(self.client.session["_auth_user_id"]), stroller.owner_id)
+        self.assertTrue(BoardProfile.objects.get(user=stroller.owner).is_guest)
 
     def test_home_new_questions_and_ask_popup(self):
-        fresh = Question.objects.create(body="新しい質問です", theme="life", author=self.alice)
+        Question.objects.create(body="新しい質問です", theme="life", author=self.alice)
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, "新着の質問")
-        self.assertContains(page, f'data-ask="{fresh.pk}"')
-        self.client.force_login(self.alice)
-        # 自分の質問は聞かない
-        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
-        # 回答が2件ついたら聞かない (運営の回答は数えない)
-        Answer.objects.create(question=fresh, body="運営", nickname="運営", is_staff=True)
-        Answer.objects.create(question=fresh, body="a", author=self.bob, nickname="ボブ")
-        self.client.logout()
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
-        Answer.objects.create(question=fresh, body="b", author=self.bob, nickname="ボブ")
-        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), f'data-ask="{fresh.pk}"')
+        # 1回目に開いたとき (12秒後) のポップアップは「質問してみませんか」(書いて送れる)
+        self.assertContains(page, 'id="cb-askpop"')
+        self.assertContains(page, "count !== 1")
+        self.assertContains(page, "12000")
+        self.assertNotContains(page, "この質問、わかりますか？")
 
     def test_board_answers_count_in_survey(self):
         from pre_survey.services import with_answer_count
@@ -169,26 +165,59 @@ class SurveyImportTests(BoardTestCase):
 
 class HomeTests(BoardTestCase):
 
-    def test_home_is_weekly_edition_without_new_post_list(self):
+    def test_home_puts_questions_first(self):
+        import datetime
+
         from chiebukuro.models import Thanks
 
         Post.objects.create(body="Coop に枝豆がありました", author=self.alice, nickname="alice")
-        Question.objects.create(body="答え待ちの質問", theme="life")
-        answered = Question.objects.create(body="答えのある質問", theme="life")
+        old = Question.objects.create(body="答え待ちの質問", theme="life", created_at=timezone.now() - datetime.timedelta(days=4))
+        staff_only = Question.objects.create(body="運営だけが答えた質問", theme="life", created_at=timezone.now() - datetime.timedelta(days=5))
+        Answer.objects.create(question=staff_only, body="運営です", nickname="運営", is_staff=True)
+        Question.objects.create(body="きのうの質問", theme="life", created_at=timezone.now() - datetime.timedelta(days=1))
+        answered = Question.objects.create(body="答えの多い質問", theme="life", created_at=timezone.now() - datetime.timedelta(days=9))
         best = Answer.objects.create(question=answered, body="これが答え", author=self.bob, nickname="bob")
+        Answer.objects.create(question=answered, body="もうひとつ", author=self.alice, nickname="alice")
         Thanks.objects.create(answer=best, user=self.alice)
+        wanted = Question.objects.create(body="みんな知りたい質問", theme="life", survey_interest_count=5, created_at=timezone.now() - datetime.timedelta(days=8))
         Item.objects.create(kind="give", genre="kids", title="ベビーカー", owner=self.bob, photo_url="https://example.com/a.jpg")
-        Item.objects.create(kind="give", genre="kids", title="写真なしの椅子", owner=self.bob)
-        response = self.client.get(reverse("chiebukuro:home"))
-        for text in ["今週の注目", "役に立った答え", "これが答え", "答え待ちの質問", "ベビーカー", "新着の質問"]:
-            self.assertContains(response, text)
-        # つぶやきの新着・写真のないゆずりあいは HOME に出さない
-        self.assertNotContains(response, "Coop に枝豆がありました")
-        self.assertNotContains(response, "写真なしの椅子")
-        # 下のメニュー: 本は出さない、つぶやきは出す
-        for label in ["つぶやき", "質問", "ゆずりあい", "募集・告知"]:
-            self.assertContains(response, f"<span>{label}</span>", html=False)
-        self.assertNotContains(response, "本の貸し借り")
+        Item.objects.create(kind="lend", genre="books", title="写真なしの本", owner=self.bob)
+        page = self.client.get(reverse("chiebukuro:home")).content.decode()
+        for text in ["知りたい人が多い質問", "みんな知りたい質問", "人気の質問", "答えの多い質問", "新着の質問",
+                     "回答を待っている質問", "運営だけが答えた質問", "ゆずりあい", "ベビーカー", "写真なしの本"]:
+            self.assertIn(text, page)
+        self.assertLess(page.index("人気の質問"), page.index("新着の質問"))
+        self.assertLess(page.index("新着の質問"), page.index("知りたい人が多い質問"))
+        self.assertLess(page.index("回答を待っている質問"), page.index("ゆずりあい<small>"))
+        # HOME のいちばん上に質問の入力欄は出さない。ヒーローもなし
+        self.assertNotIn("cb-askbox", page)
+        self.assertNotIn("cb-hero", page)
+        self.assertNotIn("Coop に枝豆がありました", page)
+        # 下のメニュー: 質問・ゆずりあいが先
+        self.assertLess(page.index("<span>質問</span>"), page.index("<span>つぶやき</span>"))
+        self.assertLess(page.index("<span>ゆずりあい</span>"), page.index("<span>つぶやき</span>"))
+        # 右下はどのページでも「質問する」
+        self.assertIn('class="cb-fab" aria-label="質問する"', self.client.get(reverse("chiebukuro:items")).content.decode())
+        self.assertTrue(old and wanted)
+
+    def test_home_sections_change_by_day_without_repeats(self):
+        import datetime
+
+        from chiebukuro.services import home_questions, question_examples
+
+        for number in range(12):
+            question = Question.objects.create(body=f"人気の質問その{number}です", theme="life", survey_interest_count=number + 1)
+            for _ in range(2):
+                Answer.objects.create(question=question, body="a", author=self.bob, nickname="bob")
+        day = datetime.date(2026, 11, 16)
+        sections = home_questions(day=day)
+        self.assertEqual([len(sections[key]) for key in ("wanted", "answered", "new")], [3, 3, 3])
+        ids = [q.pk for key in ("wanted", "answered", "new", "waiting") for q in sections[key]]
+        self.assertEqual(len(ids), len(set(ids)))
+        days = {tuple(sorted(q.pk for q in home_questions(day=day + datetime.timedelta(days=n))["wanted"])) for n in range(5)}
+        self.assertGreater(len(days), 1)
+        # 質問の例は実際の質問から日替わり
+        self.assertTrue(set(question_examples(day)) <= {f"人気の質問その{n}です" for n in range(12)})
 
     def test_staff_pick_comes_first_in_featured(self):
         from chiebukuro.models import Thanks
@@ -333,14 +362,46 @@ class QuestionTests(BoardTestCase):
         self.assertContains(response, "答えがつきました")
         self.assertEqual(self.client.get(reverse("chiebukuro:home")).context["unread"], 0)
 
-    def test_guest_can_read_but_must_log_in_to_write(self):
-        question = Question.objects.create(body="Q", theme="life")
+    def test_guest_can_ask_and_answer_without_signing_up(self):
+        from chiebukuro.models import BoardProfile
+
+        question = Question.objects.create(body="Q", theme="life", author=self.alice)
         response = self.client.get(reverse("chiebukuro:question", args=[question.pk]))
-        self.assertContains(response, "ログインして回答する")
-        response = self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "A"})
-        self.assertEqual(response.status_code, 302)
+        self.assertContains(response, 'name="guest_email"')
+        # 荒らし (見えない欄に入力) は書けない
+        self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "spam", "website": "x"})
         self.assertFalse(Answer.objects.exists())
-        self.assertEqual(self.client.get(reverse("chiebukuro:ask")).status_code, 302)
+        self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "A", "guest_nickname": ""})
+        answer = Answer.objects.get()
+        self.assertEqual(answer.nickname, "名無しさん")
+        self.assertTrue(BoardProfile.objects.get(user=answer.author).is_guest)
+        # 同じ端末なら同じ人のまま。質問もできる (テーマは選ばなくてよい)
+        self.client.post(reverse("chiebukuro:ask"), {"body": "Coop の米はどれがおいしい？"})
+        asked = Question.objects.get(body="Coop の米はどれがおいしい？")
+        self.assertEqual((asked.author_id, asked.theme), (answer.author_id, "other"))
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "登録なしで使っています")
+
+    def test_guest_email_gets_answer_mail_and_can_claim_account(self):
+        from chiebukuro.models import BoardProfile
+
+        self.client.post(reverse("chiebukuro:ask"), {"body": "質問です", "guest_nickname": "はなこ", "guest_email": "hana@example.com"})
+        question = Question.objects.get()
+        self.assertEqual(question.nickname, "はなこ")
+        self.client.logout()
+        self.client.force_login(self.bob)
+        with mock.patch("pre_survey.alerts._send") as send, mock.patch("threading.Thread") as thread:
+            thread.side_effect = lambda target, args, daemon: mock.Mock(start=lambda: target(*args))
+            self.client.post(reverse("chiebukuro:question", args=[question.pk]), {"body": "答えです"})
+        send.assert_called_once()
+        self.assertEqual(send.call_args[0][2], "hana@example.com")
+        # ゲストは ID とパスワードを決めて、ふつうのアカウントにできる
+        guest = question.author
+        self.client.force_login(guest)
+        self.client.post(reverse("chiebukuro:claim"), {"username": "hanako", "password": "Swiss-Board-2026!x", "email": "hana@example.com"})
+        guest.refresh_from_db()
+        self.assertEqual(guest.username, "hanako")
+        self.assertTrue(guest.check_password("Swiss-Board-2026!x"))
+        self.assertFalse(BoardProfile.objects.get(user=guest).is_guest)
 
     def test_hidden_question_is_not_shown(self):
         question = Question.objects.create(body="消した質問", theme="life", status="hidden")
@@ -647,9 +708,9 @@ class HomeExtrasTests(BoardTestCase):
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "スイスで一番好きな季節は？")
         self.assertContains(response, "答えると結果が見られます")
-        # アンケートは「今日のひとこと」とは別のポップアップ
+        # アンケートは自動では出さない (HOME のボタンから開く)
         self.assertContains(response, 'id="cb-pollpop"')
-        self.assertContains(response, 'data-poll="%d" data-auto="1"' % poll.pk)
+        self.assertNotContains(response, 'data-poll="%d" data-auto="1"' % poll.pk)
         self.assertNotIn("cb-poll-q", response.content.decode().split('id="cb-daily"')[1].split("</dialog>")[0])
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
@@ -662,9 +723,8 @@ class HomeExtrasTests(BoardTestCase):
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "50%")
 
     def test_sponsor_slot_and_click(self):
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
         sponsor = Sponsor.objects.create(name="和ショップ", title="日本の食材を宅配", link="https://example.com/")
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "日本の食材を宅配")
         response = self.client.get(reverse("chiebukuro:sponsor", args=[sponsor.pk]))
         self.assertEqual(response["Location"], "https://example.com/")
         sponsor.refresh_from_db()
@@ -809,19 +869,9 @@ class SeasonTests(BoardTestCase):
         board.hero_season = "spring"
         self.assertEqual(board.season(datetime.date(2026, 6, 10)), "spring")
 
-    def test_home_hero_shows_big_date_and_season(self):
-        from chiebukuro.models import BoardSettings
-
-        board = BoardSettings.current()
-        board.hero_season = "christmas"
-        board.save()
+    def test_home_has_no_hero(self):
         response = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(response, 'data-season="christmas"')
-        self.assertNotContains(response, "🎄 アドベント")  # 季節のことばは出さない (祝日・行事の日だけ)
-        self.assertContains(response, "cb-hero-md")
-        self.assertNotContains(response, "cb-scene")
-        self.assertNotContains(response, "スイスで暮らす日本人の、知恵と助け合い")
-
+        self.assertNotContains(response, "cb-hero")
 
 class JapanCalendarTests(TestCase):
 
@@ -1174,11 +1224,11 @@ class BoardImprovementTests(BoardTestCase):
         page = self.client.get(reverse("chiebukuro:questions")).content.decode()
         self.assertIn('cb-qcount one', page)
 
-    def test_guest_signup_nudge(self):
+    def test_no_signup_box_on_home_for_guests(self):
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, 'id="cb-nudge"')
-        self.assertContains(page, 'name="password1"')
-
+        self.assertNotContains(page, 'id="cb-nudge"')
+        self.assertNotContains(page, "無料で登録")
+        self.assertContains(page, 'name="guest_email"')  # ポップアップの質問欄 (登録なしで書ける)
 
 class BoardBotTests(BoardTestCase):
 
@@ -1187,10 +1237,8 @@ class BoardBotTests(BoardTestCase):
 
         bots.schedule(BotPost)
         self.assertEqual(BotPost.objects.filter(bot="swiss").count(), 31)
-        # 30日のうち日曜が4回: お昼は26回 (和食13・おでかけ13)、ニュースは毎日
-        self.assertEqual(BotPost.objects.filter(bot__in=["washoku", "outings"]).count(), 26)
-        self.assertEqual(BotPost.objects.filter(bot="washoku").count(), 13)
-        self.assertEqual(BotPost.objects.filter(bot="news").count(), 30)
+        # 和食・おでかけ・ニュースのBotはやめた (2026-11-16)
+        self.assertFalse(BotPost.objects.exclude(bot="swiss").exists())
         first = timezone.localtime(BotPost.objects.get(bot="swiss", day=1).publish_at)
         self.assertEqual((first.date().isoformat(), first.hour), ("2026-11-12", 8))
         intro = timezone.localtime(BotPost.objects.get(bot="swiss", day=0).publish_at)
@@ -1232,23 +1280,16 @@ class BoardBotTests(BoardTestCase):
         self.assertNotContains(page, "ふつうのつぶやき")
 
     def test_washoku_bot_uses_a_recipe(self):
+        # 予約はもう作らないが、しくみは残してある
         from washoku.models import Recipe
 
-        from chiebukuro.bots import release_due
+        from chiebukuro.bots import build_washoku
 
         recipe = Recipe.objects.create(name="肉じゃが", description="スイスのじゃがいもで。", steps="煮る", status="published", cooking_time_minutes=30)
         now = timezone.now()
-        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(minutes=1))
-        BotPost.objects.create(bot="news", publish_at=now - timezone.timedelta(minutes=1))
-        BotPost.objects.create(bot="washoku", publish_at=now - timezone.timedelta(hours=8))
-        self.assertEqual(release_due(now), 1)
-        post = Post.objects.get()
-        self.assertEqual(post.title, "肉じゃが")
-        self.assertEqual(post.links[0]["url"], reverse("washoku:recipe_detail", args=[recipe.pk]))
-        notes = set(BotPost.objects.values_list("note", flat=True))
-        self.assertIn("出せるデータがありませんでした", notes)  # ニュースがない
-        self.assertIn("時間をすぎていたので出していません", notes)
-        self.assertContains(self.client.get(reverse("chiebukuro:post", args=[post.pk])), "レシピを見る")
+        content = build_washoku(BotPost(bot="washoku", publish_at=now), now)
+        self.assertEqual(content["title"], "肉じゃが")
+        self.assertEqual(content["links"][0]["url"], reverse("washoku:recipe_detail", args=[recipe.pk]))
 
     def test_outings_bot_prefers_a_spot_with_photo(self):
         from outings.models import TouristSpot
@@ -1303,3 +1344,29 @@ class BoardBotTests(BoardTestCase):
         spot.refresh_from_db()
         self.assertEqual(post.photo_url, "")
         self.assertTrue(spot.details["photo_removed"])
+
+    def test_asker_chooses_best_answer(self):
+        question = Question.objects.create(body="ベストアンサーの質問", theme="life", author=self.alice, nickname="ありす")
+        first = Answer.objects.create(question=question, body="最初の答え", author=self.bob, nickname="ボブ")
+        best = Answer.objects.create(question=question, body="いちばんの答え", author=self.bob, nickname="ボブ")
+        url = reverse("chiebukuro:choose_best", args=[question.pk])
+        # 質問した人 (と運営) だけが選べる
+        self.client.force_login(self.bob)
+        self.assertEqual(self.client.post(url, {"answer": best.pk}).status_code, 404)
+        self.client.force_login(self.alice)
+        self.assertContains(self.client.get(reverse("chiebukuro:question", args=[question.pk])), "✓ 解決済みにする")
+        self.client.post(url, {"answer": best.pk})
+        question.refresh_from_db()
+        self.assertEqual(question.best_answer, best)
+        self.assertIsNotNone(question.solved_at)
+        self.assertTrue(Notification.objects.filter(user=self.bob, kind="best").exists())
+        page = self.client.get(reverse("chiebukuro:question", args=[question.pk])).content.decode()
+        self.assertLess(page.index("いちばんの答え"), page.index("最初の答え"))
+        self.assertIn("ベストアンサー", page)
+        self.assertIn("✓解決済み", self.client.get(reverse("chiebukuro:questions")).content.decode())
+        # もどす
+        self.client.post(url, {"answer": "0"})
+        question.refresh_from_db()
+        self.assertIsNone(question.solved_at)
+        self.assertIsNone(question.best_answer)
+        self.assertTrue(first)
