@@ -63,7 +63,7 @@ def make_guest(nickname="", email="", token=None, agreed=True):
     user.save()
     group, _ = Group.objects.get_or_create(name="public_users")
     user.groups.add(group)
-    nickname = (nickname or "").strip()[:30] or GUEST_NAME
+    nickname = (nickname or "").strip()[:30] or name_idea()
     profile, _ = UserProfile.objects.get_or_create(user=user)
     profile.nickname = nickname
     for field in ("password_setup_completed", "nickname_setup_completed"):

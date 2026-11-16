@@ -245,7 +245,7 @@ def board_context(request, tab, region=None):
         "needs_rules": needs_rules(request.user),
         "is_guest": is_guest(request.user),
         "ask_examples": daily_ask_examples(),
-        "guest_name_idea": "" if request.user.is_authenticated else name_idea(),
+        "guest_name_ideas": "" if request.user.is_authenticated else "|".join(name_idea() for _ in range(12)),
         "claim_nudge": claim_nudge(request.user),
     }
 

@@ -11,19 +11,20 @@
     --sub: #646b73;
     --line: #e2e5e9;
     --line-strong: #cfd4da;
-    --brand: #1f56c7;          /* 青: 選択中のメニュー・質問するボタン (2026-11-16 Taro: 色弱の人のため、赤と緑は使わない。青・黄・白黒で) */
+    --brand: #b8247a;          /* マゼンタ: 選択中のメニュー・質問するボタン (2026-11-16 Taro: 色弱の人のため赤と緑は使わない。マゼンタとシアン) */
+    --accent: #0a8aa5;         /* シアン: 回答・リンク */
     --brand-ink: #ffffff;
-    --link: #0b57a4;
-    --focus: #2563eb;
-    --answer: #1f56c7;
-    --open: #a15c00;
-    --give: #a15c00;
-    --want: #0b57a4;
+    --link: #087c95;
+    --focus: #0a8aa5;
+    --answer: #0a8aa5;
+    --open: #b8247a;
+    --give: #b8247a;
+    --want: #087c95;
     --lend: #475569;
     --borrow: #7c3aed;
     --notice: #4b5563;
     --pr: #9a6700;
-    --unread: #eef4ff;
+    --unread: #e8f7fa;
     --radius: 6px;
     --header-h: 52px;
     --tab-h: 58px;
@@ -38,17 +39,18 @@ html[data-yapp-resolved-theme="dark"] {
     --sub: #9aa1a9;
     --line: #2b3036;
     --line-strong: #3a4048;
-    --brand: #3f7fe8;
-    --link: #6cb0ff;
-    --answer: #7fb2ff;
-    --open: #f0b44c;
-    --give: #f0b44c;
-    --want: #6cb0ff;
+    --brand: #d9479b;
+    --accent: #35c4dc;
+    --link: #5fd0e4;
+    --answer: #35c4dc;
+    --open: #f07cbf;
+    --give: #f07cbf;
+    --want: #5fd0e4;
     --lend: #a8b3c2;
     --borrow: #b394ff;
     --notice: #aab1ba;
     --pr: #e2b54c;
-    --unread: #1c2636;
+    --unread: #13282d;
     color-scheme: dark;
 }
 
@@ -477,17 +479,16 @@ html[data-yapp-resolved-theme="dark"] .cb-staff-note { background: #3a2f12; colo
     display: grid;
     place-content: center;
     text-align: center;
-    border: 1px solid var(--open);
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
-    color: var(--open);
+    background: transparent;
+    color: var(--sub);
     font-size: 10.5px;
     line-height: 1.2;
 }
 .cb-qcount b { display: block; font-size: 17px; }
-.cb-qcount.has { border-color: var(--answer); background: var(--answer); color: #fff; }
-/* 回答数の色: 0 白、1 薄いグレー、2〜3 黄、4〜 青 (赤と緑は使わない) */
-.cb-qcount.one { border-color: #c3cad4; background: #eef1f5; color: #334155; }
-.cb-qcount.few { border-color: #e6c25a; background: #fdf1c7; color: #7a5a00; }
+/* 回答数で色は変えない (2026-11-16 Taro: 見づらい。背景はどれも透明) */
+.cb-qcount.has, .cb-qcount.one, .cb-qcount.few { color: var(--text); }
 
 .cb-qmain { flex: 1; min-width: 0; display: grid; gap: 3px; }
 .cb-qtext {
@@ -1420,7 +1421,7 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 .cb-daily { border: 0; border-radius: 18px; padding: 0; width: min(420px, calc(100vw - 28px)); max-height: calc(100vh - 40px); background: var(--surface); color: var(--text); box-shadow: 0 24px 70px rgba(0, 0, 0, .35); }
 .cb-daily::backdrop { background: rgba(10, 15, 25, .55); }
 .cb-daily-box { display: grid; gap: 12px; padding: 0 0 14px; }
-.cb-daily-head { position: relative; padding: 16px 18px 12px; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 55%, #ffb000)); color: #fff; }
+.cb-daily-head { position: relative; padding: 16px 18px 12px; background: linear-gradient(135deg, var(--brand), var(--accent)); color: #fff; }
 .cb-daily-date { margin: 0; font-size: 12px; font-weight: 700; opacity: .9; }
 .cb-daily-head h2 { margin: 0; font-size: 19px; }
 .cb-daily-x { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .2); color: #fff; font-size: 20px; cursor: pointer; }
@@ -1452,7 +1453,7 @@ html[data-yapp-resolved-theme="dark"][data-cb-color="mint"]     { --brand: #38c9
 html[data-yapp-resolved-theme="dark"][data-cb-color="lake"]     { --brand: #5aa9f0; --link: #8cc4f5; }
 html[data-yapp-resolved-theme="dark"][data-cb-color="lavender"] { --brand: #9d8cf2; --link: #bcb0f7; }
 html[data-yapp-resolved-theme="dark"][data-cb-color="lemon"]    { --brand: #f2b33d; --link: #f5c86e; }
-html[data-yapp-resolved-theme="dark"][data-cb-color="classic"]  { --brand: #3f7fe8; }
+html[data-yapp-resolved-theme="dark"][data-cb-color="classic"]  { --brand: #d9479b; }
 
 .cb-colors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 10px; }
 .cb-color-pick { position: relative; display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 2px solid var(--line); border-radius: 12px; background: var(--cb-head, var(--surface)); cursor: pointer; }
@@ -1654,7 +1655,7 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-thanks-box .cb-btn { justify-self: center; min-width: 160px; margin-top: 6px; }
 
 /* HOME いちばん上の「気軽に質問してみよう」: その場で書いて送れる */
-.cb-askline { display: grid; gap: 8px; margin: 10px 12px; padding: 10px 12px 12px; border-radius: 16px; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 75%, #4f9dff)); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--brand) 30%, transparent); }
+.cb-askline { display: grid; gap: 8px; margin: 10px 12px; padding: 10px 12px 12px; border-radius: 16px; background: linear-gradient(120deg, var(--brand), var(--accent)); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--brand) 30%, transparent); }
 .cb-askline-head { display: flex; align-items: center; gap: 8px; margin: 0; }
 .cb-askline-q { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; color: var(--brand); font-weight: 900; font-size: 15px; }
 .cb-askline-text { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; }
@@ -1677,3 +1678,16 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-voices-kinds span { padding: 1px 8px; border-radius: 999px; background: var(--surface-2); }
 .cb-voices-ex span { padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--text); }
 .cb-voices-call { font-size: 13.5px; }
+
+/* 登録なしで書くときの欄 (コンパクトに) */
+.cb-guest { gap: 6px; padding: 10px; }
+.cb-guest-row { display: flex; align-items: center; gap: 8px; margin: 0; }
+.cb-guest-row > span { flex: none; width: 6.5em; font-size: 13px; font-weight: 700; color: var(--text); }
+.cb-guest .cb-guest-row input { flex: 1; min-width: 0; padding: 7px 10px; font-size: 16px; }
+.cb-guest-auto { flex: none; min-height: 36px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 8px; background: var(--surface); color: var(--accent); font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.cb-guest-note { font-size: 12px; line-height: 1.5; }
+.cb-guest, .cb-guest-row { min-width: 0; }
+.cb-guest .cb-guest-row input { width: 0; }
+.cb-guest-row > span { width: 6.2em; min-width: 0; }
+.cb-askline .cb-guest { background: var(--surface); }
+.cb-askline-row, .cb-askline > * { min-width: 0; }

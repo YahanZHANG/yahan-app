@@ -148,6 +148,18 @@ document.addEventListener("input", function (event) {
     var guest = area.form.querySelector("[data-guest]");
     if (guest) guest.classList.add("is-open");
 });
+document.addEventListener("click", function (event) {
+    // 登録なしで書くとき: 「おまかせ」でニックネームを入れる
+    var button = event.target.closest && event.target.closest("[data-name-ideas]");
+    if (!button) return;
+    event.preventDefault();
+    var ideas = button.dataset.nameIdeas.split("|").filter(Boolean);
+    var field = button.parentNode.querySelector('input[name="guest_nickname"]');
+    if (!ideas.length || !field) return;
+    var next = ideas[Math.floor(Math.random() * ideas.length)];
+    if (ideas.length > 1) while (next === field.value) next = ideas[Math.floor(Math.random() * ideas.length)];
+    field.value = next;
+});
 document.querySelectorAll("[data-autosubmit]").forEach(function (field) {
     field.addEventListener("change", function () { field.form.submit(); });
 });
