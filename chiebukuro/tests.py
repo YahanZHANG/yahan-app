@@ -379,7 +379,7 @@ class QuestionTests(BoardTestCase):
         self.client.post(reverse("chiebukuro:ask"), {"body": "Coop の米はどれがおいしい？"})
         asked = Question.objects.get(body="Coop の米はどれがおいしい？")
         self.assertEqual((asked.author_id, asked.theme), (answer.author_id, "other"))
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "登録なしで使っています")
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), "あと少しで登録完了です")
 
     def test_guest_email_gets_answer_mail_and_can_claim_account(self):
         from chiebukuro.models import BoardProfile

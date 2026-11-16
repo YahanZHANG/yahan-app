@@ -1,0 +1,29 @@
+{% comment %}登録なしで書いた人 (ゲスト) に、書いてから少し時間をおいて「パスワードを決めると登録完了」(2026-11-16 Taro)。
+出すのは3日に1回まで (この端末だけ、localStorage)。ほかのポップアップが開いているときと、登録のページでは出さない。{% endcomment %}
+{% if claim_nudge and request.resolver_match.url_name != "claim" %}
+<dialog class="cb-daily cb-thanks cb-claimpop" id="cb-claimpop" aria-labelledby="cb-claimpop-title">
+    <div class="cb-thanks-box">
+        <p class="cb-thanks-mark" aria-hidden="true">🎉</p>
+        <h2 id="cb-claimpop-title">{{ claim_nudge }}さん、<br>あと少しで登録完了です</h2>
+        <p>IDとパスワードを決めると、<br>ほかのスマホやパソコンからも<br>同じ名前で使えます。</p>
+        <a href="{% url 'chiebukuro:claim' %}" class="cb-btn cb-btn-primary">パスワードを決める</a>
+        <button type="button" class="cb-textbtn" data-claimpop-close>閉じる</button>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-claimpop");
+    var key = "cb_claimpop_at";
+    var last = 0;
+    try { last = Number(localStorage.getItem(key) || 0); } catch (e) { return; }
+    if (!dialog || !dialog.showModal || Date.now() - last < 3 * 24 * 60 * 60 * 1000) return;
+    setTimeout(function () {
+        if (document.querySelector("dialog[open]")) return;
+        try { localStorage.setItem(key, String(Date.now())); } catch (e) {}
+        dialog.showModal();
+    }, 3000);
+    dialog.querySelector("[data-claimpop-close]").addEventListener("click", function () { dialog.close(); });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
+})();
+</script>
+{% endif %}

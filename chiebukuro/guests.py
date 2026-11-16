@@ -25,6 +25,24 @@ LOGIN_BACKEND = "portal.backends.EmailOrUsernameBackend"
 GUEST_PER_IP_PER_DAY = 6
 
 
+NAME_FIRST = [
+    "のんびり", "朝型の", "山好きの", "チーズ好きの", "ハイキング好きの", "雪国の", "湖畔の", "ほっこり",
+    "パン好きの", "週末の", "コーヒー好きの", "まったり", "日曜日の", "散歩好きの", "てくてく", "ぽかぽか",
+]
+NAME_SECOND = [
+    "マーモット", "シュタインボック", "エーデルワイス", "カウベル", "ロシュティ", "アルプホルン", "リス",
+    "ハリネズミ", "フクロウ", "ヤギ", "マッターホルン", "ブレッツェル", "チョコレート", "ラクレット",
+]
+
+
+def name_idea():
+    """登録なしで書く人のニックネームの案 (変えられる)"""
+
+    import random
+
+    return random.choice(NAME_FIRST) + random.choice(NAME_SECOND)
+
+
 def client_ip(request):
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
     return (forwarded.split(",")[0].strip() if forwarded else request.META.get("REMOTE_ADDR", "")) or "?"

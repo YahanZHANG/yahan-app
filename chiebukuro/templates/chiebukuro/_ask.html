@@ -1,15 +1,11 @@
 {% comment %}質問のポップアップ (base.html でどのページにも置く)。data-ask-open のボタン (HOMEの1行・質問するボタン) で開き、
 その場で書いて送れる (2026-11-16 Taro: 別ページに行かず、気軽に)。JS がないときは /ask/ のページへ。
 自動で出すのは HOME だけ: その日1回目に HOME を開いたとき、少し読んでもらってから (12秒後) 「質問してみませんか？」(その場で書いて送れる)。
-2回目は「今日のひとこと」(_daily.html)。質問の例は、実際の質問から日替わり。「1週間表示しない」はこの端末だけ (localStorage)。
+2回目は「今日のひとこと」(_daily.html)。質問の例は、実際の質問から日替わり。(2026-11-16 Taro: 見出し・説明・「あとで」はなし。できるだけシンプルに)
 window.cbAskShown: このポップアップを出したか (出したら、今日のひとことは次に開いたときに)。{% endcomment %}
-<dialog class="cb-daily cb-askpop" id="cb-askpop" aria-labelledby="cb-askpop-title">
+<dialog class="cb-daily cb-askpop" id="cb-askpop" aria-label="質問する">
     <div class="cb-daily-box">
-        <header class="cb-daily-head">
-            <h2 id="cb-askpop-title">質問してみませんか？</h2>
-            <p class="cb-askpop-lead">スイスに住む日本語の仲間が答えてくれます{% if not user.is_authenticated %} <span class="cb-askline-tag">ログイン不要</span>{% endif %}</p>
-            <button type="button" class="cb-daily-x" data-askpop-close aria-label="閉じる">×</button>
-        </header>
+        <button type="button" class="cb-askpop-x" data-askpop-close aria-label="閉じる">×</button>
         <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-daily-body cb-askpop-form" data-rules>
             {% csrf_token %}
             <label class="cb-sr" for="cb-askpop-body">質問</label>
@@ -20,10 +16,6 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
             {% include "chiebukuro/_guest_fields.html" %}
             <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">質問する</button>
         </form>
-        <footer class="cb-daily-foot">
-            <label class="cb-check-s cb-askpop-snooze"><input type="checkbox" id="cb-askpop-snooze"> 1週間表示しない</label>
-            <button type="button" class="cb-btn cb-btn-s" data-askpop-close>あとで</button>
-        </footer>
     </div>
 </dialog>
 <script>
@@ -41,7 +33,6 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
         if (manual) setTimeout(function () { document.getElementById("cb-askpop-body").focus(); }, 50);
     }
     function close() {
-        if (!dialog.classList.contains("is-manual") && document.getElementById("cb-askpop-snooze").checked) write("cb_askpop_until", String(Date.now() + WEEK));
         dialog.close();
     }
     dialog.querySelectorAll("[data-askpop-close]").forEach(function (element) { element.addEventListener("click", close); });
