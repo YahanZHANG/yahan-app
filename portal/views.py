@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -1234,6 +1235,21 @@ def portal_latest_news(limit=3):
     )
 
 
+def portal_board_questions():
+    """Yapp トップの掲示板カードに出す質問 (掲示板の HOME の「人気の質問」と同じ、日替わり3件)"""
+
+    try:
+        from chiebukuro.models import BoardSettings
+        from chiebukuro.services import home_questions
+
+        if not BoardSettings.current().is_open:
+            return []
+        return home_questions()["answered"][:3]
+    except Exception:
+        logging.getLogger(__name__).exception("portal: board questions failed")
+        return []
+
+
 def portal_card_photo(key):
     """
     static/portal/images/cards/<key>.jpg (または .webp) を置くと、
@@ -1352,6 +1368,7 @@ def home(request):
             "particles": seasons.particles(season),
             "latest_news": portal_latest_news(),
             "featured_apps": featured_apps,
+            "board_questions": portal_board_questions(),
             "other_apps": other_apps,
             "announcements": list(PortalAnnouncement.current()),
             "idea_sent": request.GET.get("idea") == "sent",

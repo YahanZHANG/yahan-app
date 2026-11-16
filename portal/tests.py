@@ -293,27 +293,6 @@ class PortalHomeTests(TestCase):
         self.assertContains(response, "チューリッヒで初雪")
         self.assertContains(response, 'property="og:image"')
 
-    def test_season_can_be_fixed_in_admin(self):
-
-        from portal.models import PortalSettings
-
-        settings_row = PortalSettings.load()
-        settings_row.season = "winter"
-        settings_row.save()
-
-        response = self.client.get(reverse("portal:home"))
-
-        self.assertContains(response, "season-winter")
-
-        settings_row.season = "late_autumn"
-        settings_row.save()
-
-        response = self.client.get(reverse("portal:home"))
-
-        self.assertContains(response, "scene-autumn")
-        self.assertContains(response, "data-autumn-leaves")
-
-
 class SeasonCalendarTests(TestCase):
 
     def test_events_and_seasons_by_date(self):
