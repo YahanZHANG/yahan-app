@@ -6,6 +6,13 @@
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_pollpop.html" %}
 
+<a href="{% url 'chiebukuro:ask' %}" class="cb-askline">
+    <span class="cb-askline-q" aria-hidden="true">?</span>
+    <span class="cb-askline-text">気軽に質問してみよう</span>
+    {% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}
+    <span class="cb-askline-go" aria-hidden="true">›</span>
+</a>
+
 {% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" %}
