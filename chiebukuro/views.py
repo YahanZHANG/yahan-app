@@ -62,6 +62,7 @@ from .guests import guest_fields, is_guest, name_idea, sign_in_guest, silent_log
 from .services import (
     home_questions,
     question_examples,
+    survey_share_voices,
     attach_stamps,
     received_thanks,
     rename_member_content,
@@ -1099,6 +1100,7 @@ def item_list(request):
         "chiebukuro/items.html",
         {
             **board_context(request, "items", region),
+            "voices": survey_share_voices(),
             "page": page,
             "kind": kind,
             "kinds": Item.Kind.choices,

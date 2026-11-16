@@ -129,7 +129,8 @@ def import_from_survey():
             Question.objects.filter(pk=question.pk).update(survey_interest_count=count, last_answered_at=latest)
 
     release_survey_questions()
-    import_share_offers()
+    # 2026-11-16 Taro: アンケートのゆずりあいの希望は、品物として出さない (書いた人が掲示板を見るとは限らない)。
+    # 代わりに、ゆずりあいのページで「アンケートでこんな声がありました」(survey_share_voices)
     return new_questions, new_answers
 
 
@@ -153,9 +154,39 @@ def guess_genre(title):
     return "other"
 
 
+def survey_share_voices(day=None, count=8):
+    """
+    事前アンケートで集まった、ゆずりあいの希望 (品物としては出さない)。
+    種類ごとの件数と、品物の名前の例 (短いもの、日替わり)。
+    """
+
+    import random
+
+    from pre_survey.models import ShareOffer
+
+    rows = list(ShareOffer.objects.exclude(item="").values_list("kind", "item"))
+    if not rows:
+        return None
+    counts = {kind: 0 for kind in ShareOffer.Kind.values}
+    names = []
+    for kind, item in rows:
+        counts[kind] = counts.get(kind, 0) + 1
+        name = " ".join(item.split())
+        if 1 < len(name) <= 14 and name not in names:
+            names.append(name)
+    day = day or timezone.localdate()
+    examples = random.Random(day.toordinal()).sample(names, min(count, len(names)))
+    labels = dict(ShareOffer.Kind.choices)
+    return {
+        "total": len(rows),
+        "kinds": [(labels[kind], counts[kind]) for kind in ShareOffer.Kind.values if counts.get(kind)],
+        "examples": examples,
+    }
+
+
 def import_share_offers():
     """
-    事前アンケートで書いてもらった、ゆずりあい・貸し借りの希望を、掲示板のゆずりあいに出す。
+    (2026-11-16 から使っていない) 事前アンケートで書いてもらった、ゆずりあい・貸し借りの希望を、掲示板のゆずりあいに出す。
     アカウントがある人はその人の名前で。ない人は、その人の端末だけで使えるゲストのアカウントを作って出す
     (アンケートに答えた端末で掲示板を開くと、自動でそのアカウントになり、申し込みのやりとりができる)。
     取り込み済みのもの (掲示板で消したものも) は二度と取り込まない。品物の名前がないものは出さない。

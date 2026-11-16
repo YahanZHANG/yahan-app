@@ -96,35 +96,22 @@ class SurveyImportTests(BoardTestCase):
         surveyed = Question.objects.filter(survey_question_id__isnull=False)
         self.assertEqual(surveyed.filter(status="published").count(), 41)
 
-    def test_survey_share_offers_become_items(self):
-        from pre_survey.models import Participant, ShareOffer
+    def test_survey_share_offers_are_shown_as_voices_not_items(self):
+        # 2026-11-16 Taro: 品物としては出さず、ゆずりあいのページに「アンケートでこんな声」
+        from pre_survey.models import ShareOffer
 
-        from chiebukuro.models import BoardProfile
-
-        token = uuid.uuid4()
-        participant = Participant.objects.create(browser_token=token, nickname="さくら", region="zurich", consent_version="v1", consented_at=timezone.now())
-        ShareOffer.objects.create(kind="give", item="ベビーカー", participant=participant, browser_token=token)
-        ShareOffer.objects.create(kind="lend", item="日本の絵本", participant=participant, browser_token=token)
+        ShareOffer.objects.create(kind="give", item="ベビーカー", user=self.alice)
         ShareOffer.objects.create(kind="want", item="炊飯器", user=self.alice)
         ShareOffer.objects.create(kind="give", item="", user=self.alice)
         import_from_survey()
-        import_from_survey()
-        self.assertEqual(Item.objects.count(), 3)
-        stroller = Item.objects.get(title="ベビーカー")
-        self.assertEqual((stroller.kind, stroller.genre, stroller.region, stroller.nickname), ("give", "kids", "zurich", "さくら"))
-        self.assertEqual(Item.objects.get(title="日本の絵本").genre, "books")
-        self.assertEqual(Item.objects.get(title="日本の絵本").owner, stroller.owner)
-        self.assertEqual(Item.objects.get(title="炊飯器").owner, self.alice)
-        # アンケートに答えた端末で開くと、自動でその人になる
-        from pre_survey.services import TOKEN_COOKIE
-
+        self.assertEqual(Item.objects.count(), 0)
         settings_row = BoardSettings.current()
         settings_row.is_open = True
         settings_row.save()
-        self.client.cookies[TOKEN_COOKIE] = str(token)
-        self.client.get(reverse("chiebukuro:home"))
-        self.assertEqual(int(self.client.session["_auth_user_id"]), stroller.owner_id)
-        self.assertTrue(BoardProfile.objects.get(user=stroller.owner).is_guest)
+        page = self.client.get(reverse("chiebukuro:items"))
+        self.assertContains(page, "ゆずりあいの声が <b>2件</b>")
+        self.assertContains(page, "ベビーカー")
+        self.assertContains(page, "ゆずりたい 1件")
 
     def test_home_new_questions_and_ask_popup(self):
         Question.objects.create(body="新しい質問です", theme="life", author=self.alice)

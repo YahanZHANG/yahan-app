@@ -1668,3 +1668,12 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-askpop-x { position: absolute; top: 8px; right: 10px; z-index: 2; width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-2); color: var(--sub); font-size: 18px; cursor: pointer; }
 .cb-askpop .cb-daily-box { position: relative; padding-top: 48px; }
 .cb-claimpop .cb-textbtn { justify-self: center; }
+
+/* ゆずりあい: 事前アンケートで集まった声 (品物としては出さない) */
+.cb-voices { display: grid; gap: 6px; justify-items: start; margin: 0 12px 12px; padding: 12px 14px; border: 1px solid var(--line); border-left: 4px solid var(--give); border-radius: var(--radius); background: var(--surface); }
+.cb-voices p { margin: 0; }
+.cb-voices-head { font-size: 14.5px; }
+.cb-voices-kinds, .cb-voices-ex { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--sub); }
+.cb-voices-kinds span { padding: 1px 8px; border-radius: 999px; background: var(--surface-2); }
+.cb-voices-ex span { padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--text); }
+.cb-voices-call { font-size: 13.5px; }
