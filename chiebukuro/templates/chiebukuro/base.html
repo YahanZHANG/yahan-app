@@ -71,6 +71,7 @@
             <p class="cb-flash cb-flash-{{ message.tags }}" role="status">{{ message }}</p>
         {% endfor %}
         {% if is_guest %}<p class="cb-guestbar">登録なしで使っています（この端末だけ）。<a href="{% url 'chiebukuro:claim' %}">IDとパスワードを決めると、ほかのスマホからも使えます ›</a></p>{% endif %}
+        {% include "chiebukuro/_thanks.html" %}
         {% block content %}{% endblock %}
         <footer class="cb-footer">
             <a href="{% url 'portal:home' %}">Yapp</a>

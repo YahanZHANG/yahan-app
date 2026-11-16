@@ -1644,3 +1644,11 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-best-btn { min-height: 28px; padding: 0 10px; border: 1px solid #e6c46e; border-radius: 999px; background: #fffaf0; color: #8a5d00; font-size: 12.5px; font-weight: 700; cursor: pointer; }
 .cb-best-btn:hover { background: #fff3d6; }
 .cb-best-btn.is-on { border-color: var(--line-strong); background: none; color: var(--sub); font-weight: 400; }
+
+/* 事前アンケートへのお礼 (はじめて開いたとき1回だけ) */
+.cb-thanks-box { display: grid; gap: 10px; padding: 26px 24px 22px; text-align: center; }
+.cb-thanks-box h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.5; }
+.cb-thanks-box p { margin: 0; font-size: 15px; line-height: 1.75; }
+.cb-thanks-mark { font-size: 40px; line-height: 1; }
+.cb-thanks-sign { color: var(--sub); font-size: 13px !important; }
+.cb-thanks-box .cb-btn { justify-self: center; min-width: 160px; margin-top: 6px; }

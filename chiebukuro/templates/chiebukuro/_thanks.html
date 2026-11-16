@@ -1,0 +1,24 @@
+{% comment %}事前アンケートへのお礼 (2026-11-16 Taro): 掲示板をはじめて開いたとき、すぐに1回だけ。端末ごと (localStorage)。
+これが出た日は、質問のポップアップと今日のひとことは出さない (window.cbThanksShown)。{% endcomment %}
+<dialog class="cb-daily cb-thanks" id="cb-thanks" aria-labelledby="cb-thanks-title">
+    <div class="cb-thanks-box">
+        <p class="cb-thanks-mark" aria-hidden="true">🙏</p>
+        <h2 id="cb-thanks-title">事前アンケートへのご協力、<br>ありがとうございました</h2>
+        <p>みなさんの質問と回答から、<br>この掲示板が生まれました。</p>
+        <p>これからも一緒に育てていただけたら<br>うれしいです。<br>どうぞよろしくお願いします。</p>
+        <p class="cb-thanks-sign">スイス掲示板 運営</p>
+        <button type="button" class="cb-btn cb-btn-primary" data-thanks-close>はじめる</button>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-thanks");
+    var seen;
+    try { seen = localStorage.getItem("cb_thanks_seen"); localStorage.setItem("cb_thanks_seen", "1"); } catch (e) { return; }
+    if (seen || !dialog || !dialog.showModal) return;
+    window.cbThanksShown = true;
+    dialog.showModal();
+    dialog.querySelector("[data-thanks-close]").addEventListener("click", function () { dialog.close(); });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
+})();
+</script>
