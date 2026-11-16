@@ -1,5 +1,5 @@
 {% comment %}開いたときの「今日のひとこと」: お守り占い・スイスドイツ語・豆知識の3つを1枚にまとめて出す。
-1日1回だけ自動で出す (マイページで選んだものだけ)。その日1回目は「質問してみませんか」(_ask.html) なので、2回目に開いたとき。HOME の「今日のひとこと」ボタンでは全部見られる。
+1日1回だけ自動で出す (マイページで選んだものだけ)。その日2回目に開いたとき (1回目は「質問してみませんか」_ask.html)。HOME の「今日のひとこと」ボタンでは全部見られる。
 「1週間表示しない」はこの端末だけ (localStorage)。ずっと出さないのはマイページの設定で。{% endcomment %}
 <dialog class="cb-daily" id="cb-daily" aria-labelledby="cb-daily-title" data-day="{{ daily.day|date:'Y-m-d' }}" data-auto="{% if show_daily %}1{% endif %}">
     <div class="cb-daily-box">
@@ -67,7 +67,7 @@
     if (/^#poll\d+$/.test(location.hash)) {
         // アンケートに答えたあと (結果は _pollpop.html が出す)
     } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day && !window.cbAskShown) {
-        // 1日の最初に開いたときだけ、選ばれたものを自動で出す
+        // その日2回目からで、まだ見ていないときだけ、選ばれたものを自動で出す (1回目は質問のポップアップ)
         var auto = parts.filter(function (part) { return part.hasAttribute("data-auto"); });
         if (auto.length) setTimeout(function () { open(auto); }, 400);
     }

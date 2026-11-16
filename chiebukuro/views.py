@@ -61,6 +61,7 @@ from .models import (
 from .guests import guest_fields, is_guest, sign_in_guest, silent_login
 from .services import (
     home_questions,
+    question_examples,
     attach_stamps,
     received_thanks,
     rename_member_content,
@@ -343,9 +344,9 @@ DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia"]
 @board_open
 def home(request):
     """
-    HOME (2026-11-16 Taro: 知恵袋がいちばん前): いちばん上で質問できる → 人気の質問4件と回答募集中2件
-    (日替わり) → 新着の質問 → ゆずりあい → つぶやきの注目・アンケート・広告 → おでかけ・ニュースは最後。
-    ポップアップ: その日1回目に開いたら「質問してみませんか」、2回目は「今日のひとこと」。
+    HOME (2026-11-16 Taro: 知恵袋がいちばん前): 質問の4つの枠 (知りたい人が多い・回答が多い・新着・
+    回答を待っている) → ゆずりあい → つぶやきの注目・アンケート・広告 → おでかけ・ニュースは最後。
+    ポップアップ: その日1回目に開いたら「今日のひとこと」、2回目は「質問してみませんか」。
     """
 
     import uuid
@@ -353,9 +354,7 @@ def home(request):
     region = current_region(request)
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     poll = poll_for_home(request, voter_key)
-    popular, asking = home_questions(region)
-    shown = {question.pk for question in popular} | {question.pk for question in asking}
-    fresh = [question for question in new_questions(region, user=request.user, limit=6) if question.pk not in shown][:3]
+    sections = home_questions(region)
     daily_auto = set(DAILY_CARDS)
     if request.user.is_authenticated:
         profile = BoardProfile.objects.filter(user=request.user).first()
@@ -373,10 +372,8 @@ def home(request):
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
             "poll_auto": False,
-            "popular": popular,
-            "asking": asking,
-            "new_questions": fresh,
-            "examples": ASK_EXAMPLES,
+            "sections": sections,
+            "examples": question_examples() or ASK_EXAMPLES,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
@@ -816,7 +813,13 @@ def question_detail(request, pk):
         .order_by("-thanks_total", "created_at")
     )
     attach_stamps(answers, "answer", request.user)
-    best_answer = answers[0] if answers and answers[0].thanks_total > 0 else None
+    # ベストアンサー: 質問した人 (か運営) が選んだものを一番上に。選ばれていなければ「参考になった」がいちばん多い回答
+    chosen = next((answer for answer in answers if answer.pk == question.best_answer_id), None)
+    if chosen:
+        answers.remove(chosen)
+        answers.insert(0, chosen)
+    best_answer = chosen or (answers[0] if answers and answers[0].thanks_total > 0 else None)
+    can_choose = request.user.is_authenticated and (request.user.pk == question.author_id or request.user.is_staff)
     thanked = set()
     interested = False
     if request.user.is_authenticated:
@@ -848,8 +851,44 @@ def question_detail(request, pk):
             "max_length": ANSWER_MAX_LENGTH,
             "related": related,
             "login_url": login_url(request),
+            "chosen": chosen,
+            "can_choose": can_choose,
         },
     )
+
+
+@board_open
+@require_POST
+@login_required
+def choose_best(request, pk):
+    """
+    質問した人 (か運営) が、ベストアンサーを選ぶ・やめる。選ぶと「解決済み」になり、回答した人に知らせる。
+    answer=0 なら、ベストアンサーなしで「解決しました」/「まだ解決していない」に切りかえる。
+    """
+
+    question = get_object_or_404(Question, pk=pk, status=Status.PUBLISHED)
+    if request.user.pk != question.author_id and not request.user.is_staff:
+        raise Http404
+    answer_id = request.POST.get("answer", "")
+    url = reverse("chiebukuro:question", args=[question.pk])
+    if answer_id.isdigit() and int(answer_id):
+        answer = get_object_or_404(Answer, pk=int(answer_id), question=question, status=Status.PUBLISHED)
+        if question.best_answer_id == answer.pk:
+            question.best_answer = None
+            messages.success(request, "ベストアンサーをやめました。")
+        else:
+            question.best_answer = answer
+            question.solved_at = question.solved_at or timezone.now()
+            if answer.author_id:
+                notify(answer.author, Notification.Kind.BEST, f"あなたの回答がベストアンサーに選ばれました「{short(question.body, 24)}」", url + f"#a{answer.pk}", actor=request.user)
+            messages.success(request, "ベストアンサーに選びました。ありがとうございました！")
+    else:
+        question.solved_at = None if question.solved_at else timezone.now()
+        if not question.solved_at:
+            question.best_answer = None
+        messages.success(request, "解決済みにしました。" if question.solved_at else "「回答募集中」にもどしました。")
+    question.save(update_fields=["best_answer", "solved_at"])
+    return redirect(url + "#answers")
 
 
 def notify_answer(request, question, answer):
@@ -960,7 +999,7 @@ def ask(request):
             "error": error,
             "max_length": QUESTION_MAX_LENGTH,
             "nickname": user_nickname(request.user),
-            "examples": ASK_EXAMPLES,
+            "examples": question_examples() or ASK_EXAMPLES,
         },
     )
 

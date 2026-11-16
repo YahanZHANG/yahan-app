@@ -1,5 +1,5 @@
-{% comment %}その日1回目に HOME を開いたとき: 「質問してみませんか？」(その場で書いて送れる)。
-2回目からは「今日のひとこと」(_daily.html)。「1週間表示しない」はこの端末だけ (localStorage)。
+{% comment %}その日1回目に HOME を開いたとき、少し読んでもらってから (12秒後) 「質問してみませんか？」(その場で書いて送れる)。
+2回目は「今日のひとこと」(_daily.html)。質問の例は、実際の質問から日替わり。「1週間表示しない」はこの端末だけ (localStorage)。
 window.cbAskShown: このポップアップを出したか (出したら、今日のひとことは次に開いたときに)。{% endcomment %}
 <dialog class="cb-daily cb-askpop" id="cb-askpop" aria-labelledby="cb-askpop-title">
     <div class="cb-daily-box">
@@ -40,10 +40,14 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
     window.cbAskShown = false;
 
     var snoozed = Number(read("cb_askpop_until") || 0) > Date.now();
-    if (!dialog || !dialog.showModal || count > 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;
+    if (!dialog || !dialog.showModal || count !== 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;
     window.cbAskShown = true;
     write("cb_askpop_day", day);
-    setTimeout(function () { dialog.showModal(); }, 400);
+    setTimeout(function () {
+        // 12秒のあいだに、ほかのポップアップが開いていたり、入力中だったりしたら出さない
+        if (document.querySelector("dialog[open]") || (document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) return;
+        dialog.showModal();
+    }, 12000);
 
     function close() {
         if (document.getElementById("cb-askpop-snooze").checked) write("cb_askpop_until", String(Date.now() + WEEK));

@@ -6,53 +6,10 @@
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_pollpop.html" %}
 
-<section class="cb-askbox" id="ask">
-    <h1 class="cb-askbox-title">スイスの暮らし、なんでも聞いてみよう</h1>
-    <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-askbox-form" data-rules>
-        {% csrf_token %}
-        <label class="cb-sr" for="cb-askbox-body">質問</label>
-        <textarea name="body" id="cb-askbox-body" rows="2" maxlength="500" required data-grow placeholder="例：{{ examples.0 }}"></textarea>
-        {% include "chiebukuro/_guest_fields.html" %}
-        <div class="cb-askbox-bar">
-            <span class="cb-sub">{% if user.is_authenticated %}ひとことでOK{% else %}登録なしで書けます{% endif %}</span>
-            <button type="submit" class="cb-btn cb-btn-primary">質問する</button>
-        </div>
-    </form>
-    <p class="cb-askbox-hint">お店・手続き・地域の名前など、具体的に書くほど答えが集まります。</p>
-</section>
-
-{% if popular %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>人気の質問</h2><a href="{% url 'chiebukuro:questions' %}?sort=popular" class="cb-more">もっと見る</a></header>
-    <div class="cb-hsec-body">
-    {% for question in popular %}
-        {% include "chiebukuro/_question_row.html" with hide_time=True %}
-    {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-{% if asking %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>回答募集中</h2><a href="{% url 'chiebukuro:questions' %}?sort=open" class="cb-more">もっと見る</a></header>
-    <div class="cb-hsec-body">
-    {% for question in asking %}
-        {% include "chiebukuro/_question_row.html" with hide_time=True %}
-    {% endfor %}
-    </div>
-</section>
-{% endif %}
-
-{% if new_questions %}
-<section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>新着の質問</h2><a href="{% url 'chiebukuro:questions' %}" class="cb-more">もっと見る</a></header>
-    <div class="cb-hsec-body">
-    {% for question in new_questions %}
-        {% include "chiebukuro/_question_row.html" with hide_best=True %}
-    {% endfor %}
-    </div>
-</section>
-{% endif %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="回答が多い質問" more="?sort=popular" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.waiting title="回答を待っている質問" more="?sort=open" hide_best=True %}
 
 {% if items %}
 <section class="cb-hsec">

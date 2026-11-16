@@ -83,7 +83,8 @@ def import_from_survey():
             author=source.user,
             nickname="" if is_staff_question else source.nickname,
             survey_question_id=source.pk,
-            created_at=source.created_at,
+            # 本当の日時ではなく、掲示板に出た日 (2026-11-16 Taro)
+            created_at=timezone.now(),
         )
         SurveyImport.objects.create(kind="question", source_id=source.pk)
         question_map[source.pk] = question
@@ -110,7 +111,7 @@ def import_from_survey():
             author=source.user,
             nickname=source.nickname,
             from_survey=True,
-            created_at=source.created_at,
+            created_at=timezone.now(),
         )
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
@@ -186,7 +187,6 @@ def import_share_offers():
             region="" if not participant or participant.region in ("", "other") else participant.region,
             owner=owner,
             nickname=user_nickname(owner) or nickname,
-            created_at=offer.created_at,
         )
         SurveyImport.objects.create(kind="offer", source_id=offer.pk)
         made += 1
@@ -353,34 +353,54 @@ def questions_to_ask(user, region="", limit=8):
     return list(questions.filter(member_answer_total__lte=1).order_by("member_answer_total", "-created_at", "-pk")[:limit])
 
 
-def home_questions(region="", day=None, popular=4, waiting=2):
+def home_questions(region="", day=None, per=3, wait_days=3):
     """
-    HOME の質問: 人気の質問 popular 件と、回答募集中の質問 waiting 件。
-    毎日入れかわるように、上位の中から日付で選ぶ (同じ日はだれが見ても同じ)。
-    人気 = 知りたい人・回答・参考になった、の多い質問 (上位30件から)。
-    回答募集中 = 回答が0〜1件の質問 (知りたい人が多い順の上位20件から)。
+    HOME の質問 (2026-11-16 Taro): 4つの枠に per 件ずつ。人気の枠と答え待ちは、上位の中から日替わりで選ぶ
+    (同じ日はだれが見ても同じ)。同じ質問は2つの枠に出さない。
+    - wanted: 知りたい人が多い質問 (上位20件から)
+    - answered: 回答が多い質問 (運営の回答は数えない。上位20件から)
+    - new: 新着の質問 (新しい順)
+    - waiting: wait_days 日たっても回答がない (運営の回答だけのものも) 質問
     """
 
     import random
 
     day = day or timezone.localdate()
     chooser = random.Random(day.toordinal() * 7919 + len(region))
-    pool = list(
-        question_list(region=region)
-        .filter(answer_total__gte=2)
-        .annotate(thanks_total=Count("answers__thanks", distinct=True))
-        .order_by("-interest_total", "-answer_total", "-thanks_total", "-last_answered_at", "-pk")[:30]
+    base = question_list(region=region)
+    taken = set()
+
+    def pick(queryset, count=per, rotate=True, pool=20):
+        rows = [question for question in queryset[: pool + per * 3] if question.pk not in taken][:pool]
+        chosen = chooser.sample(rows, min(count, len(rows))) if rotate else rows[:count]
+        taken.update(question.pk for question in chosen)
+        return chosen
+
+    wanted = pick(base.filter(interest_total__gt=0).order_by("-interest_total", "-member_answer_total", "-pk"))
+    wanted.sort(key=lambda question: -question.interest_total)
+    answered = pick(base.filter(member_answer_total__gte=2).order_by("-member_answer_total", "-interest_total", "-pk"))
+    answered.sort(key=lambda question: -question.member_answer_total)
+    since = timezone.now() - timedelta(days=wait_days)
+    waiting = pick(base.filter(member_answer_total=0, created_at__lte=since).order_by("-interest_total", "created_at", "pk"), pool=30)
+    new = pick(base.order_by("-created_at", "-pk"), rotate=False)
+    best_answers(wanted + answered)
+    return {"wanted": wanted, "answered": answered, "new": new, "waiting": waiting}
+
+
+def question_examples(day=None, count=3):
+    """質問の例: 実際の質問から日替わりで (短くて、答えのついたもの)"""
+
+    import random
+
+    from django.db.models.functions import Length
+
+    day = day or timezone.localdate()
+    rows = list(
+        question_list().filter(answer_total__gte=1, is_anonymous=False)
+        .annotate(size=Length("body")).filter(size__gte=12, size__lte=60)
+        .order_by("-pk").values_list("body", flat=True)[:300]
     )
-    picked = chooser.sample(pool, min(popular, len(pool)))
-    picked.sort(key=lambda question: (-question.interest_total, -question.answer_total))
-    taken = {question.pk for question in picked}
-    open_pool = [
-        question for question in
-        question_list(region=region).filter(answer_total__lte=1).order_by("answer_total", "-interest_total", "-created_at", "-pk")[:24]
-        if question.pk not in taken
-    ][:20]
-    asking = chooser.sample(open_pool, min(waiting, len(open_pool)))
-    return best_answers(picked), asking
+    return random.Random(day.toordinal()).sample(rows, min(count, len(rows)))
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

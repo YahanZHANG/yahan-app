@@ -1628,3 +1628,13 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-daily-word b { font-size: 21px; }
 .cb-daily-word span { font-size: 14px; }
 .cb-daily-note { font-size: 16px; line-height: 1.65; }
+
+/* ベストアンサー・解決済み */
+.cb-solved { display: inline-block; margin: 6px 0 0; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--answer) 14%, var(--surface)); color: var(--answer); font-size: 13px; font-weight: 800; }
+.cb-solved-tag { color: var(--answer); font-weight: 800; }
+.cb-best-chosen { color: #9a6700; }
+.cb-best-ask { margin: 0 16px 10px; padding: 10px 12px; border-radius: var(--radius); background: #fff8e6; border: 1px solid #f1d38a; font-size: 14px; }
+.cb-best-ask p { margin: 0 0 6px; }
+.cb-best-ask b { display: block; margin-bottom: 2px; }
+.cb-best-undo { margin: 0 16px 10px; }
+.cb-best-btn { color: #9a6700; font-weight: 700; }

@@ -18,6 +18,7 @@ urlpatterns = [
     path("ask/", views.ask, name="ask"),
     path("q/<int:pk>/", views.question_detail, name="question"),
     path("q/<int:pk>/interest/", views.toggle_interest, name="interest"),
+    path("q/<int:pk>/best/", views.choose_best, name="choose_best"),
     path("a/<int:pk>/thanks/", views.toggle_thanks, name="thanks"),
     path("a/<int:pk>/delete/", views.delete_answer, name="delete_answer"),
     # ゆずりあい

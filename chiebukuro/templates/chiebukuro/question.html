@@ -7,6 +7,7 @@
 <section class="cb-block cb-qhead">
     <div class="cb-meta"><span class="cb-cat">{{ theme_label }}</span>{% if question_region %}<span>{{ question_region }}</span>{% endif %}<span>{{ question.display_name }}</span>{% if question.author and question.source != "staff" and not question.is_anonymous %}{% home_region question.author %}{% endif %}<span>{{ question.created_at|date:"Y年n月j日" }}</span>{% if question.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% include "chiebukuro/_staff_hide.html" with hide_kind="question" hide_id=question.pk %}</div>
     <h1><span class="cb-qmark" aria-hidden="true">Q</span>{{ question.body }}</h1>
+    {% if question.solved_at %}<p class="cb-solved">✓ 解決済み</p>{% endif %}
     {% include "chiebukuro/_photo.html" with url=question.photo_url %}
     <div class="cb-qactions">
         {% if user.is_authenticated %}
@@ -29,9 +30,17 @@
 
 <section class="cb-block" id="answers">
     <header class="cb-block-head"><h2>回答 {{ answers|length }}件</h2>{% if answers|length > 1 %}<span class="cb-sub">参考になった順</span>{% endif %}</header>
+    {% if can_choose and answers and not question.solved_at %}
+        <div class="cb-best-ask">
+            <p><b>{% if user.pk == question.author_id %}解決しましたか？{% else %}運営：ベストアンサーを選べます{% endif %}</b>いちばん役に立った回答の「ベストアンサーに選ぶ」を押してください。答えた人に「ありがとう」が届きます。</p>
+            <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-textbtn">選ばずに「解決済み」にする</button></form>
+        </div>
+    {% elif can_choose and question.solved_at %}
+        <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}" class="cb-best-undo">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-textbtn">「回答募集中」にもどす</button></form>
+    {% endif %}
     {% for answer in answers %}
         <article class="cb-answer {% if best_answer and answer.pk == best_answer.pk %}is-best{% endif %}" id="a{{ answer.pk }}">
-            {% if best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
+            {% if chosen and answer.pk == chosen.pk %}<p class="cb-best cb-best-chosen">👑 ベストアンサー</p>{% elif best_answer and answer.pk == best_answer.pk %}<p class="cb-best">いちばん参考になった回答</p>{% endif %}
             <div class="cb-post-head">
                 {% if answer.author %}<a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-av cb-av-s {{ answer.author_id|avatar }}" aria-hidden="true" tabindex="-1">{% face answer.author answer.display_name %}</a><a href="{% url 'chiebukuro:profile' answer.author.username %}" class="cb-name">{{ answer.display_name }}</a>{% home_region answer.author %}{% else %}<span class="cb-av cb-av-s cb-av0" aria-hidden="true">{{ answer.display_name|initial }}</span><span class="cb-name">{{ answer.display_name }}</span>{% endif %}
                 <span class="cb-sub">{{ answer.created_at|ago }}</span>{% if answer.edited_at %}<span class="cb-edited">編集済み</span>{% endif %}{% include "chiebukuro/_staff_hide.html" with hide_kind="answer" hide_id=answer.pk %}
@@ -48,6 +57,9 @@
                     <span class="cb-act cb-act-static">{% include "chiebukuro/_icon.html" with name="heart" %}<span>参考になった{% if answer.thanks_total %} {{ answer.thanks_total }}{% endif %}</span></span>
                 {% endif %}
                 {% include "chiebukuro/_stamps.html" with obj=answer target="answer" prefix="a" %}
+                {% if can_choose and answer.author_id != question.author_id %}
+                    <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="{{ answer.pk }}"><button type="submit" class="cb-textbtn cb-best-btn">{% if chosen and answer.pk == chosen.pk %}ベストアンサーをやめる{% else %}👑 ベストアンサーに選ぶ{% endif %}</button></form>
+                {% endif %}
                 {% if user.is_authenticated and answer.author_id == user.pk %}
                     <a href="{% url 'chiebukuro:edit' 'answer' answer.pk %}" class="cb-textbtn">編集</a>
                     <form method="post" action="{% url 'chiebukuro:delete_answer' answer.pk %}" onsubmit="return confirm('この回答を消しますか？');">
