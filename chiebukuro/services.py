@@ -376,7 +376,11 @@ def home_questions(region="", day=None, per=3, wait_days=3):
         taken.update(question.pk for question in chosen)
         return chosen
 
-    answered = popular_mix(base.filter(member_answer_total__gte=2).order_by("-member_answer_total", "-interest_total", "-pk"), day, region, per)
+    popular = base.filter(member_answer_total__gte=2)
+    if popular.count() < per:
+        # 回答が2件以上の質問がまだ少ないうちは、1件以上から
+        popular = base.filter(member_answer_total__gte=1)
+    answered = popular_mix(popular.order_by("-member_answer_total", "-interest_total", "-pk"), day, region, per)
     taken.update(question.pk for question in answered)
     wanted = pick(base.filter(interest_total__gt=0).order_by("-interest_total", "-member_answer_total", "-pk"))
     wanted.sort(key=lambda question: -question.interest_total)
