@@ -76,22 +76,16 @@
         </header>
 
         <div class="landing-hero__inner landing-container">
-            <div class="landing-hero__copy">
-                <h1 id="landing-title">{{ theme.title }}<span class="landing-hero__spark">✦</span></h1>
-                <p class="landing-hero__headline">{{ theme.headline }}</p>
-
-                <p class="landing-hero__desc">ニュースも、和食も、お出かけも。<br>スイスの毎日に、役立つ発見を。</p>
-                <a class="landing-hero__cta" href="#apps">
-                    <i class="bi bi-grid-fill" aria-hidden="true"></i>
-                    アプリを見つける
-                    <i class="bi bi-arrow-down-right" aria-hidden="true"></i>
+            <div class="landing-hero__copy landing-hero__copy--board">
+                <p class="landing-hero__kicker"><img src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" width="28" height="28"> スイス掲示板 ・ 先行公開中</p>
+                <h1 id="landing-title">スイス暮らしの「？」を、<br>みんなに聞いてみよう。</h1>
+                <p class="landing-hero__desc">スイスに住む日本人どうしで、気軽に聞けて、気軽に答えられる掲示板です。病院、手続き、買いもの、子育てまで。</p>
+                <a class="landing-hero__cta" href="{% url 'chiebukuro:home' %}">
+                    <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+                    掲示板をのぞく
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
-                {% if not user.is_authenticated %}
-                    <p class="landing-hero__free">
-                        <span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> ログインなしで使えます</span>
-                        <a href="{% url 'portal:signup' %}">無料登録（30秒）›</a>
-                    </p>
-                {% endif %}
+                <p class="landing-hero__free"><span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> ログインなしで質問・回答できます</span></p>
             </div>
         </div>
 
@@ -224,19 +218,6 @@
                 {% if app.url %}</a>{% else %}</article>{% endif %}
             {% endfor %}
         </div>
-
-        {# 事前アンケートのお願い (閉じられない・いつも出す) #}
-        <aside class="landing-survey" data-survey-banner aria-label="アンケートへのご協力のお願い">
-            <a class="landing-survey__link" href="{% url 'pre_survey:start' %}?from=yapp">
-                <span class="landing-survey__icon" aria-hidden="true">📝</span>
-                <span class="landing-survey__body">
-                    <span class="landing-kicker">PLEASE HELP US</span>
-                    <strong>スイス生活の<wbr>知恵袋アンケートに、<wbr>ご協力ください</strong>
-                    <span>スイスで暮らす日本人どうしの知恵を集めて、掲示板を作ろうとしています。答えられる質問だけでOK・登録不要です。</span>
-                </span>
-                <span class="landing-survey__cta">協力する <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
-            </a>
-        </aside>
 
         <section class="landing-more" aria-labelledby="landing-more-title">
             <div class="landing-more__intro">

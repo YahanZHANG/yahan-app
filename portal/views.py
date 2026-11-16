@@ -1290,7 +1290,7 @@ def home(request):
             "key": "washoku",
             "name": "スイスで和食",
             "icon_url": static("pwa/washoku/icon-192.png"),
-            "badge": "先行公開中",
+            "badge": "公開中",
             "status_class": "live",
             "is_new": True,
             "eyebrow": "WASHOKU",
@@ -1339,14 +1339,6 @@ def home(request):
             "icon": "📅",
             "description": "みんなの予定を簡単に調整。",
             "url": reverse("event_scheduler:event_list"),
-        },
-        {
-            "key": "board",
-            "name": "暮らしの掲示板",
-            "icon": "💬",
-            "description": "生活の知恵や口コミを、みんなで。",
-            "url": None,
-            "badge": "準備中",
         },
     ]
 

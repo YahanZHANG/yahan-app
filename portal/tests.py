@@ -293,16 +293,6 @@ class PortalHomeTests(TestCase):
         self.assertContains(response, "チューリッヒで初雪")
         self.assertContains(response, 'property="og:image"')
 
-    def test_survey_banner_between_featured_and_other_apps(self):
-
-        content = self.client.get(reverse("portal:home")).content.decode()
-
-        banner = content.index('data-survey-banner')
-        self.assertLess(content.index("気になるアプリから、はじめよう。"), banner)
-        self.assertLess(banner, content.index("その他のアプリ"))
-        self.assertIn(reverse("pre_survey:start") + "?from=yapp", content)
-        self.assertNotIn("landing-survey__close", content)
-
     def test_season_can_be_fixed_in_admin(self):
 
         from portal.models import PortalSettings
@@ -347,21 +337,16 @@ class SeasonCalendarTests(TestCase):
         self.assertEqual(theme_for(date(2026, 12, 24)), "christmas")
 
 
-class PortalThemeTextTests(TestCase):
+class PortalHeroTests(TestCase):
 
-    def test_catch_can_be_changed_in_admin(self):
-
-        from portal.models import PortalSettings, PortalThemeText
-
-        settings_row = PortalSettings.load()
-        settings_row.season = "winter"
-        settings_row.save()
-        PortalThemeText.objects.create(theme="winter", title="寒い日は", headline="")
-
+    def test_hero_promotes_the_board(self):
+        # 2026-11-16 Taro: 季節のキャッチと「アプリを見つける」は消して、掲示板の宣伝に
         response = self.client.get(reverse("portal:home"))
-
-        self.assertContains(response, "寒い日は")
-        self.assertContains(response, "スイスを楽しもう。")  # 空の行は元の文言のまま
+        self.assertContains(response, "掲示板をのぞく")
+        self.assertContains(response, reverse("chiebukuro:home"))
+        self.assertNotContains(response, "アプリを見つける")
+        self.assertNotContains(response, "暮らしの掲示板")
+        self.assertNotContains(response, "知恵袋アンケート")
 
 
 class ManageAppsReturnTests(TestCase):

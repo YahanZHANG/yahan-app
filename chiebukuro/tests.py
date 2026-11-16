@@ -44,6 +44,7 @@ class BoardTestCase(TestCase):
 class GateTests(TestCase):
 
     def test_closed_board_shows_waiting_page_but_staff_see_it(self):
+        BoardSettings.objects.filter(pk=1).update(is_open=False)
         response = self.client.get(reverse("chiebukuro:home"))
         self.assertContains(response, "いま準備しています")
         staff = User.objects.create_user("staff", password=PASSWORD, is_staff=True)

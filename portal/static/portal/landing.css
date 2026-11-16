@@ -544,3 +544,10 @@
 @media (min-width: 761px) {
     #yapp-landing .landing-featured-card__head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ヒーロー = スイス掲示板の宣伝 (2026-11-16) */
+#yapp-landing .landing-hero__kicker { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 6px 14px 6px 6px; border-radius: 100px; background: rgba(255,255,255,.14); color: #fff; font-size: 13px; font-weight: 850; letter-spacing: .08em; }
+#yapp-landing .landing-hero__kicker img { border-radius: 8px; }
+#yapp-landing .landing-hero__copy--board h1 { font-size: clamp(28px, 6vw, 46px); line-height: 1.35; }
+#yapp-landing .landing-hero__copy--board h1 { margin-bottom: 14px; }
+#yapp-landing .landing-hero__copy--board .landing-hero__desc { text-shadow: 0 1px 6px rgba(0,0,0,.45); }

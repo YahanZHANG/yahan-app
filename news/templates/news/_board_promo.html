@@ -1,0 +1,14 @@
+{% load static %}
+{# スイス掲示板の宣伝 (2026-11-16: 事前アンケートのお願いから差し替え)。注目ニュースのすぐ後に出す。×で閉じると30日出さない (news/templates/news/home.html のスクリプト) #}
+<aside class="news-yapp-promo news-yapp-promo--survey" data-yapp-promo="board" aria-label="スイス掲示板のご案内" hidden>
+    <a class="news-yapp-promo__link" href="{% url 'chiebukuro:home' %}">
+        <img class="news-yapp-promo__icon" src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" width="52" height="52" loading="lazy">
+        <span class="news-yapp-promo__text">
+            <span class="news-yapp-promo__label">先行公開中 ・ Swiss News を作っている Yapp より</span>
+            <strong>スイス掲示板</strong>
+            <span class="news-yapp-promo__desc">スイス暮らしの「？」を、日本語でみんなに気軽に聞けます。ログインなしで質問・回答できます。</span>
+        </span>
+        <span class="news-yapp-promo__cta">のぞいてみる ›</span>
+    </a>
+    <button type="button" class="news-yapp-promo__close" aria-label="このご案内を閉じる" data-yapp-promo-close>×</button>
+</aside>

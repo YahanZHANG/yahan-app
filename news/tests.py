@@ -65,7 +65,7 @@ class NewsTestCase(TestCase):
 
 class YappPromoTests(NewsTestCase):
 
-    def test_survey_after_featured_and_washoku_after_fifth_article(self):
+    def test_board_after_featured_and_washoku_after_fifth_article(self):
 
         now = timezone.now()
         for number in range(7):
@@ -73,7 +73,7 @@ class YappPromoTests(NewsTestCase):
 
         content = self.client.get(reverse("news:home")).content.decode()
 
-        survey = content.index('data-yapp-promo="pre-survey"')
+        survey = content.index('data-yapp-promo="board"')
         washoku = content.index('data-yapp-promo="washoku"')
         self.assertLess(survey, content.index("日本語 n0"))
         self.assertLess(content.index("日本語 n4"), washoku)
@@ -86,7 +86,7 @@ class YappPromoTests(NewsTestCase):
 
         response = self.client.get(reverse("news:home"))
 
-        self.assertContains(response, 'data-yapp-promo="pre-survey"')
+        self.assertContains(response, 'data-yapp-promo="board"')
         self.assertNotContains(response, 'data-yapp-promo="washoku"')
 
 
