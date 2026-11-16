@@ -1,94 +1,56 @@
-{% comment %}その日2回目に HOME を開いたとき: 回答が0件か1件の質問を、1問ずつ (最大3問) 聞く。
-スキップ・私も知りたいで次へ。3問とも見終わったら自動で閉じる。右上の×でいつでも閉じられる。
-終わったら (聞く質問がないときも) cb:ask-done を出す → まだ答えていないアンケートのポップアップ (_pollpop.html)。{% endcomment %}
-{% if ask_questions %}
-<dialog class="cb-daily cb-ask" id="cb-ask" aria-labelledby="cb-ask-title" data-day="{% now 'Y-m-d' %}">
+{% comment %}その日1回目に HOME を開いたとき: 「質問してみませんか？」(その場で書いて送れる)。
+2回目からは「今日のひとこと」(_daily.html)。「1週間表示しない」はこの端末だけ (localStorage)。
+window.cbAskShown: このポップアップを出したか (出したら、今日のひとことは次に開いたときに)。{% endcomment %}
+<dialog class="cb-daily cb-askpop" id="cb-askpop" aria-labelledby="cb-askpop-title">
     <div class="cb-daily-box">
         <header class="cb-daily-head">
-            <p class="cb-daily-date">答えを待っています</p>
-            <h2 id="cb-ask-title">この質問、わかりますか？</h2>
-            <button type="button" class="cb-daily-x" data-ask-close aria-label="閉じる">×</button>
+            <h2 id="cb-askpop-title">質問してみませんか？</h2>
+            <p class="cb-askpop-lead">スイスに住む日本語の仲間が答えてくれます</p>
+            <button type="button" class="cb-daily-x" data-askpop-close aria-label="閉じる">×</button>
         </header>
-        {% for question in ask_questions %}
-            <section class="cb-ask-card" data-ask="{{ question.pk }}" hidden>
-                <p class="cb-ask-meta"><span class="cb-cat">{{ question.get_theme_display }}</span>{% if question.get_region_display %}<span>{{ question.get_region_display }}</span>{% endif %}<span>{% if question.answer_total %}回答 {{ question.answer_total }}件{% else %}まだ回答なし{% endif %}</span></p>
-                <p class="cb-ask-q">{{ question.body }}</p>
-                <div class="cb-ask-actions">
-                    <a class="cb-btn cb-btn-primary" href="{% url 'chiebukuro:question' question.pk %}#answer-form">答える</a>
-                    {% if user.is_authenticated %}
-                        <button type="button" class="cb-btn" data-ask-want="{% url 'chiebukuro:interest' question.pk %}">私も知りたい</button>
-                    {% else %}
-                        <a class="cb-btn" href="{{ login_url }}">私も知りたい</a>
-                    {% endif %}
-                    <button type="button" class="cb-btn cb-ask-skip" data-ask-skip>スキップ</button>
-                </div>
-            </section>
-        {% endfor %}
-        <footer class="cb-daily-foot"><span class="cb-daily-dots" aria-hidden="true"></span><p class="cb-ask-done" role="status" hidden></p></footer>
-        {% csrf_token %}
+        <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-daily-body cb-askpop-form" data-rules>
+            {% csrf_token %}
+            <label class="cb-sr" for="cb-askpop-body">質問</label>
+            <textarea name="body" id="cb-askpop-body" rows="3" maxlength="500" required placeholder="例：{{ examples.0 }}"></textarea>
+            <ul class="cb-askpop-examples" aria-label="質問の例">
+                {% for example in examples|slice:"1:3" %}<li>{{ example }}</li>{% endfor %}
+            </ul>
+            {% include "chiebukuro/_guest_fields.html" %}
+            <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">質問する</button>
+        </form>
+        <footer class="cb-daily-foot">
+            <label class="cb-check-s"><input type="checkbox" id="cb-askpop-snooze"> 1週間表示しない</label>
+            <button type="button" class="cb-btn cb-btn-s" data-askpop-close>あとで</button>
+        </footer>
     </div>
 </dialog>
-{% endif %}
 <script>
 (function () {
-    var dialog = document.getElementById("cb-ask");
+    var dialog = document.getElementById("cb-askpop");
     var day = "{% now 'Y-m-d' %}";
-    var SHOW = 3;
+    var WEEK = 7 * 24 * 60 * 60 * 1000;
     function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
     function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
-    function finished() { document.dispatchEvent(new Event("cb:ask-done")); }
 
-    // その日に HOME を開いた回数 (2回目から出す。1日1回だけ)
+    // その日に HOME を開いた回数
     var opens = {};
     try { opens = JSON.parse(read("cb_home_opens") || "{}"); } catch (e) {}
     var count = opens.day === day ? opens.count + 1 : 1;
     write("cb_home_opens", JSON.stringify({ day: day, count: count }));
-    if (count < 2) return;
+    window.cbAskShown = false;
 
-    var skipped = [];
-    try { skipped = JSON.parse(read("cb_ask_skipped") || "[]"); } catch (e) {}
-    var cards = dialog ? Array.prototype.slice.call(dialog.querySelectorAll("[data-ask]"))
-        .filter(function (card) { return skipped.indexOf(card.dataset.ask) < 0; })
-        .slice(0, SHOW) : [];
-    if (!dialog || !dialog.showModal || !cards.length || read("cb_ask_day") === day) {
-        setTimeout(finished, 700);
-        return;
-    }
-    var dots = dialog.querySelector(".cb-daily-dots");
-    var index = 0;
+    var snoozed = Number(read("cb_askpop_until") || 0) > Date.now();
+    if (!dialog || !dialog.showModal || count > 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;
+    window.cbAskShown = true;
+    write("cb_askpop_day", day);
+    setTimeout(function () { dialog.showModal(); }, 400);
 
-    function show() {
-        cards.forEach(function (card, i) { card.hidden = i !== index; });
-        dots.innerHTML = cards.length > 1 ? cards.map(function (c, i) { return '<i class="' + (i === index ? "on" : "") + '"></i>'; }).join("") : "";
+    function close() {
+        if (document.getElementById("cb-askpop-snooze").checked) write("cb_askpop_until", String(Date.now() + WEEK));
+        dialog.close();
     }
-    function close() { write("cb_ask_day", day); dialog.close(); finished(); }
-    function next() {
-        index += 1;
-        if (index >= cards.length) close(); else show();
-    }
-    dialog.addEventListener("click", function (event) {
-        var target = event.target;
-        if (target === dialog || target.closest("[data-ask-close]")) return close();
-        if (target.closest("[data-ask-skip]")) {
-            skipped.push(cards[index].dataset.ask);
-            write("cb_ask_skipped", JSON.stringify(skipped.slice(-200)));
-            return next();
-        }
-        var want = target.closest("[data-ask-want]");
-        if (want) {
-            var token = dialog.querySelector('input[name="csrfmiddlewaretoken"]');
-            fetch(want.dataset.askWant, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": token ? token.value : "" } }).catch(function () {});
-            want.disabled = true; want.textContent = "✓ 知りたいに追加";
-            setTimeout(next, 600);
-        }
-        if (target.closest("a[href]")) write("cb_ask_day", day);
-    });
+    dialog.querySelectorAll("[data-askpop-close]").forEach(function (element) { element.addEventListener("click", close); });
     dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
-    // 今日のひとことが開いているときは、閉じてから
-    var daily = document.getElementById("cb-daily");
-    setTimeout(function () {
-        if (daily && daily.open) return;
-        show(); dialog.showModal();
-    }, 700);
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
 })();
 </script>

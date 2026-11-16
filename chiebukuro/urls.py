@@ -40,6 +40,7 @@ urlpatterns = [
     # 自分・ほかの人
     path("notifications/", views.notifications, name="notifications"),
     path("me/", views.my_page, name="me"),
+    path("me/account/", views.claim, name="claim"),
     path("me/profile/", views.profile_edit, name="profile_edit"),
     path("avatar.svg", views.avatar_preview, name="avatar_preview"),
     path("u/<str:username>/", views.profile, name="profile"),

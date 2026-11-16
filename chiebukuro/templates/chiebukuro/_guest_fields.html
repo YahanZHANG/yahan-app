@@ -1,0 +1,9 @@
+{% comment %}登録なしで書くときだけ: 名前とメール (どちらも任意)。書きはじめると出てくる。website は荒らし対策の見えない欄{% endcomment %}
+{% if not user.is_authenticated %}
+<div class="cb-guest" data-guest>
+    <input type="text" name="website" class="cb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="cb-field"><span>名前（空なら「名無しさん」）</span><input type="text" name="guest_nickname" maxlength="30" value="{{ guest_nickname|default:'' }}" autocomplete="nickname"></label>
+    <label class="cb-field"><span>メールアドレス（任意）：回答がついたらお知らせします</span><input type="email" name="guest_email" maxlength="200" value="{{ guest_email|default:'' }}" autocomplete="email" inputmode="email"></label>
+    <p class="cb-guest-note">登録なしで書けます。送信すると<a href="{% url 'chiebukuro:rules' %}" target="_blank">掲示板のルール</a>に同意したことになります。ログインしている方は<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">こちら</a></p>
+</div>
+{% endif %}

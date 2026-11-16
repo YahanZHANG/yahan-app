@@ -58,7 +58,9 @@ from .models import (
     Status,
     Thanks,
 )
+from .guests import guest_fields, is_guest, sign_in_guest, silent_login
 from .services import (
+    home_questions,
     attach_stamps,
     received_thanks,
     rename_member_content,
@@ -115,6 +117,7 @@ def board_open(view):
     def wrapper(request, *args, **kwargs):
         if not can_preview(request):
             return render(request, "chiebukuro/closed.html", status=200)
+        silent_login(request)
         release_due_questions()
         return view(request, *args, **kwargs)
 
@@ -205,13 +208,8 @@ def by_region(queryset, region, field="region"):
 
 
 # 右下の「＋」ボタン: いま見ているページに合わせて変わる
-FAB = {
-    "home": ("書く", "chiebukuro:new"),
-    "posts": ("つぶやく", "chiebukuro:post_new"),
-    "questions": ("質問する", "chiebukuro:ask"),
-    "items": ("出す", "chiebukuro:item_new"),
-    "notices": ("告知する", "chiebukuro:notice_new"),
-}
+# 右下のボタンは、どのページでも「質問する」(2026-11-16 Taro: 質問がいちばん大事)
+FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "notices", "daily", "me", "bell")}
 
 
 def board_color(user):
@@ -244,6 +242,7 @@ def board_context(request, tab, region=None):
         "regions": BOARD_REGION_CHOICES,
         "stamp_list": STAMPS,
         "needs_rules": needs_rules(request.user),
+        "is_guest": is_guest(request.user),
     }
 
 
@@ -344,29 +343,24 @@ DAILY_CARDS = ["daily_charm", "daily_word", "daily_trivia"]
 @board_open
 def home(request):
     """
-    HOME: 個人のニーズにかかわらず、みんなの参考になるもの
-    (アンケート・広告枠・今週末のおでかけ) と、掲示板の新着・答えを待っている質問。
+    HOME (2026-11-16 Taro: 知恵袋がいちばん前): いちばん上で質問できる → 人気の質問4件と回答募集中2件
+    (日替わり) → 新着の質問 → ゆずりあい → つぶやきの注目・アンケート・広告 → おでかけ・ニュースは最後。
+    ポップアップ: その日1回目に開いたら「質問してみませんか」、2回目は「今日のひとこと」。
     """
 
     import uuid
 
     region = current_region(request)
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
-    season = BoardSettings.current().season(timezone.localdate())
-    cal = today_info()
     poll = poll_for_home(request, voter_key)
-    fresh = new_questions(region, user=request.user)
-    fresh_ids = {question.pk for question in fresh}
-    # 開いたときに自動で出すカード (ログインしている人はマイページで選べる)
-    # アンケートは別のポップアップ (2回目に開いたとき、質問の回答協力のあと。まだ答えていないときだけ)
+    popular, asking = home_questions(region)
+    shown = {question.pk for question in popular} | {question.pk for question in asking}
+    fresh = [question for question in new_questions(region, user=request.user, limit=6) if question.pk not in shown][:3]
     daily_auto = set(DAILY_CARDS)
-    poll_auto = True
     if request.user.is_authenticated:
         profile = BoardProfile.objects.filter(user=request.user).first()
         if profile:
             daily_auto = {field for field in DAILY_CARDS if profile.daily_popup and getattr(profile, field)}
-            poll_auto = profile.daily_poll
-    poll_auto = bool(poll_auto and poll and not poll.my_choice_id)
     daily = today_card(timezone.localdate(), str(request.user.pk) if request.user.is_authenticated else voter_key)
 
     response = render(
@@ -378,27 +372,18 @@ def home(request):
             "daily": daily,
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
-            "poll_auto": poll_auto,
-            # この2週間つぶやいていない人にだけ「つぶやいてみよう」
-            "nudge_post": request.user.is_authenticated
-            and not Post.objects.filter(author=request.user, created_at__gte=timezone.now() - timedelta(days=14)).exists(),
+            "poll_auto": False,
+            "popular": popular,
+            "asking": asking,
+            "new_questions": fresh,
+            "examples": ASK_EXAMPLES,
             "sponsor": current_sponsor(),
             "outings": weekend_outings(limit=6),
-            "featured": featured_this_week(),
+            "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
+            "items": list(by_region(open_items(), region).order_by("-created_at")[:5]),
             "headlines": news_headlines(),
-            "new_questions": fresh,
-            "waiting": [question for question in waiting_questions(region=region, limit=6) if question.pk not in fresh_ids][:3],
-            "ask_questions": questions_to_ask(request.user, region),
-            "today": timezone.localdate(),
-            "hero_time": hero_time(),
             "login_url": login_url(request),
-            "hero_season": season,
-            "cal": cal,
-            "moon_art": moon_path(92, 44, 24, cal["lit"], cal["waxing"]),
-            "moon_mini": moon_path(20, 20, 14, cal["lit"], cal["waxing"]),
-            "japan_now": timezone.now().astimezone(JAPAN_TZ),
-            "day_events": day_events(timezone.localdate()),
         },
     )
     if not voter_key and not request.user.is_authenticated:
@@ -795,14 +780,16 @@ def question_detail(request, pk):
     draft = ""
 
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return redirect(login_url(request))
-
         draft = (request.POST.get("body") or "").strip()
-        if not draft:
+        guest_name, guest_email, error = guest_fields(request)
+        if error:
+            pass
+        elif not draft:
             error = "答えを入力してください。"
         elif len(draft) > ANSWER_MAX_LENGTH:
             error = f"答えは{ANSWER_MAX_LENGTH}文字までです。"
+        elif not request.user.is_authenticated and sign_in_guest(request, guest_name, guest_email) is None:
+            error = GUEST_LIMIT_ERROR
         else:
             # 二度押し: 同じ人の同じ答えがもうあれば追加しない
             exists = question.answers.filter(author=request.user, body=draft).exists()
@@ -871,6 +858,7 @@ def notify_answer(request, question, answer):
     url = reverse("chiebukuro:question", args=[question.pk]) + f"#a{answer.pk}"
     if question.author_id:
         notify(question.author, Notification.Kind.ANSWER, f"あなたの質問「{short(question.body, 24)}」に答えがつきました", url, actor=request.user)
+        email_answer(request, question, url)
     interests = question.interests.select_related("user")
     if question.author_id:
         interests = interests.exclude(user_id=question.author_id)
@@ -878,8 +866,39 @@ def notify_answer(request, question, answer):
         notify(interest.user, Notification.Kind.ANSWER, f"知りたい質問「{short(question.body, 24)}」に答えがつきました", url, actor=request.user)
 
 
+# 質問の例: 具体的な名前 (お店・手続き・地域) が入った質問ほど、役に立つ答えが集まる
+ASK_EXAMPLES = [
+    "Migros と Coop、お米がいちばん安いのはどこ？",
+    "チューリッヒで日本語の通じる歯医者さんは？",
+    "滞在許可（B許可）の更新、何週間前に申しこんだ？",
+    "Winterthur で、夜に通えるドイツ語学校のおすすめは？",
+    "SBB の Halbtax、元を取れるのは月に何回乗る人？",
+]
+
+GUEST_LIMIT_ERROR = "いまは送れませんでした。少し時間をおくか、ログインしてから書きこんでください。"
+
+
+def email_answer(request, question, url):
+    """メールで知らせてほしいと書いた人 (登録なしで質問した人など) に、回答がついたことをメールで"""
+
+    import threading
+
+    from pre_survey.alerts import _send
+
+    author = question.author
+    if not author.email or author.pk == request.user.pk:
+        return
+    if not BoardProfile.objects.filter(user=author, email_answer=True).exists():
+        return
+    body = (
+        f"スイス掲示板で、あなたの質問に回答がつきました。\n\n「{short(question.body, 60)}」\n\n"
+        f"{request.build_absolute_uri(url)}\n\n"
+        "このメールが不要になったら、掲示板の「マイページ ＞ 設定」で止められます。\n"
+    )
+    threading.Thread(target=_send, args=("[スイス掲示板] 質問に回答がつきました", body, author.email), daemon=True).start()
+
+
 @board_open
-@login_required
 def ask(request):
 
     error = ""
@@ -888,18 +907,25 @@ def ask(request):
     region = ""
     anonymous = False
 
+    if request.method == "GET" and request.GET.get("body"):
+        body = request.GET["body"].strip()[:QUESTION_MAX_LENGTH]
+
     if request.method == "POST":
         body = (request.POST.get("body") or "").strip()
-        theme = clean_choice(request.POST.get("theme", ""), THEME_CHOICES)
+        # テーマは選ばなくてもよい (あとで運営が分けられる)
+        theme = clean_choice(request.POST.get("theme", ""), THEME_CHOICES) or "other"
         region = clean_choice(request.POST.get("question_region", ""), BOARD_REGION_CHOICES)
         anonymous = request.POST.get("anonymous") == "1"
+        guest_name, guest_email, error = guest_fields(request)
 
-        if not body:
+        if error:
+            pass
+        elif not body:
             error = "質問を入力してください。"
         elif len(body) > QUESTION_MAX_LENGTH:
             error = f"質問は{QUESTION_MAX_LENGTH}文字までです。"
-        elif not theme:
-            error = "テーマを選んでください。"
+        elif not request.user.is_authenticated and sign_in_guest(request, guest_name, guest_email) is None:
+            error = GUEST_LIMIT_ERROR
         else:
             question = Question.objects.filter(author=request.user, body=body).first()
             photo_url = ""
@@ -918,7 +944,7 @@ def ask(request):
                     is_anonymous=anonymous,
                 )
                 notify_staff(request, "新しい質問", question.body, reverse("admin:chiebukuro_question_change", args=[question.pk]))
-            messages.success(request, "質問を書き込みました。答えがついたら🔔でお知らせします。")
+            messages.success(request, "質問を書き込みました。答えがついたら🔔でお知らせします。" + (" メールでもお知らせします。" if request.user.email and is_guest(request.user) else ""))
             return redirect("chiebukuro:question", pk=question.pk)
 
     return render(
@@ -934,6 +960,7 @@ def ask(request):
             "error": error,
             "max_length": QUESTION_MAX_LENGTH,
             "nickname": user_nickname(request.user),
+            "examples": ASK_EXAMPLES,
         },
     )
 
@@ -1914,6 +1941,52 @@ def staff_hide(request, kind, pk):
     if kind == "post":
         return redirect("chiebukuro:posts")
     return redirect(safe_next(request, reverse("chiebukuro:home")))
+
+
+@board_open
+@login_required
+def claim(request):
+    """登録なしで書いた人 (ゲスト) が、ID とパスワードを決めて、ふつうのアカウントにする"""
+
+    from django.contrib.auth import get_user_model, update_session_auth_hash
+    from django.contrib.auth.password_validation import validate_password
+
+    profile = BoardProfile.objects.filter(user=request.user, is_guest=True).first()
+    if profile is None:
+        return redirect("chiebukuro:me")
+    error = ""
+    username = ""
+    email = request.user.email
+    if request.method == "POST":
+        username = (request.POST.get("username") or "").strip()
+        password = request.POST.get("password") or ""
+        email = (request.POST.get("email") or "").strip()[:200]
+        User = get_user_model()
+        if not username or not all(ch.isascii() and (ch.isalnum() or ch in "_.-@+") for ch in username) or len(username) > 150:
+            error = "ユーザーIDは半角の英数字で決めてください。"
+        elif username.lower().startswith("guest_") or User.objects.filter(username__iexact=username).exclude(pk=request.user.pk).exists():
+            error = "このユーザーIDは使えません。別のIDにしてください。"
+        else:
+            try:
+                validate_password(password, request.user)
+            except ValidationError as problem:
+                error = " ".join(problem.messages)
+        if not error:
+            user = request.user
+            user.username = username
+            user.email = email
+            user.set_password(password)
+            user.save()
+            update_session_auth_hash(request, user)
+            profile.is_guest = False
+            profile.save(update_fields=["is_guest"])
+            messages.success(request, "アカウントにしました。ほかのスマホやパソコンからも、このIDとパスワードでログインできます。")
+            return redirect("chiebukuro:me")
+    return render(
+        request,
+        "chiebukuro/claim.html",
+        {**board_context(request, "me"), "error": error, "username": username, "email": email, "nickname": user_nickname(request.user)},
+    )
 
 
 @require_POST

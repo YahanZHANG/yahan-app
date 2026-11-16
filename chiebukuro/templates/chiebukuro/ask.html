@@ -8,22 +8,27 @@
     <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
         {% csrf_token %}
         <label class="cb-field">
-            <span>質問（「{{ nickname }}」として載ります）</span>
-            <textarea name="body" rows="4" maxlength="{{ max_length }}" required placeholder="例: チューリッヒで日本語が通じる歯医者はありますか？" data-count="ask-left">{{ body }}</textarea>
+            <span>質問{% if user.is_authenticated %}（「{{ nickname }}」として載ります）{% endif %}</span>
+            <textarea name="body" rows="4" maxlength="{{ max_length }}" required placeholder="例：{{ examples.1 }}" data-count="ask-left">{{ body }}</textarea>
             <small class="cb-sub">あと <span id="ask-left"></span> 文字</small>
         </label>
         {% include "chiebukuro/_photo_field.html" %}
         <div class="cb-field-row">
-            <label class="cb-field"><span>テーマ</span>
-                <select name="theme" required><option value="">選んでください</option>{% for value, label in themes %}<option value="{{ value }}" {% if value == theme %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            <label class="cb-field"><span>テーマ（任意）</span>
+                <select name="theme"><option value="">選ばない</option>{% for value, label in themes %}<option value="{{ value }}" {% if value == theme %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
             </label>
             <label class="cb-field"><span>地域（その地域の話のときだけ）</span>
                 <select name="question_region"><option value="">スイス全体</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == question_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
             </label>
         </div>
-        <label class="cb-radio"><input type="checkbox" name="anonymous" value="1" {% if anonymous %}checked{% endif %}> 匿名で質問する（名前は「匿名さん」になり、プロフィールにも出ません）</label>
+        {% if user.is_authenticated %}<label class="cb-radio"><input type="checkbox" name="anonymous" value="1" {% if anonymous %}checked{% endif %}> 匿名で質問する（名前は「匿名さん」になり、プロフィールにも出ません）</label>{% endif %}
+        {% include "chiebukuro/_guest_fields.html" %}
         <button type="submit" class="cb-btn cb-btn-primary">質問する</button>
         <p class="cb-note">答えがついたら🔔でお知らせします。個人が特定できる情報は書かないでください。</p>
+        <div class="cb-ask-tips">
+            <p>具体的な質問ほど、役に立つ答えが集まります。たとえば：</p>
+            <ul>{% for example in examples %}<li>{{ example }}</li>{% endfor %}</ul>
+        </div>
     </form>
 </section>
 {% endblock %}

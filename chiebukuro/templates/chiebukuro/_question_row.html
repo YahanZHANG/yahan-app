@@ -8,7 +8,7 @@
             <span class="cb-cat">{{ question.get_theme_display }}</span>
             {% if question.get_region_display %}<span>{{ question.get_region_display }}</span>{% endif %}
             {% if question.interest_total %}<span>知りたい {{ question.interest_total }}</span>{% endif %}
-            <span>{% if question.last_answered_at %}{{ question.last_answered_at|ago }}{% else %}{{ question.created_at|ago }}{% endif %}</span>
+            {% if not hide_time %}<span>{% if question.last_answered_at %}{{ question.last_answered_at|ago }}{% else %}{{ question.created_at|ago }}{% endif %}</span>{% endif %}
         </span>
     </span>
 </a>

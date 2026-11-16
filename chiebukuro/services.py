@@ -115,11 +115,7 @@ def import_from_survey():
         SurveyImport.objects.create(kind="answer", source_id=source.pk)
         new_answers += 1
 
-    # 新しい質問は「公開待ち」にして、少しずつ出す (答えが0〜1件のものは「答え待ち」の枠で別に数える)
-    for question in created:
-        few = question.answers.filter(status=Status.PUBLISHED, is_staff=False).count() < QUEUE_MIN_ANSWERS
-        Question.objects.filter(pk=question.pk).update(status=QUEUED, release_rank=next_rank, release_open=few)
-        next_rank += 1
+    # 2026-11-16 Taro: 小出しはやめて、取り込んだ質問はすぐに全部公開する (created は公開のまま)
 
     # 「私も知りたい」の数と、最後の答えの日時をそろえる
     interest_counts = dict(
@@ -132,7 +128,69 @@ def import_from_survey():
             Question.objects.filter(pk=question.pk).update(survey_interest_count=count, last_answered_at=latest)
 
     release_survey_questions()
+    import_share_offers()
     return new_questions, new_answers
+
+
+# 事前アンケートの「ゆずりたい・ほしい・貸したい・借りたい」→ ゆずりあい
+OFFER_KINDS = {"give": "give", "want": "want", "lend": "lend", "borrow": "borrow"}
+GENRE_WORDS = [
+    ("books", ["本", "絵本", "マンガ", "漫画", "雑誌", "図鑑", "小説", "参考書", "ドリル"]),
+    ("kids", ["子ども", "子供", "ベビー", "赤ちゃん", "おもちゃ", "ベビーカー", "チャイルドシート", "ランドセル", "抱っこ", "授乳"]),
+    ("furniture", ["家具", "机", "椅子", "いす", "棚", "ベッド", "ソファ", "テーブル", "ラグ", "カーテン"]),
+    ("appliance", ["家電", "炊飯器", "電子レンジ", "レンジ", "掃除機", "変圧器", "プリンター", "テレビ", "ドライヤー", "アイロン", "加湿器", "扇風機"]),
+    ("kitchen", ["食器", "鍋", "フライパン", "キッチン", "茶碗", "箸", "お弁当", "弁当箱", "包丁", "調理"]),
+    ("clothes", ["服", "靴", "浴衣", "着物", "コート", "ジャケット", "ブーツ", "制服", "帽子"]),
+    ("sports", ["スキー", "スノーボード", "自転車", "テント", "キャンプ", "ソリ", "そり", "登山", "スケート", "ヘルメット"]),
+]
+
+
+def guess_genre(title):
+    for genre, words in GENRE_WORDS:
+        if any(word in title for word in words):
+            return genre
+    return "other"
+
+
+def import_share_offers():
+    """
+    事前アンケートで書いてもらった、ゆずりあい・貸し借りの希望を、掲示板のゆずりあいに出す。
+    アカウントがある人はその人の名前で。ない人は、その人の端末だけで使えるゲストのアカウントを作って出す
+    (アンケートに答えた端末で掲示板を開くと、自動でそのアカウントになり、申し込みのやりとりができる)。
+    取り込み済みのもの (掲示板で消したものも) は二度と取り込まない。品物の名前がないものは出さない。
+    """
+
+    from pre_survey.models import ShareOffer
+
+    from .guests import make_guest
+    from .models import BoardProfile, Item
+
+    done = set(SurveyImport.objects.filter(kind="offer").values_list("source_id", flat=True))
+    made = 0
+    for offer in ShareOffer.objects.select_related("participant", "user").order_by("created_at"):
+        title = " ".join((offer.item or "").split())[:80]
+        if offer.pk in done or not title or offer.kind not in OFFER_KINDS:
+            continue
+        participant = offer.participant
+        owner = offer.user or (participant.user if participant and participant.user_id else None)
+        nickname = (participant.nickname if participant else "") or ""
+        if owner is None:
+            token = offer.browser_token or (participant.browser_token if participant else None)
+            profile = BoardProfile.objects.filter(guest_token=token, is_guest=True).select_related("user").first() if token else None
+            owner = profile.user if profile else make_guest(nickname, token=token)
+        Item.objects.create(
+            kind=OFFER_KINDS[offer.kind],
+            genre=guess_genre(title),
+            title=title,
+            body="事前アンケートで寄せられた希望です。",
+            region="" if not participant or participant.region in ("", "other") else participant.region,
+            owner=owner,
+            nickname=user_nickname(owner) or nickname,
+            created_at=offer.created_at,
+        )
+        SurveyImport.objects.create(kind="offer", source_id=offer.pk)
+        made += 1
+    return made
 
 
 # アンケートの質問で、答えがこの数より少ないものは「答え待ち」の枠
@@ -293,6 +351,36 @@ def questions_to_ask(user, region="", limit=8):
             .exclude(interests__user=user)
         )
     return list(questions.filter(member_answer_total__lte=1).order_by("member_answer_total", "-created_at", "-pk")[:limit])
+
+
+def home_questions(region="", day=None, popular=4, waiting=2):
+    """
+    HOME の質問: 人気の質問 popular 件と、回答募集中の質問 waiting 件。
+    毎日入れかわるように、上位の中から日付で選ぶ (同じ日はだれが見ても同じ)。
+    人気 = 知りたい人・回答・参考になった、の多い質問 (上位30件から)。
+    回答募集中 = 回答が0〜1件の質問 (知りたい人が多い順の上位20件から)。
+    """
+
+    import random
+
+    day = day or timezone.localdate()
+    chooser = random.Random(day.toordinal() * 7919 + len(region))
+    pool = list(
+        question_list(region=region)
+        .filter(answer_total__gte=2)
+        .annotate(thanks_total=Count("answers__thanks", distinct=True))
+        .order_by("-interest_total", "-answer_total", "-thanks_total", "-last_answered_at", "-pk")[:30]
+    )
+    picked = chooser.sample(pool, min(popular, len(pool)))
+    picked.sort(key=lambda question: (-question.interest_total, -question.answer_total))
+    taken = {question.pk for question in picked}
+    open_pool = [
+        question for question in
+        question_list(region=region).filter(answer_total__lte=1).order_by("answer_total", "-interest_total", "-created_at", "-pk")[:24]
+        if question.pk not in taken
+    ][:20]
+    asking = chooser.sample(open_pool, min(waiting, len(open_pool)))
+    return best_answers(picked), asking
 
 
 def waiting_questions(theme="", region="", query="", limit=30):

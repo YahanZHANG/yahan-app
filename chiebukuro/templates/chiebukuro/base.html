@@ -54,9 +54,9 @@
 <div class="cb-layout">
     <nav class="cb-side" aria-label="メニュー">
         <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}HOME</a>
-        <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}つぶやき</a>
         <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
         <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
+        <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}つぶやき</a>
         <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>
         <a href="{% url 'chiebukuro:daily_list' %}" class="{% if tab == 'daily' %}on{% endif %}"><span class="cb-side-emoji" aria-hidden="true">🍀</span>今日のひとこと</a>
         {% if user.is_authenticated %}
@@ -70,6 +70,7 @@
         {% for message in messages %}
             <p class="cb-flash cb-flash-{{ message.tags }}" role="status">{{ message }}</p>
         {% endfor %}
+        {% if is_guest %}<p class="cb-guestbar">登録なしで使っています（この端末だけ）。<a href="{% url 'chiebukuro:claim' %}">IDとパスワードを決めると、ほかのスマホからも使えます ›</a></p>{% endif %}
         {% block content %}{% endblock %}
         <footer class="cb-footer">
             <a href="{% url 'portal:home' %}">Yapp</a>
@@ -98,9 +99,9 @@
 
 <nav class="cb-tabbar" aria-label="メニュー">
     <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}<span>HOME</span></a>
-    <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}<span>つぶやき</span></a>
     <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}<span>質問</span></a>
     <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}<span>ゆずりあい</span></a>
+    <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}<span>つぶやき</span></a>
     <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}<span>募集・告知</span></a>
 </nav>
 
@@ -136,6 +137,13 @@ document.addEventListener("submit", function (event) {
     if (form.dataset.sent) { event.preventDefault(); return; }
     form.dataset.sent = "1";
     setTimeout(function () { delete form.dataset.sent; }, 4000);
+});
+document.addEventListener("input", function (event) {
+    // 登録なしで書くとき: 書きはじめたら、名前とメールの欄を出す
+    var area = event.target;
+    if (!area.matches || !area.matches('textarea[name="body"]') || !area.form) return;
+    var guest = area.form.querySelector("[data-guest]");
+    if (guest) guest.classList.add("is-open");
 });
 document.querySelectorAll("[data-autosubmit]").forEach(function (field) {
     field.addEventListener("change", function () { field.form.submit(); });

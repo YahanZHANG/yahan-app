@@ -1,5 +1,5 @@
-{% comment %}開いたときの「今日のひとこと」: お守り占い・スイスドイツ語・豆知識を1枚にまとめて出す (アンケートは _pollpop.html)。
-1日1回だけ自動で出す (マイページで選んだものだけ)。HOME の「今日のひとこと」ボタンでは全部見られる。
+{% comment %}開いたときの「今日のひとこと」: お守り占い・スイスドイツ語・豆知識の3つを1枚にまとめて出す。
+1日1回だけ自動で出す (マイページで選んだものだけ)。その日1回目は「質問してみませんか」(_ask.html) なので、2回目に開いたとき。HOME の「今日のひとこと」ボタンでは全部見られる。
 「1週間表示しない」はこの端末だけ (localStorage)。ずっと出さないのはマイページの設定で。{% endcomment %}
 <dialog class="cb-daily" id="cb-daily" aria-labelledby="cb-daily-title" data-day="{{ daily.day|date:'Y-m-d' }}" data-auto="{% if show_daily %}1{% endif %}">
     <div class="cb-daily-box">
@@ -17,7 +17,6 @@
                     <div>
                         <p class="cb-daily-charm-name">{{ daily.charm.name }}<small>{{ daily.charm.german }}</small></p>
                         <p class="cb-daily-msg">{{ daily.charm.message }}</p>
-                        <p class="cb-daily-action">ラッキーアクション：{{ daily.charm.action }}</p>
                     </div>
                 </div>
             </section>
@@ -25,7 +24,6 @@
             <section class="cb-daily-part cb-daily-sec" data-card="word" {% if "daily_word" in daily_auto %}data-auto{% endif %}>
                 <p class="cb-daily-label">🗣️ 今日のスイスドイツ語</p>
                 <p class="cb-daily-word"><b lang="gsw">{{ daily.word.text }}</b><span>{{ daily.word.reading }}</span>＝ {{ daily.word.meaning }}</p>
-                {% if daily.word.note %}<p class="cb-daily-origin">{{ daily.word.note }}</p>{% endif %}
             </section>
 
             <section class="cb-daily-part cb-daily-sec" data-card="trivia" {% if "daily_trivia" in daily_auto %}data-auto{% endif %}>
@@ -68,7 +66,7 @@
     var snoozed = Number(read("cb_daily_snooze_until") || 0) > Date.now();
     if (/^#poll\d+$/.test(location.hash)) {
         // アンケートに答えたあと (結果は _pollpop.html が出す)
-    } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day) {
+    } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day && !window.cbAskShown) {
         // 1日の最初に開いたときだけ、選ばれたものを自動で出す
         var auto = parts.filter(function (part) { return part.hasAttribute("data-auto"); });
         if (auto.length) setTimeout(function () { open(auto); }, 400);

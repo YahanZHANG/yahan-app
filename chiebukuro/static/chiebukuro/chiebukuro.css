@@ -1594,3 +1594,37 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-staff-photo-form input[type=file] { font: inherit; font-weight: 400; }
 .cb-staff-photo-form .cb-sub { margin: 0; font-size: 13px; }
 .cb-staff-photo-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 2026-11-16: 質問がいちばん前。HOME のいちばん上で質問できる */
+.cb-askbox { background: var(--surface); border-bottom: 1px solid var(--line); padding: 16px 16px 12px; }
+.cb-askbox-title { margin: 0 0 10px; font-size: 19px; font-weight: 900; line-height: 1.4; }
+.cb-askbox-form { display: grid; gap: 8px; }
+.cb-askbox-form textarea, .cb-askpop-form textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; line-height: 1.6; padding: 10px 12px; border: 2px solid var(--brand); border-radius: 10px; background: var(--surface); color: var(--text); resize: vertical; }
+.cb-askbox-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cb-askbox-bar .cb-btn { min-width: 120px; font-size: 15px; }
+.cb-askbox-hint { margin: 8px 0 0; font-size: 13px; color: var(--sub); }
+.cb-guest { display: none; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
+.cb-guest.is-open, .cb-form .cb-guest { display: grid; }
+.cb-guest .cb-field span { font-size: 13px; font-weight: 700; }
+.cb-guest input[type=text], .cb-guest input[type=email] { font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); }
+.cb-guest-note { margin: 0; font-size: 12.5px; color: var(--sub); }
+.cb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.cb-guestbar { margin: 8px 12px; padding: 8px 12px; border-radius: var(--radius); background: var(--unread); font-size: 13.5px; }
+.cb-ask-tips { margin-top: 6px; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); font-size: 14px; }
+.cb-ask-tips p { margin: 0 0 4px; color: var(--sub); }
+.cb-ask-tips ul { margin: 0; padding-left: 18px; }
+.cb-dailybar { margin-top: 8px; }
+
+/* ポップアップ: 文字を大きく、情報は少なく */
+.cb-askpop-lead { margin: 4px 0 0; font-size: 14px; opacity: .95; }
+.cb-askpop .cb-daily-head h2, .cb-daily .cb-daily-head h2 { font-size: 22px; }
+.cb-askpop-form { padding: 0 18px; gap: 10px; }
+.cb-askpop-examples { margin: 0; padding-left: 18px; font-size: 14px; color: var(--sub); }
+.cb-askpop-send { font-size: 16px; min-height: 46px; }
+.cb-daily-label { font-size: 13px; }
+.cb-daily-charm-name { font-size: 19px; }
+.cb-daily-msg { font-size: 16px; line-height: 1.6; }
+.cb-daily-word { font-size: 16px; }
+.cb-daily-word b { font-size: 21px; }
+.cb-daily-word span { font-size: 14px; }
+.cb-daily-note { font-size: 16px; line-height: 1.65; }

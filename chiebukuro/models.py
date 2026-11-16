@@ -462,6 +462,9 @@ class BoardProfile(models.Model):
     avatar_parts = models.JSONField("イラストの組み合わせ", default=dict, blank=True)
     photo_url = models.URLField("プロフィール写真", max_length=500, blank=True)
     rules_agreed_at = models.DateTimeField("ルールに同意した日時", null=True, blank=True)
+    is_guest = models.BooleanField("登録なしで書きこんだ人", default=False, help_text="ID・パスワードを決めずに書きこんだ人 (この端末だけでログイン中)")
+    guest_token = models.UUIDField("事前アンケートの端末の目印", null=True, blank=True, db_index=True, help_text="事前アンケートに答えた端末で開くと、自動でこのアカウントになる")
+    email_answer = models.BooleanField("回答がついたらメールで知らせる", default=False)
 
     class PushFrequency(models.TextChoices):
         INSTANT = "instant", "すぐに知らせる"
