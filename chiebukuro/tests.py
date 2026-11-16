@@ -721,9 +721,8 @@ class HomeExtrasTests(BoardTestCase):
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "50%")
 
     def test_sponsor_slot_and_click(self):
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
         sponsor = Sponsor.objects.create(name="和ショップ", title="日本の食材を宅配", link="https://example.com/")
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "日本の食材を宅配")
         response = self.client.get(reverse("chiebukuro:sponsor", args=[sponsor.pk]))
         self.assertEqual(response["Location"], "https://example.com/")
         sponsor.refresh_from_db()

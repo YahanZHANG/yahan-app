@@ -32,11 +32,11 @@
     <header class="cb-block-head"><h2>回答 {{ answers|length }}件</h2>{% if answers|length > 1 %}<span class="cb-sub">参考になった順</span>{% endif %}</header>
     {% if can_choose and answers and not question.solved_at %}
         <div class="cb-best-ask">
-            <p><b>{% if user.pk == question.author_id %}解決しましたか？{% else %}運営：ベストアンサーを選べます{% endif %}</b>いちばん役に立った回答の「ベストアンサーに選ぶ」を押してください。答えた人に「ありがとう」が届きます。</p>
-            <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-textbtn">選ばずに「解決済み」にする</button></form>
+            <p><b>{% if user.pk == question.author_id %}解決しましたか？{% else %}運営：ベストアンサーを選べます{% endif %}</b>役に立った回答の「👑 ベストアンサー」を押すと、答えた人にお礼が届きます。</p>
+            <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-btn cb-btn-s">✓ 解決済みにする</button></form>
         </div>
     {% elif can_choose and question.solved_at %}
-        <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}" class="cb-best-undo">{% csrf_token %}<input type="hidden" name="answer" value="0"><button type="submit" class="cb-textbtn">「回答募集中」にもどす</button></form>
+        <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}" class="cb-best-undo">{% csrf_token %}<input type="hidden" name="answer" value="0"><span class="cb-sub">✓ 解決済みの質問です</span><button type="submit" class="cb-textbtn">取り消す</button></form>
     {% endif %}
     {% for answer in answers %}
         <article class="cb-answer {% if best_answer and answer.pk == best_answer.pk %}is-best{% endif %}" id="a{{ answer.pk }}">
@@ -58,7 +58,7 @@
                 {% endif %}
                 {% include "chiebukuro/_stamps.html" with obj=answer target="answer" prefix="a" %}
                 {% if can_choose and answer.author_id != question.author_id %}
-                    <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="{{ answer.pk }}"><button type="submit" class="cb-textbtn cb-best-btn">{% if chosen and answer.pk == chosen.pk %}ベストアンサーをやめる{% else %}👑 ベストアンサーに選ぶ{% endif %}</button></form>
+                    <form method="post" action="{% url 'chiebukuro:choose_best' question.pk %}">{% csrf_token %}<input type="hidden" name="answer" value="{{ answer.pk }}"><button type="submit" class="cb-best-btn{% if chosen and answer.pk == chosen.pk %} is-on{% endif %}">{% if chosen and answer.pk == chosen.pk %}選択を取り消す{% else %}👑 ベストアンサー{% endif %}</button></form>
                 {% endif %}
                 {% if user.is_authenticated and answer.author_id == user.pk %}
                     <a href="{% url 'chiebukuro:edit' 'answer' answer.pk %}" class="cb-textbtn">編集</a>
