@@ -13,10 +13,10 @@
             <small class="cb-sub">お店・サービスと教室・レッスンには「PR」の印がつきます。</small>
         </label>
         <label class="cb-field"><span>タイトル</span>
-            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required placeholder="例: 子ども向け日本語の読み聞かせ会（毎月第1土曜）">
+            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required>
         </label>
         <label class="cb-field"><span>内容</span>
-            <textarea name="body" rows="6" maxlength="{{ body_max }}" required placeholder="何を・だれに・いつ・どこで・料金など">{{ values.body }}</textarea>
+            <textarea name="body" rows="6" maxlength="{{ body_max }}" required>{{ values.body }}</textarea>
         </label>
         {% include "chiebukuro/_photo_field.html" %}
         <div class="cb-field-row">
@@ -25,8 +25,8 @@
                 <select name="notice_region"><option value="">スイス全体</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == values.notice_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
             </label>
         </div>
-        <label class="cb-field"><span>場所（任意）</span><input type="text" name="place" value="{{ values.place }}" maxlength="80" placeholder="例: Winterthur 駅前の公民館"></label>
-        <label class="cb-field"><span>リンク（お店のサイトなど・任意）</span><input type="url" name="link" value="{{ values.link }}" maxlength="500" placeholder="https://"></label>
+        <label class="cb-field"><span>場所（任意）</span><input type="text" name="place" value="{{ values.place }}" maxlength="80"></label>
+        <label class="cb-field"><span>リンク（お店のサイトなど・任意）</span><input type="url" name="link" value="{{ values.link }}" maxlength="500"></label>
         <div class="cb-rules">
             <p><strong>ルール</strong></p>
             <ul>

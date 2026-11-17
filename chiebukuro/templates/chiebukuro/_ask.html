@@ -9,10 +9,7 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
         <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-daily-body cb-askpop-form" data-rules>
             {% csrf_token %}
             <label class="cb-sr" for="cb-askpop-body">質問</label>
-            <textarea name="body" id="cb-askpop-body" rows="3" maxlength="500" required placeholder="例：{{ ask_examples.0 }}"></textarea>
-            <ul class="cb-askpop-examples" aria-label="質問の例">
-                {% for example in ask_examples|slice:"1:3" %}<li>{{ example }}</li>{% endfor %}
-            </ul>
+            <textarea name="body" id="cb-askpop-body" rows="3" maxlength="500" required></textarea>
             {% include "chiebukuro/_guest_fields.html" %}
             <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">質問する</button>
         </form>

@@ -13,8 +13,8 @@
             {% csrf_token %}
             <p class="cb-sub">A か B のどちらかを入れて「差し替える」を押してください。</p>
             <label>A. 写真のファイルを選ぶ<input type="file" name="photo" accept="image/*"></label>
-            <label>B. 写真のURL（Wikimedia のページのURLでもOK）<input type="url" name="url" placeholder="https://commons.wikimedia.org/wiki/File:…"></label>
-            <label>出典・クレジット（任意）<input type="text" name="credit" maxlength="200" placeholder="例：Wikimedia Commons / 撮影者名 / CC BY-SA 4.0"></label>
+            <label>B. 写真のURL（Wikimedia のページのURLでもOK）<input type="url" name="url"></label>
+            <label>出典・クレジット（任意）<input type="text" name="credit" maxlength="200"></label>
             <p class="cb-sub">Wikimedia のページのURLなら、出典は空でも自動で入ります。</p>
             <div class="cb-staff-photo-actions">
                 <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">差し替える</button>
@@ -30,7 +30,7 @@
                 {% csrf_token %}
                 <div class="cb-inline-compose">
                     <label class="cb-sr" for="reply-body">返信</label>
-                    <textarea name="body" id="reply-body" rows="1" required placeholder="返信する" data-grow></textarea>
+                    <textarea name="body" id="reply-body" rows="1" required data-grow></textarea>
                     <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">返信</button>
                 </div>
                 {% include "chiebukuro/_photo_field.html" %}

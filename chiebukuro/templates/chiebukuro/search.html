@@ -4,7 +4,7 @@
 <h1 class="cb-page-title">検索</h1>
 <form method="get" class="cb-search cb-search-page">
     {% include "chiebukuro/_icon.html" with name="search" %}
-    <input type="search" name="q" value="{{ query }}" placeholder="キーワード（例: 保険、日本食、ベビーカー）" aria-label="キーワード" {% if not query %}autofocus{% endif %}>
+    <input type="search" name="q" value="{{ query }}" aria-label="キーワード" {% if not query %}autofocus{% endif %}>
 </form>
 {% if query %}
     {% if not found %}<p class="cb-empty">「{{ query }}」は見つかりませんでした。<a href="{% url 'chiebukuro:ask' %}">質問してみる</a></p>{% endif %}

@@ -40,7 +40,7 @@
     </div>
     <form method="get" action="{% url 'chiebukuro:search' %}" class="cb-searchbar" id="cb-searchbar" role="search" hidden>
         {% include "chiebukuro/_icon.html" with name="search" %}
-        <input type="search" name="q" value="{{ query|default:'' }}" placeholder="掲示板の中を検索（例: 保険、日本食、歯医者）" aria-label="掲示板の中を検索">
+        <input type="search" name="q" value="{{ query|default:'' }}" aria-label="掲示板の中を検索">
         <button type="submit" class="cb-btn cb-btn-primary cb-btn-s">検索</button>
     </form>
 </header>
@@ -86,7 +86,7 @@
     <aside class="cb-aside">
         {% block aside %}
         <form method="get" action="{% url 'chiebukuro:search' %}" class="cb-aside-search">
-            <input type="search" name="q" placeholder="掲示板の中を検索" aria-label="掲示板の中を検索">
+            <input type="search" name="q" aria-label="掲示板の中を検索">
         </form>
         <section class="cb-aside-box">
             <h2>この掲示板のルール</h2>
@@ -160,6 +160,69 @@ document.addEventListener("click", function (event) {
     if (ideas.length > 1) while (next === field.value) next = ideas[Math.floor(Math.random() * ideas.length)];
     field.value = next;
 });
+document.addEventListener("click", function (event) {
+    // 「もっと見る」: 次のページの分を、いまの一覧の下につなげる
+    var link = event.target.closest && event.target.closest("[data-load-more]");
+    if (!link || event.metaKey || event.ctrlKey) return;
+    var pager = link.closest(".cb-pager");
+    var list = pager && pager.previousElementSibling;
+    if (!list || !window.fetch || !window.DOMParser) return;
+    event.preventDefault();
+    if (link.dataset.loading) return;
+    link.dataset.loading = "1";
+    link.textContent = "読みこみ中…";
+    fetch(link.href, { credentials: "same-origin" })
+        .then(function (response) { return response.text(); })
+        .then(function (html) {
+            var doc = new DOMParser().parseFromString(html, "text/html");
+            var nextPager = doc.querySelector(".cb-pager");
+            var nextList = nextPager && nextPager.previousElementSibling;
+            if (!nextList) { location.href = link.href; return; }
+            while (nextList.firstChild) list.appendChild(document.adoptNode(nextList.firstChild));
+            var more = nextPager.querySelector("[data-load-more]");
+            if (more) { link.href = more.href; link.textContent = "もっと見る"; delete link.dataset.loading; }
+            else { pager.remove(); }
+        })
+        .catch(function () { location.href = link.href; });
+});
+(function () {
+    // ホーム画面のアプリ (standalone) で、いちばん上から下に引っぱると最新に更新 (2026-11-17 Taro)。
+    // ブラウザで開いているときは、ブラウザの「引っぱって更新」がもともとあるので何もしない
+    var standalone = window.navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    if (!standalone || !("ontouchstart" in window)) return;
+    var mark = document.createElement("div");
+    mark.className = "cb-ptr";
+    mark.setAttribute("aria-hidden", "true");
+    mark.textContent = "↓";
+    document.body.appendChild(mark);
+    var startY = null, pull = 0, LIMIT = 70;
+    document.addEventListener("touchstart", function (event) {
+        var target = event.target;
+        if (window.scrollY > 0 || document.querySelector("dialog[open]") || (target.closest && target.closest("textarea, input, select, .cb-strip"))) { startY = null; return; }
+        startY = event.touches[0].clientY;
+        pull = 0;
+    }, { passive: true });
+    document.addEventListener("touchmove", function (event) {
+        if (startY === null) return;
+        pull = Math.max(0, event.touches[0].clientY - startY);
+        if (window.scrollY > 0) pull = 0;
+        var shown = Math.min(pull, LIMIT * 1.4);
+        mark.style.transform = "translate(-50%, " + (shown - 44) + "px) rotate(" + (pull >= LIMIT ? 180 : 0) + "deg)";
+        mark.style.opacity = String(Math.min(1, pull / LIMIT));
+    }, { passive: true });
+    document.addEventListener("touchend", function () {
+        if (startY === null) return;
+        if (pull >= LIMIT) {
+            mark.textContent = "↻";
+            mark.classList.add("is-loading");
+            location.reload();
+        } else {
+            mark.style.transform = "";
+            mark.style.opacity = "0";
+        }
+        startY = null;
+    });
+})();
 document.querySelectorAll("[data-autosubmit]").forEach(function (field) {
     field.addEventListener("change", function () { field.form.submit(); });
 });

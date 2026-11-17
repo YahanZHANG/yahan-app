@@ -10,7 +10,7 @@
     <p class="cb-askline-head"><span class="cb-askline-q" aria-hidden="true">?</span><span class="cb-askline-text">気軽に質問してみよう</span>{% if not user.is_authenticated %}<span class="cb-askline-tag">ログイン不要</span>{% endif %}</p>
     <div class="cb-askline-row">
         <label class="cb-sr" for="cb-askline-body">質問</label>
-        <textarea name="body" id="cb-askline-body" rows="1" maxlength="500" required data-grow placeholder="知りたいことを、ひとことで"></textarea>
+        <textarea name="body" id="cb-askline-body" rows="1" maxlength="500" required data-grow></textarea>
         <button type="submit" class="cb-askline-send">質問する</button>
     </div>
     {% include "chiebukuro/_guest_fields.html" %}
