@@ -1,0 +1,36 @@
+{% comment %}回答のお願い (2026-11-17 Taro): 回答がない (運営だけが答えた) 質問を、HOME を3回開くごとに1回くらい出す。
+その日のほかのポップアップ (アンケートのお礼・質問・今日のひとこと) が出るときは出さず、次の回に。その場で答えて送れる。{% endcomment %}
+{% if answer_pop %}
+<dialog class="cb-daily cb-askpop cb-answerpop" id="cb-answerpop" aria-labelledby="cb-answerpop-title">
+    <div class="cb-daily-box">
+        <button type="button" class="cb-askpop-x" data-answerpop-close aria-label="閉じる">×</button>
+        <form method="post" action="{% url 'chiebukuro:question' answer_pop.pk %}" class="cb-daily-body cb-askpop-form" data-rules>
+            {% csrf_token %}
+            <p class="cb-answerpop-lead">この質問、わかる方いませんか？</p>
+            <h2 id="cb-answerpop-title" class="cb-answerpop-q"><a href="{% url 'chiebukuro:question' answer_pop.pk %}">{{ answer_pop.body|truncatechars:160 }}</a></h2>
+            <label class="cb-sr" for="cb-answerpop-body">回答</label>
+            <textarea name="body" id="cb-answerpop-body" rows="3" maxlength="2000" required></textarea>
+            {% include "chiebukuro/_guest_fields.html" %}
+            <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">回答する</button>
+        </form>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-answerpop");
+    if (!dialog || !dialog.showModal) return;
+    var count = 0;
+    try { count = Number(localStorage.getItem("cb_answerpop_count") || 0) + 1; } catch (e) { return; }
+    var busy = window.cbThanksShown || window.cbAskShown || window.cbDailyShown || location.hash;
+    if (count < 3 || busy) { try { localStorage.setItem("cb_answerpop_count", String(count)); } catch (e) {} return; }
+    setTimeout(function () {
+        if (document.querySelector("dialog[open]") || (document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) return;
+        try { localStorage.setItem("cb_answerpop_count", "0"); } catch (e) {}
+        dialog.showModal();
+    }, 2500);
+    function close() { dialog.close(); }
+    dialog.querySelector("[data-answerpop-close]").addEventListener("click", close);
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
+})();
+</script>
+{% endif %}

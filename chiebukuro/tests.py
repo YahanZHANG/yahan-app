@@ -909,7 +909,7 @@ class RulesAgreementTests(BoardTestCase):
 
     def test_rules_page_shows_full_text(self):
         page = self.client.get(reverse("chiebukuro:rules"))
-        self.assertContains(page, "ご利用にあたって")
+        self.assertContains(page, "運営（Yapp）は責任を負いません")
 
 
 class WeatherHereTests(BoardTestCase):
