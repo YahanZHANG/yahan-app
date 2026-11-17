@@ -49,7 +49,7 @@
         {% if user.is_authenticated %}
             <form method="post" action="{% url 'chiebukuro:notice_request' notice.pk %}" class="cb-form" data-rules>
                 {% csrf_token %}
-                <textarea name="body" rows="3" maxlength="{{ message_max }}" required placeholder="聞きたいことを書いてください"></textarea>
+                <textarea name="body" rows="3" maxlength="{{ message_max }}" required></textarea>
                 <button type="submit" class="cb-btn cb-btn-primary">問い合わせを送る</button>
             </form>
             <p class="cb-note">このメッセージは {{ notice.display_name }}さんだけが読めます。</p>

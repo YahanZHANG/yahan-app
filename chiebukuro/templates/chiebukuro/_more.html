@@ -13,7 +13,7 @@
                 <input type="hidden" name="target" value="{{ more_kind }}">
                 <input type="hidden" name="target_id" value="{{ more_id }}">
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <input type="text" name="reason" maxlength="500" placeholder="理由（任意）" aria-label="通報の理由">
+                <input type="text" name="reason" maxlength="500" aria-label="通報の理由">
                 <button type="submit">運営に通報する</button>
             </form>
         {% endif %}

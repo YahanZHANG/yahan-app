@@ -9,7 +9,7 @@
         {% csrf_token %}
         <label class="cb-field">
             <span>質問{% if user.is_authenticated %}（「{{ nickname }}」として載ります）{% endif %}</span>
-            <textarea name="body" rows="4" maxlength="{{ max_length }}" required placeholder="例：{{ examples.1 }}" data-count="ask-left">{{ body }}</textarea>
+            <textarea name="body" rows="4" maxlength="{{ max_length }}" required data-count="ask-left">{{ body }}</textarea>
             <small class="cb-sub">あと <span id="ask-left"></span> 文字</small>
         </label>
         {% include "chiebukuro/_photo_field.html" %}

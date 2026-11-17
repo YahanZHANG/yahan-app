@@ -1694,3 +1694,10 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-guest-row > span { width: 6.2em; min-width: 0; }
 .cb-askline .cb-guest { background: var(--surface); }
 .cb-askline-row, .cb-askline > * { min-width: 0; }
+
+/* 「もっと見る」 */
+.cb-more-btn { min-width: min(320px, 80%); }
+/* 引っぱって更新 (ホーム画面のアプリだけ) */
+.cb-ptr { position: fixed; top: calc(var(--header-h) + env(safe-area-inset-top)); left: 50%; z-index: 40; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--surface); color: var(--brand); box-shadow: 0 2px 10px rgba(0, 0, 0, .2); font-size: 18px; font-weight: 800; opacity: 0; transform: translate(-50%, -44px); transition: opacity .15s; pointer-events: none; }
+.cb-ptr.is-loading { animation: cb-ptr-spin .8s linear infinite; }
+@keyframes cb-ptr-spin { from { transform: translate(-50%, 26px) rotate(0); } to { transform: translate(-50%, 26px) rotate(360deg); } }

@@ -9,7 +9,7 @@
         {% csrf_token %}
         <label class="cb-field">
             <span>「{{ nickname }}」として載ります</span>
-            <textarea name="body" rows="5" maxlength="{{ max_length }}" required placeholder="例: Coop の冷凍コーナーに枝豆がありました！" data-count="post-left">{{ body }}</textarea>
+            <textarea name="body" rows="5" maxlength="{{ max_length }}" required data-count="post-left">{{ body }}</textarea>
             <small class="cb-sub">あと <span id="post-left"></span> 文字</small>
         </label>
         {% include "chiebukuro/_photo_field.html" %}

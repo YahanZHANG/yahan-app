@@ -4,8 +4,8 @@
 {% if not user.is_authenticated %}
 <div class="cb-guest" data-guest>
     <input type="text" name="website" class="cb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <label class="cb-guest-row"><span>ニックネーム</span><input type="text" name="guest_nickname" maxlength="30" value="{{ guest_nickname|default:'' }}" placeholder="好きな名前" autocomplete="nickname"><button type="button" class="cb-guest-auto" data-name-ideas="{{ guest_name_ideas }}">おまかせ</button></label>
-    <label class="cb-guest-row"><span>メール（任意）</span><input type="email" name="guest_email" maxlength="200" value="{{ guest_email|default:'' }}" placeholder="回答がついたらお知らせ" autocomplete="email" inputmode="email"></label>
+    <label class="cb-guest-row"><span>ニックネーム</span><input type="text" name="guest_nickname" maxlength="30" value="{{ guest_nickname|default:'' }}" autocomplete="nickname"><button type="button" class="cb-guest-auto" data-name-ideas="{{ guest_name_ideas }}">おまかせ</button></label>
+    <label class="cb-guest-row"><span>メール（任意）</span><input type="email" name="guest_email" maxlength="200" value="{{ guest_email|default:'' }}" autocomplete="email" inputmode="email"></label>
     <p class="cb-guest-note">送信すると<a href="{% url 'chiebukuro:rules' %}" target="_blank">ルール</a>に同意したことになります。登録済みの方は<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログイン</a></p>
 </div>
 {% endif %}

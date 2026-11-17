@@ -8,7 +8,7 @@
     {% include "chiebukuro/_icon.html" with name="search" %}
     <input type="hidden" name="sort" value="{{ sort }}">
     {% if theme %}<input type="hidden" name="theme" value="{{ theme }}">{% endif %}
-    <input type="search" name="q" value="{{ query }}" placeholder="知りたいことを検索（例: 歯医者、滞在許可）" aria-label="質問を検索">
+    <input type="search" name="q" value="{{ query }}" aria-label="質問を検索">
 </form>
 
 <nav class="cb-seg" aria-label="並べ方">

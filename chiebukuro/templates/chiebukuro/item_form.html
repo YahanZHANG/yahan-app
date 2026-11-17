@@ -15,14 +15,14 @@
         <input type="hidden" name="kind" value="{{ kind }}">
         <label class="cb-field">
             <span>{{ title_label }}</span>
-            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required placeholder="{{ title_placeholder }}">
+            <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required>
         </label>
         <label class="cb-field"><span>ジャンル</span>
             <select name="genre" required><option value="">選んでください</option>{% for value, label in genres %}<option value="{{ value }}" {% if value == values.genre %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
         </label>
         <label class="cb-field">
             <span>説明（任意）</span>
-            <textarea name="body" rows="4" maxlength="{{ body_max }}" placeholder="{{ body_placeholder }}">{{ values.body }}</textarea>
+            <textarea name="body" rows="4" maxlength="{{ body_max }}">{{ values.body }}</textarea>
         </label>
         {% include "chiebukuro/_photo_field.html" %}
         <div class="cb-field-row">
@@ -30,7 +30,7 @@
                 <select name="item_region"><option value="">選ばない</option>{% for value, label in regions %}<option value="{{ value }}" {% if value == values.item_region %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
             </label>
             <label class="cb-field"><span>受け渡しの場所（だいたいで）</span>
-                <input type="text" name="place" value="{{ values.place }}" maxlength="80" placeholder="例: Oerlikon 駅の近く">
+                <input type="text" name="place" value="{{ values.place }}" maxlength="80">
             </label>
         </div>
         <div class="cb-rules">

@@ -1,7 +1,8 @@
+{% comment %}ページ送り: 「もっと見る」で、次のページの分をこのページの下につなげる (2026-11-17 Taro)。
+JS がないときは、ふつうのリンクとして次のページへ。つなげる先は、この直前の一覧 (section)。{% endcomment %}
 {% if page.has_other_pages %}
 <nav class="cb-pager" aria-label="ページ">
     {% if page.has_previous %}<a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page.previous_page_number }}" class="cb-btn cb-btn-s">‹ 前へ</a>{% endif %}
-    <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
-    {% if page.has_next %}<a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page.next_page_number }}" class="cb-btn cb-btn-s">次へ ›</a>{% endif %}
+    {% if page.has_next %}<a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page.next_page_number }}" class="cb-btn cb-more-btn" data-load-more>もっと見る</a>{% endif %}
 </nav>
 {% endif %}
