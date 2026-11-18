@@ -1,5 +1,5 @@
 {% load static board %}<!DOCTYPE html>
-<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}" data-cb-color="{{ board_color|default:'classic' }}">
+<html lang="ja" data-yapp-theme="{{ yapp_theme|default:'system' }}" data-cb-color="{{ board_color|default:'classic' }}"{% if board_pattern %} data-cb-pattern="{{ board_pattern }}"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -26,6 +26,7 @@
             <img src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" class="cb-brand-mark" width="28" height="28">
             <span class="cb-brand-name">スイス掲示板</span>
         </a>
+            {% include "includes/yapp_switcher.html" with current="swiss-board" %}
         <div class="cb-header-tools">
             {% if tab != 'install' %}<a href="{% url 'chiebukuro:install' %}" class="cb-install-pill yapp-install-only">📲 アプリ<span class="cb-pill-long">にする</span></a>{% endif %}
             <a href="{% url 'chiebukuro:install' %}" class="cb-install-pc{% if tab == 'install' %} on{% endif %}">ホーム画面に追加</a>
@@ -85,9 +86,6 @@
 
     <aside class="cb-aside">
         {% block aside %}
-        <form method="get" action="{% url 'chiebukuro:search' %}" class="cb-aside-search">
-            <input type="search" name="q" aria-label="掲示板の中を検索">
-        </form>
         <section class="cb-aside-box">
             <h2>この掲示板のルール</h2>
             {% include "chiebukuro/_rules.html" %}

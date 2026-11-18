@@ -6230,3 +6230,6 @@
         display: none;
     }
 }
+
+/* Yapp のアプリ切り替え (ロゴのすぐ横) */
+.news-topbar-inner .yapp-switch { margin-left: -6px; }

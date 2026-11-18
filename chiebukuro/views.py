@@ -71,7 +71,6 @@ from .services import (
     release_survey_questions,
     best_answers,
     my_votes,
-    poll_for_home,
     poll_result,
     weekend_outings,
     featured_this_week,
@@ -213,25 +212,32 @@ def by_region(queryset, region, field="region"):
 FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "notices", "daily", "me", "bell")}
 
 
-def board_color(user):
-    """着せかえの色。12時間ごとに変える設定なら、半日ごとに順番に"""
+def board_look(user):
+    """着せかえ (色, 模様)。12時間ごとに変える設定なら、色を半日ごとに順番に"""
 
     if not user.is_authenticated:
-        return "classic"
-    row = BoardProfile.objects.filter(user=user).values("color", "color_auto").first()
+        return "classic", ""
+    row = BoardProfile.objects.filter(user=user).values("color", "color_auto", "pattern").first()
     if not row:
-        return "classic"
+        return "classic", ""
+    color = row["color"]
     if row["color_auto"]:
         now = timezone.localtime()
         colors = BoardProfile.Color.values
-        return colors[(now.toordinal() * 2 + (1 if now.hour >= 12 else 0)) % len(colors)]
-    return row["color"]
+        color = colors[(now.toordinal() * 2 + (1 if now.hour >= 12 else 0)) % len(colors)]
+    return color, row["pattern"]
+
+
+def board_color(user):
+    return board_look(user)[0]
 
 
 def board_context(request, tab, region=None):
     fab = FAB.get(tab)
+    color, pattern = board_look(request.user)
     return {
-        "board_color": board_color(request.user),
+        "board_color": color,
+        "board_pattern": pattern,
         "tab": tab,
         "board_is_open": BoardSettings.current().is_open,
         "board_preview": getattr(request, "board_preview", False),
@@ -391,7 +397,6 @@ def home(request):
 
     region = current_region(request)
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
-    poll = poll_for_home(request, voter_key)
     sections = home_questions(region)
     daily_auto = set(DAILY_CARDS)
     if request.user.is_authenticated:
@@ -405,11 +410,9 @@ def home(request):
         "chiebukuro/home.html",
         {
             **board_context(request, "home", region),
-            "poll": poll,
             "daily": daily,
             "show_daily": bool(daily_auto),
             "daily_auto": daily_auto,
-            "poll_auto": False,
             "sections": sections,
             "examples": question_examples() or ASK_EXAMPLES,
             "answer_pop": answer_pop_question(request.user, region),
@@ -1734,14 +1737,12 @@ def settings_view(request):
         frequency = request.POST.get("push_frequency", "")
         if frequency in BoardProfile.PushFrequency.values:
             board_profile.push_frequency = frequency
-        for field in toggles + DAILY_CARDS + ["daily_poll", "color_auto"]:
+        for field in toggles + DAILY_CARDS:
             setattr(board_profile, field, request.POST.get(field) == "1")
         # 「ずっと表示しない」か、1つもえらばなければ、自動では出さない
         board_profile.daily_popup = request.POST.get("daily_popup", "1") != "0" and any(
             getattr(board_profile, field) for field in DAILY_CARDS
         )
-        if request.POST.get("color") in BoardProfile.Color.values:
-            board_profile.color = request.POST["color"]
         board_profile.save()
         messages.success(request, "設定を保存しました。")
         return redirect("chiebukuro:settings")
@@ -1755,13 +1756,40 @@ def settings_view(request):
             "theme": yapp_profile.theme_preference,
             "themes": UserProfile.THEME_CHOICES,
             "frequencies": BoardProfile.PushFrequency.choices,
-            "colors": BoardProfile.Color.choices,
             "toggles": [(field, BoardProfile._meta.get_field(field).verbose_name, getattr(board_profile, field)) for field in toggles],
             "daily_cards": [
                 (field, label, getattr(board_profile, field))
                 for field, label in zip(DAILY_CARDS, ["お守り占い", "スイスドイツ語", "豆知識"])
             ],
             "vapid_public_key": getattr(django_settings, "VAPID_PUBLIC_KEY", "") or "",
+        },
+    )
+
+
+@board_open
+@login_required
+def kisekae(request):
+    """着せかえ: 色 (6色) と日本の模様 (2026-11-18 Taro: 読むのに邪魔にならない、うすい和柄の背景)"""
+
+    board_profile, _ = BoardProfile.objects.get_or_create(user=request.user)
+    if request.method == "POST":
+        if request.POST.get("color") in BoardProfile.Color.values:
+            board_profile.color = request.POST["color"]
+        if request.POST.get("pattern", "") in BoardProfile.Pattern.values:
+            board_profile.pattern = request.POST.get("pattern", "")
+        board_profile.color_auto = request.POST.get("color_auto") == "1"
+        board_profile.save(update_fields=["color", "pattern", "color_auto", "updated_at"])
+        messages.success(request, "着せかえを保存しました。")
+        return redirect("chiebukuro:kisekae")
+
+    return render(
+        request,
+        "chiebukuro/kisekae.html",
+        {
+            **board_context(request, "me"),
+            "board_profile": board_profile,
+            "colors": BoardProfile.Color.choices,
+            "patterns": BoardProfile.Pattern.choices,
         },
     )
 

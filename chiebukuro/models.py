@@ -511,6 +511,21 @@ class BoardProfile(models.Model):
 
     color = models.CharField("着せかえの色", max_length=20, choices=Color.choices, default=Color.CLASSIC)
     color_auto = models.BooleanField("12時間ごとに色を変える", default=False)
+
+    class Pattern(models.TextChoices):
+        NONE = "", "模様なし"
+        ASANOHA = "asanoha", "麻の葉"
+        SEIGAIHA = "seigaiha", "青海波"
+        ICHIMATSU = "ichimatsu", "市松"
+        SHIPPO = "shippo", "七宝"
+        YAGASURI = "yagasuri", "矢絣"
+        KIKKO = "kikko", "亀甲"
+        UROKO = "uroko", "鱗"
+        KAGOME = "kagome", "籠目"
+        HISHI = "hishi", "菱"
+        SAKURA = "sakura", "桜"
+
+    pattern = models.CharField("着せかえの模様", max_length=20, choices=Pattern.choices, default="", blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

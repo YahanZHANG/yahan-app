@@ -693,18 +693,14 @@ class HomeExtrasTests(BoardTestCase):
         poll = Poll.objects.create(question="スイスで一番好きな季節は？")
         spring = PollChoice.objects.create(poll=poll, label="春", order=1)
         autumn = PollChoice.objects.create(poll=poll, label="秋", order=2)
-        response = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(response, "スイスで一番好きな季節は？")
-        self.assertContains(response, "答えると結果が見られます")
-        # アンケートは自動では出さない (HOME のボタンから開く)
-        self.assertContains(response, 'id="cb-pollpop"')
-        self.assertNotContains(response, 'data-poll="%d" data-auto="1"' % poll.pk)
-        self.assertNotIn("cb-poll-q", response.content.decode().split('id="cb-daily"')[1].split("</dialog>")[0])
+        # 2026-11-18: アンケートのポップアップはやめた (HOME には出さない。/polls/ には残す)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), 'id="cb-pollpop"')
+        self.assertContains(self.client.get(reverse("chiebukuro:polls")), "スイスで一番好きな季節は？")
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})
         self.assertEqual(PollVote.objects.get().choice, autumn)
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), "100%")
+        self.assertContains(self.client.get(reverse("chiebukuro:polls")), "100%")
         self.client.force_login(self.alice)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.assertEqual(PollVote.objects.count(), 2)
@@ -1126,11 +1122,17 @@ class DailyAndColorTests(BoardTestCase):
 
     def test_color_setting(self):
         self.client.force_login(self.alice)
-        self.client.post(reverse("chiebukuro:settings"), {"color": "sakura", "daily_popup": "1", "push_frequency": "instant"})
-        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-cb-color="sakura"')
-        self.client.post(reverse("chiebukuro:settings"), {"color": "mint", "color_auto": "1", "push_frequency": "instant"})
+        self.client.post(reverse("chiebukuro:kisekae"), {"color": "sakura", "pattern": "asanoha"})
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, 'data-cb-color="sakura" data-cb-pattern="asanoha"')
+        # 通知の設定を保存しても、着せかえは変わらない
+        self.client.post(reverse("chiebukuro:settings"), {"daily_popup": "1", "push_frequency": "instant"})
+        self.assertContains(self.client.get(reverse("chiebukuro:home")), 'data-cb-pattern="asanoha"')
+        self.client.post(reverse("chiebukuro:kisekae"), {"color": "mint", "color_auto": "1", "pattern": ""})
         page = self.client.get(reverse("chiebukuro:home")).content.decode()
         self.assertIn('data-cb-color="', page)
+        self.assertNotIn("data-cb-pattern=", page.split(">")[0])
+        self.assertContains(self.client.get(reverse("chiebukuro:kisekae")), "麻の葉")
 
     def test_contact_form(self):
         from chiebukuro.models import Contact

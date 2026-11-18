@@ -65,6 +65,7 @@
                     <small>スイスの食卓に、みんなの知恵を。</small>
                 </span>
             </a>
+            {% include "includes/yapp_switcher.html" with current="washoku" %}
 
             <nav class="washoku-desktop-nav" aria-label="PCメニュー">
                 <a href="{% url 'washoku:home' %}" class="{% if name == 'home' %}active{% endif %}"><i class="bi bi-house" aria-hidden="true"></i>HOME</a>

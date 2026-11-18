@@ -3,7 +3,6 @@
 {% block content %}
 
 {% include "chiebukuro/_daily.html" %}
-{% include "chiebukuro/_pollpop.html" %}
 {% include "chiebukuro/_answerpop.html" %}
 
 <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-askline" data-rules>
@@ -16,6 +15,8 @@
     </div>
     {% include "chiebukuro/_guest_fields.html" %}
 </form>
+
+<button type="button" class="cb-dailyline" data-daily-open="charm"><span class="cb-dailyline-icon" aria-hidden="true">🍀</span><b>今日のひとこと</b><span class="cb-dailyline-sub">{{ daily.charm.emoji }} {{ daily.charm.name }}</span><span class="cb-dailyline-go" aria-hidden="true">›</span></button>
 
 {% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
