@@ -1,108 +1,185 @@
 # 着せかえの日本の模様 (chiebukuro.css の [data-cb-pattern="..."] の SVG) を作るスクリプト。
+# 2026-11-18 Taro: 着せかえの色とは掛け合わせず、その模様本来の和の色で。
 # 使い方: python chiebukuro/pattern_svgs.py /tmp/patterns.css → 中身を chiebukuro.css の模様の行と入れかえる
-import math, urllib.parse
-R3=math.sqrt(3)
-def f(x): return f"{x:.2f}".rstrip("0").rstrip(".")
-def svg(w,h,body,sw=1.4,size=None):
-    # 白=見える線、黒=見えない。SVG内のマスクで重なりを処理し、結果は透明度だけ (CSS の mask-image に使う)
-    s=(f"<svg xmlns='http://www.w3.org/2000/svg' width='{f(w)}' height='{f(h)}' viewBox='0 0 {f(w)} {f(h)}'>"
-       f"<mask id='m'><rect width='{f(w)}' height='{f(h)}' fill='black'/><g fill='none' stroke='white' stroke-width='{sw}'>{body}</g></mask>"
-       f"<rect width='{f(w)}' height='{f(h)}' fill='black' mask='url(#m)'/></svg>")
-    return s, (size or (w,h))
-def line(a,b): return f"<path d='M{f(a[0])} {f(a[1])}L{f(b[0])} {f(b[1])}'/>"
+import math
+import sys
+import urllib.parse
+
+R3 = math.sqrt(3)
+
+# 和の色
+BENI = "#c0395a"        # 紅
+TOKI = "#f4b3c2"        # 鴇色
+AI = "#1f4e8c"          # 藍
+ASAGI = "#5ba3c9"       # 浅葱
+KURO = "#23272b"        # 墨
+TOKIWA = "#2e7d5b"      # 常磐色
+KIN = "#c39a2b"         # 金茶
+YAMABUKI = "#e7b53c"    # 山吹
+MURASAKI = "#6b3f8f"    # 江戸紫
+FUJI = "#b9a2d6"        # 藤色
+ROKUSHO = "#3f8a78"     # 緑青
+SHU = "#d0573c"         # 朱
+TORINOKO = "#f3e3c3"    # 鳥の子色
+AINEZU = "#3f5d7d"      # 藍鼠
+ENJI = "#9b2d4a"        # 臙脂
+SAKURA = "#f2a7bd"      # 桜色
+
+
+def f(x):
+    return f"{x:.2f}".rstrip("0").rstrip(".")
+
+
+def svg(w, h, body):
+    return (w, h, f"<svg xmlns='http://www.w3.org/2000/svg' width='{f(w)}' height='{f(h)}' viewBox='0 0 {f(w)} {f(h)}'>{body}</svg>")
+
+
+def line(a, b):
+    return f"<path d='M{f(a[0])} {f(a[1])}L{f(b[0])} {f(b[1])}'/>"
+
+
+def poly(points, attrs=""):
+    return "<path d='M" + "L".join(f"{f(x)} {f(y)}" for x, y in points) + f"Z'{attrs}/>"
+
 
 def asanoha(a=36):
-    h=a*R3/2; out=[]
-    for j in range(-2,6):
-        for i in range(-2,4):
-            x0=i*a+(j%2)*a/2; y=j*h
-            up=[(x0,y),(x0+a,y),(x0+a/2,y+h)]          # 下向き三角形 (上辺が水平)
-            dn=[(x0+a/2,y+h),(x0-a/2,y+h),(x0,y)]
-            for t in (up,dn):
-                c=(sum(p[0] for p in t)/3,sum(p[1] for p in t)/3)
+    # 麻の葉: 紅の線。三角形の格子と、各三角形の頂点から重心への線
+    h = a * R3 / 2
+    out = []
+    for j in range(-2, 6):
+        for i in range(-2, 4):
+            x0 = i * a + (j % 2) * a / 2
+            y = j * h
+            for t in ([(x0, y), (x0 + a, y), (x0 + a / 2, y + h)], [(x0 + a / 2, y + h), (x0 - a / 2, y + h), (x0, y)]):
+                c = (sum(p[0] for p in t) / 3, sum(p[1] for p in t) / 3)
                 for k in range(3):
-                    out.append(line(t[k],t[(k+1)%3])); out.append(line(t[k],c))
-    return svg(a,2*h,"".join(out),1.1)
-def kagome(a=32):
-    h=a*R3/2; out=[]; L=6*a
-    for k in range(-8,10):
-        y=k*h+h/2; out.append(line((-a,y),(2*a,y)))
-        x=k*a
-        out.append(line((x-0.5*L,-R3/2*L),(x+0.5*L,R3/2*L)))
-        out.append(line((x+0.5*L,-R3/2*L),(x-0.5*L,R3/2*L)))
-    return svg(a,2*h,"".join(out),1.2)
-def seigaiha(r=22):
-    w,h=2*r,r; out=[]
-    rows=[(0,h),(2*r,h),(r,h/2),(r,h*1.5),(0,0),(2*r,0),(r,-h/2)]
-    order=sorted(rows,key=lambda c:c[1])
-    for cx,cy in order:
-        for k,rr in enumerate((r, r*0.72, r*0.44, r*0.16)):
-            fill="black" if k==0 else "none"
-            out.append(f"<circle cx='{f(cx)}' cy='{f(cy)}' r='{f(rr)}' fill='{fill}'/>")
-    return svg(w,h,"".join(out),1.3)
-def ichimatsu(s=18):
-    w=2*s
-    body=f"<rect x='0' y='0' width='{s}' height='{s}' fill='white' stroke='none'/><rect x='{s}' y='{s}' width='{s}' height='{s}' fill='white' stroke='none'/>"
-    return svg(w,w,body)
-def shippo(r=18):
-    w=2*r; out=[]
-    for cx,cy in ((0,0),(w,0),(0,w),(w,w),(r,r)):
+                    out.append(line(t[k], t[(k + 1) % 3]))
+                    out.append(line(t[k], c))
+    return svg(a, 2 * h, f"<g stroke='{BENI}' stroke-width='1.2' fill='none'>{''.join(out)}</g>")
+
+
+def seigaiha(r=24):
+    # 青海波: 藍と浅葱の波を交互に
+    w, h = 2 * r, r
+    centers = sorted([(0, h), (2 * r, h), (r, h / 2), (r, h * 1.5), (0, 0), (2 * r, 0), (r, -h / 2), (0, 2 * h), (2 * r, 2 * h)], key=lambda c: c[1])
+    out = []
+    for cx, cy in centers:
+        for k, rr in enumerate((r, r * 0.8, r * 0.6, r * 0.4, r * 0.2)):
+            out.append(f"<circle cx='{f(cx)}' cy='{f(cy)}' r='{f(rr)}' fill='{AI if k % 2 == 0 else ASAGI}'/>")
+    return svg(w, h, "".join(out))
+
+
+def ichimatsu(s=20):
+    # 市松: 墨と常磐色
+    w = 2 * s
+    return svg(w, w, f"<rect width='{w}' height='{w}' fill='{TOKIWA}'/><rect width='{s}' height='{s}' fill='{KURO}'/><rect x='{s}' y='{s}' width='{s}' height='{s}' fill='{KURO}'/>")
+
+
+def shippo(r=20):
+    # 七宝: 金茶の輪、重なりの中に山吹の花菱
+    w = 2 * r
+    out = [f"<g fill='none' stroke='{KIN}' stroke-width='1.5'>"]
+    for cx, cy in ((0, 0), (w, 0), (0, w), (w, w), (r, r)):
         out.append(f"<circle cx='{cx}' cy='{cy}' r='{r}'/>")
-    return svg(w,w,"".join(out),1.2)
-def kikko(r=16):
-    w=3*r; h=R3*r; out=[]
-    for cx,cy in ((0,0),(w,0),(0,h),(w,h),(1.5*r,h/2),(1.5*r,-h/2),(1.5*r,1.5*h)):
-        pts=[(cx+r*math.cos(math.pi/3*k),cy+r*math.sin(math.pi/3*k)) for k in range(6)]
-        inner=[(cx+0.72*r*math.cos(math.pi/3*k),cy+0.72*r*math.sin(math.pi/3*k)) for k in range(6)]
-        for P in (pts,inner):
-            out.append("<path d='M"+"L".join(f"{f(x)} {f(y)}" for x,y in P)+"Z'/>")
-    return svg(w,h,"".join(out),1.1)
-def uroko(s=20):
-    h=s*0.9; w=s; out=[]
-    # 三角形を互い違いに塗る (鱗)
-    for row in range(-1,3):
-        off=(row%2)*w/2
-        for i in range(-1,3):
-            x=i*w+off; y=row*h
-            out.append(f"<path d='M{f(x)} {f(y+h)}L{f(x+w/2)} {f(y)}L{f(x+w)} {f(y+h)}Z' fill='white' stroke='none'/>")
-    return svg(w,2*h,"".join(out))
-def hishi(w=28,h=40):
-    out=[]
-    for dx in (-w,0,w):
-        for dy in (-h,0,h):
-            cx,cy=dx+w/2,dy+h/2
-            for k in (1,0.55):
-                out.append(f"<path d='M{f(cx)} {f(cy-h/2*k)}L{f(cx+w/2*k)} {f(cy)}L{f(cx)} {f(cy+h/2*k)}L{f(cx-w/2*k)} {f(cy)}Z'/>")
-    return svg(w,h,"".join(out),1.1)
-def yagasuri(w=24,h=36):
-    out=[]
-    # 矢羽根: 縦の列ごとに上下さかさま、半分ずらす
-    for col,(dx,flip) in enumerate(((0,1),(w/2,-1))):
-        for dy in (-h,0,h):
-            y=dy+(h/2 if col else 0)
-            x0,x1=dx,dx+w/2
-            if flip==1:
-                pts=[(x0,y),(x1,y+h*0.3),(x1,y+h*0.8),(x0,y+h*0.5)]
+    out.append("</g>")
+    for cx, cy in ((r, 0), (0, r), (w, r), (r, w)):
+        d = r * 0.16
+        out.append(poly([(cx, cy - d), (cx + d, cy), (cx, cy + d), (cx - d, cy)], f" fill='{YAMABUKI}'"))
+    return svg(w, w, "".join(out))
+
+
+def yagasuri(w=24, h=40):
+    # 矢絣: 江戸紫と藤色の矢羽根を交互の列に
+    out = [f"<rect width='{w}' height='{h}' fill='{FUJI}'/>"]
+    for col, dx in enumerate((0, w / 2)):
+        for dy in (-h, 0, h):
+            y = dy + (h / 2 if col else 0)
+            x0, x1 = dx, dx + w / 2
+            if col == 0:
+                pts = [(x0, y), (x1, y + h * 0.3), (x1, y + h * 0.8), (x0, y + h * 0.5)]
             else:
-                pts=[(x1,y),(x0,y+h*0.3),(x0,y+h*0.8),(x1,y+h*0.5)]
-            out.append("<path d='M"+"L".join(f"{f(a)} {f(b)}" for a,b in pts)+"Z' fill='white' stroke='none'/>")
-    return svg(w,h,"".join(out))
-def sakura(s=60):
-    def flower(cx,cy,r,rot):
-        ps=[]
+                pts = [(x1, y), (x0, y + h * 0.3), (x0, y + h * 0.8), (x1, y + h * 0.5)]
+            out.append(poly(pts, f" fill='{MURASAKI}'"))
+    return svg(w, h, "".join(out))
+
+
+def kikko(r=18):
+    # 亀甲: 緑青の二重の六角形と、中に小さな花
+    w, h = 3 * r, R3 * r
+    out = []
+    for cx, cy in ((0, 0), (w, 0), (0, h), (w, h), (1.5 * r, h / 2), (1.5 * r, -h / 2), (1.5 * r, 1.5 * h)):
+        for k, sw in ((1, 1.4), (0.78, 0.8)):
+            pts = [(cx + k * r * math.cos(math.pi / 3 * i), cy + k * r * math.sin(math.pi / 3 * i)) for i in range(6)]
+            out.append(poly(pts, f" fill='none' stroke='{ROKUSHO}' stroke-width='{sw}'"))
+        out.append(f"<circle cx='{f(cx)}' cy='{f(cy)}' r='{f(r * 0.14)}' fill='{ROKUSHO}'/>")
+    return svg(w, h, "".join(out))
+
+
+def uroko(s=22):
+    # 鱗: 朱と鳥の子色の三角
+    h = s * 0.9
+    out = [f"<rect width='{s}' height='{f(2 * h)}' fill='{TORINOKO}'/>"]
+    for row in range(-1, 3):
+        off = (row % 2) * s / 2
+        for i in range(-1, 3):
+            x, y = i * s + off, row * h
+            out.append(poly([(x, y + h), (x + s / 2, y), (x + s, y + h)], f" fill='{SHU}'"))
+    return svg(s, 2 * h, "".join(out))
+
+
+def kagome(a=34):
+    # 籠目: 藍鼠の線を3方向に編む
+    h = a * R3 / 2
+    big = 6 * a
+    out = []
+    for k in range(-8, 10):
+        y = k * h + h / 2
+        out.append(line((-a, y), (2 * a, y)))
+        x = k * a
+        out.append(line((x - 0.5 * big, -R3 / 2 * big), (x + 0.5 * big, R3 / 2 * big)))
+        out.append(line((x + 0.5 * big, -R3 / 2 * big), (x - 0.5 * big, R3 / 2 * big)))
+    return svg(a, 2 * h, f"<g stroke='{AINEZU}' stroke-width='1.6' fill='none'>{''.join(out)}</g>")
+
+
+def hishi(w=30, h=44):
+    # 菱: 臙脂の菱と、中に小さな菱
+    out = []
+    for dx in (-w, 0, w):
+        for dy in (-h, 0, h):
+            for cx, cy in ((dx + w / 2, dy + h / 2), (dx, dy), (dx + w, dy + h)):
+                out.append(poly([(cx, cy - h / 2 * 0.9), (cx + w / 2 * 0.9, cy), (cx, cy + h / 2 * 0.9), (cx - w / 2 * 0.9, cy)], f" fill='none' stroke='{ENJI}' stroke-width='1.2'"))
+                out.append(poly([(cx, cy - h * 0.12), (cx + w * 0.12, cy), (cx, cy + h * 0.12), (cx - w * 0.12, cy)], f" fill='{ENJI}'"))
+    return svg(w, h, "".join(out))
+
+
+def sakura(s=64):
+    # 桜: 桜色の花びらと紅のしべ
+    def flower(cx, cy, r, rot, color):
+        out = []
         for k in range(5):
-            ang=rot+72*k
-            ps.append(f"<ellipse cx='{f(cx)}' cy='{f(cy-r*0.55)}' rx='{f(r*0.36)}' ry='{f(r*0.55)}' transform='rotate({ang} {f(cx)} {f(cy)})' fill='white' stroke='none'/>")
-        ps.append(f"<circle cx='{f(cx)}' cy='{f(cy)}' r='{f(r*0.16)}' fill='black' stroke='none'/>")
-        return "".join(ps)
-    body=flower(s*0.25,s*0.28,9,10)+flower(s*0.75,s*0.72,7,40)+flower(s*0.78,s*0.18,4.5,0)+flower(s*0.2,s*0.82,5,25)
-    return svg(s,s,body)
-PATTERNS=[("asanoha","麻の葉",asanoha),("seigaiha","青海波",seigaiha),("ichimatsu","市松",ichimatsu),("shippo","七宝",shippo),
-          ("yagasuri","矢絣",yagasuri),("kikko","亀甲",kikko),("uroko","鱗",uroko),("kagome","籠目",kagome),("hishi","菱",hishi),("sakura","桜",sakura)]
-css=[]
-for key,label,fn in PATTERNS:
-    s,(w,h)=fn()
-    uri="data:image/svg+xml,"+urllib.parse.quote(s,safe=":/=' ,.-()")
-    css.append(f'[data-cb-pattern="{key}"] {{ --cb-pattern: url("{uri}"); --cb-pattern-size: {f(w)}px {f(h)}px; }}')
-open(__import__("sys").argv[1],"w").write("\n".join(css)+"\n")
-print(len("".join(css)))
+            out.append(f"<ellipse cx='{f(cx)}' cy='{f(cy - r * 0.55)}' rx='{f(r * 0.38)}' ry='{f(r * 0.56)}' transform='rotate({rot + 72 * k} {f(cx)} {f(cy)})' fill='{color}'/>")
+        out.append(f"<circle cx='{f(cx)}' cy='{f(cy)}' r='{f(r * 0.17)}' fill='{BENI}'/>")
+        return "".join(out)
+
+    body = flower(s * 0.25, s * 0.28, 10, 10, SAKURA) + flower(s * 0.75, s * 0.72, 8, 40, TOKI) + flower(s * 0.8, s * 0.18, 5, 0, SAKURA) + flower(s * 0.2, s * 0.82, 5.5, 25, TOKI)
+    return svg(s, s, body)
+
+
+PATTERNS = [
+    ("asanoha", asanoha), ("seigaiha", seigaiha), ("ichimatsu", ichimatsu), ("shippo", shippo), ("yagasuri", yagasuri),
+    ("kikko", kikko), ("uroko", uroko), ("kagome", kagome), ("hishi", hishi), ("sakura", sakura),
+]
+
+
+def main(path):
+    rows = []
+    for key, build in PATTERNS:
+        w, h, text = build()
+        uri = "data:image/svg+xml," + urllib.parse.quote(text, safe=":/=' ,.-()")
+        rows.append(f'[data-cb-pattern="{key}"] {{ --cb-pattern: url("{uri}"); --cb-pattern-size: {f(w)}px {f(h)}px; }}')
+    with open(path, "w") as out:
+        out.write("\n".join(rows) + "\n")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])

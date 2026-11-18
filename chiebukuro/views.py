@@ -217,15 +217,19 @@ def board_look(user):
 
     if not user.is_authenticated:
         return "classic", ""
-    row = BoardProfile.objects.filter(user=user).values("color", "color_auto", "pattern").first()
+    row = BoardProfile.objects.filter(user=user).values("color", "color_auto", "pattern", "pattern_auto").first()
     if not row:
         return "classic", ""
-    color = row["color"]
+    now = timezone.localtime()
+    half_day = now.toordinal() * 2 + (1 if now.hour >= 12 else 0)
+    color, pattern = row["color"], row["pattern"]
     if row["color_auto"]:
-        now = timezone.localtime()
         colors = BoardProfile.Color.values
-        color = colors[(now.toordinal() * 2 + (1 if now.hour >= 12 else 0)) % len(colors)]
-    return color, row["pattern"]
+        color = colors[half_day % len(colors)]
+    if row["pattern_auto"]:
+        patterns = [value for value in BoardProfile.Pattern.values if value]
+        pattern = patterns[half_day % len(patterns)]
+    return color, pattern
 
 
 def board_color(user):
@@ -1778,7 +1782,8 @@ def kisekae(request):
         if request.POST.get("pattern", "") in BoardProfile.Pattern.values:
             board_profile.pattern = request.POST.get("pattern", "")
         board_profile.color_auto = request.POST.get("color_auto") == "1"
-        board_profile.save(update_fields=["color", "pattern", "color_auto", "updated_at"])
+        board_profile.pattern_auto = request.POST.get("pattern_auto") == "1"
+        board_profile.save(update_fields=["color", "pattern", "color_auto", "pattern_auto", "updated_at"])
         messages.success(request, "着せかえを保存しました。")
         return redirect("chiebukuro:kisekae")
 

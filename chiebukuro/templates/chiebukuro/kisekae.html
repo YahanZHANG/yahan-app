@@ -23,6 +23,7 @@
                 <label class="cb-pattern-pick" data-cb-pattern="{{ value }}"><input type="radio" name="pattern" value="{{ value }}" {% if board_profile.pattern == value %}checked{% endif %}><span class="cb-pattern-swatch" aria-hidden="true"></span><small>{{ label }}</small></label>
             {% endfor %}
         </div>
+        <label class="cb-radio cb-mt-s"><input type="checkbox" name="pattern_auto" value="1" {% if board_profile.pattern_auto %}checked{% endif %}> 12時間ごとに模様を変える（10種類が順番に切りかわります）</label>
     </section>
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>

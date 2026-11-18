@@ -526,6 +526,7 @@ class BoardProfile(models.Model):
         SAKURA = "sakura", "桜"
 
     pattern = models.CharField("着せかえの模様", max_length=20, choices=Pattern.choices, default="", blank=True)
+    pattern_auto = models.BooleanField("12時間ごとに模様を変える", default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

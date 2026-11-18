@@ -1131,8 +1131,11 @@ class DailyAndColorTests(BoardTestCase):
         self.client.post(reverse("chiebukuro:kisekae"), {"color": "mint", "color_auto": "1", "pattern": ""})
         page = self.client.get(reverse("chiebukuro:home")).content.decode()
         self.assertIn('data-cb-color="', page)
-        self.assertNotIn("data-cb-pattern=", page.split(">")[0])
+        self.assertNotIn("data-cb-pattern=", page.split("<html")[1].split(">")[0])
         self.assertContains(self.client.get(reverse("chiebukuro:kisekae")), "麻の葉")
+        # 模様も12時間ごとに切りかえられる
+        self.client.post(reverse("chiebukuro:kisekae"), {"color": "mint", "pattern": "", "pattern_auto": "1"})
+        self.assertIn("data-cb-pattern=", self.client.get(reverse("chiebukuro:home")).content.decode().split("<html")[1].split(">")[0])
 
     def test_contact_form(self):
         from chiebukuro.models import Contact
