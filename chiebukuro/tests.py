@@ -741,7 +741,7 @@ class StampAndSettingsTests(BoardTestCase):
         from travel.models import UserProfile
 
         self.client.force_login(self.alice)
-        self.assertContains(self.client.get(reverse("chiebukuro:settings")), "プッシュ通知の頻度")
+        self.assertContains(self.client.get(reverse("chiebukuro:settings")), "知らせてほしいこと")
         self.client.post(reverse("chiebukuro:settings"), {"theme": "dark", "push_frequency": "daily", "push_answer": "1", "push_stamp": "1"})
         profile = BoardProfile.objects.get(user=self.alice)
         self.assertEqual((profile.push_frequency, profile.push_answer, profile.push_reply, profile.push_stamp), ("daily", True, False, True))

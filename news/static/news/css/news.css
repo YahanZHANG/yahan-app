@@ -6232,4 +6232,4 @@
 }
 
 /* Yapp のアプリ切り替え (ロゴのすぐ横) */
-.news-topbar-inner .yapp-switch { margin-left: -6px; }
+.news-topbar-inner .yapp-switch-wrap { margin-left: -6px; }

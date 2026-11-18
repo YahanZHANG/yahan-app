@@ -25,12 +25,21 @@
 </section>
 
 <section class="cb-block">
-    <header class="cb-block-head"><h2>設定</h2></header>
-    <a href="{% url 'chiebukuro:settings' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="gear" %}<span><strong>通知と表示の設定</strong><small>プッシュ通知のオン・オフと頻度、ダークモード</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    <header class="cb-block-head"><h2>楽しむ</h2></header>
+    <a href="{% url 'chiebukuro:daily_list' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="sun" %}<span><strong>今日のひとこと</strong><small>お守り占い・スイスドイツ語・豆知識（これまでの分も）</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
     <a href="{% url 'chiebukuro:kisekae' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="palette" %}<span><strong>着せかえ</strong><small>色と、日本の模様</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+</section>
+
+<section class="cb-block">
+    <header class="cb-block-head"><h2>設定</h2></header>
+    <a href="{% url 'chiebukuro:settings' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="gear" %}<span><strong>通知と表示</strong><small>プッシュ通知・ダークモード・今日のひとことのポップアップ</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
     <a href="{% url 'chiebukuro:profile_edit' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="user" %}<span><strong>プロフィール</strong><small>ニックネーム・住んでいる地域・ひとこと</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
     <a href="{% url 'portal:manage_apps' %}?next={{ request.path|urlencode }}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="key" %}<span><strong>Yappのアカウント</strong><small>パスワード・メールアドレスなど</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
     <a href="{% url 'chiebukuro:install' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="plus" %}<span><strong>ホーム画面に追加</strong><small>アイコンからワンタップで開けます</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+</section>
+
+<section class="cb-block">
+    <header class="cb-block-head"><h2>困ったとき</h2></header>
     <a href="{% url 'chiebukuro:rules' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="notices" %}<span><strong>この掲示板のルール</strong><small>売り買いなし・受け渡しは対面で など</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
     <a href="{% url 'portal:help' %}?from=board" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="questions" %}<span><strong>ヘルプ</strong><small>ログインできない・通知が来ないときなど</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
 </section>

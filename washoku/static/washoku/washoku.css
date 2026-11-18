@@ -6085,10 +6085,11 @@ html.washoku-swipe-tabs body {
 }
 
 /* Yapp のアプリ切り替え (ロゴのすぐ横)。携帯では幅が足りないので、すき間をつめる */
-.washoku-header-inner .yapp-switch { margin: 0 -6px 0 -10px; }
+.washoku-header-inner .yapp-switch-wrap { margin: 0 -6px 0 -10px; }
 @media (max-width: 799px) {
     .washoku-header-inner { gap: 10px; }
-    .washoku-header-inner .yapp-switch { width: 24px; margin: 0 -6px 0 -6px; }
+    .washoku-header-inner .yapp-switch-wrap { margin: 0 -6px 0 -6px; }
+    .washoku-header-inner .yapp-switch { width: 24px; }
     .washoku-brand { flex: 0 1 auto; min-width: 0; }
     .washoku-brand > span, .washoku-brand small { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     .washoku-brand strong { white-space: nowrap; }
