@@ -4,6 +4,7 @@
 
 {% include "chiebukuro/_daily.html" %}
 {% include "chiebukuro/_pollpop.html" %}
+{% include "chiebukuro/_answerpop.html" %}
 
 <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-askline" data-rules>
     {% csrf_token %}

@@ -69,7 +69,7 @@
     } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day && !window.cbAskShown) {
         // その日2回目からで、まだ見ていないときだけ、選ばれたものを自動で出す (1回目は質問のポップアップ)
         var auto = parts.filter(function (part) { return part.hasAttribute("data-auto"); });
-        if (auto.length) setTimeout(function () { open(auto); }, 400);
+        if (auto.length) { window.cbDailyShown = true; setTimeout(function () { open(auto); }, 400); }
     }
     // ボタンがこのスクリプトより後ろにあっても効くように、ページ全体で受ける
     document.addEventListener("click", function (event) {

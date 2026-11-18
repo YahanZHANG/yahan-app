@@ -260,6 +260,18 @@ def claim_nudge(user):
     return user_nickname(user)
 
 
+def answer_pop_question(user, region=""):
+    """回答をお願いするポップアップ (_answerpop.html) の質問: 回答がない (運営だけのものも) 質問からランダムに1つ。自分の質問は出さない"""
+
+    import random
+
+    rows = question_list(region=region).filter(member_answer_total=0)
+    if getattr(user, "is_authenticated", False):
+        rows = rows.exclude(author=user)
+    rows = list(rows.order_by("-created_at")[:60])
+    return random.choice(rows) if rows else None
+
+
 def daily_ask_examples():
     """質問のポップアップ (どのページにもある) の例。1日1回だけ作ってキャッシュ"""
 
@@ -400,6 +412,7 @@ def home(request):
             "poll_auto": False,
             "sections": sections,
             "examples": question_examples() or ASK_EXAMPLES,
+            "answer_pop": answer_pop_question(request.user, region),
             "outings": weekend_outings(limit=6),
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
