@@ -271,16 +271,24 @@ def claim_nudge(user):
 
 
 def answer_pop_question(user, region=""):
-    """回答をお願いするポップアップ (_answerpop.html) の質問: 回答がない (運営だけのものも) 質問からランダムに1つ。自分の質問は出さない"""
+    """回答をお願いするポップアップ (_answerpop.html) の候補。
+    まず回答がない (運営だけのものも) 質問、その次に回答が1〜2件の質問 (2026-11-18 Taro: スキップされたら、回答が少ないものも積極的に)。
+    それぞれの中はランダム。どれを出すかは端末側で、スキップした質問を飛ばして選ぶ。自分の質問・自分が答えた質問は出さない"""
 
     import random
 
-    rows = question_list(region=region).filter(member_answer_total=0)
+    rows = question_list(region=region).filter(member_answer_total__lte=2)
     if getattr(user, "is_authenticated", False):
-        rows = rows.exclude(author=user)
-    rows = list(rows.order_by("-created_at")[:60])
-    return random.choice(rows) if rows else None
-
+        rows = rows.exclude(author=user).exclude(answers__author=user)
+    rows = list(rows.order_by("-created_at")[:150])
+    none = [row for row in rows if row.member_answer_total == 0]
+    few = [row for row in rows if row.member_answer_total > 0]
+    random.shuffle(none)
+    random.shuffle(few)
+    return [
+        {"id": row.pk, "body": row.body[:160], "url": reverse("chiebukuro:question", args=[row.pk]), "answers": row.member_answer_total}
+        for row in none[:40] + few[:40]
+    ]
 
 def daily_ask_examples():
     """質問のポップアップ (どのページにもある) の例。1日1回だけ作ってキャッシュ"""
