@@ -17,9 +17,9 @@
     {% include "chiebukuro/_guest_fields.html" %}
 </form>
 
-{% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.answered title="人気の質問" more="?sort=popular" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
-{% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" %}
+{% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.waiting title="回答を待っている質問" more="?sort=open" hide_best=True %}
 
 {% if items %}
