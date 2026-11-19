@@ -169,6 +169,7 @@
     color: var(--news-dark-body);
 }
 
+.news-dark .news-read-more,
 .news-dark .news-source-link {
     color: var(--news-dark-accent);
 }

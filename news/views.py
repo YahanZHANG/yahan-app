@@ -980,8 +980,7 @@ def article_detail(
     )
 
     summary = (
-        article.summary_ja
-        or article.summary_original
+        article.display_summary_ja
         or ""
     )
 
@@ -1127,6 +1126,7 @@ def search(request):
             article_filter &= (
                 Q(title_ja__icontains=word)
                 | Q(summary_ja__icontains=word)
+                | Q(combined_summary_ja__icontains=word)
                 | Q(title_original__icontains=word)
                 | Q(summary_original__icontains=word)
                 | Q(source__name__icontains=word)

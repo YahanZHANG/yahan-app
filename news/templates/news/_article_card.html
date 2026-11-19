@@ -61,11 +61,23 @@
 
         {% else %}
 
-            {{ article.summary_ja|default:article.summary_original }}
+            {{ article.display_summary_ja }}
 
         {% endif %}
 
     </p>
+
+    {% with sources=article.source_articles %}{% if sources|length == 1 %}{% with source_article=sources.0 %}
+        <a
+            href="{{ source_article.source_url }}"
+            data-click-url="{% url 'usage_analytics:public_news_article_click' source_article.id %}?origin={{ request.get_full_path|urlencode }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="news-read-more"
+        >
+            続きは元記事で読む（{{ source_article.source.name }}）↗
+        </a>
+    {% endwith %}{% endif %}{% endwith %}
 
 
     <div class="news-card-footer">

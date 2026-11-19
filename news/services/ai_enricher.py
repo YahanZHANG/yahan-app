@@ -19,7 +19,20 @@ from news.services.japanese_classifier import (
 )
 
 
-MAX_INPUT_CHARS = 10000
+# 報道記事は本文の冒頭だけを AI に渡す（細かい中身を要約に入れないため）
+MAX_INPUT_CHARS = 1500
+
+# 公的機関のお知らせ（admin.ch・SBB）は全文を使ってよい
+PUBLIC_MAX_INPUT_CHARS = 10000
+
+PUBLIC_SOURCE_NAMES = {
+    "Swiss Federal Administration",
+    SBB_SOURCE_NAME,
+}
+
+# 要約の書き方の版。上げると古い要約が少しずつ作り直される。
+# 2: 報道記事は最大3文（2026-11 著作権への配慮）
+SUMMARY_VERSION = 2
 
 MAX_OUTPUT_TOKENS = 2000
 
@@ -94,7 +107,31 @@ LIFE_ALERT_RULES = """
 """
 
 
-INSTRUCTIONS = """
+NEWS_LENGTH_RULES = """
+【要約の長さ（報道記事）】
+
+・最大3文（全体で150字程度まで）
+・だれが・何を・いつ・どこで、の中心となる事実だけを書く
+・引用（発言のかぎかっこ）、細かい数字、背景の説明、
+  記事の流れや結論の詳しい内容は入れない
+・元の記事を読まなくても全部わかる、という書き方にしない
+  （詳しくは元記事で読んでもらう）
+・「…」で文を途中で切らず、短く完結した文にする
+"""
+
+
+PUBLIC_LENGTH_RULES = """
+【要約の長さ（公的機関のお知らせ）】
+
+・短いお知らせ：2～4文程度
+・通常のお知らせ：2～5文程度
+・情報量が多く、日本人読者に重要なもの：5～10文程度
+・日付、対象、手続きなど、読者に必要な情報は落とさない
+・情報が少ないものを無理に長くしない
+"""
+
+
+BASE_INSTRUCTIONS = """
 あなたはスイス在住の日本人向けニュースアプリ
 「Swiss News」の編集者です。
 
@@ -110,22 +147,8 @@ INSTRUCTIONS = """
 ・日本の読者に読みやすい自然な日本語にする
 ・記事タイトルは簡潔にする
 ・文章数を満たすために情報を水増ししない
-・重要な情報を落とさないことを文章数より優先する
 ・「だ」「である」調で書く
-
-【要約の長さ】
-
-・短いニュースや情報量の少ない記事：
-  2～4文程度
-
-・通常の記事：
-  2～5文程度
-
-・情報量が多く、日本人読者に重要な記事：
-  5～10文程度
-
-・原文の情報量に応じて長さを調整する
-・情報が少ない記事を無理に長くしない
+・要約は下の【要約の長さ】を必ず守る
 
 【地名表記】
 
@@ -210,11 +233,40 @@ sports
 """ + LIFE_ALERT_RULES
 
 
-def enrich_article(article):
+# 地名・固有名詞の決まりは複数社まとめでも使う
+INSTRUCTIONS = BASE_INSTRUCTIONS + NEWS_LENGTH_RULES
+
+PUBLIC_INSTRUCTIONS = BASE_INSTRUCTIONS + PUBLIC_LENGTH_RULES
+
+
+def is_public_source(article):
+
+    return article.source.name in PUBLIC_SOURCE_NAMES
+
+
+def enrich_article(
+    article,
+    summary_only=False,
+):
+    """
+    外国語の記事を日本語にし、テーマを付ける。
+
+    summary_only=True のときは要約だけを書き直す
+    （古い長い要約の作り直し用。見出し・テーマ・
+    暮らしのお知らせは管理画面で直した値を残す）。
+    """
+
+    public = is_public_source(
+        article
+    )
 
     article_text = article_input_text(
         article
-    )[:MAX_INPUT_CHARS]
+    )[
+        :PUBLIC_MAX_INPUT_CHARS
+        if public
+        else MAX_INPUT_CHARS
+    ]
 
     input_text = f"""
     ニュース提供元:
@@ -233,7 +285,11 @@ def enrich_article(article):
     """
 
     result = generate_json(
-        instructions=INSTRUCTIONS,
+        instructions=(
+            PUBLIC_INSTRUCTIONS
+            if public
+            else INSTRUCTIONS
+        ),
         input_text=input_text,
         schema=OUTPUT_SCHEMA,
         name="news_enrichment",
@@ -243,6 +299,31 @@ def enrich_article(article):
     )
 
     data = result.data
+
+    article.summary_version = (
+        SUMMARY_VERSION
+    )
+
+    if summary_only:
+
+        article.summary_ja = (
+            data["summary_ja"].strip()
+        )
+
+        article.save(
+            update_fields=[
+                "summary_ja",
+                "summary_version",
+            ]
+        )
+
+        return {
+            "title_ja": article.title_ja,
+            "summary_ja": article.summary_ja,
+            "topics": [],
+            "life_alert": article.life_alert,
+            "usage": result,
+        }
 
     article.title_ja = (
         data["title_ja"].strip()
@@ -274,6 +355,7 @@ def enrich_article(article):
             "ai_model",
             "ai_error",
             "life_alert",
+            "summary_version",
         ]
     )
 
