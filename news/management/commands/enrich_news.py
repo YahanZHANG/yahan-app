@@ -1,11 +1,22 @@
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from news.models import Article
 
 from news.services.ai_enricher import (
     MAX_AI_ATTEMPTS,
+    SUMMARY_VERSION,
     enrich_article,
 )
+
+
+# 古い書き方の要約を1回の更新で作り直す上限
+# （新しい記事の翻訳を優先し、更新時間を延ばしすぎない）
+RESUMMARIZE_LIMIT = 60
+
+RESUMMARIZE_DAYS = 7
 
 
 class Command(BaseCommand):
@@ -81,9 +92,53 @@ class Command(BaseCommand):
             )
 
 
-        articles = list(
-            queryset[:limit]
-        )
+        articles = [
+            (article, False)
+            for article in queryset[:limit]
+        ]
+
+
+        # =====================================================
+        # 古い書き方（長い要約）の記事を作り直す
+        #
+        # 一覧に出る代表記事だけ。新しい記事から順に。
+        # =====================================================
+
+        if not force:
+
+            room = min(
+                limit - len(articles),
+                RESUMMARIZE_LIMIT,
+            )
+
+            if room > 0:
+
+                old_style = (
+                    Article.objects
+                    .select_related(
+                        "source"
+                    )
+                    .exclude(
+                        original_language="ja"
+                    )
+                    .filter(
+                        ai_processed_at__isnull=False,
+                        summary_version__lt=SUMMARY_VERSION,
+                        duplicate_of__isnull=True,
+                        published_at__gte=(
+                            timezone.now()
+                            - timedelta(days=RESUMMARIZE_DAYS)
+                        ),
+                    )
+                    .order_by(
+                        "-published_at"
+                    )
+                )
+
+                articles += [
+                    (article, True)
+                    for article in old_style[:room]
+                ]
 
 
         if not articles:
@@ -105,7 +160,7 @@ class Command(BaseCommand):
         # AI enrichment
         # =====================================================
 
-        for index, article in enumerate(
+        for index, (article, summary_only) in enumerate(
             articles,
             start=1,
         ):
@@ -118,6 +173,7 @@ class Command(BaseCommand):
                 (
                     f"[{index}/{len(articles)}] "
                     f"{article.source.name}"
+                    + (" (要約の作り直し)" if summary_only else "")
                 )
             )
 
@@ -129,7 +185,8 @@ class Command(BaseCommand):
             try:
 
                 result = enrich_article(
-                    article
+                    article,
+                    summary_only=summary_only,
                 )
 
                 success_count += 1
@@ -170,6 +227,17 @@ class Command(BaseCommand):
             except Exception as exc:
 
                 error_count += 1
+
+                if summary_only:
+
+                    # 作り直しの失敗は、今の要約のまま次回やり直す
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"ERROR: {exc}"
+                        )
+                    )
+
+                    continue
 
                 article.ai_error = str(
                     exc

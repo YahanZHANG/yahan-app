@@ -1286,3 +1286,231 @@ class SbbInfoTests(NewsTestCase):
 
         self.assertTrue(article.life_alert)
         fetch_body.assert_not_called()
+
+
+class ShortSummaryTests(NewsTestCase):
+    """
+    著作権への配慮：1社だけの記事は短く、
+    複数社の記事は各社の報道を均等にまとめる。
+    """
+
+    def ai_result(self, **data):
+
+        from config.services.ai_client import AIResult
+
+        return AIResult(
+            data=data,
+            model="m",
+        )
+
+    def test_news_articles_get_short_rules_and_trimmed_input(self):
+
+        from news.services import ai_enricher
+
+        article = self.make_article(self.srf, "a", processed=False)
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=self.ai_result(
+                title_ja="t", summary_ja="s", topics=[], life_alert=False,
+            ),
+        ) as generate, mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="x" * 5000,
+        ):
+            ai_enricher.enrich_article(article)
+
+        kwargs = generate.call_args.kwargs
+
+        self.assertIn("最大3文", kwargs["instructions"])
+        self.assertIn("直訳", kwargs["instructions"])
+        self.assertNotIn("5～10文", kwargs["instructions"])
+        self.assertNotIn("x" * 1501, kwargs["input_text"])
+        self.assertIn("x" * 1500, kwargs["input_text"])
+
+        article.refresh_from_db()
+
+        self.assertEqual(
+            article.summary_version,
+            ai_enricher.SUMMARY_VERSION,
+        )
+
+    def test_public_sources_keep_full_length(self):
+
+        from news.services import ai_enricher
+
+        admin = NewsSource.objects.create(
+            name="Swiss Federal Administration",
+            website_url="https://www.admin.ch",
+            language="de",
+        )
+
+        article = self.make_article(admin, "adm", processed=False)
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=self.ai_result(
+                title_ja="t", summary_ja="s", topics=[], life_alert=False,
+            ),
+        ) as generate, mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="x" * 5000,
+        ):
+            ai_enricher.enrich_article(article)
+
+        kwargs = generate.call_args.kwargs
+
+        self.assertIn("5～10文", kwargs["instructions"])
+        self.assertIn("x" * 5000, kwargs["input_text"])
+
+    def test_sbb_is_treated_like_other_media(self):
+
+        from news.management.commands.fetch_sbb_info import get_source
+        from news.services import ai_enricher
+
+        article = self.make_article(
+            get_source(),
+            "sbb2",
+            processed=False,
+            source_url="https://www.sbb.ch/x#sbb-2",
+        )
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=self.ai_result(
+                title_ja="t", summary_ja="s", topics=[], life_alert=False,
+            ),
+        ) as generate, mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="x" * 5000,
+        ):
+            ai_enricher.enrich_article(article)
+
+        self.assertIn("最大3文", generate.call_args.kwargs["instructions"])
+
+    def test_old_long_summaries_are_rewritten_summary_only(self):
+
+        old = self.make_article(
+            self.srf,
+            "old",
+            title_ja="管理画面で直した見出し",
+            summary_ja="とても長い要約。" * 10,
+            life_alert=True,
+        )
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=self.ai_result(
+                title_ja="新しい見出し",
+                summary_ja="短い要約。",
+                topics=[],
+                life_alert=False,
+            ),
+        ), mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="text",
+        ):
+            call_command("enrich_news", stdout=mock.MagicMock())
+
+            old.refresh_from_db()
+
+            self.assertEqual(old.summary_ja, "短い要約。")
+            self.assertEqual(old.title_ja, "管理画面で直した見出し")
+            self.assertTrue(old.life_alert)
+
+            # 2回目は作り直さない
+            with mock.patch(
+                "news.management.commands.enrich_news.enrich_article",
+            ) as enrich:
+                call_command("enrich_news", stdout=mock.MagicMock())
+
+            enrich.assert_not_called()
+
+    def test_combined_summary_uses_every_source_evenly(self):
+
+        root = self.make_article(self.srf, "root")
+        dup = self.make_article(self.rts, "dup", duplicate_of=root)
+
+        texts = {
+            root.id: "S" * 3000,
+            dup.id: "R" * 3000,
+        }
+
+        with mock.patch(
+            "news.services.combined_summary.generate_json",
+            return_value=self.ai_result(summary_ja="まとめ。"),
+        ) as generate, mock.patch(
+            "news.services.combined_summary.article_input_text",
+            side_effect=lambda article: texts[article.id],
+        ):
+            call_command(
+                "combine_news_summaries",
+                stdout=mock.MagicMock(),
+            )
+
+            kwargs = generate.call_args.kwargs
+
+            self.assertIn("必ず情報を採用する必要はない", kwargs["instructions"])
+            self.assertIn("直訳", kwargs["instructions"])
+            self.assertIn("最大6文", kwargs["instructions"])
+            self.assertIn("媒体: SRF", kwargs["input_text"])
+            self.assertIn("媒体: RTS", kwargs["input_text"])
+            self.assertEqual(
+                kwargs["input_text"].count("S" * 1500),
+                1,
+            )
+            self.assertEqual(
+                kwargs["input_text"].count("R" * 1500),
+                1,
+            )
+
+            root.refresh_from_db()
+
+            self.assertEqual(root.combined_summary_ja, "まとめ。")
+            self.assertEqual(root.display_summary_ja, "まとめ。")
+
+            # 組み合わせが同じなら作り直さない
+            call_command(
+                "combine_news_summaries",
+                stdout=mock.MagicMock(),
+            )
+
+            self.assertEqual(generate.call_count, 1)
+
+        # 重複が外れたら、まとめ要約を消す
+        dup.duplicate_of = None
+        dup.save()
+
+        call_command(
+            "combine_news_summaries",
+            stdout=mock.MagicMock(),
+        )
+
+        root.refresh_from_db()
+
+        self.assertEqual(root.combined_summary_ja, "")
+        self.assertEqual(root.display_summary_ja, root.summary_ja)
+
+    def test_card_links_single_source_to_original(self):
+
+        single = self.make_article(self.srf, "single")
+
+        root = self.make_article(
+            self.srf,
+            "root",
+            combined_summary_ja="各社のまとめ",
+        )
+        self.make_article(self.rts, "dup", duplicate_of=root)
+
+        response = self.client.get(
+            reverse("news:article_detail", args=[single.id])
+        )
+
+        self.assertContains(response, "続きは元記事で読む（SRF）")
+
+        response = self.client.get(
+            reverse("news:article_detail", args=[root.id])
+        )
+
+        self.assertContains(response, "各社のまとめ")
+        self.assertNotContains(response, "続きは元記事で読む")

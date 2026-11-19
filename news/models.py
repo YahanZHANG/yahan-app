@@ -203,6 +203,23 @@ class Article(models.Model):
         db_index=True,
     )
 
+    # 要約の書き方の版。古い版の要約は更新時に少しずつ作り直す。
+    summary_version = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    # 複数の媒体が同じ出来事を報じたときの、まとめた要約（代表記事にだけ入る）
+    combined_summary_ja = models.TextField(
+        "複数社のまとめ要約",
+        blank=True,
+    )
+
+    # まとめ要約を作ったときの記事ID（カンマ区切り）。変わったら作り直す。
+    combined_from = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
     # 同じ出来事を扱う代表記事。
     # 設定されている記事は一覧に表示せず、
     # 代表記事の出典として表示する。
@@ -222,6 +239,19 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title_ja or self.title_original
+
+    @property
+    def display_summary_ja(self):
+        """
+        カードに出す日本語の要約。
+        複数社のまとめがあればそれを使う。
+        """
+
+        return (
+            self.combined_summary_ja
+            or self.summary_ja
+            or self.summary_original
+        )
 
     @property
     def source_articles(self):

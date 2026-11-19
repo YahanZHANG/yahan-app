@@ -266,6 +266,19 @@ class Command(BaseCommand):
 
 
         # ========================================
+        # 8b. 複数社のまとめ要約
+        #
+        # 同じ出来事を複数の媒体が報じたとき、
+        # 各社の報道を均等にまとめる。
+        # ========================================
+
+        self._run_step(
+            "8b/10 Combine multi-source summaries",
+            "combine_news_summaries",
+        )
+
+
+        # ========================================
         # 9. Region classification
         #
         # このrefresh開始後に取得された

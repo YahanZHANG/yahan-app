@@ -140,6 +140,20 @@
     line-height: 1.8;
 }
 
+/* 1社だけの記事：続きは元記事へ */
+.news-read-more {
+    display: inline-block;
+    margin-top: 8px;
+    color: #5F7F6F;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.news-read-more:hover {
+    text-decoration: underline;
+}
+
 .news-topic-row {
     display: flex;
     flex-wrap: wrap;
