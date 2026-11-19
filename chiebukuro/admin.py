@@ -98,13 +98,37 @@ def set_status(modeladmin, request, queryset, status, label):
     modeladmin.message_user(request, f"{count}件を「{label}」にしました。")
 
 
+class BestPendingFilter(admin.SimpleListFilter):
+    """毎月1日に、前々月の末までの質問でベストアンサーが決まっていないものを運営が選ぶ (ルール)"""
+
+    title = "ベストアンサー"
+    parameter_name = "best_pending"
+
+    def lookups(self, request, model_admin):
+        return [("due", "運営が選ぶ番（前々月末までの質問・未決定）"), ("none", "未決定（すべて）")]
+
+    def queryset(self, request, queryset):
+        if self.value() not in ("due", "none"):
+            return queryset
+        import datetime
+
+        from django.utils import timezone
+
+        rows = queryset.filter(best_answer__isnull=True, answers__isnull=False).distinct()
+        if self.value() == "due":
+            today = timezone.localdate()
+            first_prev = (today.replace(day=1) - datetime.timedelta(days=1)).replace(day=1)
+            rows = rows.filter(created_at__date__lt=first_prev)
+        return rows
+
+
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "theme", "region", "status", "release_rank", "release_open", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
+    list_display = ["short_body", "open_link", "theme", "region", "status", "release_rank", "release_open", "source", "nickname", "answer_count", "interest_count", "home_pick", "created_at"]
     list_display_links = ["short_body"]
     list_editable = ["theme", "region", "status", "release_rank", "home_pick"]
-    list_filter = ["status", "theme", "source", "region"]
+    list_filter = [BestPendingFilter, "status", "theme", "source", "region"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["source", "author", "survey_question_id", "last_answered_at", "updated_at"]
     inlines = [AnswerInline]
@@ -116,6 +140,13 @@ class QuestionAdmin(admin.ModelAdmin):
             answers_total=Count("answers", filter=Q(answers__status=Status.PUBLISHED), distinct=True),
             interests_total=Count("interests", distinct=True),
         )
+
+    @admin.display(description="ページ")
+    def open_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+
+        return format_html('<a href="{}" target="_blank">開く</a>', reverse("chiebukuro:question", args=[obj.pk]))
 
     @admin.display(description="質問")
     def short_body(self, obj):

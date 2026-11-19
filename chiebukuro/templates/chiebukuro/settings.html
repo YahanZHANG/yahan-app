@@ -1,60 +1,63 @@
 {% extends "chiebukuro/base.html" %}
 {% load static %}
-{% block title %}通知と表示の設定 | スイス掲示板{% endblock %}
+{% block title %}通知と表示 | スイス掲示板{% endblock %}
 {% block content %}
 <p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
-<h1 class="cb-page-title">通知と表示の設定</h1>
-
-<section class="cb-block">
-    <header class="cb-block-head"><h2>この端末のプッシュ通知</h2></header>
-    <button type="button" id="cb-push-toggle" class="cb-menurow cb-switchrow" aria-pressed="false">
-        {% include "chiebukuro/_icon.html" with name="bell" %}
-        <span><strong>プッシュ通知を受け取る</strong><small id="cb-push-description">確認しています…</small></span>
-        <span class="cb-switch" aria-hidden="true"></span>
-    </button>
-    <p class="cb-push-test" id="cb-push-test" hidden><span role="status"></span><button type="button" class="cb-btn cb-btn-s">テスト通知を送る</button></p>
-</section>
+<h1 class="cb-page-title">通知と表示</h1>
 
 <form method="post" class="cb-settings">
     {% csrf_token %}
-    <section class="cb-block cb-block-pad">
-        <h2 class="cb-form-title">プッシュ通知の頻度</h2>
-        {% for value, label in frequencies %}
-            <label class="cb-radio"><input type="radio" name="push_frequency" value="{{ value }}" {% if board_profile.push_frequency == value %}checked{% endif %}> {{ label }}</label>
-        {% endfor %}
-        <h2 class="cb-form-title cb-mt">知らせてほしいこと</h2>
-        {% for field, label, on in toggles %}
-            <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
-        {% endfor %}
-        <p class="cb-sub">右上の🔔には、設定にかかわらず全部のお知らせが出ます。</p>
-    </section>
-    <section class="cb-block cb-block-pad">
-        <h2 class="cb-form-title">表示</h2>
-        {% for value, label in themes %}
-            <label class="cb-radio"><input type="radio" name="theme" value="{{ value }}" {% if theme == value %}checked{% endif %}> {% if value == "dark" %}ダークモード{% elif value == "light" %}ライトモード{% else %}端末の設定に合わせる{% endif %}</label>
-        {% endfor %}
-        <p class="cb-sub">Yappのほかのアプリ（Swiss News など）にも同じ設定が使われます。</p>
-    </section>
-    <section class="cb-block cb-block-pad">
-        <h2 class="cb-form-title">着せかえ</h2>
-        <div class="cb-colors">
-            {% for value, label in colors %}
-                <label class="cb-color-pick" data-cb-color="{{ value }}"><input type="radio" name="color" value="{{ value }}" {% if board_profile.color == value %}checked{% endif %}><span class="cb-color-swatch" aria-hidden="true"></span><small>{{ label }}</small></label>
+    <section class="cb-block">
+        <header class="cb-block-head"><h2>通知</h2></header>
+        <button type="button" id="cb-push-toggle" class="cb-menurow cb-switchrow" aria-pressed="false">
+            {% include "chiebukuro/_icon.html" with name="bell" %}
+            <span><strong>この端末でプッシュ通知を受け取る</strong><small id="cb-push-description">確認しています…</small></span>
+            <span class="cb-switch" aria-hidden="true"></span>
+        </button>
+        <p class="cb-push-test" id="cb-push-test" hidden><span role="status"></span><button type="button" class="cb-btn cb-btn-s">テスト通知を送る</button></p>
+        <div class="cb-set-group">
+            <h3 class="cb-set-title">頻度</h3>
+            {% for value, label in frequencies %}
+                <label class="cb-radio"><input type="radio" name="push_frequency" value="{{ value }}" {% if board_profile.push_frequency == value %}checked{% endif %}> {{ label }}</label>
             {% endfor %}
         </div>
-        <label class="cb-radio"><input type="checkbox" name="color_auto" value="1" {% if board_profile.color_auto %}checked{% endif %}> 12時間ごとに色を変える（朝と夜で、順番に切りかわります）</label>
-        <h2 class="cb-form-title cb-mt" id="daily">今日のひとこと</h2>
-        <p class="cb-sub">1日の最初に掲示板を開いたときのポップアップ</p>
-        <label class="cb-radio"><input type="radio" name="daily_popup" value="1" {% if board_profile.daily_popup %}checked{% endif %}> 表示する</label>
-        <label class="cb-radio"><input type="radio" name="daily_popup" value="0" {% if not board_profile.daily_popup %}checked{% endif %}> ずっと表示しない</label>
-        <p class="cb-sub">表示するもの</p>
-        {% for field, label, on in daily_cards %}
-            <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
-        {% endfor %}
-        <p class="cb-sub">表示しない設定にしても、HOMEの「今日のひとこと」ボタンからいつでも見られます。<a href="{% url 'chiebukuro:daily_list' %}">これまでのひとこと ›</a></p>
-        <h2 class="cb-form-title cb-mt" id="poll-popup">アンケートのポップアップ</h2>
-        <label class="cb-radio"><input type="checkbox" name="daily_poll" value="1" {% if board_profile.daily_poll %}checked{% endif %}> まだ答えていないアンケートを、その日2回目に開いたときに表示する</label>
+        <div class="cb-set-group">
+            <h3 class="cb-set-title">知らせてほしいこと</h3>
+            {% for field, label, on in toggles %}
+                <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
+            {% endfor %}
+            <p class="cb-sub">右上の🔔には、設定にかかわらず全部のお知らせが出ます。</p>
+        </div>
     </section>
+
+    <section class="cb-block">
+        <header class="cb-block-head"><h2>表示</h2></header>
+        <div class="cb-set-group">
+            <h3 class="cb-set-title">明るさ</h3>
+            {% for value, label in themes %}
+                <label class="cb-radio"><input type="radio" name="theme" value="{{ value }}" {% if theme == value %}checked{% endif %}> {% if value == "dark" %}ダークモード{% elif value == "light" %}ライトモード{% else %}端末の設定に合わせる{% endif %}</label>
+            {% endfor %}
+            <p class="cb-sub">Yapp のほかのアプリ（Swiss News など）も同じ明るさになります。</p>
+        </div>
+        <a href="{% url 'chiebukuro:kisekae' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="palette" %}<span><strong>着せかえ</strong><small>色と、日本の模様</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    </section>
+
+    <section class="cb-block" id="daily">
+        <header class="cb-block-head"><h2>今日のひとこと</h2></header>
+        <div class="cb-set-group">
+            <h3 class="cb-set-title">1日の最初に開いたときのポップアップ</h3>
+            <label class="cb-radio"><input type="radio" name="daily_popup" value="1" {% if board_profile.daily_popup %}checked{% endif %}> 表示する</label>
+            <label class="cb-radio"><input type="radio" name="daily_popup" value="0" {% if not board_profile.daily_popup %}checked{% endif %}> 表示しない</label>
+        </div>
+        <div class="cb-set-group">
+            <h3 class="cb-set-title">表示するもの</h3>
+            {% for field, label, on in daily_cards %}
+                <label class="cb-radio"><input type="checkbox" name="{{ field }}" value="1" {% if on %}checked{% endif %}> {{ label }}</label>
+            {% endfor %}
+        </div>
+        <a href="{% url 'chiebukuro:daily_list' %}" class="cb-menurow">{% include "chiebukuro/_icon.html" with name="sun" %}<span><strong>今日のひとことを見る</strong><small>これまでの分も見られます（マイページからも開けます）</small></span>{% include "chiebukuro/_icon.html" with name="chevron" %}</a>
+    </section>
+
     <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
 </form>
 

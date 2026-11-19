@@ -1,13 +1,15 @@
-{% comment %}回答のお願い (2026-11-17 Taro): 回答がない (運営だけが答えた) 質問を、HOME を3回開くごとに1回くらい出す。
-その日のほかのポップアップ (アンケートのお礼・質問・今日のひとこと) が出るときは出さず、次の回に。その場で答えて送れる。{% endcomment %}
+{% comment %}回答のお願い (2026-11-17 Taro): HOME を3回開くごとに1回くらい、質問を1つ出してその場で答えてもらう。
+その日のほかのポップアップ (アンケートのお礼・質問・今日のひとこと) が出るときは出さず、次の回に。
+出す順番 (2026-11-18 Taro): 回答がない (運営だけ) 質問。それを答えずに閉じたら、次の回は回答が1〜2件の質問。そのあとはまた回答がない質問から。
+答えずに閉じた質問は、この端末では2度と出さない (localStorage cb_answerpop_skipped)。{% endcomment %}
 {% if answer_pop %}
 <dialog class="cb-daily cb-askpop cb-answerpop" id="cb-answerpop" aria-labelledby="cb-answerpop-title">
     <div class="cb-daily-box">
         <button type="button" class="cb-askpop-x" data-answerpop-close aria-label="閉じる">×</button>
-        <form method="post" action="{% url 'chiebukuro:question' answer_pop.pk %}" class="cb-daily-body cb-askpop-form" data-rules>
+        <form method="post" action="" class="cb-daily-body cb-askpop-form" data-rules>
             {% csrf_token %}
-            <p class="cb-answerpop-lead">この質問、わかる方いませんか？</p>
-            <h2 id="cb-answerpop-title" class="cb-answerpop-q"><a href="{% url 'chiebukuro:question' answer_pop.pk %}">{{ answer_pop.body|truncatechars:160 }}</a></h2>
+            <p class="cb-answerpop-lead" data-answerpop-lead>この質問、わかる方いませんか？</p>
+            <h2 id="cb-answerpop-title" class="cb-answerpop-q"><a href="" data-answerpop-q></a></h2>
             <label class="cb-sr" for="cb-answerpop-body">回答</label>
             <textarea name="body" id="cb-answerpop-body" rows="3" maxlength="2000" required></textarea>
             {% include "chiebukuro/_guest_fields.html" %}
@@ -15,21 +17,56 @@
         </form>
     </div>
 </dialog>
+{{ answer_pop|json_script:"cb-answerpop-data" }}
 <script>
 (function () {
     var dialog = document.getElementById("cb-answerpop");
     if (!dialog || !dialog.showModal) return;
-    var count = 0;
-    try { count = Number(localStorage.getItem("cb_answerpop_count") || 0) + 1; } catch (e) { return; }
+    var KEY = "cb_answerpop_skipped";
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    var skipped = [];
+    try { skipped = JSON.parse(read(KEY) || "[]"); } catch (e) { skipped = []; }
+    // 回答がない質問が先、回答が1〜2件の質問があと (サーバーがこの順に並べている)。スキップした質問は飛ばす
+    var candidates = JSON.parse(document.getElementById("cb-answerpop-data").textContent);
+    var fresh = candidates.filter(function (row) { return skipped.indexOf(row.id) < 0; });
+    // 回答がない質問をスキップした人には、次は回答が1〜2件の質問を先に出す (そのあとはまた回答がない質問から)
+    var preferFew = read("cb_answerpop_prefer_few") === "1";
+    var pick = (preferFew && fresh.filter(function (row) { return row.answers > 0; })[0]) || fresh[0];
+    if (!pick) return;
+
+    var count = Number(read("cb_answerpop_count") || 0) + 1;
     var busy = window.cbThanksShown || window.cbAskShown || window.cbDailyShown || location.hash;
-    if (count < 3 || busy) { try { localStorage.setItem("cb_answerpop_count", String(count)); } catch (e) {} return; }
+    if (count < 3 || busy) { write("cb_answerpop_count", String(count)); return; }
+
+    var form = dialog.querySelector("form");
+    var link = dialog.querySelector("[data-answerpop-q]");
+    form.action = pick.url;
+    link.href = pick.url;
+    link.textContent = pick.body;
+    dialog.querySelector("[data-answerpop-lead]").textContent = pick.answers
+        ? "回答 " + pick.answers + "件の質問です。ほかの意見も聞かせてください"
+        : "この質問、わかる方いませんか？";
+
+    function remember() {
+        if (skipped.indexOf(pick.id) < 0) skipped.push(pick.id);
+        write(KEY, JSON.stringify(skipped.slice(-300)));
+    }
     setTimeout(function () {
         if (document.querySelector("dialog[open]") || (document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) return;
-        try { localStorage.setItem("cb_answerpop_count", "0"); } catch (e) {}
+        write("cb_answerpop_count", "0");
+        if (pick.answers) write("cb_answerpop_prefer_few", "0");
         dialog.showModal();
     }, 2500);
-    function close() { dialog.close(); }
+    // 答えても、答えずに閉じても、この質問はもう出さない (次は別の質問)
+    form.addEventListener("submit", remember);
+    function close() {
+        remember();
+        if (!pick.answers) write("cb_answerpop_prefer_few", "1");
+        dialog.close();
+    }
     dialog.querySelector("[data-answerpop-close]").addEventListener("click", close);
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
     dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
 })();
 </script>

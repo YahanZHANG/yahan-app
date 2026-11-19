@@ -1,0 +1,44 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}着せかえ | スイス掲示板{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:me' %}">{% include "chiebukuro/_icon.html" with name="back" %}マイページ</a></p>
+<h1 class="cb-page-title">着せかえ</h1>
+
+<form method="post" class="cb-settings" id="cb-kisekae">
+    {% csrf_token %}
+    <section class="cb-block cb-block-pad">
+        <h2 class="cb-form-title">色</h2>
+        <div class="cb-colors">
+            {% for value, label in colors %}
+                <label class="cb-color-pick" data-cb-color="{{ value }}"><input type="radio" name="color" value="{{ value }}" {% if board_profile.color == value %}checked{% endif %}><span class="cb-color-swatch" aria-hidden="true"></span><small>{{ label }}</small></label>
+            {% endfor %}
+        </div>
+        <label class="cb-radio"><input type="checkbox" name="color_auto" value="1" {% if board_profile.color_auto %}checked{% endif %}> 12時間ごとに色を変える（朝と夜で、順番に切りかわります）</label>
+    </section>
+    <section class="cb-block cb-block-pad">
+        <h2 class="cb-form-title">日本の模様</h2>
+        <p class="cb-sub">背景にうすく入ります。押すと、その場でためせます。</p>
+        <div class="cb-patterns">
+            {% for value, label in patterns %}
+                <label class="cb-pattern-pick" data-cb-pattern="{{ value }}"><input type="radio" name="pattern" value="{{ value }}" {% if board_profile.pattern == value %}checked{% endif %}><span class="cb-pattern-swatch" aria-hidden="true"></span><small>{{ label }}</small></label>
+            {% endfor %}
+        </div>
+        <label class="cb-radio cb-mt-s"><input type="checkbox" name="pattern_auto" value="1" {% if board_profile.pattern_auto %}checked{% endif %}> 12時間ごとに模様を変える（10種類が順番に切りかわります）</label>
+    </section>
+    <p class="cb-settings-save"><button type="submit" class="cb-btn cb-btn-primary">保存する</button></p>
+</form>
+<script>
+(function () {
+    // 押したらすぐ、このページの見た目に反映 (保存するまでは、ほかのページは前のまま)
+    var root = document.documentElement;
+    document.getElementById("cb-kisekae").addEventListener("change", function (event) {
+        var input = event.target;
+        if (input.name === "color") root.setAttribute("data-cb-color", input.value);
+        if (input.name === "pattern") {
+            if (input.value) root.setAttribute("data-cb-pattern", input.value);
+            else root.removeAttribute("data-cb-pattern");
+        }
+    });
+})();
+</script>
+{% endblock %}

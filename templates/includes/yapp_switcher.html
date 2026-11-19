@@ -1,0 +1,75 @@
+{% load static %}
+{% comment %}Yapp のアプリ切り替え (2026-11-18 Taro: アプリを行き来する人が、ほかのアプリへ行けるように。邪魔にならない場所に)。
+各アプリのヘッダーで、アプリ名のすぐ横に置く。{% include "includes/yapp_switcher.html" with current="news" %}
+ほかのアプリへのリンクは app_links.js が新しいタブ (ホーム画面のアプリからはブラウザ) で開く。{% endcomment %}
+<span class="yapp-switch-wrap"><button type="button" class="yapp-switch" data-yapp-switch aria-haspopup="dialog" aria-label="Yappのほかのアプリ" title="Yappのほかのアプリ">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><g fill="currentColor"><rect x="1" y="1" width="4" height="4" rx="1"/><rect x="6" y="1" width="4" height="4" rx="1"/><rect x="11" y="1" width="4" height="4" rx="1"/><rect x="1" y="6" width="4" height="4" rx="1"/><rect x="6" y="6" width="4" height="4" rx="1"/><rect x="11" y="6" width="4" height="4" rx="1"/><rect x="1" y="11" width="4" height="4" rx="1"/><rect x="6" y="11" width="4" height="4" rx="1"/><rect x="11" y="11" width="4" height="4" rx="1"/></g></svg>
+</button><span class="yapp-switch-tip" id="yapp-switch-tip" role="status" hidden>ここから Yapp のほかのアプリへ</span></span>
+<dialog class="yapp-sheet" id="yapp-sheet" aria-label="Yappのアプリ">
+    <div class="yapp-sheet-box">
+        <p class="yapp-sheet-title">Yapp のアプリ<button type="button" class="yapp-sheet-x" data-yapp-close aria-label="閉じる">×</button></p>
+        <a class="yapp-sheet-app{% if current == 'news' %} is-here{% endif %}" href="/news/"{% if current == 'news' %} aria-current="page"{% endif %}><img src="{% static 'pwa/news/icon-192.png' %}" alt="" width="40" height="40"><span><b>Swiss News</b><small>スイスのニュースを日本語で</small></span>{% if current == 'news' %}<i>いま見ています</i>{% endif %}</a>
+        <a class="yapp-sheet-app{% if current == 'swiss-board' %} is-here{% endif %}" href="/swiss-board/"{% if current == 'swiss-board' %} aria-current="page"{% endif %}><img src="{% static 'pwa/swiss-board/icon-192.png' %}" alt="" width="40" height="40"><span><b>スイス掲示板</b><small>質問・ゆずりあい・つぶやき</small></span>{% if current == 'swiss-board' %}<i>いま見ています</i>{% endif %}</a>
+        <a class="yapp-sheet-app{% if current == 'washoku' %} is-here{% endif %}" href="/washoku/"{% if current == 'washoku' %} aria-current="page"{% endif %}><img src="{% static 'pwa/washoku/icon-192.png' %}" alt="" width="40" height="40"><span><b>スイスで和食</b><small>スイスの食材で作る和食レシピ</small></span>{% if current == 'washoku' %}<i>いま見ています</i>{% endif %}</a>
+        <a class="yapp-sheet-top" href="/">Yapp トップへ ›</a>
+    </div>
+</dialog>
+<style>
+.yapp-switch-wrap { position: relative; display: inline-flex; flex: none; }
+.yapp-switch-tip { position: absolute; top: 38px; left: 50%; z-index: 60; transform: translateX(-30%); padding: 7px 11px; border-radius: 10px; background: #1f1f24; color: #fff; font-size: 12.5px; font-weight: 700; line-height: 1.3; white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, .2); cursor: pointer; animation: yapp-tip-in .25s ease-out; }
+.yapp-switch-tip::before { content: ""; position: absolute; top: -12px; left: 30%; transform: translateX(-50%); border: 6px solid transparent; border-bottom-color: #1f1f24; }
+.yapp-switch-tip[hidden] { display: none; }
+@keyframes yapp-tip-in { from { opacity: 0; transform: translate(-30%, -4px); } }
+.yapp-switch { display: inline-grid; place-items: center; flex: none; width: 30px; height: 30px; margin-left: 2px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: inherit; opacity: .55; cursor: pointer; }
+.yapp-switch:hover, .yapp-switch:focus-visible { opacity: 1; background: rgba(127, 127, 127, .14); }
+.yapp-sheet { width: min(420px, 100vw); max-width: 100vw; margin: auto auto 0; padding: 0; border: 0; border-radius: 18px 18px 0 0; background: #fff; color: #1d2125; font-family: inherit; box-shadow: 0 -8px 30px rgba(0, 0, 0, .18); }
+@media (min-width: 720px) { .yapp-sheet { margin: auto; border-radius: 18px; } }
+.yapp-sheet::backdrop { background: rgba(0, 0, 0, .35); }
+.yapp-sheet-box { display: grid; gap: 6px; padding: 14px 14px calc(16px + env(safe-area-inset-bottom)); }
+.yapp-sheet-title { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 4px; font-size: 14px; font-weight: 800; color: #646b73; }
+.yapp-sheet-x { width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(127, 127, 127, .14); color: inherit; font-size: 18px; line-height: 1; cursor: pointer; }
+.yapp-sheet-app { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; color: inherit !important; text-decoration: none !important; }
+.yapp-sheet-app:hover { background: rgba(127, 127, 127, .1); }
+.yapp-sheet-app img { flex: none; border-radius: 10px; }
+.yapp-sheet-app span { display: grid; flex: 1; min-width: 0; line-height: 1.35; }
+.yapp-sheet-app b { font-size: 16px; }
+.yapp-sheet-app small { color: #646b73; font-size: 12.5px; }
+.yapp-sheet-app i { flex: none; font-style: normal; font-size: 11.5px; font-weight: 700; color: #646b73; }
+.yapp-sheet-app.is-here { background: rgba(127, 127, 127, .1); pointer-events: none; }
+.yapp-sheet-top { justify-self: center; margin-top: 4px; padding: 6px 10px; color: #087c95 !important; font-size: 14px; font-weight: 700; }
+html[data-yapp-resolved-theme="dark"] .yapp-sheet, html[data-washoku-theme="dark"] .yapp-sheet { background: #1f2328; color: #e6e8eb; }
+html[data-yapp-resolved-theme="dark"] .yapp-sheet-title, html[data-yapp-resolved-theme="dark"] .yapp-sheet-app small, html[data-yapp-resolved-theme="dark"] .yapp-sheet-app i,
+html[data-washoku-theme="dark"] .yapp-sheet-title, html[data-washoku-theme="dark"] .yapp-sheet-app small, html[data-washoku-theme="dark"] .yapp-sheet-app i { color: #9aa1a9; }
+html[data-yapp-resolved-theme="dark"] .yapp-sheet-top, html[data-washoku-theme="dark"] .yapp-sheet-top { color: #5fd0e4 !important; }
+.news-dark .yapp-sheet { background: #1f2328; color: #e6e8eb; }
+.news-dark .yapp-sheet-title, .news-dark .yapp-sheet-app small, .news-dark .yapp-sheet-app i { color: #9aa1a9; }
+.news-dark .yapp-sheet-top { color: #5fd0e4 !important; }
+</style>
+<script>
+(function () {
+    var sheet = document.getElementById("yapp-sheet");
+    if (!sheet || !sheet.showModal) return;
+    document.addEventListener("click", function (event) {
+        if (event.target.closest && event.target.closest("[data-yapp-switch]")) sheet.showModal();
+        else if (event.target === sheet || (event.target.closest && event.target.closest("[data-yapp-close]"))) sheet.close();
+    });
+    // はじめての人に1回だけ、⠿ ボタンの下に吹き出しで「ここからほかのアプリへ」(2026-11-18 Taro: 切り替えられることを知らせたい)。
+    // 端末ごとに1回。初回の訪問ではなく2回目以降、ほかのポップアップが出ていないときだけ。押すか8秒で消える
+    var tip = document.getElementById("yapp-switch-tip");
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return "x"; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    if (tip && !read("yapp_switch_tip_seen")) {
+        var visits = Number(read("yapp_switch_visits") || 0) + 1;
+        write("yapp_switch_visits", String(visits));
+        if (visits >= 2) setTimeout(function () {
+            if (document.querySelector("dialog[open]") || read("yapp_switch_tip_seen")) return;
+            write("yapp_switch_tip_seen", "1");
+            tip.hidden = false;
+            setTimeout(function () { tip.hidden = true; }, 8000);
+        }, 2500);
+        document.addEventListener("click", function () { tip.hidden = true; });
+    }
+    // ほかのアプリを開いたら閉じておく (新しいタブで開くので、戻ったときにシートが残らないように)
+    sheet.addEventListener("click", function (event) { if (event.target.closest && event.target.closest("a[href]")) setTimeout(function () { sheet.close(); }, 50); });
+})();
+</script>

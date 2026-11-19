@@ -67,6 +67,7 @@ urlpatterns = [
     path("ad/<int:pk>/", views.sponsor_click, name="sponsor"),
     # 設定・プッシュ通知
     path("me/settings/", views.settings_view, name="settings"),
+    path("me/kisekae/", views.kisekae, name="kisekae"),
     path("me/thanks/", views.my_thanks, name="my_thanks"),
     path("me/<str:section>/", views.my_list, name="my_list"),
     path("push/subscribe/", views.push_subscribe, name="push_subscribe"),
