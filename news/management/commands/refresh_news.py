@@ -491,9 +491,6 @@ class Command(BaseCommand):
 
         untranslated = (
             fetched
-            .exclude(
-                original_language="ja",
-            )
             .filter(
                 ai_processed_at__isnull=True,
             )

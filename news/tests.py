@@ -529,7 +529,7 @@ class PushTests(NewsTestCase):
 
 class ArticleTextTests(NewsTestCase):
 
-    def test_body_is_added_when_summary_is_short(self):
+    def test_article_page_is_never_fetched(self):
 
         from news.services.article_text import article_input_text
 
@@ -537,31 +537,14 @@ class ArticleTextTests(NewsTestCase):
             self.srf,
             "short",
             processed=False,
-            summary_original="Kurzer Teaser.",
+            summary_original="  Kurzer Teaser.  ",
         )
 
-        html = (
-            "<html><body><nav><p>Menu menu menu menu menu menu menu menu</p></nav>"
-            "<article><p>Der Bundesrat hat heute entschieden, die Praemien zu senken.</p>"
-            "<p>kurz</p>"
-            "<p>Die Massnahme gilt ab Januar 2027 fuer alle Kantone der Schweiz.</p>"
-            "</article></body></html>"
-        )
-
-        response = mock.Mock(text=html)
-        response.raise_for_status = mock.Mock()
-
-        with mock.patch(
-            "news.services.article_text.requests.get",
-            return_value=response,
-        ):
+        with mock.patch("requests.get") as get:
             text = article_input_text(article)
 
-        self.assertIn("Kurzer Teaser.", text)
-        self.assertIn("Bundesrat hat heute", text)
-        self.assertIn("Januar 2027", text)
-        self.assertNotIn("Menu", text)
-        self.assertNotIn("kurz\n", text)
+        self.assertEqual(text, "Kurzer Teaser.")
+        get.assert_not_called()
 
 
 @override_settings(
@@ -1277,15 +1260,12 @@ class SbbInfoTests(NewsTestCase):
                 },
                 model="m",
             ),
-        ), mock.patch(
-            "news.services.article_text.fetch_article_body",
-        ) as fetch_body:
+        ):
             enrich_article(article)
 
         article.refresh_from_db()
 
         self.assertTrue(article.life_alert)
-        fetch_body.assert_not_called()
 
 
 class ShortSummaryTests(NewsTestCase):
@@ -1514,3 +1494,106 @@ class ShortSummaryTests(NewsTestCase):
 
         self.assertContains(response, "各社のまとめ")
         self.assertNotContains(response, "続きは元記事で読む")
+
+
+class SourcePolicyTests(NewsTestCase):
+
+    def test_japanese_articles_are_rewritten_by_ai(self):
+
+        swi = NewsSource.objects.create(
+            name="SWI swissinfo.ch",
+            website_url="https://www.swissinfo.ch/jpn/",
+            language="ja",
+        )
+
+        article = self.make_article(
+            swi,
+            "swi",
+            processed=False,
+            original_language="ja",
+            title_original="原文の見出し",
+            summary_original="原文の紹介文。",
+        )
+
+        # AI 処理前は一覧に出ない
+        response = self.client.get(reverse("news:home"))
+        self.assertNotContains(response, "原文の紹介文。")
+
+        from config.services.ai_client import AIResult
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=AIResult(
+                data={
+                    "title_ja": "独自の見出し",
+                    "summary_ja": "独自の要約。",
+                    "topics": [],
+                    "life_alert": False,
+                },
+                model="m",
+            ),
+        ):
+            call_command("enrich_news", stdout=mock.MagicMock())
+
+        article.refresh_from_db()
+
+        self.assertEqual(article.summary_ja, "独自の要約。")
+        self.assertEqual(article.title_ja, "独自の見出し")
+
+    def test_setup_keeps_paused_sources_off(self):
+
+        call_command("setup_news_defaults", stdout=mock.MagicMock())
+
+        for name in ["Blick", "Watson", "20 Minuten", "Nau.ch", "SWI swissinfo.ch"]:
+            self.assertFalse(
+                NewsSource.objects.get(name=name).is_active
+            )
+
+        self.assertTrue(
+            NewsSource.objects.get(name="SRF").is_active
+        )
+
+    def test_paused_source_articles_are_hidden(self):
+
+        self.make_article(self.srf, "active", title_ja="表示する記事")
+        self.make_article(self.rts, "paused", title_ja="止めた媒体の記事")
+
+        self.rts.is_active = False
+        self.rts.save()
+
+        response = self.client.get(reverse("news:home"))
+
+        self.assertContains(response, "表示する記事")
+        self.assertNotContains(response, "止めた媒体の記事")
+
+
+class DigestSourcesTests(NewsTestCase):
+
+    def test_digest_lists_its_articles_and_sources(self):
+
+        from config.services.ai_client import AIResult
+        from news.services.digest_generator import generate_news_digest
+
+        article = self.make_article(
+            self.srf,
+            "d",
+            title_ja="まとめに入った記事",
+            fetched_at=timezone.now(),
+        )
+
+        with mock.patch(
+            "news.services.digest_generator.generate_json",
+            return_value=AIResult(
+                data={"summary_ja": "今日のまとめ。"},
+                model="m",
+            ),
+        ):
+            digest = generate_news_digest(period="morning")
+
+        self.assertEqual(list(digest.articles.all()), [article])
+
+        for url in [reverse("news:digest_list"), reverse("news:home")]:
+            response = self.client.get(url)
+            self.assertContains(response, "関連記事・出典を見る（1件）")
+            self.assertContains(response, "まとめに入った記事")
+            self.assertContains(response, article.source_url)

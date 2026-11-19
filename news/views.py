@@ -280,13 +280,16 @@ def _article_queryset(
     # =====================================================
 
     queryset = queryset.filter(
-        Q(
-            original_language="ja"
-        )
-        |
-        Q(
-            ai_processed_at__isnull=False
-        )
+        Q(ai_processed_at__isnull=False)
+    )
+
+
+    # =====================================================
+    # 取得を止めた媒体の記事は出さない（利用規約への配慮）
+    # =====================================================
+
+    queryset = queryset.filter(
+        source__is_active=True,
     )
 
 
@@ -592,6 +595,9 @@ def home(request):
 
     latest_digest = (
         NewsDigest.objects
+        .prefetch_related(
+            _digest_articles_prefetch(),
+        )
         .order_by(
             "-generated_at"
         )
@@ -1656,10 +1662,40 @@ def settings_view(request):
         },
     )
 
+def _digest_articles_prefetch():
+    """
+    まとめの材料にした記事（一覧に出る代表記事だけ、出典つき）。
+    """
+
+    return Prefetch(
+        "articles",
+        queryset=(
+            Article.objects
+            .filter(
+                ai_processed_at__isnull=False,
+                duplicate_of__isnull=True,
+                source__is_active=True,
+            )
+            .select_related(
+                "source",
+            )
+            .prefetch_related(
+                "duplicates__source",
+            )
+            .order_by(
+                "-published_at",
+            )
+        ),
+    )
+
+
 def digest_list(request):
 
     digests = (
         NewsDigest.objects
+        .prefetch_related(
+            _digest_articles_prefetch(),
+        )
         .order_by(
             "-digest_date",
             "-generated_at",

@@ -226,6 +226,19 @@
 }
 
 .news-dark .news-digest-footer,
+.news-dark .news-digest-sources summary,
+.news-dark .news-digest-source-links a {
+    color: var(--news-dark-accent);
+}
+
+.news-dark .news-digest-source-title {
+    color: var(--news-dark-text);
+}
+
+.news-dark .news-digest-sources li {
+    border-color: var(--news-dark-border);
+}
+
 .news-dark .news-digest-history-meta,
 .news-dark .news-digest-history-top time {
     color: var(--news-dark-muted);
