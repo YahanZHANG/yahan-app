@@ -1,0 +1,27 @@
+{% with digest_articles=digest.articles.all %}{% if digest_articles %}
+<details class="news-digest-sources">
+
+    <summary>
+        関連記事・出典を見る（{{ digest_articles|length }}件）
+    </summary>
+
+    <ul>
+        {% for item in digest_articles %}
+            <li>
+                <a href="{% url 'news:article_detail' item.id %}" class="news-digest-source-title">{{ item.title_ja|default:item.title_original }}</a>
+                <span class="news-digest-source-links">
+                    {% for source_article in item.source_articles %}
+                        <a
+                            href="{{ source_article.source_url }}"
+                            data-click-url="{% url 'usage_analytics:public_news_article_click' source_article.id %}?origin={{ request.get_full_path|urlencode }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >{{ source_article.source.name }} ↗</a>
+                    {% endfor %}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+
+</details>
+{% endif %}{% endwith %}

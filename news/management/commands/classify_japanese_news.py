@@ -23,7 +23,9 @@ class Command(BaseCommand):
         articles = (
             Article.objects
             .filter(
-                original_language="ja"
+                original_language="ja",
+                # AI が書き直した記事は AI のテーマを使う
+                ai_processed_at__isnull=True,
             )
             .select_related(
                 "source"

@@ -437,6 +437,13 @@ class NewsDigest(models.Model):
         default=0,
     )
 
+    # まとめの材料にした記事（「関連記事・出典を見る」に出す）
+    articles = models.ManyToManyField(
+        "Article",
+        blank=True,
+        related_name="digests",
+    )
+
     class Meta:
         ordering = [
             "-generated_at",

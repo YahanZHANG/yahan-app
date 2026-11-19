@@ -3,6 +3,19 @@ from django.core.management.base import BaseCommand
 from news.models import NewsSource, Topic
 
 
+
+# 許可が取れるまで取得しない媒体（2026-11 利用規約の調査。RSS がなく
+# ページから取得している媒体と、自動取得を禁止している媒体）。
+# 許可が取れるまで取得しない。
+PAUSED_SOURCES = {
+    "20 Minuten",
+    "Blick",
+    "Nau.ch",
+    "SWI swissinfo.ch",
+    "Watson",
+}
+
+
 class Command(BaseCommand):
     help = "Create default news topics and sources."
 
@@ -170,6 +183,8 @@ class Command(BaseCommand):
                     "feed_url": feed_url,
                     "language": language,
                     "display_order": display_order,
-                    "is_active": True,
+                    "is_active": (
+                        name not in PAUSED_SOURCES
+                    ),
                 },
             )

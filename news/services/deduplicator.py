@@ -223,13 +223,7 @@ def ready_articles():
     """
 
     return Article.objects.filter(
-        Q(
-            original_language="ja"
-        )
-        |
-        Q(
-            ai_processed_at__isnull=False
-        )
+        Q(ai_processed_at__isnull=False)
     )
 
 

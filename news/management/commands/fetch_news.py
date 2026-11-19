@@ -248,8 +248,9 @@ class Command(BaseCommand):
 
                 if source.language == "ja":
 
-                    title_ja = title
-                    summary_ja = summary
+                    # 原文の文章をそのまま出さず、AI が独自の文に書き直す
+                    title_ja = ""
+                    summary_ja = ""
                     original_language = "ja"
 
                 else:

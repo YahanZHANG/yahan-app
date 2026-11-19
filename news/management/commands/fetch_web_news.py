@@ -678,20 +678,10 @@ class Command(BaseCommand):
                     "language"
                 ]
 
-                if language == "ja":
-
-                    title_ja = data[
-                        "title"
-                    ]
-
-                    summary_ja = data[
-                        "summary"
-                    ]
-
-                else:
-
-                    title_ja = ""
-                    summary_ja = ""
+                # 日本語の媒体（swissinfo）も、原文の文章を
+                # そのまま出さず AI が独自の文に書き直す。
+                title_ja = ""
+                summary_ja = ""
 
                 # ========================================
                 # Save

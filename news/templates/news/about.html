@@ -79,15 +79,9 @@ Swiss Newsについて | Swiss News
 
                         <div class="news-about-sources">
 
-                            <span>SRF</span>
-                            <span>RTS</span>
-                            <span>RSI</span>
-                            <span>SWI swissinfo.ch</span>
-                            <span>Swiss Federal Administration</span>
-                            <span>20 Minuten</span>
-                            <span>Blick</span>
-                            <span>Nau.ch</span>
-                            <span>Watson</span>
+                            {% for source in sources %}
+                                <span>{{ source.name }}</span>
+                            {% endfor %}
 
                         </div>
 

@@ -72,15 +72,6 @@ class Command(BaseCommand):
 
 
         # =====================================================
-        # Japanese articles do not need translation
-        # =====================================================
-
-        queryset = queryset.exclude(
-            original_language="ja"
-        )
-
-
-        # =====================================================
         # Only unprocessed articles by default
         # =====================================================
 
@@ -117,9 +108,6 @@ class Command(BaseCommand):
                     Article.objects
                     .select_related(
                         "source"
-                    )
-                    .exclude(
-                        original_language="ja"
                     )
                     .filter(
                         ai_processed_at__isnull=False,

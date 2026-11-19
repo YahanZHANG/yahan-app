@@ -172,13 +172,7 @@ def generate_news_digest(
             fetched_at__lte=now,
         )
         .filter(
-            Q(
-                original_language="ja"
-            )
-            |
-            Q(
-                ai_processed_at__isnull=False
-            )
+            Q(ai_processed_at__isnull=False)
         )
         .filter(
             duplicate_of__isnull=True
@@ -212,10 +206,8 @@ def generate_news_digest(
             or article.title_original
         )
 
-        summary = (
-            article.summary_ja
-            or article.summary_original
-        )
+        # AI が独自の文で書いた要約だけを材料にする
+        summary = article.display_summary_ja
 
 
         source_names = ", ".join(
@@ -289,5 +281,9 @@ SUMMARY:
         )
     )
 
+
+    digest.articles.set(
+        articles
+    )
 
     return digest
