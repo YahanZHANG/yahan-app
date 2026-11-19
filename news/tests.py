@@ -1323,6 +1323,7 @@ class ShortSummaryTests(NewsTestCase):
         kwargs = generate.call_args.kwargs
 
         self.assertIn("最大3文", kwargs["instructions"])
+        self.assertIn("直訳", kwargs["instructions"])
         self.assertNotIn("5～10文", kwargs["instructions"])
         self.assertNotIn("x" * 1501, kwargs["input_text"])
         self.assertIn("x" * 1500, kwargs["input_text"])
@@ -1361,6 +1362,31 @@ class ShortSummaryTests(NewsTestCase):
 
         self.assertIn("5～10文", kwargs["instructions"])
         self.assertIn("x" * 5000, kwargs["input_text"])
+
+    def test_sbb_is_treated_like_other_media(self):
+
+        from news.management.commands.fetch_sbb_info import get_source
+        from news.services import ai_enricher
+
+        article = self.make_article(
+            get_source(),
+            "sbb2",
+            processed=False,
+            source_url="https://www.sbb.ch/x#sbb-2",
+        )
+
+        with mock.patch(
+            "news.services.ai_enricher.generate_json",
+            return_value=self.ai_result(
+                title_ja="t", summary_ja="s", topics=[], life_alert=False,
+            ),
+        ) as generate, mock.patch(
+            "news.services.ai_enricher.article_input_text",
+            return_value="x" * 5000,
+        ):
+            ai_enricher.enrich_article(article)
+
+        self.assertIn("最大3文", generate.call_args.kwargs["instructions"])
 
     def test_old_long_summaries_are_rewritten_summary_only(self):
 
@@ -1424,7 +1450,8 @@ class ShortSummaryTests(NewsTestCase):
 
             kwargs = generate.call_args.kwargs
 
-            self.assertIn("均等", kwargs["instructions"])
+            self.assertIn("必ず情報を採用する必要はない", kwargs["instructions"])
+            self.assertIn("直訳", kwargs["instructions"])
             self.assertIn("最大6文", kwargs["instructions"])
             self.assertIn("媒体: SRF", kwargs["input_text"])
             self.assertIn("媒体: RTS", kwargs["input_text"])
