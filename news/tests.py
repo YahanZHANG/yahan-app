@@ -1597,3 +1597,13 @@ class DigestSourcesTests(NewsTestCase):
             self.assertContains(response, "関連記事・出典を見る（1件）")
             self.assertContains(response, "まとめに入った記事")
             self.assertContains(response, article.source_url)
+
+    def test_about_lists_only_active_sources(self):
+
+        self.rts.is_active = False
+        self.rts.save()
+
+        response = self.client.get(reverse("news:about"))
+
+        self.assertContains(response, "<span>SRF</span>", html=True)
+        self.assertNotContains(response, "<span>RTS</span>", html=True)

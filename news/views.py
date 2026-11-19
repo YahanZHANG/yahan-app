@@ -1837,6 +1837,18 @@ def about(request):
         {
             "form": form,
 
+            # 今取得している媒体（止めた媒体は出さない）
+            "sources": (
+                NewsSource.objects
+                .filter(
+                    is_active=True,
+                )
+                .order_by(
+                    "display_order",
+                    "name",
+                )
+            ),
+
             "twint_url": getattr(
                 django_settings,
                 "SWISS_NEWS_TWINT_URL",
