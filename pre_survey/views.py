@@ -744,3 +744,27 @@ def again(request):
     )
     request.session[SESSION_KEY] = participant.pk
     return redirect("pre_survey:question")
+
+
+def to_board(request):
+    """事前アンケート → スイス掲示板。
+    アンケートの質問を開いていたら (?show=質問ID / q/質問ID/)、掲示板の同じ質問へ。ほかは掲示板HOME。"""
+
+    from chiebukuro.models import Question as BoardQuestion
+
+    target = reverse("chiebukuro:home")
+    match = request.resolver_match
+    survey_pk = request.GET.get("show", "")
+    if match and match.kwargs.get("pk"):
+        survey_pk = str(match.kwargs["pk"])
+    if survey_pk.isdigit():
+        board_pk = (
+            BoardQuestion.objects.filter(survey_question_id=int(survey_pk)).values_list("pk", flat=True).first()
+        )
+        if board_pk:
+            target = reverse("chiebukuro:question", args=[board_pk])
+    return redirect(target)
+
+
+def to_board_any(request, rest=""):
+    return redirect(reverse("chiebukuro:home"))
