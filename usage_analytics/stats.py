@@ -24,7 +24,7 @@ DEVICE_ICONS = {"mobile": "📱", "desktop": "💻", "tablet": "📟", "other": 
 def device_info(key):
     key = key or "other"
     return {"key": key, "name": DEVICE_NAMES.get(key, key), "icon": DEVICE_ICONS.get(key, "❔")}
-from .catalog import app_info
+from .catalog import MAIN_APPS, OTHER_APP, app_info, group_key
 from .models import (
     AnalyticsExclusion,
     NewsSummaryRead,
@@ -95,7 +95,9 @@ class Scope:
 
         views = self.base()
 
-        if self.app:
+        if self.app == OTHER_APP:
+            views = views.exclude(app_key__in=MAIN_APPS)
+        elif self.app:
             views = views.filter(app_key=self.app)
 
         return views
@@ -498,7 +500,7 @@ def app_series(app_totals, app_day, labels):
 
     if rest:
         series.append({
-            "name": "その他のアプリ",
+            "name": "🧩 その他",
             "color": "s0",
             "values": [sum(app_day[app].get(day, 0) for app in rest) for day in labels],
         })
@@ -635,21 +637,32 @@ def campaign_rows(scope, visits):
 
 
 def app_interest(scope, current, previous, visits):
+    """主なアプリは1つずつ、ほかのアプリは「その他」にまとめて数える。"""
+
+    counts = dict(
+        page_views=Count("id"),
+        visitors=Count("visitor_id", distinct=True),
+        visits=Count("visit_id", distinct=True),
+        users=Count("user_id", distinct=True),
+    )
 
     rows = {
         row["app_key"]: row
-        for row in current.values("app_key").annotate(
-            page_views=Count("id"),
-            visitors=Count("visitor_id", distinct=True),
-            visits=Count("visit_id", distinct=True),
-            users=Count("user_id", distinct=True),
-        )
+        for row in current.filter(app_key__in=MAIN_APPS).values("app_key").annotate(**counts)
     }
+    others = current.exclude(app_key__in=MAIN_APPS).aggregate(**counts)
+    if others["page_views"]:
+        rows[OTHER_APP] = others
 
     previous_visitors = dict(
-        previous.values("app_key")
+        previous.filter(app_key__in=MAIN_APPS)
+        .values("app_key")
         .annotate(n=Count("visitor_id", distinct=True))
         .values_list("app_key", "n")
+    )
+    previous_visitors[OTHER_APP] = (
+        previous.exclude(app_key__in=MAIN_APPS)
+        .values("visitor_id").distinct().count()
     )
 
     total_visitors = len({visit["visitor_id"] for visit in visits}) or 1
@@ -658,15 +671,16 @@ def app_interest(scope, current, previous, visits):
     pair_counter = Counter()
     multi_app_visits = 0
     for visit in visits:
-        if len(visit["apps"]) >= 2:
+        apps = {group_key(app) for app in visit["apps"]}
+        if len(apps) >= 2:
             multi_app_visits += 1
-            for pair in combinations(sorted(visit["apps"]), 2):
+            for pair in combinations(sorted(apps), 2):
                 pair_counter[pair] += 1
 
     # 訪問者ごとに見たアプリ
     visitor_apps = defaultdict(set)
     for visit in visits:
-        visitor_apps[visit["visitor_id"]] |= visit["apps"]
+        visitor_apps[visit["visitor_id"]] |= {group_key(app) for app in visit["apps"]}
 
     multi_app_visitors = sum(1 for apps in visitor_apps.values() if len(apps) >= 2)
 

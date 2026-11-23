@@ -23,7 +23,7 @@ REGULAR_DAYS = 3
 # 1回だけ来て、このページ数以下で帰った人を「すぐ帰った人」とする
 SHORT_VISIT_PAGES = 2
 
-TOP = 6
+TOP = 3
 
 
 def _page_rows(counter, visitors, titles, total, limit=TOP):
@@ -169,8 +169,7 @@ def build_advice(total, regulars, short_visitors, one_visit, regular_rows, exit_
         advice.append({
             "icon": "🚪",
             "text": format_html(
-                "1回だけ来てすぐ帰った人が <strong>{}%</strong> います。いちばん多く最後に見ていたのは"
-                "「{}」です。このページから次に見るもの（関連レシピ・食材・HOMEへの道）を目立たせると、続けて見てもらえそうです。",
+                "すぐ帰る人 <strong>{}%</strong>。多くは「{}」で離脱。次に見るものを目立たせる。",
                 short_share, _name(top),
             ),
         })
@@ -187,8 +186,7 @@ def build_advice(total, regulars, short_visitors, one_visit, regular_rows, exit_
             advice.append({
                 "icon": "💡",
                 "text": format_html(
-                    "よく使う人は「{}」をよく見ていますが、ほかの人はあまり見ていません。"
-                    "HOMEや初めての人向けの案内で見せると、使い続けてもらうきっかけになりそうです。",
+                    "「{}」はよく使う人だけが見ている。HOMEで紹介する。",
                     _name(row),
                 ),
             })
@@ -199,8 +197,8 @@ def build_advice(total, regulars, short_visitors, one_visit, regular_rows, exit_
         advice.append({
             "icon": "📈",
             "text": format_html(
-                "最近「{}」がよく見られています（{}回、前半は{}回）。関連するコラムやアンケートを足すと、さらに盛り上がりそうです。",
-                _name(top), top["count"], top["before"],
+                "「{}」が伸びている（{}→{}回）。関連の話題を足す。",
+                _name(top), top["before"], top["count"],
             ),
         })
 
@@ -208,13 +206,12 @@ def build_advice(total, regulars, short_visitors, one_visit, regular_rows, exit_
         advice.append({
             "icon": "🔔",
             "text": format_html(
-                "3日以上来ている人はまだ <strong>{}人</strong>（{}%）です。"
-                "お知らせの通知やホーム画面への追加の案内で、また来てもらう仕掛けを増やすとよさそうです。",
+                "3日以上来る人は <strong>{}人</strong>（{}%）。通知やホーム画面追加を勧める。",
                 len(regulars), round(len(regulars) / total * 100),
             ),
         })
 
     if not advice:
-        advice.append({"icon": "👍", "text": "大きく気になるところはありません。この調子で投稿や話題を増やしていきましょう。"})
+        advice.append({"icon": "👍", "text": "気になる点はありません。"})
 
     return advice

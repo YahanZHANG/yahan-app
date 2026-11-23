@@ -390,3 +390,39 @@ class NewsSummaryReadTests(TestCase):
         )
 
         self.assertEqual([row["title"] for row in stats.top_news_reads()], ["新しい"])
+
+
+@override_settings(STORAGES=SIMPLE_STATIC)
+class MainAppGroupingTests(TestCase):
+
+    def test_minor_apps_grouped_into_other(self):
+
+        import uuid
+
+        from django.utils import timezone
+
+        from . import stats
+
+        now = timezone.now()
+        person = uuid.uuid4()
+        visit = uuid.uuid4()
+        for app_key in ("news", "games", "recipes"):
+            PageView.objects.create(visitor_id=person, visit_id=visit, app_key=app_key,
+                                    path=f"/{app_key}/", accessed_at=now)
+
+        data = stats.build_dashboard(stats.Scope(days=7))
+        rows = {row["key"]: row for row in data["apps"]["rows"]}
+
+        self.assertEqual(set(rows), {"news", "other"})
+        self.assertEqual(rows["other"]["visitors"], 1)
+        self.assertEqual(rows["other"]["page_views"], 2)
+        self.assertEqual(data["apps"]["pairs"][0]["visits"], 1)
+
+        other = stats.Scope(days=7, app="other")
+        self.assertEqual(other.current().count(), 2)
+
+        User = get_user_model()
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "x"))
+        response = self.client.get("/analytics/?app=games", HTTP_USER_AGENT=BROWSER)
+        self.assertContains(response, "🧩 その他")
+        self.assertNotContains(response, "ミニゲーム</a>")

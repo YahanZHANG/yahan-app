@@ -13,7 +13,7 @@ APP_CATALOG = {
     "washoku": {"name": "スイスで和食", "emoji": "🍙", "color": 2},
     "outings": {"name": "おでかけ", "emoji": "⛰️", "color": 3},
     "portal": {"name": "Yappトップ", "emoji": "🏠", "color": 4},
-    "support": {"name": "サポート", "emoji": "💝", "color": 5},
+    "support": {"name": "サポート", "emoji": "💝", "color": 0},
     "recipes": {"name": "料理・レシピ", "emoji": "🍳", "color": 0},
     "feeding": {"name": "離乳食記録", "emoji": "🍼", "color": 0},
     "vaccination": {"name": "ワクチン記録", "emoji": "💉", "color": 0},
@@ -23,8 +23,13 @@ APP_CATALOG = {
     "board": {"name": "お知らせ", "emoji": "📌", "color": 0},
     "chat": {"name": "チャット", "emoji": "💬", "color": 0},
     "events": {"name": "日程調整", "emoji": "📅", "color": 0},
-    "swiss-board": {"name": "スイス掲示板", "emoji": "💡", "color": 0},
+    "swiss-board": {"name": "スイス掲示板", "emoji": "💡", "color": 5},
 }
+
+# 解析ページで1つずつ数えるアプリ。ほかは「その他」にまとめる。
+MAIN_APPS = ("swiss-board", "news", "washoku", "outings", "portal")
+OTHER_APP = "other"
+OTHER_INFO = {"name": "その他", "emoji": "🧩", "color": 0}
 
 # ポータル (ログイン・アカウント系) にまとめるパス
 PORTAL_PREFIXES = (
@@ -66,7 +71,16 @@ def app_for_path(path):
     return first[:40]
 
 
+def group_key(app_key):
+    """主なアプリはそのまま、それ以外は「その他」のキーにする。"""
+
+    return app_key if app_key in MAIN_APPS else OTHER_APP
+
+
 def app_info(app_key):
+
+    if app_key == OTHER_APP:
+        return {"key": OTHER_APP, **OTHER_INFO}
 
     info = APP_CATALOG.get(app_key)
 

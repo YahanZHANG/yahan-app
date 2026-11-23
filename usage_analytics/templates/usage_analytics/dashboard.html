@@ -91,7 +91,7 @@
     {% if behavior %}
     <details class="ya-card ya-insights ya-fold">
         <summary><h3>🔍 使い方の傾向と改善のヒント</h3><span class="ya-fold-hint">開く</span></summary>
-        <p class="ya-note">直近{{ behavior.days }}日間。よく使う人 = {{ behavior.regular_days }}日以上来た人（{{ behavior.regulars }}人）、すぐ帰った人 = 1回だけ来て{{ behavior.short_pages }}ページ以内で帰った人（{{ behavior.short_visitors }}人）</p>
+        <p class="ya-note">直近{{ behavior.days }}日。よく使う人＝{{ behavior.regular_days }}日以上（{{ behavior.regulars }}人）、すぐ帰る人＝1回・{{ behavior.short_pages }}ページ以内（{{ behavior.short_visitors }}人）</p>
         <ul>
             {% for line in behavior.advice %}
                 <li><span aria-hidden="true">{{ line.icon }}</span><span>{{ line.text }}</span></li>
@@ -100,7 +100,7 @@
 
         <div class="ya-grid ya-grid-3 ya-behavior">
             <div>
-                <h4>⭐ よく使う人がよく見るページ</h4>
+                <h4>⭐ よく使う人が見る</h4>
                 <ol class="ya-behavior-list">
                     {% for row in behavior.regular_pages %}
                         <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.count }}回・{{ row.visitors }}人</span></li>
@@ -110,7 +110,7 @@
                 </ol>
             </div>
             <div>
-                <h4>🚪 すぐ帰った人が最後に見たページ</h4>
+                <h4>🚪 すぐ帰る人の最後</h4>
                 <ol class="ya-behavior-list">
                     {% for row in behavior.exit_pages %}
                         <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.visitors }}人・{{ row.share }}%</span></li>
@@ -120,7 +120,7 @@
                 </ol>
             </div>
             <div>
-                <h4>📈 最近よく見られ始めたページ</h4>
+                <h4>📈 伸びている</h4>
                 <ol class="ya-behavior-list">
                     {% for row in behavior.rising_pages %}
                         <li>{{ row.app.emoji }} {% if row.title %}{{ row.title }}{% else %}{{ row.path }}{% endif %}<span class="ya-sub">{{ row.before }}→{{ row.count }}回</span></li>
@@ -398,7 +398,7 @@
 
     <section class="ya-section ya-anchor" id="ya-sec-apps">
         <h2>🧩 アプリ別の関心</h2>
-        <p class="ya-lead">カードを押すと、そのアプリだけに絞って見られます。バーは来た人の数です。</p>
+        <p class="ya-lead">主な5つのアプリ以外は「その他」にまとめています。カードを押すとそのアプリだけに絞れます。</p>
 
         <div class="ya-apps">
             {% for app in data.apps.rows %}
