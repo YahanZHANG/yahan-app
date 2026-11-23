@@ -1,4 +1,4 @@
-/* =========================================================
+/* ==================================================
    スイス掲示板: 掲示板らしい、文字が読みやすい見た目
    白地・細い区切り線・小さなラベル。和食アプリ (丸いカード・暖色) とは別のデザイン
    ========================================================= */
@@ -858,7 +858,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
     .cb-aside-box ul { margin: 0; padding-left: 1.2em; color: var(--sub); }
 }
 
-/* =========================================================
+/* ==================================================
    v4: 検索バー・写真・スタンプ・アンケート・広告枠・おでかけ・新着・マイページ・設定
    ========================================================= */
 
@@ -1106,7 +1106,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
 .cb-stamp-pick[open] .cb-stamp-menu button { width: auto; padding: 6px 0; font-size: 12px; }
 .cb-menurow > .cb-switch { flex: 0 0 46px; }
 
-/* =========================================================
+/* ==================================================
    v5: プロフィールのアイコン (写真・イラスト)
    ========================================================= */
 .cb-av { overflow: hidden; }
@@ -1137,7 +1137,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
 .cb-face-option input:checked ~ small { color: var(--text); font-weight: 700; }
 .cb-face-option input:focus-visible ~ .cb-av { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-/* =========================================================
+/* ==================================================
    v5: HOME「今週の知恵袋」
    ========================================================= */
 
@@ -1232,7 +1232,7 @@ img.cb-brand-mark { display: block; width: 30px; height: 30px; border-radius: 7p
 .cb-rules-actions .cb-btn[disabled] { opacity: .45; cursor: not-allowed; }
 .cb-rules-box .cb-note { margin: 0; font-size: 12px; color: var(--sub); }
 
-/* =========================================================
+/* ==================================================
    HOME 上部: 小さめのウィジェット (Taro が選んだデザイン)
    日付・日本の時刻・暦・月 + 天気と為替の2マス。主役は下の掲示板なので控えめに
    ========================================================= */
@@ -1771,3 +1771,7 @@ html[data-yapp-resolved-theme="dark"]:is([data-cb-pattern="seigaiha"], [data-cb-
 /* ページの見出しの右にボタン (募集・告知の「告知する」) */
 .cb-page-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-right: 16px; }
 .cb-page-head .cb-page-title { flex: 1; min-width: 0; }
+
+/* ポップアップ: 「知らんけど」を左、「回答する」を右に1行で (2026-11-23 Taro) */
+.cb-answerpop-send { flex-wrap: nowrap; }
+.cb-answerpop-send .cb-askpop-send { flex: 1; }

@@ -1143,8 +1143,21 @@ def item_list(request):
             "genre": genre,
             "genres": Genre.choices,
             "show_done": show_done,
+            "new_label": ITEM_NEW_LABELS.get(kind, "ゆずりあいに出す"),
         },
     )
+
+
+# 2026-11-23 Taro: ゆずりあいは1人1日10件まで (スイス時間の0時で切りかわる)
+ITEMS_PER_DAY = 10
+
+# 種類ごとの「出す」ボタンの言葉 (すべて = ゆずりあいに出す)
+ITEM_NEW_LABELS = {
+    "give": "ゆずります",
+    "want": "ゆずってほしい",
+    "lend": "貸します",
+    "borrow": "借りたい",
+}
 
 
 ITEM_HINTS = {
@@ -1181,6 +1194,11 @@ def item_new(request):
             error = "ジャンルを選んでください。"
         elif request.POST.get("agree") != "yes":
             error = "ルールを確認して、チェックを入れてください。"
+        elif (
+            not request.user.is_staff
+            and Item.objects.filter(owner=request.user, created_at__date=timezone.localdate()).count() >= ITEMS_PER_DAY
+        ):
+            error = f"ゆずりあいに出せるのは、1日{ITEMS_PER_DAY}件までです。また明日お願いします。"
         else:
             photo_url, error = take_photo(request, "items")
             if not error:
