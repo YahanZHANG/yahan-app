@@ -3,7 +3,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -44,6 +44,7 @@ class FlowMixin:
         )
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class ParticipationTests(FlowMixin, TestCase):
 
     def test_start_page_shows_consent_and_login(self):
@@ -224,6 +225,7 @@ class ParticipationTests(FlowMixin, TestCase):
         self.assertEqual(response.context["regions"][0][0], "zurich")
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class FeatureWishTests(FlowMixin, TestCase):
 
     def test_wish_comes_before_the_first_question(self):
@@ -293,6 +295,7 @@ class FeatureWishTests(FlowMixin, TestCase):
         self.assertIn("困ったことを質問・相談できる（知恵袋）", response.content.decode("utf-8-sig"))
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class DeliveryTests(FlowMixin, TestCase):
 
     def test_only_published_questions(self):
@@ -485,6 +488,7 @@ class DeliveryTests(FlowMixin, TestCase):
         self.assertIsNone(self.current(other))
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class AccountTests(FlowMixin, TestCase):
 
     def make_public_user(self, username="hana", **extra):
@@ -626,6 +630,7 @@ class AccountTests(FlowMixin, TestCase):
         self.assertEqual(suggest_username("🌸"), ("", False))
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class NicknameTests(TestCase):
 
     def test_names_come_from_one_set(self):
@@ -651,6 +656,7 @@ class NicknameTests(TestCase):
             services._nickname_candidate = original
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class AdminTests(FlowMixin, TestCase):
 
     def setUp(self):
@@ -703,6 +709,7 @@ class AdminTests(FlowMixin, TestCase):
         self.assertIn("Migros", response.content.decode("utf-8-sig"))
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class ImportTests(TestCase):
 
     def test_import_is_idempotent(self):
@@ -718,6 +725,7 @@ class ImportTests(TestCase):
         self.assertFalse(Question.objects.exclude(source="staff").exists())
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class ActivityPageTests(FlowMixin, TestCase):
 
     def setUp(self):
@@ -766,6 +774,7 @@ class ActivityPageTests(FlowMixin, TestCase):
         self.assertContains(staff.get(reverse("admin:pre_survey_participant_changelist")), reverse("admin:pre_survey_activity"))
 
 
+@override_settings(PRE_SURVEY_CLOSED=False)
 class LabelTimeTests(TestCase):
 
     def test_labels_use_swiss_time(self):
@@ -781,3 +790,23 @@ class LabelTimeTests(TestCase):
         participant.refresh_from_db()
         # 15:42 UTC は冬のスイス時間で 16:42
         self.assertEqual(str(participant), "チーズ好きのヤギ (2026-11-03 16:42)")
+
+
+class RedirectToBoardTests(TestCase):
+    """2026-11-21: 掲示板の公開後、事前アンケートは掲示板へ転送する"""
+
+    def test_pages_go_to_board_home(self):
+        for url in ["/pre-survey/", "/pre-survey/q/", "/pre-survey/done/", "/pre-survey/old/thing/"]:
+            response = self.client.get(url)
+            self.assertRedirects(response, "/swiss-board/", fetch_redirect_response=False, msg_prefix=url)
+
+    def test_question_goes_to_same_board_question(self):
+        from chiebukuro.models import Question as BoardQuestion
+
+        board = BoardQuestion.objects.create(body="テスト", survey_question_id=42)
+        response = self.client.get("/pre-survey/q/?show=42")
+        self.assertRedirects(response, f"/swiss-board/q/{board.pk}/", fetch_redirect_response=False)
+        response = self.client.post("/pre-survey/q/42/", {"action": "answer", "body": "x"})
+        self.assertRedirects(response, f"/swiss-board/q/{board.pk}/", fetch_redirect_response=False)
+        response = self.client.get("/pre-survey/q/?show=999")
+        self.assertRedirects(response, "/swiss-board/", fetch_redirect_response=False)
