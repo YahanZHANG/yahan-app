@@ -1757,3 +1757,13 @@ html[data-yapp-resolved-theme="dark"]:is([data-cb-pattern="seigaiha"], [data-cb-
 .cb-set-group .cb-sub { margin: 6px 0 0; }
 .cb-settings .cb-menurow { border-top: 1px solid var(--line); }
 .cb-mt-s { margin-top: 10px; }
+
+/* 知らんけど (2026-11-23 Taro): 自信のない回答でも書きやすく。押すと色がつく小さなボタン + 回答の最後の小さなラベル */
+.cb-answer-send { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.cb-shiran { display: inline-flex; align-items: center; align-self: flex-start; cursor: pointer; user-select: none; }
+.cb-answer-send .cb-shiran { align-self: center; }
+.cb-shiran input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cb-shiran span { display: inline-block; padding: 6px 14px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 14px; color: var(--sub); background: var(--surface); }
+.cb-shiran input:checked + span { border-color: var(--accent); color: var(--accent); background: var(--unread); font-weight: 700; }
+.cb-shiran input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cb-shiran-tag { display: inline-block; margin-left: 2px; padding: 0 7px; border-radius: 999px; font-size: 12px; line-height: 1.7; color: var(--sub); background: var(--surface-2); border: 1px solid var(--line); vertical-align: 1px; white-space: nowrap; }

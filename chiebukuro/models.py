@@ -234,6 +234,8 @@ class Answer(models.Model):
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     from_survey = models.BooleanField("事前アンケートから", default=False)
     is_staff = models.BooleanField("運営の回答", default=False, help_text="運営の回答は、回答の数に入れません。")
+    # 2026-11-23 Taro: 自信のない回答でも書きやすく。回答の最後に小さく「知らんけど」と出る (任意)
+    unsure = models.BooleanField("知らんけど", default=False, help_text="オンにすると、回答のあとに小さく「知らんけど」と出ます。")
     home_pick = models.BooleanField("HOMEの注目に出す", default=False, help_text="オンにすると、HOMEの「今週の注目」に先に出ます。")
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     edited_at = models.DateTimeField("編集した日時", null=True, blank=True)

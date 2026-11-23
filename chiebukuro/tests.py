@@ -349,6 +349,26 @@ class QuestionTests(BoardTestCase):
         self.assertContains(response, "答えがつきました")
         self.assertEqual(self.client.get(reverse("chiebukuro:home")).context["unread"], 0)
 
+    def test_answer_with_shiran_kedo(self):
+        """知らんけど: 任意。オンなら回答の最後に小さく出る。編集で外せる"""
+        question = Question.objects.create(body="Q", theme="life")
+        self.client.force_login(self.bob)
+        url = reverse("chiebukuro:question", args=[question.pk])
+        self.client.post(url, {"body": "たぶん月曜休み", "unsure": "yes"})
+        self.client.post(url, {"body": "火曜は開いています"})
+        unsure, sure = Answer.objects.order_by("pk")
+        self.assertEqual((unsure.unsure, sure.unsure), (True, False))
+        self.assertContains(self.client.get(url), 'class="cb-shiran-tag"', count=1)
+
+        edit = reverse("chiebukuro:edit", args=["answer", unsure.pk])
+        self.assertContains(self.client.get(edit), 'name="unsure" value="yes" checked')
+        self.client.post(edit, {"body": "たぶん月曜休み"})
+        unsure.refresh_from_db()
+        self.assertFalse(unsure.unsure)
+        self.client.post(edit, {"body": "たぶん月曜休み", "unsure": "yes"})
+        unsure.refresh_from_db()
+        self.assertTrue(unsure.unsure)
+
     def test_guest_can_ask_and_answer_without_signing_up(self):
         from chiebukuro.models import BoardProfile
 
