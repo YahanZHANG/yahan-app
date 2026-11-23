@@ -1385,3 +1385,53 @@ class BoardBotTests(BoardTestCase):
         self.assertIsNone(question.solved_at)
         self.assertIsNone(question.best_answer)
         self.assertTrue(first)
+
+
+class EditorialAuthorTests(TestCase):
+    """管理画面: 投稿者を「Yapp編集部」に変える (2026-11-23 Taro)"""
+
+    def test_admin_action_makes_editorial_author(self):
+        from django.contrib.auth import get_user_model
+
+        from chiebukuro.models import Answer, Item, Notice, Post, PostReply, Question
+
+        User = get_user_model()
+        admin_user = User.objects.create_superuser("boss", "boss@example.com", "pw")
+        alice = User.objects.create_user("alice2", password="pw")
+        question = Question.objects.create(body="編集部の質問？", theme="life", source="member", author=alice, nickname="アリス", is_anonymous=True)
+        staff_question = Question.objects.create(body="運営の質問", theme="life", source="staff")
+        answer = Answer.objects.create(question=question, body="答え", author=alice, nickname="アリス")
+        item = Item.objects.create(kind="give", title="本", body="x", owner=alice, nickname="アリス")
+        notice = Notice.objects.create(kind="event", title="会", body="x", owner=alice, nickname="アリス")
+        post = Post.objects.create(body="つぶやき", author=alice, nickname="アリス")
+        reply = PostReply.objects.create(post=post, body="返信", author=alice, nickname="アリス")
+        self.client.force_login(admin_user)
+        for name, rows in [("question", [question, staff_question]), ("answer", [answer]), ("item", [item]), ("notice", [notice]), ("post", [post]), ("postreply", [reply])]:
+            response = self.client.post(
+                reverse(f"admin:chiebukuro_{name}_changelist"),
+                {"action": "make_editorial", "_selected_action": [row.pk for row in rows]},
+            )
+            self.assertEqual(response.status_code, 302, name)
+        for obj in (question, staff_question, answer, item, notice, post, reply):
+            obj.refresh_from_db()
+            self.assertEqual(obj.display_name, "Yapp編集部")
+        self.assertEqual(question.author.username, "yapp_editorial")
+        self.assertFalse(question.author.is_active)
+        self.assertEqual(item.owner, question.author)
+        self.assertFalse(question.is_anonymous)
+
+
+class HomeNoticesTests(TestCase):
+    def test_home_shows_new_notices(self):
+        from django.contrib.auth import get_user_model
+
+        from chiebukuro.models import BoardSettings, Notice
+
+        BoardSettings.objects.update_or_create(pk=1, defaults={"is_open": True})
+        alice = get_user_model().objects.create_user("alice3", password="pw")
+        Notice.objects.create(kind="event", title="絵本の会", body="x", owner=alice, nickname="アリス")
+        Notice.objects.create(kind="event", title="架空の会", body="x", owner=alice, nickname="アリス", is_sample=True)
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "新着の募集・告知")
+        self.assertContains(page, "絵本の会")
+        self.assertNotContains(page, "架空の会")

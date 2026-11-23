@@ -93,6 +93,21 @@ class AnswerInline(admin.TabularInline):
     show_change_link = True
 
 
+@admin.action(description="投稿者を「Yapp編集部」にする")
+def make_editorial(modeladmin, request, queryset):
+    """選んだ投稿の投稿者を Yapp編集部 に変える (2026-11-23 Taro)。もとの投稿者は、その投稿を編集・削除できなくなる"""
+
+    from .models import EDITORIAL_NAME
+    from .services import editorial_user
+
+    field = "owner" if any(f.name == "owner" for f in queryset.model._meta.fields) else "author"
+    changes = {field: editorial_user(), "nickname": EDITORIAL_NAME}
+    if queryset.model is Question:
+        changes["is_anonymous"] = False
+    count = queryset.update(**changes)
+    modeladmin.message_user(request, f"{count}件の投稿者を「{EDITORIAL_NAME}」にしました。")
+
+
 def set_status(modeladmin, request, queryset, status, label):
     count = queryset.update(status=status)
     modeladmin.message_user(request, f"{count}件を「{label}」にしました。")
@@ -132,7 +147,7 @@ class QuestionAdmin(admin.ModelAdmin):
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["source", "author", "survey_question_id", "last_answered_at", "updated_at"]
     inlines = [AnswerInline]
-    actions = ["publish", "hide"]
+    actions = ["publish", "hide", make_editorial]
     list_per_page = 100
 
     def get_queryset(self, request):
@@ -198,7 +213,7 @@ class AnswerAdmin(admin.ModelAdmin):
     list_filter = [UnhelpfulFilter, "status", "from_survey", "is_staff", "unsure"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["question", "author", "from_survey"]
-    actions = ["publish", "hide"]
+    actions = ["publish", "hide", make_editorial]
     list_per_page = 100
 
     @admin.display(description="答え")
@@ -222,6 +237,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_filter = ["kind", "genre", "state", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
+    actions = [make_editorial]
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(requests_total=Count("requests"))
@@ -239,7 +255,7 @@ class NoticeAdmin(admin.ModelAdmin):
     list_filter = ["is_sample", "kind", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
-    actions = ["delete_samples"]
+    actions = ["delete_samples", make_editorial]
 
     @admin.action(description="テスト用（架空）の告知をすべて消す（選んだものに関係なく）")
     def delete_samples(self, request, queryset):
@@ -287,8 +303,24 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["author"]
     inlines = [PostReplyInline]
+    actions = [make_editorial]
 
     @admin.display(description="つぶやき")
+    def short_body(self, obj):
+        return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
+
+
+@admin.register(PostReply)
+class PostReplyAdmin(admin.ModelAdmin):
+    """つぶやきへの返信 (投稿者を Yapp編集部 に変えるため)"""
+
+    list_display = ["short_body", "post", "nickname", "status", "created_at"]
+    list_filter = ["status"]
+    search_fields = ["body", "nickname", "author__username"]
+    readonly_fields = ["post", "author"]
+    actions = [make_editorial]
+
+    @admin.display(description="返信")
     def short_body(self, obj):
         return obj.body if len(obj.body) <= 50 else obj.body[:50] + "…"
 

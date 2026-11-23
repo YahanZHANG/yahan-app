@@ -149,6 +149,11 @@ class BoardSettings(models.Model):
         return ""
 
 
+# 管理画面で投稿者を「Yapp編集部」に変えられる (2026-11-23 Taro)。編集部のアカウントは yapp_editorial (ログイン不可)
+EDITORIAL_NAME = "Yapp編集部"
+EDITORIAL_USERNAME = "yapp_editorial"
+
+
 class Status(models.TextChoices):
     PUBLISHED = "published", "公開"
     HIDDEN = "hidden", "非公開"
@@ -212,7 +217,7 @@ class Question(models.Model):
     @property
     def display_name(self):
         if self.source == self.Source.STAFF:
-            return "運営"
+            return EDITORIAL_NAME if self.nickname == EDITORIAL_NAME else "運営"
         if self.is_anonymous:
             return "匿名さん"
         return self.nickname or "名無しさん"

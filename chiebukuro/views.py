@@ -436,6 +436,8 @@ def home(request):
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
             "items": list(by_region(open_items(), region).order_by("-created_at")[:5]),
+            # 新着の募集・告知 (2026-11-23 Taro: ゆずりあいの近くに)
+            "home_notices": list(by_region(active_notices().filter(is_sample=False), region).order_by("-created_at")[:3]),
             "headlines": news_headlines(),
             "login_url": login_url(request),
         },
