@@ -33,6 +33,9 @@ DEBUG = os.environ.get(
     "True",
 ).lower() == "true"
 
+# 事前アンケートを閉じて、掲示板へ転送する (2026-11-21, 掲示板の一般公開後)
+PRE_SURVEY_CLOSED = os.environ.get("PRE_SURVEY_CLOSED", "true").lower() == "true"
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
