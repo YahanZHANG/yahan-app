@@ -853,6 +853,7 @@ def question_detail(request, pk):
                     author=request.user,
                     nickname=user_nickname(request.user),
                     is_staff=request.user.is_staff,
+                    unsure=request.POST.get("unsure") == "yes",
                 )
                 Question.objects.filter(pk=question.pk).update(last_answered_at=answer.created_at)
                 notify_answer(request, question, answer)
@@ -901,6 +902,7 @@ def question_detail(request, pk):
             "interest_total": question.interests.count() + question.survey_interest_count,
             "error": error,
             "draft": draft,
+            "unsure": request.method == "POST" and request.POST.get("unsure") == "yes",
             "max_length": ANSWER_MAX_LENGTH,
             "related": related,
             "login_url": login_url(request),
@@ -2251,7 +2253,7 @@ def _edit_spec(kind):
         },
         "answer": {
             "model": Answer, "owner": "author", "label": "回答", "photo": "answers", "edited": True,
-            "fields": [body(ANSWER_MAX_LENGTH, "回答")],
+            "fields": [body(ANSWER_MAX_LENGTH, "回答"), ("unsure", "知らんけど", "checkbox", None, False, None)],
             "back": lambda obj: reverse("chiebukuro:question", args=[obj.question_id]) + f"#a{obj.pk}",
         },
         "item": {
@@ -2294,16 +2296,23 @@ def edit_mine(request, kind, pk):
     values = {}
     for name, label, field_type, limit, required, choices in spec["fields"]:
         current = getattr(obj, name)
-        values[name] = current.isoformat() if field_type == "date" and current else (current or "")
+        if field_type == "checkbox":
+            values[name] = bool(current)
+        else:
+            values[name] = current.isoformat() if field_type == "date" and current else (current or "")
 
     if request.method == "POST":
         cleaned = {}
         for name, label, field_type, limit, required, choices in spec["fields"]:
             value = (request.POST.get(name) or "").strip()
+            if field_type == "checkbox":
+                value = value == "yes"
             values[name] = value
             if error:
                 continue
-            if choices is not None and value not in {key for key, _ in choices}:
+            if field_type == "checkbox":
+                pass
+            elif choices is not None and value not in {key for key, _ in choices}:
                 error = f"{label}を選んでください。"
             elif required and not value:
                 error = f"{label}を入力してください。"

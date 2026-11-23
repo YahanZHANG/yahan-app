@@ -8,6 +8,9 @@
     <form method="post" enctype="multipart/form-data" class="cb-form">
         {% csrf_token %}
         {% for field in fields %}
+            {% if field.type == "checkbox" %}
+            <label class="cb-shiran"><input type="checkbox" name="{{ field.name }}" value="yes" {% if field.value %}checked{% endif %}><span>{{ field.label }}</span></label>
+            {% else %}
             <label class="cb-field">
                 <span>{{ field.label }}{% if not field.required %}（任意）{% endif %}</span>
                 {% if field.type == "textarea" %}
@@ -21,6 +24,7 @@
                     <input type="{% if field.type == 'url' %}url{% else %}text{% endif %}" name="{{ field.name }}" value="{{ field.value }}" {% if field.limit %}maxlength="{{ field.limit }}"{% endif %} {% if field.required %}required{% endif %}>
                 {% endif %}
             </label>
+            {% endif %}
         {% endfor %}
         {% if obj.photo_url %}
             <div class="cb-field">

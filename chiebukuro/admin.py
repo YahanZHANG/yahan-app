@@ -193,9 +193,9 @@ class UnhelpfulFilter(admin.SimpleListFilter):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
 
-    list_display = ["short_body", "question", "nickname", "status", "from_survey", "is_staff", "home_pick", "created_at"]
+    list_display = ["short_body", "question", "nickname", "status", "from_survey", "is_staff", "unsure", "home_pick", "created_at"]
     list_editable = ["status", "is_staff", "home_pick"]
-    list_filter = [UnhelpfulFilter, "status", "from_survey", "is_staff"]
+    list_filter = [UnhelpfulFilter, "status", "from_survey", "is_staff", "unsure"]
     search_fields = ["body", "nickname", "author__username"]
     readonly_fields = ["question", "author", "from_survey"]
     actions = ["publish", "hide"]
