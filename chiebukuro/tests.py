@@ -522,7 +522,7 @@ class NoticeTests(BoardTestCase):
     def data(self, **extra):
         return {"kind": "lesson", "title": "書道教室", "body": "毎週土曜", "notice_region": "zurich", "agree": "yes", **extra}
 
-    def test_one_notice_per_person_and_inquiry(self):
+    def test_notices_per_day_and_inquiry(self):
         self.client.force_login(self.alice)
         response = self.client.post(reverse("chiebukuro:notice_new"), self.data(link="https://example.com/"))
         notice = Notice.objects.get()
@@ -530,11 +530,12 @@ class NoticeTests(BoardTestCase):
         self.assertTrue(notice.is_pr)
         self.assertEqual((notice.expires_at - notice.created_at).days, 30)
 
-        # 2件目は出せない (いまの告知へ)
-        response = self.client.get(reverse("chiebukuro:notice_new"))
-        self.assertRedirects(response, reverse("chiebukuro:notice", args=[notice.pk]))
-        self.client.post(reverse("chiebukuro:notice_new"), self.data(title="2件目"))
-        self.assertEqual(Notice.objects.count(), 1)
+        # 1人1日5件まで (6件目は出せない)
+        for number in range(2, 7):
+            self.client.post(reverse("chiebukuro:notice_new"), self.data(title=f"{number}件目"))
+        self.assertEqual(Notice.objects.count(), 5)
+        self.assertRedirects(self.client.get(reverse("chiebukuro:notice_new")), reverse("chiebukuro:notices"))
+        Notice.objects.exclude(pk=notice.pk).delete()
 
         page = self.client.get(reverse("chiebukuro:notices") + "?kind=lesson")
         self.assertContains(page, "書道教室")
@@ -549,10 +550,11 @@ class NoticeTests(BoardTestCase):
         self.client.force_login(self.alice)
         self.assertContains(self.client.get(reverse("chiebukuro:my_list", args=["items"])), "書道教室")
 
-        # 取り下げると、すぐ新しく出せる
+        # 取り下げると見えなくなる
         self.client.post(reverse("chiebukuro:notice_withdraw", args=[notice.pk]))
-        self.client.post(reverse("chiebukuro:notice_new"), self.data(title="新しい告知"))
-        self.assertEqual(Notice.objects.filter(status="published").get().title, "新しい告知")
+        self.assertFalse(Notice.objects.filter(status="published").exists())
+        # 告知のページには、いつでも「告知する」ボタン
+        self.assertContains(self.client.get(reverse("chiebukuro:notices")), reverse("chiebukuro:notice_new"))
 
     def test_expired_notices_disappear_and_link_must_be_url(self):
         old = Notice.objects.create(kind="event", title="終わった会", body="x", owner=self.alice)

@@ -4,7 +4,7 @@
 <p class="cb-back"><a href="{% url 'chiebukuro:notices' %}">{% include "chiebukuro/_icon.html" with name="back" %}募集・告知</a></p>
 <section class="cb-block cb-form-block">
     <h1 class="cb-form-title">募集・告知する</h1>
-    <p class="cb-sub">1人1件まで、{{ days }}日間のせられます。終わったら、また新しく出せます。</p>
+    <p class="cb-sub">1人1日{{ per_day }}件まで出せます。それぞれ{{ days }}日間のせられます。</p>
     {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post" enctype="multipart/form-data" class="cb-form" data-rules>
         {% csrf_token %}

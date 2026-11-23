@@ -1767,3 +1767,7 @@ html[data-yapp-resolved-theme="dark"]:is([data-cb-pattern="seigaiha"], [data-cb-
 .cb-shiran input:checked + span { border-color: var(--accent); color: var(--accent); background: var(--unread); font-weight: 700; }
 .cb-shiran input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cb-shiran-tag { display: inline-block; margin-left: 2px; padding: 0 7px; border-radius: 999px; font-size: 12px; line-height: 1.7; color: var(--sub); background: var(--surface-2); border: 1px solid var(--line); vertical-align: 1px; white-space: nowrap; }
+
+/* ページの見出しの右にボタン (募集・告知の「告知する」) */
+.cb-page-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-right: 16px; }
+.cb-page-head .cb-page-title { flex: 1; min-width: 0; }

@@ -217,7 +217,7 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
 
-    list_display = ["title", "kind", "genre", "state", "status", "region", "nickname", "request_count", "created_at"]
+    list_display = ["title", "kind", "genre", "state", "status", "region", "nickname", "request_count", "created_at", "updated_at"]
     list_editable = ["status"]
     list_filter = ["kind", "genre", "state", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
