@@ -537,7 +537,7 @@ class NoticeTests(BoardTestCase):
     def data(self, **extra):
         return {"kind": "lesson", "title": "書道教室", "body": "毎週土曜", "notice_region": "zurich", "agree": "yes", **extra}
 
-    def test_one_notice_per_person_and_inquiry(self):
+    def test_notices_per_day_and_inquiry(self):
         self.client.force_login(self.alice)
         response = self.client.post(reverse("chiebukuro:notice_new"), self.data(link="https://example.com/"))
         notice = Notice.objects.get()
@@ -545,11 +545,12 @@ class NoticeTests(BoardTestCase):
         self.assertTrue(notice.is_pr)
         self.assertEqual((notice.expires_at - notice.created_at).days, 30)
 
-        # 2件目は出せない (いまの告知へ)
-        response = self.client.get(reverse("chiebukuro:notice_new"))
-        self.assertRedirects(response, reverse("chiebukuro:notice", args=[notice.pk]))
-        self.client.post(reverse("chiebukuro:notice_new"), self.data(title="2件目"))
-        self.assertEqual(Notice.objects.count(), 1)
+        # 1人1日5件まで (6件目は出せない)
+        for number in range(2, 7):
+            self.client.post(reverse("chiebukuro:notice_new"), self.data(title=f"{number}件目"))
+        self.assertEqual(Notice.objects.count(), 5)
+        self.assertRedirects(self.client.get(reverse("chiebukuro:notice_new")), reverse("chiebukuro:notices"))
+        Notice.objects.exclude(pk=notice.pk).delete()
 
         page = self.client.get(reverse("chiebukuro:notices") + "?kind=lesson")
         self.assertContains(page, "書道教室")
@@ -564,10 +565,11 @@ class NoticeTests(BoardTestCase):
         self.client.force_login(self.alice)
         self.assertContains(self.client.get(reverse("chiebukuro:my_list", args=["items"])), "書道教室")
 
-        # 取り下げると、すぐ新しく出せる
+        # 取り下げると見えなくなる
         self.client.post(reverse("chiebukuro:notice_withdraw", args=[notice.pk]))
-        self.client.post(reverse("chiebukuro:notice_new"), self.data(title="新しい告知"))
-        self.assertEqual(Notice.objects.filter(status="published").get().title, "新しい告知")
+        self.assertFalse(Notice.objects.filter(status="published").exists())
+        # 告知のページには、いつでも「告知する」ボタン
+        self.assertContains(self.client.get(reverse("chiebukuro:notices")), reverse("chiebukuro:notice_new"))
 
     def test_expired_notices_disappear_and_link_must_be_url(self):
         old = Notice.objects.create(kind="event", title="終わった会", body="x", owner=self.alice)
@@ -1398,3 +1400,53 @@ class BoardBotTests(BoardTestCase):
         self.assertIsNone(question.solved_at)
         self.assertIsNone(question.best_answer)
         self.assertTrue(first)
+
+
+class EditorialAuthorTests(TestCase):
+    """管理画面: 投稿者を「Yapp編集部」に変える (2026-11-23 Taro)"""
+
+    def test_admin_action_makes_editorial_author(self):
+        from django.contrib.auth import get_user_model
+
+        from chiebukuro.models import Answer, Item, Notice, Post, PostReply, Question
+
+        User = get_user_model()
+        admin_user = User.objects.create_superuser("boss", "boss@example.com", "pw")
+        alice = User.objects.create_user("alice2", password="pw")
+        question = Question.objects.create(body="編集部の質問？", theme="life", source="member", author=alice, nickname="アリス", is_anonymous=True)
+        staff_question = Question.objects.create(body="運営の質問", theme="life", source="staff")
+        answer = Answer.objects.create(question=question, body="答え", author=alice, nickname="アリス")
+        item = Item.objects.create(kind="give", title="本", body="x", owner=alice, nickname="アリス")
+        notice = Notice.objects.create(kind="event", title="会", body="x", owner=alice, nickname="アリス")
+        post = Post.objects.create(body="つぶやき", author=alice, nickname="アリス")
+        reply = PostReply.objects.create(post=post, body="返信", author=alice, nickname="アリス")
+        self.client.force_login(admin_user)
+        for name, rows in [("question", [question, staff_question]), ("answer", [answer]), ("item", [item]), ("notice", [notice]), ("post", [post]), ("postreply", [reply])]:
+            response = self.client.post(
+                reverse(f"admin:chiebukuro_{name}_changelist"),
+                {"action": "make_editorial", "_selected_action": [row.pk for row in rows]},
+            )
+            self.assertEqual(response.status_code, 302, name)
+        for obj in (question, staff_question, answer, item, notice, post, reply):
+            obj.refresh_from_db()
+            self.assertEqual(obj.display_name, "Yapp編集部")
+        self.assertEqual(question.author.username, "yapp_editorial")
+        self.assertFalse(question.author.is_active)
+        self.assertEqual(item.owner, question.author)
+        self.assertFalse(question.is_anonymous)
+
+
+class HomeNoticesTests(TestCase):
+    def test_home_shows_new_notices(self):
+        from django.contrib.auth import get_user_model
+
+        from chiebukuro.models import BoardSettings, Notice
+
+        BoardSettings.objects.update_or_create(pk=1, defaults={"is_open": True})
+        alice = get_user_model().objects.create_user("alice3", password="pw")
+        Notice.objects.create(kind="event", title="絵本の会", body="x", owner=alice, nickname="アリス")
+        Notice.objects.create(kind="event", title="架空の会", body="x", owner=alice, nickname="アリス", is_sample=True)
+        page = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(page, "新着の募集・告知")
+        self.assertContains(page, "絵本の会")
+        self.assertNotContains(page, "架空の会")

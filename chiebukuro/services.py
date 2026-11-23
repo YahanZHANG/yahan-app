@@ -28,6 +28,26 @@ def user_nickname(user):
     return (profile.display_name if profile else user.username)[:30]
 
 
+def editorial_user():
+    """「Yapp編集部」のアカウント (ログインはできない)。管理画面で投稿者をこのアカウントに変える"""
+
+    from django.contrib.auth import get_user_model
+
+    from travel.models import UserProfile
+
+    from .models import EDITORIAL_NAME, EDITORIAL_USERNAME
+
+    user, made = get_user_model().objects.get_or_create(username=EDITORIAL_USERNAME, defaults={"is_active": False})
+    if made:
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    if profile.nickname != EDITORIAL_NAME:
+        profile.nickname = EDITORIAL_NAME
+        profile.save(update_fields=["nickname"])
+    return user
+
+
 def rename_member_content(user, nickname):
     """ニックネームを変えたら、これまでの質問・回答・つぶやきなども新しい名前にする"""
 

@@ -35,7 +35,7 @@
             {% if item.state != 'open' %}<button type="submit" name="state" value="open" class="cb-btn cb-btn-s">受付中に戻す</button>{% endif %}
             {% if item.state != 'done' %}<button type="submit" name="state" value="done" class="cb-btn cb-btn-s">おわりにする</button>{% endif %}
             <a href="{% url 'chiebukuro:edit' 'item' item.pk %}" class="cb-textbtn">編集</a>
-            <button type="submit" name="delete" value="yes" class="cb-textbtn" onclick="return confirm('この書きこみを取り下げますか？');">取り下げる（消す）</button>
+            <button type="submit" name="delete" value="yes" class="cb-textbtn" onclick="return confirm('取り下げると、みんなから見えなくなります。\n受け渡しが終わったときは「取り下げる」ではなく「おわりにする」を押してください。\n\n本当に取り下げますか？');">取り下げる（消す）</button>
         </form>
     </section>
 {% elif my_request %}

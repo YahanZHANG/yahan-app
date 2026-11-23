@@ -209,7 +209,11 @@ def by_region(queryset, region, field="region"):
 
 # 右下の「＋」ボタン: いま見ているページに合わせて変わる
 # 右下のボタンは、どのページでも「質問する」(2026-11-16 Taro: 質問がいちばん大事)
-FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "notices", "daily", "me", "bell")}
+FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "daily", "me", "bell")}
+# 募集・告知のページでは「告知する」(2026-11-23 Taro: PC で告知を出す入口がなかった)
+FAB["notices"] = ("告知する", "chiebukuro:notice_new")
+# 募集・告知は1人1日5件まで (2026-11-23 Taro: 1人1件は厳しすぎる)
+NOTICES_PER_DAY = 5
 
 
 def board_look(user):
@@ -432,6 +436,8 @@ def home(request):
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
             "items": list(by_region(open_items(), region).order_by("-created_at")[:5]),
+            # 新着の募集・告知 (2026-11-23 Taro: ゆずりあいの近くに)
+            "home_notices": list(by_region(active_notices().filter(is_sample=False), region).order_by("-created_at")[:3]),
             "headlines": news_headlines(),
             "login_url": login_url(request),
         },
@@ -1393,10 +1399,10 @@ def notice_list(request):
 @login_required
 def notice_new(request):
 
-    mine = active_notices().filter(owner=request.user, is_sample=False).first()
-    if mine:
-        messages.info(request, f"募集・告知は1人1件までです。いまの告知は、あと{mine.days_left}日で終わります（取り下げると、すぐに新しく出せます）。")
-        return redirect("chiebukuro:notice", pk=mine.pk)
+    today_start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+    if Notice.objects.filter(owner=request.user, is_sample=False, created_at__gte=today_start).count() >= NOTICES_PER_DAY:
+        messages.info(request, f"募集・告知は1人1日{NOTICES_PER_DAY}件までです。また明日出してください。")
+        return redirect("chiebukuro:notices")
 
     error = ""
     kind = clean_choice(request.GET.get("kind", ""), Notice.Kind.choices)
@@ -1465,6 +1471,7 @@ def notice_new(request):
             "title_max": ITEM_TITLE_MAX_LENGTH,
             "body_max": NOTICE_BODY_MAX_LENGTH,
             "days": Notice.DAYS,
+            "per_day": NOTICES_PER_DAY,
         },
     )
 
