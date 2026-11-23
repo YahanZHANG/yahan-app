@@ -13,8 +13,10 @@
             <label class="cb-sr" for="cb-answerpop-body">回答</label>
             <textarea name="body" id="cb-answerpop-body" rows="3" maxlength="2000" required></textarea>
             {% include "chiebukuro/_guest_fields.html" %}
-            <label class="cb-shiran"><input type="checkbox" name="unsure" value="yes"><span>知らんけど</span></label>
-            <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">回答する</button>
+            <div class="cb-answer-send cb-answerpop-send">
+                <label class="cb-shiran"><input type="checkbox" name="unsure" value="yes"><span>知らんけど</span></label>
+                <button type="submit" class="cb-btn cb-btn-primary cb-askpop-send">回答する</button>
+            </div>
         </form>
     </div>
 </dialog>
