@@ -1767,3 +1767,6 @@ html[data-yapp-resolved-theme="dark"]:is([data-cb-pattern="seigaiha"], [data-cb-
 .cb-shiran input:checked + span { border-color: var(--accent); color: var(--accent); background: var(--unread); font-weight: 700; }
 .cb-shiran input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cb-shiran-tag { display: inline-block; margin-left: 2px; padding: 0 7px; border-radius: 999px; font-size: 12px; line-height: 1.7; color: var(--sub); background: var(--surface-2); border: 1px solid var(--line); vertical-align: 1px; white-space: nowrap; }
+/* ポップアップ: 「知らんけど」を左、「回答する」を右に1行で (2026-11-23 Taro) */
+.cb-answerpop-send { flex-wrap: nowrap; }
+.cb-answerpop-send .cb-askpop-send { flex: 1; }
