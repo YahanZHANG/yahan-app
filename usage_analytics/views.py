@@ -20,7 +20,7 @@ from news.models import Article
 from travel.models import UserProfile
 
 from . import stats
-from .catalog import app_info
+from .catalog import MAIN_APPS, OTHER_APP, app_info
 from .behavior import build_behavior
 from .insights import build_insights
 from .middleware import IGNORE_COOKIE, get_device_type, is_bot, page_view_id_from_token, visitor_of
@@ -80,21 +80,22 @@ def scope_from_request(request):
 
     app = request.GET.get("app", "")
 
-    # 存在しないアプリ名は無視 (自由入力を集計クエリに流さない)
-    if app and not PageView.objects.filter(app_key=app).exists():
-        app = ""
+    # 主なアプリ以外は「その他」にまとめて絞り込む (自由入力を集計クエリに流さない)
+    if app and app not in MAIN_APPS:
+        app = OTHER_APP
 
     return stats.Scope(days=stats.parse_period(request.GET.get("days")), app=app)
 
 
 def app_choices():
 
-    keys = PageView.objects.values_list("app_key", flat=True).distinct()
+    keys = set(PageView.objects.values_list("app_key", flat=True).distinct())
 
-    return sorted(
-        (app_info(key) for key in keys),
-        key=lambda app: (app["color"] or 99, app["name"]),
-    )
+    choices = [app_info(key) for key in MAIN_APPS if key in keys]
+    if keys - set(MAIN_APPS):
+        choices.append(app_info(OTHER_APP))
+
+    return choices
 
 
 # =========================================================

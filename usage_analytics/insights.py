@@ -6,46 +6,36 @@ from collections import Counter
 
 from django.utils.html import format_html
 
-from .models import PageView
+from .catalog import OTHER_APP
 
 
 def _trend(percent):
 
-    if percent is None:
+    if percent is None or -5 < percent < 5:
         return ""
 
-    if percent >= 5:
-        return format_html("前の期間より <strong>{}%増</strong>", percent)
-
-    if percent <= -5:
-        return format_html("前の期間より <strong>{}%減</strong>", -percent)
-
-    return "前の期間とほぼ同じ"
+    return format_html("（前の期間より{}{}%）", "+" if percent > 0 else "−", abs(percent))
 
 
 def build_insights(scope, data, pages, clicks):
+    """要点だけを短く。1行ずつ、数字が中心。"""
 
     lines = []
     summary = data["summary"]
     changes = data["changes"]
-    period = f"この{scope.days}日間"
 
     if not summary["visitors"]:
-        return [{"icon": "💤", "text": f"{period}の記録はまだありません。"}]
+        return [{"icon": "💤", "text": "この期間の記録はまだありません。"}]
 
-    # ---------------------------------------------------
     # 人数
-    # ---------------------------------------------------
-
-    trend = _trend(changes["visitors"])
     lines.append({
         "icon": "👥",
         "text": format_html(
-            "{}に来た人は <strong>{}人</strong>、ページは合計 {} 回見られました{}。",
-            period,
+            "来た人 <strong>{}人</strong>{}・閲覧 {}回{}",
             summary["visitors"],
+            _trend(changes["visitors"]),
             summary["page_views"],
-            format_html("（人数は{}）", trend) if trend else "",
+            "（少人数なので参考程度）" if summary["visitors"] < 10 else "",
         ),
     })
 
@@ -53,71 +43,23 @@ def build_insights(scope, data, pages, clicks):
         repeat_share = round(summary["returning_visitors"] / summary["visitors"] * 100)
         lines.append({
             "icon": "🔁",
-            "text": format_html(
-                "初めての人が {}人、前にも来たことがある人が {}人で、"
-                "<strong>リピーターが{}%</strong>です。",
-                summary["new_visitors"],
-                summary["returning_visitors"],
-                repeat_share,
-            ),
+            "text": format_html("リピーター <strong>{}%</strong>", repeat_share),
         })
 
-    retention = data["retention"]
-    if retention["rate"] is not None and retention["base"] >= 3:
-        lines.append({
-            "icon": "🌱",
-            "text": format_html(
-                "期間の前半に初めて来た {}人のうち <strong>{}%</strong> が、別の日にもう一度来ています。",
-                retention["base"],
-                retention["rate"],
-            ),
-        })
-
-    # ---------------------------------------------------
-    # アプリ
-    # ---------------------------------------------------
-
-    apps = data["apps"]["rows"]
+    # アプリ (「その他」は除いて見る)
+    apps = [app for app in data["apps"]["rows"] if app["key"] != OTHER_APP]
 
     if apps and not scope.app:
         top = apps[0]
-        lines.append({
-            "icon": top["emoji"],
-            "text": format_html(
-                "いちばん人が集まっているのは <strong>{}</strong>（{}人・来た人の{}%）。",
-                top["name"],
-                top["visitors"],
-                top["share"],
-            ),
-        })
+        parts = [format_html("いちばん人気は {} {}（{}人）", top["emoji"], top["name"], top["visitors"])]
 
         growing = [
             app for app in apps
             if app["change"] is not None and app["visitors"] >= 3 and app["change"] >= 20
         ]
-        new_apps = [
-            app for app in apps
-            if app["previous_visitors"] == 0 and app["visitors"] >= 3
-        ]
-
         if growing:
             best = max(growing, key=lambda app: app["change"])
-            lines.append({
-                "icon": "📈",
-                "text": format_html(
-                    "{} {} は前の期間より <strong>{}%</strong> 人が増えていて、伸びています。",
-                    best["emoji"], best["name"], best["change"],
-                ),
-            })
-
-        for app in new_apps[:2]:
-            lines.append({
-                "icon": "✨",
-                "text": format_html(
-                    "{} {} にこの期間から人が来はじめました（{}人）。",
-                    app["emoji"], app["name"], app["visitors"],
-                ),
-            })
+            parts.append(format_html("{} が +{}%", best["name"], best["change"]))
 
         falling = [
             app for app in apps
@@ -125,144 +67,48 @@ def build_insights(scope, data, pages, clicks):
         ]
         if falling:
             worst = min(falling, key=lambda app: app["change"])
-            lines.append({
-                "icon": "📉",
-                "text": format_html(
-                    "{} {} は前の期間より {}% 人が減っています。",
-                    worst["emoji"], worst["name"], -worst["change"],
-                ),
-            })
+            parts.append(format_html("{} が −{}%", worst["name"], -worst["change"]))
 
-    if data["apps"]["multi_app_visitors"] and data["apps"]["pairs"]:
-        pair = data["apps"]["pairs"][0]
-        lines.append({
-            "icon": "🔗",
-            "text": format_html(
-                "複数のアプリを見た人は {}人。よくある組み合わせは {} {} と {} {} です。",
-                data["apps"]["multi_app_visitors"],
-                pair["a"]["emoji"], pair["a"]["name"],
-                pair["b"]["emoji"], pair["b"]["name"],
-            ),
-        })
+        lines.append({"icon": "🏆", "text": format_html_join_jp(parts)})
 
-    # ---------------------------------------------------
-    # 流入元
-    # ---------------------------------------------------
-
+    # 経路
     source_types = sorted(data["source_types"], key=lambda row: row["visits"], reverse=True)
     if source_types:
         top = source_types[0]
+        outside = [
+            row for row in data["source_table"]
+            if row["type"]["key"] not in ("direct", "unknown")
+        ]
         lines.append({
             "icon": "🧭",
             "text": format_html(
-                "来る経路は「<strong>{}</strong>」がいちばん多く、訪問の{}%です。",
-                top["short"], top["share"],
+                "経路は「{}」が {}%{}",
+                top["short"],
+                top["share"],
+                format_html("、外からは {} が最多（{}回）", outside[0]["label"], outside[0]["visits"]) if outside else "",
             ),
         })
 
-    outside = [
-        row for row in data["source_table"]
-        if row["type"]["key"] not in ("direct", "unknown")
-    ]
-    if outside:
-        best = outside[0]
-        lines.append({
-            "icon": "🚪",
-            "text": format_html(
-                "外から来た中では <strong>{}</strong>（{}）が {}回でトップ。そこから来た人は1回に平均 {} ページ見ています。",
-                best["label"], best["type"]["short"], best["visits"], best["pages_per_visit"],
-            ),
-        })
-
-        previous_labels = set(
-            scope.base()
-            .filter(
-                is_visit_start=True,
-                accessed_at__gte=scope.previous_start,
-                accessed_at__lt=scope.start,
-            )
-            .values_list("source_label", flat=True)
-            .distinct()
-        )
-        has_previous = PageView.objects.filter(accessed_at__lt=scope.start).exists()
-        fresh = [row for row in outside if row["label"] not in previous_labels]
-        if has_previous and fresh:
-            lines.append({
-                "icon": "🆕",
-                "text": format_html(
-                    "新しい流入元: {}（前の期間にはなかった経路です）。",
-                    "、".join(f"{row['label']} {row['visits']}回" for row in fresh[:3]),
-                ),
-            })
-
-    # ---------------------------------------------------
-    # いつ・どこで
-    # ---------------------------------------------------
-
+    # 時間帯
     heat = data["heatmap"]["rows"]
     if data["visits_count"] >= 5:
         weekday_totals = Counter({i: sum(row) for i, row in enumerate(heat)})
         hour_totals = Counter({h: sum(row[h] for row in heat) for h in range(24)})
-        best_day = weekday_totals.most_common(1)[0][0]
-        best_hour = hour_totals.most_common(1)[0][0]
         lines.append({
             "icon": "🕒",
             "text": format_html(
-                "よく見られているのは <strong>{}曜日</strong>、時間帯では <strong>{}時台</strong>（スイス時間）です。",
-                data["heatmap"]["weekdays"][best_day],
-                best_hour,
+                "多いのは {}曜日・{}時台",
+                data["heatmap"]["weekdays"][weekday_totals.most_common(1)[0][0]],
+                hour_totals.most_common(1)[0][0],
             ),
-        })
-
-    if data["devices"]:
-        mobile = next((row for row in data["devices"] if row["name"] == "スマホ"), None)
-        if mobile and mobile["share"] >= 50:
-            lines.append({
-                "icon": "📱",
-                "text": format_html("訪問の <strong>{}%</strong> はスマホからです。", mobile["share"]),
-            })
-
-    browsers = data["browsers"]
-    if browsers["in_app_share"] is not None and browsers["recorded_visits"] >= 5 and browsers["in_app_share"] >= 15:
-        top_app = next((row for row in browsers["rows"] if row["in_app"]), None)
-        lines.append({
-            "icon": "📲",
-            "text": format_html(
-                "訪問の <strong>{}%</strong> は {} などアプリの中から開かれています。"
-                "アプリ内は記録が残りにくいので、実際の人数は「来た人」より少し少ないかもしれません。",
-                browsers["in_app_share"],
-                top_app["name"] if top_app else "LINE",
-            ),
-        })
-
-    # ---------------------------------------------------
-    # 人気
-    # ---------------------------------------------------
-
-    titled = [page for page in pages if page["title"]]
-    if titled:
-        page = titled[0]
-        lines.append({
-            "icon": "⭐",
-            "text": format_html(
-                "よく見られているページは「{}」（{} {}・{}回）。",
-                page["title"], page["app"]["emoji"], page["app"]["name"], page["page_views"],
-            ),
-        })
-
-    if clicks:
-        lines.append({
-            "icon": "📰",
-            "text": format_html(
-                "Swiss News でいちばん読まれた記事は「{}」（{}回クリック）。",
-                clicks[0]["title"], clicks[0]["clicks"],
-            ),
-        })
-
-    if summary["visitors"] < 10:
-        lines.append({
-            "icon": "ℹ️",
-            "text": "まだ人数が少ないので、傾向は参考程度に見てください。",
         })
 
     return lines
+
+
+def format_html_join_jp(parts):
+
+    text = parts[0]
+    for part in parts[1:]:
+        text = format_html("{}、{}", text, part)
+    return text
