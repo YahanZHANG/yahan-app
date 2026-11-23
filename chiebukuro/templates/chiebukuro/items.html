@@ -2,7 +2,7 @@
 {% block title %}ゆずりあい | スイス掲示板{% endblock %}
 {% block content %}
 
-<h1 class="cb-page-title">ゆずりあい</h1>
+<h1 class="cb-page-title cb-title-row">ゆずりあい<a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></h1>
 <p class="cb-page-lead">いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。</p>
 
 {% if voices %}
@@ -40,7 +40,7 @@
     {% empty %}
         <div class="cb-empty">
             <p>この条件の書きこみはまだありません。</p>
-            <p><a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">出してみる</a></p>
+            <p><a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></p>
         </div>
     {% endfor %}
 </section>

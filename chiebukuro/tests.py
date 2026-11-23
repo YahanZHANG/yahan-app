@@ -426,6 +426,21 @@ class QuestionTests(BoardTestCase):
 
 class ItemTests(BoardTestCase):
 
+    def test_daily_limit_and_button_labels(self):
+        self.client.force_login(self.alice)
+        data = {"kind": "want", "genre": "other", "title": "椅子", "agree": "yes"}
+        for _ in range(10):
+            self.client.post(reverse("chiebukuro:item_new"), data)
+        self.assertEqual(Item.objects.count(), 10)
+        response = self.client.post(reverse("chiebukuro:item_new"), data)
+        self.assertContains(response, "1日10件まで")
+        self.assertEqual(Item.objects.count(), 10)
+
+        # ほかの人の書きこみがあっても、出すボタンはいつも出る (種類ごとの言葉)
+        self.assertContains(self.client.get(reverse("chiebukuro:items") + "?kind=want"), "ゆずってほしい</a>")
+        self.assertContains(self.client.get(reverse("chiebukuro:items") + "?kind=give"), "ゆずります</a>")
+        self.assertContains(self.client.get(reverse("chiebukuro:items")), "ゆずりあいに出す</a>")
+
     def test_give_away_flow(self):
         self.client.force_login(self.alice)
         response = self.client.post(
