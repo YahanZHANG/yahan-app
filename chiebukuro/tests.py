@@ -1266,7 +1266,7 @@ class BoardBotTests(BoardTestCase):
         from chiebukuro import bots
 
         bots.schedule(BotPost)
-        self.assertEqual(BotPost.objects.filter(bot="swiss").count(), 31)
+        self.assertEqual(BotPost.objects.filter(bot="swiss").count(), 61)
         # 和食・おでかけ・ニュースのBotはやめた (2026-11-16)
         self.assertFalse(BotPost.objects.exclude(bot="swiss").exists())
         first = timezone.localtime(BotPost.objects.get(bot="swiss", day=1).publish_at)
@@ -1274,6 +1274,17 @@ class BoardBotTests(BoardTestCase):
         intro = timezone.localtime(BotPost.objects.get(bot="swiss", day=0).publish_at)
         self.assertLess(intro, first)
         self.assertEqual(bots.schedule(BotPost), 0)
+        last = timezone.localtime(BotPost.objects.get(bot="swiss", day=60).publish_at)
+        self.assertEqual((last.date().isoformat(), last.hour), ("2027-01-10", 8))
+
+    def test_schedule_from_day(self):
+        # Day 31〜 だけ足す (前の日の予約は消してあっても作り直さない)
+        from chiebukuro import bots
+
+        self.assertEqual(bots.schedule(BotPost, days=60, first=31), 30)
+        self.assertFalse(BotPost.objects.filter(bot="swiss", day__lt=31).exists())
+        day31 = timezone.localtime(BotPost.objects.get(bot="swiss", day=31).publish_at)
+        self.assertEqual((day31.date().isoformat(), day31.hour), ("2026-12-12", 8))
 
     def test_swiss_post_released_with_source(self):
         from chiebukuro.bots import release_due
