@@ -1,5 +1,4 @@
 <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}<span>ゆずりあい</span></a>
 <a href="{% url 'chiebukuro:lending' %}" class="{% if tab == 'lending' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="swap" %}<span>貸し借り</span></a>
 <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}<span>宣伝</span></a>
-<a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}<span>つぶやき</span></a>
 <span class="cb-menu-soon" aria-disabled="true">{% include "chiebukuro/_icon.html" with name="job" %}<span>求人<small>（準備中）</small></span></span>

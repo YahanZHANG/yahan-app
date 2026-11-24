@@ -180,12 +180,12 @@ class HomeTests(BoardTestCase):
         self.assertNotIn("cb-askbox", page)
         self.assertNotIn("cb-hero", page)
         self.assertNotIn("Coop に枝豆がありました", page)
-        # 下のメニュー (2026-11-24): HOME・質問・アンケート・その他 (ゆずりあい・貸し借り・宣伝・つぶやき・求人)
+        # 下のメニュー (2026-11-24): HOME・質問・アンケート・つぶやき・その他 (ゆずりあい・貸し借り・宣伝・求人)
         tabbar = page[page.index('class="cb-tabbar"'):]
         tabbar = tabbar[:tabbar.index("</nav>")]
         self.assertLess(tabbar.index("<span>質問</span>"), tabbar.index("<span>アンケート</span>"))
         self.assertIn("<span>その他</span>", tabbar)
-        self.assertNotIn("<span>つぶやき</span>", tabbar)
+        self.assertLess(tabbar.index("<span>アンケート</span>"), tabbar.index("<span>つぶやき</span>"))
         more = page[page.index('id="cb-moremenu"'):]
         for label in ["ゆずりあい", "貸し借り", "宣伝", "求人"]:
             self.assertIn(f"<span>{label}", more)

@@ -1,5 +1,5 @@
 """アンケート (2026-11-24 Taro): 誰でも作れる・公開日時の予約・1週間で締め切り。
-これまでのアンケートは作成日時を公開日時にする (もう締め切り)。運営のアンケート12問を火・金の朝7時 (スイス時間) に1問ずつ予約する
+これまでのアンケートは作成日時を公開日時にし (もう締め切り)、非表示だったものも出す (2026-11-24 Taro)。運営のアンケート12問を火・金の朝7時 (スイス時間) に1問ずつ予約する
 (利用者がいる DB だけ。テスト用の空の DB には入れない)"""
 
 import datetime
@@ -36,7 +36,8 @@ def schedule(apps, schema_editor):
     User = apps.get_model(*settings.AUTH_USER_MODEL.split("."))
     for poll in Poll.objects.all():
         poll.publish_at = poll.created_at
-        poll.save(update_fields=["publish_at"])
+        poll.is_active = True
+        poll.save(update_fields=["publish_at", "is_active"])
     if not User.objects.exists():
         return
     for day, question, labels in POLLS:
