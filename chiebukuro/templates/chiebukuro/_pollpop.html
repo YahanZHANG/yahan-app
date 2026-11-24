@@ -30,7 +30,7 @@
     var candidates = JSON.parse(document.getElementById("cb-pollpop-data").textContent);
     var pick = candidates.filter(function (row) { return skipped.indexOf(row.id) < 0; })[0];
     var today = new Date().toDateString();
-    var busy = window.cbThanksShown || window.cbAskShown || window.cbDailyShown || location.hash;
+    var busy = window.cbThanksShown || window.cbNoticeShown || window.cbAskShown || window.cbDailyShown || location.hash;
     if (!pick || busy || read("cb_pollpop_day") === today) return;
     window.cbPollShown = true;
 

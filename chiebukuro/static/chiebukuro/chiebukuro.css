@@ -1720,6 +1720,12 @@ html[data-yapp-resolved-theme="dark"] .cb-color-pick { background: var(--surface
 .cb-thanks-box p { margin: 0; font-size: 15px; line-height: 1.75; }
 .cb-thanks-mark { font-size: 40px; line-height: 1; }
 .cb-thanks-sign { color: var(--sub); font-size: 13px !important; }
+.cb-noticepop-box { display: grid; gap: 12px; padding: 22px 22px 18px; }
+.cb-noticepop-box h2 { margin: 0; font-size: 18px; text-align: center; }
+.cb-noticepop-part { padding: 12px 14px; border-radius: 10px; background: var(--surface-2); }
+.cb-noticepop-part h3 { margin: 0 0 4px; font-size: 15px; }
+.cb-noticepop-part p { margin: 0; font-size: 14px; line-height: 1.7; }
+.cb-noticepop-foot { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
 .cb-thanks-box .cb-btn { justify-self: center; min-width: 160px; margin-top: 6px; }
 
 /* HOME いちばん上の「気軽に質問してみよう」: その場で書いて送れる */

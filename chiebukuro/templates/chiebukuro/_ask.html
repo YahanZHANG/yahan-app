@@ -51,7 +51,8 @@ window.cbAskShown: このポップアップを出したか (出したら、今�
     write("cb_home_opens", JSON.stringify({ day: day, count: count }));
     window.cbAskShown = false;
     // はじめて開いたとき (アンケートのお礼が出たとき) は出さない。今日のひとことも出さない
-    if (window.cbThanksShown) { window.cbAskShown = true; return; }
+    // お知らせのポップアップが出たときも同じ (1回に1つだけ)
+    if (window.cbThanksShown || window.cbNoticeShown) { window.cbAskShown = true; return; }
 
     var snoozed = Number(read("cb_askpop_until") || 0) > Date.now();
     if (count !== 1 || snoozed || read("cb_askpop_day") === day || location.hash) return;

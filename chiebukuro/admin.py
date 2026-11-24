@@ -23,6 +23,7 @@ from .models import (
     Message,
     Notice,
     Poll,
+    PopupNotice,
     PollChoice,
     BotPost,
     Post,
@@ -442,3 +443,13 @@ class SponsorAdmin(admin.ModelAdmin):
     list_display = ["name", "title", "starts_on", "ends_on", "is_active", "clicks"]
     list_editable = ["is_active"]
     readonly_fields = ["clicks"]
+
+
+@admin.register(PopupNotice)
+class PopupNoticeAdmin(admin.ModelAdmin):
+    """お知らせのポップアップ。「出す」になっているいちばん新しいものを、次に掲示板を開いたときに1回だけ出します (端末ごと)。
+    はじめて来た人には、事前アンケートのお礼のすぐあとに出ます。新しく作ると、もう見た人にもまた出ます"""
+
+    list_display = ["title", "is_active", "show_until", "created_at"]
+    list_editable = ["is_active"]
+    fields = ["title", "body", "link_url", "link_label", "is_active", "show_until", "created_at"]
