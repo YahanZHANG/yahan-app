@@ -1,7 +1,7 @@
 {% extends "chiebukuro/base.html" %}
 {% block title %}アンケート | スイス掲示板{% endblock %}
 {% block content %}
-<h1 class="cb-page-title">アンケート</h1>
+<h1 class="cb-page-title cb-title-row">アンケート<a href="{% url 'chiebukuro:poll_new' %}" class="cb-btn cb-btn-primary cb-btn-s">アンケートを作る</a></h1>
 <nav class="cb-seg" aria-label="アンケートの種類">
     <a href="{% url 'chiebukuro:polls' %}" class="{% if view == 'open' %}on{% endif %}">回答募集中</a>
     <a href="{% url 'chiebukuro:polls' %}?view=closed" class="{% if view == 'closed' %}on{% endif %}">締め切り</a>

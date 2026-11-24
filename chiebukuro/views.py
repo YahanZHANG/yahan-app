@@ -213,10 +213,9 @@ def by_region(queryset, region, field="region"):
 
 # 右下の「＋」ボタン: いま見ているページに合わせて変わる
 # 右下のボタンは、どのページでも「質問する」(2026-11-16 Taro: 質問がいちばん大事)
-FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "daily", "me", "bell")}
+FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "daily", "me", "bell", "polls")}
 # 募集・告知のページでは「告知する」(2026-11-23 Taro: PC で告知を出す入口がなかった)
 FAB["notices"] = ("告知する", "chiebukuro:notice_new")
-FAB["polls"] = ("アンケートを作る", "chiebukuro:poll_new")
 # 募集・告知は1人1日5件まで (2026-11-23 Taro: 1人1件は厳しすぎる)
 NOTICES_PER_DAY = 5
 
