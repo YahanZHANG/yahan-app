@@ -56,9 +56,9 @@
     <nav class="cb-side" aria-label="メニュー">
         <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}HOME</a>
         <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
-        <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
+        <a href="{% url 'chiebukuro:polls' %}" class="{% if tab == 'polls' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="poll" %}アンケート</a>
         <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}つぶやき</a>
-        <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>
+        {% include "chiebukuro/_more_links.html" %}
         <a href="{% url 'chiebukuro:daily_list' %}" class="{% if tab == 'daily' %}on{% endif %}"><span class="cb-side-emoji" aria-hidden="true">🍀</span>今日のひとこと</a>
         {% if user.is_authenticated %}
             <a href="{% url 'chiebukuro:notifications' %}" class="{% if tab == 'bell' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="bell" %}お知らせ{% if unread %}<b class="cb-badge cb-badge-inline">{{ unread }}</b>{% endif %}</a>
@@ -98,13 +98,28 @@
     <a href="{{ fab_url }}" class="cb-fab" aria-label="{{ fab_label }}"{% if fab_label == "質問する" %} data-ask-open{% endif %}>{% include "chiebukuro/_icon.html" with name="plus" %}<span>{{ fab_label }}</span></a>
 {% endif %}
 
+{% comment %}スマホ下のメニュー (2026-11-24 Taro): HOME・質問・アンケート・つぶやき・その他。その他はサブメニュー{% endcomment %}
 <nav class="cb-tabbar" aria-label="メニュー">
     <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}<span>HOME</span></a>
     <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}<span>質問</span></a>
-    <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}<span>ゆずりあい</span></a>
+    <a href="{% url 'chiebukuro:polls' %}" class="{% if tab == 'polls' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="poll" %}<span>アンケート</span></a>
     <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}<span>つぶやき</span></a>
-    <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}<span>募集・告知</span></a>
+    <button type="button" class="cb-tabbar-more{% if tab == 'items' or tab == 'lending' or tab == 'notices' %} on{% endif %}" aria-expanded="false" aria-controls="cb-moremenu" id="cb-more-toggle">{% include "chiebukuro/_icon.html" with name="more" %}<span>その他</span></button>
 </nav>
+<div class="cb-moremenu" id="cb-moremenu" hidden>
+    <nav class="cb-moremenu-box" aria-label="その他のメニュー">{% include "chiebukuro/_more_links.html" %}</nav>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById("cb-more-toggle");
+    var menu = document.getElementById("cb-moremenu");
+    if (!toggle || !menu) return;
+    function set(open) { menu.hidden = !open; toggle.setAttribute("aria-expanded", open ? "true" : "false"); }
+    toggle.addEventListener("click", function () { set(menu.hidden); });
+    menu.addEventListener("click", function (event) { if (event.target === menu) set(false); });
+    document.addEventListener("keydown", function (event) { if (event.key === "Escape") set(false); });
+})();
+</script>
 
 <script src="{% static 'washoku/photo_upload.js' %}" defer></script>
 <script src="{% static 'chiebukuro/share.js' %}" defer></script>

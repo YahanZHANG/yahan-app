@@ -1,9 +1,9 @@
 {% extends "chiebukuro/base.html" %}
-{% block title %}ゆずりあい | スイス掲示板{% endblock %}
+{% block title %}{{ page_title }} | スイス掲示板{% endblock %}
 {% block content %}
 
-<h1 class="cb-page-title cb-title-row">ゆずりあい<a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></h1>
-<p class="cb-page-lead">いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。</p>
+<h1 class="cb-page-title cb-title-row">{{ page_title }}<a href="{% url 'chiebukuro:item_new' %}?kind={% if kind %}{{ kind }}{% elif area == 'lending' %}lend{% else %}give{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></h1>
+<p class="cb-page-lead">{% if area == "lending" %}使っていない物を、無料で貸し借りする場所です。受け渡しは対面で。{% else %}いらなくなった物・さがしている物を、お金をかけずにゆずりあう場所です。受け渡しは対面で。{% endif %}</p>
 
 {% if voices %}
 <section class="cb-voices" aria-label="事前アンケートで集まった声">
@@ -40,7 +40,7 @@
     {% empty %}
         <div class="cb-empty">
             <p>この条件の書きこみはまだありません。</p>
-            <p><a href="{% url 'chiebukuro:item_new' %}{% if kind %}?kind={{ kind }}{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></p>
+            <p><a href="{% url 'chiebukuro:item_new' %}?kind={% if kind %}{{ kind }}{% elif area == 'lending' %}lend{% else %}give{% endif %}" class="cb-btn cb-btn-primary cb-btn-s">{{ new_label }}</a></p>
         </div>
     {% endfor %}
 </section>

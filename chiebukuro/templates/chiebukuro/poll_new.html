@@ -1,0 +1,26 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}アンケートを作る | スイス掲示板{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:polls' %}">{% include "chiebukuro/_icon.html" with name="back" %}アンケート</a></p>
+<section class="cb-block cb-form-block">
+    <h1 class="cb-form-title">アンケートを作る</h1>
+    {% if error %}<p class="cb-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" class="cb-form" data-rules>
+        {% csrf_token %}
+        <label class="cb-field">
+            <span>質問</span>
+            <input type="text" name="question" value="{{ question }}" maxlength="120" required>
+        </label>
+        <fieldset class="cb-field cb-poll-fields">
+            <legend>選択肢（2〜4つ）</legend>
+            {% for label in labels %}
+                <input type="text" name="choice{{ forloop.counter }}" value="{{ label }}" maxlength="60" aria-label="選択肢{{ forloop.counter }}"{% if forloop.counter <= 2 %} required{% endif %}>
+            {% endfor %}
+        </fieldset>
+        {% if user.is_authenticated and not user.is_staff %}<label class="cb-radio"><input type="checkbox" name="anonymous" value="1" {% if anonymous %}checked{% endif %}> 匿名で出す</label>{% endif %}
+        {% include "chiebukuro/_guest_fields.html" %}
+        <button type="submit" class="cb-btn cb-btn-primary">アンケートを出す</button>
+        <p class="cb-note">1週間、回答募集中として出ます。</p>
+    </form>
+</section>
+{% endblock %}

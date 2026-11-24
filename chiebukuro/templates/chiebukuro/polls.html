@@ -1,11 +1,14 @@
 {% extends "chiebukuro/base.html" %}
-{% block title %}みんなのアンケート | スイス掲示板{% endblock %}
+{% block title %}アンケート | スイス掲示板{% endblock %}
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:home' %}">{% include "chiebukuro/_icon.html" with name="back" %}HOME</a></p>
-<h1 class="cb-page-title">みんなのアンケート</h1>
+<h1 class="cb-page-title cb-title-row">アンケート<a href="{% url 'chiebukuro:poll_new' %}" class="cb-btn cb-btn-primary cb-btn-s">アンケートを作る</a></h1>
+<nav class="cb-seg" aria-label="アンケートの種類">
+    <a href="{% url 'chiebukuro:polls' %}" class="{% if view == 'open' %}on{% endif %}">回答募集中</a>
+    <a href="{% url 'chiebukuro:polls' %}?view=closed" class="{% if view == 'closed' %}on{% endif %}">締め切り</a>
+</nav>
 {% for poll in polls %}
-    <div class="cb-block cb-block-pad">{% include "chiebukuro/_poll.html" %}</div>
+    <div class="cb-block cb-block-pad">{% include "chiebukuro/_poll.html" with link=True %}</div>
 {% empty %}
-    <p class="cb-empty">まだアンケートはありません。</p>
+    <p class="cb-empty">{% if view == 'open' %}いま回答募集中のアンケートはありません。{% else %}まだありません。{% endif %}</p>
 {% endfor %}
 {% endblock %}

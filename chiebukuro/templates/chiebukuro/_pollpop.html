@@ -1,0 +1,102 @@
+{% comment %}回答募集中のアンケートのお願い (2026-11-24 Taro)。HOME で、まだ答えていないアンケートを1日1回まで。
+ほかのポップアップ (お礼・質問・今日のひとこと) が出るときは出さない。回答のお願い (_answerpop.html) より先。
+答えたらその場で結果を見せる。答えずに閉じたものは、この端末では2度と出さない (localStorage cb_pollpop_skipped)。{% endcomment %}
+{% if poll_pop %}
+<dialog class="cb-daily cb-askpop cb-pollpop" id="cb-pollpop" aria-labelledby="cb-pollpop-title">
+    <div class="cb-daily-box">
+        <button type="button" class="cb-askpop-x" data-pollpop-close aria-label="閉じる">×</button>
+        <div class="cb-daily-body">
+            <p class="cb-poll-label"><span class="cb-poll-state is-open">アンケート</span><span data-pollpop-total></span></p>
+            <h2 id="cb-pollpop-title" class="cb-poll-q" data-pollpop-q></h2>
+            <form method="post" action="" class="cb-poll-choices" data-pollpop-form>
+                {% csrf_token %}<input type="hidden" name="next" value="{% url 'chiebukuro:polls' %}">
+            </form>
+            <ul class="cb-poll-result" data-pollpop-result hidden></ul>
+            <p class="cb-poll-note" data-pollpop-note>ログイン不要。答えると結果が見られます。</p>
+            <p class="cb-pollpop-more" data-pollpop-more hidden><a href="{% url 'chiebukuro:polls' %}">ほかのアンケート ›</a></p>
+        </div>
+    </div>
+</dialog>
+{{ poll_pop|json_script:"cb-pollpop-data" }}
+<script>
+(function () {
+    var dialog = document.getElementById("cb-pollpop");
+    if (!dialog || !dialog.showModal || !window.fetch) return;
+    var KEY = "cb_pollpop_skipped";
+    function read(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+    var skipped = [];
+    try { skipped = JSON.parse(read(KEY) || "[]"); } catch (e) { skipped = []; }
+    var candidates = JSON.parse(document.getElementById("cb-pollpop-data").textContent);
+    var pick = candidates.filter(function (row) { return skipped.indexOf(row.id) < 0; })[0];
+    var today = new Date().toDateString();
+    var busy = window.cbThanksShown || window.cbAskShown || window.cbDailyShown || location.hash;
+    if (!pick || busy || read("cb_pollpop_day") === today) return;
+    window.cbPollShown = true;
+
+    var form = dialog.querySelector("[data-pollpop-form]");
+    var result = dialog.querySelector("[data-pollpop-result]");
+    var question = dialog.querySelector("[data-pollpop-q]");
+    var link = document.createElement("a");
+    link.href = pick.url;
+    link.textContent = pick.question;
+    question.appendChild(link);
+    form.action = pick.vote;
+    pick.choices.forEach(function (choice) {
+        var button = document.createElement("button");
+        button.type = "submit";
+        button.name = "choice";
+        button.value = choice.id;
+        button.textContent = choice.label;
+        form.appendChild(button);
+    });
+
+    function remember() {
+        if (skipped.indexOf(pick.id) < 0) skipped.push(pick.id);
+        write(KEY, JSON.stringify(skipped.slice(-300)));
+    }
+    function show(data) {
+        form.hidden = true;
+        dialog.querySelector("[data-pollpop-note]").hidden = true;
+        dialog.querySelector("[data-pollpop-more]").hidden = false;
+        dialog.querySelector("[data-pollpop-total]").textContent = data.total + "人が回答";
+        data.rows.forEach(function (row) {
+            var item = document.createElement("li");
+            if (row.mine) item.className = "is-mine";
+            var bar = document.createElement("span");
+            bar.className = "cb-poll-bar";
+            bar.style.width = row.percent + "%";
+            var text = document.createElement("span");
+            text.className = "cb-poll-text";
+            text.textContent = row.label + (row.mine ? "（あなた）" : "");
+            var percent = document.createElement("b");
+            percent.textContent = row.percent + "%";
+            item.appendChild(bar); item.appendChild(text); item.appendChild(percent);
+            result.appendChild(item);
+        });
+        result.hidden = false;
+    }
+    form.addEventListener("submit", function (event) {
+        var button = event.submitter;
+        if (!button || !button.value) return;  // 古いブラウザは普通に送る (アンケートのページで結果)
+        event.preventDefault();
+        remember();
+        var body = new FormData(form);
+        body.append("choice", button.value);
+        fetch(form.action, { method: "POST", body: body, headers: { Accept: "application/json" }, credentials: "same-origin" })
+            .then(function (response) { return response.json(); })
+            .then(show)
+            .catch(function () { location.href = pick.url; });
+    });
+    function close() { remember(); dialog.close(); }
+    dialog.querySelector("[data-pollpop-close]").addEventListener("click", close);
+    dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) close(); });
+    setTimeout(function () {
+        if (document.querySelector("dialog[open]") || (document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) { window.cbPollShown = false; return; }
+        write("cb_pollpop_day", today);
+        dialog.showModal();
+    }, 2000);
+})();
+</script>
+{% endif %}

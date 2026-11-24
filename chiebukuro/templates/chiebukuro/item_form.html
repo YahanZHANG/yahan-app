@@ -1,9 +1,9 @@
 {% extends "chiebukuro/base.html" %}
-{% block title %}ゆずりあいに出す | スイス掲示板{% endblock %}
+{% block title %}{% if tab == "lending" %}貸し借り{% else %}ゆずりあい{% endif %}に出す | スイス掲示板{% endblock %}
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:items' %}">{% include "chiebukuro/_icon.html" with name="back" %}ゆずりあい</a></p>
+<p class="cb-back">{% if tab == 'lending' %}<a href="{% url 'chiebukuro:lending' %}">{% include "chiebukuro/_icon.html" with name="back" %}貸し借り</a>{% else %}<a href="{% url 'chiebukuro:items' %}">{% include "chiebukuro/_icon.html" with name="back" %}ゆずりあい</a>{% endif %}</p>
 <section class="cb-block cb-form-block">
-    <h1 class="cb-form-title">ゆずりあいに出す</h1>
+    <h1 class="cb-form-title">{% if tab == "lending" %}貸し借り{% else %}ゆずりあい{% endif %}に出す</h1>
 
     <nav class="cb-seg" aria-label="種類">
         {% for value, label in kinds %}<a href="?kind={{ value }}" class="{% if kind == value %}on{% endif %}">{{ label }}</a>{% endfor %}

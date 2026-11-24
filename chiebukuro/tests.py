@@ -180,9 +180,15 @@ class HomeTests(BoardTestCase):
         self.assertNotIn("cb-askbox", page)
         self.assertNotIn("cb-hero", page)
         self.assertNotIn("Coop に枝豆がありました", page)
-        # 下のメニュー: 質問・ゆずりあいが先
-        self.assertLess(page.index("<span>質問</span>"), page.index("<span>つぶやき</span>"))
-        self.assertLess(page.index("<span>ゆずりあい</span>"), page.index("<span>つぶやき</span>"))
+        # 下のメニュー (2026-11-24): HOME・質問・アンケート・つぶやき・その他 (ゆずりあい・貸し借り・宣伝・求人)
+        tabbar = page[page.index('class="cb-tabbar"'):]
+        tabbar = tabbar[:tabbar.index("</nav>")]
+        self.assertLess(tabbar.index("<span>質問</span>"), tabbar.index("<span>アンケート</span>"))
+        self.assertIn("<span>その他</span>", tabbar)
+        self.assertLess(tabbar.index("<span>アンケート</span>"), tabbar.index("<span>つぶやき</span>"))
+        more = page[page.index('id="cb-moremenu"'):]
+        for label in ["ゆずりあい", "貸し借り", "宣伝", "求人"]:
+            self.assertIn(f"<span>{label}", more)
         # 右下はどのページでも「質問する」
         self.assertIn('class="cb-fab" aria-label="質問する"', self.client.get(reverse("chiebukuro:items")).content.decode())
         self.assertTrue(old and wanted)
@@ -456,7 +462,12 @@ class ItemTests(BoardTestCase):
         self.assertEqual(Item.objects.count(), 1)
 
         self.assertContains(self.client.get(reverse("chiebukuro:items") + "?kind=give"), "ベビーカー")
-        self.assertNotContains(self.client.get(reverse("chiebukuro:items") + "?kind=lend"), "ベビーカー")
+        # 貸します・借りたいは「貸し借り」のページ (2026-11-24)
+        self.assertRedirects(self.client.get(reverse("chiebukuro:items") + "?kind=lend"), reverse("chiebukuro:lending") + "?kind=lend")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:lending")), "ベビーカー")
+        Item.objects.create(kind="lend", title="日本語の絵本", owner=self.alice, nickname="alice")
+        self.assertContains(self.client.get(reverse("chiebukuro:lending")), "日本語の絵本")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:items")), "日本語の絵本")
         self.assertContains(self.client.get(reverse("chiebukuro:items") + "?genre=kids"), "ベビーカー")
 
         self.client.force_login(self.bob)
@@ -730,18 +741,55 @@ class HomeExtrasTests(BoardTestCase):
         poll = Poll.objects.create(question="スイスで一番好きな季節は？")
         spring = PollChoice.objects.create(poll=poll, label="春", order=1)
         autumn = PollChoice.objects.create(poll=poll, label="秋", order=2)
-        # 2026-11-18: アンケートのポップアップはやめた (HOME には出さない。/polls/ には残す)
-        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), 'id="cb-pollpop"')
+        # 2026-11-24: 回答募集中のアンケートは HOME に出て、ポップアップでもお願いする
+        home = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(home, 'id="cb-pollpop"')
+        self.assertContains(home, "回答募集中のアンケート")
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "スイスで一番好きな季節は？")
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})
         self.assertEqual(PollVote.objects.get().choice, autumn)
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "100%")
+        # 答えたものはポップアップに出さない
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), 'id="cb-pollpop"')
         self.client.force_login(self.alice)
-        self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
+        response = self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk}, HTTP_ACCEPT="application/json")
+        self.assertEqual(response.json()["total"], 2)
         self.assertEqual(PollVote.objects.count(), 2)
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "50%")
+
+    def test_poll_schedule_and_closing(self):
+        from datetime import timedelta
+
+        later = Poll.objects.create(question="予約のアンケート", publish_at=timezone.now() + timedelta(days=1))
+        PollChoice.objects.create(poll=later, label="はい")
+        old = Poll.objects.create(question="先月のアンケート", publish_at=timezone.now() - timedelta(days=8))
+        yes = PollChoice.objects.create(poll=old, label="はい")
+        PollChoice.objects.create(poll=old, label="いいえ")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:polls")), "予約のアンケート")
+        self.assertEqual(self.client.get(reverse("chiebukuro:poll", args=[later.pk])).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "先月のアンケート")
+        closed = self.client.get(reverse("chiebukuro:polls") + "?view=closed")
+        self.assertContains(closed, "先月のアンケート")
+        self.assertContains(closed, "締め切り後も回答できます")
+        # 締め切ったあとも答えられる
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:poll_vote", args=[old.pk]), {"choice": yes.pk})
+        self.assertEqual(PollVote.objects.filter(poll=old).count(), 1)
+
+    def test_anyone_can_start_a_poll(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("chiebukuro:poll_new"), {"question": "チップは払う？", "choice1": "払う", "choice2": "払わない", "choice3": "", "anonymous": "1"})
+        poll = Poll.objects.get(question="チップは払う？")
+        self.assertRedirects(response, reverse("chiebukuro:poll", args=[poll.pk]))
+        self.assertEqual(poll.author, self.alice)
+        self.assertEqual(poll.display_name, "匿名さん")
+        self.assertEqual(list(poll.choices.values_list("label", flat=True)), ["払う", "払わない"])
+        self.assertTrue(poll.is_open)
+        # 選択肢が1つだけはだめ
+        self.client.post(reverse("chiebukuro:poll_new"), {"question": "1つだけ", "choice1": "はい"})
+        self.assertFalse(Poll.objects.filter(question="1つだけ").exists())
 
     def test_sponsor_slot_and_click(self):
         self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
@@ -1458,6 +1506,6 @@ class HomeNoticesTests(TestCase):
         Notice.objects.create(kind="event", title="絵本の会", body="x", owner=alice, nickname="アリス")
         Notice.objects.create(kind="event", title="架空の会", body="x", owner=alice, nickname="アリス", is_sample=True)
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, "新着の募集・告知")
+        self.assertContains(page, "新着の宣伝")
         self.assertContains(page, "絵本の会")
         self.assertNotContains(page, "架空の会")

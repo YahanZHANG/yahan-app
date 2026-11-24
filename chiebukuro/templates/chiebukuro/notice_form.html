@@ -1,7 +1,7 @@
 {% extends "chiebukuro/base.html" %}
 {% block title %}告知する | スイス掲示板{% endblock %}
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:notices' %}">{% include "chiebukuro/_icon.html" with name="back" %}募集・告知</a></p>
+<p class="cb-back"><a href="{% url 'chiebukuro:notices' %}">{% include "chiebukuro/_icon.html" with name="back" %}宣伝</a></p>
 <section class="cb-block cb-form-block">
     <h1 class="cb-form-title">募集・告知する</h1>
     <p class="cb-sub">1人1日{{ per_day }}件まで出せます。それぞれ{{ days }}日間のせられます。</p>

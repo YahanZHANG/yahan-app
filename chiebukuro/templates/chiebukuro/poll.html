@@ -1,0 +1,6 @@
+{% extends "chiebukuro/base.html" %}
+{% block title %}{{ poll.question }} | スイス掲示板{% endblock %}
+{% block content %}
+<p class="cb-back"><a href="{% url 'chiebukuro:polls' %}">{% include "chiebukuro/_icon.html" with name="back" %}アンケート</a></p>
+<div class="cb-block cb-block-pad">{% include "chiebukuro/_poll.html" %}</div>
+{% endblock %}
