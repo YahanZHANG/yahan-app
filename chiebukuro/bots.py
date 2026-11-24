@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 ZURICH = ZoneInfo("Europe/Zurich")
 SWISS_DATA = Path(__file__).resolve().parent / "data" / "bot_swiss.json"
 
-# 試運転: 2026-11-12 から30日間
+# 試運転: 2026-11-12 から30日間 → 2026-11-24 に60日分へ延長 (Day 31〜60 は 0039 で予約)
 TRIAL_START = date(2026, 11, 12)
-TRIAL_DAYS = 30
+TRIAL_DAYS = 60
 
 SWISS_AT = time(8, 0)
 LUNCH_AT = time(12, 0)
@@ -49,10 +49,11 @@ def at(day, clock):
     return datetime.combine(day, clock, tzinfo=ZURICH)
 
 
-def schedule(BotPost, start=TRIAL_START, days=TRIAL_DAYS):
+def schedule(BotPost, start=TRIAL_START, days=TRIAL_DAYS, first=0):
     """
     予約を作る (すでにある予約はそのまま)。マイグレーションからも呼ぶので、モデルは引数で受け取る。
     スイスを知ろうBot: Day 0 (はじめのあいさつ) は初日の 7:59、Day n は (初日 + n-1) 日の 8:00。
+    first: この Day より前は作らない (消した予約が過去の日付でよみがえらないように)
     """
 
     created = 0
@@ -64,7 +65,7 @@ def schedule(BotPost, start=TRIAL_START, days=TRIAL_DAYS):
 
     for row in swiss_rows():
         number = row["day"]
-        if number > days:
+        if number > days or number < first:
             continue
         when = at(start, time(7, 59)) if number == 0 else at(start + timedelta(days=number - 1), SWISS_AT)
         add(
