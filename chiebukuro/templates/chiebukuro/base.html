@@ -56,6 +56,7 @@
     <nav class="cb-side" aria-label="メニュー">
         <a href="{% url 'chiebukuro:home' %}" class="{% if tab == 'home' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="home" %}HOME</a>
         <a href="{% url 'chiebukuro:questions' %}" class="{% if tab == 'questions' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="questions" %}質問</a>
+        <a href="{% url 'chiebukuro:polls' %}" class="{% if tab == 'polls' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="poll" %}アンケート</a>
         <a href="{% url 'chiebukuro:items' %}" class="{% if tab == 'items' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="items" %}ゆずりあい</a>
         <a href="{% url 'chiebukuro:posts' %}" class="{% if tab == 'posts' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="posts" %}つぶやき</a>
         <a href="{% url 'chiebukuro:notices' %}" class="{% if tab == 'notices' %}on{% endif %}">{% include "chiebukuro/_icon.html" with name="notices" %}募集・告知</a>

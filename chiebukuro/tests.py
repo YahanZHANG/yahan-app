@@ -730,18 +730,55 @@ class HomeExtrasTests(BoardTestCase):
         poll = Poll.objects.create(question="スイスで一番好きな季節は？")
         spring = PollChoice.objects.create(poll=poll, label="春", order=1)
         autumn = PollChoice.objects.create(poll=poll, label="秋", order=2)
-        # 2026-11-18: アンケートのポップアップはやめた (HOME には出さない。/polls/ には残す)
-        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), 'id="cb-pollpop"')
+        # 2026-11-24: 回答募集中のアンケートは HOME に出て、ポップアップでもお願いする
+        home = self.client.get(reverse("chiebukuro:home"))
+        self.assertContains(home, 'id="cb-pollpop"')
+        self.assertContains(home, "回答募集中のアンケート")
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "スイスで一番好きな季節は？")
         # ゲストはブラウザごとに1票 (cookie)
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
         self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": autumn.pk})
         self.assertEqual(PollVote.objects.get().choice, autumn)
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "100%")
+        # 答えたものはポップアップに出さない
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), 'id="cb-pollpop"')
         self.client.force_login(self.alice)
-        self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk})
+        response = self.client.post(reverse("chiebukuro:poll_vote", args=[poll.pk]), {"choice": spring.pk}, HTTP_ACCEPT="application/json")
+        self.assertEqual(response.json()["total"], 2)
         self.assertEqual(PollVote.objects.count(), 2)
         self.assertContains(self.client.get(reverse("chiebukuro:polls")), "50%")
+
+    def test_poll_schedule_and_closing(self):
+        from datetime import timedelta
+
+        later = Poll.objects.create(question="予約のアンケート", publish_at=timezone.now() + timedelta(days=1))
+        PollChoice.objects.create(poll=later, label="はい")
+        old = Poll.objects.create(question="先月のアンケート", publish_at=timezone.now() - timedelta(days=8))
+        yes = PollChoice.objects.create(poll=old, label="はい")
+        PollChoice.objects.create(poll=old, label="いいえ")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:polls")), "予約のアンケート")
+        self.assertEqual(self.client.get(reverse("chiebukuro:poll", args=[later.pk])).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "先月のアンケート")
+        closed = self.client.get(reverse("chiebukuro:polls") + "?view=closed")
+        self.assertContains(closed, "先月のアンケート")
+        self.assertContains(closed, "締め切り")
+        # 締め切ったあとも答えられる
+        self.client.force_login(self.alice)
+        self.client.post(reverse("chiebukuro:poll_vote", args=[old.pk]), {"choice": yes.pk})
+        self.assertEqual(PollVote.objects.filter(poll=old).count(), 1)
+
+    def test_anyone_can_start_a_poll(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("chiebukuro:poll_new"), {"question": "チップは払う？", "choice1": "払う", "choice2": "払わない", "choice3": "", "anonymous": "1"})
+        poll = Poll.objects.get(question="チップは払う？")
+        self.assertRedirects(response, reverse("chiebukuro:poll", args=[poll.pk]))
+        self.assertEqual(poll.author, self.alice)
+        self.assertEqual(poll.display_name, "匿名さん")
+        self.assertEqual(list(poll.choices.values_list("label", flat=True)), ["払う", "払わない"])
+        self.assertTrue(poll.is_open)
+        # 選択肢が1つだけはだめ
+        self.client.post(reverse("chiebukuro:poll_new"), {"question": "1つだけ", "choice1": "はい"})
+        self.assertFalse(Poll.objects.filter(question="1つだけ").exists())
 
     def test_sponsor_slot_and_click(self):
         self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")

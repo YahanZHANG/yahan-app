@@ -1,7 +1,11 @@
+{% comment %}アンケート1つ。答えたら結果 (締め切ったものは答える前から結果も見える)。締め切ったあとも答えられる{% endcomment %}
 <section class="cb-poll" id="poll{{ poll.pk }}">
-    <p class="cb-poll-label">みんなのアンケート{% if poll.total %}<span>{{ poll.total }}人が回答</span>{% endif %}</p>
-    <h3 class="cb-poll-q">{{ poll.question }}</h3>
-    {% if poll.my_choice_id %}
+    <p class="cb-poll-label">
+        <span class="cb-poll-state{% if poll.is_open %} is-open{% endif %}">{% if poll.is_open %}回答募集中{% else %}締め切り{% endif %}</span>
+        <span>{% if poll.total %}{{ poll.total }}人が回答{% endif %}</span>
+    </p>
+    <h3 class="cb-poll-q">{% if link %}<a href="{% url 'chiebukuro:poll' poll.pk %}">{{ poll.question }}</a>{% else %}{{ poll.question }}{% endif %}</h3>
+    {% if poll.my_choice_id or not poll.is_open %}
         <ul class="cb-poll-result">
             {% for row in poll.rows %}
                 <li class="{% if row.mine %}is-mine{% endif %}">
@@ -11,17 +15,17 @@
                 </li>
             {% endfor %}
         </ul>
-        <p class="cb-poll-note">選び直すときは、下からもう一度選べます。</p>
         <form method="post" action="{% url 'chiebukuro:poll_vote' poll.pk %}" class="cb-poll-revote">
             {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <select name="choice" aria-label="選び直す">{% for row in poll.rows %}<option value="{{ row.choice.pk }}" {% if row.mine %}selected{% endif %}>{{ row.choice.label }}</option>{% endfor %}</select>
-            <button type="submit" class="cb-btn cb-btn-s">選び直す</button>
+            <select name="choice" aria-label="{% if poll.my_choice_id %}選び直す{% else %}答える{% endif %}">{% if not poll.my_choice_id %}<option value="">選ぶ</option>{% endif %}{% for row in poll.rows %}<option value="{{ row.choice.pk }}" {% if row.mine %}selected{% endif %}>{{ row.choice.label }}</option>{% endfor %}</select>
+            <button type="submit" class="cb-btn cb-btn-s">{% if poll.my_choice_id %}選び直す{% else %}答える{% endif %}</button>
         </form>
     {% else %}
         <form method="post" action="{% url 'chiebukuro:poll_vote' poll.pk %}" class="cb-poll-choices">
             {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
             {% for row in poll.rows %}<button type="submit" name="choice" value="{{ row.choice.pk }}">{{ row.choice.label }}</button>{% endfor %}
         </form>
-        <p class="cb-poll-note">ログインなしで答えられます。答えると結果が見られます。</p>
+        <p class="cb-poll-note">ログイン不要。答えると結果が見られます。</p>
     {% endif %}
+    <p class="cb-poll-meta">{{ poll.display_name }}・{% if poll.is_open %}{{ poll.closes_at|date:"n/j" }}まで{% else %}{{ poll.publish_at|date:"Y/n/j" }}{% endif %}</p>
 </section>

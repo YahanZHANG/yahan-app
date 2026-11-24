@@ -70,8 +70,12 @@ from .services import (
     questions_to_ask,
     release_survey_questions,
     best_answers,
+    home_polls,
     my_votes,
+    open_polls,
+    poll_pop_candidates,
     poll_result,
+    visible_polls,
     weekend_outings,
     featured_this_week,
     give_items_with_photo,
@@ -212,6 +216,7 @@ def by_region(queryset, region, field="region"):
 FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "daily", "me", "bell")}
 # 募集・告知のページでは「告知する」(2026-11-23 Taro: PC で告知を出す入口がなかった)
 FAB["notices"] = ("告知する", "chiebukuro:notice_new")
+FAB["polls"] = ("アンケートを作る", "chiebukuro:poll_new")
 # 募集・告知は1人1日5件まで (2026-11-23 Taro: 1人1件は厳しすぎる)
 NOTICES_PER_DAY = 5
 
@@ -432,6 +437,9 @@ def home(request):
             "sections": sections,
             "examples": question_examples() or ASK_EXAMPLES,
             "answer_pop": answer_pop_question(request.user, region),
+            # 回答募集中のアンケート (2026-11-24 Taro: HOME には2つ、まだ答えていないものはポップアップでも)
+            "polls": home_polls(request, voter_key),
+            "poll_pop": poll_pop_candidates(request, voter_key),
             "outings": weekend_outings(limit=6),
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
@@ -547,12 +555,24 @@ def fx_detail(request):
     return render(request, "chiebukuro/_fx_detail.html", {"rows": rows})
 
 
+def set_voter_cookie(request, response):
+    """ログインしていない人が1人1票で答えられるように、ブラウザごとの印をつける"""
+
+    import uuid
+
+    if not request.user.is_authenticated and not request.COOKIES.get(VOTER_COOKIE):
+        response.set_cookie(VOTER_COOKIE, uuid.uuid4().hex, max_age=400 * 86400, samesite="Lax")
+    return response
+
+
 @board_open
 @require_POST
 def poll_vote(request, pk):
-    """アンケートに答える (ログインなしでも、ブラウザごとに1票)。答え直しもできる"""
+    """アンケートに答える (ログインなしでも、ブラウザごとに1票)。答え直しもできる。締め切ったあとも答えられる"""
 
-    poll = get_object_or_404(Poll, pk=pk)
+    from django.http import JsonResponse
+
+    poll = get_object_or_404(visible_polls(), pk=pk)
     choice = poll.choices.filter(pk=request.POST.get("choice") or 0).first()
     voter_key = request.COOKIES.get(VOTER_COOKIE, "")
     if choice and (request.user.is_authenticated or voter_key):
@@ -569,18 +589,108 @@ def poll_vote(request, pk):
                 user=request.user if request.user.is_authenticated else None,
                 voter_key="" if request.user.is_authenticated else voter_key[:40],
             )
-    return redirect(safe_next(request, reverse("chiebukuro:home")) + f"#poll{poll.pk}")
+    if request.headers.get("Accept", "").startswith("application/json"):
+        # ポップアップから答えたとき: その場で結果を見せる
+        poll_result(poll, choice.pk if choice else None)
+        return JsonResponse({
+            "total": poll.total,
+            "rows": [{"label": row["choice"].label, "percent": row["percent"], "mine": row["mine"]} for row in poll.rows],
+        })
+    return redirect(safe_next(request, reverse("chiebukuro:polls")) + f"#poll{poll.pk}")
+
+
+def with_results(request, polls):
+    voter_key = request.COOKIES.get(VOTER_COOKIE, "")
+    mine = my_votes(request, voter_key, [poll.pk for poll in polls])
+    return [poll_result(poll, mine.get(poll.pk)) for poll in polls]
 
 
 @board_open
 def poll_list(request):
+    """アンケートのページ: 回答募集中 / 締め切り (2026-11-24 Taro)"""
 
-    voter_key = request.COOKIES.get(VOTER_COOKIE, "")
-    polls = list(Poll.objects.prefetch_related("choices")[:30])
-    mine = my_votes(request, voter_key, [poll.pk for poll in polls])
-    for poll in polls:
-        poll_result(poll, mine.get(poll.pk))
-    return render(request, "chiebukuro/polls.html", {**board_context(request, "home"), "polls": polls})
+    view = "closed" if request.GET.get("view") == "closed" else "open"
+    if view == "open":
+        polls = list(open_polls())
+    else:
+        open_ids = open_polls().values_list("pk", flat=True)
+        polls = list(visible_polls().exclude(pk__in=open_ids)[:60])
+    response = render(
+        request,
+        "chiebukuro/polls.html",
+        {**board_context(request, "polls"), "polls": with_results(request, polls), "view": view},
+    )
+    return set_voter_cookie(request, response)
+
+
+@board_open
+def poll_detail(request, pk):
+
+    poll = get_object_or_404(visible_polls(), pk=pk)
+    response = render(request, "chiebukuro/poll.html", {**board_context(request, "polls"), "poll": with_results(request, [poll])[0]})
+    return set_voter_cookie(request, response)
+
+
+# アンケートは1人1日3つまで
+POLLS_PER_DAY = 3
+POLL_CHOICES_MAX = 4
+
+
+@board_open
+def poll_new(request):
+    """アンケートを作る (誰でも。ログインしていない人はゲストとして)。選択肢は2〜4つ"""
+
+    question = ""
+    labels = ["", "", "", ""]
+    anonymous = False
+    error = ""
+    if request.method == "POST":
+        question = (request.POST.get("question") or "").strip()[:120]
+        labels = [(request.POST.get(f"choice{n}") or "").strip()[:60] for n in range(1, POLL_CHOICES_MAX + 1)]
+        anonymous = request.POST.get("anonymous") == "1"
+        filled = list(dict.fromkeys(label for label in labels if label))
+        guest_name, guest_email, error = guest_fields(request)
+        if error:
+            pass
+        elif not question:
+            error = "質問を入力してください。"
+        elif len(filled) < 2:
+            error = "選択肢を2つ以上入れてください。"
+        elif (
+            request.user.is_authenticated
+            and not request.user.is_staff
+            and Poll.objects.filter(author=request.user, created_at__date=timezone.localdate()).count() >= POLLS_PER_DAY
+        ):
+            error = f"アンケートを作れるのは、1日{POLLS_PER_DAY}つまでです。また明日お願いします。"
+        elif not request.user.is_authenticated and sign_in_guest(request, guest_name, guest_email) is None:
+            error = GUEST_LIMIT_ERROR
+        if not error:
+            poll = Poll.objects.filter(author=request.user, question=question, created_at__date=timezone.localdate()).first()
+            if poll is None:
+                poll = Poll.objects.create(
+                    question=question,
+                    author=request.user,
+                    nickname=user_nickname(request.user),
+                    is_anonymous=anonymous,
+                )
+                for order, label in enumerate(filled):
+                    PollChoice.objects.create(poll=poll, label=label, order=order)
+                notify_staff(request, "新しいアンケート", question + "\n" + " / ".join(filled), reverse("admin:chiebukuro_poll_change", args=[poll.pk]))
+            messages.success(request, "アンケートを出しました。")
+            return redirect("chiebukuro:poll", pk=poll.pk)
+
+    return render(
+        request,
+        "chiebukuro/poll_new.html",
+        {
+            **board_context(request, "polls"),
+            "question": question,
+            "labels": labels,
+            "anonymous": anonymous,
+            "error": error,
+            "nickname": user_nickname(request.user),
+        },
+    )
 
 
 def sponsor_click(request, pk):

@@ -820,20 +820,52 @@ class Reaction(models.Model):
         ]
 
 
+# アンケートは1週間で締め切り (2026-11-24 Taro)。締め切ったあとも答えられ、結果も変わる
+POLL_OPEN_DAYS = 7
+
+
 class Poll(models.Model):
-    """HOME の「みんなのアンケート」(運営が管理画面で作る)"""
+    """アンケート (2026-11-24 Taro: 誰でも作れる。運営のものは公開日時を予約して火・金に出す)"""
 
     question = models.CharField("質問", max_length=120)
-    is_active = models.BooleanField("HOME に出す", default=True)
+    is_active = models.BooleanField("公開する", default=True, help_text="オフにすると、どこにも出ません。")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="作った人",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="chie_polls",
+        help_text="空なら「運営」",
+    )
+    nickname = models.CharField("ニックネーム", max_length=30, blank=True)
+    is_anonymous = models.BooleanField("匿名", default=False)
+    publish_at = models.DateTimeField("公開日時", default=timezone.now, db_index=True, help_text="この日時から出ます (予約できます)。1週間後に締め切り。")
     created_at = models.DateTimeField("作成日時", default=timezone.now)
 
     class Meta:
         verbose_name = "アンケート"
         verbose_name_plural = "アンケート"
-        ordering = ["-created_at"]
+        ordering = ["-publish_at", "-pk"]
 
     def __str__(self):
         return self.question
+
+    @property
+    def closes_at(self):
+        return self.publish_at + timedelta(days=POLL_OPEN_DAYS)
+
+    @property
+    def is_open(self):
+        return timezone.now() < self.closes_at
+
+    @property
+    def display_name(self):
+        if self.author_id is None or self.author.is_staff:
+            return "運営"
+        if self.is_anonymous:
+            return "匿名さん"
+        return self.nickname or "名無しさん"
 
 
 class PollChoice(models.Model):

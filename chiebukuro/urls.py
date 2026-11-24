@@ -63,6 +63,8 @@ urlpatterns = [
     path("contact/", views.contact, name="contact"),
     path("daily/off/", views.daily_off, name="daily_off"),
     path("polls/", views.poll_list, name="polls"),
+    path("polls/new/", views.poll_new, name="poll_new"),
+    path("polls/<int:pk>/", views.poll_detail, name="poll"),
     path("polls/<int:pk>/vote/", views.poll_vote, name="poll_vote"),
     path("ad/<int:pk>/", views.sponsor_click, name="sponsor"),
     # 設定・プッシュ通知

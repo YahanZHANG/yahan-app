@@ -679,17 +679,55 @@ def recent_activity(region="", limit=8):
     return [{"kind": kind, "obj": obj} for kind, obj in rows[:limit]]
 
 
-def poll_for_home(request, voter_key):
-    """HOME に出すアンケート: まだ答えていない新しいもの (なければいちばん新しいもの)"""
+def visible_polls():
+    """公開中のアンケート (予約して公開日時がまだのものは出さない)。新しく出たものから"""
 
-    from .models import Poll, PollVote
+    from django.utils import timezone
 
-    polls = list(Poll.objects.filter(is_active=True).prefetch_related("choices")[:10])
-    if not polls:
-        return None
-    voted = set(my_votes(request, voter_key, [poll.pk for poll in polls]))
-    poll = next((poll for poll in polls if poll.pk not in voted), polls[0])
-    return poll_result(poll, my_votes(request, voter_key, [poll.pk]).get(poll.pk))
+    from .models import Poll
+
+    return Poll.objects.filter(is_active=True, publish_at__lte=timezone.now()).select_related("author").prefetch_related("choices")
+
+
+def open_polls():
+    """回答募集中 (公開から1週間以内) のアンケート"""
+
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models import POLL_OPEN_DAYS
+
+    return visible_polls().filter(publish_at__gt=timezone.now() - timedelta(days=POLL_OPEN_DAYS))
+
+
+def home_polls(request, voter_key, limit=2):
+    """HOME の「回答募集中のアンケート」: まだ答えていないものを先に、2つまで"""
+
+    polls = list(open_polls()[:20])
+    mine = my_votes(request, voter_key, [poll.pk for poll in polls])
+    polls.sort(key=lambda poll: poll.pk in mine)
+    return [poll_result(poll, mine.get(poll.pk)) for poll in polls[:limit]]
+
+
+def poll_pop_candidates(request, voter_key):
+    """回答をうながすポップアップの候補: 回答募集中で、まだ答えていないもの (新しい順)"""
+
+    from django.urls import reverse
+
+    polls = list(open_polls()[:20])
+    mine = my_votes(request, voter_key, [poll.pk for poll in polls])
+    return [
+        {
+            "id": poll.pk,
+            "question": poll.question,
+            "vote": reverse("chiebukuro:poll_vote", args=[poll.pk]),
+            "url": reverse("chiebukuro:poll", args=[poll.pk]),
+            "choices": [{"id": choice.pk, "label": choice.label} for choice in poll.choices.all()],
+        }
+        for poll in polls
+        if poll.pk not in mine
+    ]
 
 
 def my_votes(request, voter_key, poll_ids):

@@ -405,14 +405,30 @@ class PollChoiceInline(admin.TabularInline):
 
 @admin.register(Poll)
 class PollAdmin(admin.ModelAdmin):
-    """HOME の「みんなのアンケート」。まだ答えていない新しいものから HOME に出ます"""
+    """アンケート。公開日時を先にすると予約になり、その日時から1週間「回答募集中」。作った人が空なら「運営」"""
 
-    list_display = ["question", "is_active", "vote_total", "created_at"]
+    list_display = ["question", "is_active", "publish_at", "poll_state", "poll_by", "vote_total"]
     list_editable = ["is_active"]
+    list_filter = ["is_active"]
+    search_fields = ["question"]
+    raw_id_fields = ["author"]
+    fields = ["question", "is_active", "publish_at", "author", "nickname", "is_anonymous"]
     inlines = [PollChoiceInline]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(votes_total=Count("votes"))
+        return super().get_queryset(request).select_related("author").annotate(votes_total=Count("votes"))
+
+    @admin.display(description="状態")
+    def poll_state(self, obj):
+        from django.utils import timezone
+
+        if obj.publish_at > timezone.now():
+            return "予約"
+        return "回答募集中" if obj.is_open else "締め切り"
+
+    @admin.display(description="作った人")
+    def poll_by(self, obj):
+        return obj.display_name
 
     @admin.display(description="回答数", ordering="votes_total")
     def vote_total(self, obj):

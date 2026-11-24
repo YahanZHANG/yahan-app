@@ -3,6 +3,7 @@
 {% block content %}
 
 {% include "chiebukuro/_daily.html" %}
+{% include "chiebukuro/_pollpop.html" %}
 {% include "chiebukuro/_answerpop.html" %}
 
 <form method="post" action="{% url 'chiebukuro:ask' %}" class="cb-askline" data-rules>
@@ -21,6 +22,17 @@
 {% include "chiebukuro/_home_qsec.html" with rows=sections.new title="新着の質問" more="" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.wanted title="知りたい人が多い質問" more="?sort=wanted" hide_best=True %}
 {% include "chiebukuro/_home_qsec.html" with rows=sections.waiting title="回答を待っている質問" more="?sort=open" hide_best=True %}
+
+{% if polls %}
+<section class="cb-hsec">
+    <header class="cb-hsec-head"><h2>回答募集中のアンケート</h2><a href="{% url 'chiebukuro:polls' %}" class="cb-more">すべて見る</a></header>
+    <div class="cb-hsec-body cb-hsec-polls">
+    {% for poll in polls %}
+        {% include "chiebukuro/_poll.html" with link=True %}
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 {% if items %}
 <section class="cb-hsec">
