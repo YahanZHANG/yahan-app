@@ -213,7 +213,7 @@ def by_region(queryset, region, field="region"):
 
 # 右下の「＋」ボタン: いま見ているページに合わせて変わる
 # 右下のボタンは、どのページでも「質問する」(2026-11-16 Taro: 質問がいちばん大事)
-FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "daily", "me", "bell", "polls")}
+FAB = {tab: ("質問する", "chiebukuro:ask") for tab in ("home", "posts", "questions", "items", "lending", "daily", "me", "bell", "polls")}
 # 募集・告知のページでは「告知する」(2026-11-23 Taro: PC で告知を出す入口がなかった)
 FAB["notices"] = ("告知する", "chiebukuro:notice_new")
 # 募集・告知は1人1日5件まで (2026-11-23 Taro: 1人1件は厳しすぎる)
@@ -1221,15 +1221,36 @@ def delete_answer(request, pk):
 # ゆずりあい
 # =========================================================
 
+# 2026-11-24 Taro: 貸します・借りたいは「貸し借り」の別のページに (ゆずりあいは、ゆずります・ください)
+LEND_KINDS = ("lend", "borrow")
+
+
+def item_tab(kind):
+    return "lending" if kind in LEND_KINDS else "items"
+
+
+def item_kinds(area):
+    return [(value, label) for value, label in Item.Kind.choices if (value in LEND_KINDS) == (area == "lending")]
+
+
 @board_open
-def item_list(request):
+def lending_list(request):
+    return item_list(request, area="lending")
+
+
+@board_open
+def item_list(request, area="items"):
 
     region = current_region(request)
     kind = clean_choice(request.GET.get("kind", ""), Item.Kind.choices)
+    if kind and item_tab(kind) != area:
+        # 古いリンク (ゆずりあい?kind=lend など) は、正しいページへ
+        return redirect(reverse(f"chiebukuro:{item_tab(kind)}") + "?" + request.GET.urlencode())
+    kinds = item_kinds(area)
     genre = clean_choice(request.GET.get("genre", ""), Genre.choices)
     show_done = request.GET.get("all") == "1"
 
-    items = by_region(Item.objects.filter(status=Status.PUBLISHED), region)
+    items = by_region(Item.objects.filter(status=Status.PUBLISHED, kind__in=[value for value, _ in kinds]), region)
     if kind:
         items = items.filter(kind=kind)
     if genre:
@@ -1244,15 +1265,17 @@ def item_list(request):
         request,
         "chiebukuro/items.html",
         {
-            **board_context(request, "items", region),
-            "voices": survey_share_voices(),
+            **board_context(request, area, region),
+            "area": area,
+            "page_title": "貸し借り" if area == "lending" else "ゆずりあい",
+            "voices": survey_share_voices() if area == "items" else None,
             "page": page,
             "kind": kind,
-            "kinds": Item.Kind.choices,
+            "kinds": kinds,
             "genre": genre,
             "genres": Genre.choices,
             "show_done": show_done,
-            "new_label": ITEM_NEW_LABELS.get(kind, "ゆずりあいに出す"),
+            "new_label": ITEM_NEW_LABELS.get(kind, "貸し借りに出す" if area == "lending" else "ゆずりあいに出す"),
         },
     )
 
@@ -1331,9 +1354,9 @@ def item_new(request):
         request,
         "chiebukuro/item_form.html",
         {
-            **board_context(request, "items", current_region(request)),
+            **board_context(request, item_tab(kind), current_region(request)),
             "kind": kind,
-            "kinds": Item.Kind.choices,
+            "kinds": item_kinds(item_tab(kind)),
             "genres": Genre.choices,
             "values": values,
             "error": error,
@@ -1365,7 +1388,7 @@ def item_detail(request, pk):
         request,
         "chiebukuro/item.html",
         {
-            **board_context(request, "items", current_region(request)),
+            **board_context(request, item_tab(item.kind), current_region(request)),
             "item": item,
             "is_owner": request.user.is_authenticated and request.user.pk == item.owner_id,
             "my_request": my_request,
@@ -1447,7 +1470,7 @@ def item_state(request, pk):
         item.status = Status.HIDDEN
         item.save(update_fields=["status", "updated_at"])
         messages.success(request, "書き込みを取り下げました。")
-        return redirect("chiebukuro:items")
+        return redirect(f"chiebukuro:{item_tab(item.kind)}")
 
     state = request.POST.get("state", "")
     if state in Item.State.values:

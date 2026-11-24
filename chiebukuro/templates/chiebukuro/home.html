@@ -58,7 +58,7 @@
 
 {% if home_notices %}
 <section class="cb-hsec">
-    <header class="cb-hsec-head"><h2>新着の募集・告知</h2><a href="{% url 'chiebukuro:notices' %}" class="cb-more">すべて見る</a></header>
+    <header class="cb-hsec-head"><h2>新着の宣伝</h2><a href="{% url 'chiebukuro:notices' %}" class="cb-more">すべて見る</a></header>
     <div class="cb-hsec-body">
     {% for notice in home_notices %}
         {% include "chiebukuro/_notice_row.html" %}

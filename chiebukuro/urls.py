@@ -23,6 +23,7 @@ urlpatterns = [
     path("a/<int:pk>/delete/", views.delete_answer, name="delete_answer"),
     # ゆずりあい
     path("items/", views.item_list, name="items"),
+    path("lending/", views.lending_list, name="lending"),
     path("items/new/", views.item_new, name="item_new"),
     path("items/<int:pk>/", views.item_detail, name="item"),
     path("items/<int:pk>/state/", views.item_state, name="item_state"),

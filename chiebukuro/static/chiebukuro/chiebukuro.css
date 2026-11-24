@@ -753,7 +753,7 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
     bottom: 0;
     z-index: 30;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     height: calc(var(--tab-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--cb-tab, var(--surface));
@@ -771,8 +771,60 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
     white-space: nowrap;
 }
 .cb-tabbar a:hover { text-decoration: none; }
-.cb-tabbar a.on { color: var(--brand); }
-.cb-tabbar a.on .cb-icon { stroke-width: 2.3; }
+.cb-tabbar a.on, .cb-tabbar-more.on { color: var(--brand); }
+.cb-tabbar a.on .cb-icon, .cb-tabbar-more.on .cb-icon { stroke-width: 2.3; }
+.cb-tabbar-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cb-tabink, var(--sub));
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cb-tabbar-more[aria-expanded="true"] { color: var(--text); }
+
+/* その他のサブメニュー (下のメニューのすぐ上に出る) */
+.cb-moremenu {
+    position: fixed;
+    inset: 0 0 calc(var(--tab-h) + env(safe-area-inset-bottom));
+    z-index: 29;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    background: rgba(0, 0, 0, .25);
+}
+.cb-moremenu[hidden] { display: none; }
+.cb-moremenu-box {
+    display: grid;
+    min-width: 200px;
+    margin: 0 8px 8px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
+}
+.cb-moremenu-box a, .cb-moremenu-box .cb-menu-soon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+}
+.cb-moremenu-box a:hover { text-decoration: none; background: var(--surface-2); }
+.cb-moremenu-box a.on { color: var(--brand); }
+.cb-menu-soon { color: var(--sub) !important; cursor: default; }
+.cb-menu-soon small { margin-left: 2px; font-size: 12px; font-weight: 400; }
 
 /* ---------- PC ---------- */
 
@@ -814,6 +866,8 @@ html[data-yapp-resolved-theme="dark"] .cb-safety { background: #2c2512; border-c
         font-weight: 600;
     }
     .cb-side a:hover { background: var(--surface); text-decoration: none; }
+    .cb-side .cb-menu-soon { display: flex; align-items: center; gap: 12px; padding: 9px 12px; font-size: 16px; font-weight: 600; }
+    .cb-moremenu { display: none !important; }
     .cb-side a.on { font-weight: 800; color: var(--brand); }
     .cb-side-write {
         justify-content: center;

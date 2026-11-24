@@ -2,7 +2,7 @@
 {% load board %}
 {% block title %}{{ item.title }} | スイス掲示板{% endblock %}
 {% block content %}
-<p class="cb-back"><a href="{% url 'chiebukuro:items' %}?kind={{ item.kind }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ item.get_kind_display }}</a></p>
+<p class="cb-back"><a href="{% if item.kind == 'lend' or item.kind == 'borrow' %}{% url 'chiebukuro:lending' %}{% else %}{% url 'chiebukuro:items' %}{% endif %}?kind={{ item.kind }}">{% include "chiebukuro/_icon.html" with name="back" %}{{ item.get_kind_display }}</a></p>
 
 <section class="cb-block cb-detail">
     {% if item.photo_url %}<img src="{{ item.photo_url }}" alt="{{ item.title }}" class="cb-detail-image">{% endif %}

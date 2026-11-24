@@ -180,9 +180,15 @@ class HomeTests(BoardTestCase):
         self.assertNotIn("cb-askbox", page)
         self.assertNotIn("cb-hero", page)
         self.assertNotIn("Coop に枝豆がありました", page)
-        # 下のメニュー: 質問・ゆずりあいが先
-        self.assertLess(page.index("<span>質問</span>"), page.index("<span>つぶやき</span>"))
-        self.assertLess(page.index("<span>ゆずりあい</span>"), page.index("<span>つぶやき</span>"))
+        # 下のメニュー (2026-11-24): HOME・質問・アンケート・その他 (ゆずりあい・貸し借り・宣伝・つぶやき・求人)
+        tabbar = page[page.index('class="cb-tabbar"'):]
+        tabbar = tabbar[:tabbar.index("</nav>")]
+        self.assertLess(tabbar.index("<span>質問</span>"), tabbar.index("<span>アンケート</span>"))
+        self.assertIn("<span>その他</span>", tabbar)
+        self.assertNotIn("<span>つぶやき</span>", tabbar)
+        more = page[page.index('id="cb-moremenu"'):]
+        for label in ["ゆずりあい", "貸し借り", "宣伝", "求人"]:
+            self.assertIn(f"<span>{label}", more)
         # 右下はどのページでも「質問する」
         self.assertIn('class="cb-fab" aria-label="質問する"', self.client.get(reverse("chiebukuro:items")).content.decode())
         self.assertTrue(old and wanted)
@@ -456,7 +462,12 @@ class ItemTests(BoardTestCase):
         self.assertEqual(Item.objects.count(), 1)
 
         self.assertContains(self.client.get(reverse("chiebukuro:items") + "?kind=give"), "ベビーカー")
-        self.assertNotContains(self.client.get(reverse("chiebukuro:items") + "?kind=lend"), "ベビーカー")
+        # 貸します・借りたいは「貸し借り」のページ (2026-11-24)
+        self.assertRedirects(self.client.get(reverse("chiebukuro:items") + "?kind=lend"), reverse("chiebukuro:lending") + "?kind=lend")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:lending")), "ベビーカー")
+        Item.objects.create(kind="lend", title="日本語の絵本", owner=self.alice, nickname="alice")
+        self.assertContains(self.client.get(reverse("chiebukuro:lending")), "日本語の絵本")
+        self.assertNotContains(self.client.get(reverse("chiebukuro:items")), "日本語の絵本")
         self.assertContains(self.client.get(reverse("chiebukuro:items") + "?genre=kids"), "ベビーカー")
 
         self.client.force_login(self.bob)
@@ -1484,6 +1495,6 @@ class HomeNoticesTests(TestCase):
         Notice.objects.create(kind="event", title="絵本の会", body="x", owner=alice, nickname="アリス")
         Notice.objects.create(kind="event", title="架空の会", body="x", owner=alice, nickname="アリス", is_sample=True)
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, "新着の募集・告知")
+        self.assertContains(page, "新着の宣伝")
         self.assertContains(page, "絵本の会")
         self.assertNotContains(page, "架空の会")
