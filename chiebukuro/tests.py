@@ -761,7 +761,7 @@ class HomeExtrasTests(BoardTestCase):
         self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "先月のアンケート")
         closed = self.client.get(reverse("chiebukuro:polls") + "?view=closed")
         self.assertContains(closed, "先月のアンケート")
-        self.assertContains(closed, "締め切り")
+        self.assertContains(closed, "締め切り後も回答できます")
         # 締め切ったあとも答えられる
         self.client.force_login(self.alice)
         self.client.post(reverse("chiebukuro:poll_vote", args=[old.pk]), {"choice": yes.pk})

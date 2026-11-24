@@ -20,6 +20,7 @@
             <select name="choice" aria-label="{% if poll.my_choice_id %}選び直す{% else %}答える{% endif %}">{% if not poll.my_choice_id %}<option value="">選ぶ</option>{% endif %}{% for row in poll.rows %}<option value="{{ row.choice.pk }}" {% if row.mine %}selected{% endif %}>{{ row.choice.label }}</option>{% endfor %}</select>
             <button type="submit" class="cb-btn cb-btn-s">{% if poll.my_choice_id %}選び直す{% else %}答える{% endif %}</button>
         </form>
+        {% if not poll.is_open %}<p class="cb-poll-note">締め切り後も回答できます。</p>{% endif %}
     {% else %}
         <form method="post" action="{% url 'chiebukuro:poll_vote' poll.pk %}" class="cb-poll-choices">
             {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
