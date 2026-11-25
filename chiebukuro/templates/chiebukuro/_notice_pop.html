@@ -1,0 +1,46 @@
+{% comment %}お知らせのポップアップ (2026-11-24 Taro)。管理画面「お知らせポップアップ」のいちばん新しいものを、次に開いたときに最初に1回だけ (端末ごと、localStorage cb_notice_seen)。
+はじめて来た人は、事前アンケートのお礼 (_thanks.html) を閉じたすぐあと。
+これを出したページでは、ほかのポップアップ (質問・今日のひとこと・アンケート・回答のお願い・登録のおすすめ) は出さない (window.cbNoticeShown)。{% endcomment %}
+{% if popup_notice %}
+<dialog class="cb-daily cb-noticepop" id="cb-noticepop" aria-labelledby="cb-noticepop-title" data-id="{{ popup_notice.pk }}">
+    <div class="cb-noticepop-box">
+        <h2 id="cb-noticepop-title">{{ popup_notice.title }}</h2>
+        {% for block in popup_notice.blocks %}
+            <section class="cb-noticepop-part">
+                {% if block.head %}<h3>{{ block.head }}</h3>{% endif %}
+                <p>{{ block.text|linebreaksbr }}</p>
+            </section>
+        {% endfor %}
+        <div class="cb-noticepop-foot">
+            {% if popup_notice.link_url and popup_notice.link_label %}<a href="{{ popup_notice.link_url }}" class="cb-btn cb-btn-primary" data-noticepop-close>{{ popup_notice.link_label }}</a>{% endif %}
+            <button type="button" class="cb-btn" data-noticepop-close>閉じる</button>
+        </div>
+    </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById("cb-noticepop");
+    if (!dialog || !dialog.showModal) return;
+    var id = dialog.dataset.id;
+    var seen;
+    try { seen = localStorage.getItem("cb_notice_seen"); } catch (e) { return; }
+    if (seen === id) return;
+    window.cbNoticeShown = true;
+    function open() {
+        try { localStorage.setItem("cb_notice_seen", id); } catch (e) {}
+        dialog.showModal();
+    }
+    var thanks = document.getElementById("cb-thanks");
+    if (window.cbThanksShown && thanks && thanks.open) {
+        // はじめての人: お礼を閉じたらすぐ
+        thanks.addEventListener("close", function () { setTimeout(open, 250); });
+    } else {
+        open();
+    }
+    dialog.querySelectorAll("[data-noticepop-close]").forEach(function (element) {
+        element.addEventListener("click", function () { dialog.close(); });
+    });
+    dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
+})();
+</script>
+{% endif %}

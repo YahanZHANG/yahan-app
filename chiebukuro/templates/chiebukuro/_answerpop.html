@@ -39,7 +39,7 @@
     if (!pick) return;
 
     var count = Number(read("cb_answerpop_count") || 0) + 1;
-    var busy = window.cbThanksShown || window.cbAskShown || window.cbDailyShown || window.cbPollShown || location.hash;
+    var busy = window.cbThanksShown || window.cbNoticeShown || window.cbAskShown || window.cbDailyShown || window.cbPollShown || location.hash;
     if (count < 3 || busy) { write("cb_answerpop_count", String(count)); return; }
 
     var form = dialog.querySelector("form");

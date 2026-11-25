@@ -820,6 +820,45 @@ class Reaction(models.Model):
         ]
 
 
+class PopupNotice(models.Model):
+    """お知らせのポップアップ (2026-11-24 Taro: 新しい機能などを知らせる)。
+    いちばん新しい「出す」ものを、次に掲示板を開いたときに1回だけ (端末ごと)。はじめての人は事前アンケートのお礼のすぐあと"""
+
+    title = models.CharField("タイトル", max_length=60)
+    body = models.TextField("本文", help_text="空行で区切ると段落になり、各段落の1行目が太字の見出しになります。")
+    link_url = models.CharField("ボタンのリンク先", max_length=300, blank=True, help_text="例: /swiss-board/polls/ (空ならボタンなし)")
+    link_label = models.CharField("ボタンの文字", max_length=30, blank=True)
+    is_active = models.BooleanField("出す", default=True)
+    show_until = models.DateTimeField("いつまで出すか", null=True, blank=True, help_text="空なら、ずっと (はじめて来た人にも出ます)")
+    created_at = models.DateTimeField("作成日時", default=timezone.now)
+
+    class Meta:
+        verbose_name = "お知らせポップアップ"
+        verbose_name_plural = "お知らせポップアップ"
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def blocks(self):
+        rows = []
+        for part in self.body.replace("\r\n", "\n").split("\n\n"):
+            lines = [line for line in part.strip().split("\n") if line.strip()]
+            if lines:
+                rows.append({"head": lines[0] if len(lines) > 1 else "", "text": "\n".join(lines[1:]) if len(lines) > 1 else lines[0]})
+        return rows
+
+    @classmethod
+    def current(cls):
+        now = timezone.now()
+        return (
+            cls.objects.filter(is_active=True, created_at__lte=now)
+            .filter(models.Q(show_until__isnull=True) | models.Q(show_until__gt=now))
+            .first()
+        )
+
+
 # アンケートは1週間で締め切り (2026-11-24 Taro)。締め切ったあとも答えられ、結果も変わる
 POLL_OPEN_DAYS = 7
 

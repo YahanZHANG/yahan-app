@@ -791,6 +791,22 @@ class HomeExtrasTests(BoardTestCase):
         self.client.post(reverse("chiebukuro:poll_new"), {"question": "1つだけ", "choice1": "はい"})
         self.assertFalse(Poll.objects.filter(question="1つだけ").exists())
 
+    def test_popup_notice(self):
+        from chiebukuro.models import PopupNotice
+
+        PopupNotice.objects.all().delete()  # 0041 の最初のお知らせ
+        self.assertNotContains(self.client.get(reverse("chiebukuro:questions")), 'id="cb-noticepop"')
+        PopupNotice.objects.create(title="新しい機能のお知らせ", body="📊 アンケートができました\n気軽に答えてみてください。", link_url="/swiss-board/polls/", link_label="アンケートを見る")
+        page = self.client.get(reverse("chiebukuro:questions"))
+        self.assertContains(page, 'id="cb-noticepop"')
+        self.assertContains(page, "<h3>📊 アンケートができました</h3>", html=False)
+        # お礼のあとに出て、ほかのポップアップは止める
+        html = page.content.decode()
+        self.assertLess(html.index('id="cb-thanks"'), html.index('id="cb-noticepop"'))
+        self.assertLess(html.index('id="cb-noticepop"'), html.index('id="cb-askpop"'))
+        PopupNotice.objects.update(is_active=False)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:questions")), 'id="cb-noticepop"')
+
     def test_sponsor_slot_and_click(self):
         self.assertNotContains(self.client.get(reverse("chiebukuro:home")), "広告を出せます")
         sponsor = Sponsor.objects.create(name="和ショップ", title="日本の食材を宅配", link="https://example.com/")

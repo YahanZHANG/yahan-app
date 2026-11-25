@@ -16,7 +16,7 @@
     var key = "cb_claimpop_at";
     var last = 0;
     try { last = Number(localStorage.getItem(key) || 0); } catch (e) { return; }
-    if (!dialog || !dialog.showModal || Date.now() - last < 3 * 24 * 60 * 60 * 1000) return;
+    if (!dialog || !dialog.showModal || window.cbNoticeShown || Date.now() - last < 3 * 24 * 60 * 60 * 1000) return;
     setTimeout(function () {
         if (document.querySelector("dialog[open]")) return;
         try { localStorage.setItem(key, String(Date.now())); } catch (e) {}

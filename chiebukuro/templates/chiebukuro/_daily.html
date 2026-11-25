@@ -66,7 +66,7 @@
     var snoozed = Number(read("cb_daily_snooze_until") || 0) > Date.now();
     if (/^#poll\d+$/.test(location.hash)) {
         // アンケートに答えたあと (結果は _pollpop.html が出す)
-    } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day && !window.cbAskShown) {
+    } else if (dialog.dataset.auto && !snoozed && read("cb_daily_seen") !== day && !window.cbAskShown && !window.cbNoticeShown) {
         // その日2回目からで、まだ見ていないときだけ、選ばれたものを自動で出す (1回目は質問のポップアップ)
         var auto = parts.filter(function (part) { return part.hasAttribute("data-auto"); });
         if (auto.length) { window.cbDailyShown = true; setTimeout(function () { open(auto); }, 400); }
