@@ -404,7 +404,6 @@ class Notice(models.Model):
         SITTER_OFFER = "sitter_offer", "シッターできます"
         OTHER = "other", "その他"
 
-    PR_KINDS = ("shop", "lesson")
     SITTER_KINDS = ("sitter_find", "sitter_offer")
     DAYS = 30
 
@@ -420,6 +419,8 @@ class Notice(models.Model):
     nickname = models.CharField("ニックネーム", max_length=30, blank=True)
     status = models.CharField("ステータス", max_length=20, choices=Status.choices, default=Status.PUBLISHED, db_index=True)
     expires_at = models.DateTimeField("掲載の終わり", db_index=True)
+    # 2026-11-26 Taro: PR は自動で付けない。お金をもらっているところだけ運営が付ける (一覧の上・HOME に出る)
+    is_pr = models.BooleanField("PR", default=False, db_index=True, help_text="お金をもらっている宣伝だけ。印が付き、宣伝の一覧のいちばん上と HOME に出ます。")
     is_sample = models.BooleanField("テスト用（架空）", default=False, help_text="先行テスト用の架空の告知。「テスト用・架空」の印が付きます。公開前に管理画面からまとめて消してください。")
     created_at = models.DateTimeField("作成日時", default=timezone.now, db_index=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
@@ -440,10 +441,6 @@ class Notice(models.Model):
     @property
     def display_name(self):
         return self.nickname or "名無しさん"
-
-    @property
-    def is_pr(self):
-        return self.kind in self.PR_KINDS
 
     @property
     def is_sitter(self):

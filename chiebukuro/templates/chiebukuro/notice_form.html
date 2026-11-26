@@ -10,7 +10,6 @@
         {% csrf_token %}
         <label class="cb-field"><span>種類</span>
             <select name="kind" required><option value="">選んでください</option>{% for value, label in kinds %}<option value="{{ value }}" {% if value == values.kind %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-            <small class="cb-sub">お店・サービスと教室・レッスンには「PR」の印がつきます。</small>
         </label>
         <label class="cb-field"><span>タイトル</span>
             <input type="text" name="title" value="{{ values.title }}" maxlength="{{ title_max }}" required>

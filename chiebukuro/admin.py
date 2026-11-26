@@ -251,9 +251,9 @@ class ItemAdmin(admin.ModelAdmin):
 @admin.register(Notice)
 class NoticeAdmin(admin.ModelAdmin):
 
-    list_display = ["title", "kind", "status", "is_sample", "region", "nickname", "expires_at", "created_at"]
-    list_editable = ["status"]
-    list_filter = ["is_sample", "kind", "status", "region"]
+    list_display = ["title", "kind", "is_pr", "status", "is_sample", "region", "nickname", "expires_at", "created_at"]
+    list_editable = ["is_pr", "status"]
+    list_filter = ["is_pr", "is_sample", "kind", "status", "region"]
     search_fields = ["title", "body", "nickname", "owner__username"]
     readonly_fields = ["owner"]
     actions = ["delete_samples", make_editorial]
