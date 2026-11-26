@@ -394,6 +394,14 @@ def active_notices():
     return Notice.objects.filter(status=Status.PUBLISHED, expires_at__gt=timezone.now())
 
 
+def home_notices(region, limit=3):
+    """HOME の宣伝: PR (運営が付けたもの、最大3件) を上に、その下に新着3件"""
+
+    notices = by_region(active_notices().filter(is_sample=False), region)
+    pr = list(notices.filter(is_pr=True).order_by("-created_at")[:limit])
+    return pr + list(notices.filter(is_pr=False).order_by("-created_at")[:limit])
+
+
 def open_items():
     return Item.objects.filter(status=Status.PUBLISHED).exclude(state=Item.State.DONE)
 
@@ -445,8 +453,8 @@ def home(request):
             "featured": [card for card in featured_this_week() if card["kind"] != "question"],
             "gives": give_items_with_photo(region),
             "items": list(by_region(open_items(), region).order_by("-created_at")[:5]),
-            # 新着の募集・告知 (2026-11-23 Taro: ゆずりあいの近くに)
-            "home_notices": list(by_region(active_notices().filter(is_sample=False), region).order_by("-created_at")[:3]),
+            # 宣伝 (2026-11-23 Taro: ゆずりあいの近くに)。運営が PR を付けたものはいつも上に
+            "home_notices": home_notices(region),
             "headlines": news_headlines(),
             "login_url": login_url(request),
         },
@@ -1515,7 +1523,7 @@ def notice_list(request):
     elif kind:
         notices = notices.filter(kind=kind)
 
-    page = Paginator(notices.order_by("-created_at"), PER_PAGE).get_page(request.GET.get("page"))
+    page = Paginator(notices.order_by("-is_pr", "-created_at"), PER_PAGE).get_page(request.GET.get("page"))
 
     return render(
         request,
@@ -2221,6 +2229,20 @@ def staff_hide(request, kind, pk):
     if kind == "post":
         return redirect("chiebukuro:posts")
     return redirect(safe_next(request, reverse("chiebukuro:home")))
+
+
+@require_POST
+@login_required
+def staff_notice_pr(request, pk):
+    """運営だけ: 宣伝に PR を付ける・はずす"""
+
+    if not request.user.is_staff:
+        raise Http404
+    notice = get_object_or_404(Notice, pk=pk)
+    notice.is_pr = not notice.is_pr
+    notice.save(update_fields=["is_pr", "updated_at"])
+    messages.success(request, "PR を付けました。" if notice.is_pr else "PR をはずしました。")
+    return redirect("chiebukuro:notice", pk=pk)
 
 
 @board_open

@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -545,6 +546,33 @@ class ItemTests(BoardTestCase):
 
 class NoticeTests(BoardTestCase):
 
+    def test_staff_sets_pr_and_pr_goes_top(self):
+        old = Notice.objects.create(kind="shop", title="提携のお店", body="b", owner=self.alice, created_at=timezone.now() - timedelta(days=3))
+        Notice.objects.create(kind="lesson", title="新しい教室", body="b", owner=self.alice)
+        url = reverse("chiebukuro:staff_notice_pr", args=[old.pk])
+
+        # 運営でない人は付けられない
+        self.client.force_login(self.bob)
+        self.assertEqual(self.client.post(url).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("chiebukuro:notice", args=[old.pk])), "PRを付ける")
+
+        staff = User.objects.create_user("staffer", password="pw", is_staff=True)
+        self.client.force_login(staff)
+        self.assertContains(self.client.get(reverse("chiebukuro:notice", args=[old.pk])), "PRを付ける")
+        self.client.post(url)
+        old.refresh_from_db()
+        self.assertTrue(old.is_pr)
+
+        page = self.client.get(reverse("chiebukuro:notices")).content.decode()
+        self.assertLess(page.index("提携のお店"), page.index("新しい教室"))
+        self.assertIn(">PR<", page)
+        home = self.client.get(reverse("chiebukuro:home")).content.decode()
+        self.assertLess(home.index("提携のお店"), home.index("新しい教室"))
+
+        self.client.post(url)
+        old.refresh_from_db()
+        self.assertFalse(old.is_pr)
+
     def data(self, **extra):
         return {"kind": "lesson", "title": "書道教室", "body": "毎週土曜", "notice_region": "zurich", "agree": "yes", **extra}
 
@@ -553,7 +581,8 @@ class NoticeTests(BoardTestCase):
         response = self.client.post(reverse("chiebukuro:notice_new"), self.data(link="https://example.com/"))
         notice = Notice.objects.get()
         self.assertRedirects(response, reverse("chiebukuro:notice", args=[notice.pk]))
-        self.assertTrue(notice.is_pr)
+        # PR は自動で付かない (運営が手動で付ける)
+        self.assertFalse(notice.is_pr)
         self.assertEqual((notice.expires_at - notice.created_at).days, 30)
 
         # 1人1日5件まで (6件目は出せない)
@@ -565,7 +594,7 @@ class NoticeTests(BoardTestCase):
 
         page = self.client.get(reverse("chiebukuro:notices") + "?kind=lesson")
         self.assertContains(page, "書道教室")
-        self.assertContains(page, ">PR<", html=False)
+        self.assertNotContains(page, ">PR<", html=False)
 
         self.client.force_login(self.bob)
         self.client.post(reverse("chiebukuro:notice_request", args=[notice.pk]), {"body": "見学できますか？"})
@@ -1522,6 +1551,6 @@ class HomeNoticesTests(TestCase):
         Notice.objects.create(kind="event", title="絵本の会", body="x", owner=alice, nickname="アリス")
         Notice.objects.create(kind="event", title="架空の会", body="x", owner=alice, nickname="アリス", is_sample=True)
         page = self.client.get(reverse("chiebukuro:home"))
-        self.assertContains(page, "新着の宣伝")
+        self.assertContains(page, "<h2>宣伝</h2>", html=False)
         self.assertContains(page, "絵本の会")
         self.assertNotContains(page, "架空の会")
